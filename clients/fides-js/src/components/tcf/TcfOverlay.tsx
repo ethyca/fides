@@ -138,7 +138,6 @@ export const TcfOverlay = () => {
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
-  const defaultLocale = i18n.getDefaultLocale();
   const userlocale = detectUserLocale(
     navigator,
     options.fidesLocale,
@@ -270,16 +269,24 @@ export const TcfOverlay = () => {
   const [draftIds, setDraftIds] = useState<EnabledIds>(EMPTY_ENABLED_IDS);
 
   useEffect(() => {
-    if (experienceFull) {
+    const isFullExperience = !!experienceFull;
+    if (isFullExperience) {
+      // Load messages from experience
+      // This includes any custom notices, but not the GVL translations.
       loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
-      if (!userlocale || bestLocale === defaultLocale) {
-        // English (default) GVL translations are part of the full experience, so we load them here.
+
+      // Set the locale to the best locale
+      setCurrentLocale(bestLocale);
+
+      const shouldUseEnglish = bestLocale === DEFAULT_LOCALE;
+      if (shouldUseEnglish) {
+        // English (default) GVL translations are already included in the full experience,
+        // so we can directly load them from the full experience
         loadGVLMessagesFromExperience(i18n, experienceFull);
-      } else {
-        setCurrentLocale(bestLocale);
-        if (!isGVLLangLoading) {
-          setIsI18nLoading(false);
-        }
+        setIsI18nLoading(false);
+      }
+      if (!shouldUseEnglish && !isGVLLangLoading) {
+        setIsI18nLoading(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -356,12 +363,22 @@ export const TcfOverlay = () => {
     if (gvlTranslations) {
       return getGVLPurposeList(gvlTranslations);
     }
+
+    // Use full experience if available and the current locale is English
+    if (experienceFull && currentLocale === DEFAULT_LOCALE) {
+      const fullPurposeNames =
+        experienceFull.tcf_purpose_consents?.map((p) => p.name) || [];
+      const fullSpecialFeatureNames =
+        experienceFull.tcf_special_features?.map((sf) => sf.name) || [];
+      return [...fullPurposeNames, ...fullSpecialFeatureNames];
+    }
+
+    // Otherwise, use the minimal experience
     const tcfPurposeNames = experienceMinimal?.tcf_purpose_names || [];
     const tcfSpecialFeatureNames =
       experienceMinimal?.tcf_special_feature_names || [];
     return [...tcfPurposeNames, ...tcfSpecialFeatureNames];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experienceMinimal, gvlTranslations]);
+  }, [experienceMinimal, experienceFull, gvlTranslations, currentLocale]);
 
   const tcfNoticesServed = constructTCFNoticesServedProps(
     experienceFull || experienceMinimal,
@@ -649,6 +666,7 @@ export const TcfOverlay = () => {
         setActiveTabIndex(2);
       }}
       isUiBlocking={!isDismissable}
+      isVendorAssetDisclosureView={false}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({

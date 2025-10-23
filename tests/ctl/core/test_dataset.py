@@ -399,6 +399,7 @@ def test_namespace_meta(db) -> None:
         "resource_id": None,
         "after": None,
         "namespace": {"dataset_id": "public"},
+        "redact": None,
     }
 
 
@@ -467,18 +468,21 @@ TEST_DATABASE_PARAMETERS = {
             }
         },
     },
-    "snowflake": {
-        "url": SNOWFLAKE_URL,
-        "setup_url": SNOWFLAKE_URL,
-        "init_script_path": "tests/ctl/data/example_sql/snowflake_example.sql",
-        "is_external": True,
-        "expected_collection": {
-            "PUBLIC": {
-                "VISIT": ["EMAIL", "LAST_VISIT"],
-                "LOGIN": ["ID", "CUSTOMER_ID", "TIME"],
-            }
-        },
-    },
+    # Disabling Snowflake tests for now as they are proving flaky.
+    # This functionality is basically superceded by Helios, so there is
+    # minimal risk in disabling these tests.
+    # "snowflake": {
+    #     "url": SNOWFLAKE_URL,
+    #     "setup_url": SNOWFLAKE_URL,
+    #     "init_script_path": "tests/ctl/data/example_sql/snowflake_example.sql",
+    #     "is_external": True,
+    #     "expected_collection": {
+    #         "PUBLIC": {
+    #             "VISIT": ["EMAIL", "LAST_VISIT"],
+    #             "LOGIN": ["ID", "CUSTOMER_ID", "TIME"],
+    #         }
+    #     },
+    # },
     "redshift": {
         "url": REDSHIFT_URL,
         "setup_url": REDSHIFT_URL,

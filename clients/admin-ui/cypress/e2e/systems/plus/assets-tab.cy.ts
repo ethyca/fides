@@ -1,5 +1,6 @@
 import {
   stubDatasetCrud,
+  stubGVLSystem,
   stubPlus,
   stubSystemAssets,
   stubSystemCrud,
@@ -29,6 +30,7 @@ describe("System Assets Tab", () => {
     stubSystemVendors();
     stubVendorList();
     stubSystemAssets();
+    stubGVLSystem();
     cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
     cy.wait(["@getDictionaryEntries", "@getSystems"]);
   });
@@ -37,12 +39,12 @@ describe("System Assets Tab", () => {
     cy.getByTestId("vendor-name-select").find("input").type("Aniview");
     cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
     cy.getByTestId("save-btn").click();
-    cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+    cy.wait(["@postSystem", "@getDictSystem", "@getSystems"]);
 
     cy.getAntTab("Assets").click();
 
-    cy.getByTestId("col-select").should("not.exist");
-    cy.getByTestId("col-actions").should("not.exist");
+    cy.getByTestId("row-0-col-select").should("not.exist");
+    cy.getByTestId("row-0-col-actions").should("not.exist");
     cy.getByTestId("add-asset-btn").should("not.exist");
     cy.getByTestId("row-0").within(() => {
       cy.getByTestId("system-badge").should("not.have.attr", "onClick");

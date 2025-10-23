@@ -10,8 +10,10 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
+from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
-    AwaitingAsyncTask,
+    ClientUnsuccessfulException,
+    ConnectionException,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
@@ -27,7 +29,6 @@ from fides.api.schemas.consentable_item import (
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
-    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -37,6 +38,10 @@ from fides.api.schemas.saas.saas_config import (
 from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
+)
+from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
+    get_strategy,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
@@ -64,7 +69,9 @@ from fides.api.util.logger_context_utils import (
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
+    PRIVACY_REQUEST_OBJECT,
     assign_placeholders,
+    check_dataset_missing_reference_values,
     map_param_values,
 )
 
@@ -215,17 +222,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Retrieve data from SaaS APIs"""
+        """
+        Retrieve data from SaaS APIs.
+
+        Handles sync requests directly and delegates async requests to external handlers.
+        """
 
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
-        if request_task.callback_succeeded:
-            # If this is True, we assume we've received results from a third party
-            # asynchronously and we can proceed to the next node.
-            logger.info(
-                "Access callback succeeded for request task '{}'", request_task.id
-            )
-            return request_task.get_access_data()
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
@@ -263,24 +267,30 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if custom_privacy_request_fields:
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
-        rows: List[Row] = []
-        awaiting_async_callback: bool = False
+        input_data[PRIVACY_REQUEST_OBJECT] = [privacy_request.to_safe_dict()]
+        # check all the values specified by param_values are provided in input_data
         for read_request in read_requests:
-            self.set_saas_request_state(read_request)
-            if (
-                read_request.async_config
-                and read_request.async_config.strategy == AsyncStrategy.callback
-                and request_task.id  # Only supported in DSR 3.0
-            ):
-                # Asynchronous read request detected. We will exit below and put the
-                # Request Task in an "awaiting_processing" status.
-                awaiting_async_callback = True
-
-            # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
             ):
                 return []
+
+        # Delegate async requests
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.access
+            ):
+
+                return async_dsr_strategy.async_retrieve_data(
+                    client=self.create_client(),
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    input_data=input_data,
+                )
+
+        rows: List[Row] = []
+        for read_request in read_requests:
+            self.set_saas_request_state(read_request)
 
             # hook for user-provided request override functions
             if read_request.request_override:
@@ -297,7 +307,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # if a path is provided, it means we want to generate HTTP requests from the config
             if read_request.path:
                 prepared_requests: List[Tuple[SaaSRequestParams, Dict[str, Any]]] = (
-                    query_config.generate_requests(input_data, policy, read_request)
+                    query_config.generate_requests(
+                        input_data,
+                        policy,
+                        read_request,
+                        privacy_request=privacy_request,
+                    )
                 )
 
                 # Iterates through initial list of prepared requests and through subsequent
@@ -321,7 +336,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
             # values to provide as row data to the mask_data function
-            elif read_request.output:
+            elif not read_request.path and read_request.output:
                 rows.extend(
                     self._apply_output_template(
                         query_config.generate_param_value_maps(
@@ -332,12 +347,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-        if awaiting_async_callback:
-            # If a read request was marked to expect async results, original response data here is ignored.
-            # We'll instead use the data received in the callback URL later.
-            # Raising an AwaitingAsyncTask to put this task in an awaiting_processing state
-            raise AwaitingAsyncTask()
-
         return rows
 
     def _apply_output_template(
@@ -369,29 +378,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         return result
 
     def _missing_dataset_reference_values(
-        self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
+        self, input_data: Dict[str, List[Any]], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
         """Return a list of dataset reference values that are not found in the input_data map"""
-
-        # get the list of param_value references
-        required_param_value_references = [
-            param_value.name
-            for param_value in param_values or []
-            if param_value.references
-        ]
-
-        # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
-        provided_input_keys = (
-            list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
-            if input_data.get("fidesops_grouped_inputs")
-            else []
-        ) + list(input_data.keys())
-
-        # find the missing values
-        missing_dataset_reference_values = list(
-            set(required_param_value_references) - set(provided_input_keys)
+        missing_dataset_reference_values = check_dataset_missing_reference_values(
+            input_data, param_values
         )
-
+        logger.info(
+            f"Missing dataset reference values: {missing_dataset_reference_values}"
+        )
         if missing_dataset_reference_values:
             logger.info(
                 "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
@@ -518,22 +513,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         rows: List[Row],
         input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated."""
-        self.set_privacy_request_state(privacy_request, node, request_task)
-        if request_task.callback_succeeded:
-            # If this is True, we assume the data was masked
-            # asynchronously and we can proceed to the next node.
-            logger.info(
-                "Masking callback succeeded for request task '{}'", request_task.id
-            )
-            # If we've received the callback for this node, return rows_masked directly
-            return request_task.rows_masked or 0
+        """
+        Execute masking requests.
 
+        Handles synchronous requests directly and delegates async requests to external handlers.
+        """
         self.set_privacy_request_state(privacy_request, node, request_task)
+
         query_config = self.query_config(node)
 
-        session = Session.object_session(privacy_request)
-        masking_request = query_config.get_masking_request(session)
+        # Delegate async requests
+        with get_db() as db:
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.erasure
+            ):
+                return async_dsr_strategy.async_mask_data(
+                    client=self.create_client(),
+                    request_task_id=request_task.id,
+                    query_config=query_config,
+                    rows=rows,
+                )
+        masking_request = query_config.get_masking_request()
         rows_updated = 0
 
         if not masking_request:
@@ -578,7 +578,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         for row in rows:
             try:
                 prepared_request = query_config.generate_update_stmt(
-                    row, policy, privacy_request
+                    row, policy, privacy_request, input_data
                 )
             except ValueError as exc:
                 if masking_request.skip_missing_param_values:
@@ -630,18 +630,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
         self.unset_connector_state()
-
-        awaiting_async_callback: bool = bool(
-            masking_request.async_config
-            and masking_request.async_config.strategy == AsyncStrategy.callback
-        ) and bool(
-            request_task.id
-        )  # Only supported in DSR 3.0
-        if awaiting_async_callback:
-            # Asynchronous masking request detected in saas config.
-            # If the masking request was marked to expect async results, original responses are ignored
-            # and we raise an AwaitingAsyncTask to put this task in an awaiting_processing state.
-            raise AwaitingAsyncTask()
         return rows_updated
 
     @staticmethod
@@ -949,6 +937,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 client,
                 secrets,
             )  # type: ignore
+        except (ConnectionException, ClientUnsuccessfulException):
+            # Re-raise these exceptions as-is so the connection service can handle them properly
+            raise
         except Exception as exc:
             logger.error(
                 "Encountered error executing override test function '{}'",
@@ -1094,3 +1085,38 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             return []
 
         return consent_requests.opt_in if opt_in else consent_requests.opt_out  # type: ignore
+
+
+def _get_async_dsr_strategy(
+    session: Session,
+    request_task: RequestTask,
+    query_config: SaaSQueryConfig,
+    action_type: ActionType,
+) -> Optional[AsyncDSRStrategy]:
+    """
+    Returns the async DSR strategy if any of the read or masking requests have an async_config.
+    """
+
+    # Async processing is only supported for DSR 3.0.
+    # A request task with an ID of None is an indicator that the request is not DSR 3.0.
+    if request_task.id is None:
+        return None
+
+    if action_type == ActionType.access:
+        read_requests = query_config.get_read_requests_by_identity()
+        for request in read_requests:
+            if request.async_config is not None:
+                return get_strategy(
+                    request.async_config.strategy,
+                    session,
+                    request.async_config.configuration,
+                )
+    elif action_type == ActionType.erasure:
+        masking_request = query_config.get_masking_request()
+        if masking_request is not None and masking_request.async_config is not None:
+            return get_strategy(
+                masking_request.async_config.strategy,
+                session,
+                masking_request.async_config.configuration,
+            )
+    return None

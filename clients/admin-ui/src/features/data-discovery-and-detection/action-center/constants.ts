@@ -1,9 +1,39 @@
-export enum DiscoveryStatusDisplayNames {
-  WITH_CONSENT = "With consent",
-  WITHOUT_CONSENT = "Without consent",
-  EXEMPT = "Exempt",
-  UNKNOWN = "Unknown",
-}
+import {
+  ConsentStatus,
+  DatastoreMonitorUpdates,
+  WebMonitorUpdates,
+} from "~/types/api";
+
+export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
+  [ConsentStatus.WITH_CONSENT]: "Consent respected",
+  [ConsentStatus.WITHOUT_CONSENT]: "Consent ignored",
+  [ConsentStatus.EXEMPT]: "Exempt",
+  [ConsentStatus.UNKNOWN]: "Unknown",
+  [ConsentStatus.PRE_CONSENT]: "Pre-Consent",
+  [ConsentStatus.CMP_ERROR]: "CMP failure",
+  [ConsentStatus.NOT_APPLICABLE]: "Not applicable",
+};
+
+export const DiscoveryStatusDescriptions: Record<ConsentStatus, string> = {
+  [ConsentStatus.WITH_CONSENT]:
+    "Asset was detected after the user gave consent",
+  [ConsentStatus.WITHOUT_CONSENT]:
+    "The user explicitly opted out, but this asset still loaded. This is a serious compliance issue and may indicate that consent settings are not being enforced.",
+  [ConsentStatus.EXEMPT]: "Asset is valid regardless of consent",
+  [ConsentStatus.UNKNOWN]:
+    "Did not find consent information for this asset. You may need to re-run the monitor.",
+  [ConsentStatus.PRE_CONSENT]:
+    "Assets loaded before the user had a chance to give consent. This violates opt-in compliance requirements if your CMP is configured for explicit consent.",
+  [ConsentStatus.CMP_ERROR]:
+    "The Consent Management Platform (CMP) was not detected when the service ran. It likely failed to load or wasn't available.",
+  [ConsentStatus.NOT_APPLICABLE]: "No privacy notices apply to this asset",
+};
+
+export const DiscoveryErrorStatuses: ConsentStatus[] = [
+  ConsentStatus.WITHOUT_CONSENT,
+  ConsentStatus.PRE_CONSENT,
+  ConsentStatus.CMP_ERROR,
+];
 
 export enum DiscoveredAssetsColumnKeys {
   NAME = "name",
@@ -29,4 +59,50 @@ export enum DiscoveredSystemAggregateColumnKeys {
 export enum ConsentBreakdownColumnKeys {
   LOCATION = "location",
   PAGE = "page",
+  STATUS = "status",
 }
+
+export const MONITOR_UPDATES_TO_IGNORE = [
+  "classified_low_confidence",
+  "classified_high_confidence",
+  "classified_manually",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];
+
+export const MONITOR_UPDATE_NAMES = new Map<
+  | keyof WebMonitorUpdates
+  | keyof Omit<
+      DatastoreMonitorUpdates,
+      (typeof MONITOR_UPDATES_TO_IGNORE)[number]
+    >,
+  string
+>([
+  ["cookie", "Cookie"],
+  ["browser_request", "Browser request"],
+  ["image", "Image"],
+  ["iframe", "iFrame"],
+  ["javascript_tag", "JavaScript tag"],
+  ["unlabeled", "Unlabeled"],
+  ["in_review", "In review"],
+  ["classifying", "Classifying"],
+  ["removals", "Removals"],
+  ["approved", "Approved"],
+]);
+
+export const MONITOR_UPDATE_ORDER = [
+  "cookie",
+  "image",
+  "javascript_tag",
+  "iframe",
+  "browser_request",
+  "unlabeled",
+  "classifying",
+  "in_review",
+  "approved",
+  "removals",
+] as const satisfies readonly (
+  | keyof DatastoreMonitorUpdates
+  | keyof WebMonitorUpdates
+)[];

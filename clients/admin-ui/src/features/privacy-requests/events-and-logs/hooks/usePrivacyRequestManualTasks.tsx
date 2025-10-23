@@ -22,9 +22,9 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
     {
       page: 1,
       size: 100,
-      privacyRequestId,
+      privacy_request_id: privacyRequestId,
       status: undefined, // Get all statuses, we'll filter for completed/skipped
-      includeFullSubmissionDetails: true,
+      include_full_submission_details: true,
     },
     { skip: !isPlusEnabled },
   );
@@ -79,6 +79,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
             isError: false,
             isSkipped,
             isAwaitingInput: false,
+            isPolling: false,
             id: `manual-task-${task.manual_field_id}`,
             attachments: attachments as { id: string; file_name: string }[],
           };

@@ -19,7 +19,245 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.69.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.73.0..main)
+
+## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
+
+### Added
+- Added support for new experience config to delete cookie based on host domain [#6706](https://github.com/ethyca/fides/pull/6706)
+- Adding support for references outside the collection on update and delete endpoints for SaaS integrations [#6719](https://github.com/ethyca/fides/pull/6719)
+- Added support for bulk actions in the new request manager page [#6773](https://github.com/ethyca/fides/pull/6773)
+- Added `tagging_instructions` field to `DataCategory` model for LLM classification customization [#6736](https://github.com/ethyca/fides/pull/6736) https://github.com/ethyca/fides/labels/db-migration
+- Added monitor result display variations for web and datastore monitors [#6750](https://github.com/ethyca/fides/pull/6750)
+- Added gated fields for LLM classifier config in monitor config form [#6761](https://github.com/ethyca/fides/pull/6761)
+- Added status indicators to schema explorer tree with color-coded change indicators [#6785](https://github.com/ethyca/fides/pull/6785)
+- Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
+- Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
+- Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
+
+### Changed
+- Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
+
+### Developer Experience
+- Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
+- Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
+- Added new CustomList component to fidesui with selection support [#6759](https://github.com/ethyca/fides/pull/6759)
+- Update integration logos to use Ant components [#6755](https://github.com/ethyca/fides/pull/6755)
+- Adds a reusable form modal hook for confirmation modals [#6789](https://github.com/ethyca/fides/pull/6789)
+- Added fullHeight prop to FixedLayout component for full viewport usage [#6787](https://github.com/ethyca/fides/pull/6787)
+- Replaced custom tag color strings with new CUSTOM_TAG_COLOR enum for type safety [#6801](https://github.com/ethyca/fides/pull/6801)
+
+### Fixed
+- Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
+- Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
+- Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
+- Fixed a bug where the "Request manager" navigation item wouldn't return users to the main request view [#6814](https://github.com/ethyca/fides/pull/6814)
+- Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
+- Fixed missing reference value validation in SaaS requests to apply to all access requests [#6782](https://github.com/ethyca/fides/pull/6782)
+
+### Changed
+- Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
+
+## [2.72.3](https://github.com/ethyca/fides/compare/2.72.2...2.72.3)
+
+### Fixed
+- Support fields in "Approved" status in D&D [#6794](https://github.com/ethyca/fides/pull/6794)
+
+## [2.72.2](https://github.com/ethyca/fides/compare/2.72.1...2.72.2)
+
+### Changed
+- Added `collection` to privacy request logging metadata [#6753](https://github.com/ethyca/fides/pull/6753)
+- Removed PII filtering from request task error logging [#6753](https://github.com/ethyca/fides/pull/6753)
+
+### Fixed
+- Added `has_table` checks for BigQuery erasures [#6760](https://github.com/ethyca/fides/pull/6760)
+- Using correct data select types in alpha fields [#6758](https://github.com/ethyca/fides/pull/6758)
+- Redirected users from invalid system detail pages in Action Center [#6795](https://github.com/ethyca/fides/pull/6795)
+
+## [2.72.1](https://github.com/ethyca/fides/compare/2.72.0...2.72.1)
+
+### Fixed
+- Request overrides connection exceptions are now correctly handled [#6726](https://github.com/ethyca/fides/pull/6726)
+
+## [2.72.0](https://github.com/ethyca/fides/compare/2.71.1...2.72.0)
+
+### Added
+- Added digest worker task model [#6688](https://github.com/ethyca/fides/pull/6688) https://github.com/ethyca/fides/labels/db-migration
+- Added Manual Task Digest email templates and dispatch [#6691](https://github.com/ethyca/fides/pull/6691)
+- Added UI to manage email digests [#6710](https://github.com/ethyca/fides/pull/6710)
+- Event Auditing for Connections And Connection Secrets [#6681](https://github.com/ethyca/fides/pull/6681)
+- Support for detection phase in new classifier screen [#6711](https://github.com/ethyca/fides/pull/6711)
+- Field Level Actions for New Classifier Screen [#6707](https://github.com/ethyca/fides/pull/6707)
+- Added new beta privacy request manager screen [#6725](https://github.com/ethyca/fides/pull/6725)
+
+### Changed
+- Bumped `fideslog` dependency to `1.2.14` [#6635](https://github.com/ethyca/fides/pull/6635)
+- Update UI to support for different consent compliance issues [#6680](https://github.com/ethyca/fides/pull/6680)
+- Updated calls to `/mute` endpoint so they use request body instead of query params [#6702](https://github.com/ethyca/fides/pull/6702)
+- Changed default sort order for discovered assets from compliance status to asset name [#6704](https://github.com/ethyca/fides/pull/6704)
+- Moved 'Messaging' and 'Messaging Providers' pages to a single Settings > Notifications page [#6710](https://github.com/ethyca/fides/pull/6710)
+- Break system table actions out of overflow menu [#6696](https://github.com/ethyca/fides/pull/6696)
+- Tweaks to system table UX [#6712](https://github.com/ethyca/fides/pull/6712)
+- Added error handling to the privacy_request.save_filtered_access_results in the DSR process [#6718](https://github.com/ethyca/fides/pull/6718)
+
+### Developer Experience
+- Improved accessibility configuration for ESLint jsx-a11y plugin with Ant Design component support [#6699](https://github.com/ethyca/fides/pull/6699)
+- Upgraded Cypress version to latest and made additional changes to help speed up Admin UI test runs [#6705](https://github.com/ethyca/fides/pull/6705)
+
+### Fixed
+- Fixed an issue where users were unable to cancel out of the Add New System dialog in Action Center [#6651](https://github.com/ethyca/fides/pull/6651)
+- Fixed an issue where using pagination on the consent issues modal affects the results of the page [#6665](https://github.com/ethyca/fides/pull/6665)
+- Fixed Action Center modal not closing after successfully adding a Compass System [#6669](https://github.com/ethyca/fides/pull/6669)
+- Prevent stale data issues by clearing row selections when underlying data changes in Action Center tables [#6673](https://github.com/ethyca/fides/pull/6673)
+- Returning a user-friendly message when attempting to delete datasets linked to an integration [#6663](https://github.com/ethyca/fides/pull/6663)
+- Fixed an issue where updating an Experience in Admin UI could potentially result in a browser error [#6676](https://github.com/ethyca/fides/pull/6676)
+- Fixed a bug that prevented users from removing categories of consent from web monitor resources [#6679](https://github.com/ethyca/fides/pull/6679)
+- Fixed some toast notifications in Action Center to truncate long asset and system names [#6692](https://github.com/ethyca/fides/pull/6692)
+- Fixed an issue where columns were inconsistent in the Integrations' Monitor table [#6682](https://github.com/ethyca/fides/pull/6682)
+- Fixed custom fields on the system data use form being nonfunctional [#6657](https://github.com/ethyca/fides/pull/6657)
+- Fixed expanded categories of consent table cells auto-collapsing in Action Center when adding new values [#6690](https://github.com/ethyca/fides/pull/6690)
+- Fixed an issue where adding a category of consent moved the item off-page in Action Center [#6704](https://github.com/ethyca/fides/pull/6704)
+- Fixed several accessibility issues discovered in Admin UI using the new linting rules [#6699](https://github.com/ethyca/fides/pull/6699)
+
+## [2.71.1](https://github.com/ethyca/fides/compare/2.71.0...2.71.1)
+
+### Added
+- Added digest conditional dependency SQL model [#6627](https://github.com/ethyca/fides/pull/6627) https://github.com/ethyca/fides/labels/db-migration
+- Adds support for dynamic vendor disclosure in Fides UI [#6593](https://github.com/ethyca/fides/pull/6593) https://github.com/ethyca/fides/labels/db-migration
+- Added async polling for SaaS integrations [#6566](https://github.com/ethyca/fides/pull/6566) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Updated `StagedResource.user_assigned_data_uses` to be nullable and have a null default [#6674](https://github.com/ethyca/fides/pull/6674) https://github.com/ethyca/fides/labels/db-migration
+- Allow selecting from all data uses for discovered assets in Action Center [#6668](https://github.com/ethyca/fides/pull/6668)
+
+### Fixed
+- Fix compliance issue warning button showing when you don't have the Consent status featured flag enabled [#6677](https://github.com/ethyca/fides/pull/6677)
+
+### Developer Experience
+- Added `disableUrlState` option to pagination, sorting, table state, and search hooks to support in-memory state management without URL synchronization [#6685](https://github.com/ethyca/fides/pull/6685)
+
+## [2.71.0](https://github.com/ethyca/fides/compare/2.70.5...2.71.0)
+
+### Added
+- Added `Not applicable` and `Pre-consent` as new `ConsentStatus` labels in the UI [#6571](https://github.com/ethyca/fides/pull/6571)
+- Add indexes for classifications and user_assigned_data_categories columns from stagedresource table [#6612](https://github.com/ethyca/fides/pull/6612) https://github.com/ethyca/fides/labels/db-migration
+- Added a ConditionalDependency base class that Manual tasks now inherits from. This sets up a base for digest conditional dependencies. [#6613](https://github.com/ethyca/fides/pull/6613)
+- Added condition to sql orm translator functionality. [#6578](https://github.com/ethyca/fides/pull/6578)
+- Added model for digest configuration. [#6616](https://github.com/ethyca/fides/pull/6616) https://github.com/ethyca/fides/labels/db-migration
+- Added Deadline, Completed On, Last Updated to Privacy Request CSV [#6621](https://github.com/ethyca/fides/pull/6621)
+- Add OAuth2 support for connection configurations [#6614](https://github.com/ethyca/fides/pull/6614)
+- Added new classifier alpha screen [6639](https://github.com/ethyca/fides/pull/6639)
+
+### Changed
+- Update `pymssql` dependency from 2.3.4 to 2.3.7 [#6601](https://github.com/ethyca/fides/pull/6601)
+- Systems inventory page now displays GVL deleted systems [#6602](https://github.com/ethyca/fides/pull/6602)
+- After creating a new integration it now redirects you to the integration detail page [#6605](https://github.com/ethyca/fides/pull/6605)
+- Add permission for "Approver" role to create privacy requests and show as "Submitted by" in the Admin UI [#6606](https://github.com/ethyca/fides/pull/6606)
+- Updated consent compliance issue labels & tooltips. Improved the way the consent issue modal is opened. [#6615](https://github.com/ethyca/fides/pull/6615)
+- Updated manual task configuration UI from a table to a list view [#6632](https://github.com/ethyca/fides/pull/6632)
+- Action type column of Privacy Request CSV to show all request policy types separated by `+` [6621](https://github.com/ethyca/fides/pull/6621)
+- Privacy Center now supports certain HTML if `FIDES_PRIVACY_CENTER__ALLOW_HTML_DESCRIPTION` is set [#6643](https://github.com/ethyca/fides/pull/6643)
+
+### Developer Experience
+- Trigger fidesplus CI actions on pushes to `main` in Fides [#6592](https://github.com/ethyca/fides/pull/6592)
+- Improved readability and maintainability around DSR packages and improved test coverage [#6540](https://github.com/ethyca/fides/pull/6540)
+
+### Fixed
+- Fixed FidesJS banner's Acknowledge button incorrectly overriding GPC settings [#6660](https://github.com/ethyca/fides/pull/6660)
+- Fix an issue where approver users wouldn't see the manual tasks associated with a privacy request from the detail view [#6638](https://github.com/ethyca/fides/pull/6638)
+
+## [2.70.5](https://github.com/ethyca/fides/compare/2.70.3...2.70.5)
+
+### Fixed
+- Encode GPC subsection in GPP string whenever supported by the section (e.g. usnat, usca) [#6633](https://github.com/ethyca/fides/pull/6633)
+- Enforce required location validation on privacy-request POST when configured via Privacy Center/property config [#6646](https://github.com/ethyca/fides/pull/6646)
+
+## [2.70.4](https://github.com/ethyca/fides/compare/2.70.3...2.70.4)
+
+### Fixed
+- Fixed query to retrieve a `PrivacyNotice`'s cookies [#6636](https://github.com/ethyca/fides/pull/6636)
+
+## [2.70.3](https://github.com/ethyca/fides/compare/2.70.2...2.70.3)
+
+### Fixed
+- Fixed an error on trying to submit optional integer fields in the integration form [#6626](https://github.com/ethyca/fides/pull/6626)
+
+### [2.70.2](https://github.com/ethyca/fides/compare/2.70.1...2.70.2)
+
+- This tag is intentionally skipped. Changes intended for this version are included in 2.70.3.
+
+## [2.70.1](https://github.com/ethyca/fides/compare/2.70.0...2.70.1)
+
+### Added
+- Added SRV and SSL support for MongoDB [#6590](https://github.com/ethyca/fides/pull/6590)
+
+### Fixed
+- Location field submission and display for privacy requests [#6619](https://github.com/ethyca/fides/pull/6619)
+- Fix column sizing bug [#6620](https://github.com/ethyca/fides/pull/6620)
+- Fixed an issue that allowed new taxonomy items to be submitted multiple times [#6609](https://github.com/ethyca/fides/pull/6609)
+- Fix misc location displays [#6600](https://github.com/ethyca/fides/pull/6600)
+- Incorrect location display in system inventory screen [#6598](https://github.com/ethyca/fides/pull/6598)
+- Inconsistent location values displayed on action center [#6599](https://github.com/ethyca/fides/pull/6599)
+
+## [2.70.0](https://github.com/ethyca/fides/compare/2.69.2...2.70.0)
+
+### Added
+- Added new `WebMonitorGroupJob` model and table to store web monitor scan data [#6542](https://github.com/ethyca/fides/pull/6542) https://github.com/ethyca/fides/labels/db-migration
+- Added new values to `ConsentStatus` enum [#6562](https://github.com/ethyca/fides/pull/6562) https://github.com/ethyca/fides/labels/db-migration
+- Added a messaging provider configuration page to the Admin UI [#6213](https://github.com/ethyca/fides/pull/6213)
+- Added event audits for taxonomy actions [#6564](https://github.com/ethyca/fides/pull/6564)
+- Added `ClassificationBenchmark` model and table to store classification benchmark records [#6569](https://github.com/ethyca/fides/pull/6569) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Changed "Recent activity" tab to "Added" in Action Center for improved clarity [#6565](https://github.com/ethyca/fides/pull/6565)
+- Request manager screen now shows loader while waiting for sets of results [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen now persists pagination parameters to URL [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen no longer persists search to local storage and instead populates URL parameters [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV Download now flattens the subject identity object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
+- Request manager CSV Download now flattens the custom privacy request fields object to comma separated columns [#6563](https://github.com/ethyca/fides/pull/6563)
+
+### Deprecated
+- DSR 2.0 is deprecated. New requests will be created using DSR 3.0 only. Existing DSR 2.0 requests will continue to process until completion. [#6458](https://github.com/ethyca/fides/pull/6458)
+
+### Fixed
+- Fix search within language picker in admin-ui [#6550](https://github.com/ethyca/fides/pull/6550)
+- Fix translations for TCF not loading correctly in certain cases [#6557](https://github.com/ethyca/fides/pull/6557) [#6587](https://github.com/ethyca/fides/pull/6587)
+- Removed unnecessary ability to link systems with website integrations. [#6554](https://github.com/ethyca/fides/pull/6554)
+- Better TCF overlay behavior when no vendors are configured [#6556](https://github.com/ethyca/fides/pull/6556)
+- Fix bug in oauth authorization success toast [#6572](https://github.com/ethyca/fides/pull/6572)
+- Fix expadable tag cell for locations in notices page of admin-ui [#6559](https://github.com/ethyca/fides/pull/6559)
+- Request manager screen date range now respects timezones [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager screen will no longer silently filter results by prior searches [#6552](https://github.com/ethyca/fides/pull/6552)
+- Request manager CSV download link is now cleaned up making memory leaks in Admin UI less likely [#6552](https://github.com/ethyca/fides/pull/6552)
+- Fix custom logos in external task portal [#6573](https://github.com/ethyca/fides/pull/6573)
+- TCF alert rendering incorrectly during react lifecycle [#6582](https://github.com/ethyca/fides/pull/6582)
+
+### Removed
+- Remove "expand/collapse all" menu on privacy notice locations [#6581](https://github.com/ethyca/fides/pull/6581)
+
+## [2.69.2](https://github.com/ethyca/fides/compare/2.69.1...2.69.2)
+
+### Fixed
+- Decode S3 storage URLs when building object keys for streaming attachments into download packages [#6541](https://github.com/ethyca/fides/pull/6541)
+- Enables the exclude domains field in the website monitor config. [#6544](https://github.com/ethyca/fides/pull/6544)
+- Region table value displayed correctly and Location select only allowing valid values [#6545](https://github.com/ethyca/fides/pull/6545)
+- Adds safeguards when encountering rate limit errors upon instantiation [#6546](https://github.com/ethyca/fides/pull/6546)
+
+## [2.69.1](https://github.com/ethyca/fides/compare/2.69.0...2.69.1)
+
+### Added
+- Added the ability to selectively redact dataset, collection, and field names in DSR packages [#6487](https://github.com/ethyca/fides/pull/6487)
+- Added system group functionality to systems table [#6453](https://github.com/ethyca/fides/pull/6453)
+
+### Security
+- Changed session invalidation logic to end all sessions for a user when their password has been changed [CVE-2025-57766](https://github.com/ethyca/fides/security/advisories/GHSA-rpw8-82v9-3q87)
+- Fixed OAuth scope privilege escalation vulnerability that allowed clients to create or update other OAuth clients with unauthorized scopes [CVE-2025-57817](https://github.com/ethyca/fides/security/advisories/GHSA-hjfh-p8f5-24wr)
+- Added stricter rate limiting to authentication endpoints to mitigate against brute force attacks. [CVE-2025-57815](https://github.com/ethyca/fides/security/advisories/GHSA-7q62-r88r-j5gw)
+- Adds Redis-driven rate limiting across all endpoints [CVE-2025-57816](https://github.com/ethyca/fides/security/advisories/GHSA-fq34-xw6c-fphf)
+
+
+### Changed
+- Improved column width handling in Action Center tables [#6496](https://github.com/ethyca/fides/pull/6496)
 
 ## [2.69.0](https://github.com/ethyca/fides/compare/2.68.0...2.69.0)
 
@@ -29,6 +267,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added UI for conditional manual task creation feature [#6431](https://github.com/ethyca/fides/pull/6431)
 - Added streaming attachment capabilities for access packages. [#6474](https://github.com/ethyca/fides/pull/6474)
 - Added tokenized redirect for streaming enabled access package downloads. [#6489](https://github.com/ethyca/fides/pull/6489)
+- Pagination is persisted to the URL on the Consent Report Page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Changed
 - Manual Tasks now check conditional dependencies and either skip or wait for input based on the evaluation.[#6440](https://github.com/ethyca/fides/pull/6440)
@@ -39,9 +278,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated Admin UI to poll during non-terminal task statuses [#6493](https://github.com/ethyca/fides/pull/6493)
 - Moved Organization Management and SSO out of beta [#6495](https://github.com/ethyca/fides/pull/6494)
 - Updated data lineage nodes styling to use neutral color scheme for improved visual consistency [#6505](https://github.com/ethyca/fides/pull/6505)
+- Removed total from Consent Report page until Cursor Pagination is added, this solves broken loads when there is a large amount of consent data [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Fixed
 - Erasure Request finalization [#6493](https://github.com/ethyca/fides/pull/6493)
+- DSR finalization UI tweaks [#6514](https://github.com/ethyca/fides/pull/6514)
+- Account for Timezone on Consent Report page [#6504](https://github.com/ethyca/fides/pull/6504)
 
 ### Developer Experience
 - Refactored table column header menu functionality to use column-level menu property instead of custom header cell components [#6481](https://github.com/ethyca/fides/pull/6481)
@@ -52,9 +294,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed bug with non-applicable notices being saved as opted in in Fides.js [#6490](https://github.com/ethyca/fides/pull/6490)
-
-
-### Fixed
 - Handle missing GVL in TCF experience by displaying an error message instead of infinite spinners. [#6472](https://github.com/ethyca/fides/pull/6472)
 - Prevent edits for assets that have been ignored in the Action Center [#6485](https://github.com/ethyca/fides/pull/6485)
 

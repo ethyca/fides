@@ -184,6 +184,9 @@ class DataCategory(Base, FidesBase):
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
 
+    # LLM Classification
+    tagging_instructions = Column(Text, nullable=True)
+
     children: "RelationshipProperty[List[DataCategory]]" = relationship(
         "DataCategory",
         back_populates="parent",
@@ -459,6 +462,14 @@ class System(Base, FidesBase):
 
     assets = relationship(
         "Asset", back_populates="system", lazy="selectin", uselist=True, viewonly=True
+    )
+
+    system_groups = relationship(
+        "SystemGroup",
+        secondary="system_group_member",
+        back_populates="systems",
+        lazy="selectin",
+        viewonly=True,
     )
 
     @classmethod

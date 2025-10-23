@@ -51,6 +51,8 @@ export const defaultAntTheme: ThemeConfig = {
       defaultShadow: undefined,
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
+      textHoverBg: undefined,
+      textTextHoverColor: palette.FIDESUI_NEUTRAL_600,
     },
     Card: {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,

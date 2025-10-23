@@ -16,22 +16,27 @@ export type {
   TablePaginationConfig as AntTablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
+  DrawerProps as AntDrawerProps,
   DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   FormItemProps as AntFormItemProps,
   InputProps as AntInputProps,
-  ListProps as AntListProps,
   MenuProps as AntMenuProps,
+  ModalProps as AntModalProps,
+  ProgressProps as AntProgressProps,
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
   TableProps as AntTableProps,
   TabsProps as AntTabsProps,
   TooltipProps as AntTooltipProps,
+  TreeDataNode as AntTreeDataNode,
+  TreeProps as AntTreeProps,
   UploadFile as AntUploadFile,
   GetProps,
   InputRef,
@@ -50,7 +55,9 @@ export {
   Col as AntCol,
   Collapse as AntCollapse,
   DatePicker as AntDatePicker,
+  Descriptions as AntDescriptions,
   Divider as AntDivider,
+  Drawer as AntDrawer,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
   Flex as AntFlex,
@@ -59,20 +66,25 @@ export {
   Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
-  List as AntList,
   Menu as AntMenu,
   message as AntMessage,
   Modal as AntModal,
+  notification as AntNotification,
   Pagination as AntPagination,
   Popover as AntPopover,
+  Progress as AntProgress,
   Radio as AntRadio,
+  Result as AntResult,
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
+  Splitter as AntSplitter,
   Steps as AntSteps,
   Switch as AntSwitch,
   Tabs as AntTabs,
+  TimePicker as AntTimePicker,
+  Tree as AntTree,
   TreeSelect as AntTreeSelect,
   Upload as AntUpload,
 } from "antd/lib";
@@ -90,14 +102,20 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
   CustomDateRangePicker as AntDateRangePicker,
+  CustomList as AntList,
   CustomSelect as AntSelect,
   CustomTable as AntTable,
   CustomTag as AntTag,
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type {
+  CustomListProps as AntListProps,
+  RowSelection as AntRowSelection,
+} from "./hoc/CustomList";
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
+export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 
 // Export utils
 export * from "./components/data-display/location.utils";
@@ -118,6 +136,14 @@ export const AntLink = CustomTypography.Link;
 /* eslint-disable import/export */
 export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
+export {
+  CarryOutOutlined as AntCarryOutlined,
+  CheckOutlined as AntCheckOutlined,
+  CloseOutlined as AntCloseOutlined,
+  DownOutlined as AntDownOutlined,
+  PlusOutlined as AntPlusOutlined,
+  SyncOutlined as AntSyncOutlined,
+} from "@ant-design/icons";
 /* eslint-enable import/export */
 
 /**
@@ -134,6 +160,7 @@ export { extendTheme, theme } from "./FidesUITheme";
  * Ant Design Theme System
  */
 export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+export { theme as antTheme } from "antd";
 
 /**
  * Custom Components
@@ -149,3 +176,9 @@ export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SelectInline } from "./components/select-inline";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+
+/**
+ * Custom Hooks
+ */
+export type { UseFormModalOptions } from "./hooks";
+export { useFormModal } from "./hooks";

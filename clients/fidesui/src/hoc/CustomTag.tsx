@@ -6,16 +6,30 @@ import SparkleIcon from "../icons/Sparkle";
 import palette from "../palette/palette.module.scss";
 import styles from "./CustomTag.module.scss";
 
-// Extract brand colors that start with "FIDESUI_BG_" from palette
-type BrandColorKeys = keyof typeof palette;
-type BgColorKeys = Extract<BrandColorKeys, `FIDESUI_BG_${string}`>;
-type ColorName = BgColorKeys extends `FIDESUI_BG_${infer Name}` ? Name : never;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export enum CUSTOM_TAG_COLOR {
+  DEFAULT = "default",
+  CORINTH = "corinth",
+  MINOS = "minos",
+  NECTAR = "nectar",
+  OLIVE = "olive",
+  SANDSTONE = "sandstone",
+  TERRACOTTA = "terracotta",
+  MARBLE = "marble",
+  ERROR = "error",
+  WARNING = "warning",
+  INFO = "info",
+  SUCCESS = "success",
+  ALERT = "alert",
+  CAUTION = "caution",
+  WHITE = "white",
+}
 
-// Create a union type of all available brand colors (without the bg- prefix)
-export type BrandColor = Lowercase<ColorName>;
+// Derive BrandColor from the enum to avoid duplication
+type BrandColor = `${CUSTOM_TAG_COLOR}`;
 
 export interface CustomTagProps extends Omit<TagProps, "color"> {
-  color?: TagProps["color"] | BrandColor;
+  color?: BrandColor;
   addable?: boolean;
   hasSparkle?: boolean;
   closeButtonLabel?: string;
@@ -33,7 +47,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     (
       {
         onClick,
-        color = onClick ? "white" : "default",
+        color = onClick ? CUSTOM_TAG_COLOR.WHITE : CUSTOM_TAG_COLOR.DEFAULT,
         style,
         className,
         addable,
@@ -77,11 +91,11 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       const brandColor: string | undefined =
         typeof color === "string" &&
         `FIDESUI_BG_${color.toUpperCase()}` in palette
-          ? (`FIDESUI_BG_${color.toUpperCase()}` as BgColorKeys)
+          ? `FIDESUI_BG_${color.toUpperCase()}`
           : undefined;
       const needsLightText = color && DARK_BACKGROUNDS.includes(color);
       const retainDefaultBorder =
-        color && RETAIN_DEFAULT_BORDER.includes(color);
+        !!color && RETAIN_DEFAULT_BORDER.includes(color);
       let customStyle = {};
       if (brandColor) {
         customStyle = {
@@ -102,7 +116,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ...style,
         },
         className: `${styles.tag} ${className ?? ""}`.trim(),
-        bordered: retainDefaultBorder ? true : undefined,
+        bordered: retainDefaultBorder,
         ...props,
         closeIcon:
           (props.closable ?? props.onClose) ? (
@@ -154,7 +168,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
  * elements like close and add actions, and includes proper ARIA labels.
  *
  * Custom props:
- * @param {BrandColor | TagProps["color"]} [color] - Color of the tag. Can be a Fides brand color or Ant Design color
+ * @param {BrandColor | string} [color] - Color of the tag. Use a Fides brand color whenever possible. Import CUSTOM_TAG_COLOR from fidesui to use a Fides brand color programmatically.
  * @param {boolean} [addable] - Shows an add icon at the end of the tag
  * @param {boolean} [hasSparkle] - Shows a sparkle icon before the content
  * @param {string} [closeButtonLabel="Remove"] - Aria label for the close button
@@ -173,6 +187,10 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
  * // With icons
  * <Tag hasSparkle>AI Generated</Tag>
  * <Tag><Icons.Edit />Editable</Tag>
+ *
+ * // Using a Fides brand color programmatically
+ * const tagColor = CUSTOM_TAG_COLOR.MINOS;
+ * <Tag color={tagColor}>Dark background</Tag>
  * ```
  */
 export const CustomTag = withCustomProps(Tag);

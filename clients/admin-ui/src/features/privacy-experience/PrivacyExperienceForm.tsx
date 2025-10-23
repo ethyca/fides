@@ -7,6 +7,7 @@ import {
   Divider,
   Flex,
   formatIsoLocation,
+  FormLabel,
   Heading,
   isoStringToEntry,
   Text,
@@ -48,6 +49,7 @@ import {
   LimitedPrivacyNoticeResponseSchema,
   Property,
   RejectAllMechanism,
+  StagedResourceTypeValue,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -166,6 +168,9 @@ export const PrivacyExperienceForm = ({
   const {
     values,
     setFieldValue,
+    setFieldError,
+    setFieldTouched,
+    validateForm,
     dirty,
     isValid,
     isSubmitting,
@@ -552,12 +557,114 @@ export const PrivacyExperienceForm = ({
         baseTestId="property"
       />
       <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Vendors & Assets
+      </Heading>
+      <Collapse
+        in={
+          values.component === ComponentType.BANNER_AND_MODAL ||
+          values.component === ComponentType.MODAL
+        }
+        animateOpacity
+      >
+        <Box p="1px">
+          <CustomSwitch
+            name="allow_vendor_asset_disclosure"
+            id="allow_vendor_asset_disclosure"
+            label="Enable vendor disclosure"
+            variant="stacked"
+            tooltip="If enabled, the consent banner will include a link beneath privacy notices to view the vendors and assets associated with the notice."
+            onChange={(checked) => {
+              if (checked) {
+                // Default selection to Cookie
+                setFieldValue("asset_disclosure_include_types", [
+                  StagedResourceTypeValue.COOKIE,
+                ]);
+              } else {
+                // Clear values and any lingering validation state when disabling
+                setFieldValue("asset_disclosure_include_types", []);
+                setFieldError("asset_disclosure_include_types", undefined);
+                setFieldTouched("asset_disclosure_include_types", false, false);
+              }
+              // Re-run validation to immediately reflect schema changes in isValid
+              validateForm();
+            }}
+          />
+        </Box>
+      </Collapse>
+      <Collapse
+        in={
+          (values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.MODAL) &&
+          !!values.allow_vendor_asset_disclosure
+        }
+        animateOpacity
+      >
+        <ControlledSelect
+          name="asset_disclosure_include_types"
+          id="asset_disclosure_include_types"
+          mode="multiple"
+          label="Asset types to disclose"
+          layout="stacked"
+          tooltip="Select the asset types to disclose. Only cookies are currently supported."
+          options={[
+            {
+              label: StagedResourceTypeValue.COOKIE,
+              value: StagedResourceTypeValue.COOKIE,
+              disabled: false,
+            },
+            {
+              label: StagedResourceTypeValue.BROWSER_REQUEST,
+              value: StagedResourceTypeValue.BROWSER_REQUEST,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.I_FRAME,
+              value: StagedResourceTypeValue.I_FRAME,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.JAVASCRIPT_TAG,
+              value: StagedResourceTypeValue.JAVASCRIPT_TAG,
+              disabled: true,
+            },
+            {
+              label: StagedResourceTypeValue.IMAGE,
+              value: StagedResourceTypeValue.IMAGE,
+              disabled: true,
+            },
+          ]}
+        />
+      </Collapse>
+      <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Cookie Deletion
+      </Heading>
+      <FormLabel htmlFor="regions" fontSize="xs" my={0} mr={1}>
+        Delete rejected cookies on:
+      </FormLabel>
+      <CustomSwitch
+        name="cookie_deletion_based_on_host_domain"
+        id="cookie_deletion_based_on_host_domain"
+        label="Host's domain"
+        variant="stacked"
+        tooltip="If enabled, deletes user-rejected cookies on the current host domain regardless of the cookie's configured domain. Recommended to enable for ease of consent compliance."
+      />
       <CustomSwitch
         name="auto_subdomain_cookie_deletion"
         id="auto_subdomain_cookie_deletion"
-        label="Automatically delete subdomain cookies"
+        label="Host's subdomain"
         variant="stacked"
-        tooltip="If enabled, automatically deletes cookies set on subdomains in addition to main domain where appropriate. Recommended to enable for full consent compliance."
+        tooltip="If enabled, deletes user-rejected cookies on subdomains in addition to main domain. Recommended to enable for full consent compliance."
+      />
+      <CustomSwitch
+        name="configured_domain_cookie_deletion"
+        id="configured_domain_cookie_deletion"
+        label="Configured domain"
+        variant="stacked"
+        tooltip="Deletes cookies using the cookie's configured domain. This is enabled by default and not configurable in the admin UI."
+        isDisabled
+        checkedOverride
       />
     </PrivacyExperienceConfigColumnLayout>
   );

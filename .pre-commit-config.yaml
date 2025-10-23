@@ -10,7 +10,8 @@ repos:
         name: gitleaks-pre-commit
         description: Detect hardcoded secrets pre-commit using Gitleaks
         entry: gitleaks protect --verbose --no-banner --redact --staged
-        language: system
+        language: golang
+        additional_dependencies: [ github.com/zricethezav/gitleaks@latest ]
         stages: [commit]
 
       - id: gitleaks-pre-push
@@ -19,5 +20,28 @@ repos:
         name: gitleaks-pre-push
         description: Detect hardcoded secrets pre-push using Gitleaks
         entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
-        language: system
+        language: golang
+        additional_dependencies: [ github.com/zricethezav/gitleaks@latest ]
         stages: [push]
+
+      - id: black-formatter
+        name: black
+        description: "Format files using black"
+        entry: sh -c 'git status | grep "modified:" | cut -d ":" -f 2 | grep ".py" | xargs black'
+        language: python
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        types_or: [ python, pyi ]
+        additional_dependencies: [ black==23.9.1 ]
+        stages: [commit]
+
+      - id: isort-imports
+        name: isort
+        description: "Sort imports using isort"
+        entry: sh -c 'git status | grep "modified:" | cut -d ":" -f 2 | grep ".py" | xargs isort'
+        language: python
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        types_or: [ python, pyi ]
+        additional_dependencies: [ isort==5.12.0 ]
+        stages: [commit]

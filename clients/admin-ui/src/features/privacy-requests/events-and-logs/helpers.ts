@@ -36,3 +36,11 @@ export const hasUnresolvedError = (logs: ExecutionLog[]): boolean => {
 export const hasSkippedEntry = (logs: ExecutionLog[]): boolean => {
   return hasStatus(logs, ExecutionLogStatus.SKIPPED);
 };
+
+export const hasAwaitingProcessing = (logs: ExecutionLog[]): boolean => {
+  return hasStatus(logs, ExecutionLogStatus.AWAITING_PROCESSING);
+};
+
+export const hasPolling = (logs: ExecutionLog[]): boolean => {
+  return hasStatus(logs, ExecutionLogStatus.POLLING);
+};

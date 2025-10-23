@@ -41,6 +41,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .first()
             .should("contain", "Export Customer Data from Salesforce");
           cy.getByTestId("manual-task-status-tag").should("contain", "New");
@@ -203,6 +204,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .eq(4)
             .within(() => {
               cy.get(".ant-tag").should("have.length.at.least", 1);
@@ -578,6 +580,57 @@ describe("Manual Tasks", () => {
     });
   });
 
+  describe("Export Functionality", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests?tab=manual-tasks");
+      cy.wait("@getManualTasks");
+    });
+
+    it("should display export button and call export endpoint with correct parameters", () => {
+      // Mock the export endpoint
+      cy.intercept("POST", "/api/v1/plus/manual-fields/export*", {
+        statusCode: 200,
+        headers: {
+          "content-type": "text/csv",
+        },
+        body: "name,status,system_name,request_type,assigned_users,created_at,privacy_request.id,privacy_request.days_left,privacy_request.subject_identities.email,privacy_request.subject_identities.external_id,privacy_request.subject_identities.phone_number\nExport Customer Data from Salesforce,new,Salesforce,access,123,2024-01-01T00:00:00Z,pri_123,15,customer@email.com,,",
+      }).as("exportTasks");
+
+      // Check that the export button is present
+      cy.getByTestId("export-manual-tasks-btn").should("be.visible");
+      cy.getByTestId("export-manual-tasks-btn").click();
+
+      // Verify the export endpoint was called with correct parameters
+      cy.wait("@exportTasks").then((interception) => {
+        expect(interception.request.method).to.equal("POST");
+        expect(interception.request.url).to.include(
+          "/api/v1/plus/manual-fields/export",
+        );
+
+        // Check query parameters
+        const url = new URL(interception.request.url);
+        expect(url.searchParams.get("assigned_user_id")).to.equal("123");
+
+        // Check request body contains expected fields
+        expect(interception.request.body).to.have.property("format", "csv");
+        expect(interception.request.body).to.have.property("fields");
+        expect(interception.request.body.fields).to.include.members([
+          "name",
+          "status",
+          "system_name",
+          "request_type",
+          "assigned_users",
+          "created_at",
+          "privacy_request.id",
+          "privacy_request.days_left",
+          "privacy_request.subject_identities.email",
+          "privacy_request.subject_identities.external_id",
+          "privacy_request.subject_identities.phone_number",
+        ]);
+      });
+    });
+  });
+
   describe("Internal Respondent Access", () => {
     beforeEach(() => {
       cy.login();
@@ -617,6 +670,7 @@ describe("Manual Tasks", () => {
         .first()
         .within(() => {
           cy.get("td")
+            .not("td.ant-table-selection-column")
             .first()
             .should("contain", "Export Customer Data from Salesforce");
           cy.getByTestId("manual-task-status-tag").should("contain", "New");

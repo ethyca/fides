@@ -54,6 +54,7 @@ def dev(session: Session) -> None:
         - workers-all = Run all available Fides workers (see below)
         - flower = Run Flower monitoring dashboard for Celery
         - child = Run a Fides child node
+        - nginx = Run two Fides webservers with nginx load balancer proxy
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
 
     To run specific workers only, use any of the following posargs:
@@ -111,7 +112,20 @@ def dev(session: Session) -> None:
 
     open_shell = "shell" in session.posargs
     remote_debug = "remote_debug" in session.posargs
-    if not datastores:
+    use_nginx = "nginx" in session.posargs
+
+    if use_nginx:
+        # Run two Fides webservers with nginx load balancer proxy
+        session.run(
+            "docker",
+            "compose",
+            "up",
+            "fides-1",
+            "fides-2",
+            "fides-proxy",
+            external=True,
+        )
+    elif not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
             session.log("~~Remember to login with `fides user login`!~~")

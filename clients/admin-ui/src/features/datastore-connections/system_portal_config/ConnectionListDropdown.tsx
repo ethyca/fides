@@ -22,10 +22,13 @@ import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
 } from "~/features/connection-type";
-import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import ConnectionTypeLogo, {
+  connectionLogoFromSystemType,
+} from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
 } from "~/types/api";
 
 type ItemOption = {
@@ -72,10 +75,15 @@ type SelectDropdownProps = {
 
 type UseConnectionListDropDown = {
   connectionConfig?: ConnectionConfigurationResponse | null;
+  /**
+   * Connection type identifiers to hide from the dropdown
+   */
+  hiddenTypes?: ConnectionType[];
 };
 
 export const useConnectionListDropDown = ({
   connectionConfig,
+  hiddenTypes = [],
 }: UseConnectionListDropDown) => {
   const filters = useAppSelector(selectConnectionTypeFilters);
   const { data } = useGetAllConnectionTypesQuery(filters);
@@ -86,10 +94,13 @@ export const useConnectionListDropDown = ({
 
   const sortedItems = useMemo(
     () =>
-      [...connectionOptions].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1,
-      ),
-    [connectionOptions],
+      [...connectionOptions]
+        .filter(
+          (option) =>
+            !hiddenTypes.includes(option.identifier as ConnectionType),
+        )
+        .sort((a, b) => (a.human_readable > b.human_readable ? 1 : -1)),
+    [connectionOptions, hiddenTypes],
   );
 
   const dropDownOptions = useMemo(() => {
@@ -272,7 +283,9 @@ const ConnectionListDropdown = ({
                     bg: "gray.100",
                   }}
                 >
-                  <ConnectionTypeLogo data={option.value} />
+                  <ConnectionTypeLogo
+                    data={connectionLogoFromSystemType(option.value)}
+                  />
                   <Text
                     ml={2}
                     fontSize="0.75rem"

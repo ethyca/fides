@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
+    AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     CollectionDisabled,
     NotSupportedForCollection,
@@ -47,6 +48,7 @@ from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
+from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
@@ -60,7 +62,6 @@ from fides.api.util.collection_util import (
 from fides.api.util.consent_util import (
     add_errored_system_status_for_consent_reporting_on_preferences,
 )
-from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
@@ -95,6 +96,7 @@ def retry(
     If we exceed the number of TASK_RETRY_COUNT retries, we re-raise the exception to stop execution of the privacy request.
     """
 
+    # pylint: disable=too-many-return-statements
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def result(*args: Any, **kwargs: Any) -> Any:
@@ -114,8 +116,18 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except AwaitingAsyncProcessing as ex:
+                    logger.warning(
+                        "Request Task {} {} {} async processing in progress",
+                        self.request_task.id if self.request_task.id else None,
+                        method_name,
+                        self.execution_node.address,
+                    )
+                    # Log the async processing status and exit without retrying.
+                    self.log_async_processing(action_type, ex)
+                    # Request Task put in "polling" status and exited, external system is processing
+                    return None
                 except AwaitingAsyncTask as ex:
-                    traceback.print_exc()
                     logger.warning(
                         "Request Task {} {} {} awaiting async continuation",
                         self.request_task.id if self.request_task.id else None,
@@ -416,9 +428,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
             if self.request_task.id:
-                # Merge the request task to ensure we keep the changes made
-                # to self.request_task that haven't yet been committed to the database
+                # Merge the request_task into the current session to make it persistent,
+                # then refresh its `async_type` to load the latest state from the
+                # database. This is crucial for async tasks where `async_type` might be
+                # updated by another process, and avoids overwriting local data like
+                # `access_data`.
                 request_task = db.merge(self.request_task)
+                db.refresh(request_task, attribute_names=["async_type"])
                 request_task.update_status(db, status)
                 self.request_task = request_task
 
@@ -453,6 +469,21 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             message, [], action_type, ExecutionLogStatus.awaiting_processing
         )
 
+    def log_async_processing(
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException],
+        extra_message: Optional[str] = None,
+    ) -> None:
+        """On async processing activities - external system is actively processing, Fides is polling"""
+        logger.info("Polling for async results on node {}", self.key)
+
+        message = str(ex)
+        if extra_message:
+            message = f"{message}. {extra_message}"
+
+        self.update_status(message, [], action_type, ExecutionLogStatus.polling)
+
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
         logger.info("Skipping node {}", self.key)
@@ -469,11 +500,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ) -> None:
         """On completion activities"""
         if ex:
-            logger.warning(
-                "Ending {}, {} with failure {}",
+            logger.error(
+                "Ending {}, {} with failure: {}",
                 self.resources.request.id,
                 self.key,
-                Pii(ex),
+                ex,
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
@@ -589,7 +620,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # TODO Remove when we stop support for DSR 2.0
         # Save data to build masking requests for DSR 2.0 in Redis.
         # Results saved with matching array elements preserved
-        if not CONFIG.execution.use_dsr_3_0:
+        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
             self.resources.cache_results_with_placeholders(
                 f"access_request__{self.key}", placeholder_output
             )
@@ -619,7 +650,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # TODO Remove when we stop support for DSR 2.0
         # Saves intermediate access results for DSR 2.0 in Redis
-        if not CONFIG.execution.use_dsr_3_0:
+        # Only cache for existing DSR 2.0 requests
+        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
             self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
@@ -692,7 +724,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.execution_node,
                     self.resources.policy,
                     self.resources.request,
-                    self.resources.privacy_request_task,
+                    self.request_task,
                     formatted_input_data,
                 )
 
@@ -853,7 +885,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         privacy_request_id = self.resources.request.id
 
         with get_db() as db:
-
             privacy_preferences = db.query(PrivacyPreferenceHistory).filter(
                 PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
             )
@@ -974,7 +1005,6 @@ def build_affected_field_logs(
     policy_id = policy.id
 
     with get_db() as db:
-
         rules = db.query(Rule).filter(Rule.policy_id == policy_id)
 
         targeted_field_paths: Dict[FieldAddress, str] = {}

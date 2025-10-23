@@ -1,10 +1,17 @@
 import "../fides.css";
 
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "preact/hooks";
 
 import { FidesEvent } from "../../docs/fides-event";
 import { getConsentContext } from "../../lib/consent-context";
 import {
+  AssetType,
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
@@ -45,6 +52,7 @@ import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import VendorAssetDisclosure from "./VendorAssetDisclosure";
 
 const NoticeOverlay = () => {
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
@@ -65,21 +73,19 @@ const NoticeOverlay = () => {
   } = useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
 
-  // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
-    if (experience.privacy_notices) {
-      // ensure we have most up-to-date cookie vals. If we don't have any consent, use the savedConsent which will be the default values that haven't been passed through the privacy_notices yet so it's perfect to use here.
-      return experience.privacy_notices.map((notice) => {
-        const val = resolveConsentValue(
-          notice,
-          consent || savedConsent || parsedCookie?.consent,
-        );
-        return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
-      });
-    }
-    return [];
-  };
+  const getEnabledNoticeKeys = useCallback(
+    (consent: NoticeConsent) => {
+      if (experience.privacy_notices) {
+        // ensure we have most up-to-date cookie vals, including GPC and other automated consent applied during initialization
+        return experience.privacy_notices.map((notice) => {
+          const val = resolveConsentValue(notice, consent);
+          return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
+        });
+      }
+      return [];
+    },
+    [experience.privacy_notices],
+  );
 
   useEffect(() => {
     if (!currentLocale && i18n.locale) {
@@ -151,16 +157,40 @@ const NoticeOverlay = () => {
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<string>
-  >(initialEnabledNoticeKeys());
+  >(getEnabledNoticeKeys(cookie?.consent));
 
-  window.addEventListener("FidesUpdating", (event) => {
-    // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
-    const { consent } = event.detail;
-    Object.entries(consent).forEach(([key, value]) => {
-      consent[key] = processExternalConsentValue(value);
-    });
-    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(consent));
-  });
+  /**
+   * If GPC is being applied after initialization, we need to update the initial overlay
+   * to reflect the new state. This is especially important for Firefox browsers (Gecko)
+   * because GPC gets applied rather late due to how it queues the `setTimeout` on the last
+   * step of our `initialize` function.
+   *
+   * Effect is needed to avoid memory leaks and to allow cleanup.
+   * Use `useLayoutEffect` instead of `useEffect` to ensure the listener is attached
+   * as early as possible, before the browser paints. This prevents a race condition
+   * where the FidesUpdating event (triggered by GPC) fires before the listener is ready.
+   */
+  useLayoutEffect(() => {
+    const handleFidesUpdating = (event: Event) => {
+      const fidesEvent = event as FidesEvent;
+      const { consent } = fidesEvent.detail;
+      Object.entries(consent).forEach(([key, value]) => {
+        consent[key] = processExternalConsentValue(value);
+      });
+      setDraftEnabledNoticeKeys(getEnabledNoticeKeys(consent));
+
+      // only need to run during initialization, no need to listen for subsequent updates
+      window.removeEventListener("FidesUpdating", handleFidesUpdating);
+    };
+
+    window.addEventListener("FidesUpdating", handleFidesUpdating);
+
+    return () => {
+      window.removeEventListener("FidesUpdating", handleFidesUpdating);
+    };
+    // only need to run once on mount, no dependency watch needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isAllNoticeOnly = privacyNoticeItems.every(
     (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
@@ -181,12 +211,39 @@ const NoticeOverlay = () => {
       noticeKey: item.notice.notice_key,
       title: item.bestTranslation?.title || item.notice.name || "",
       description: item.bestTranslation?.description,
+      cookies: item.notice.cookies,
       checked,
       consentMechanism: item.notice.consent_mechanism,
       disabled: item.notice.disabled,
       gpcStatus,
     };
   });
+
+  const [isVendorAssetDisclosureView, setIsVendorAssetDisclosureView] =
+    useState(false);
+  const [selectedNoticeKey, setSelectedNoticeKey] = useState<string | null>(
+    null,
+  );
+
+  const selectedNotice = useMemo(() => {
+    if (!selectedNoticeKey) {
+      return null;
+    }
+    return privacyNoticeItems.find(
+      (item) => item.notice.notice_key === selectedNoticeKey,
+    );
+  }, [selectedNoticeKey, privacyNoticeItems]);
+
+  const noticesWithCookies = privacyNoticeItems
+    .map((item) => ({
+      noticeKey: item.notice.notice_key,
+      title: item.bestTranslation?.title || item.notice.name || "",
+      cookies: item.notice.cookies || [],
+    }))
+    .filter((n) => n.cookies && n.cookies.length > 0);
+  const cookiesBySelectedNotice = selectedNoticeKey
+    ? noticesWithCookies.filter((n) => n.noticeKey === selectedNoticeKey)
+    : noticesWithCookies;
 
   useNoticesServed({
     privacyExperienceConfigHistoryId,
@@ -318,13 +375,14 @@ const NoticeOverlay = () => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
       handleUpdatePreferences(
         ConsentMethod.DISMISS,
-        initialEnabledNoticeKeys(),
+        getEnabledNoticeKeys(cookie?.consent),
       );
     }
   }, [
     handleUpdatePreferences,
-    initialEnabledNoticeKeys,
+    getEnabledNoticeKeys,
     parsedCookie?.consent,
+    cookie?.consent,
   ]);
 
   const handleToggleChange = useCallback(
@@ -367,6 +425,22 @@ const NoticeOverlay = () => {
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
+      isVendorAssetDisclosureView={isVendorAssetDisclosureView}
+      onModalHide={() => {
+        setIsVendorAssetDisclosureView(false);
+        setSelectedNoticeKey(null);
+      }}
+      headerContent={
+        isVendorAssetDisclosureView && selectedNotice
+          ? {
+              title:
+                selectedNotice.bestTranslation?.title ||
+                selectedNotice.notice.name ||
+                "",
+              description: selectedNotice.bestTranslation?.description || "",
+            }
+          : undefined
+      }
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
@@ -421,13 +495,51 @@ const NoticeOverlay = () => {
       }}
       renderModalContent={() => (
         <div>
-          <div className="fides-modal-notices">
-            <NoticeToggles
-              noticeToggles={noticeToggles}
-              enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={handleToggleChange}
+          {isVendorAssetDisclosureView ? (
+            <VendorAssetDisclosure
+              cookiesByNotice={cookiesBySelectedNotice}
+              onBack={() => {
+                setIsVendorAssetDisclosureView(false);
+                setSelectedNoticeKey(null);
+              }}
             />
-          </div>
+          ) : (
+            <div className="fides-modal-notices">
+              <NoticeToggles
+                noticeToggles={noticeToggles}
+                enabledNoticeKeys={draftEnabledNoticeKeys}
+                onChange={handleToggleChange}
+                renderDescription={(props) => {
+                  const hasCookies = (props.cookies || []).length > 0;
+                  return (
+                    <div>
+                      {props.description}
+                      {hasCookies &&
+                      // only "Cookie" asset types are currently supported for vendor disclosure
+                      experience.experience_config?.asset_disclosure_include_types?.includes(
+                        AssetType.COOKIE,
+                      ) &&
+                      experience.experience_config
+                        ?.allow_vendor_asset_disclosure ? (
+                        <div style={{ marginTop: "12px" }}>
+                          <button
+                            type="button"
+                            className="fides-link-button fides-vendors-disclosure-link"
+                            onClick={() => {
+                              setSelectedNoticeKey(props.noticeKey);
+                              setIsVendorAssetDisclosureView(true);
+                            }}
+                          >
+                            {i18n.t("static.other.vendors")}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
       renderModalFooter={({ onClose }) => (

@@ -2,10 +2,6 @@
 """
 QA scenario for testing ManualTask and ManualTaskConditionalDependencies with postgres-example database.
 """
-# Enable DSR 3.0 execution BEFORE any other imports
-from fides.config import CONFIG
-CONFIG.execution.use_dsr_3_0 = True
-print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 
 import sys
 import argparse
@@ -30,6 +26,9 @@ from utils import QATestScenario, Argument
 from fides.api.db.ctl_session import sync_engine
 from fides.api.db.base import *
 from fides.api.db.database import seed_db
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
+)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -38,7 +37,6 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConditionalDependency,
-    ManualTaskConditionalDependencyType,
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskConfigurationType,
@@ -109,14 +107,14 @@ DEPENDENCIES_DATA = [
     # Root group condition (AND)
     {
         "parent_id": None,
-        "condition_type": ManualTaskConditionalDependencyType.group,
+        "condition_type": ConditionalDependencyType.group,
         "logical_operator": "and",
         "sort_order": 0
     },
     # Customer name exists condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "condition_type": ConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
         "operator": "exists",
         "value": None,  # exists operator doesn't need a value
@@ -125,7 +123,7 @@ DEPENDENCIES_DATA = [
     # Customer email contains specific value condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "condition_type": ConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
         "operator": "starts_with",
         "value": "customer-1",
@@ -134,14 +132,14 @@ DEPENDENCIES_DATA = [
     # Nested group condition (OR)
     {
         "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ManualTaskConditionalDependencyType.group,
+        "condition_type": ConditionalDependencyType.group,
         "logical_operator": "or",
         "sort_order": 3
     },
     # Customer ID condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after nested group is created
-        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "condition_type": ConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
         "operator": "gt",
         "value": 0,
@@ -150,7 +148,7 @@ DEPENDENCIES_DATA = [
     # Customer address city starts with Example condition (leaf) - references postgres dataset field
     {
         "parent_id": None,  # Will be updated after nested group is created
-        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "condition_type": ConditionalDependencyType.leaf,
         "field_address": f"{POSTGRES_DATASET_KEY}:address:city",
         "operator": "starts_with",
         "value": "Example",
@@ -970,9 +968,6 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             self.info(f"🔗 Connections with manual tasks: {len(connections_with_manual_tasks)}")
             for conn in connections_with_manual_tasks:
                 self.info(f"   - {conn.key} (type: {conn.connection_type})")
-
-            # Check DSR 3.0 configuration
-            self.info(f"🔧 DSR 3.0 configuration: {CONFIG.execution.use_dsr_3_0}")
 
         except Exception as e:
             self.error(f"Error in debug method: {e}")

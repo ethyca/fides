@@ -1,0 +1,54 @@
+# This workflow sends repository dispatch events when there are changes to the fides main branch.
+# It sends repository dispatch events to fidesplus to trigger all CI actions that run
+# regularly on commits to the `main` branch of fidesplus. This ensures our fidesplus CI
+# is always up-to-date with the latest fides changes.
+
+name: Trigger Fidesplus CI Actions
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # allow manual invocations
+
+env:
+  FIDESPLUS_REPO: ethyca/fidesplus
+
+jobs:
+  trigger-fidesplus-ci-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fides
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit info
+        id: commit_info
+        run: |
+          echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "commit_author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "branch_name=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Send Repository Dispatch Event (Fidesplus)
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          client-payload: |
+            {
+              "fides_commit_sha": "${{ steps.commit_info.outputs.commit_sha }}",
+              "fides_commit_message": "${{ steps.commit_info.outputs.commit_message }}",
+              "fides_commit_author": "${{ steps.commit_info.outputs.commit_author }}",
+              "fides_branch": "${{ steps.commit_info.outputs.branch_name }}",
+              "triggered_by": "fides_main_push"
+            }
+          event-type: new-fides-main-commit
+          repository: ${{ env.FIDESPLUS_REPO }}
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "Triggered fidesplus main branch actions for fides main branch commit ${{ steps.commit_info.outputs.commit_sha }}"
+          echo "Commit: ${{ steps.commit_info.outputs.commit_message }}"
+          echo "Author: ${{ steps.commit_info.outputs.commit_author }}"
+          echo "Branch: ${{ steps.commit_info.outputs.branch_name }}"

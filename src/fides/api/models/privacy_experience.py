@@ -101,12 +101,21 @@ class PrivacyExperienceConfigBase:
         nullable=True,
         default=True,
     )  # base is nullable for privacy experience config history
+    cookie_deletion_based_on_host_domain = Column(
+        Boolean,
+        nullable=True,
+        default=True,
+    )  # base is nullable for privacy experience config history
 
     disabled = Column(Boolean, nullable=False, default=True)
 
     dismissable = Column(Boolean)
 
     show_layer1_notices = Column(Boolean, nullable=True, default=False)
+
+    # Vendor/Asset disclosure configuration
+    allow_vendor_asset_disclosure = Column(Boolean, nullable=True, default=False)
+    asset_disclosure_include_types = Column(ARRAY(String), nullable=True)
 
     @declared_attr
     def layer1_button_options(cls) -> Column:
@@ -139,8 +148,14 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     auto_subdomain_cookie_deletion = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    cookie_deletion_based_on_host_domain = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     dismissable = Column(
         Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    allow_vendor_asset_disclosure = Column(
+        Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     name = Column(
         String, nullable=False
@@ -210,11 +225,17 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     auto_subdomain_cookie_deletion = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    cookie_deletion_based_on_host_domain = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     disabled = Column(
         Boolean, nullable=False, default=True, index=True
     )  # Overridding PrivacyExperienceConfigBase to index
     dismissable = Column(
         Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    allow_vendor_asset_disclosure = Column(
+        Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     name = Column(
         String, nullable=False

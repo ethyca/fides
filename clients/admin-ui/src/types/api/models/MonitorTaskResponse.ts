@@ -16,4 +16,9 @@ export type MonitorTaskResponse = {
   status?: string | null;
   celery_id?: string | null;
   staged_resource_urns?: Array<string>;
+  dismissed?: boolean | null;
+  monitor_name?: string | null;
+  connection_name?: string | null;
+  connection_type?: string | null;
+  field_count?: number | null;
 };

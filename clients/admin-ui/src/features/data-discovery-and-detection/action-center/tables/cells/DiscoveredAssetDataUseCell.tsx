@@ -1,36 +1,42 @@
 import { AntSpace as Space, AntTag as Tag } from "fidesui";
-import { useState } from "react";
+import { truncate } from "lodash";
+import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import styles from "~/features/common/table/cells/Cells.module.scss";
+import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
+import { ColumnState } from "~/features/common/table/cells/types";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
 const DiscoveredAssetDataUseCell = ({
   asset,
   readonly,
+  columnState,
+  onChange,
 }: {
   asset: StagedResourceAPIResponse;
   readonly?: boolean;
+  columnState?: ColumnState;
+  onChange?: (dataUses: string[]) => void;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(
+    columnState?.isExpanded || false,
+  );
 
   const [updateAssetsDataUseMutation] = useUpdateAssetsDataUseMutation();
   const { successAlert, errorAlert } = useAlert();
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  // eslint-disable-next-line no-nested-ternary
-  const currentDataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses?.length
-      ? asset.data_uses
-      : [];
+  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
+
+  const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({
@@ -42,9 +48,10 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category added to ${asset.resource_type} "${asset.name}" .`,
+        `Consent category added to ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.([...currentDataUses, newDataUse]);
     }
     setIsAdding(false);
   };
@@ -59,51 +66,49 @@ const DiscoveredAssetDataUseCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `Consent category removed from ${asset.resource_type} "${asset.name}".`,
+        `Consent category removed from ${asset.resource_type} "${truncatedAssetName}".`,
         `Confirmed`,
       );
+      onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }
   };
 
-  const dataUses = asset.user_assigned_data_uses?.length
-    ? asset.user_assigned_data_uses
-    : asset.data_uses;
-
-  const consentUses = dataUses?.filter((use) => isConsentCategory(use));
+  useEffect(() => {
+    setIsExpanded(columnState?.isExpanded || false);
+  }, [columnState?.isExpanded]);
 
   if (readonly) {
     return (
-      <Space direction="vertical">
-        {consentUses?.map((d) => (
-          <Tag key={d} color="white">
-            {getDataUseDisplayName(d)}
-          </Tag>
-        ))}
-      </Space>
+      <TagExpandableCell
+        values={currentDataUses?.map((d) => ({
+          label: getDataUseDisplayName(d),
+          key: d,
+        }))}
+        columnState={columnState}
+        onStateChange={setIsExpanded}
+      />
     );
   }
 
   return (
     <>
       {!isAdding && (
-        <Space wrap>
-          {consentUses?.map((d) => (
-            <Tag
-              key={d}
-              data-testid={`data-use-${d}`}
-              color="white"
-              closable
-              onClose={() => handleDeleteDataUse(d)}
-              closeButtonLabel="Remove data use"
-            >
-              {getDataUseDisplayName(d)}
-            </Tag>
-          ))}
+        <Space align="start">
           <Tag
             onClick={() => setIsAdding(true)}
             data-testid="taxonomy-add-btn"
             addable
             aria-label="Add data use"
+          />
+          <TagExpandableCell
+            values={currentDataUses?.map((d) => ({
+              label: getDataUseDisplayName(d),
+              key: d,
+            }))}
+            columnState={{ ...columnState, isExpanded }}
+            tagProps={{ closable: true, closeButtonLabel: "Remove data use" }}
+            onTagClose={handleDeleteDataUse}
+            onStateChange={setIsExpanded}
           />
         </Space>
       )}
@@ -113,9 +118,14 @@ const DiscoveredAssetDataUseCell = ({
           style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
-            selectedTaxonomies={consentUses || []}
+            selectedTaxonomies={currentDataUses}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
+            onKeyDown={(key) => {
+              if (key.key === "Escape") {
+                setIsAdding(false);
+              }
+            }}
             open
           />
         </div>

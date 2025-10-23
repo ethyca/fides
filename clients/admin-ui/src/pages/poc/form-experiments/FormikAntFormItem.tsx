@@ -1,5 +1,5 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable no-console */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import {
   AntCard as Card,
   AntCheckbox as Checkbox,
@@ -30,8 +30,8 @@ export const FormikAntFormItemPOC = () => (
         <Col span={12}>
           <Title level={2}>{`<Formik> + Controlled + Ant's <Form.Item>`}</Title>
           <div className="mb-4">
-            <Tag color="green">funcitonal</Tag>
-            <Tag color="orange">mid effort</Tag>
+            <Tag color="success">functional</Tag>
+            <Tag color="warning">mid effort</Tag>
           </div>
           <Form>
             <Flex vertical>

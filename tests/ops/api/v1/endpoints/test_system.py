@@ -30,10 +30,14 @@ from fides.common.api.scope_registry import (
     CONNECTION_READ,
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
+    SYSTEM_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_READ,
     SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -603,10 +607,15 @@ class TestDeleteSystemConnectionConfig:
             "domain": "test_hubspot_domain",
             "private_app_token": "test_hubspot_api_key",
         }
+        # Create ConnectionService instance
+        event_audit_service = EventAuditService(db)
+        connection_service = ConnectionService(db, event_audit_service)
+
         connection_config, dataset_config = instantiate_connector(
             db,
+            connection_service,
             "hubspot",
-            "secondary_hubspot_instance",
+            "hubspot_connection_config",
             "Hubspot ConnectionConfig description",
             secrets,
             system,
@@ -918,7 +927,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
+        "fides.service.connection.connection_service.ConnectionService.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url
@@ -1103,3 +1112,39 @@ class TestInstantiateSystemConnectionFromTemplate:
         dataset_config.delete(db)
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
+
+
+class TestBulkDeleteSystems:
+    @pytest.fixture(scope="function")
+    def bulk_url(self) -> str:
+        return V1_URL_PREFIX + "/system/bulk-delete"
+
+    def test_bulk_delete_not_authenticated(
+        self, api_client: TestClient, system, bulk_url
+    ) -> None:
+        resp = api_client.post(bulk_url, headers={}, json=[system.fides_key])
+        assert resp.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_bulk_delete_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, system, bulk_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_READ])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+        assert resp.status_code == HTTP_403_FORBIDDEN
+
+    def test_bulk_delete_systems(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        system,
+        bulk_url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
+        resp = api_client.post(bulk_url, headers=auth_header, json=[system.fides_key])
+
+        assert resp.status_code == HTTP_200_OK
+        assert resp.json()["deleted"][0]["fides_key"] == system.fides_key
+
+        # System should be removed from the database
+        assert db.query(System).filter_by(id=system.id).first() is None

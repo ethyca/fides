@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { formatIsoLocation, isoStringToEntry } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -8,6 +9,7 @@ import {
   IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import { AssetType } from "~/features/system/tabs/system-assets/AddEditAssetModal";
 import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
@@ -96,10 +98,16 @@ const useSystemAssetColumns = ({
       id: "locations",
       cell: (props) => (
         <BadgeCellExpandable
-          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
-            label: PRIVACY_NOTICE_REGION_RECORD[location],
-            key: location,
-          }))}
+          values={props.getValue().map((location: PrivacyNoticeRegion) => {
+            const isoEntry = isoStringToEntry(location);
+
+            return {
+              label: isoEntry
+                ? formatIsoLocation({ isoEntry, showFlag: true })
+                : PRIVACY_NOTICE_REGION_RECORD[location],
+              key: location,
+            };
+          })}
         />
       ),
       header: "Locations",
@@ -111,6 +119,15 @@ const useSystemAssetColumns = ({
     id: "domain",
     cell: (props) => <DefaultCell value={props.getValue()} />,
     header: "Domain",
+  });
+
+  const duration = columnHelper.accessor((row) => row.duration, {
+    id: "duration",
+    cell: (props) =>
+      props.row.original.asset_type === AssetType.COOKIE ? (
+        <DefaultCell value={props.getValue()} />
+      ) : null,
+    header: "Duration",
   });
 
   const page = columnHelper.accessor((row) => row.page, {
@@ -148,6 +165,7 @@ const useSystemAssetColumns = ({
     dataUses,
     locations,
     domain,
+    duration,
     page,
   ];
 

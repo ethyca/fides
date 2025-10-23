@@ -367,6 +367,39 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@patchConnection");
         cy.wait("@patchConnectionSecrets");
       });
+
+      it("should redirect to integration detail page after creating a new integration", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/bigquery_secret.json",
+        }).as("getBigquerySecretsSchema");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-bq_placeholder").within(() => {
+            cy.contains("Details").click();
+          });
+        });
+        cy.getByTestId("configure-modal-btn").click();
+        cy.getByTestId("input-name").type("Test Redirect Integration");
+        cy.getByTestId("input-secrets.keyfile_creds").type(
+          `{"credentials": "test"}`,
+          {
+            parseSpecialCharSequences: false,
+          },
+        );
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets");
+
+        // Verify user is redirected to the integration detail page
+        cy.url().should("contain", "/integrations/test_redirect_integration");
+      });
     });
 
     describe("adding a website integration", () => {
@@ -405,6 +438,26 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
         cy.wait("@patchConnectionSecrets");
+      });
+
+      it("should not show system selection for website integrations", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("details-btn-website_placeholder").click();
+          cy.getByTestId("configure-modal-btn").click();
+
+          // Verify system selection field is not present for website integrations
+          cy.getByTestId("controlled-select-system_fides_key").should(
+            "not.exist",
+          );
+        });
       });
 
       it("accepts HTTP URLs", () => {
@@ -541,7 +594,7 @@ describe("Integration management for data detection & discovery", () => {
       }).as("getEmptyDatabases");
       cy.getAntTab("Data discovery").click({ force: true });
       cy.wait("@getEmptyMonitors");
-      cy.getByTestId("no-results-notice").should("exist");
+      cy.get(".ant-empty-description").should("exist");
     });
 
     describe("data discovery tab", () => {
@@ -564,18 +617,18 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("shows a table of monitors", () => {
-        cy.getByTestId("row-test monitor 1").should("exist");
-        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
-          "contain",
-          "Scanning",
-        );
-        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+        cy.getAntTableRow("test_monitor_1")
+          .should("exist")
+          .within(() => {
+            cy.getAntCellWithinRow(3).should("contain", "Scanning");
+          });
+        cy.getAntTableRow("test_monitor_2").within(() => {
           cy.getByTestId("tag-success").should("exist");
         });
-        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+        cy.getAntTableRow("test_monitor_3").within(() => {
           cy.getByTestId("tag-error").should("exist");
           cy.getByTestId("tag-error").within(() => {
-            cy.get("button").click();
+            cy.get("button").click({ force: true });
           });
         });
         cy.getByTestId("error-log-drawer")
@@ -663,7 +716,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
@@ -686,24 +739,15 @@ describe("Integration management for data detection & discovery", () => {
         });
       });
 
-      it("can edit an existing monitor by clicking the table row", () => {
-        cy.getByTestId("row-test monitor 2").click();
-        cy.getByTestId("input-name").should("have.value", "test monitor 2");
-        cy.getByTestId("controlled-select-execution_frequency").should(
-          "contain",
-          "Weekly",
-        );
-      });
-
       it("can execute a monitor", () => {
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("action-Scan").click();
         });
         cy.wait("@executeMonitor");
       });
 
       it("can delete a monitor", () => {
-        cy.getByTestId("row-test monitor 1").within(() => {
+        cy.getAntTableRow("test_monitor_1").within(() => {
           cy.getByTestId("delete-monitor-btn").click();
         });
         cy.getByTestId("confirmation-modal").within(() => {
@@ -716,10 +760,79 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test monitor 1").within(() => {
-          cy.getByTestId("toggle-switch").click();
+        cy.getAntTableRow("test_monitor_1").within(() => {
+          cy.getByTestId("toggle-switch").click({ force: true });
         });
         cy.wait("@putMonitor");
+      });
+
+      describe("LLM classifier configuration", () => {
+        it("can configure a monitor with LLM classifier enabled", () => {
+          cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+            response: 200,
+          }).as("putMonitor");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+          cy.getByTestId("input-name").type("Monitor with LLM");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+
+          // LLM fields should now exist (not checking visibility due to modal overlay issues)
+          cy.getByTestId("input-llm_model_override").should("exist");
+          cy.getByTestId("controlled-select-prompt_template").should("exist");
+
+          // Give fields a moment to render before interacting
+          cy.getByTestId("input-llm_model_override").should("have.value", "");
+          cy.getByTestId("input-llm_model_override").type("gpt-4");
+
+          // Use force: true for the select to work around modal overlay issues
+          cy.getByTestId("controlled-select-prompt_template").antSelect(
+            "Full",
+            {
+              force: true,
+            },
+          );
+
+          cy.getByTestId("controlled-select-execution_frequency").antSelect(
+            "Daily",
+          );
+          cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+          cy.getByTestId("next-btn").click();
+          cy.wait("@getDatabasesPage1");
+          cy.getByTestId("prj-bigquery-000001-checkbox").click();
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@putMonitor").then((interception) => {
+            // Verify LLM classifier fields are in the request
+            expect(
+              interception.request.body.classify_params.context_classifier,
+            ).to.equal("llm");
+            expect(
+              interception.request.body.classify_params.llm_model_override,
+            ).to.equal("gpt-4");
+            expect(
+              interception.request.body.classify_params.prompt_template,
+            ).to.equal("full");
+          });
+        });
+
+        it("should hide LLM fields when switch is toggled off", () => {
+          cy.getByTestId("add-monitor-btn").click();
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-llm_model_override").should("be.visible");
+
+          // Toggle it back off
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-llm_model_override").should("not.exist");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "not.exist",
+          );
+        });
       });
 
       describe("shared monitor configs", () => {
@@ -819,10 +932,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("monitor-description").contains(
           "Configure your website monitor",
         );
-        cy.getByTestId("row-test website monitor-col-name").should(
-          "contain",
-          "test website monitor",
-        );
+        cy.getAntTableRow("test_website_monitor").within(() => {
+          cy.getAntCellWithinRow(0).should("contain", "test website monitor");
+        });
       });
 
       it("should allow creating a website monitor", () => {
@@ -852,11 +964,16 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
           response: 200,
         }).as("putMonitor");
-        cy.getByTestId("row-test website monitor").click();
+        cy.getAntTableRow("test_website_monitor").within(() => {
+          cy.getByTestId("edit-monitor-btn").click();
+        });
         cy.getByTestId("input-name")
           .should("have.value", "test website monitor")
           .clear()
           .type("A different name");
+        cy.getByTestId("controlled-select-system_fides_key").should(
+          "not.exist",
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body.name).to.equal("A different name");
@@ -1088,6 +1205,58 @@ describe("Integration management for data detection & discovery", () => {
           true,
           "Integration authorized successfully",
         );
+      });
+
+      describe("website integrations", () => {
+        // There is no reason for a website integration to have a system linked
+        beforeEach(() => {
+          cy.intercept("GET", "/api/v1/connection/*", {
+            fixture: "connectors/website_integration.json",
+          }).as("getWebsiteIntegration");
+
+          cy.intercept("GET", "/api/v1/connection_type?*", {
+            fixture: "connectors/connection_types.json",
+          }).as("getConnectionTypes");
+        });
+
+        it("should not show link system step for website integrations", () => {
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            fixture: "detection-discovery/monitors/website_monitor_list.json",
+          }).as("getWebsiteMonitors");
+
+          cy.visit("/integrations/test_website_integration");
+          cy.wait("@getWebsiteIntegration");
+          cy.wait("@getWebsiteMonitors");
+          cy.wait("@getConnectionTypes");
+
+          // Verify that the Link system step is not shown for website integrations
+          cy.getByTestId("integration-setup-card").within(() => {
+            cy.contains("Link system").should("not.exist");
+          });
+
+          // Verify that other steps are still present
+          cy.getByTestId("integration-setup-card").within(() => {
+            cy.contains("Create integration").should("exist");
+            cy.contains("Create monitor").should("exist");
+          });
+        });
+
+        it("shows create integration step as completed for website integrations", () => {
+          cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+            fixture: "detection-discovery/monitors/empty_monitors.json",
+          }).as("getEmptyMonitors");
+
+          cy.visit("/integrations/test_website_integration");
+          cy.wait("@getWebsiteIntegration");
+          cy.wait("@getEmptyMonitors");
+          cy.wait("@getConnectionTypes");
+
+          checkStepStatus(
+            "Create integration",
+            true,
+            "Integration created successfully",
+          );
+        });
       });
     });
   });

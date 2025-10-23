@@ -5,6 +5,9 @@ import { User } from "../user-management/types";
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
+export const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 /**
  * "Fun On A Bun" => "Fun on a bun"
  * "fun on a bun" => "Fun on a bun"
@@ -119,7 +122,7 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (domain: string, size = 24) => {
+export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
@@ -207,3 +210,85 @@ export const buildArrayQueryParams = (
 
   return urlParams;
 };
+
+/**
+ * Truncates a URL by removing protocol and www., and shortening paths when needed.
+ *
+ * Behavior:
+ * - Always removes protocol (http://, https://, etc.) and www. subdomain
+ * - If the cleaned URL is within limit: returns as-is
+ * - If the cleaned URL exceeds limit and has a path: returns domain/.../last-segment
+ * - If the domain alone exceeds limit: returns just the domain
+ *
+ * Note: This function does NOT guarantee the result won't exceed the limit, especially
+ * when the last path segment or domain itself is long. Always use Typography ellipsis
+ * or similar UI truncation in the rendering layer.
+ *
+ * @param url - The URL to truncate
+ * @param limit - Target maximum character count (not strictly enforced)
+ * @returns Truncated URL with complete path segments only
+ *
+ * @example
+ * truncateUrl('https://www.example.com/path/to/page', 30);
+ * // returns 'example.com/.../page'
+ *
+ * @example
+ * truncateUrl('https://example.com/very-long-segment-name-that-exceeds-limit', 20);
+ * // returns 'example.com/.../very-long-segment-name-that-exceeds-limit' (exceeds limit)
+ */
+export const truncateUrl = (url: string, limit: number): string => {
+  try {
+    const urlObj = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const { hostname: rawHostname, pathname, search, hash } = urlObj;
+
+    // Build cleaned string: remove www. from hostname
+    const hostname = rawHostname.replace(/^www\./i, "");
+
+    // Full cleaned URL (include search and hash if present)
+    const cleaned = hostname + pathname + search + hash;
+
+    // If within limit, return as-is
+    if (cleaned.length <= limit) {
+      return cleaned;
+    }
+
+    // If no meaningful path (just "/"), return hostname
+    if (!pathname || pathname === "/") {
+      return hostname;
+    }
+
+    // Get last path segment
+    const segments = pathname.split("/").filter((s) => s.length > 0);
+    if (segments.length === 0) {
+      return hostname;
+    }
+
+    const lastSegment = segments[segments.length - 1];
+    return `${hostname}/.../${lastSegment}`;
+  } catch (error) {
+    // As fallback, return the original URL and log the error
+    // eslint-disable-next-line no-console
+    console.error("Failed to parse URL in truncateUrl:", url, error);
+    return url;
+  }
+};
+
+/**
+ * Formats a number with a suffix for large numbers (K, M, etc.)
+ * @param num - The number to format
+ * @param digits - The number of digits to round to (default is 0)
+ * @returns The formatted number as a string
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+ *
+ * @example
+ * nFormatter(1111); // returns "1K"
+ * nFormatter(1111, 0); // returns "1K"
+ * nFormatter(1111, 1); // returns "1.1K"
+ * nFormatter(1111, 2); // returns "1.11K"
+ */
+export const nFormatter = (num: number = 0, digits: number = 0) =>
+  Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: digits,
+  }).format(num);

@@ -15,7 +15,6 @@ import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
 import router from "next/router";
 import { useMemo, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
 import RightArrow from "~/features/common/Icon/RightArrow";
@@ -30,8 +29,6 @@ import {
 } from "~/features/plus/plus.slice";
 import {
   ConnectionConfigSecretsRequest,
-  selectActiveSystem,
-  setActiveSystem,
   useDeleteSystemConnectionConfigMutation,
   usePatchSystemConnectionConfigsMutation,
   usePatchSystemConnectionSecretsMutation,
@@ -43,7 +40,6 @@ import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
-  SystemResponse,
   SystemType,
 } from "~/types/api";
 
@@ -193,7 +189,6 @@ export const useConnectorForm = ({
 }) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
-  const dispatch = useAppDispatch();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
@@ -223,13 +218,10 @@ export const useConnectorForm = ({
     () => connectionConfig?.secrets ?? {},
     [connectionConfig],
   );
-  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
   const handleDelete = async () => {
     try {
       await deleteDatastoreConnection(systemFidesKey);
-      // @ts-ignore connection_configs isn't on the type yet but will be in the future
-      dispatch(setActiveSystem({ ...activeSystem, connection_configs: null }));
       setSelectedConnectionOption(undefined);
       successAlert(`Integration successfully deleted!`);
     } catch (e) {

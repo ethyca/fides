@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, selectinload
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
@@ -29,9 +29,12 @@ class ConsentStatus(str, Enum):
     Consent status of the asset
     """
 
+    cmp_error = "cmp_error"
+    pre_consent = "pre_consent"
     with_consent = "with_consent"
     without_consent = "without_consent"
     exempt = "exempt"
+    not_applicable = "not_applicable"
     unknown = "unknown"
 
 
@@ -44,6 +47,7 @@ class Asset(Base):
     name = Column(String, index=True, nullable=False)
     asset_type = Column(String, index=True, nullable=False)
     domain = Column(String, index=True)
+    duration = Column(String, nullable=True)
     parent = Column(ARRAY(String), server_default="{}", nullable=False)
     parent_domain = Column(String)
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
@@ -187,5 +191,17 @@ class Asset(Base):
                 .where(System.fides_key == system_fides_key)
             )
 
+        # Explicitly eager load the `system` relationship to make this query's
+        # performance predictable and prevent N+1 issues.
+        query = query.options(selectinload(cls.system))  # type: ignore[attr-defined]
         result = await async_session.execute(query)
         return result.scalars().all()
+
+    # Expose related System attributes for API serialization convenience
+    @property
+    def system_name(self) -> Optional[str]:
+        return self.system.name if self.system else None
+
+    @property
+    def system_fides_key(self) -> Optional[str]:
+        return self.system.fides_key if self.system else None

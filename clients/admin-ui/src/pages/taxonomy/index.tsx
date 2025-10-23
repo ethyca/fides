@@ -11,6 +11,7 @@ import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import {
   enumToOptions,
   getErrorMessage,
@@ -25,22 +26,29 @@ import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInte
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
-  taxonomyTypeToScopeRegistryEnum,
+  taxonomyKeyToScopeRegistryEnum,
+  TaxonomyTypeEnum,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
+import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 
 const TaxonomyPage: NextPage = () => {
-  const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
-    CoreTaxonomiesEnum.DATA_CATEGORIES,
+  // taxonomyType now stores the fides_key string (e.g. "data_category")
+  const [taxonomyType, setTaxonomyType] = useState<string>(
+    TaxonomyTypeEnum.DATA_CATEGORY,
   );
+  const features = useFeatures();
+  const isPlusEnabled = features.plus;
+  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(undefined, {
+    skip: !isPlusEnabled,
+  });
   const {
     createTrigger,
     getAllTrigger,
     taxonomyItems = [],
-  } = useTaxonomySlices({
-    taxonomyType,
-  });
+    isCreating,
+  } = useTaxonomySlices({ taxonomyType });
   const searchParams = useSearchParams();
   const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
 
@@ -64,6 +72,13 @@ const TaxonomyPage: NextPage = () => {
     setLastCreatedItemKey(null);
     setTaxonomyItemToEdit(null);
   }, [taxonomyType]);
+
+  // Redirect away from system groups if Plus is disabled
+  useEffect(() => {
+    if (taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP && !isPlusEnabled) {
+      setTaxonomyType(TaxonomyTypeEnum.DATA_CATEGORY);
+    }
+  }, [taxonomyType, isPlusEnabled]);
 
   const toast = useToast();
   const createNewLabel = useCallback(
@@ -97,7 +112,7 @@ const TaxonomyPage: NextPage = () => {
   ) as TaxonomyEntity[];
 
   const userCanAddLabels = useHasPermission([
-    taxonomyTypeToScopeRegistryEnum(taxonomyType).CREATE,
+    taxonomyKeyToScopeRegistryEnum(taxonomyType).CREATE,
   ]);
 
   return (
@@ -124,11 +139,39 @@ const TaxonomyPage: NextPage = () => {
           <div className="absolute left-2 top-2 z-[1]">
             <FloatingMenu
               selectedKeys={[taxonomyType]}
-              onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
-              items={enumToOptions(CoreTaxonomiesEnum).map((e) => ({
-                label: e.label,
-                key: e.value,
-              }))}
+              onSelect={({ key }) => setTaxonomyType(key as string)}
+              items={(() => {
+                // Core taxonomies, excluding system groups if plus is not enabled
+                const coreMapping: Record<CoreTaxonomiesEnum, string> = {
+                  [CoreTaxonomiesEnum.DATA_CATEGORIES]:
+                    TaxonomyTypeEnum.DATA_CATEGORY,
+                  [CoreTaxonomiesEnum.DATA_USES]: TaxonomyTypeEnum.DATA_USE,
+                  [CoreTaxonomiesEnum.DATA_SUBJECTS]:
+                    TaxonomyTypeEnum.DATA_SUBJECT,
+                  [CoreTaxonomiesEnum.SYSTEM_GROUPS]:
+                    TaxonomyTypeEnum.SYSTEM_GROUP,
+                };
+
+                const items = enumToOptions(CoreTaxonomiesEnum)
+                  .filter(
+                    (opt) =>
+                      isPlusEnabled ||
+                      opt.value !== CoreTaxonomiesEnum.SYSTEM_GROUPS,
+                  )
+                  .map((e) => ({
+                    label: e.label,
+                    key: coreMapping[e.value as CoreTaxonomiesEnum],
+                  }));
+
+                // Custom taxonomies, if available
+                if (customTaxonomies?.length) {
+                  customTaxonomies.forEach((t) => {
+                    items.push({ label: t.name, key: t.fides_key as any });
+                  });
+                }
+
+                return items;
+              })()}
               data-testid="taxonomy-type-selector"
             />
           </div>
@@ -154,9 +197,10 @@ const TaxonomyPage: NextPage = () => {
 
                 setDraftNewItem(newItem);
               }}
-              taxonomyType={taxonomyType}
+              taxonomyType={taxonomyType as any}
               onCancelDraftItem={() => setDraftNewItem(null)}
               onSubmitDraftItem={createNewLabel}
+              isCreating={isCreating}
             />
           )}
         </div>

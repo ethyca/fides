@@ -1,9 +1,10 @@
-from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict
+from pydantic import Field as PydanticField
+from pydantic import field_validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -69,7 +70,7 @@ class Strategy(BaseModel):
     """General shape for swappable strategies (ex: auth, processors, pagination, etc.)"""
 
     strategy: str
-    configuration: Dict[str, Any]
+    configuration: Optional[Dict[str, Any]] = None
 
 
 class ClientConfig(BaseModel):
@@ -88,20 +89,6 @@ class Header(BaseModel):
 class QueryParam(BaseModel):
     name: str
     value: Union[int, str]
-
-
-class AsyncStrategy(Enum):
-    """Async strategies: supports callback for now, but could be
-    extended to polling as well in the future"""
-
-    callback = "callback"
-
-
-class AsyncConfig(BaseModel):
-    """Async config only has strategy for now, but could be
-    extended with other configuration options when we add polling"""
-
-    strategy: AsyncStrategy
 
 
 class SaaSRequest(BaseModel):
@@ -126,9 +113,13 @@ class SaaSRequest(BaseModel):
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[Union[bool, List[int]]] = False
     rate_limit_config: Optional[RateLimitConfig] = None
-    async_config: Optional[AsyncConfig] = None
+    async_config: Optional[Strategy] = None
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
+    )
+    correlation_id_path: Optional[str] = PydanticField(
+        default=None,
+        description="The path to the correlation ID in the response. For use with async polling.",
     )
     model_config = ConfigDict(
         from_attributes=True, use_enum_values=True, extra="forbid"
@@ -228,7 +219,7 @@ class SaaSRequest(BaseModel):
 class ReadSaaSRequest(SaaSRequest):
     """
     An extension of the base SaaSRequest that allows the inclusion of an output template
-    that is used to format each collection result.
+    that is used to format each collection result, and correlation_id_path for async polling.
     """
 
     output: Optional[str] = None
@@ -245,7 +236,8 @@ class ReadSaaSRequest(SaaSRequest):
                 raise ValueError(
                     "A read request must specify a method if a path is provided and no request_override is specified"
                 )
-        else:
+
+        if self.request_override:
             allowed_fields = {
                 "request_override",
                 "param_values",

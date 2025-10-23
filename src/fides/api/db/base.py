@@ -9,6 +9,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference
+from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
@@ -21,6 +22,9 @@ from fides.api.models.detection_discovery.monitor_task import (
     MonitorTask,
     MonitorTaskExecutionLog,
 )
+from fides.api.models.detection_discovery.web_monitor import WebMonitorGroupJob
+from fides.api.models.digest import DigestCondition, DigestConfig
+from fides.api.models.event_audit import EventAudit
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
@@ -66,6 +70,9 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request_redaction_pattern import (
+    PrivacyRequestRedactionPattern,
+)
 from fides.api.models.property import (
     MessagingTemplateToProperty,
     PrivacyExperienceConfigProperty,
@@ -74,6 +81,7 @@ from fides.api.models.property import (
 from fides.api.models.registration import UserRegistration
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
+from fides.api.models.system_group import SystemGroup, SystemGroupMember
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
 from fides.api.models.taxonomy import (

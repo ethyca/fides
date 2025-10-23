@@ -63,10 +63,12 @@ const AddTranslationMenu = ({
         defaultOpen
         allowClear
         placeholder="Select a language..."
+        aria-label="Select a language"
         options={languageOptions}
         onChange={handleSelect}
         data-testid="select-language"
         className="w-full"
+        optionFilterProp="label"
       />
     );
   }

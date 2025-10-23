@@ -20,7 +20,7 @@ import {
   isValidAcString,
   shouldResurfaceBanner,
 } from "~/lib/consent-utils";
-import { parseFidesDisabledNotices } from "~/lib/shared-consent-utils";
+import { parseCommaSeparatedString } from "~/lib/shared-consent-utils";
 
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 
@@ -151,7 +151,7 @@ describe("parseFidesDisabledNotices", () => {
       expected: ["data_sales_and_sharing", "analytics_cookies"],
     },
   ])("returns $expected when input is $label", ({ value, expected }) => {
-    expect(parseFidesDisabledNotices(value)).toStrictEqual(expected);
+    expect(parseCommaSeparatedString(value)).toStrictEqual(expected);
   });
 });
 
@@ -343,6 +343,14 @@ describe("shouldResurfaceBanner", () => {
         ...mockCookie,
         fides_meta: { consentMethod: ConsentMethod.DISMISS },
       },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false for TCF when there are no vendors",
+      experience: { ...mockTCFExperience, vendor_count: 0 },
+      cookie: mockCookie,
       savedConsent: mockSavedConsent,
       options: {},
       expected: false,

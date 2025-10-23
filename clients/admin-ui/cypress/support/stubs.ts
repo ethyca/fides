@@ -12,6 +12,27 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+
+  // Generic taxonomy endpoints
+  cy.intercept("GET", "/api/v1/taxonomies", {
+    body: [], // No custom taxonomies by default
+  }).as("getCustomTaxonomies");
+
+  // Generic taxonomy endpoint for system groups (if accessed via taxonomy API)
+  cy.intercept("GET", "/api/v1/taxonomies/system_group", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroupTaxonomy");
+
+  // Generic taxonomy CRUD operations
+  cy.intercept("POST", "/api/v1/taxonomies/*", {
+    statusCode: 201,
+  }).as("createTaxonomyItem");
+  cy.intercept("PUT", "/api/v1/taxonomies/*", {
+    statusCode: 200,
+  }).as("updateTaxonomyItem");
+  cy.intercept("DELETE", "/api/v1/taxonomies/*/*", {
+    statusCode: 204,
+  }).as("deleteTaxonomyItem");
   cy.intercept(
     {
       method: "GET",
@@ -40,12 +61,6 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", `/api/v1/plus/custom-metadata/custom-field/resource`, {
     fixture: "taxonomy/custom-metadata/custom-field/list.json",
   }).as("getCustomFields");
-};
-
-export const stubLanguages = () => {
-  cy.intercept("GET", "/api/v1/plus/languages*", {
-    fixture: "languages.json",
-  }).as("getLanguages");
 };
 
 export const stubSystemCrud = () => {
@@ -95,6 +110,30 @@ export const stubSystemCrud = () => {
         resource: system,
       },
     }).as("deleteSystem");
+  });
+  cy.intercept("POST", "/api/v1/system/bulk-delete", {
+    statusCode: 200,
+  }).as("bulkDeleteSystems");
+  cy.intercept("POST", "/api/v1/system/assign-steward", {
+    statusCode: 200,
+  }).as("bulkAssignSteward");
+};
+
+export const stubGVLSystem = () => {
+  cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
+    cy.fixture("systems/system.json").then((origSystem) => {
+      cy.intercept(
+        { method: "GET", url: "/api/v1/system/demo_analytics_system" },
+        {
+          body: {
+            ...origSystem,
+            ...dictSystem,
+            fides_key: origSystem.fides_key,
+            customFieldValues: undefined,
+          },
+        },
+      ).as("getDictSystem");
+    });
   });
 };
 
@@ -218,6 +257,28 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   }).as("getPrivacyCenterConfig");
 };
 
+export const stubMessagingProvidersCrud = (options?: {
+  listItems?: any[];
+  createStatus?: number;
+  createResponse?: any;
+  getByKeyResponse?: any;
+}) => {
+  cy.intercept("GET", "/api/v1/messaging/config", {
+    statusCode: 200,
+    body: { items: options?.listItems ?? [] },
+  }).as("getMessagingConfigs");
+
+  cy.intercept("POST", "/api/v1/messaging/config", {
+    statusCode: options?.createStatus ?? 200,
+    body: options?.createResponse ?? { key: "new_config_key" },
+  }).as("postMessagingConfig");
+
+  cy.intercept("GET", "/api/v1/messaging/config/*", {
+    statusCode: 200,
+    body: options?.getByKeyResponse ?? {},
+  }).as("getMessagingConfigByKey");
+};
+
 export const stubPrivacyNoticesCrud = () => {
   cy.intercept("GET", "/api/v1/privacy-notice*", {
     fixture: "privacy-notices/list.json",
@@ -315,6 +376,30 @@ export const stubPrivacyRequests = (
         },
         { fixture: "privacy-requests/list.json" },
       ).as("getPrivacyRequests");
+
+      // Add specific stub for Request Manager request
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/privacy-request",
+          query: {
+            include_identities: "true",
+            request_id: "pri_request_manager_test-1234-5678-9abc-def012345678",
+          },
+        },
+        {
+          body: {
+            items: [
+              privacyRequests.items.find(
+                (item) =>
+                  item.id ===
+                  "pri_request_manager_test-1234-5678-9abc-def012345678",
+              ),
+            ],
+            total: 1,
+          },
+        },
+      ).as("getPrivacyRequestManager");
     },
   );
 
@@ -394,7 +479,7 @@ export const stubSystemVendors = () => {
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
-  cy.intercept("GET", "/api/v1/languages", {
+  cy.intercept("GET", "/api/v1/plus/languages*", {
     fixture: "languages.json",
   }).as("getLanguages");
   cy.intercept("GET", "/api/v1/config*", {
@@ -405,6 +490,9 @@ export const stubTranslationConfig = (enabled: boolean) => {
       },
     },
   }).as("getTranslationConfig");
+  cy.intercept("GET", "/api/v1/privacy-experience/gvl/translations*", {
+    fixture: "privacy-experiences/gvl_translations.json",
+  }).as("getGvlTranslations");
 };
 
 export const stubStagedResourceActions = () => {
@@ -528,6 +616,14 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
     fixture: "tcf/configurations.json",
   }).as("getTcfConfigs");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/system/consent-management/report?page=1&size=1",
+    { items: [{ id: "test" }], total: 1, page: 1, size: 1 },
+  ).as("getVendorReportEmpty");
+  cy.intercept("GET", "/api/v1/system*", {
+    fixture: "systems/systems.json",
+  }).as("getSystems");
   stubPlus(true);
 };
 
@@ -556,6 +652,32 @@ export const stubWebsiteMonitor = () => {
       fixture: "detection-discovery/activity-center/system-aggregate-results",
     },
   ).as("getSystemAggregateResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/system-aggregate-results?*resolved_system_id=*&page=1&size=1&search=&diff_status=addition",
+    {
+      items: [
+        {
+          id: "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+          name: "Google Tag Manager",
+          system_key: "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+          vendor_id: "fds.1046",
+          total_updates: 10,
+          locations: [],
+          data_uses: [],
+          domains: [],
+          consent_status: {
+            status: "alert",
+            message: "One or more assets were detected with compliance issues",
+          },
+        },
+      ],
+      page: 1,
+      size: 1,
+      total: 1,
+      pages: 1,
+    },
+  ).as("getSystemDetails");
   cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
     fixture: "detection-discovery/activity-center/system-asset-results",
   }).as("getSystemAssetResults");
@@ -878,4 +1000,66 @@ export const stubPlusAuth = () => {
     statusCode: 200,
     body: {},
   }).as("logoutRequest");
+};
+
+export const stubCustomFields = () => {
+  // List custom field definitions
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    fixture: "custom-fields/list.json",
+  }).as("getCustomFieldDefinitions");
+
+  // Get single custom field definition
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      fixture: "custom-fields/detail.json",
+    },
+  ).as("getCustomFieldDefinition");
+
+  // Create custom field definition
+  cy.intercept("POST", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 201,
+    fixture: "custom-fields/detail.json",
+  }).as("createCustomFieldDefinition");
+
+  // Update custom field definition
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/custom-field-definition", {
+    statusCode: 200,
+    fixture: "custom-fields/detail.json",
+  }).as("updateCustomFieldDefinition");
+
+  // Delete custom field definition
+  cy.intercept(
+    "DELETE",
+    "/api/v1/plus/custom-metadata/custom-field-definition/*",
+    {
+      statusCode: 204,
+    },
+  ).as("deleteCustomFieldDefinition");
+
+  // Get allow list
+  cy.intercept("GET", "/api/v1/plus/custom-metadata/allow-list/*", {
+    fixture: "custom-fields/allow-list.json",
+  }).as("getAllowList");
+
+  // Create/Update allow list
+  cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list", {
+    statusCode: 200,
+    fixture: "custom-fields/allow-list.json",
+  }).as("upsertAllowList");
+};
+
+export const stubSystemGroups = () => {
+  cy.intercept("GET", "/api/v1/system-groups", {
+    fixture: "systems/system-groups.json",
+  }).as("getSystemGroups");
+
+  cy.intercept("POST", "/api/v1/system-groups", {
+    statusCode: 200,
+  }).as("createSystemGroup");
+
+  cy.intercept("PUT", "/api/v1/system-groups/*", {
+    statusCode: 200,
+  }).as("updateSystemGroup");
 };

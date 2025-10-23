@@ -58,11 +58,13 @@ const useSharedMonitorConfigColumns = ({
               onClick={() => onEditClick(data)}
               icon={<Icons.Edit />}
               data-testid="edit-btn"
+              aria-label="Edit"
             />
             <Button
               size="small"
               onClick={() => handleDeleteMonitorConfig(data.id!)}
               icon={<Icons.TrashCan />}
+              aria-label="Delete"
             />
           </Flex>
         );

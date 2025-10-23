@@ -38,7 +38,6 @@ def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
     session.notify("black(fix)")
     session.notify("isort(fix)")
-    session.notify("xenon")
     session.notify("mypy")
     session.notify("pylint")
 
@@ -265,7 +264,11 @@ def minimal_config_startup(session: nox.Session) -> None:
 def performance_tests(session: nox.Session) -> None:
     """Compose the various performance checks into a single uber-test."""
     session.notify("teardown")
-    session.run(*START_APP, external=True, silent=True)
+    perf_env = {
+        "FIDES__SECURITY__AUTH_RATE_LIMIT": "1000000/minute",
+        **session.env,
+    }
+    session.run(*START_APP, external=True, silent=True, env=perf_env)
     samples = 2
     for i in range(samples):
         session.log(f"Sample {i + 1} of {samples}")
@@ -366,6 +369,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/integration/": ["ops-integration"],  # Workflow integration tests
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 

@@ -1,4 +1,9 @@
-import { AntColumnsType as ColumnsType, AntSpace as Space } from "fidesui";
+import {
+  AntColumnsType as ColumnsType,
+  AntSpace as Space,
+  formatIsoLocation,
+  isoStringToEntry,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -39,6 +44,10 @@ export const useDiscoveredSystemAggregateColumns = ({
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+  const [locationsVersion, setLocationsVersion] = useState(0);
+  const [domainsVersion, setDomainsVersion] = useState(0);
+  const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
       const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
@@ -67,8 +76,27 @@ export const useDiscoveredSystemAggregateColumns = ({
         {
           title: "Categories of consent",
           key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsDataUsesExpanded(true);
+                setDataUsesVersion((prev) => prev + 1);
+              } else if (e.key === "collapse-all") {
+                setIsDataUsesExpanded(false);
+                setDataUsesVersion((prev) => prev + 1);
+              }
+            },
+          },
           render: (_, record) => (
-            <DiscoveredSystemDataUseCell system={record} />
+            <DiscoveredSystemDataUseCell
+              system={record}
+              columnState={{
+                isExpanded: isDataUsesExpanded,
+                version: dataUsesVersion,
+              }}
+            />
           ),
         },
         {
@@ -79,28 +107,35 @@ export const useDiscoveredSystemAggregateColumns = ({
               e.domEvent.stopPropagation();
               if (e.key === "expand-all") {
                 setIsLocationsExpanded(true);
+                setLocationsVersion((prev) => prev + 1);
               } else if (e.key === "collapse-all") {
                 setIsLocationsExpanded(false);
+                setLocationsVersion((prev) => prev + 1);
               }
             },
           },
           dataIndex: "locations",
           key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
-          width: 250,
           render: (locations: string[]) => (
             <TagExpandableCell
               values={
-                locations?.map((location) => ({
-                  label:
-                    PRIVACY_NOTICE_REGION_RECORD[
-                      location as PrivacyNoticeRegion
-                    ] ?? location,
-                  key: location,
-                })) ?? []
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[
+                          location as PrivacyNoticeRegion
+                        ] ?? location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
               }
               columnState={{
                 isExpanded: isLocationsExpanded,
                 isWrapped: true,
+                version: locationsVersion,
               }}
             />
           ),
@@ -113,8 +148,10 @@ export const useDiscoveredSystemAggregateColumns = ({
               e.domEvent.stopPropagation();
               if (e.key === "expand-all") {
                 setIsDomainsExpanded(true);
+                setDomainsVersion((prev) => prev + 1);
               } else if (e.key === "collapse-all") {
                 setIsDomainsExpanded(false);
+                setDomainsVersion((prev) => prev + 1);
               }
             },
           },
@@ -126,6 +163,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               valueSuffix="domains"
               columnState={{
                 isExpanded: isDomainsExpanded,
+                version: domainsVersion,
               }}
             />
           ),
@@ -136,6 +174,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         baseColumns.push({
           title: "Actions",
           key: DiscoveredSystemAggregateColumnKeys.ACTIONS,
+          fixed: "right",
           render: (_, record) => (
             <DiscoveredSystemActionsCell
               system={record}
@@ -152,8 +191,12 @@ export const useDiscoveredSystemAggregateColumns = ({
       readonly,
       consentStatus,
       rowClickUrl,
+      isDataUsesExpanded,
       isLocationsExpanded,
       isDomainsExpanded,
+      dataUsesVersion,
+      locationsVersion,
+      domainsVersion,
       monitorId,
       allowIgnore,
       onTabChange,

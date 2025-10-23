@@ -3,12 +3,14 @@ import {
   AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
+  AntMenu as Menu,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -18,13 +20,19 @@ import {
 } from "~/features/common/table/v2";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
+import useTopLevelActionCenterTabs, {
+  TopLevelActionCenterTabHash,
+} from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 const ActionCenterPage = () => {
   const toast = useToast();
+  const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
+  const { flags } = useFeatures();
   const {
     PAGE_SIZES,
     pageSize,
@@ -77,23 +85,36 @@ const ActionCenterPage = () => {
     }
   }, [data, setTotalPages]);
 
-  const results = data?.items || [];
+  /*
+   * Filtering paginated results can lead to odd behaviors
+   * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
+   */
+  const results =
+    data?.items
+      ?.flatMap((monitor) =>
+        !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+      )
+      .filter(
+        (monitor) =>
+          flags.alphaFullActionCenter ||
+          monitor.monitorType === MONITOR_TYPES.WEBSITE,
+      ) || [];
   const loadingResults = isFetching
-    ? (Array.from({ length: pageSize }, (_, index) => ({
+    ? Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),
         updates: [],
         last_monitored: null,
-      })) as any[])
+      }))
     : [];
 
   // TODO: [HJ-337] Add button functionality
 
-  // const handleAdd = (monidorId: string) => {
-  //   console.log("Add report", monidorId);
+  // const handleAdd = (monitorId: string) => {
+  //   console.log("Add report", monitorId);
   // };
 
   const getWebsiteMonitorActions = useCallback(
-    (monitorKey: string) => [
+    (monitorKey: string, link?: string) => [
       // <Button
       //   key="add"
       //   type="link"
@@ -105,12 +126,7 @@ const ActionCenterPage = () => {
       // >
       //   Add
       // </Button>,
-      <NextLink
-        key="review"
-        href={`${ACTION_CENTER_ROUTE}/${monitorKey}`}
-        passHref
-        legacyBehavior
-      >
+      <NextLink key="review" href={link ?? ""} passHref legacyBehavior>
         <Button
           type="link"
           className="p-0"
@@ -134,44 +150,78 @@ const ActionCenterPage = () => {
         breadcrumbItems={[{ title: "All activity" }]}
       />
 
-      <Flex className="justify-between py-6">
-        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
-      </Flex>
-
-      <List
-        loading={isLoading}
-        dataSource={results || loadingResults}
-        locale={{
-          emptyText: <EmptyMonitorsResult />,
-        }}
-        renderItem={(summary: MonitorAggregatedResults) => {
-          return (
-            !!summary?.key && (
-              <MonitorResult
-                showSkeleton={isFetching}
-                key={summary.key}
-                monitorSummary={summary}
-                actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
-              />
-            )
+      <Menu
+        aria-label="Action center tabs"
+        mode="horizontal"
+        items={tabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        selectedKeys={[activeTab]}
+        onClick={async (menuInfo) => {
+          const validKey = Object.values(TopLevelActionCenterTabHash).find(
+            (value) => value === menuInfo.key,
           );
+          if (validKey) {
+            await onTabChange(validKey);
+          }
         }}
+        className="mb-4"
+        data-testid="action-center-tabs"
       />
 
-      {!!results && !!data?.total && data.total > pageSize && (
+      {activeTab === TopLevelActionCenterTabHash.IN_PROGRESS ? (
+        <InProgressMonitorTasksList />
+      ) : (
         <>
-          <Divider className="mb-6 mt-0" />
-          <PaginationBar
-            totalRows={data?.total || 0}
-            pageSizes={PAGE_SIZES}
-            setPageSize={setPageSize}
-            onPreviousPageClick={onPreviousPageClick}
-            isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-            onNextPageClick={onNextPageClick}
-            isNextPageDisabled={isNextPageDisabled || isFetching}
-            startRange={startRange}
-            endRange={endRange}
+          <Flex className="justify-between py-6">
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          </Flex>
+
+          <List
+            loading={isLoading}
+            dataSource={results || loadingResults}
+            locale={{
+              emptyText: <EmptyMonitorsResult />,
+            }}
+            renderItem={(summary) => {
+              const link =
+                summary.key && summary.monitorType
+                  ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}`
+                  : "";
+              return (
+                !!summary?.key && (
+                  <MonitorResult
+                    showSkeleton={isFetching}
+                    key={summary.key}
+                    monitorSummary={summary}
+                    href={link}
+                    actions={getWebsiteMonitorActions(summary.key, link)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+                  />
+                )
+              );
+            }}
           />
+
+          {!!results && !!data?.total && data.total > pageSize && (
+            <>
+              <Divider className="mb-6 mt-0" />
+              <PaginationBar
+                totalRows={data?.total || 0}
+                pageSizes={PAGE_SIZES}
+                setPageSize={setPageSize}
+                onPreviousPageClick={onPreviousPageClick}
+                isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+                onNextPageClick={onNextPageClick}
+                isNextPageDisabled={isNextPageDisabled || isFetching}
+                startRange={startRange}
+                endRange={endRange}
+              />
+            </>
+          )}
         </>
       )}
     </Layout>

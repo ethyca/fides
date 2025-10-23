@@ -130,15 +130,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Request manager (new)",
+        path: routes.PRIVACY_REQUESTS_ROUTE_NEW,
+        requiresFlag: "privacyRequestV2",
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+        ],
+      },
+      {
         title: "Connection manager",
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Configuration",
-        path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
-        requiresFlag: "privacyRequestsConfiguration",
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
     ],
   },
@@ -183,10 +188,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PROPERTY_READ],
       },
       {
-        title: "Messaging",
-        path: routes.MESSAGING_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
+        ],
+      },
+      {
+        title: "Privacy requests",
+        path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
       },
       {
         title: "Users",

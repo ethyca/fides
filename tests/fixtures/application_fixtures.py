@@ -3,7 +3,7 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
-from typing import Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
 
@@ -24,6 +24,7 @@ from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentType
+from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -118,7 +119,6 @@ logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
-
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
 
@@ -495,7 +495,7 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def https_connection_config(db: Session) -> Generator:
+def https_connection_config(db: Session) -> Generator[ConnectionConfig, None, None]:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(
         db=db,
@@ -512,6 +512,78 @@ def https_connection_config(db: Session) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def https_connection_config_with_oauth(
+    db: Session,
+) -> Generator[ConnectionConfig, None, None]:
+    name = str(uuid4())
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_webhook_oauth2_config",
+            "connection_type": ConnectionType.https,
+            "access": AccessLevel.read,
+            "secrets": {
+                "url": "https://example.com",
+                "authorization": "test_authorization",
+            },
+        },
+    )
+    oauth2_config = OAuthConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "grant_type": "client_credentials",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "token_url": "https://example.com/token",
+            "scope": "read write",
+        },
+    )
+
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def policy_pre_execution_webhooks_oauth2(
+    db: Session, https_connection_config_with_oauth, policy
+) -> Generator:
+    pre_webhook = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config_with_oauth.id,
+            "policy_id": policy.id,
+            "direction": "one_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_one_way_webhook_oauth2",
+            "order": 0,
+        },
+    )
+    pre_webhook_two = PolicyPreWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config_with_oauth.id,
+            "policy_id": policy.id,
+            "direction": "two_way",
+            "name": str(uuid4()),
+            "key": "pre_execution_two_way_webhook_oauth2",
+            "order": 1,
+        },
+    )
+    db.commit()
+    yield [pre_webhook, pre_webhook_two]
+    try:
+        pre_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")
@@ -1638,6 +1710,39 @@ def privacy_request(
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_two_types(
+    db: Session,
+    policy: Policy,
+) -> Generator[PrivacyRequest, None, None]:
+    erasure_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "name": "Erasure Request Rule",
+            "policy_id": policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    privacy_request = _create_privacy_request_for_policy(db, policy)
+
+    yield privacy_request
+
+    try:
+        erasure_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+
+    try:
+        privacy_request.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def soft_deleted_privacy_request(
     db: Session,
     policy: Policy,
@@ -1859,6 +1964,20 @@ def privacy_request_with_consent_policy(
         db,
         consent_policy,
     )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_location(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, Any, None]:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.location = "US"
+    privacy_request.save(db)
     yield privacy_request
     privacy_request.delete(db)
 
@@ -2104,6 +2223,218 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield pr
     pr.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_targeted_advertising(db: Session) -> Generator:
+    """
+    Privacy notice fixture for targeted advertising use cases.
+
+    Creates a privacy notice with targeted advertising data uses that can be used
+    to test matching with various cookie assets.
+    """
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "targeted advertising notice",
+            "notice_key": "targeted_advertising_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_out,
+            "data_uses": [
+                "marketing.advertising.first_party.targeted",
+                "marketing.advertising.third_party.targeted",
+            ],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Targeted Advertising Notice",
+                    "description": "Notice for targeted advertising",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "targeted advertising notice",
+            "notice_key": "targeted_advertising_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_out,
+            "data_uses": [
+                "marketing.advertising.first_party.targeted",
+                "marketing.advertising.third_party.targeted",
+            ],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Targeted Advertising Notice",
+                    "description": "Notice for targeted advertising",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+
+    # Clean up translations and histories
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+    template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def multi_data_use_cookie_asset(db: Session, system) -> Generator:
+    """
+    Asset that mimics a real-world cookie with multiple data uses.
+    """
+    asset = Asset(
+        name="_gcl_au",
+        asset_type="Cookie",
+        domain="*",
+        system_id=system.id,
+        data_uses=[
+            "marketing.advertising.first_party.contextual",
+            "marketing.advertising.negative_targeting",
+            "analytics.reporting.campaign_insights",
+            "marketing.advertising.first_party.targeted",  # Should match targeted advertising notices
+            "analytics.reporting.ad_performance",
+            "functional.service.improve",
+            "marketing.advertising.third_party.targeted",  # Should match targeted advertising notices
+            "marketing.advertising.profiling",
+            "marketing.advertising.frequency_capping",
+            "functional.storage",
+        ],
+        locations=[],
+        parent=[],
+        consent_status="unknown",
+        page=[],
+    )
+    asset.save(db)
+
+    yield asset
+
+    # Clean up
+    try:
+        asset.delete(db)
+    except ObjectDeletedError:
+        # Skip if already deleted
+        pass
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_fun_data_use(db: Session) -> Generator:
+    """
+    Privacy notice fixture for testing substring matching edge cases.
+
+    Creates a privacy notice with 'fun' data use to test against 'funding' assets.
+    """
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "fun activities notice",
+            "notice_key": "fun_activities_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["fun"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Fun Activities Notice",
+                    "description": "Notice for fun activities",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "fun activities notice",
+            "notice_key": "fun_activities_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["fun"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Fun Activities Notice",
+                    "description": "Notice for fun activities",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+
+    # Clean up
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+    template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice_empty_data_uses(db: Session) -> Generator:
+    """
+    Privacy notice fixture with no data uses for testing edge cases.
+
+    Creates a privacy notice with empty data uses list to test that it returns
+    no cookies regardless of what cookie assets exist.
+    """
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
+            "name": "Empty Notice",
+            "notice_key": "empty_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": [],  # Empty data uses
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Empty Notice",
+                    "description": "This notice has no data uses.",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "Empty Notice",
+            "notice_key": "empty_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": [],  # Empty data uses
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Empty Notice",
+                    "description": "This notice has no data uses.",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+
+    # Clean up
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+    template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -3766,20 +4097,42 @@ def served_notice_history(
     pref_1.delete(db)
 
 
+# TODO: remove this fixture when we get rid of DSR 2.0
 @pytest.fixture(scope="function")
 def use_dsr_3_0():
-    original_value: int = CONFIG.execution.use_dsr_3_0
-    CONFIG.execution.use_dsr_3_0 = True
+    """DSR 3.0 is now the default - this fixture is kept for test compatibility."""
+    # DSR 3.0 is now always used for new requests
     yield CONFIG
-    CONFIG.execution.use_dsr_3_0 = original_value
 
 
 @pytest.fixture(scope="function")
 def use_dsr_2_0():
-    original_value: int = CONFIG.execution.use_dsr_3_0
-    CONFIG.execution.use_dsr_3_0 = False
-    yield CONFIG
-    CONFIG.execution.use_dsr_3_0 = original_value
+    """Force DSR 2.0 behavior by mocking the scheduler function."""
+
+    # Patch where the function is actually used in production code AND in test modules
+    with (
+        mock.patch(
+            "fides.api.task.graph_runners.use_dsr_3_0_scheduler",
+            return_value=False,
+        ),
+        mock.patch(
+            "fides.api.task.graph_task.use_dsr_3_0_scheduler",
+            return_value=False,
+        ),
+        mock.patch(
+            "tests.test_dsr_3_0_default.use_dsr_3_0_scheduler",
+            return_value=False,
+        ),
+        mock.patch(
+            "tests.ops.integration_tests.saas.connector_runner.use_dsr_3_0_scheduler",
+            return_value=False,
+        ),
+        mock.patch(
+            "tests.ops.task.test_execute_request_tasks.use_dsr_3_0_scheduler",
+            return_value=False,
+        ),
+    ):
+        yield CONFIG
 
 
 @pytest.fixture()

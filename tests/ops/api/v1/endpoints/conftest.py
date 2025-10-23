@@ -3,7 +3,10 @@ from typing import Generator
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.db.seed import load_default_taxonomy
 from fides.api.models.client import ClientDetail
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
@@ -18,6 +21,50 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 )
 from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+
+
+@pytest.fixture(scope="function", autouse=True)
+def load_default_data_categories(db: Session):
+    """
+    Automatically load default taxonomy for all tests in this module.
+    Required for dataset validation which checks data categories against the database.
+    """
+    load_default_taxonomy(db)
+
+
+@pytest.fixture(scope="function")
+def external_user(db: Session) -> Generator[FidesUser, None, None]:
+    """Create a user with external_respondent role for testing."""
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "external_user",
+            "email_address": "external@example.com",
+        },
+    )
+    FidesUserPermissions.create(
+        db=db,
+        data={"user_id": user.id, "roles": ["external_respondent"]},
+    )
+
+    # Create a client for the user (required for auth header generation)
+    from fides.api.models.client import ClientDetail
+    from fides.config import CONFIG
+
+    client, _ = ClientDetail.create_client_and_secret(
+        db,
+        CONFIG.security.oauth_client_id_length_bytes,
+        CONFIG.security.oauth_client_secret_length_bytes,
+        user_id=user.id,
+    )
+
+    # Refresh the user to get the client relationship
+    db.refresh(user)
+
+    yield user
+    if user.permissions:
+        user.permissions.delete(db)
+    user.delete(db)
 
 
 @pytest.fixture(scope="function")

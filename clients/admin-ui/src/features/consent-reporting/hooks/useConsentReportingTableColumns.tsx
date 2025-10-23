@@ -1,5 +1,11 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { AntTag as Tag, AntTypography as Typography, Icons } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTypography as Typography,
+  formatIsoLocation,
+  Icons,
+  isoStringToEntry,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -43,8 +49,13 @@ const useConsentReportingTableColumns = ({
         id: "user_geography",
         cell: ({ getValue }) => {
           const region = getValue() as PrivacyNoticeRegion | null | undefined;
-          const regionLabel =
+          const isoEntry = region && isoStringToEntry(region);
+          const legacyEntry =
             (region && PRIVACY_NOTICE_REGION_RECORD[region]) || region;
+          const regionLabel = isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : legacyEntry;
+
           return <DefaultCell value={regionLabel} />;
         },
         header: (props) => (
@@ -61,7 +72,8 @@ const useConsentReportingTableColumns = ({
             preference;
 
           const badgeColor =
-            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
+            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) ||
+            undefined;
 
           const hasTcfDetails =
             preference === "tcf" && row.original.tcf_preferences;

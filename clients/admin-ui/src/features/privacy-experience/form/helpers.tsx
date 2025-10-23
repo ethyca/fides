@@ -52,6 +52,9 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   translations: defaultTranslations,
   auto_detect_language: true,
   auto_subdomain_cookie_deletion: true,
+  cookie_deletion_based_on_host_domain: true,
+  allow_vendor_asset_disclosure: false,
+  asset_disclosure_include_types: [],
 };
 // utility type to pass as a prop to the translation form
 export type TranslationWithLanguageName = ExperienceTranslation &
@@ -103,13 +106,27 @@ export const transformConfigResponseToCreate = (
     id,
     ...rest
   } = config;
-  return {
+  const transformed: ExperienceConfigCreate = {
     ...rest,
     privacy_notice_ids: notices ? notices.map((notice) => notice.id) : [],
     translations: config.translations
       ? config.translations.map((t) => transformTranslationResponseToCreate(t))
       : [],
   };
+
+  // If vendor/asset disclosure is enabled but there are no include types,
+  // default the flag to false so unrelated edits aren't blocked by validation.
+  if (
+    (transformed.component === ComponentType.BANNER_AND_MODAL ||
+      transformed.component === ComponentType.MODAL) &&
+    transformed.allow_vendor_asset_disclosure &&
+    (!transformed.asset_disclosure_include_types ||
+      transformed.asset_disclosure_include_types.length === 0)
+  ) {
+    transformed.allow_vendor_asset_disclosure = false;
+  }
+
+  return transformed;
 };
 
 type TranslationFieldConfig = {

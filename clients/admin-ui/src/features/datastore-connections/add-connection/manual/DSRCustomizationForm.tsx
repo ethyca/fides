@@ -1,5 +1,11 @@
 import { useAlert } from "common/hooks";
-import { Box, HStack, Text, TrashCanSolidIcon, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  HStack,
+  TrashCanSolidIcon,
+  VStack,
+} from "fidesui";
 import { FieldArray, Form, Formik, FormikProps } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
@@ -9,7 +15,7 @@ import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
-import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
+import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
 import CustomInput from "../forms/CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
@@ -160,12 +166,8 @@ const DSRCustomizationForm = ({
                           ))
                         : null}
                     </Box>
-                    <Text
-                      color="complimentary.500"
-                      fontWeight="medium"
-                      fontSize="sm"
-                      mb="24px !important"
-                      mt="24px !important"
+                    <Button
+                      className="my-6"
                       onClick={() => {
                         fieldArrayProps.push({
                           pii_field: "",
@@ -173,10 +175,9 @@ const DSRCustomizationForm = ({
                           data_categories: [],
                         });
                       }}
-                      _hover={{ cursor: "pointer" }}
                     >
                       Add new PII field
-                    </Text>
+                    </Button>
                     <ManualButtonGroup
                       isSubmitting={isSubmitting}
                       onCancelClick={handleCancel}

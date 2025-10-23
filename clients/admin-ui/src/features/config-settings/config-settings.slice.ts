@@ -2,11 +2,9 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 // Import the types needed for the patchConfigurationSettings mutation
+import { StorageConfigResponse } from "~/features/privacy-requests/types";
 import {
   MessagingConfigResponse,
-  StorageConfigResponse,
-} from "~/features/privacy-requests/types";
-import {
   PlusApplicationConfig as ApplicationConfig,
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
@@ -54,7 +52,12 @@ export const configSettingsApi = baseApi.injectEndpoints({
       }),
       // Switching GPP settings causes the backend to update privacy notices behind the scenes, so
       // invalidate privacy notices when a patch goes through.
-      invalidatesTags: ["Configuration Settings", "Privacy Notices"],
+      // Also invalidate messaging config since notification settings affect active messaging provider
+      invalidatesTags: [
+        "Configuration Settings",
+        "Privacy Notices",
+        "Messaging Config",
+      ],
     }),
   }),
 });

@@ -22,7 +22,10 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
-from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.models.worker_task import (
+    RESUMABLE_EXECUTION_LOG_STATUSES,
+    ExecutionLogStatus,
+)
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
@@ -162,7 +165,7 @@ def can_run_task_body(
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
         return False
-    if request_task.status != ExecutionLogStatus.pending:
+    if request_task.status not in RESUMABLE_EXECUTION_LOG_STATUSES:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
             request_task.action_type,
@@ -274,15 +277,18 @@ def run_access_node(
 
     try:
         with self.get_new_session() as session:
-            privacy_request, request_task, upstream_results = (
-                run_prerequisite_task_checks(
-                    session, privacy_request_id, privacy_request_task_id
-                )
+            (
+                privacy_request,
+                request_task,
+                upstream_results,
+            ) = run_prerequisite_task_checks(
+                session, privacy_request_id, privacy_request_task_id
             )
             with logger.contextualize(
                 privacy_request_source=(
                     privacy_request.source.value if privacy_request.source else None
-                )
+                ),
+                collection=request_task.collection_address,
             ):
                 log_task_starting(request_task)
 
@@ -343,7 +349,8 @@ def run_erasure_node(
         with logger.contextualize(
             privacy_request_source=(
                 privacy_request.source.value if privacy_request.source else None
-            )
+            ),
+            collection=request_task.collection_address,
         ):
             log_task_starting(request_task)
 
@@ -416,7 +423,8 @@ def run_consent_node(
         with logger.contextualize(
             privacy_request_source=(
                 privacy_request.source.value if privacy_request.source else None
-            )
+            ),
+            collection=request_task.collection_address,
         ):
             log_task_starting(request_task)
 

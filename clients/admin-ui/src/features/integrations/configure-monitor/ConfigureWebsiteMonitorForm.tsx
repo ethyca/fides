@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { FormikDateTimeInput } from "~/features/common/form/FormikDateTimeInput";
@@ -62,6 +63,7 @@ const ConfigureWebsiteMonitorForm = ({
   onClose: () => void;
   onSubmit: (values: MonitorConfig) => Promise<void>;
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -93,10 +95,12 @@ const ConfigureWebsiteMonitorForm = ({
     connection_config_key: integrationId,
     datasource_params: (monitor?.datasource_params as WebsiteMonitorParams) ?? {
       locations: [],
+      exclude_domains: [],
     },
   };
 
   const handleSubmit = async (values: WebsiteMonitorConfig) => {
+    setIsSubmitting(true);
     const executionInfo =
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
@@ -178,16 +182,17 @@ const ConfigureWebsiteMonitorForm = ({
           placeholder="Enter domains to exclude"
           id="exclude_domains"
           label="Exclude domains"
+          mode="tags"
           options={[]}
+          suffixIcon={null}
           open={false}
-          disabled
           error={getIn(errors, "datasource_params.exclude_domains")}
           touched={getIn(touched, "datasource_params.exclude_domains")}
           onChange={(value) =>
             formik.setFieldValue("datasource_params.exclude_domains", value)
           }
           onBlur={formik.handleBlur}
-          value={values.execution_frequency || []}
+          value={values.datasource_params?.exclude_domains || []}
         />
         <FormikTextInput
           name="url"
@@ -209,9 +214,8 @@ const ConfigureWebsiteMonitorForm = ({
           options={isoCodesToOptions(
             regionOptions.map((option) => option.value),
           )}
-          required
           tooltip={REGIONS_TOOLTIP_COPY}
-          mode="tags"
+          mode="multiple"
           error={getIn(errors, "datasource_params.locations")}
           touched={getIn(touched, "datasource_params.locations")}
           onChange={(value) =>
@@ -259,16 +263,23 @@ const ConfigureWebsiteMonitorForm = ({
           onBlur={formik.handleBlur}
           value={dayjs(values.execution_start_date)}
         />
-        <Flex className="mt-2 justify-between">
+        <Flex gap="small" className="mt-2" justify="stretch">
           <Button
             onClick={() => {
               resetForm();
               onClose();
             }}
+            block
           >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit" data-testid="save-btn">
+          <Button
+            type="primary"
+            htmlType="submit"
+            data-testid="save-btn"
+            block
+            loading={isSubmitting}
+          >
             Save
           </Button>
         </Flex>

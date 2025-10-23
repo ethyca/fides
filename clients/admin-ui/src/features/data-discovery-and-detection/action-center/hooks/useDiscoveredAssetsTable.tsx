@@ -3,6 +3,8 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntSpace as Space,
   AntText as Text,
+  formatIsoLocation,
+  isoStringToEntry,
   useToast,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -12,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  ACTION_CENTER_ROUTE,
+  ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
@@ -27,6 +29,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
+  ConsentAlertInfo,
   ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
@@ -60,29 +63,28 @@ import useActionCenterTabs, {
 interface UseDiscoveredAssetsTableConfig {
   monitorId: string;
   systemId: string;
-  onSystemName?: (name: string) => void;
-  onShowBreakdown?: (
+  consentStatus?: ConsentAlertInfo | null;
+  onShowComplianceIssueDetails?: (
     stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
   ) => void;
 }
 
 export const useDiscoveredAssetsTable = ({
   monitorId,
   systemId,
-  onSystemName,
-  onShowBreakdown,
+  consentStatus,
+  onShowComplianceIssueDetails,
 }: UseDiscoveredAssetsTableConfig) => {
   const router = useRouter();
   const toast = useToast();
 
   const [systemName, setSystemName] = useState(systemId);
-  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
-    ConsentStatus | null | undefined
-  >();
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
-
+  const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
+  const [locationsVersion, setLocationsVersion] = useState(0);
+  const [pagesVersion, setPagesVersion] = useState(0);
+  const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
@@ -117,7 +119,7 @@ export const useDiscoveredAssetsTable = ({
     search: searchQuery,
     sort_by: sortKey
       ? [sortKey] // User selected a column to sort by
-      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
+      : [DiscoveredAssetsColumnKeys.NAME], // Default,
     sort_asc: sortOrder !== "descend",
     ...activeParams,
     ...columnFilters,
@@ -159,12 +161,14 @@ export const useDiscoveredAssetsTable = ({
 
   const antTableConfig = useMemo(
     () => ({
-      enableSelection: activeTab !== ActionCenterTabHash.RECENT_ACTIVITY,
+      enableSelection: activeTab !== ActionCenterTabHash.ADDED,
       getRowKey: (record: StagedResourceAPIResponse) => record.urn,
       isLoading,
       isFetching,
       dataSource: data?.items || [],
       totalRows: data?.total || 0,
+      sortBy: [DiscoveredAssetsColumnKeys.NAME],
+      sortAsc: true,
       customTableProps: {
         locale: {
           emptyText: (
@@ -172,6 +176,9 @@ export const useDiscoveredAssetsTable = ({
               <div>All caught up!</div>
             </div>
           ),
+        },
+        sticky: {
+          offsetHeader: 40,
         },
       },
     }),
@@ -182,6 +189,12 @@ export const useDiscoveredAssetsTable = ({
     StagedResourceAPIResponse,
     DiscoveredAssetsColumnKeys
   >(tableState, antTableConfig);
+
+  const {
+    selectedKeys: selectedUrns,
+    selectedRows,
+    resetSelections,
+  } = antTable;
 
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
@@ -215,7 +228,6 @@ export const useDiscoveredAssetsTable = ({
         title: "System",
         dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
         key: DiscoveredAssetsColumnKeys.SYSTEM,
-        width: 200,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -224,13 +236,28 @@ export const useDiscoveredAssetsTable = ({
               readonly={
                 actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
               }
+              onChange={() => {
+                resetSelections();
+              }}
             />
           ),
       },
       {
         title: "Categories of consent",
         key: DiscoveredAssetsColumnKeys.DATA_USES,
-        width: 400,
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsDataUsesExpanded(true);
+              setDataUsesVersion((prev) => prev + 1);
+            } else if (e.key === "collapse-all") {
+              setIsDataUsesExpanded(false);
+              setDataUsesVersion((prev) => prev + 1);
+            }
+          },
+        },
         filters: convertToAntFilters(
           filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
         ),
@@ -241,6 +268,13 @@ export const useDiscoveredAssetsTable = ({
             readonly={
               actionsDisabled || activeTab === ActionCenterTabHash.IGNORED
             }
+            columnState={{
+              isExpanded: isDataUsesExpanded,
+              version: dataUsesVersion,
+            }}
+            onChange={() => {
+              resetSelections();
+            }}
           />
         ),
       },
@@ -248,39 +282,50 @@ export const useDiscoveredAssetsTable = ({
         title: "Locations",
         dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
         key: DiscoveredAssetsColumnKeys.LOCATIONS,
-        width: 250,
         menu: {
           items: expandCollapseAllMenuItems,
           onClick: (e) => {
             e.domEvent.stopPropagation();
             if (e.key === "expand-all") {
               setIsLocationsExpanded(true);
+              setLocationsVersion((prev) => prev + 1);
             } else if (e.key === "collapse-all") {
               setIsLocationsExpanded(false);
+              setLocationsVersion((prev) => prev + 1);
             }
           },
         },
-        filters: convertToAntFilters(
-          filterOptions?.locations,
-          (location) =>
-            PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-            location,
-        ),
+        filters: convertToAntFilters(filterOptions?.locations, (location) => {
+          const isoEntry = isoStringToEntry(location);
+
+          return isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : (PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+                location);
+        }),
         filteredValue: columnFilters?.locations || null,
-        render: (locations: PrivacyNoticeRegion[]) => (
-          <TagExpandableCell
-            values={
-              locations?.map((location) => ({
-                label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
-                key: location,
-              })) ?? []
-            }
-            columnState={{
-              isExpanded: isLocationsExpanded,
-              isWrapped: true,
-            }}
-          />
-        ),
+        render: (locations: PrivacyNoticeRegion[]) => {
+          return (
+            <TagExpandableCell
+              values={
+                locations?.map((location) => {
+                  const isoEntry = isoStringToEntry(location);
+                  return {
+                    label: isoEntry
+                      ? formatIsoLocation({ isoEntry })
+                      : (PRIVACY_NOTICE_REGION_RECORD[location] ??
+                        location) /* fallback on internal list for now */,
+                    key: location,
+                  };
+                }) ?? []
+              }
+              columnState={{
+                isExpanded: isLocationsExpanded,
+                version: locationsVersion,
+              }}
+            />
+          );
+        },
       },
       {
         title: "Domain",
@@ -297,8 +342,10 @@ export const useDiscoveredAssetsTable = ({
             e.domEvent.stopPropagation();
             if (e.key === "expand-all") {
               setIsPagesExpanded(true);
+              setPagesVersion((prev) => prev + 1);
             } else if (e.key === "collapse-all") {
               setIsPagesExpanded(false);
+              setPagesVersion((prev) => prev + 1);
             }
           },
         },
@@ -309,6 +356,7 @@ export const useDiscoveredAssetsTable = ({
             valueSuffix="pages"
             columnState={{
               isExpanded: isPagesExpanded,
+              version: pagesVersion,
             }}
           />
         ),
@@ -321,13 +369,8 @@ export const useDiscoveredAssetsTable = ({
         title: () => (
           <Space>
             <div>Compliance</div>
-            {firstItemConsentStatus === ConsentStatus.WITHOUT_CONSENT && (
-              <DiscoveryStatusIcon
-                consentStatus={{
-                  status: AlertLevel.ALERT,
-                  message: "One or more assets were detected without consent",
-                }}
-              />
+            {consentStatus?.status === AlertLevel.ALERT && (
+              <DiscoveryStatusIcon consentStatus={consentStatus} />
             )}
           </Space>
         ),
@@ -340,15 +383,8 @@ export const useDiscoveredAssetsTable = ({
             : null,
         filters: convertToAntFilters(
           filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
-          (status) => {
-            const statusMap: Record<string, string> = {
-              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
-              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
-              exempt: DiscoveryStatusDisplayNames.EXEMPT,
-              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
-            };
-            return statusMap[status] ?? status;
-          },
+          (status) =>
+            DiscoveryStatusDisplayNames[status as ConsentStatus] ?? status,
         ),
         filteredValue:
           columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
@@ -357,7 +393,6 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
             stagedResource={record}
-            onShowBreakdown={onShowBreakdown}
           />
         ),
       });
@@ -373,6 +408,7 @@ export const useDiscoveredAssetsTable = ({
           <DiscoveredAssetActionsCell
             asset={record}
             onTabChange={onTabChange}
+            showComplianceIssueDetails={onShowComplianceIssueDetails}
           />
         ),
       });
@@ -387,11 +423,16 @@ export const useDiscoveredAssetsTable = ({
     assetConsentStatusLabels,
     actionsDisabled,
     activeTab,
+    isDataUsesExpanded,
+    dataUsesVersion,
+    resetSelections,
     isLocationsExpanded,
+    locationsVersion,
     isPagesExpanded,
-    firstItemConsentStatus,
-    onShowBreakdown,
+    pagesVersion,
+    consentStatus,
     onTabChange,
+    onShowComplianceIssueDetails,
   ]);
 
   // Business logic effects
@@ -400,26 +441,8 @@ export const useDiscoveredAssetsTable = ({
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
       setSystemName(firstSystemName);
-      onSystemName?.(firstSystemName);
     }
-  }, [data, systemId, onSystemName, systemName]);
-
-  useEffect(() => {
-    if (data?.items && !firstItemConsentStatus) {
-      // this ensures that the column header remembers the consent status
-      // even when the user navigates to a different paginated page
-      const consentStatus = data.items.find(
-        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
-      )?.consent_aggregated;
-      setFirstItemConsentStatus(consentStatus);
-    }
-  }, [data, firstItemConsentStatus]);
-
-  const {
-    selectedKeys: selectedUrns,
-    selectedRows,
-    resetSelections,
-  } = antTable;
+  }, [data, systemId, systemName]);
 
   const handleBulkAdd = useCallback(async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -480,10 +503,17 @@ export const useDiscoveredAssetsTable = ({
               `Confirmed`,
             ),
           );
+          resetSelections();
         }
       }
     },
-    [updateAssetsSystemMutation, monitorId, selectedUrns, toast],
+    [
+      updateAssetsSystemMutation,
+      monitorId,
+      selectedUrns,
+      toast,
+      resetSelections,
+    ],
   );
 
   const handleBulkAddDataUse = useCallback(
@@ -494,7 +524,7 @@ export const useDiscoveredAssetsTable = ({
       const assets = selectedRows.map((asset) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const user_assigned_data_uses = uniq([
-          ...(asset.user_assigned_data_uses || asset.data_uses || []),
+          ...(asset.preferred_data_uses || []),
           ...newDataUses,
         ]);
         return {
@@ -517,6 +547,7 @@ export const useDiscoveredAssetsTable = ({
             `Confirmed`,
           ),
         );
+        resetSelections();
       }
     },
     [
@@ -526,6 +557,7 @@ export const useDiscoveredAssetsTable = ({
       selectedUrns,
       systemName,
       toast,
+      resetSelections,
     ],
   );
 
@@ -586,7 +618,12 @@ export const useDiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      router.push({
+        pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
+        query: {
+          monitorId: encodeURIComponent(monitorId),
+        },
+      });
       toast(
         successToastParams(
           `${assetCount} assets from ${systemName} have been added to the system inventory.`,
@@ -649,7 +686,7 @@ export const useDiscoveredAssetsTable = ({
 
     // Business state
     systemName,
-    firstItemConsentStatus,
+    consentStatus,
 
     // Business actions
     handleBulkAdd,

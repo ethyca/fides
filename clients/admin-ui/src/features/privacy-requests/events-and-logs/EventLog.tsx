@@ -189,7 +189,8 @@ const EventLog = ({
       backgroundColor={
         detail.status === ExecutionLogStatus.ERROR ||
         (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-        detail.status === ExecutionLogStatus.AWAITING_PROCESSING
+        detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+        detail.status === ExecutionLogStatus.POLLING
           ? palette.FIDESUI_NEUTRAL_50
           : "unset"
       }
@@ -197,7 +198,8 @@ const EventLog = ({
         if (
           detail.status === ExecutionLogStatus.ERROR ||
           (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+          detail.status === ExecutionLogStatus.POLLING
         ) {
           onDetailPanel(detail.message, detail.status);
         }
@@ -217,24 +219,22 @@ const EventLog = ({
           {getActionTypeLabel(detail.action_type)}
         </Text>
       </Td>
-      {hasDatasetEntries && !isRequestFinishedView && (
-        <Td>
-          {ExecutionLogStatusLabels[detail.status] ? (
-            <AntTag color={ExecutionLogStatusColors[detail.status]}>
-              {ExecutionLogStatusLabels[detail.status]}
-            </AntTag>
-          ) : (
-            <Text
-              color="gray.600"
-              fontSize="xs"
-              lineHeight="4"
-              fontWeight="medium"
-            >
-              {detail.status}
-            </Text>
-          )}
-        </Td>
-      )}
+      <Td>
+        {ExecutionLogStatusLabels[detail.status] ? (
+          <AntTag color={ExecutionLogStatusColors[detail.status]}>
+            {ExecutionLogStatusLabels[detail.status]}
+          </AntTag>
+        ) : (
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {detail.status}
+          </Text>
+        )}
+      </Td>
       {hasDatasetEntries && (
         <Td>
           <Text
@@ -306,18 +306,16 @@ const EventLog = ({
                   Action Type
                 </Text>
               </Th>
-              {hasDatasetEntries && !isRequestFinishedView && (
-                <Th>
-                  <Text
-                    color="black"
-                    fontSize="xs"
-                    lineHeight="4"
-                    fontWeight="medium"
-                  >
-                    Status
-                  </Text>
-                </Th>
-              )}
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
+                  Status
+                </Text>
+              </Th>
               {hasDatasetEntries && (
                 <Th>
                   <Text

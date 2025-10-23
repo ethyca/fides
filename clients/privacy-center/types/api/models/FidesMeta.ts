@@ -40,4 +40,8 @@ export type FidesMeta = {
    * Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR.
    */
   custom_request_field?: string | null;
+  /**
+   * Optionally specify that this entity's name should be redacted in DSR reports. When set to "name", the entity will be redacted using the indexed format (e.g., "dataset_1", "collection_1", "field_1").
+   */
+  redact?: "name" | null;
 };

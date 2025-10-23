@@ -1,11 +1,13 @@
 import {
   AntButton as Button,
+  AntForm as Form,
   LinkIcon,
+  LocationSelect,
   Stack,
   useClipboard,
   useToast,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form as FormikForm, Formik, useField } from "formik";
 import { lazy } from "yup";
 import * as Yup from "yup";
 
@@ -23,6 +25,19 @@ import {
 } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
+
+/**
+ * Mirror location type from backend
+ */
+export type LocationCustomPrivacyRequestField = {
+  label: string;
+  required?: boolean | null;
+  default_value?: string | null;
+  hidden?: boolean | null;
+  query_param_key?: string | null;
+  field_type: "location";
+  ip_geolocation_hint?: boolean | null;
+};
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -64,12 +79,47 @@ const IdentityFields = ({
   );
 };
 
+const LocationSelectInput = (props: {
+  label: string;
+  name: string;
+  required: boolean;
+}) => {
+  const { label, required, name } = props;
+  const [initialField, meta, helpers] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const { setValue } = helpers;
+  const { value } = {
+    ...initialField,
+    value: initialField.value ?? "",
+  };
+
+  return (
+    <Form.Item
+      label={label}
+      name={name}
+      required={required ?? undefined}
+      layout="vertical"
+      validateStatus={isInvalid ? "error" : undefined}
+    >
+      <LocationSelect
+        key={name}
+        value={value}
+        onChange={(newValue) => {
+          if (newValue) {
+            setValue(newValue);
+          }
+        }}
+      />
+    </Form.Item>
+  );
+};
 const CustomFields = ({
   customFieldInputs,
 }: {
   customFieldInputs?: Record<
     string,
-    fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
+    | fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
+    | LocationCustomPrivacyRequestField
   > | null;
 }) => {
   if (!customFieldInputs) {
@@ -78,15 +128,26 @@ const CustomFields = ({
   const allInputs = Object.entries(customFieldInputs);
   return (
     <>
-      {allInputs.map(([fieldName, fieldInfo]) => (
-        <CustomTextInput
-          name={`custom_privacy_request_fields.${fieldName}.value`}
-          key={fieldName}
-          label={fieldInfo.label}
-          isRequired={Boolean(fieldInfo.required)}
-          variant="stacked"
-        />
-      ))}
+      {allInputs.map(([fieldName, fieldInfo]) => {
+        /* checking for object key should not be necessarry when backend types are updated */
+        return "field_type" in fieldInfo &&
+          fieldInfo.field_type === "location" ? (
+          <LocationSelectInput
+            name={fieldName}
+            key={fieldName}
+            label={fieldInfo.label}
+            required={Boolean(fieldInfo.required)}
+          />
+        ) : (
+          <CustomTextInput
+            name={`custom_privacy_request_fields.${fieldName}.value`}
+            key={fieldName}
+            label={fieldInfo.label}
+            isRequired={Boolean(fieldInfo.required)}
+            variant="stacked"
+          />
+        );
+      })}
     </>
   );
 };
@@ -140,7 +201,7 @@ const SubmitPrivacyRequestForm = ({
         };
 
         return (
-          <Form>
+          <FormikForm>
             <Stack spacing={6} mb={2}>
               <ControlledSelect
                 name="policy_key"
@@ -176,7 +237,7 @@ const SubmitPrivacyRequestForm = ({
                 </Button>
               </div>
             </Stack>
-          </Form>
+          </FormikForm>
         );
       }}
     </Formik>
@@ -214,7 +275,7 @@ export const CopyPrivacyRequestLinkForm = ({
     >
       {({ dirty, isValid }) => {
         return (
-          <Form>
+          <FormikForm>
             <Stack spacing={6} mb={2}>
               <IdentityFields identityInputs={{ email: "required" }} />
               <div className="flex gap-4 self-end">
@@ -230,7 +291,7 @@ export const CopyPrivacyRequestLinkForm = ({
                 </Button>
               </div>
             </Stack>
-          </Form>
+          </FormikForm>
         );
       }}
     </Formik>

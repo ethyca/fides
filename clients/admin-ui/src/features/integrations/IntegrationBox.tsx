@@ -86,7 +86,7 @@ const IntegrationBox = ({
       data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>
-        <ConnectionTypeLogo data={logoData ?? ""} boxSize="50px" />
+        <ConnectionTypeLogo data={logoData} size={50} />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
           <Text color="gray.700" fontWeight="semibold">
             {integration?.name || "(No name)"}

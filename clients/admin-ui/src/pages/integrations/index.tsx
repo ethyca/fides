@@ -6,6 +6,7 @@ import {
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
+  CUSTOM_TAG_COLOR,
   useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -43,7 +44,7 @@ const IntegrationLogo = ({
   integration: ConnectionConfigurationResponse;
 }) => {
   const logoData = useConnectionLogo(integration);
-  return <ConnectionTypeLogo data={logoData} boxSize="20px" />;
+  return <ConnectionTypeLogo data={logoData} size={20} />;
 };
 
 const IntegrationListView: NextPage = () => {
@@ -174,15 +175,15 @@ const IntegrationListView: NextPage = () => {
             record.last_test_timestamp === null ||
             record.last_test_timestamp === undefined
           ) {
-            return { status: "Untested", color: "default" };
+            return { status: "Untested", color: CUSTOM_TAG_COLOR.DEFAULT };
           }
           if (record.last_test_succeeded === true) {
-            return { status: "Healthy", color: "success" };
+            return { status: "Healthy", color: CUSTOM_TAG_COLOR.SUCCESS };
           }
           if (record.last_test_succeeded === false) {
-            return { status: "Failed", color: "error" };
+            return { status: "Failed", color: CUSTOM_TAG_COLOR.ERROR };
           }
-          return { status: "Untested", color: "default" };
+          return { status: "Untested", color: CUSTOM_TAG_COLOR.DEFAULT };
         };
 
         const { status, color } = getConnectionStatus();

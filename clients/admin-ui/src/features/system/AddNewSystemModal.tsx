@@ -145,6 +145,7 @@ export const AddNewSystemModal = ({
         if (toastOnSuccess) {
           successAlert(`${data.name} has been added to your system inventory.`);
         }
+        handleCloseModal();
       }
     } else {
       const payload = {
@@ -234,7 +235,6 @@ export const AddNewSystemModal = ({
               <Button
                 htmlType="reset"
                 onClick={handleCloseModal}
-                disabled={isLoading || !dirty || !isValid}
                 data-testid="cancel-btn"
               >
                 Cancel

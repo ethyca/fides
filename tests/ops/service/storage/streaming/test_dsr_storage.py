@@ -63,7 +63,6 @@ class TestStreamDsrBufferToStorage:
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="application/zip",
         )
 
         # Verify content was written
@@ -95,7 +94,6 @@ class TestStreamDsrBufferToStorage:
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="application/zip",
         )
 
         # Verify content was written
@@ -121,67 +119,6 @@ class TestStreamDsrBufferToStorage:
                 dsr_buffer=test_buffer,
             )
 
-    def test_dsr_builder_integration(
-        self,
-        mock_smart_open_client_s3,
-    ):
-        """Test integration with DsrReportBuilder - now handled by caller."""
-        # This test is no longer relevant since DSR generation is handled by the caller
-        # The storage function now only handles streaming the buffer to storage
-        content = "Generated DSR report content"
-        test_buffer = BytesIO(content.encode("utf-8"))
-
-        # Mock the streaming upload
-        mock_stream = Mock()
-        mock_stream.__enter__ = Mock(return_value=mock_stream)
-        mock_stream.__exit__ = Mock(return_value=None)
-        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
-
-        result = stream_dsr_buffer_to_storage(
-            storage_client=mock_smart_open_client_s3,
-            bucket_name="test-bucket",
-            file_key="test-report.html",
-            dsr_buffer=test_buffer,
-        )
-
-        # Verify streaming upload was called
-        mock_smart_open_client_s3.stream_upload.assert_called_once()
-
-    def test_html_dsr_zip_with_attachments(
-        self,
-        mock_smart_open_client_s3,
-    ):
-        """Test that HTML DSR reports can be created as ZIPs with attachments."""
-        # This test would verify the new HTML DSR ZIP functionality
-        # that includes both the DSR report and actual attachment files
-        # For now, we'll just verify the basic functionality works
-        content = "HTML DSR report with attachments test"
-        test_buffer = BytesIO(content.encode("utf-8"))
-
-        # Mock the streaming upload
-        mock_stream = Mock()
-        mock_stream.__enter__ = Mock(return_value=mock_stream)
-        mock_stream.__exit__ = Mock(return_value=None)
-        mock_smart_open_client_s3.stream_upload.return_value = mock_stream
-
-        result = stream_dsr_buffer_to_storage(
-            storage_client=mock_smart_open_client_s3,
-            bucket_name="test-bucket",
-            file_key="test-report.html",
-            dsr_buffer=test_buffer,
-            content_type="application/zip",  # HTML DSR reports are now ZIPs
-        )
-
-        # Verify streaming upload was called
-        mock_smart_open_client_s3.stream_upload.assert_called_once_with(
-            "test-bucket",
-            "test-report.html",
-            content_type="application/zip",
-        )
-
-        # Verify content was written
-        mock_stream.write.assert_called_once_with(content.encode("utf-8"))
-
     def test_custom_content_type(
         self,
         mock_smart_open_client_s3,
@@ -202,14 +139,12 @@ class TestStreamDsrBufferToStorage:
             bucket_name="test-bucket",
             file_key="test-report.html",
             dsr_buffer=test_buffer,
-            content_type="text/html",  # Override default
         )
 
         # Verify custom content type was used
         mock_smart_open_client_s3.stream_upload.assert_called_once_with(
             "test-bucket",
             "test-report.html",
-            content_type="text/html",
         )
 
         # Verify content was written
@@ -245,7 +180,6 @@ class TestStreamDsrBufferToStorage:
                 bucket_name="test-bucket",
                 file_key="test-report.html",
                 dsr_buffer=test_buffer,
-                content_type="application/zip",
             )
 
             # Verify streaming upload was called

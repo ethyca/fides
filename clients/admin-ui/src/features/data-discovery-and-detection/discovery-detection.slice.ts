@@ -169,10 +169,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: ({ staged_resource_urn }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/mute?${queryString.stringify(
-          { staged_resource_urns: [staged_resource_urn] },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/mute",
+        body: {
+          staged_resource_urns: [staged_resource_urn],
+        },
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -186,15 +186,15 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
     }),
     muteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/mute?${queryString.stringify(
-          { staged_resource_urns },
-          { arrayFormat: "none" },
-        )}`,
+        url: "/plus/discovery-monitor/mute",
+        body: {
+          staged_resource_urns,
+        },
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -206,10 +206,13 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
     }),
     updateResourceCategory: build.mutation<
-      any,
+      Array<{
+        urn: string;
+        data_uses?: string[] | null;
+      }>,
       ChangeResourceCategoryQueryParam
     >({
       query: (params) => ({
@@ -224,7 +227,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         ],
       }),
 
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
   }),
 });

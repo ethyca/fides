@@ -1,192 +1,312 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  FIELD_TYPE_OPTIONS_NEW,
+  AntButton as Button,
+  AntFlex as Flex,
+  AntForm as Form,
+  AntInput as Input,
+  AntMessage as message,
+  AntSelect as Select,
+  AntSkeleton as Skeleton,
+  AntTypography as Typography,
+  ConfirmationModal,
+  Icons,
+} from "fidesui";
+import { useRouter } from "next/router";
+import { useState } from "react";
+
+import { getErrorMessage } from "~/features/common/helpers";
+import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
+import { useHasPermission } from "~/features/common/Restrict";
+import {
+  FIELD_TYPE_OPTIONS,
   FieldTypes,
   RESOURCE_TYPE_OPTIONS,
-} from "common/custom-fields";
-import CustomInput, {
-  CUSTOM_LABEL_STYLES,
-} from "common/custom-fields/form/CustomInput";
-import { AddIcon } from "common/custom-fields/icons/AddIcon";
-import FormSection from "common/form/FormSection";
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AntButton as Button, Box, Flex, Text } from "fidesui";
-import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
-import { useEffect } from "react";
+} from "~/features/custom-fields/constants";
+import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
+import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
+import { getCustomFieldType } from "~/features/custom-fields/utils";
+import {
+  useDeleteCustomFieldDefinitionMutation,
+  useGetAllowListQuery,
+} from "~/features/plus/plus.slice";
+import {
+  CustomFieldDefinition,
+  CustomFieldDefinitionWithId,
+  ScopeRegistryEnum,
+} from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
-import type { FormValues } from "~/features/custom-fields/CustomFieldModal";
-
-import { ControlledSelect } from "../common/form/ControlledSelect";
-
-const CustomFieldLabelStyles = {
-  ...CUSTOM_LABEL_STYLES,
-  minWidth: "unset",
+export const SkeletonCustomFieldForm = () => {
+  return (
+    <Skeleton active>
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Input />
+      <Skeleton.Button />
+    </Skeleton>
+  );
 };
 
-type Props = FormikProps<FormValues> & {
-  validationSchema: any;
-  isLoading: boolean;
-  onClose: () => void;
-  handleDropdownChange: (value: FieldTypes) => void;
-  isEditing: boolean;
-};
-
-export const CustomFieldForm = ({
-  values,
-  validationSchema,
-  errors,
-  dirty,
-  isValid,
-  isSubmitting,
+const CustomFieldForm = ({
+  initialField,
   isLoading,
-  onClose,
-  handleDropdownChange,
-  isEditing,
-}: Props) => {
-  const { validateForm } = useFormikContext<FormValues>();
-  useEffect(() => {
-    validateForm();
-  }, [validationSchema, validateForm]);
+}: {
+  initialField?: CustomFieldDefinitionWithId;
+  isLoading?: boolean;
+}) => {
+  const [form] = Form.useForm<CustomFieldsFormValues>();
+  const router = useRouter();
+
+  const [messageApi, messageContext] = message.useMessage();
+
+  const { createOrUpdate } = useCreateOrUpdateCustomField();
+
+  const { data: allowList, isLoading: isAllowListLoading } =
+    useGetAllowListQuery(initialField?.allow_list_id as string, {
+      skip: !initialField?.allow_list_id,
+    });
+
+  const [deleteCustomField, { isLoading: deleteIsLoading }] =
+    useDeleteCustomFieldDefinitionMutation();
+
+  const showDeleteButton =
+    useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
+
+  const handleDelete = async () => {
+    const result = await deleteCustomField({ id: initialField?.id as string });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    // navigate to main page after success toast is shown
+    messageApi.success("Custom field deleted successfully", undefined, () => {
+      router.push(CUSTOM_FIELDS_ROUTE);
+    });
+  };
+
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
+
+  const onSubmit = async (values: CustomFieldsFormValues) => {
+    const result = await createOrUpdate(values, initialField, allowList);
+    if (!result) {
+      messageApi.error("An unexpected error occurred");
+      return;
+    }
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    } else {
+      messageApi.success(
+        `Custom field ${initialField ? "updated" : "created"} successfully`,
+      );
+    }
+    router.push(CUSTOM_FIELDS_ROUTE);
+  };
+
+  const parseFieldToFormValues = (
+    field: CustomFieldDefinition | undefined,
+  ): CustomFieldsFormValues | undefined => {
+    if (!field) {
+      return undefined;
+    }
+    return {
+      ...field,
+      field_type: getCustomFieldType(field),
+      options: allowList?.allowed_values ?? [],
+    };
+  };
+
+  const initialValues = parseFieldToFormValues(initialField);
+
+  if (isLoading || isAllowListLoading) {
+    return <SkeletonCustomFieldForm />;
+  }
 
   return (
     <Form
-      style={{
-        paddingTop: "12px",
-        paddingBottom: "12px",
-      }}
+      form={form}
+      layout="vertical"
+      initialValues={initialValues || {}}
+      validateTrigger={["onBlur", "onChange"]}
+      onFinish={onSubmit}
     >
-      <Box py={3}>
-        <FormSection title="Field Information">
-          <CustomInput
-            isRequired
-            label="Name"
-            name="name"
-            customLabelProps={CustomFieldLabelStyles}
-          />
-          <CustomInput
-            label="Description"
-            name="description"
-            customLabelProps={CustomFieldLabelStyles}
-          />
-          <ControlledSelect
-            label="Location"
-            name="resource_type"
-            options={RESOURCE_TYPE_OPTIONS}
-            labelProps={CustomFieldLabelStyles}
-            disabled={isEditing}
-          />
-        </FormSection>
-      </Box>
-      <Box py={3}>
-        <FormSection title="Configuration">
-          <ControlledSelect
-            label="Field Type"
-            name="field_type"
-            labelProps={CustomFieldLabelStyles}
-            options={FIELD_TYPE_OPTIONS_NEW}
-            onChange={handleDropdownChange}
-          />
-          {values.field_type !== FieldTypes.OPEN_TEXT &&
-          values.field_type !== FieldTypes.LOCATION_SELECT ? (
-            <Flex
-              flexDirection="column"
-              gap="12px"
-              paddingTop="6px"
-              paddingBottom="24px"
-            >
-              <FieldArray
-                name="allow_list.allowed_values"
-                render={(fieldArrayProps) => {
-                  // eslint-disable-next-line @typescript-eslint/naming-convention
-                  const { allowed_values } = values.allow_list;
+      {messageContext}
+      <Form.Item
+        label="Name"
+        name="name"
+        rules={[{ required: true, message: "Please enter a name" }]}
+      >
+        <Input data-testid="input-name" />
+      </Form.Item>
 
-                  return (
-                    <Flex flexDirection="column" gap="6" pl="6">
-                      <Flex flexDirection="column">
-                        {allowed_values.map((_value, index) => (
-                          <Flex
-                            flexGrow={1}
-                            gap="3"
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={index}
-                            mt={index > 0 ? 3 : undefined}
+      <Form.Item label="Description" name="description">
+        <Input.TextArea rows={2} data-testid="input-description" />
+      </Form.Item>
+
+      <Form.Item
+        label="Location"
+        name="resource_type"
+        rules={[{ required: true, message: "Please select a resource type" }]}
+      >
+        <Select
+          options={RESOURCE_TYPE_OPTIONS}
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
+          disabled={!!initialField}
+          data-testid="select-resource-type"
+        />
+      </Form.Item>
+
+      <Form.Item
+        label="Field Type"
+        name="field_type"
+        rules={[{ required: true, message: "Please select a field type" }]}
+      >
+        <Select
+          options={FIELD_TYPE_OPTIONS}
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
+          data-testid="select-field-type"
+        />
+      </Form.Item>
+
+      <Form.Item
+        noStyle
+        shouldUpdate={(prevValues, currentValues) =>
+          prevValues.field_type !== currentValues.field_type
+        }
+      >
+        {({ getFieldValue }) => {
+          const fieldType = getFieldValue("field_type");
+          const isSelectType =
+            fieldType === FieldTypes.SINGLE_SELECT ||
+            fieldType === FieldTypes.MULTIPLE_SELECT;
+
+          return (
+            isSelectType && (
+              <Form.List
+                name="options"
+                rules={[
+                  {
+                    validator: async (_, options) => {
+                      if (!options || options.length < 1) {
+                        return Promise.reject(
+                          new Error(
+                            "At least one option is required for selects",
+                          ),
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                {(fields, { add, remove }, { errors }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Form.Item
+                        required={false}
+                        key={field.key}
+                        label={index === 0 ? "Options" : ""}
+                        data-testid="options-form-item"
+                      >
+                        <Flex gap="middle">
+                          <Form.Item
+                            {...field}
+                            validateTrigger={["onChange", "onBlur"]}
+                            rules={[
+                              {
+                                required: true,
+                                whitespace: true,
+                                message: "Options cannot be empty",
+                              },
+                              () => ({
+                                validator(_, value) {
+                                  const duplicateCount = getFieldValue(
+                                    "options",
+                                  ).filter(
+                                    (opt: string) => opt === value,
+                                  ).length;
+                                  if (duplicateCount > 1) {
+                                    return Promise.reject(
+                                      new Error("Option values must be unique"),
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              }),
+                            ]}
+                            noStyle
                           >
-                            <CustomInput
-                              customLabelProps={{
-                                color: "gray.600",
-                                fontSize: "sm",
-                                fontWeight: "500",
-                                lineHeight: "20px",
-                                minW: "126px",
-                                pr: "8px",
-                              }}
-                              isRequired
-                              label={`List item ${index + 1}`}
-                              name={`allow_list.allowed_values[${index}]`}
+                            <Input
+                              placeholder="Enter option value"
+                              data-testid={`input-option-${index}`}
                             />
+                          </Form.Item>
+                          {fields.length > 1 && (
                             <Button
-                              aria-label="Remove this list value"
-                              data-testid={`remove-list-value-btn-${index}`}
-                              icon={<TrashCanSolidIcon />}
-                              disabled={allowed_values.length <= 1}
-                              onClick={() => fieldArrayProps.remove(index)}
-                              type="text"
+                              icon={<Icons.TrashCan />}
+                              onClick={() => remove(field.name)}
+                              aria-label="Remove option"
                             />
-                          </Flex>
-                        ))}
-                      </Flex>
-                      <Flex alignItems="center">
-                        <Text
-                          color="gray.600"
-                          fontSize="xs"
-                          fontWeight="500"
-                          lineHeight="16px"
-                          pr="8px"
-                        >
-                          Add a list value
-                        </Text>
-                        <Button
-                          aria-label="Add a list value"
-                          data-testid="add-list-value-btn"
-                          icon={<AddIcon h="7px" w="7px" />}
-                          onClick={() => {
-                            fieldArrayProps.push("");
-                          }}
-                          size="small"
-                        />
-                        {allowed_values.length === 0 && errors?.allow_list ? (
-                          <Text color="red.500" pl="18px" size="sm">
-                            {errors.allow_list.allowed_values}
-                          </Text>
-                        ) : null}
-                      </Flex>
-                    </Flex>
-                  );
-                }}
-              />
-            </Flex>
-          ) : null}
-        </FormSection>
-      </Box>
-
-      <Flex justifyContent="space-between" width="100%">
-        <Button
-          onClick={onClose}
-          disabled={isLoading || isSubmitting}
-          className="mr-3"
-          data-testid="cancel-btn"
-        >
-          Cancel
-        </Button>
-        <Button
-          htmlType="submit"
-          type="primary"
-          data-testid="save-btn"
-          loading={isLoading}
-          disabled={!dirty || !isValid || isSubmitting}
-        >
+                          )}
+                        </Flex>
+                      </Form.Item>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<Icons.Add />}
+                        data-testid="add-option-btn"
+                      >
+                        Add select option
+                      </Button>
+                    </Form.Item>
+                    <Form.ErrorList errors={errors} className="-mt-4 mb-4" />
+                  </>
+                )}
+              </Form.List>
+            )
+          );
+        }}
+      </Form.Item>
+      <Flex justify="space-between">
+        {showDeleteButton && (
+          <>
+            <Button
+              danger
+              onClick={() => setDeleteModalIsOpen(true)}
+              loading={deleteIsLoading}
+              data-testid="delete-btn"
+            >
+              Delete
+            </Button>
+            <ConfirmationModal
+              isOpen={deleteModalIsOpen}
+              onClose={() => setDeleteModalIsOpen(false)}
+              onConfirm={handleDelete}
+              title="Delete custom field"
+              message={
+                <Typography.Paragraph>
+                  Are you sure you want to delete{" "}
+                  <strong>{initialField?.name}</strong>? This action cannot be
+                  undone.
+                </Typography.Paragraph>
+              }
+              isCentered
+              data-testid="delete-modal"
+            />
+          </>
+        )}
+        <Button type="primary" htmlType="submit" data-testid="save-btn">
           Save
         </Button>
       </Flex>
     </Form>
   );
 };
+
+export default CustomFieldForm;

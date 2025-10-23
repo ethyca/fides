@@ -78,6 +78,7 @@ describe("automaticallyApplyPreferences", () => {
     fidesConsentOverride: null,
     otFidesMapping: null,
     fidesDisabledNotices: null,
+    fidesDisabledSystems: null,
     fidesConsentNonApplicableFlagMode: null,
     fidesConsentFlagType: null,
     fidesInitializedEventMode: "once",

@@ -1,4 +1,9 @@
-import { AntFlex, AntTabs as Tabs, Spinner } from "fidesui";
+import {
+  AntCol as Col,
+  AntRow as Row,
+  AntTabs as Tabs,
+  Spinner,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -103,44 +108,37 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
-      >
-        <AntFlex gap={24}>
-          <div className="grow">
-            <div className="mb-6">
-              <IntegrationBox
-                integration={connection}
-                integrationTypeInfo={integrationTypeInfo}
-                showDeleteButton
+      />
+      <Row wrap={false} gutter={24}>
+        <Col flex="1 1 auto">
+          <IntegrationBox
+            integration={connection}
+            integrationTypeInfo={integrationTypeInfo}
+            showDeleteButton
+          />
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            !!connection && (
+              <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
+            )
+          )}
+        </Col>
+        <Col flex="0 0 350px">
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            !!connection && (
+              <IntegrationSetupSteps
+                testData={testData}
+                testIsLoading={isTestLoading}
+                connectionOption={integrationOption!}
+                connection={connection}
               />
-            </div>
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              !!connection && (
-                <Tabs
-                  items={tabs}
-                  activeKey={activeTab}
-                  onChange={onTabChange}
-                />
-              )
-            )}
-          </div>
-          <div className="w-[350px] shrink-0">
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              !!connection && (
-                <IntegrationSetupSteps
-                  testData={testData}
-                  testIsLoading={isTestLoading}
-                  connectionOption={integrationOption!}
-                  connection={connection}
-                />
-              )
-            )}
-          </div>
-        </AntFlex>
-      </PageHeader>
+            )
+          )}
+        </Col>
+      </Row>
     </Layout>
   );
 };

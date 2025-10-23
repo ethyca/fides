@@ -20,8 +20,8 @@ describe("System integrations", () => {
   });
 
   it("should render the integration configuration panel when navigating to integrations tab", () => {
-    cy.getByTestId("system-fidesctl_system").within(() => {
-      cy.getByTestId("edit-btn").click();
+    cy.getAntTableRow("fidesctl_system").within(() => {
+      cy.getByTestId("system-link-fidesctl_system").click();
     });
     cy.wait("@getDict");
     cy.getAntTab("Integrations").click({ force: true });
@@ -30,8 +30,8 @@ describe("System integrations", () => {
 
   describe("Integration search", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
+      cy.getAntTableRow("fidesctl_system").within(() => {
+        cy.getByTestId("system-link-fidesctl_system").click();
       });
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
@@ -50,13 +50,17 @@ describe("System integrations", () => {
         .find('[role="menuitem"] p')
         .should("contain.text", "Shopify");
     });
+
+    it("should not display Website in the dropdown", () => {
+      cy.getByTestId("select-dropdown-list")
+        .find('[role="menuitem"] p')
+        .should("not.contain.text", "Website");
+    });
   });
 
   describe("Integration form contents", () => {
     beforeEach(() => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 
@@ -91,9 +95,7 @@ describe("System integrations", () => {
       cy.intercept("GET", "/api/v1/privacy-notice*", {
         fixture: "privacy-notices/list.json",
       }).as("getNotices");
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("edit-btn").click();
-      });
+      cy.getByTestId("system-link-fidesctl_system").click();
       cy.getAntTab("Integrations").click({ force: true });
     });
     it("should render the Bidirectional consent accordion panel", () => {

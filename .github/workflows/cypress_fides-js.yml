@@ -1,0 +1,105 @@
+name: FidesJS Banner/Modal Cypress Tests
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - "main"
+      - "release-**"
+
+env:
+  CI: true
+
+jobs:
+  Check-FidesJS-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_fidesjs_changes: ${{ steps.filter.outputs.fidesjs }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for FidesJS file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            fidesjs:
+              - 'clients/privacy-center/pages/api/fides-js.ts'
+              - 'clients/fides-js/**'
+              - '.github/workflows/cypress_fides-js.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.fidesjs == 'true'
+        run: echo "${{ steps.filter.outputs.fidesjs_files }}"
+
+  Privacy-Center-Cypress:
+    needs: Check-FidesJS-Changes
+    if: needs.Check-FidesJS-Changes.outputs.has_fidesjs_changes == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build FidesJS
+        working-directory: clients/fides-js
+        run: npm run build:test
+
+      - name: Build NextJS
+        working-directory: clients/privacy-center
+        run: npm run build:test
+
+      - name: Cypress Privacy Center E2E Tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: clients/privacy-center
+          install: false
+          start: npm run start:test
+          wait-on: "http://localhost:3001"
+          wait-on-timeout: 180
+          spec: cypress/e2e/fides-js/**
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-fides-js
+          path: /home/runner/work/fides/fides/clients/fides-js/cypress/videos/*.mp4
+
+  FidesJS-Cypress-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Privacy-Center-Cypress
+    steps:
+      - name: Check job results
+        run: |
+          echo "Privacy-Center-Cypress: ${{ needs.Privacy-Center-Cypress.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Privacy-Center-Cypress.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required FidesJS Cypress checks passed or were skipped"

@@ -154,6 +154,7 @@ const ScrollableListAdd = ({
         onChange={handleElementSelected}
         className="w-full"
         data-testid={`select-${baseTestId}`}
+        aria-label={label}
       />
     </Box>
   ) : (

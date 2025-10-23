@@ -17,7 +17,7 @@ import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
 
-import { useGetActiveMessagingProviderQuery } from "./privacy-requests.slice";
+import { useGetActiveMessagingProviderQuery } from "../messaging/messaging.slice";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
@@ -99,7 +99,7 @@ export const RequestTableActions = ({
         <Button
           title="Finalize"
           aria-label="Finalize"
-          icon={<Icons.Checkmark />}
+          icon={<Icons.Stamp />}
           onClick={finalizeModal.onOpen}
           loading={isLoading}
           disabled={isLoading}
@@ -166,7 +166,10 @@ export const RequestTableActions = ({
       <ConfirmationModal
         isOpen={finalizeModal.isOpen}
         onClose={finalizeModal.onClose}
-        onConfirm={handleFinalizeRequest}
+        onConfirm={() => {
+          handleFinalizeRequest();
+          finalizeModal.onClose();
+        }}
         title="Finalize privacy request"
         message={
           <Text>

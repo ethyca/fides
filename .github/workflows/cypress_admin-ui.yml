@@ -2,9 +2,8 @@ name: Admin UI Cypress Tests
 
 on:
   pull_request:
-    paths:
-      - "clients/admin-ui/**"
-      - ".github/workflows/cypress_admin-ui.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -14,7 +13,31 @@ env:
   CI: true
 
 jobs:
+  Check-Admin-UI-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_admin_ui_changes: ${{ steps.filter.outputs.admin_ui }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for Admin UI file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            admin_ui:
+              - 'clients/admin-ui/**'
+              - '.github/workflows/cypress_admin-ui.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.admin_ui == 'true'
+        run: echo "${{ steps.filter.outputs.admin_ui_files }}"
+
   prepare-matrix:
+    needs: Check-Admin-UI-Changes
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true'
     runs-on: ubuntu-latest
     outputs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
@@ -32,7 +55,7 @@ jobs:
           import sys, os, json, math, re
 
           # Number of groups to create (adjust based on your needs)
-          NUM_GROUPS = 3
+          NUM_GROUPS = 5
 
           # Get all test files with their test counts
           files = []
@@ -71,7 +94,8 @@ jobs:
           ')" >> $GITHUB_OUTPUT
 
   Admin-UI-Cypress:
-    needs: prepare-matrix
+    needs: [Check-Admin-UI-Changes, prepare-matrix]
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true'
     strategy:
       fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
       matrix:
@@ -85,9 +109,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20.x
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -96,12 +121,16 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build:test
 
+      - name: Build NextJS
+        working-directory: clients/admin-ui
+        run: npm run build:test
+
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run cy:start
+          start: npm run start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
           spec: ${{ matrix.spec_group }}
@@ -111,3 +140,31 @@ jobs:
         with:
           name: cypress-videos-admin-ui-${{ strategy.job-index }}
           path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+
+  Admin-UI-Cypress-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - prepare-matrix
+      - Admin-UI-Cypress
+    steps:
+      - name: Check job results
+        run: |
+          echo "prepare-matrix: ${{ needs.prepare-matrix.result }}"
+          echo "Admin-UI-Cypress: ${{ needs.Admin-UI-Cypress.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.prepare-matrix.result }}" == "failure" ] || \
+             [ "${{ needs.Admin-UI-Cypress.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.prepare-matrix.result }}" == "cancelled" ] || \
+             [ "${{ needs.Admin-UI-Cypress.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required Admin UI Cypress checks passed or were skipped"

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import {
   AntCard as Card,
   AntCheckbox as Checkbox,
@@ -31,8 +29,8 @@ export const AntFormPOC = () => {
       <Col span={12}>
         <Title level={2}>Pure Ant</Title>
         <div className="mb-4">
-          <Tag color="green">funcitonal</Tag>
-          <Tag color="green">low effort</Tag>
+          <Tag color="success">functional</Tag>
+          <Tag color="success">low effort</Tag>
         </div>
         <Form
           initialValues={{ ...initialValues }}
@@ -43,7 +41,7 @@ export const AntFormPOC = () => {
           }}
         >
           <Form.Item label="Input" name="input">
-            <Input />
+            <Input aria-label="Input" />
           </Form.Item>
           <Form.Item name="radio">
             <Radio.Group
@@ -67,6 +65,7 @@ export const AntFormPOC = () => {
                 { value: "1", label: "Option 1" },
                 { value: "2", label: "Option 2" },
               ]}
+              aria-label="Select"
             />
           </Form.Item>
           <Form.Item label="Multiselect" name="multiselect">
@@ -78,6 +77,7 @@ export const AntFormPOC = () => {
                 { value: "1", label: "Option 1" },
                 { value: "2", label: "Option 2" },
               ]}
+              aria-label="Select"
             />
           </Form.Item>
           <Form.Item label="Tags" name="tags">
@@ -89,13 +89,14 @@ export const AntFormPOC = () => {
                 { value: "1", label: "Option 1" },
                 { value: "2", label: "Option 2" },
               ]}
+              aria-label="Select"
             />
           </Form.Item>
           <Form.Item label="Date" name="date">
             <DatePicker />
           </Form.Item>
           <Form.Item label="Number" name="number">
-            <InputNumber />
+            <InputNumber aria-label="InputNumber" />
           </Form.Item>
         </Form>
       </Col>

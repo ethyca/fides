@@ -1,6 +1,13 @@
 # Set the security team as owners of the security policy.
 /SECURITY.md @ethyca/fides-security-team
 
+# Set the frontend team as owners of relevant files.
+/clients/** @ethyca/frontend
+
+# Set the backend team as owners of relevant files.
+/data/** @ethyca/backend
+/src/** @ethyca/backend
+
 # Set the connectors team as owners of relevant connectors files.
 /data/saas/** @ethyca/connectors
 /src/fides/api/service/saas_request/override_implementations/** @ethyca/connectors

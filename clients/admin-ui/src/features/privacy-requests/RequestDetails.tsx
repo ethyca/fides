@@ -58,6 +58,18 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
           )}
         </RequestDetailsRow>
+        {subjectRequest.submitted_by && (
+          <RequestDetailsRow label="Created by">
+            <Typography.Text>
+              {subjectRequest.submitter?.username || "-"}
+            </Typography.Text>
+          </RequestDetailsRow>
+        )}
+        <RequestDetailsRow label="Reviewed by">
+          <Typography.Text>
+            {subjectRequest.reviewer?.username || "-"}
+          </Typography.Text>
+        </RequestDetailsRow>
 
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
@@ -87,7 +99,10 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 value={id}
                 data-testid="request-detail-value-id"
               />
-              <Button icon={<ClipboardButton copyText={id} />} />
+              <Button
+                aria-label="Copy request ID"
+                icon={<ClipboardButton copyText={id} />}
+              />
             </Space.Compact>
           </Flex>
         </Form.Item>

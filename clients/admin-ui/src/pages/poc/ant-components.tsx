@@ -9,6 +9,7 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntLayout as Layout,
+  AntList as List,
   AntRadio as Radio,
   AntRow as Row,
   AntSelect as Select,
@@ -20,9 +21,13 @@ import {
   Icons,
 } from "fidesui";
 import type { NextPage } from "next";
+import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
+import type { ListDataItem } from "~/features/poc/mockListData";
+import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
+import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
 
 const { Content } = Layout;
 const { Link, Paragraph, Text, Title } = Typography;
@@ -36,6 +41,13 @@ for (let i = 10; i < 36; i += 1) {
 }
 
 const AntPOC: NextPage = () => {
+  // Start the list component with 2 items selected to showcase
+  // different states of selection
+  const [selectedListKeys, setSelectedListKeys] = useState<React.Key[]>([
+    "1",
+    "3",
+  ]);
+
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
@@ -79,30 +91,35 @@ const AntPOC: NextPage = () => {
                     { value: "Yiminghe", label: "yiminghe" },
                     { value: "disabled", label: "Disabled", disabled: true },
                   ]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   disabled
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   loading
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   defaultValue="lucy"
                   className="w-32"
                   allowClear
                   options={[{ value: "lucy", label: "Lucy" }]}
+                  aria-label="Select"
                 />
                 <Select
                   mode="multiple"
                   allowClear
                   className="w-full"
                   placeholder="Please select"
+                  aria-label="Select"
                   defaultValue={["a10", "c12"]}
                   options={options}
                 />
@@ -111,6 +128,7 @@ const AntPOC: NextPage = () => {
                   disabled
                   className="w-full"
                   placeholder="Please select"
+                  aria-label="Select"
                   defaultValue={["a10", "c12"]}
                   options={options}
                 />
@@ -178,26 +196,45 @@ const AntPOC: NextPage = () => {
             <Card title="Input" variant="borderless" className="h-full">
               <Space direction="vertical" size="middle">
                 <Space.Compact>
-                  <Input defaultValue="26888888" />
+                  <Input defaultValue="26888888" aria-label="Input" />
                 </Space.Compact>
                 <Space.Compact>
-                  <Input className="w-1/5" defaultValue="0571" />
-                  <Input className="w-4/5" defaultValue="26888888" />
+                  <Input
+                    className="w-1/5"
+                    defaultValue="0571"
+                    aria-label="Input"
+                  />
+                  <Input
+                    className="w-4/5"
+                    defaultValue="26888888"
+                    aria-label="Input"
+                  />
                 </Space.Compact>
                 <Space.Compact>
                   <Input.Search
                     addonBefore="https://"
                     placeholder="input search text"
                     allowClear
+                    aria-label="Input"
                   />
                 </Space.Compact>
                 <Space.Compact className="w-full">
-                  <Input defaultValue="Combine input and button" />
+                  <Input
+                    defaultValue="Combine input and button"
+                    aria-label="Input"
+                  />
                   <Button type="primary">Submit</Button>
                 </Space.Compact>
                 <Space.Compact>
-                  <Select defaultValue="Zhejiang" options={options} />
-                  <Input defaultValue="Xihu District, Hangzhou" />
+                  <Select
+                    defaultValue="Zhejiang"
+                    options={options}
+                    aria-label="Select"
+                  />
+                  <Input
+                    defaultValue="Xihu District, Hangzhou"
+                    aria-label="Input"
+                  />
                 </Space.Compact>
               </Space>
             </Card>
@@ -359,6 +396,101 @@ const AntPOC: NextPage = () => {
                 </Link>
               </Space>
             </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={24}>
+            <Card
+              title="List with rowSelection"
+              variant="borderless"
+              className="h-full"
+            >
+              <Space direction="vertical" className="w-full">
+                <Text>
+                  CustomList supports rowSelection similar to Table, with
+                  checkboxes in the avatar position. Selected items:{" "}
+                  <Text strong>{selectedListKeys.length}</Text>
+                </Text>
+                <List
+                  dataSource={MOCK_LIST_DATA}
+                  rowSelection={{
+                    selectedRowKeys: selectedListKeys,
+                    onChange: (keys, rows) => {
+                      console.log("Selected keys:", keys);
+                      console.log("Selected rows:", rows);
+                      setSelectedListKeys(keys);
+                    },
+                    getCheckboxProps: (item: ListDataItem) => ({
+                      disabled: item.locked,
+                    }),
+                  }}
+                  renderItem={(item: ListDataItem, index, checkbox) => (
+                    <List.Item
+                      actions={[
+                        <Button
+                          key="view"
+                          type="link"
+                          size="small"
+                          onClick={() =>
+                            console.log("View clicked for:", item.title)
+                          }
+                        >
+                          View
+                        </Button>,
+                      ]}
+                    >
+                      <List.Item.Meta
+                        title={item.title}
+                        description={item.description}
+                        avatar={checkbox}
+                      />
+                      <Tag
+                        color={item.status === "completed" ? "success" : "info"}
+                      >
+                        {item.status}
+                      </Tag>
+                    </List.Item>
+                  )}
+                />
+                {selectedListKeys.length > 0 && (
+                  <Alert
+                    message={`${selectedListKeys.length} item(s) selected`}
+                    description={
+                      <Space direction="vertical" size="small">
+                        <Text>
+                          You can perform bulk actions on selected items.
+                        </Text>
+                        <Space>
+                          <Button
+                            size="small"
+                            onClick={() =>
+                              console.log("Bulk action on:", selectedListKeys)
+                            }
+                          >
+                            Bulk action
+                          </Button>
+                          <Button
+                            size="small"
+                            onClick={() => setSelectedListKeys([])}
+                          >
+                            Clear selection
+                          </Button>
+                        </Space>
+                      </Space>
+                    }
+                    type="info"
+                    showIcon
+                  />
+                )}
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={24}>
+            <ModalMethodsCard />
           </Col>
         </Row>
       </Content>

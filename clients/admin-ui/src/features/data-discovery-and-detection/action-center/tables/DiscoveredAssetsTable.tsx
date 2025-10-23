@@ -14,7 +14,7 @@ import { useState } from "react";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
-  ConsentStatus,
+  ConsentAlertInfo,
   DiffStatus,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -29,29 +29,24 @@ import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
 interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
-  onSystemName?: (name: string) => void;
+  consentStatus?: ConsentAlertInfo | null;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
-  onSystemName,
+  consentStatus,
 }: DiscoveredAssetsTableProps) => {
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
-  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
-    stagedResource: StagedResourceAPIResponse;
-    status: ConsentStatus;
-  } | null>(null);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] =
+    useState<StagedResourceAPIResponse | null>(null);
 
-  const handleShowBreakdown = (
-    stagedResource: StagedResourceAPIResponse,
-    status: ConsentStatus,
-  ) => {
-    setConsentBreakdownModalData({ stagedResource, status });
+  const handleShowBreakdown = (stagedResource: StagedResourceAPIResponse) => {
+    setConsentBreakdownModalData(stagedResource);
   };
 
   const handleCloseBreakdown = () => {
@@ -98,8 +93,8 @@ export const DiscoveredAssetsTable = ({
   } = useDiscoveredAssetsTable({
     monitorId,
     systemId,
-    onSystemName,
-    onShowBreakdown: handleShowBreakdown,
+    consentStatus,
+    onShowComplianceIssueDetails: handleShowBreakdown,
   });
 
   const handleClearFilters = () => {
@@ -139,7 +134,11 @@ export const DiscoveredAssetsTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex
+        justify="space-between"
+        align="center"
+        className="sticky -top-6 z-10 mb-4 bg-white py-4"
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
@@ -261,8 +260,7 @@ export const DiscoveredAssetsTable = ({
       {consentBreakdownModalData && (
         <ConsentBreakdownModal
           isOpen={!!consentBreakdownModalData}
-          stagedResource={consentBreakdownModalData.stagedResource}
-          status={consentBreakdownModalData.status}
+          stagedResource={consentBreakdownModalData}
           onCancel={handleCloseBreakdown}
         />
       )}

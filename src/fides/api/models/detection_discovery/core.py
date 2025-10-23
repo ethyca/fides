@@ -60,6 +60,56 @@ class MonitorFrequency(Enum):
 QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 
+class StagedResourceType(str, Enum):
+    """
+    Enum representing the type of staged resource.
+    The resource_type column is a string in the DB, this is just for
+    application-level use.
+    """
+
+    # Note: If you add a new resource type, make sure to update either
+    # get_datastore_resource_types or get_website_monitor_resource_types
+
+    # Datastore staged resources
+    DATABASE = "Database"
+    SCHEMA = "Schema"
+    TABLE = "Table"
+    FIELD = "Field"
+    ENDPOINT = "Endpoint"
+    # Website monitor staged resources
+    COOKIE = "Cookie"
+    BROWSER_REQUEST = "Browser request"
+    IMAGE_BROWSER_REQUEST = "Image"
+    IFRAME_BROWSER_REQUEST = "iFrame"
+    JAVASCRIPT_BROWSER_REQUEST = "Javascript tag"
+
+    @staticmethod
+    def get_datastore_resource_types() -> List["StagedResourceType"]:
+        return [
+            StagedResourceType.DATABASE,
+            StagedResourceType.SCHEMA,
+            StagedResourceType.TABLE,
+            StagedResourceType.FIELD,
+            StagedResourceType.ENDPOINT,
+        ]
+
+    @staticmethod
+    def get_website_monitor_resource_types() -> List["StagedResourceType"]:
+        return [
+            StagedResourceType.COOKIE,
+            StagedResourceType.BROWSER_REQUEST,
+            StagedResourceType.IMAGE_BROWSER_REQUEST,
+            StagedResourceType.IFRAME_BROWSER_REQUEST,
+            StagedResourceType.JAVASCRIPT_BROWSER_REQUEST,
+        ]
+
+    def is_datastore_resource(self) -> bool:
+        return self in self.get_datastore_resource_types()
+
+    def is_website_monitor_resource(self) -> bool:
+        return self in self.get_website_monitor_resource_types()
+
+
 class SharedMonitorConfig(Base, FidesBase):
     """SQL model for shareable monitor configurations"""
 
@@ -499,11 +549,15 @@ class StagedResource(Base):
         server_default="{}",
         default=dict,
     )
+    # This field is intentionally nullable to distinguish the case when no user assigned data uses
+    # have been set (default, value is None) from the case in which they have been explicitly set
+    # as empty (value is empty array). This allows users to remove all data uses from a StagedResource,
+    # which was not possible when this field was not nullable.
     user_assigned_data_uses = Column(
         ARRAY(String),
-        nullable=False,
-        server_default="{}",
-        default=dict,
+        nullable=True,
+        server_default=None,
+        default=None,
     )
     user_assigned_system_id = Column(String, nullable=True, index=True)
 
@@ -598,6 +652,17 @@ class StagedResource(Base):
             "system_id",
             "vendor_id",
             text("(meta->>'consent_aggregated')"),
+        ),
+        # GIN indices for array operations (&&, @>, <@)
+        Index(
+            "idx_stagedresource_classifications_gin",
+            "classifications",
+            postgresql_using="gin",
+        ),
+        Index(
+            "idx_stagedresource_user_categories_gin",
+            "user_assigned_data_categories",
+            postgresql_using="gin",
         ),
     )
 

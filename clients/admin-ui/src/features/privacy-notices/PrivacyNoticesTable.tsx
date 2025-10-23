@@ -171,9 +171,7 @@ export const PrivacyNoticesTable = () => {
             />
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
-          size: 250,
           meta: {
-            showHeaderMenu: true,
             disableRowClick: true,
           },
         }),

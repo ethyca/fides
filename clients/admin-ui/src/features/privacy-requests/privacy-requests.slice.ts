@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import dayjs, { Dayjs } from "dayjs";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -13,11 +14,7 @@ import {
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL } from "../../constants";
 import {
-  ConfigMessagingDetailsRequest,
-  ConfigMessagingRequest,
-  ConfigMessagingSecretsRequest,
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
@@ -43,16 +40,14 @@ export function mapFiltersToSearchParams({
   sort_direction,
   sort_field,
 }: Partial<PrivacyRequestParams>): URLSearchParams {
-  let fromISO: Date | undefined;
+  let fromDay: Dayjs | undefined;
   if (from) {
-    fromISO = new Date(from);
-    fromISO.setUTCHours(0, 0, 0);
+    fromDay = dayjs(from);
   }
 
-  let toISO: Date | undefined;
+  let toDay: Dayjs | undefined;
   if (to) {
-    toISO = new Date(to);
-    toISO.setUTCHours(23, 59, 59);
+    toDay = dayjs(to);
   }
 
   const params = new URLSearchParams();
@@ -80,11 +75,11 @@ export function mapFiltersToSearchParams({
     params.set("fuzzy_search_str", fuzzy_search_str);
   }
 
-  if (fromISO && !Number.isNaN(fromISO.getTime())) {
-    params.set("created_gt", fromISO.toISOString());
+  if (fromDay) {
+    params.set("created_gt", fromDay.startOf("day").utc().toISOString());
   }
-  if (toISO && !Number.isNaN(toISO.getTime())) {
-    params.set("created_lt", toISO.toISOString());
+  if (toDay) {
+    params.set("created_lt", toDay.endOf("day").utc().toISOString());
   }
 
   if (page) {
@@ -109,53 +104,6 @@ export function mapFiltersToSearchParams({
 
   return params;
 }
-
-export const requestCSVDownload = async ({
-  id,
-  from,
-  to,
-  status,
-  action_type,
-  token,
-}: PrivacyRequestParams & { token: string | null }) => {
-  if (!token) {
-    return null;
-  }
-
-  const params = mapFiltersToSearchParams({
-    id,
-    from,
-    to,
-    status,
-    action_type,
-  });
-  params.set("download_csv", "true");
-
-  return fetch(`${BASE_URL}/privacy-request?${params.toString()}`, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      Authorization: `Bearer ${token}`,
-      "X-Fides-Source": "fidesops-admin-ui",
-    },
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        if (response.status === 400) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Bad request error");
-        }
-        throw new Error("Got a bad response from the server");
-      }
-      return response.blob();
-    })
-    .then((data) => {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "privacy-requests.csv";
-      a.click();
-    })
-    .catch((error) => Promise.reject(error));
-};
 
 export const selectPrivacyRequestFilters = (
   state: RootState,
@@ -234,11 +182,7 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       id: action.payload,
     }),
-    setFuzzySearchStr: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      fuzzy_search_str: action.payload,
-    }),
+
     setRequestStatus: (
       state,
       action: PayloadAction<PrivacyRequestStatus[]>,
@@ -292,7 +236,6 @@ export const {
   setRequestActionType,
   setRequestTo,
   setRetryRequests,
-  setFuzzySearchStr,
   setSortDirection,
   setSortKey,
   setVerbose,
@@ -316,6 +259,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkApproveRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
       query: (values) => ({
         url: `privacy-request/bulk/retry`,
@@ -335,6 +289,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkDenyRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[]; reason?: string }
+    >({
+      query: (body) => ({
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     softDeleteRequest: build.mutation<
       PrivacyRequestEntity,
       Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
@@ -342,6 +307,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       query: ({ id }) => ({
         url: `privacy-request/${id}/soft-delete`,
         method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    bulkSoftDeleteRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: `privacy-request/bulk/soft-delete`,
+        method: "POST",
+        body,
       }),
       invalidatesTags: ["Request"],
     }),
@@ -360,6 +336,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
         });
+      },
+    }),
+    downloadPrivacyRequestCsv: build.query<any, Partial<PrivacyRequestParams>>({
+      query: (filters) => {
+        return {
+          url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
+          params: {
+            download_csv: true,
+          },
+          responseHandler: "content-type",
+        };
       },
     }),
     postPrivacyRequest: build.mutation<
@@ -460,43 +447,6 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.details,
       }),
     }),
-    getActiveMessagingProvider: build.query<any, void>({
-      query: () => ({
-        url: `messaging/default/active`,
-      }),
-    }),
-    getMessagingConfigurationDetails: build.query<any, ConfigMessagingRequest>({
-      query: (params) => ({
-        url: `messaging/default/${params.type}`,
-      }),
-    }),
-    createMessagingConfiguration: build.mutation<
-      any,
-      ConfigMessagingDetailsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default`,
-        method: "PUT",
-        body: params,
-      }),
-    }),
-    createMessagingConfigurationSecrets: build.mutation<
-      any,
-      ConfigMessagingSecretsRequest
-    >({
-      query: (params) => ({
-        url: `messaging/default/${params.service_type}/secret`,
-        method: "PUT",
-        body: params.details,
-      }),
-    }),
-    createTestConnectionMessage: build.mutation<any, any>({
-      query: (params) => ({
-        url: `messaging/config/test`,
-        method: "POST",
-        body: params,
-      }),
-    }),
     uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -573,7 +523,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
 
 export const {
   useApproveRequestMutation,
+  useBulkApproveRequestMutation,
+  useBulkDenyRequestMutation,
   useBulkRetryMutation,
+  useBulkSoftDeleteRequestMutation,
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
@@ -588,14 +541,10 @@ export const {
   useGetStorageDetailsQuery,
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-  useGetActiveMessagingProviderQuery,
   useGetActiveStorageQuery,
-  useCreateMessagingConfigurationMutation,
-  useCreateMessagingConfigurationSecretsMutation,
-  useCreateTestConnectionMessageMutation,
   useGetPrivacyRequestAccessResultsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,
+  useLazyDownloadPrivacyRequestCsvQuery,
 } = privacyRequestApi;

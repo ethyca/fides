@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * External Task Layout Component
  *
@@ -12,7 +13,6 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import Image from "next/image";
 
 import BrandLink from "~/components/BrandLink";
 import { useConfig } from "~/features/common/config.slice";
@@ -64,12 +64,11 @@ export const ExternalTaskLayout = () => {
             <Flex justify="space-between" align="center">
               {/* Left side - Logo and Title */}
               <Flex align="center" gap={32}>
-                <Image
+                <img
                   src={config?.logo_path || "/logo.svg"}
-                  alt="Fides logo"
+                  alt="Logo"
                   width={205}
                   height={46}
-                  priority
                 />
                 <div>
                   <Typography.Title

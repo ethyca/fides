@@ -22,7 +22,7 @@ describe("Action center system aggregate results", () => {
     stubPlus(true);
     stubWebsiteMonitor();
     stubTaxonomyEntities();
-    cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+    cy.visit(`${ACTION_CENTER_ROUTE}/website/${webMonitorKey}`);
     cy.wait("@getSystemAggregateResults");
     cy.getByTestId("page-breadcrumb").should("contain", webMonitorKey); // little hack to make sure the webMonitorKey is available before proceeding
   });
@@ -186,13 +186,15 @@ describe("Action center system aggregate results", () => {
 
   describe("tab navigation", () => {
     it("updates URL hash when switching tabs", () => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
+      cy.visit(
+        `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}#attention-required`,
+      );
       cy.location("hash").should("eq", "#attention-required");
 
-      cy.clickAntTab("Recent activity");
-      cy.location("hash").should("eq", "#recent-activity");
+      cy.clickAntTab("Added");
+      cy.location("hash").should("eq", "#added");
 
-      // "recent activity" tab should be read-only
+      // "added" tab should be read-only
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.get("thead tr")
         .should("be.visible")
@@ -216,24 +218,24 @@ describe("Action center system aggregate results", () => {
 
     it("maintains hash when clicking on a row", () => {
       // no hash (default tab)
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+      cy.visit(`${ACTION_CENTER_ROUTE}/website/${webMonitorKey}`);
       cy.wait("@getSystemAggregateResults");
 
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#attention-required`,
         );
       });
 
-      cy.clickAntTab("Recent activity");
+      cy.clickAntTab("Added");
       cy.wait("@getSystemAggregateResults");
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#recent-activity`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#added`,
         );
       });
 
@@ -243,7 +245,7 @@ describe("Action center system aggregate results", () => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#ignored`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#ignored`,
         );
       });
 
@@ -253,7 +255,7 @@ describe("Action center system aggregate results", () => {
           .should(
             "have.attr",
             "href",
-            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
+            `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#attention-required`,
           )
           .click();
       });

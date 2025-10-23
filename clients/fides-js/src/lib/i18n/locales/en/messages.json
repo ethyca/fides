@@ -3,5 +3,10 @@
   "static.gpc.description": "Your global privacy control preference has been honored. You have been automatically opted out of data use cases which adhere to global privacy control.",
   "static.gpc.status.applied": "Applied",
   "static.gpc.status.overridden": "Overridden",
-  "static.gpc.title": "Global Privacy Control detected"
+  "static.gpc.title": "Global Privacy Control detected",
+  "static.other.cookies": "Cookies",
+  "static.other.back": "Back",
+  "static.other.vendors": "Vendors",
+  "static.other.retention": "Retention",
+  "static.other.description": "Description"
 }

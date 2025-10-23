@@ -64,13 +64,13 @@ const SelectableIntegrationBox = ({
       onClick={onClick}
       data-testid={`integration-info-${integration?.key}`}
     >
-      <Flex justifyContent="space-between" alignItems="flex-start" width="100%">
+      <Flex
+        justifyContent="space-between"
+        alignItems="flex-start"
+        className="w-full"
+      >
         <Flex flexGrow={1} width="100%">
-          <ConnectionTypeLogo
-            data={logoData ?? ""}
-            boxSize="40px"
-            className="shrink-0"
-          />
+          <ConnectionTypeLogo data={logoData} size={40} />
           <Flex
             direction="column"
             flexGrow={1}

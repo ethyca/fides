@@ -2,10 +2,13 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  Icons,
   useToast,
 } from "fidesui";
+import { truncate } from "lodash";
 import { useRouter } from "next/router";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -19,16 +22,23 @@ import {
 } from "../../action-center.slice";
 import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
 import { SuccessToastContent } from "../../SuccessToastContent";
+import hasConsentComplianceIssue from "../../utils/hasConsentComplianceIssue";
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  showComplianceIssueDetails?: (
+    stagedResource: StagedResourceAPIResponse,
+  ) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
   onTabChange,
+  showComplianceIssueDetails,
 }: DiscoveredAssetActionsCellProps) => {
+  const { flags } = useFeatures();
+  const { assetConsentStatusLabels: isConsentStatusFlagEnabled } = flags;
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -52,7 +62,14 @@ export const DiscoveredAssetActionsCell = ({
     diff_status: diffStatus,
     system_key: systemKey,
     user_assigned_system_key: userAssignedSystemKey,
+    consent_aggregated: consentAggregated,
   } = asset;
+
+  const truncatedAssetName = truncate(name || "", { length: 50 });
+
+  // Check if the consent status is an error type
+  const showConsentComplianceWarning =
+    hasConsentComplianceIssue(consentAggregated);
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -66,7 +83,7 @@ export const DiscoveredAssetActionsCell = ({
       toast(
         successToastParams(
           SuccessToastContent(
-            `${type} "${name}" has been added to the system inventory.`,
+            `${type} "${truncatedAssetName}" has been added to the system inventory.`,
             systemToLink ? () => router.push(href) : undefined,
           ),
         ),
@@ -84,7 +101,7 @@ export const DiscoveredAssetActionsCell = ({
       toast(
         successToastParams(
           SuccessToastContent(
-            `${type} "${name}" has been ignored and will not appear in future scans.`,
+            `${type} "${truncatedAssetName}" has been ignored and will not appear in future scans.`,
             async () => {
               await onTabChange(ActionCenterTabHash.IGNORED);
             },
@@ -103,10 +120,14 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       toast(
         successToastParams(
-          `${type} "${name}" is no longer ignored and will appear in future scans.`,
+          `${type} "${truncatedAssetName}" is no longer ignored and will appear in future scans.`,
         ),
       );
     }
+  };
+
+  const handleViewComplianceDetails = () => {
+    showComplianceIssueDetails?.(asset);
   };
 
   // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented
@@ -140,6 +161,22 @@ export const DiscoveredAssetActionsCell = ({
           >
             Ignore
           </Button>
+          {showConsentComplianceWarning && isConsentStatusFlagEnabled && (
+            <Button
+              data-testid="view-compliance-details-btn"
+              size="small"
+              onClick={handleViewComplianceDetails}
+              disabled={anyActionIsLoading}
+              loading={isRestoringResults}
+              icon={
+                <Icons.WarningAltFilled
+                  style={{ color: "var(--fidesui-error)", width: 14 }}
+                />
+              }
+              title="View compliance issue"
+              aria-label="View compliance issue"
+            />
+          )}
         </>
       )}
       {diffStatus === DiffStatus.MUTED && (

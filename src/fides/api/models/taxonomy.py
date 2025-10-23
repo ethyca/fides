@@ -85,10 +85,17 @@ class Taxonomy(Base, FidesBase):
             raise ValidationError(
                 f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
             )
-        applies_to = data.pop("applies_to", [])
+        applies_to = data.get("applies_to", [])
+
+        # Create a copy of data without applies_to to avoid modifying the input
+        data_without_applies_to = {
+            key: value for key, value in data.items() if key != "applies_to"
+        }
 
         # Create the taxonomy
-        taxonomy: Taxonomy = super().create(db=db, data=data, check_name=check_name)
+        taxonomy: Taxonomy = super().create(
+            db=db, data=data_without_applies_to, check_name=check_name
+        )
 
         # Reconcile allowed usages if applies_to was provided
         if applies_to:
@@ -98,10 +105,15 @@ class Taxonomy(Base, FidesBase):
 
     def update(self, db: Session, *, data: Dict[str, Any]) -> "Taxonomy":
         """Update a Taxonomy with proper handling of applies_to."""
-        applies_to = data.pop("applies_to", None)
+        applies_to = data.get("applies_to", None)
+
+        # Create a copy of data without applies_to to avoid modifying the input
+        data_without_applies_to = {
+            key: value for key, value in data.items() if key != "applies_to"
+        }
 
         # Update the base fields
-        super().update(db=db, data=data)
+        super().update(db=db, data=data_without_applies_to)
 
         # If applies_to was provided, reconcile allowed usages
         if applies_to is not None:

@@ -7,6 +7,9 @@ import {
 } from "cypress/support/stubs";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+
+const WEB_MONITOR_ROUTE = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}`;
 
 describe("Action center Asset Results", () => {
   beforeEach(() => {
@@ -22,7 +25,7 @@ describe("Action center Asset Results", () => {
     const firstRowUrn =
       "my_web_monitor_1.forms.hubspot.com.https://forms.hubspot.com/submissions-validation/v1/validate/7252764/0d22c925-3a81-4f10-bfdc-69a5d67e93bc";
     beforeEach(() => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetsUncategorized");
       cy.getByTestId("page-breadcrumb").should("contain", "Uncategorized");
     });
@@ -79,8 +82,9 @@ describe("Action center Asset Results", () => {
     ];
 
     beforeEach(() => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
+      cy.wait("@getSystemDetails");
       cy.getByTestId("page-breadcrumb").should("contain", systemName); // little hack to make sure the systemName is available before proceeding
     });
     it("should render asset results view", () => {
@@ -325,21 +329,21 @@ describe("Action center Asset Results", () => {
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
       cy.getAntTableRow(rowUrns[0]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
       cy.getAntTableRow(rowUrns[2]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
       cy.getAntTableRow(rowUrns[3]).within(() => {
-        cy.findByRole("checkbox").should("be.checked");
+        cy.findByRole("checkbox").should("not.be.checked");
       });
-      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
     });
 
     describe("tab navigation", () => {
       it("updates URL hash when switching tabs", () => {
         cy.visit(
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
+          `${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
         );
         cy.location("hash").should("eq", "#attention-required");
 
@@ -347,11 +351,11 @@ describe("Action center Asset Results", () => {
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.getByTestId("asset-state-filter")
-          .contains("Recent activity")
+          .contains("Added")
           .click({ force: true });
-        cy.location("hash").should("eq", "#recent-activity");
+        cy.location("hash").should("eq", "#added");
 
-        // "recent activity" tab should be read-only
+        // "added" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
         cy.getAntTableRow(rowUrns[0]).within(() => {
           cy.getByTestId("system-badge")
@@ -387,8 +391,9 @@ describe("Action center Asset Results", () => {
 
     describe("URL sync and table reset behavior", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResults");
+        cy.wait("@getSystemDetails");
         cy.getByTestId("page-breadcrumb").should("contain", systemName);
       });
 
@@ -504,8 +509,9 @@ describe("Action center Asset Results", () => {
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     const rowUrns = [
       "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
-      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
       "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/anchor",
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
     ];
 
     beforeEach(() => {
@@ -531,14 +537,14 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
 
         cy.getByTestId("monitor-result-my_web_monitor_1").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
 
-        // Monitor without consent issues should not show warning icon
+        // Monitor without compliance issues should not show warning icon
         cy.getByTestId("monitor-result-My_New_BQ_Monitor").within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("not.exist");
         });
@@ -547,7 +553,7 @@ describe("Action center Asset Results", () => {
 
     describe("Compliance column in assets table", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResultsWithConsent");
       });
 
@@ -556,9 +562,9 @@ describe("Action center Asset Results", () => {
           cy.contains("Compliance").should("exist");
         });
 
-        // Check "Without consent" badge
+        // Check "Consent ignored" badge
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.contains("Without consent").should("exist");
+          cy.contains("Consent ignored").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
             "have.attr",
             "data-color",
@@ -566,59 +572,62 @@ describe("Action center Asset Results", () => {
           );
         });
 
-        // Check "With consent" badge
+        // Check "Consent ignored" badge for another asset
         cy.getAntTableRow(rowUrns[1]).within(() => {
-          cy.contains("With consent").should("exist");
-          cy.getByTestId("status-badge_with-consent").should(
-            "have.attr",
-            "data-color",
-            "success",
-          );
-        });
-
-        // Check "Without consent" badge for another asset
-        cy.getAntTableRow(rowUrns[2]).within(() => {
-          cy.contains("Without consent").should("exist");
+          cy.contains("Consent ignored").should("exist");
           cy.getByTestId("status-badge_without-consent").should(
             "have.attr",
             "data-color",
             "error",
           );
         });
+
+        // Check "Pre-Consent" badge
+        cy.getAntTableRow(rowUrns[2]).within(() => {
+          cy.contains("Pre-Consent").should("exist");
+          cy.getByTestId("status-badge_pre-consent").should(
+            "have.attr",
+            "data-color",
+            "error",
+          );
+        });
+
+        // "With consent" status no longer shows a badge as it's not an error status
+        cy.getAntTableRow(rowUrns[3]).within(() => {
+          // The badge should not exist for "with_consent" status
+          cy.getByTestId("status-badge_with-consent").should("not.exist");
+        });
       });
 
-      it("should show warning icon in compliance column header when there are assets without consent", () => {
+      it("should show warning icon in compliance column header when there are assets with compliance issues", () => {
         cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
-          cy.getByTestId("discovery-status-icon-alert")
-            .should("exist")
-            .scrollIntoView()
-            .should("be.visible");
-          cy.getByTestId("discovery-status-icon-alert").realHover();
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
-        cy.findByRole("tooltip", {
-          name: "One or more assets were detected without consent",
-        }).should("be.visible");
       });
 
-      it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
+      it("should open consent breakdown modal when clicking 'View compliance details' button", () => {
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.getByTestId("status-badge_without-consent")
+          cy.getByTestId("view-compliance-details-btn")
             .scrollIntoView()
-            .within(() => {
-              cy.findByRole("button").click();
-            });
+            .click();
         });
 
-        cy.wait("@getConsentBreakdown");
+        cy.wait("@getConsentBreakdown").then((interception) => {
+          // Verify the request includes all compliance issue status types
+          const url = interception.request.url;
+          expect(url).to.include("status=without_consent");
+          expect(url).to.include("status=pre_consent");
+          expect(url).to.include("status=cmp_error");
+        });
 
         // Check modal is open
         cy.getByTestId("consent-breakdown-modal").should("exist");
-        cy.contains("Consent discovery").should("exist");
+        cy.contains("Compliance issues").should("exist");
 
         // Check modal content
         cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.contains(
-            "View all instances where this asset was detected without consent",
+            "View all instances where this asset was detected with consent compliance issues",
           ).should("exist");
           cy.contains("Asset name:").should("exist");
           cy.contains("System:").should("exist");
@@ -627,6 +636,7 @@ describe("Action center Asset Results", () => {
           // Check table headers
           cy.findByRole("columnheader", { name: /Location/ }).should("exist");
           cy.findByRole("columnheader", { name: /Page/ }).should("exist");
+          cy.findByRole("columnheader", { name: /Compliance/ }).should("exist");
 
           // Check table data
           cy.getByTestId("consent-breakdown-modal-table")
@@ -638,6 +648,9 @@ describe("Action center Asset Results", () => {
                 .within(() => {
                   cy.contains("United States").should("exist");
                   cy.get("a[href='https://example.com/page1']").should("exist");
+                  cy.getByTestId("status-badge_without-consent").should(
+                    "exist",
+                  );
                 });
             });
         });
@@ -656,11 +669,9 @@ describe("Action center Asset Results", () => {
 
       it("should open external links in new tab from consent breakdown modal", () => {
         cy.getAntTableRow(rowUrns[0]).within(() => {
-          cy.getByTestId("status-badge_without-consent")
+          cy.getByTestId("view-compliance-details-btn")
             .scrollIntoView()
-            .within(() => {
-              cy.findByRole("button").click({ force: true });
-            });
+            .click({ force: true });
         });
 
         cy.wait("@getConsentBreakdown");
@@ -677,7 +688,7 @@ describe("Action center Asset Results", () => {
 
     describe("System aggregate view consent status", () => {
       beforeEach(() => {
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}`);
         cy.wait("@getSystemAggregateResults");
       });
 
@@ -688,9 +699,123 @@ describe("Action center Asset Results", () => {
         });
         cy.get(".ant-tooltip-inner").should(
           "contain",
-          "One or more assets were detected without consent",
+          "One or more assets were detected with compliance issues",
         );
       });
+    });
+  });
+
+  describe("Adding and removing categories of consent from results", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
+    const rowUrns = [
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/anchor",
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
+    ];
+
+    beforeEach(() => {
+      cy.login();
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+        fixture:
+          "detection-discovery/activity-center/system-asset-results-with-consent",
+      }).as("getSystemAssetResultsWithConsent");
+      cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
+        response: 200,
+      }).as("patchAssets");
+
+      cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.wait("@getSystemAssetResultsWithConsent");
+    });
+
+    it("should show preferred_data_uses as categories of consent", () => {
+      // Rows with preferred_data_uses should display their consent category
+      cy.getAntTableRow(rowUrns[2]).within(() => {
+        cy.getAntCellWithinRow(3).should("contain", "analytics");
+      });
+      cy.getAntTableRow(rowUrns[3]).within(() => {
+        cy.getAntCellWithinRow(3)
+          .should("contain", "marketing.advertising.first_party.targeted")
+          .should("contain", "analytics");
+      });
+
+      // All rows should show the add button
+      rowUrns.forEach((urn) => {
+        cy.getAntTableRow(urn).within(() => {
+          cy.getByTestId("taxonomy-add-btn").should("exist");
+        });
+      });
+    });
+
+    it("should allow adding categories of consent to assets", () => {
+      cy.getAntTableRow(rowUrns[0]).within(() => {
+        cy.getByTestId("taxonomy-add-btn").click({ force: true });
+      });
+      cy.getByTestId("taxonomy-select").antSelect("analytics");
+      cy.wait("@patchAssets").then((interception) => {
+        expect(interception.request.body).to.deep.equal([
+          {
+            urn: rowUrns[0],
+            user_assigned_data_uses: ["analytics"],
+          },
+        ]);
+      });
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Consent category added to Browser request "11020051272"',
+      );
+    });
+
+    it("should allow removing categories of consent from assets", () => {
+      // Remove the only category of consent
+      cy.getAntTableRow(rowUrns[2]).within(() => {
+        cy.getAntCellWithinRow(3).within(() => {
+          cy.contains("analytics")
+            .should("exist")
+            .parent()
+            .findByLabelText("Remove data use")
+            .click({ force: true });
+        });
+      });
+      // Since we removed the only category of consent, user_assigned_data_uses should be empty
+      cy.wait("@patchAssets").then((interception) => {
+        expect(interception.request.body).to.deep.equal([
+          {
+            urn: rowUrns[2],
+            user_assigned_data_uses: [],
+          },
+        ]);
+      });
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Consent category removed from Browser request "anchor"',
+      );
+
+      // Remove a single category of consent
+      cy.getAntTableRow(rowUrns[3]).within(() => {
+        cy.getAntCellWithinRow(3).within(() => {
+          cy.contains("First Party Personalized Advertising")
+            .should("exist")
+            .parent()
+            .findByLabelText("Remove data use")
+            .click({ force: true });
+        });
+      });
+      // Should still have the other category of consent
+      cy.wait("@patchAssets").then((interception) => {
+        expect(interception.request.body).to.deep.equal([
+          {
+            urn: rowUrns[3],
+            user_assigned_data_uses: ["analytics"],
+          },
+        ]);
+      });
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Consent category removed from Browser request "697301175_with_a_really_long_name_that_should_b..."',
+      );
     });
   });
 });

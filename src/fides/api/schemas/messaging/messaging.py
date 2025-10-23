@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
@@ -7,15 +8,14 @@ from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from fides.api.custom_types import PhoneNumber, SafeStr
+from fides.api.custom_types import SafeStr
 from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
-    BaseAWSSchema,
-)
+from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
+from fides.api.schemas.redis_cache import IdentityBase
 
 
 class MessagingMethod(Enum):
@@ -44,6 +44,25 @@ class MessagingServiceType(Enum):
                 return member
         return None
 
+    @property
+    def human_readable(self) -> str:
+        """
+        Human-readable mapping for MessagingServiceType
+        """
+        readable_mapping: Dict[str, str] = {
+            MessagingServiceType.mailgun.value: "Mailgun",
+            MessagingServiceType.twilio_text.value: "Twilio SMS",
+            MessagingServiceType.twilio_email.value: "Twilio Email",
+            MessagingServiceType.mailchimp_transactional.value: "Mailchimp Transactional",
+            MessagingServiceType.aws_ses.value: "AWS SES",
+        }
+        try:
+            return readable_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError(
+                "Add new MessagingServiceType to human_readable mapping"
+            )
+
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.mailgun.value,
@@ -70,6 +89,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
     EXTERNAL_USER_WELCOME = "external_user_welcome"
+    MANUAL_TASK_DIGEST = "manual_task_digest"
     TEST_MESSAGE = "test_message"
 
 
@@ -82,7 +102,14 @@ CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
+    MessagingActionType.MANUAL_TASK_DIGEST.value,
 )
+
+
+class MessagingTestBodyParams(BaseModel):
+    """Body params required for testing messaging service"""
+
+    to_identity: IdentityBase
 
 
 class ErrorNotificationBodyParams(BaseModel):
@@ -194,6 +221,18 @@ class ExternalUserWelcomeBodyParams(BaseModel):
     org_name: str
 
 
+class ManualTaskDigestBodyParams(BaseModel):
+    """Body params required to send manual task digest emails"""
+
+    vendor_contact_name: str
+    organization_name: str
+    portal_url: str
+    imminent_task_count: int
+    upcoming_task_count: int
+    total_task_count: int
+    company_logo_url: Optional[str] = None
+
+
 class FidesopsMessage(
     BaseModel,
 ):
@@ -231,6 +270,7 @@ class FidesopsMessage(
             MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
             MessagingActionType.USER_INVITE: UserInviteBodyParams,
             MessagingActionType.EXTERNAL_USER_WELCOME: ExternalUserWelcomeBodyParams,
+            MessagingActionType.MANUAL_TASK_DIGEST: ManualTaskDigestBodyParams,
         }
 
         valid_body_params = valid_body_params_for_action_type.get(
@@ -339,56 +379,6 @@ class MessagingServiceSecrets(Enum):
     AWS_ASSUME_ROLE_ARN = "aws_assume_role_arn"
 
 
-class MessagingServiceSecretsMailchimpTransactional(BaseModel):
-    """The secrets required to connect to Mailchimp Transactional."""
-
-    mailchimp_transactional_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsMailgun(BaseModel):
-    """The secrets required to connect to Mailgun."""
-
-    mailgun_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsTwilioSMS(BaseModel):
-    """The secrets required to connect to Twilio SMS."""
-
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_messaging_service_sid: Optional[str] = None
-    twilio_sender_phone_number: Optional[PhoneNumber] = None
-    model_config = ConfigDict(extra="forbid")
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        sender_phone = values.get("twilio_sender_phone_number")
-        if not values.get("twilio_messaging_service_sid") and not sender_phone:
-            raise ValueError(
-                "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
-            )
-        return values
-
-
-class MessagingServiceSecretsTwilioEmail(BaseModel):
-    """The secrets required to connect to twilio email."""
-
-    twilio_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsAWS_SES(BaseAWSSchema):
-    """
-    The secrets required to connect to AWS SES.
-    Inherits basic AWS authentication schema.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-
 class MessagingConfigBase(BaseModel):
     """Base model shared by messaging config related models"""
 
@@ -453,8 +443,9 @@ class MessagingConfigRequestBase(MessagingConfigBase):
 class MessagingConfigRequest(MessagingConfigRequestBase):
     """Messaging Config Request Schema"""
 
-    name: str
+    name: Optional[str] = None
     key: Optional[FidesKey] = None
+    secrets: Optional[PossibleMessagingSecrets] = None
 
 
 class MessagingConfigResponse(MessagingConfigBase):
@@ -462,16 +453,8 @@ class MessagingConfigResponse(MessagingConfigBase):
 
     name: str
     key: FidesKey
-    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
-
-
-SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
-    MessagingServiceSecretsMailgun,
-    MessagingServiceSecretsTwilioSMS,
-    MessagingServiceSecretsTwilioEmail,
-    MessagingServiceSecretsMailchimpTransactional,
-    MessagingServiceSecretsAWS_SES,
-]
+    last_test_timestamp: Optional[datetime] = None
+    last_test_succeeded: Optional[bool] = None
 
 
 class MessagingConnectionTestStatus(Enum):
@@ -479,7 +462,6 @@ class MessagingConnectionTestStatus(Enum):
 
     succeeded = "succeeded"
     failed = "failed"
-    skipped = "skipped"
 
 
 class TestMessagingStatusMessage(Msg):

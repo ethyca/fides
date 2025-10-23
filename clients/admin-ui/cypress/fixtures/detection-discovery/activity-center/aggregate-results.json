@@ -3,42 +3,55 @@
     {
       "name": "my web monitor 2",
       "key": "my_web_monitor_2",
+      "connection_type": "website",
       "last_monitored": "2024-12-17T17:31:20.791014Z",
       "updates": {
-        "Browser request": 92,
-        "Cookie": 5
+        "browser_request": 92,
+        "cookie": 5
       },
       "total_updates": 97,
       "consent_status": {
         "status": "alert",
-        "message": "One or more assets were detected without consent"
-      }
+        "message": "One or more assets were detected with compliance issues"
+      },
+      "monitorType": "website",
+      "isTestMonitor": false
     },
     {
       "name": "my web monitor 1",
       "key": "my_web_monitor_1",
+      "connection_type": "website",
       "last_monitored": "2024-12-17T17:31:02.319068Z",
       "updates": {
-        "Browser request": 201,
-        "Cookie": 24
+        "browser_request": 201,
+        "cookie": 24
       },
       "total_updates": 225,
       "consent_status": {
         "status": "alert",
-        "message": "One or more assets were detected without consent"
-      }
+        "message": "One or more assets were detected with compliance issues"
+      },
+      "monitorType": "website",
+      "isTestMonitor": false
     },
     {
       "name": "My New BQ Monitor",
       "key": "My_New_BQ_Monitor",
+      "connection_type": "bigquery",
       "last_monitored": "2024-12-16T20:04:16.824025Z",
       "updates": {
-        "Database": 2,
-        "Field": 216,
-        "Schema": 13,
-        "Table": 22
+        "removals": 2,
+        "unlabeled": 216,
+        "in_review": 13,
+        "classifying": 22,
+        "approved": 0,
+        "classified_low_confidence": 100,
+        "classified_high_confidence": 100,
+        "classified_manually": 100
       },
-      "total_updates": 253
+      "total_updates": 253,
+      "monitorType": "datastore",
+      "isTestMonitor": false
     }
   ],
   "total": 3,

@@ -1,11 +1,10 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_task import (
-    ManualTask,
-    ManualTaskConditionalDependency,
-    ManualTaskConditionalDependencyType,
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
 )
+from fides.api.models.manual_task import ManualTask, ManualTaskConditionalDependency
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
@@ -49,7 +48,7 @@ class TestManualTaskConditionalDependencyCRUD:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -59,7 +58,7 @@ class TestManualTaskConditionalDependencyCRUD:
 
         assert dependency.id is not None
         assert dependency.manual_task_id == manual_task.id
-        assert dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+        assert dependency.condition_type == ConditionalDependencyType.leaf
         assert dependency.field_address == sample_condition_leaf.field_address
         assert dependency.operator == sample_condition_leaf.operator
         assert dependency.value == sample_condition_leaf.value
@@ -79,13 +78,13 @@ class TestManualTaskConditionalDependencyCRUD:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
         )
 
-        assert dependency.condition_type == ManualTaskConditionalDependencyType.group
+        assert dependency.condition_type == ConditionalDependencyType.group
         assert dependency.logical_operator == "and"
 
     def test_manual_task_conditional_dependency_serialization(
@@ -99,7 +98,7 @@ class TestManualTaskConditionalDependencyCRUD:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
@@ -107,7 +106,7 @@ class TestManualTaskConditionalDependencyCRUD:
 
         # Verify the logical operator is stored correctly
         assert dependency.logical_operator == "and"
-        assert dependency.condition_type == ManualTaskConditionalDependencyType.group
+        assert dependency.condition_type == ConditionalDependencyType.group
 
 
 class TestManualTaskConditionalDependencyRelationships:
@@ -121,7 +120,7 @@ class TestManualTaskConditionalDependencyRelationships:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -149,7 +148,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 db=db,
                 data={
                     "manual_task_id": "non_existent_id",
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
@@ -166,7 +165,7 @@ class TestManualTaskConditionalDependencyRelationships:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -182,7 +181,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
@@ -204,7 +203,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -217,7 +216,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -244,7 +243,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -259,7 +258,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
@@ -276,7 +275,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
@@ -311,7 +310,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -348,7 +347,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -361,7 +360,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -417,7 +416,7 @@ class TestManualTaskConditionalDependencyValidation:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
@@ -470,7 +469,7 @@ class TestManualTaskConditionalDependencyConversion:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -495,7 +494,7 @@ class TestManualTaskConditionalDependencyConversion:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
@@ -514,7 +513,7 @@ class TestManualTaskConditionalDependencyConversion:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
@@ -525,7 +524,7 @@ class TestManualTaskConditionalDependencyConversion:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -557,7 +556,7 @@ class TestManualTaskConditionalDependencyConversion:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -581,7 +580,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -591,7 +590,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result
@@ -609,7 +608,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
@@ -620,7 +619,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.leaf,
+                "condition_type": ConditionalDependencyType.leaf,
                 "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
@@ -631,7 +630,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result
@@ -650,7 +649,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         """Test getting root condition when none exists"""
         # Get root condition for a task with no dependencies
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Should return None
@@ -665,7 +664,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
             },
@@ -676,7 +675,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ManualTaskConditionalDependencyType.group,
+                "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "or",
                 "sort_order": 2,
                 "parent_id": root_dependency.id,
@@ -689,7 +688,7 @@ class TestManualTaskConditionalDependencyClassMethods:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": ManualTaskConditionalDependencyType.leaf,
+                    "condition_type": ConditionalDependencyType.leaf,
                     "field_address": f"user.field_{i}",
                     "operator": "eq",
                     "value": i,
@@ -700,7 +699,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Get root condition
         root_condition = ManualTaskConditionalDependency.get_root_condition(
-            db, manual_task.id
+            db, manual_task_id=manual_task.id
         )
 
         # Verify the result

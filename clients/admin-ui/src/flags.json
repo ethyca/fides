@@ -1,7 +1,7 @@
 {
-  "privacyRequestsConfiguration": {
+  "messagingConfiguration": {
     "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
-    "development": false,
+    "development": true,
     "test": false,
     "production": false,
     "userCannotModify": true
@@ -52,6 +52,18 @@
     "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,
     "test": true,
+    "production": false
+  },
+  "alphaFullActionCenter": {
+    "description": "Enable additional Action Center features",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "privacyRequestV2": {
+    "description": "Enable new privacy request dashboard",
+    "development": true,
+    "test": false,
     "production": false
   }
 }

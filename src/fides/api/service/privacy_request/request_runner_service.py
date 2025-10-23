@@ -2,10 +2,13 @@
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
-import requests
+import sqlalchemy.exc
 from loguru import logger
+
+# pylint: disable=no-name-in-module
+from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
 
@@ -22,7 +25,6 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
@@ -53,7 +55,7 @@ from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.storage.storage import StorageType
-from fides.api.service.connectors import FidesConnector, get_connector
+from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
@@ -85,11 +87,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
-from fides.common.api.v1.urn_registry import (
-    PRIVACY_CENTER_DSR_PACKAGE,
-    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
-    V1_URL_PREFIX,
-)
+from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -261,14 +259,14 @@ def upload_access_results(
             "Error uploading subject access data for rule {} on policy {}: {}",
             rule.key,
             policy.key,
-            Pii(str(exc)),
+            str(exc),
         )
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
             dataset_name="Access package upload",
             collection_name=None,
-            message="Access package upload failed for privacy request.",
+            message=f"Access package upload failed for privacy request: {str(exc)}",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
@@ -276,6 +274,11 @@ def upload_access_results(
     return download_urls
 
 
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
 def save_access_results(
     session: Session,
     privacy_request: PrivacyRequest,
@@ -284,11 +287,33 @@ def save_access_results(
 ) -> None:
     """Save the results we uploaded to the user for later retrieval"""
     # Save the results we uploaded to the user for later retrieval
-    privacy_request.save_filtered_access_results(session, rule_filtered_results)
     # Saving access request URL's on the privacy request in case DSR 3.0
     # exits processing before the email is sent
     privacy_request.access_result_urls = {"access_result_urls": download_urls}
     privacy_request.save(session)
+
+    # Try to save the backup results, but don't fail the DSR if this fails
+    try:
+        privacy_request.save_filtered_access_results(session, rule_filtered_results)
+        logger.info("Successfully saved backup filtered access results to database")
+    except (
+        InternalError_,  # invalid memory alloc request size 1073741824
+        sqlalchemy.exc.StatementError,  # SQL statement errors
+        # Python memory errors
+        MemoryError,  # system out of memory
+        OverflowError,  # numeric overflow during serialization
+    ) as exc:
+        logger.warning(
+            "Failed to save backup of DSR results to database after successful S3 upload. "
+            "DSR will continue processing. Error: {}",
+            str(exc),
+        )
+    except Exception as exc:
+        logger.error(
+            "Failed to save backup of DSR results to database after successful S3 upload. "
+            "DSR will continue processing. Unexpected Error: {}",
+            str(exc),
+        )
 
 
 @log_context(
@@ -307,13 +332,23 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 ) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
-    # Remove manual webhook attachments from the list of attachments
-    # This is done because the manual webhook attachments are already included in the manual_data
+    # Remove manual webhook attachments and request task attachments from the list of attachments
+    # This is done because:
+    # - manual webhook attachments are already included in the manual_data
+    # - manual task submission attachments are already included in the manual_data
+    # - request task attachments (from async polling) are already embedded in the dataset results
     loaded_attachments = [
         attachment
         for attachment in privacy_request.attachments
-        if AttachmentReferenceType.access_manual_webhook
-        not in [ref.reference_type for ref in attachment.references]
+        if not any(
+            ref.reference_type
+            in [
+                AttachmentReferenceType.access_manual_webhook,
+                AttachmentReferenceType.manual_task_submission,
+                AttachmentReferenceType.request_task,
+            ]
+            for ref in attachment.references
+        )
     ]
     attachments = get_attachments_content(loaded_attachments)
     # Process attachments once for both upload and storage
@@ -776,10 +811,28 @@ def run_privacy_request(
                                     privacy_request.property_id,
                                     privacy_request.id,
                                 )
+                                # Add success log for completion email
+                                privacy_request.add_success_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message="Privacy request completion email sent successfully.",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
                             except (
                                 IdentityNotFoundException,
                                 MessageDispatchException,
                             ) as e:
+                                # Add error log for completion email failure
+                                privacy_request.add_error_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Privacy request completion email",
+                                    collection_name=None,
+                                    message=f"Privacy request completion email failed: {str(e)}",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
                                 privacy_request.error_processing(db=session)
                                 # If dev mode, log traceback
                                 _log_exception(e, CONFIG.dev_mode)
@@ -896,78 +949,6 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
         )
         privacy_request.error_processing(db=db)
     db.close()
-
-
-def _retrieve_child_results(  # pylint: disable=R0911
-    fides_connector: Tuple[str, ConnectionConfig],
-    rule_key: str,
-    access_result: dict[str, list[Row]],
-) -> Optional[list[dict[str, Optional[list[Row]]]]]:
-    """Get child access request results to add to upload."""
-    try:
-        connector = FidesConnector(fides_connector[1])
-    except Exception as e:
-        logger.error(
-            "Error create client for child server {}: {}", fides_connector[0], e
-        )
-        return None
-
-    results = []
-
-    for key, rows in access_result.items():
-        address = CollectionAddress.from_string(key)
-        privacy_request_id = None
-        if address.dataset == fides_connector[0]:
-            if not rows:
-                logger.info("No rows found for result entry {}", key)
-                continue
-            privacy_request_id = rows[0]["id"]
-
-        if not privacy_request_id:
-            logger.error(
-                "No privacy request found for connector key {}", fides_connector[0]
-            )
-            continue
-
-        try:
-            client = connector.create_client()
-        except requests.exceptions.HTTPError as e:
-            logger.error(
-                "Error logger into to child server for privacy request {}: {}",
-                privacy_request_id,
-                e,
-            )
-            continue
-
-        try:
-            request = client.authenticated_request(
-                method="get",
-                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
-                headers={"Authorization": f"Bearer {client.token}"},
-            )
-            response = client.session.send(request)
-        except requests.exceptions.HTTPError as e:
-            logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
-                privacy_request_id,
-                e,
-            )
-            continue
-
-        if response.status_code != 200:
-            logger.error(
-                "Error retrieving data from child server for privacy request {}: {}",
-                privacy_request_id,
-                response.json(),
-            )
-            continue
-
-        results.append(response.json())
-
-    if not results:
-        return None
-
-    return results
 
 
 def get_consent_email_connection_configs(db: Session) -> Query:

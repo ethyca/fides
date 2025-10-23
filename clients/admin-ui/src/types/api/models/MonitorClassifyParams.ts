@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ClassifyLlmPromptTemplateOptions } from "./ClassifyLlmPromptTemplateOptions";
+
 /**
  * Extension of base ClassifyParams to include some additional
  * classification parameters that can be used with Discovery monitors
@@ -18,6 +20,11 @@ export type MonitorClassifyParams = {
   prefer_context?: boolean;
   excluded_categories?: Array<any>;
   context_classification_enabled?: boolean;
+  context_classifier?: string;
+  custom_llm_instructions?: string | null;
+  llm_model_override?: string | null;
+  prompt_template?: ClassifyLlmPromptTemplateOptions | null;
+  num_workers?: number;
   language?: string;
   decision_method?: string;
   aggregation_method?: string;

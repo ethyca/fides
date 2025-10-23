@@ -1,4 +1,7 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestUser } from "~/types/api/models/PrivacyRequestUser";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -20,6 +23,7 @@ export enum ExecutionLogStatus {
   AWAITING_PROCESSING = "awaiting_processing",
   RETRYING = "retrying",
   SKIPPED = "skipped",
+  POLLING = "polling",
 }
 
 export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
@@ -31,20 +35,22 @@ export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
   [ExecutionLogStatus.AWAITING_PROCESSING]: "Awaiting input",
   [ExecutionLogStatus.RETRYING]: "Retrying",
   [ExecutionLogStatus.SKIPPED]: "Skipped",
+  [ExecutionLogStatus.POLLING]: "Awaiting polling",
 };
 
 export const ExecutionLogStatusColors: Record<
   ExecutionLogStatus,
-  string | undefined
+  CUSTOM_TAG_COLOR | undefined
 > = {
-  [ExecutionLogStatus.ERROR]: "error",
-  [ExecutionLogStatus.SKIPPED]: "warning",
-  [ExecutionLogStatus.AWAITING_PROCESSING]: "minos",
+  [ExecutionLogStatus.ERROR]: CUSTOM_TAG_COLOR.ERROR,
+  [ExecutionLogStatus.SKIPPED]: CUSTOM_TAG_COLOR.WARNING,
+  [ExecutionLogStatus.AWAITING_PROCESSING]: CUSTOM_TAG_COLOR.MINOS,
   [ExecutionLogStatus.IN_PROCESSING]: undefined,
   [ExecutionLogStatus.PENDING]: undefined,
   [ExecutionLogStatus.COMPLETE]: undefined,
   [ExecutionLogStatus.PAUSED]: undefined,
   [ExecutionLogStatus.RETRYING]: undefined,
+  [ExecutionLogStatus.POLLING]: CUSTOM_TAG_COLOR.WARNING,
 };
 
 export interface ExecutionLog {
@@ -94,17 +100,17 @@ export interface PrivacyRequestEntity {
     drp_action?: DrpAction;
     execution_timeframe?: number;
   };
-  reviewer: {
-    id: string;
-    username: string;
-  };
+  reviewer?: PrivacyRequestUser;
   created_at: string;
-  reviewed_by: string;
+  reviewed_by?: string;
+  submitted_by?: string;
   finalized_at?: string;
+  submitter?: PrivacyRequestUser;
   finalized_by?: string;
   id: string;
   days_left?: number;
   source?: string;
+  location?: string;
 }
 
 export interface PrivacyRequestResponse {
@@ -133,12 +139,6 @@ export type RetryRequests = {
   checkAll: boolean;
   errorRequests: string[];
 };
-
-export interface MessagingConfigResponse {
-  storage: {
-    active_default_storage_type: string;
-  };
-}
 
 export interface StorageConfigResponse {
   notifications: {
@@ -221,11 +221,11 @@ export enum ActivityTimelineItemTypeEnum {
 
 export const TimelineItemColorMap: Record<
   ActivityTimelineItemTypeEnum,
-  string
+  CUSTOM_TAG_COLOR
 > = {
-  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
-  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
-  [ActivityTimelineItemTypeEnum.MANUAL_TASK]: "nectar",
+  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: CUSTOM_TAG_COLOR.SANDSTONE,
+  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: CUSTOM_TAG_COLOR.MARBLE,
+  [ActivityTimelineItemTypeEnum.MANUAL_TASK]: CUSTOM_TAG_COLOR.NECTAR,
 };
 
 export interface ActivityTimelineItem {
@@ -239,6 +239,7 @@ export interface ActivityTimelineItem {
   isError: boolean;
   isSkipped: boolean;
   isAwaitingInput: boolean;
+  isPolling: boolean;
   id: string;
   attachments?: { id: string; file_name: string }[];
 }
