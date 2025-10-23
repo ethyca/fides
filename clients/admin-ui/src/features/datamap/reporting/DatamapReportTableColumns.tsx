@@ -1,5 +1,6 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { DefaultCell, GroupCountBadgeCell } from "common/table/v2";
+import { CUSTOM_TAG_COLOR } from "fidesui";
 import { isArray, map, snakeCase } from "lodash";
 import { ReactNode } from "react";
 
@@ -134,7 +135,9 @@ export const getDatamapReportColumns = ({
   const customFieldColumns = getCustomFieldColumns(datamapReport, customFields);
 
   // Helper function to get system group color by fides_key
-  const getSystemGroupColor = (fidesKey: string): string | undefined => {
+  const getSystemGroupColor = (
+    fidesKey: string,
+  ): CUSTOM_TAG_COLOR | undefined => {
     const systemGroup = systemGroups.find(
       (group) => group.fides_key === fidesKey,
     );
@@ -144,7 +147,9 @@ export const getDatamapReportColumns = ({
   };
 
   // Helper function to get the dominant color for a group of system groups
-  const getDominantColor = (groupKeys: string[]): string | undefined => {
+  const getDominantColor = (
+    groupKeys: string[],
+  ): CUSTOM_TAG_COLOR | undefined => {
     if (!groupKeys || groupKeys.length === 0) {
       return undefined;
     }
@@ -529,7 +534,7 @@ export const getDatamapReportColumns = ({
             tagProps: {
               color: systemGroup?.label_color
                 ? COLOR_VALUE_MAP[systemGroup.label_color]
-                : "default",
+                : undefined,
               bordered: false,
             },
           };
@@ -577,7 +582,7 @@ export const getDatamapReportColumns = ({
               ignoreZero
               value={groupName}
               tagProps={{
-                color: dominantColor || "white",
+                color: dominantColor ?? CUSTOM_TAG_COLOR.WHITE,
                 bordered: false,
               }}
               {...props}

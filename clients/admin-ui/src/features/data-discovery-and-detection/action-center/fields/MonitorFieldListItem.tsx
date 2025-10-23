@@ -1,10 +1,10 @@
 import {
+  AntBreadcrumb as Breadcrumb,
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntListProps as ListProps,
-  AntProgress as Progress,
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
@@ -12,12 +12,17 @@ import {
   SparkleIcon,
 } from "fidesui";
 
-import { capitalize } from "~/features/common/utils";
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
+import {
+  parseResourceBreadcrumbs,
+  UrnBreadcrumbItem,
+} from "../utils/parseResourceBreadcrumbs";
 import ClassificationSelect from "./ClassificationSelect";
+import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
@@ -28,7 +33,7 @@ type TagRender = (
   },
 ) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
 
-const tagRender: TagRender = (props) => {
+export const tagRender: TagRender = (props) => {
   const { label, closable, onClose, isFromClassifier } = props;
 
   const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -64,12 +69,27 @@ type MonitorFieldListItemRenderParams = Parameters<
   selected?: boolean;
   onSelect?: (key: string, selected?: boolean) => void;
   onSetDataCategories: (dataCategories: string[], urn: string) => void;
+  onNavigate?: (key: string) => void;
   onIgnore: (urn: string) => void;
 };
 
 type RenderMonitorFieldListItem = (
   props: MonitorFieldListItemRenderParams,
 ) => ReturnType<NonNullable<ListRenderItem>>;
+
+const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
+  const { title, IconComponent } = breadcrumb;
+  return {
+    title: IconComponent ? (
+      <Flex gap={3} align="center">
+        <IconComponent />
+        <span>{title}</span>
+      </Flex>
+    ) : (
+      title
+    ),
+  };
+};
 
 const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
@@ -79,6 +99,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   selected,
   onSelect,
   onSetDataCategories,
+  onNavigate,
   user_assigned_data_categories,
   onIgnore,
 }) => {
@@ -102,52 +123,16 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
       key={urn}
       actions={[
         classifications && classifications.length > 0 && (
-          <Flex
-            gap="small"
-            align="center"
-            className="pr-[var(--ant-padding-xl)]"
-            key="progress"
-          >
-            <Progress
-              percent={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? 100
-                  : 25
-              }
-              percentPosition={{
-                align: "start",
-                type: "outer",
-              }}
-              strokeColor={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? "var(--ant-color-success-text)"
-                  : "var(--ant-color-warning-text)"
-              }
-              steps={2}
-              showInfo={false}
-              strokeLinecap="round"
-              size={[24, 8]}
-            />
-            <Text size="sm" type="secondary" className="font-normal">
-              {capitalize(
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? ConfidenceScoreRange.HIGH
-                  : ConfidenceScoreRange.LOW,
-              )}
-            </Text>
-          </Flex>
+          <ClassifierProgress
+            percent={
+              classifications.find(
+                (classification) =>
+                  classification.confidence_score === ConfidenceScoreRange.HIGH,
+              )
+                ? 100
+                : 25
+            }
+          />
         ),
         classifications && classifications.length > 0 && (
           <Button
@@ -168,7 +153,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         ),
         <Button
           aria-label="Reclassify"
-          icon={<SparkleIcon />}
+          icon={<SparkleIcon size={12} />}
           size="small"
           key="reclassify"
         />,
@@ -182,29 +167,35 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           />
         }
         title={
-          <Flex justify="space-between">
-            <Flex gap="small" align="center" className="w-full">
+          <Flex
+            gap={12}
+            align="center"
+            className={styles["monitor-field__title"]}
+          >
+            <Button
+              type="text"
+              size="small"
+              className="-mx-2"
+              onClick={() => onNavigate && onNavigate(urn)}
+            >
               {name}
-              {diff_status && (
-                <Tag
-                  bordered={false}
-                  color={
-                    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
-                  }
-                  className="font-normal text-[var(--ant-font-size-sm)]"
-                >
-                  {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
-                </Tag>
-              )}
-              <Text
-                size="sm"
-                type="secondary"
-                className="overflow-hidden font-normal"
-                ellipsis={{ tooltip: urn }}
+            </Button>
+            {diff_status && diff_status !== DiffStatus.ADDITION && (
+              <Tag
+                bordered={false}
+                color={
+                  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
+                }
               >
-                {urn}
-              </Text>
-            </Flex>
+                {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
+              </Tag>
+            )}
+            <Breadcrumb
+              className={styles["monitor-field__breadcrumb"]}
+              items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+              // @ts-expect-error - role works here, but Ant's type system doesn't know that
+              role="presentation"
+            />
           </Flex>
         }
         description={

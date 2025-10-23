@@ -27,18 +27,7 @@ import useTopLevelActionCenterTabs, {
   TopLevelActionCenterTabHash,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { ConnectionType } from "~/types/api";
-
-const buildMonitorLink = (
-  isAlphaFlat: boolean,
-  monitorType: ConnectionType,
-  monitorKey: string,
-) =>
-  isAlphaFlat &&
-  monitorType !== ConnectionType.TEST_WEBSITE &&
-  monitorType !== ConnectionType.WEBSITE
-    ? `${ACTION_CENTER_ROUTE}/data-explorer/${monitorKey}`
-    : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 const ActionCenterPage = () => {
   const toast = useToast();
@@ -101,9 +90,15 @@ const ActionCenterPage = () => {
    * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
    */
   const results =
-    data?.items?.flatMap((monitor) =>
-      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
-    ) || [];
+    data?.items
+      ?.flatMap((monitor) =>
+        !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+      )
+      .filter(
+        (monitor) =>
+          flags.alphaFullActionCenter ||
+          monitor.monitorType === MONITOR_TYPES.WEBSITE,
+      ) || [];
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),
@@ -193,13 +188,10 @@ const ActionCenterPage = () => {
               emptyText: <EmptyMonitorsResult />,
             }}
             renderItem={(summary) => {
-              const link = summary.key
-                ? buildMonitorLink(
-                    flags.alphaFullActionCenter,
-                    summary.connection_type,
-                    summary.key,
-                  )
-                : "";
+              const link =
+                summary.key && summary.monitorType
+                  ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}`
+                  : "";
               return (
                 !!summary?.key && (
                   <MonitorResult

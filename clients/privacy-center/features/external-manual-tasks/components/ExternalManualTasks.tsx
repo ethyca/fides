@@ -12,10 +12,14 @@
  */
 
 import {
+  AntButton as Button,
   AntColumnsType as ColumnsType,
+  AntFlex as Flex,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
+  CUSTOM_TAG_COLOR,
+  Icons,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -27,12 +31,22 @@ import {
   useGetExternalTasksQuery,
 } from "../external-manual-tasks.slice";
 import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
+import useDownloadExternalTasksReport from "./hooks/useDownloadExternalTasksReport";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
-  [ManualFieldStatus.NEW]: { color: "info", label: "New" },
-  [ManualFieldStatus.COMPLETED]: { color: "success", label: "Completed" },
-  [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
+const statusMap: Record<
+  ManualFieldStatus,
+  { color: CUSTOM_TAG_COLOR; label: string }
+> = {
+  [ManualFieldStatus.NEW]: { color: CUSTOM_TAG_COLOR.INFO, label: "New" },
+  [ManualFieldStatus.COMPLETED]: {
+    color: CUSTOM_TAG_COLOR.SUCCESS,
+    label: "Completed",
+  },
+  [ManualFieldStatus.SKIPPED]: {
+    color: CUSTOM_TAG_COLOR.MARBLE,
+    label: "Skipped",
+  },
 };
 
 // Extract column definitions for external users
@@ -117,11 +131,11 @@ const getExternalColumns = (
       }
 
       // Simple days left display for external users
-      let color = "green";
+      let color = CUSTOM_TAG_COLOR.SUCCESS;
       if (daysLeft <= 5) {
-        color = "red";
+        color = CUSTOM_TAG_COLOR.ERROR;
       } else if (daysLeft <= 10) {
-        color = "orange";
+        color = CUSTOM_TAG_COLOR.WARNING;
       }
       return <Tag color={color}>{daysLeft} days</Tag>;
     },
@@ -171,9 +185,20 @@ export const ExternalManualTasks = () => {
     size: pageSize,
     // Pass filter parameters to API
     status: filters.status as ManualFieldStatus,
-    systemName: filters.systemName,
-    requestType: filters.requestType as ManualFieldRequestType,
+    system_name: filters.systemName,
+    request_type: filters.requestType as ManualFieldRequestType,
   });
+
+  const { downloadReport, isDownloadingReport } =
+    useDownloadExternalTasksReport();
+
+  const handleExport = async () => {
+    await downloadReport({
+      status: filters.status as ManualFieldStatus,
+      system_name: filters.systemName,
+      request_type: filters.requestType as ManualFieldRequestType,
+    });
+  };
 
   const {
     items: tasks,
@@ -255,7 +280,20 @@ export const ExternalManualTasks = () => {
   const showSpinner = isLoading || isFetching;
 
   return (
-    <div className="space-y-4" data-testid="external-manual-tasks">
+    <div data-testid="external-manual-tasks">
+      {/* Export Button */}
+      <Flex justify="flex-end" style={{ marginBottom: "16px" }}>
+        <Button
+          aria-label="Export external tasks as CSV"
+          data-testid="export-external-tasks-btn"
+          icon={<Icons.Download />}
+          loading={isDownloadingReport}
+          onClick={handleExport}
+        >
+          Download tasks
+        </Button>
+      </Flex>
+
       {/* Tasks Table */}
       <Table
         columns={columns}
