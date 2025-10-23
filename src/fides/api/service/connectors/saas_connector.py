@@ -231,10 +231,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config: SaaSQueryConfig = self.query_config(node)
-
         # Delegate async requests
         with get_db() as db:
-            logger.info(f"Request action type: {request_task.action_type}")
             # Guard clause to ensure we only run async access requests for access requests
             if policy.get_rules_for_action(ActionType.access):
                 if async_dsr_strategy := _get_async_dsr_strategy(
