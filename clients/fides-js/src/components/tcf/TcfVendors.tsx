@@ -259,18 +259,18 @@ const PagedVendorData = ({
 
   const {
     gvlVendors,
-    specialPurposeOnlyGvlVendors,
+    specialPurposeGvlVendors,
     otherVendors,
   }: {
     gvlVendors: VendorRecord[];
-    specialPurposeOnlyGvlVendors: VendorRecord[];
+    specialPurposeGvlVendors: VendorRecord[];
     otherVendors: VendorRecord[];
   } = useMemo(
     () => ({
       gvlVendors: activeChunk?.filter(
         (v) => v.isGvl && (v.isConsent || v.isLegint),
       ),
-      specialPurposeOnlyGvlVendors: activeChunk?.filter(
+      specialPurposeGvlVendors: activeChunk?.filter(
         (v) => v.isGvl && v.isSpecial && !v.isConsent && !v.isLegint,
       ),
       otherVendors: activeChunk?.filter((v) => !v.isGvl),
@@ -301,11 +301,11 @@ const PagedVendorData = ({
           )}
         />
       )}
-      {specialPurposeOnlyGvlVendors.length > 0 && (
+      {specialPurposeGvlVendors.length > 0 && (
         <RecordsList<VendorRecord>
           type="vendors"
           title={i18n.t("static.tcf.special_purposes")}
-          items={specialPurposeOnlyGvlVendors}
+          items={specialPurposeGvlVendors}
           enabledIds={[]}
           renderBadgeLabel={(vendor) =>
             vendorGvlEntry(vendor.id, experience.gvl)
