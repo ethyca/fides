@@ -4,7 +4,6 @@ import {
   AntTitle as Title,
   AntTree as Tree,
   AntTreeProps as TreeProps,
-  Icons,
   SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -12,9 +11,13 @@ import { Key, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api";
+import {
+  Page_DatastoreStagedResourceTreeAPIResponse_,
+  StagedResourceTypeValue,
+} from "~/types/api";
 
 import {
+  MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_LOAD_MORE_TEXT,
   TREE_NODE_SKELETON_KEY_PREFIX,
@@ -27,27 +30,23 @@ const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
-  const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => ({
-    title: treeNode.name,
-    key: treeNode.urn,
-    selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
-    icon: () => {
-      switch (treeNode.resource_type) {
-        case "Database":
-          return <Icons.Layers className="h-full" />;
-        case "Schema":
-          return <Icons.Db2Database className="h-full" />;
-        case "Table":
-          return <Icons.Table className="h-full" />;
-        case "Field":
-          return <Icons.ShowDataCards className="h-full" />;
-        default:
-          return null;
-      }
-    },
-    status: treeNode.update_status,
-    isLeaf: !treeNode.has_grandchildren,
-  }));
+  const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
+    const IconComponent = treeNode.resource_type
+      ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[
+          treeNode.resource_type as StagedResourceTypeValue
+        ]
+      : undefined;
+    return {
+      title: treeNode.name,
+      key: treeNode.urn,
+      selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
+      icon: IconComponent
+        ? () => <IconComponent className="h-full" />
+        : undefined,
+      status: treeNode.update_status,
+      isLeaf: !treeNode.has_grandchildren,
+    };
+  });
 
   return (dataItems?.length ?? 0) < TREE_PAGE_SIZE
     ? dataItems
@@ -330,7 +329,7 @@ const MonitorTree = ({
           <span>{selectedNodeKeys.length} selected</span>
           <Button
             aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
-            icon={<SparkleIcon />}
+            icon={<SparkleIcon size={12} />}
             size="small"
             onClick={onClickClassifyButton}
           />

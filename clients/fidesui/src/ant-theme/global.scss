@@ -202,3 +202,10 @@ h6 {
     --ant-popover-inner-content-padding: 0;
   }
 }
+
+/**
+ * Used to move the close button for drawers to the right side
+ */
+.ant-drawer-header-title {
+  flex-direction: row-reverse;
+}

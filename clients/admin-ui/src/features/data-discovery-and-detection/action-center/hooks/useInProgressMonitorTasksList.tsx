@@ -118,7 +118,6 @@ export const useInProgressMonitorTasksList = () => {
       data?.items,
       data?.total,
       isLoading,
-      isFetching,
       pageIndex,
       pageSize,
       showSizeChanger,
