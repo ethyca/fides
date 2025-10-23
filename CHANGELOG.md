@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.73.0..main)
 
 ### Changed
+- Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
 - Updates legacy taxonomy consts for custom taxonomy API [#6824](https://github.com/ethyca/fides/pull/6824)
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
