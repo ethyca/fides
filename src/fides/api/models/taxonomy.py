@@ -89,6 +89,8 @@ class Taxonomy(Base, FidesBase):
         """Create a new Taxonomy with proper handling of applies_to."""
         # Disallow creating taxonomies that represent legacy types
         fides_key = data.get("fides_key")
+        # Specifically exclude system_group to allow for creation during tests
+        # We already have unique constraints on fides_key to prevent duplicates on DB level
         if fides_key in LEGACY_TAXONOMY_KEYS_WITHOUT_SYSTEM_GROUP:
             raise ValidationError(
                 f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
