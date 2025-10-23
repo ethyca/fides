@@ -1,13 +1,17 @@
-import { AntDrawerProps as DrawerProps } from "fidesui";
+import {
+  AntDrawerProps as DrawerProps,
+  AntTagProps as TagProps,
+} from "fidesui";
+import { ReactNode } from "react";
 
 export type DetailsAction = {
   label: string;
-  callback: (itemKey: React.Key) => void;
+  callback: (itemKey: string) => void;
 };
 
 export type DetailsDrawerProps = DrawerProps & {
-  itemKey: React.Key;
+  itemKey: string;
   titleIcon?: ReactNode;
   titleTag?: TagProps;
-  actions?: Record<string, DetailsAction>;
+  actions?: DetailsAction[];
 };

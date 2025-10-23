@@ -1,4 +1,5 @@
 import { AntButton as Button, AntFlex as Flex } from "fidesui";
+import _ from "lodash";
 
 import type { DetailsDrawerProps } from "./types";
 
@@ -6,21 +7,19 @@ export const DetailsDrawerFooter = ({
   itemKey,
   actions,
 }: {
-  itemKey: React.Key;
+  itemKey: string;
   actions: NonNullable<DetailsDrawerProps["actions"]>;
-}) => {
-  const actionValues = Object.values(actions);
-  return (
+}) =>
+  !_.isEmpty(actions) ? (
     <Flex gap="small" justify="flex-end">
-      {actionValues.map(({ callback, label }, index) => (
+      {actions.map(({ callback, label }, index) => (
         <Button
           onClick={() => callback(itemKey)}
           key={label}
-          type={index === actionValues.length - 1 ? "primary" : "default"}
+          type={index === actions.length - 1 ? "primary" : "default"}
         >
           {label}
         </Button>
       ))}
     </Flex>
-  );
-};
+  ) : null;

@@ -4,11 +4,11 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
+  AntListItemProps as ListItemProps,
   AntListProps as ListProps,
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
-  Icons,
   SparkleIcon,
 } from "fidesui";
 
@@ -68,13 +68,14 @@ type MonitorFieldListItemRenderParams = Parameters<
 >[0] & {
   selected?: boolean;
   onSelect?: (key: string, selected?: boolean) => void;
-  onSetDataCategories: (dataCategories: string[], urn: string) => void;
   onNavigate?: (key: string) => void;
-  onIgnore: (urn: string) => void;
+  onSetDataCategories: (urn: string, dataCategories: string[]) => void;
 };
 
 type RenderMonitorFieldListItem = (
-  props: MonitorFieldListItemRenderParams,
+  props: MonitorFieldListItemRenderParams & {
+    actions?: ListItemProps["actions"];
+  },
 ) => ReturnType<NonNullable<ListRenderItem>>;
 
 const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
@@ -101,7 +102,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   onSetDataCategories,
   onNavigate,
   user_assigned_data_categories,
-  onIgnore,
+  actions,
 }) => {
   const onSelectDataCategory = (value: string) => {
     if (
@@ -111,10 +112,10 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     }
 
     if (!user_assigned_data_categories?.includes(value)) {
-      onSetDataCategories(
-        [...(user_assigned_data_categories ?? []), value],
-        urn,
-      );
+      onSetDataCategories(urn, [
+        ...(user_assigned_data_categories ?? []),
+        value,
+      ]);
     }
   };
 
@@ -134,29 +135,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             }
           />
         ),
-        classifications && classifications.length > 0 && (
-          <Button
-            aria-label="Approve"
-            icon={<Icons.Checkmark />}
-            size="small"
-            key="approve"
-          />
-        ),
-        diff_status !== DiffStatus.MUTED && (
-          <Button
-            icon={<Icons.ViewOff />}
-            size="small"
-            aria-label="Ignore"
-            key="ignore"
-            onClick={() => onIgnore(urn)}
-          />
-        ),
-        <Button
-          aria-label="Reclassify"
-          icon={<SparkleIcon size={12} />}
-          size="small"
-          key="reclassify"
-        />,
+        ...(actions ?? []),
       ]}
     >
       <List.Item.Meta
@@ -222,7 +201,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                     user_assigned_data_categories?.filter(
                       (category) => category !== props.value,
                     ) ?? [];
-                  onSetDataCategories(newDataCategories, urn);
+                  onSetDataCategories(urn, newDataCategories);
                 }
               };
 
