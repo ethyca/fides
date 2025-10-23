@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
 - Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 - Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
+- Added database model for the v3 consent documents [#6790](https://github.com/ethyca/fides/pull/6790) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
