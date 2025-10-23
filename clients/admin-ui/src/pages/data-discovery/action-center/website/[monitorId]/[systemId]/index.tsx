@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
@@ -36,7 +36,7 @@ const MonitorResultAssets: NextPage = () => {
   }, [systemResults, router, monitorId]);
 
   return (
-    <Layout title="Action center - Discovered assets">
+    <FixedLayout title="Action center - Discovered assets">
       <PageHeader
         heading="Action center"
         breadcrumbItems={[
@@ -52,14 +52,13 @@ const MonitorResultAssets: NextPage = () => {
                 : system?.name,
           },
         ]}
-        isSticky={false}
       />
       <DiscoveredAssetsTable
         monitorId={monitorId}
         systemId={systemId}
         consentStatus={system?.consent_status}
       />
-    </Layout>
+    </FixedLayout>
   );
 };
 

@@ -601,8 +601,15 @@ describe("Action center Asset Results", () => {
 
       it("should show warning icon in compliance column header when there are assets with compliance issues", () => {
         cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
-          cy.getByTestId("discovery-status-icon-alert").should("exist");
+          cy.getByTestId("discovery-status-icon-alert")
+            .should("exist")
+            .scrollIntoView()
+            .should("be.visible");
+          cy.getByTestId("discovery-status-icon-alert").realHover();
         });
+        cy.findByRole("tooltip", {
+          name: "One or more assets were detected with compliance issues",
+        }).should("be.visible");
       });
 
       it("should open consent breakdown modal when clicking 'View compliance details' button", () => {
