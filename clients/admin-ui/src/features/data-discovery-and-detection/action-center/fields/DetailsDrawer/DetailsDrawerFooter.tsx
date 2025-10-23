@@ -1,6 +1,5 @@
 import { AntButton as Button, AntFlex as Flex } from "fidesui";
-
-import { isNotEmpty } from "~/utils/array";
+import _ from "lodash";
 
 import type { DetailsDrawerProps } from "./types";
 
@@ -11,7 +10,7 @@ export const DetailsDrawerFooter = ({
   itemKey: string;
   actions: NonNullable<DetailsDrawerProps["actions"]>;
 }) =>
-  isNotEmpty(actions) ? (
+  !_.isEmpty(actions) ? (
     <Flex gap="small" justify="flex-end">
       {actions.map(({ callback, label }, index) => (
         <Button

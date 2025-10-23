@@ -1,4 +1,5 @@
 import { useToast } from "fidesui";
+import _ from "lodash";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -14,19 +15,19 @@ import {
 import { Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult } from "~/types/errors";
-import { fold, intersection } from "~/utils/array";
-import { A } from "~/utils/array.d";
 
 import { AVAILABLE_ACTIONS, FIELD_ACTION_LABEL } from "./FieldActions.const";
 import { ResourceStatusLabel } from "./MonitorFields.const";
-import { FieldActionTypeValue } from "./types";
 
 export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
-  const availableActions = statusList.map(
+  const [init, ...availableActions] = statusList.map(
     (status) => AVAILABLE_ACTIONS[status],
   );
 
-  return fold<A<FieldActionTypeValue>>(availableActions, intersection);
+  return availableActions.reduce<Readonly<Array<FieldActionType>>>(
+    (acc, current) => _.intersection(acc, [...current]),
+    init ?? ([] as Readonly<FieldActionType[]>),
+  );
 };
 
 export const useFieldActions = (monitorId: string) => {
