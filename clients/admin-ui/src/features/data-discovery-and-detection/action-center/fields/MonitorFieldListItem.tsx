@@ -12,9 +12,9 @@ import {
   SparkleIcon,
 } from "fidesui";
 
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
-// import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
-// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import {
@@ -123,18 +123,18 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     <List.Item
       key={urn}
       actions={[
-        // classifications && classifications.length > 0 && (
-        //   <ClassifierProgress
-        //     percent={
-        //       classifications.find(
-        //         (classification) =>
-        //           classification.confidence_score === ConfidenceScoreRange.HIGH,
-        //       )
-        //         ? 100
-        //         : 25
-        //     }
-        //   />,
-        // )
+        classifications && classifications.length > 0 && (
+          <ClassifierProgress
+            percent={
+              classifications.find(
+                (classification) =>
+                  classification.confidence_score === ConfidenceScoreRange.HIGH,
+              )
+                ? 100
+                : 25
+            }
+          />
+        ),
         ...(actions ?? []),
       ]}
     >
