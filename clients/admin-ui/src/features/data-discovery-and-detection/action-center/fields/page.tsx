@@ -362,7 +362,7 @@ const ActionCenterFields: NextPage = () => {
       </Splitter>
       <DetailsDrawer
         itemKey={resource?.urn ?? ""}
-        title={resource ? resource.name : null}
+        title={resource?.name ?? null}
         titleIcon={<Icons.Column />}
         titleTag={{
           bordered: false,
@@ -399,6 +399,7 @@ const ActionCenterFields: NextPage = () => {
           <Flex gap="middle" vertical>
             <Descriptions
               bordered
+              size="small"
               column={1}
               items={[
                 {
