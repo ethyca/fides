@@ -4,8 +4,12 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionType,
   ConsentStatus,
+  Database,
+  DatastoreStagedResource,
   DiffStatus,
+  Field,
   MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
@@ -14,6 +18,7 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
+  Table,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
@@ -22,13 +27,18 @@ import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/Data
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
+  PaginatedResponse,
   PaginationQueryParams,
   SearchQueryParams,
   SortQueryParams,
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
-import { MonitorSummaryPaginatedResponse } from "./types";
+import {
+  MonitorAggregatedResults,
+  MonitorSummaryPaginatedResponse,
+} from "./types";
+import { getMonitorType } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -51,6 +61,18 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ page = 1, size = 20, search }) => ({
         url: `/plus/discovery-monitor/aggregate-results`,
         params: { page, size, search, diff_status: "addition" },
+      }),
+      transformResponse: (
+        response: PaginatedResponse<MonitorAggregatedResults>,
+      ) => ({
+        ...response,
+        items: response.items.map((monitor) => ({
+          ...monitor,
+          monitorType: getMonitorType(monitor.connection_type),
+          isTestMonitor:
+            monitor.connection_type === ConnectionType.TEST_WEBSITE ||
+            monitor.connection_type === ConnectionType.FIDES,
+        })),
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
@@ -329,6 +351,17 @@ const actionCenterApi = baseApi.injectEndpoints({
         };
       },
     }),
+    getStagedResourceDetails: build.query<
+      DatastoreStagedResource | Database | Schema | Table | Field,
+      { stagedResourceUrn: string }
+    >({
+      query: ({ stagedResourceUrn }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+          stagedResourceUrn,
+        )}`,
+      }),
+      providesTags: ["Monitor Field Details"],
+    }),
     getWebsiteMonitorResourceFilters: build.query<
       WebsiteMonitorResourcesFilters,
       {
@@ -503,4 +536,6 @@ export const {
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
+  useGetStagedResourceDetailsQuery,
+  useLazyGetStagedResourceDetailsQuery,
 } = actionCenterApi;

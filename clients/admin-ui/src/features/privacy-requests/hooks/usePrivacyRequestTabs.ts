@@ -80,6 +80,9 @@ export const usePrivacyRequestTabs = () => {
       if (isTabAvailable) {
         setActiveTab(queryTab);
       }
+    } else if (availableTabs.request) {
+      // If no tab query param is present, default to the request tab
+      setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
     }
   }, [
     router.isReady,

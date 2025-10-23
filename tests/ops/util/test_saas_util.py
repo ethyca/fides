@@ -8,9 +8,11 @@ from fides.api.graph.config import (
     ObjectField,
     ScalarField,
 )
+from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.saas_util import (
     assign_placeholders,
+    check_dataset_missing_reference_values,
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
@@ -620,3 +622,71 @@ class TestNullsafeUrlencode:
         }
         result_parts = set(result.split("&"))
         assert result_parts == expected_parts
+
+
+@pytest.mark.unit_saas
+class TestCheckDatasetReferenceValues:
+    def test_check_dataset_missing_reference_values_no_values_missing(self):
+        """Test that no values are missing when all the reference values are present"""
+        input_data = {
+            "fidesops_grouped_inputs": [],
+            "user_id": ["test_user_123"],
+            "email": ["user@example.com"],
+            "privacy_request": [
+                {
+                    "id": "pri_test_request_id",
+                    "status": "in_processing",
+                    "policy": {
+                        "name": "Test Access Policy",
+                        "key": "test_access_policy",
+                    },
+                    "source": "Test Source",
+                }
+            ],
+        }
+        param_values = [
+            ParamValue(
+                name="user_id",
+                identity=None,
+                references=["customer.user_id"],
+                connector_param=None,
+                unpack=False,
+            ),
+            ParamValue(
+                name="email",
+                identity=None,
+                references=["customer.email"],
+                connector_param=None,
+                unpack=False,
+            ),
+        ]
+        assert check_dataset_missing_reference_values(input_data, param_values) == []
+
+    def test_check_dataset_missing_reference_values_values_missing(self):
+        """Test that we identify missing values when some reference values are not present"""
+        input_data = {
+            "fidesops_grouped_inputs": [],
+            "user_id": ["test_user_123"],
+            "privacy_request": [
+                {"id": "pri_test_request_id", "status": "in_processing"}
+            ],
+        }
+        param_values = [
+            ParamValue(
+                name="user_id",
+                identity=None,
+                references=["customer.user_id"],
+                connector_param=None,
+                unpack=False,
+            ),
+            ParamValue(
+                name="missing_param",
+                identity=None,
+                references=["customer.missing_field"],
+                connector_param=None,
+                unpack=False,
+            ),
+        ]
+        assert check_dataset_missing_reference_values(input_data, param_values) == [
+            "missing_param"
+        ]

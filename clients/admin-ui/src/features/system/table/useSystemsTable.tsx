@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntFlex as Flex,
+  AntFlexProps as FlexProps,
   AntMessage as message,
   AntTypography as Typography,
   Icons,
@@ -124,6 +125,9 @@ const useSystemsTable = () => {
         locale: {
           emptyText: <div>No systems found</div>,
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [systemsResponse, isLoading, isFetching],
@@ -222,6 +226,7 @@ const useSystemsTable = () => {
           <LinkCell
             href={`/systems/configure/${record.fides_key}`}
             data-testid={`system-link-${record.fides_key}`}
+            containerProps={{ className: "max-w-96" } as FlexProps}
           >
             {name || record.fides_key}
           </LinkCell>
@@ -302,7 +307,11 @@ const useSystemsTable = () => {
         dataIndex: "data_stewards",
         key: SystemColumnKeys.DATA_STEWARDS,
         render: (dataStewards: string[] | null) => (
-          <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
+          <ListExpandableCell
+            values={dataStewards ?? []}
+            valueSuffix="users"
+            containerProps={{ className: "min-w-36" }}
+          />
         ),
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
