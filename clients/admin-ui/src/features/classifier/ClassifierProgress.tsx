@@ -38,7 +38,30 @@ export const percentToConfidenceScore = (percent: number) => {
   return percent > 50 ? ConfidenceScoreRange.HIGH : ConfidenceScoreRange.LOW;
 };
 
+/**
+ * Placeholder for the classifier progress component.
+ * TODO: Remove this when we have a proper confidence score from the backend and rename
+ * the component below to ClassifierProgress.
+ */
 export const ClassifierProgress = ({
+  percent,
+  confidenceScore,
+}: {
+  percent: number;
+  confidenceScore?: ConfidenceScoreRange;
+}) => {
+  // use fidesDebugger to keep Typescript happy about the params being passed in but not used
+  fidesDebugger("percent", percent);
+  fidesDebugger("confidenceScore", confidenceScore);
+  return null;
+};
+
+/**
+ * Future classifier progress component.
+ * TODO: Rename this to ClassifierProgress when we have a proper confidence score from
+ * the backend and remove the placeholder component above.
+ */
+export const FutureClassifierProgress = ({
   percent,
   confidenceScore,
 }: {
