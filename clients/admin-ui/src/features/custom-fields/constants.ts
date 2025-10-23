@@ -14,28 +14,7 @@ export enum FieldTypes {
   OPEN_TEXT = "openText",
 }
 
-export const RESOURCE_TYPE_OPTIONS = [
-  {
-    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
-    value: ResourceTypes.DATA_CATEGORY,
-  },
-  {
-    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
-    value: ResourceTypes.DATA_SUBJECT,
-  },
-  {
-    label: `taxonomy:${ResourceTypes.DATA_USE}`,
-    value: ResourceTypes.DATA_USE,
-  },
-  {
-    label: `${ResourceTypes.SYSTEM}:information`,
-    value: ResourceTypes.SYSTEM,
-  },
-  {
-    label: "system:data use",
-    value: ResourceTypes.PRIVACY_DECLARATION,
-  },
-];
+export const RESOURCE_TYPE_OPTIONS: { label: string; value: string }[] = [];
 
 export const FIELD_TYPE_OPTIONS = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
