@@ -171,9 +171,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         description={
           <ClassificationSelect
             mode="tags"
-            value={[
-              ...(preferred_data_categories?.map((value) => value) ?? []),
-            ]}
+            value={preferred_data_categories ?? []}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
                 (item) => item.label === props.value,
