@@ -36,9 +36,6 @@ const useCustomFieldsTable = () => {
     isLoading,
     customTableProps: {
       layout: "fixed",
-      sticky: {
-        offsetHeader: 40,
-      },
     },
   });
 
