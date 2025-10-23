@@ -38,7 +38,6 @@ def upgrade():
             server_default=sa.text("now()"),
         ),
         sa.Column("updated_at", postgresql.TIMESTAMP(timezone=True), nullable=True),
-        sa.Column("collected_at", postgresql.TIMESTAMP(timezone=True), nullable=True),
         postgresql_partition_by="LIST (is_latest)",
     )
     # Create our partition tables using _current and _historic as suffixes
