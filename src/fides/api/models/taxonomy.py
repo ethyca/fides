@@ -21,7 +21,8 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
-LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects"}
+LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects", "system_groups"}
+LEGACY_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
 
 
 class TargetType(str, Enum):
