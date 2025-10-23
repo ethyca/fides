@@ -231,19 +231,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # pylint: disable=too-many-branches
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config: SaaSQueryConfig = self.query_config(node)
-        # Delegate async requests
-        with get_db() as db:
-            # Guard clause to ensure we only run async access requests for access requests
-            if policy.get_rules_for_action(ActionType.access):
-                if async_dsr_strategy := _get_async_dsr_strategy(
-                    db, request_task, query_config, ActionType.access
-                ):
-                    return async_dsr_strategy.async_retrieve_data(
-                        client=self.create_client(),
-                        request_task_id=request_task.id,
-                        query_config=query_config,
-                        input_data=input_data,
-                    )
+
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
         # An endpoint can be defined with multiple 'read' requests if the data for a single
@@ -290,11 +278,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # Delegate async requests
         with get_db() as db:
-            if policy.get_action_type() == ActionType.access:
+            # Guard clause to ensure we only run async access requests for access requests
+            if policy.get_rules_for_action(ActionType.access):
                 if async_dsr_strategy := _get_async_dsr_strategy(
                     db, request_task, query_config, ActionType.access
                 ):
-
                     return async_dsr_strategy.async_retrieve_data(
                         client=self.create_client(),
                         request_task_id=request_task.id,
