@@ -21,7 +21,14 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
-LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects", "system_groups"}
+# Used for validation logic
+LEGACY_TAXONOMY_KEYS_WITHOUT_SYSTEM_GROUP = {
+    "data_category",
+    "data_use",
+    "data_subject",
+}
+
+# Includes all DB-pre-populated Taxonomy entries
 LEGACY_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
 
 
@@ -82,7 +89,7 @@ class Taxonomy(Base, FidesBase):
         """Create a new Taxonomy with proper handling of applies_to."""
         # Disallow creating taxonomies that represent legacy types
         fides_key = data.get("fides_key")
-        if fides_key in LEGACY_TAXONOMY_KEYS:
+        if fides_key in LEGACY_TAXONOMY_KEYS_WITHOUT_SYSTEM_GROUP:
             raise ValidationError(
                 f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
             )
