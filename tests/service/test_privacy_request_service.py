@@ -101,10 +101,8 @@ class TestPrivacyRequestService:
                 "client_id": policy.client_id,
             },
         )
-        privacy_request.deleted_at = datetime.now(timezone.utc)
-        privacy_request.save(db=db)
-        yield privacy_request
-        privacy_request.delete(db)
+        privacy_request.update(db=db, data={"deleted_at": datetime.now(timezone.utc)})
+        return privacy_request
 
     @pytest.fixture
     def privacy_request_requires_manual_finalization(
@@ -113,7 +111,7 @@ class TestPrivacyRequestService:
         policy: Policy,
     ):
         """Create a privacy request in requires_manual_finalization status"""
-        privacy_request = PrivacyRequest.create(
+        return PrivacyRequest.create(
             db=db,
             data={
                 "external_id": "ext-test-finalize",
@@ -125,8 +123,6 @@ class TestPrivacyRequestService:
                 "client_id": policy.client_id,
             },
         )
-        yield privacy_request
-        privacy_request.delete(db)
 
     @pytest.mark.integration
     @pytest.mark.integration_postgres
@@ -1289,46 +1285,6 @@ class TestPrivacyRequestService:
 
         assert privacy_request.location is None
         assert privacy_request.status == PrivacyRequestStatus.pending
-
-    def test_validate_privacy_request_for_bulk_operation_not_found(
-        self,
-        privacy_request_service: PrivacyRequestService,
-    ):
-        """Test validation helper returns BulkUpdateFailed when privacy request doesn't exist"""
-        result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            "nonexistent_id"
-        )
-
-        assert isinstance(result, BulkUpdateFailed)
-        assert result.message == "No privacy request found with id 'nonexistent_id'"
-        assert result.data == {"privacy_request_id": "nonexistent_id"}
-
-    def test_validate_privacy_request_for_bulk_operation_deleted(
-        self,
-        privacy_request_service: PrivacyRequestService,
-        deleted_privacy_request: PrivacyRequest,
-    ):
-        """Test validation helper returns BulkUpdateFailed when privacy request is deleted"""
-        result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            deleted_privacy_request.id
-        )
-
-        assert isinstance(result, BulkUpdateFailed)
-        assert result.message == "Cannot transition status for a deleted request"
-        assert result.data["id"] == deleted_privacy_request.id
-
-    def test_validate_privacy_request_for_bulk_operation_success(
-        self,
-        privacy_request_service: PrivacyRequestService,
-        privacy_request: PrivacyRequest,
-    ):
-        """Test validation helper returns the privacy request when valid"""
-        result = privacy_request_service._validate_privacy_request_for_bulk_operation(
-            privacy_request.id
-        )
-
-        assert isinstance(result, PrivacyRequest)
-        assert result.id == privacy_request.id
 
     def test_finalize_privacy_requests_not_found(
         self,
