@@ -324,6 +324,18 @@ const PagedVendorData = ({
             hideToggles
           />
         )}
+        {nonGVLVendors.length > 0 && (
+          <RecordsList<VendorRecord>
+            type="vendors"
+            title={i18n.t("static.tcf.vendors.other")}
+            items={nonGVLVendors}
+            enabledIds={enabledIds}
+            onToggle={onChange}
+            renderDropdownChild={(vendor) => (
+              <ToggleChild vendor={vendor} experience={experience} />
+            )}
+          />
+        )}
         <PagingButtons {...paging} />
       </Fragment>
     );
@@ -392,17 +404,29 @@ const TcfVendors = ({
   );
 
   const filteredVendors = useMemo(() => {
-    if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
-      // Consent tab: show consent GVL vendors first, then non-GVL vendors
-      return [
-        ...vendors.filter((v) => v.isGvl && v.isConsent),
-        ...vendors.filter((v) => !v.isGvl),
-      ];
+    const legalBasisFiltered =
+      activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
+        ? vendors.filter((v) => v.isConsent)
+        : vendors.filter((v) => v.isLegint || v.isSpecial);
+    if (
+      activeLegalBasisOption.value ===
+      LegalBasisEnum.LEGITIMATE_INTERESTS.toString()
+    ) {
+      // sort by isLegint first, then isSpecial
+      legalBasisFiltered.sort((a, b) => {
+        if (a.isLegint && !b.isLegint) {
+          return -1;
+        }
+        if (!a.isLegint && b.isLegint) {
+          return 1;
+        }
+        return 0;
+      });
     }
-    // Legitimate interests tab: show legint GVL vendors first, then special purpose GVL vendors
+    // Put "other vendors" last in the list
     return [
-      ...vendors.filter((v) => v.isGvl && v.isLegint && !v.isConsent),
-      ...vendors.filter((v) => v.isGvl && v.isSpecial && !v.isLegint),
+      ...legalBasisFiltered.filter((v) => v.isGvl),
+      ...legalBasisFiltered.filter((v) => !v.isGvl),
     ];
   }, [activeLegalBasisOption, vendors]);
 
