@@ -12,11 +12,12 @@ export const DetailsDrawerFooter = ({
 }) =>
   !_.isEmpty(actions) ? (
     <Flex gap="small" justify="flex-end">
-      {actions.map(({ callback, label }, index) => (
+      {actions.map(({ callback, label, disabled }, index) => (
         <Button
           onClick={() => callback(itemKey)}
           key={label}
           type={index === actions.length - 1 ? "primary" : "default"}
+          disabled={disabled}
         >
           {label}
         </Button>
