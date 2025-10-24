@@ -21,6 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.73.0..main)
 
+### Changed
+- Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
+- Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
+
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
 ### Added
@@ -52,6 +56,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 - Fixed missing reference value validation in SaaS requests to apply to all access requests [#6782](https://github.com/ethyca/fides/pull/6782)
 - Fixed an issue where some Special purpose vendors were displaying incorrectly in the TCF modal [#6830](https://github.com/ethyca/fides/pull/6830)
+- Added action guards on polling requests to avoid running access polling requests on erasure tasks [#6827](https://github.com/ethyca/fides/pull/6827)
 
 ### Changed
 - Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
