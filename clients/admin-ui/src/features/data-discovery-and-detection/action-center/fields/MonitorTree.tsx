@@ -342,6 +342,13 @@ const MonitorTree = ({
             setTreeData((origin) =>
               mergeTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
             );
+            setNodePaginationState((prevState) => ({
+              ...prevState,
+              [key]: {
+                pageSize: TREE_PAGE_SIZE,
+                pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
+              },
+            }));
           },
         });
       }
