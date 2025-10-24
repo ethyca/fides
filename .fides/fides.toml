@@ -70,4 +70,3 @@ override_vendor_purposes = false
 [privacy_request_duplicate_detection]
 enabled = false
 time_window_days = 365
-automatically_filter_duplicates_from_results = true

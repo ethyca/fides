@@ -73,6 +73,5 @@ CONFIG_KEY_ALLOWLIST = {
     "privacy_request_duplicate_detection": [
         "enabled",
         "time_window_days",
-        "automatically_filter_duplicates_from_results",
     ],
 }

@@ -1504,7 +1504,6 @@ class TestPatchDuplicateDetectionConfig:
             "privacy_request_duplicate_detection": {
                 "enabled": True,
                 "time_window_days": 30,
-                "automatically_filter_duplicates_from_results": False,
             }
         }
 
@@ -1521,12 +1520,6 @@ class TestPatchDuplicateDetectionConfig:
         assert (
             response_settings["privacy_request_duplicate_detection"]["time_window_days"]
             == 30
-        )
-        assert (
-            response_settings["privacy_request_duplicate_detection"][
-                "automatically_filter_duplicates_from_results"
-            ]
-            is False
         )
 
         # Verify in database
@@ -1622,10 +1615,4 @@ class TestPatchDuplicateDetectionConfig:
             assert config["privacy_request_duplicate_detection"]["enabled"] is False
             assert (
                 config["privacy_request_duplicate_detection"]["time_window_days"] == 365
-            )
-            assert (
-                config["privacy_request_duplicate_detection"][
-                    "automatically_filter_duplicates_from_results"
-                ]
-                is True
             )

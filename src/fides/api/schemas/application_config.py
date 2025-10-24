@@ -118,11 +118,6 @@ class DuplicateDetectionApplicationConfig(FidesSchema):
         le=3650,  # Max 10 years
     )
 
-    automatically_filter_duplicates_from_results: Optional[bool] = Field(
-        default=True,
-        description="Whether to automatically filter out duplicate requests from list/search results.",
-    )
-
     model_config = ConfigDict(extra="forbid")
 
 

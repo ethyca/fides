@@ -160,7 +160,6 @@ class DuplicateDetectionSettingsProxy(ConfigProxyBase):
 
     enabled: bool
     time_window_days: int
-    automatically_filter_duplicates_from_results: bool
 
 
 # pylint: disable=too-many-instance-attributes
