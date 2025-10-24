@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AntFlex as Flex,
   AntProgress as Progress,
@@ -50,9 +51,6 @@ export const ClassifierProgress = ({
   percent: number;
   confidenceScore?: ConfidenceScoreRange;
 }) => {
-  // use fidesDebugger to keep Typescript happy about the params being passed in but not used
-  fidesDebugger("percent", percent);
-  fidesDebugger("confidenceScore", confidenceScore);
   return null;
 };
 

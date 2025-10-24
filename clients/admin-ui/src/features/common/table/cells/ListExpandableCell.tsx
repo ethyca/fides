@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntFlexProps as FlexProps,
   AntList as List,
   AntTypography as Typography,
 } from "fidesui";
@@ -23,12 +22,10 @@ export const ListExpandableCell = ({
   values,
   valueSuffix,
   columnState,
-  containerProps,
 }: {
   values: string[] | undefined;
   valueSuffix: string;
   columnState?: ColumnState;
-  containerProps?: Omit<FlexProps, "children">;
 }) => {
   const { isExpanded, version } = columnState || {};
   const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
@@ -63,11 +60,9 @@ export const ListExpandableCell = ({
 
     if (values.length === 1) {
       return (
-        <Flex {...containerProps}>
-          <Text ellipsis data-testid="list-expandable-cell-single">
-            {values[0]}
-          </Text>
-        </Flex>
+        <Text ellipsis data-testid="list-expandable-cell-single">
+          {values[0]}
+        </Text>
       );
     }
 
@@ -77,7 +72,6 @@ export const ListExpandableCell = ({
         vertical={!isCollapsed}
         gap={isCollapsed ? "small" : "none"}
         data-testid="list-expandable-cell"
-        {...containerProps}
       >
         {isCollapsed ? (
           <Text ellipsis>
@@ -102,5 +96,5 @@ export const ListExpandableCell = ({
         </Button>
       </Flex>
     );
-  }, [isCollapsed, values, valueSuffix, handleToggle, containerProps]);
+  }, [isCollapsed, values, valueSuffix, handleToggle]);
 };
