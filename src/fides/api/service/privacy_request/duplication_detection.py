@@ -27,13 +27,7 @@ def _create_identity_conditions(
     we need to match both field_name and hashed_value. This function automatically
     creates the required nested conditions for each identity field.
 
-    Additionally we are adding a condition for the policy_id to ensure that we are only matching requests for the same policy.
-
-    Args:
-        current_identities: A dictionary of identity fields and their hashed values
-
-    Returns:
-        A list of conditions for matching identity fields
+    Also adds a condition for the policy_id to ensure that we are only matching requests for the same policy.
     """
     current_identities: dict[str, str] = {}
     conditions: list[Condition] = []
@@ -68,26 +62,20 @@ def _create_identity_conditions(
                     operator=Operator.eq,
                     value=hashed_value,
                 ),
-                ConditionLeaf(
-                    field_address="privacyrequest.policy_id",
-                    operator=Operator.eq,
-                    value=current_request.policy_id,
-                ),
             ],
         )
         conditions.append(identity_condition)
+    policy_condition = ConditionLeaf(
+        field_address="privacyrequest.policy_id",
+        operator=Operator.eq,
+        value=current_request.policy_id,
+    )
+    conditions.append(policy_condition)
     return conditions
 
 
 def _create_time_window_condition(time_window_days: int) -> Condition:
-    """Creates a condition for matching requests within a time window.
-
-    Args:
-        time_window_days: The number of days to match requests within
-
-    Returns:
-        A condition for matching requests within a time window
-    """
+    """Creates a condition for matching requests within a time window."""
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=time_window_days)
     condition = ConditionLeaf(
         field_address="privacyrequest.created_at",
@@ -100,7 +88,7 @@ def _create_time_window_condition(time_window_days: int) -> Condition:
 def create_duplicate_detection_conditions(
     current_request: PrivacyRequest,
     config: DuplicateDetectionSettings,
-) -> Optional[Condition]:
+) -> Optional[ConditionGroup]:
     """
     Create conditions for duplicate detection based on configuration.
 
@@ -114,16 +102,14 @@ def create_duplicate_detection_conditions(
     identity_conditions = _create_identity_conditions(current_request, config)
 
     if not identity_conditions:
-        # We dont want to create a time window condition if no identity conditions are created
-        return None
+        return None  # Only proceed if we have identity conditions
 
     time_window_condition = _create_time_window_condition(config.time_window_days)
 
     # Combine all conditions with AND operator
     all_conditions: list[Condition] = [*identity_conditions, time_window_condition]
     return ConditionGroup(
-        logical_operator=GroupOperator.and_,
-        conditions=all_conditions,
+        logical_operator=GroupOperator.and_, conditions=all_conditions
     )
 
 
@@ -144,21 +130,17 @@ def find_duplicate_privacy_requests(
         config: Duplicate detection configuration settings
 
     Returns:
-        List of PrivacyRequest objects that match the duplicate criteria
+        List of PrivacyRequest objects that match the duplicate criteria,
+        does not include the current request
     """
     # Create conditions from config
     condition = create_duplicate_detection_conditions(current_request, config)
 
     if condition is None:
-        logger.debug(
-            "No duplicate detection conditions were created, returning empty list"
-        )
         return []
 
-    # Use SQL translator to generate query from conditions
     translator = SQLConditionTranslator(db)
     query = translator.generate_query_from_condition(condition)
 
-    # Exclude the current request from results
     query = query.filter(PrivacyRequest.id != current_request.id)
     return query.all()
