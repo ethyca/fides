@@ -163,6 +163,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
+      // TODO: Remove this test route
+      {
+        title: "Privacy notices sandbox",
+        path: routes.PRIVACY_NOTICES_SANDBOX_ROUTE,
+        scopes: [],
+        hidden: true,
+      },
       {
         title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
