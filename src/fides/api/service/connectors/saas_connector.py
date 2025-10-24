@@ -278,7 +278,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # Delegate async requests
         with get_db() as db:
             # Guard clause to ensure we only run async access requests for access requests
-            if policy.get_rules_for_action(ActionType.access):
+            if self.guard_access_request(policy):
                 if async_dsr_strategy := _get_async_dsr_strategy(
                     db, request_task, query_config, ActionType.access
                 ):
@@ -349,6 +349,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         self.unset_connector_state()
         return rows
+
+    def guard_access_request(self, policy: Policy) -> bool:
+        """
+        Guard clause to ensure we only run async access requests
+        if the access request is enabled and we are in an Access Request
+        """
+        if self.configuration.enabled_actions is None or ActionType.access in self.configuration.enabled_actions:
+            if policy.get_rules_for_action(ActionType.access):
+                return True
+        return False
 
     def _apply_output_template(
         self,
