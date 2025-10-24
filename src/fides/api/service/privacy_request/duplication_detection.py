@@ -24,29 +24,28 @@ def _create_identity_conditions(
     """Creates conditions for matching identity fields.
 
     For identity field matching using the EAV pattern in ProvidedIdentity,
-    we need to match both field_name and hashed_value. This function automatically
+    we need to match both field_name and hashed_value. This function
     creates the required nested conditions for each identity field.
 
     Also adds a condition for the policy_id to ensure that we are only matching requests for the same policy.
     """
     current_identities: dict[str, str] = {}
     conditions: list[Condition] = []
-    if config.match_identity_fields:
-        current_identities = {
-            pi.field_name: pi.hashed_value
-            for pi in current_request.provided_identities  # type: ignore [attr-defined]
-            if pi.field_name in config.match_identity_fields
-        }
-        if len(current_identities) != len(config.match_identity_fields):
-            missing_fields = [
-                field
-                for field in config.match_identity_fields
-                if field not in current_identities.keys()
-            ]
-            logger.debug(
-                f"Some identity fields were not found in the current request: {missing_fields}"
-            )
-            return []
+    current_identities = {
+        pi.field_name: pi.hashed_value
+        for pi in current_request.provided_identities  # type: ignore [attr-defined]
+        if pi.field_name in config.match_identity_fields
+    }
+    if len(current_identities) != len(config.match_identity_fields):
+        missing_fields = [
+            field
+            for field in config.match_identity_fields
+            if field not in current_identities.keys()
+        ]
+        logger.debug(
+            f"Some identity fields were not found in the current request: {missing_fields}"
+        )
+        return []
 
     for field_name, hashed_value in current_identities.items():
         identity_condition = ConditionGroup(
@@ -99,8 +98,10 @@ def create_duplicate_detection_conditions(
     Returns:
         A ConditionGroup with AND operator, or None if no conditions can be created
     """
-    identity_conditions = _create_identity_conditions(current_request, config)
+    if len(config.match_identity_fields) == 0:
+        return None
 
+    identity_conditions = _create_identity_conditions(current_request, config)
     if not identity_conditions:
         return None  # Only proceed if we have identity conditions
 

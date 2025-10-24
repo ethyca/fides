@@ -19,24 +19,14 @@ from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 @pytest.fixture
 def privacy_request_with_multiple_identities(
     db: Session,
-    policy: Policy,
+    privacy_request_with_email_identity: PrivacyRequest,
 ) -> Generator[PrivacyRequest, None, None]:
     """Privacy request with email and phone_number identities."""
-    privacy_request = PrivacyRequest.create(
-        db=db,
-        data={
-            "external_id": "test_external_id_multi",
-            "started_processing_at": datetime.now(timezone.utc),
-            "requested_at": datetime.now(timezone.utc),
-            "status": PrivacyRequestStatus.in_processing,
-            "policy_id": policy.id,
-        },
-    )
-    privacy_request.persist_identity(
+    privacy_request_with_email_identity.persist_identity(
         db=db,
         identity=Identity(email="customer-1@example.com", phone_number="+15555555555"),
     )
-    return privacy_request
+    return privacy_request_with_email_identity
 
 
 @pytest.fixture
@@ -65,48 +55,50 @@ def old_privacy_request_with_email(
     return privacy_request
 
 
+# Helper function to get a detection config with default values
+def get_detection_config(
+    time_window_days: int = 30, match_identity_fields: list[str] = ["email"]
+) -> DuplicateDetectionSettings:
+    return DuplicateDetectionSettings(
+        enabled=True,
+        time_window_days=time_window_days,
+        match_identity_fields=match_identity_fields,
+    )
+
+
 class TestCreateDuplicateDetectionConditions:
     """Tests for create_duplicate_detection_conditions function."""
-
-    def _get_detection_config(
-        self, match_identity_fields: list[str]
-    ) -> DuplicateDetectionSettings:
-        return DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=30,
-            match_identity_fields=match_identity_fields,
-        )
 
     def test_create_conditions_single_identity_field(
         self, privacy_request_with_email_identity
     ):
         """Test creating conditions with single identity field returns expected structure."""
-        detection_config = self._get_detection_config(["email"])
+        detection_config = get_detection_config(match_identity_fields=["email"])
         conditions = create_duplicate_detection_conditions(
             privacy_request_with_email_identity, detection_config
         )
 
         assert conditions is not None
         assert isinstance(conditions, ConditionGroup)
-        # Should have identity condition and time window condition
         assert (
-            len(conditions.conditions) == 2
-        )  # Grouped identity conditions and time window condition
+            len(conditions.conditions) == 3
+        )  # identity condition, policy condition & time window condition
 
     def test_create_conditions_multiple_identity_fields(
         self, privacy_request_with_multiple_identities
     ):
         """Test creating conditions with multiple identity fields returns expected structure."""
-        detection_config = self._get_detection_config(["email", "phone_number"])
+        detection_config = get_detection_config(
+            match_identity_fields=["email", "phone_number"]
+        )
         conditions = create_duplicate_detection_conditions(
             privacy_request_with_multiple_identities, detection_config
         )
         assert conditions is not None
         assert isinstance(conditions, ConditionGroup)
-        # Should have grouped identity conditions and time window condition
         assert (
-            len(conditions.conditions) == 3
-        )  # 2 grouped identity conditions and 1 time window condition
+            len(conditions.conditions) == 4
+        )  # identity conditions, policy condition & time window condition
 
     @pytest.mark.parametrize(
         "match_identity_fields",
@@ -122,7 +114,7 @@ class TestCreateDuplicateDetectionConditions:
         self, privacy_request_with_email_identity, match_identity_fields
     ):
         """Test returns None when request has no identities matching configured fields."""
-        config = self._get_detection_config(match_identity_fields)
+        config = get_detection_config(match_identity_fields=match_identity_fields)
         conditions = create_duplicate_detection_conditions(
             privacy_request_with_email_identity, config
         )
@@ -132,25 +124,16 @@ class TestCreateDuplicateDetectionConditions:
 class TestFindDuplicatePrivacyRequests:
     """Tests for find_duplicate_privacy_requests function."""
 
-    @pytest.fixture
-    def duplicate_detection_config(self):
-        """Basic duplicate detection configuration."""
-        return DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=30,
-            match_identity_fields=["email"],
-        )
-
     @pytest.mark.parametrize("duplicate_count", [1, 3])
     def test_find_duplicates_within_time_window(
         self,
         db,
         privacy_request_with_email_identity,
-        duplicate_detection_config,
         policy,
         duplicate_count,
     ):
         """Test finding duplicate request within time window with matching identity."""
+        duplicate_detection_config = get_detection_config()
         duplicate_ids = []
         for i in range(duplicate_count):
             duplicate_request = PrivacyRequest.create(
@@ -181,9 +164,9 @@ class TestFindDuplicatePrivacyRequests:
         self,
         db,
         privacy_request_with_email_identity,
-        duplicate_detection_config,
     ):
         """Test that requests outside time window are not returned as duplicates."""
+        duplicate_detection_config = get_detection_config()
         duplicates = find_duplicate_privacy_requests(
             db, privacy_request_with_email_identity, duplicate_detection_config
         )
@@ -194,14 +177,9 @@ class TestFindDuplicatePrivacyRequests:
         self, db, privacy_request_with_email_identity, old_privacy_request_with_email
     ):
         """Test finding duplicate when extending time window to include older requests."""
-        config = DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=60,
-            match_identity_fields=["email"],
-        )
-
+        duplicate_detection_config = get_detection_config(time_window_days=60)
         duplicates = find_duplicate_privacy_requests(
-            db, privacy_request_with_email_identity, config
+            db, privacy_request_with_email_identity, duplicate_detection_config
         )
 
         assert len(duplicates) == 1
@@ -211,10 +189,10 @@ class TestFindDuplicatePrivacyRequests:
         self,
         db,
         privacy_request_with_email_identity,
-        duplicate_detection_config,
         policy,
     ):
         """Test that requests with different identity values are not returned."""
+        duplicate_detection_config = get_detection_config()
         different_request = PrivacyRequest.create(
             db=db,
             data={
@@ -240,22 +218,22 @@ class TestFindDuplicatePrivacyRequests:
         self, db, privacy_request_with_email_identity
     ):
         """Test returns empty list when config specifies unmatched identity fields."""
-        config = DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=30,
-            match_identity_fields=["phone_number"],
+        duplicate_detection_config = get_detection_config(
+            match_identity_fields=["phone_number"]
         )
-
         duplicates = find_duplicate_privacy_requests(
-            db, privacy_request_with_email_identity, config
+            db, privacy_request_with_email_identity, duplicate_detection_config
         )
 
         assert len(duplicates) == 0
 
     def test_current_request_excluded_from_results(
-        self, db, privacy_request_with_email_identity, duplicate_detection_config
+        self,
+        db,
+        privacy_request_with_email_identity,
     ):
         """Test that the current request itself is excluded from duplicate results."""
+        duplicate_detection_config = get_detection_config()
         duplicates = find_duplicate_privacy_requests(
             db, privacy_request_with_email_identity, duplicate_detection_config
         )
@@ -267,12 +245,9 @@ class TestFindDuplicatePrivacyRequests:
         self, db, privacy_request_with_multiple_identities, policy
     ):
         """Test finding duplicates when matching on multiple identity fields."""
-        config = DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=365,
-            match_identity_fields=["email", "phone_number"],
+        config = get_detection_config(
+            time_window_days=365, match_identity_fields=["email", "phone_number"]
         )
-
         duplicate_request = PrivacyRequest.create(
             db=db,
             data={
@@ -301,12 +276,9 @@ class TestFindDuplicatePrivacyRequests:
         self, db, privacy_request_with_multiple_identities, policy
     ):
         """Test that request with only partial identity match is not returned as duplicate."""
-        config = DuplicateDetectionSettings(
-            enabled=True,
-            time_window_days=365,
-            match_identity_fields=["email", "phone_number"],
+        config = get_detection_config(
+            time_window_days=365, match_identity_fields=["email", "phone_number"]
         )
-
         partial_match_request = PrivacyRequest.create(
             db=db,
             data={
@@ -335,11 +307,10 @@ class TestFindDuplicatePrivacyRequests:
         self,
         db,
         privacy_request_with_email_identity,
-        duplicate_detection_config,
         erasure_policy: Policy,
     ):
         """Test that requests from different policies are not returned as duplicates."""
-
+        duplicate_detection_config = get_detection_config()
         erasure_request = PrivacyRequest.create(
             db=db,
             data={
@@ -358,5 +329,4 @@ class TestFindDuplicatePrivacyRequests:
         duplicates = find_duplicate_privacy_requests(
             db, privacy_request_with_email_identity, duplicate_detection_config
         )
-
         assert len(duplicates) == 0
