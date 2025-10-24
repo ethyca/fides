@@ -2051,6 +2051,19 @@ class TestAsyncCallbacks:
         )
 
         if dsr_version == "use_dsr_3_0":
+            # Access async task fired first
+            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply access results async
+            # This requeues task and proceeds downstream
+            response = api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+            )
+            assert response.status_code == 200
+
             # Erasure task is also expected async results and is now paused
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
             jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]

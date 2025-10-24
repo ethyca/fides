@@ -244,13 +244,11 @@ const ToggleChild = ({
 };
 
 const PagedVendorData = ({
-  activeTab,
   experience,
   vendors,
   enabledIds,
   onChange,
 }: {
-  activeTab: string;
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
@@ -260,23 +258,22 @@ const PagedVendorData = ({
   const { activeChunk, ...paging } = usePaging(vendors);
 
   const {
-    consentGvlVendors,
-    legintGvlVendors,
-    specialPurposeGvlVendors,
-    nonGVLVendors,
+    gvlVendors,
+    specialPurposeOnlyGvlVendors,
+    otherVendors,
   }: {
-    consentGvlVendors: VendorRecord[];
-    legintGvlVendors: VendorRecord[];
-    specialPurposeGvlVendors: VendorRecord[];
-    nonGVLVendors: VendorRecord[];
+    gvlVendors: VendorRecord[];
+    specialPurposeOnlyGvlVendors: VendorRecord[];
+    otherVendors: VendorRecord[];
   } = useMemo(
     () => ({
-      nonGVLVendors: activeChunk?.filter((v) => !v.isGvl),
-      consentGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isConsent),
-      legintGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isLegint),
-      specialPurposeGvlVendors: activeChunk?.filter(
-        (v) => v.isGvl && v.isSpecial && !v.isLegint,
+      gvlVendors: activeChunk?.filter(
+        (v) => v.isGvl && (v.isConsent || v.isLegint),
       ),
+      specialPurposeOnlyGvlVendors: activeChunk?.filter(
+        (v) => v.isGvl && v.isSpecial && !v.isConsent && !v.isLegint,
+      ),
+      otherVendors: activeChunk?.filter((v) => !v.isGvl),
     }),
     [activeChunk],
   );
@@ -285,67 +282,13 @@ const PagedVendorData = ({
     return null;
   }
 
-  if (activeTab === LegalBasisEnum.LEGITIMATE_INTERESTS.toString()) {
-    return (
-      <Fragment>
-        {legintGvlVendors.length > 0 && (
-          <RecordsList<VendorRecord>
-            type="vendors"
-            title={i18n.t("static.tcf.vendors.iab")}
-            items={legintGvlVendors}
-            enabledIds={enabledIds}
-            onToggle={onChange}
-            renderBadgeLabel={(vendor) =>
-              vendorGvlEntry(vendor.id, experience.gvl)
-                ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
-                : undefined
-            }
-            renderDropdownChild={(vendor) => (
-              <ToggleChild vendor={vendor} experience={experience} />
-            )}
-          />
-        )}
-        {specialPurposeGvlVendors.length > 0 && (
-          <RecordsList<VendorRecord>
-            type="vendors"
-            title={i18n.t("static.tcf.special_purposes")}
-            items={specialPurposeGvlVendors}
-            enabledIds={[]}
-            renderBadgeLabel={(vendor) =>
-              vendorGvlEntry(vendor.id, experience.gvl)
-                ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
-                : undefined
-            }
-            renderDropdownChild={(vendor) => (
-              <ToggleChild vendor={vendor} experience={experience} />
-            )}
-            hideToggles
-          />
-        )}
-        {nonGVLVendors.length > 0 && (
-          <RecordsList<VendorRecord>
-            type="vendors"
-            title={i18n.t("static.tcf.vendors.other")}
-            items={nonGVLVendors}
-            enabledIds={enabledIds}
-            onToggle={onChange}
-            renderDropdownChild={(vendor) => (
-              <ToggleChild vendor={vendor} experience={experience} />
-            )}
-          />
-        )}
-        <PagingButtons {...paging} />
-      </Fragment>
-    );
-  }
-
   return (
     <Fragment>
-      {consentGvlVendors.length > 0 && (
+      {gvlVendors.length > 0 && (
         <RecordsList<VendorRecord>
           type="vendors"
           title={i18n.t("static.tcf.vendors.iab")}
-          items={consentGvlVendors}
+          items={gvlVendors}
           enabledIds={enabledIds}
           onToggle={onChange}
           renderBadgeLabel={(vendor) =>
@@ -358,11 +301,28 @@ const PagedVendorData = ({
           )}
         />
       )}
-      {nonGVLVendors.length > 0 && (
+      {specialPurposeOnlyGvlVendors.length > 0 && (
+        <RecordsList<VendorRecord>
+          type="vendors"
+          title={i18n.t("static.tcf.special_purposes")}
+          items={specialPurposeOnlyGvlVendors}
+          enabledIds={[]}
+          renderBadgeLabel={(vendor) =>
+            vendorGvlEntry(vendor.id, experience.gvl)
+              ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
+              : undefined
+          }
+          renderDropdownChild={(vendor) => (
+            <ToggleChild vendor={vendor} experience={experience} />
+          )}
+          hideToggles
+        />
+      )}
+      {otherVendors.length > 0 && (
         <RecordsList<VendorRecord>
           type="vendors"
           title={i18n.t("static.tcf.vendors.other")}
-          items={nonGVLVendors}
+          items={otherVendors}
           enabledIds={enabledIds}
           onToggle={onChange}
           renderDropdownChild={(vendor) => (
@@ -406,21 +366,6 @@ const TcfVendors = ({
       activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
         ? vendors.filter((v) => v.isConsent)
         : vendors.filter((v) => v.isLegint || v.isSpecial);
-    if (
-      activeLegalBasisOption.value ===
-      LegalBasisEnum.LEGITIMATE_INTERESTS.toString()
-    ) {
-      // sort by isLegint first, then isSpecial
-      legalBasisFiltered.sort((a, b) => {
-        if (a.isLegint && !b.isLegint) {
-          return -1;
-        }
-        if (!a.isLegint && b.isLegint) {
-          return 1;
-        }
-        return 0;
-      });
-    }
     // Put "other vendors" last in the list
     return [
       ...legalBasisFiltered.filter((v) => v.isGvl),
@@ -436,7 +381,6 @@ const TcfVendors = ({
         onChange={setActiveLegalBasisOption}
       />
       <PagedVendorData
-        activeTab={activeLegalBasisOption.value}
         experience={experience}
         vendors={filteredVendors}
         enabledIds={
