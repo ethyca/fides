@@ -342,12 +342,13 @@ const MonitorTree = ({
             setTreeData((origin) =>
               mergeTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
             );
-          detailedUpdateFn: (data) => {
-            // Detailed query: merge/update the nodes with the same keys
-            setTreeData((origin) =>
-              mergeTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
-            );
-          },
+            setNodePaginationState((prevState) => ({
+              ...prevState,
+              [key]: {
+                pageSize: TREE_PAGE_SIZE,
+                pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
+              },
+            }));
           },
         });
       }
