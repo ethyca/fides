@@ -144,6 +144,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
@@ -1969,6 +1970,32 @@ def resume_privacy_request_from_requires_input(
     )
 
     return privacy_request  # type: ignore[return-value]
+
+
+@router.post(
+    PRIVACY_REQUEST_BULK_FINALIZE,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def bulk_finalize_privacy_requests(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkReviewResponse:
+    """
+    Bulk finalize privacy requests that are in requires_manual_finalization status.
+    Each request will be moved from the 'requires_finalization' state to 'complete'.
+    Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
+    """
+    return privacy_request_service.finalize_privacy_requests(
+        privacy_requests.request_ids, user_id=client.user_id
+    )
 
 
 @router.post(
