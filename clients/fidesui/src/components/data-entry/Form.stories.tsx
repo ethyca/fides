@@ -4,7 +4,7 @@ import FormItem from "antd/es/form/FormItem";
 import { FormProps } from "antd/lib";
 
 import { CustomSelect } from "../../hoc";
-import { LocationSelect } from "../select/LocationSelect";
+import { LocationSelect } from "./LocationSelect";
 
 const LayoutOptions: Array<FormProps["layout"]> = [
   "vertical",
