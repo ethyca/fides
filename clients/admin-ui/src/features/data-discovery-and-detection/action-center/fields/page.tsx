@@ -39,8 +39,11 @@ import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { DetailsDrawer } from "./DetailsDrawer";
 import {
   AVAILABLE_ACTIONS,
+  DRAWER_ACTIONS,
+  DROPDOWN_ACTIONS,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
+  LIST_ITEM_ACTIONS,
 } from "./FieldActions.const";
 import { useGetMonitorFieldsQuery } from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
@@ -251,7 +254,7 @@ const ActionCenterFields: NextPage = () => {
                 <Dropdown
                   menu={{
                     items: [
-                      ...Object.values(FieldActionType).map((actionType) => ({
+                      ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
                         label: FIELD_ACTION_LABEL[actionType],
                         disabled: selectAll
@@ -328,26 +331,27 @@ const ActionCenterFields: NextPage = () => {
                       user_assigned_data_categories: values,
                     }),
                   actions: props?.diff_status
-                    ? AVAILABLE_ACTIONS[
-                        DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                      ].flatMap((action) =>
-                        action !== FieldActionType.ASSIGN_CATEGORIES
-                          ? [
-                              <Tooltip
-                                key={action}
-                                title={FIELD_ACTION_LABEL[action]}
-                              >
-                                <Button
-                                  aria-label={FIELD_ACTION_LABEL[action]}
-                                  icon={FIELD_ACTION_ICON[action]}
-                                  onClick={() =>
-                                    fieldActions[action]([props.urn])
-                                  }
-                                />
-                              </Tooltip>,
-                            ]
-                          : [],
-                      )
+                    ? LIST_ITEM_ACTIONS.map((action) => (
+                        <Tooltip
+                          key={action}
+                          title={FIELD_ACTION_LABEL[action]}
+                        >
+                          <Button
+                            aria-label={FIELD_ACTION_LABEL[action]}
+                            icon={FIELD_ACTION_ICON[action]}
+                            onClick={() => fieldActions[action]([props.urn])}
+                            disabled={
+                              props?.diff_status
+                                ? ![
+                                    ...AVAILABLE_ACTIONS[
+                                      DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                                    ],
+                                  ].includes(action)
+                                : true
+                            }
+                          />
+                        </Tooltip>
+                      ))
                     : [],
                 })
               }
@@ -376,22 +380,17 @@ const ActionCenterFields: NextPage = () => {
                 .label
             : null,
         }}
-        actions={
-          resource?.diff_status
-            ? AVAILABLE_ACTIONS[
-                DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-              ].flatMap((action) =>
-                action !== FieldActionType.ASSIGN_CATEGORIES
-                  ? [
-                      {
-                        label: FIELD_ACTION_LABEL[action],
-                        callback: (value) => fieldActions[action]([value]),
-                      },
-                    ]
-                  : [],
-              )
-            : []
-        }
+        actions={DRAWER_ACTIONS.map((action) => ({
+          label: FIELD_ACTION_LABEL[action],
+          callback: (value) => fieldActions[action]([value]),
+          disabled: resource?.diff_status
+            ? ![
+                ...AVAILABLE_ACTIONS[
+                  DIFF_TO_RESOURCE_STATUS[resource.diff_status]
+                ],
+              ].includes(action)
+            : false,
+        }))}
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
       >
