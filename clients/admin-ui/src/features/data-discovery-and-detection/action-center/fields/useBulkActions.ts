@@ -49,6 +49,8 @@ export const useBulkActions = (monitorId: string) => {
     classify: handleBulkAction(FieldActionType.CLASSIFY),
     "assign-categories": handleBulkAction(FieldActionType.ASSIGN_CATEGORIES),
     approve: handleBulkAction(FieldActionType.APPROVE),
+    "un-approve": handleBulkAction(FieldActionType.UN_APPROVE),
+    "promote-removals": handleBulkAction(FieldActionType.PROMOTE_REMOVALS),
   } satisfies Record<
     FieldActionType,
     null | ((filterParams: MonitorFieldParameters) => Promise<void> | void)

@@ -144,6 +144,8 @@ export const useFieldActions = (monitorId: string) => {
     classify: handleClassifyStagedResources,
     "assign-categories": handleSetDataCategories,
     approve: handleApprove,
+    "promote-removals": () => {},
+    "un-approve": () => {},
   } satisfies Record<
     FieldActionType,
     (urns: string[], field?: Partial<Field>) => Promise<void> | void

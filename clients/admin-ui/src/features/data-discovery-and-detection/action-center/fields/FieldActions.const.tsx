@@ -13,6 +13,8 @@ export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
   promote: "Confirm",
   "un-mute": "Un-mute",
   mute: "Ignore",
+  "un-approve": "Un-approve",
+  "promote-removals": "Promote removals",
 };
 
 export const AVAILABLE_ACTIONS = {
@@ -38,4 +40,6 @@ export const FIELD_ACTION_ICON = {
   "un-mute": <Icons.View />,
   promote: <Icons.Checkmark />,
   "assign-categories": null,
+  "un-approve": null,
+  "promote-removals": null,
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
