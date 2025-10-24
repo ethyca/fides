@@ -209,3 +209,7 @@ h6 {
 .ant-drawer-header-title {
   flex-direction: row-reverse;
 }
+
+.ant-tree .ant-tree-treenode {
+  --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
+}

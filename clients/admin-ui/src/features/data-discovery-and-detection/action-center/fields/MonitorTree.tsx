@@ -313,7 +313,6 @@ const MonitorTree = ({
         showIcon
         showLine
         blockNode
-        multiple
         rootClassName="h-full overflow-x-hidden"
         // eslint-disable-next-line react/no-unstable-nested-components
         titleRender={(node) => (
