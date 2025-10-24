@@ -1,27 +1,14 @@
 import { baseApi } from "~/features/common/api.slice";
 import { buildArrayQueryParams } from "~/features/common/utils";
-import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 import { PaginationQueryParams } from "~/types/query-params";
 
-import { FieldActionTypeValue } from "./types";
-
-interface MonitorFieldQueryParameters {
-  staged_resource_urn?: Array<string>;
-  search?: string;
-  diff_status?: Array<DiffStatus>;
-  confidence_score?: Array<ConfidenceScoreRange>;
-  data_category?: Array<string>;
-}
-
-interface MonitorFieldParameters {
-  path: {
-    monitor_config_id: string;
-  };
-  query: MonitorFieldQueryParameters;
-}
+import {
+  FieldActionTypeValue,
+  MonitorFieldParameters,
+  MonitorFieldQueryParameters,
+} from "./types";
 
 const monitorFieldApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

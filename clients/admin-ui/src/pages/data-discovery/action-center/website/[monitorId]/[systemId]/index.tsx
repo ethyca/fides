@@ -2,9 +2,10 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import {
   ACTION_CENTER_ROUTE,
+  ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -31,12 +32,17 @@ const MonitorResultAssets: NextPage = () => {
   // if there are no results, redirect to the monitor page
   useEffect(() => {
     if (!!systemResults && systemResults.items.length === 0) {
-      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      router.push({
+        pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
+        query: {
+          monitorId: encodeURIComponent(monitorId),
+        },
+      });
     }
   }, [systemResults, router, monitorId]);
 
   return (
-    <Layout title="Action center - Discovered assets">
+    <FixedLayout title="Action center - Discovered assets">
       <PageHeader
         heading="Action center"
         breadcrumbItems={[
@@ -52,14 +58,13 @@ const MonitorResultAssets: NextPage = () => {
                 : system?.name,
           },
         ]}
-        isSticky={false}
       />
       <DiscoveredAssetsTable
         monitorId={monitorId}
         systemId={systemId}
         consentStatus={system?.consent_status}
       />
-    </Layout>
+    </FixedLayout>
   );
 };
 

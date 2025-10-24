@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AntFlex as Flex,
   AntProgress as Progress,
@@ -38,7 +39,27 @@ export const percentToConfidenceScore = (percent: number) => {
   return percent > 50 ? ConfidenceScoreRange.HIGH : ConfidenceScoreRange.LOW;
 };
 
+/**
+ * Placeholder for the classifier progress component.
+ * TODO: Remove this when we have a proper confidence score from the backend and rename
+ * the component below to ClassifierProgress.
+ */
 export const ClassifierProgress = ({
+  percent,
+  confidenceScore,
+}: {
+  percent: number;
+  confidenceScore?: ConfidenceScoreRange;
+}) => {
+  return null;
+};
+
+/**
+ * Future classifier progress component.
+ * TODO: Rename this to ClassifierProgress when we have a proper confidence score from
+ * the backend and remove the placeholder component above.
+ */
+export const FutureClassifierProgress = ({
   percent,
   confidenceScore,
 }: {

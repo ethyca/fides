@@ -12,11 +12,12 @@ import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 
-// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
-import { ResourceStatusLabel } from "./types";
+import {
+  DIFF_TO_RESOURCE_STATUS,
+  ResourceStatusLabel,
+} from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
-
+// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 // const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);
 
 export const MonitorFieldFilters = ({
@@ -40,7 +41,7 @@ export const MonitorFieldFilters = ({
     (agg, current) => {
       const diffStatus = Object.values(DiffStatus).find((rs) => rs === current);
       const currentResourceStatus = diffStatus
-        ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diffStatus].label
+        ? DIFF_TO_RESOURCE_STATUS[diffStatus]
         : null;
 
       if (!!currentResourceStatus && !agg.includes(currentResourceStatus)) {
