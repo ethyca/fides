@@ -273,9 +273,7 @@ const PagedVendorData = ({
     () => ({
       nonGVLVendors: activeChunk?.filter((v) => !v.isGvl),
       consentGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isConsent),
-      legintGvlVendors: activeChunk?.filter(
-        (v) => v.isGvl && v.isLegint && !v.isConsent,
-      ),
+      legintGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isLegint),
       specialPurposeGvlVendors: activeChunk?.filter(
         (v) => v.isGvl && v.isSpecial && !v.isLegint,
       ),
