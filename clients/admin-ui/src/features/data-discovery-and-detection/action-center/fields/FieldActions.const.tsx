@@ -10,12 +10,28 @@ export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
   "assign-categories": "Assign categories",
   "promote-removals": "Promote removals",
   "un-approve": "Un-approve",
-  "un-mute": "Un-mute",
+  "un-mute": "Restore",
   approve: "Approve",
   classify: "Classify",
   mute: "Ignore",
   promote: "Confirm",
 };
+
+export const DRAWER_ACTIONS = [
+  FieldActionType.APPROVE,
+  FieldActionType.PROMOTE,
+] as const;
+export const DROPDOWN_ACTIONS = [
+  FieldActionType.CLASSIFY,
+  FieldActionType.APPROVE,
+  FieldActionType.PROMOTE,
+  FieldActionType.MUTE,
+  FieldActionType.UN_MUTE,
+] as const;
+export const LIST_ITEM_ACTIONS = [
+  FieldActionType.CLASSIFY,
+  FieldActionType.PROMOTE,
+] as const;
 
 export const AVAILABLE_ACTIONS = {
   "In Review": [
