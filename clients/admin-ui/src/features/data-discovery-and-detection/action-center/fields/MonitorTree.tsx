@@ -329,13 +329,7 @@ const MonitorTree = ({
             setTreeData((origin) =>
               appendTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
             );
-            setNodePaginationState((prevState) => ({
-              ...prevState,
-              [key]: {
-                pageSize: TREE_PAGE_SIZE,
-                pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
-              },
-            }));
+            // Note: pagination state is updated in detailedUpdateFn to avoid double increment
           },
           detailedUpdateFn: (data) => {
             // Detailed query: merge/update the nodes with the same keys
