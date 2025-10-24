@@ -54,6 +54,15 @@ const usePrivacyRequestsFilters = ({
     },
   );
 
+  // A user friendly count of the number of filters applied in the modal
+  // It counts only filters applied in the modal, and counts the range date filter as one
+  const modalFiltersCount = useMemo(() => {
+    const filtersWithoutTo = { ...modalFilters, to: undefined };
+    return Object.values(filtersWithoutTo).filter(
+      (value) => value && value.length > 0,
+    ).length;
+  }, [modalFilters]);
+
   const [sortState, setSortState] = useQueryStates(
     {
       sort_field: parseAsString.withDefault(""),
@@ -86,6 +95,7 @@ const usePrivacyRequestsFilters = ({
     fuzzySearchTerm,
     setFuzzySearchTerm,
     modalFilters,
+    modalFiltersCount,
     setModalFilters,
     sortState,
     setSortState,

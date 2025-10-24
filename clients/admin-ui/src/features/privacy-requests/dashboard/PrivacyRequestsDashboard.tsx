@@ -1,4 +1,5 @@
 import {
+  AntBadge as Badge,
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
@@ -10,6 +11,7 @@ import {
   Portal,
   useDisclosure,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
@@ -33,6 +35,7 @@ export const PrivacyRequestsDashboard = () => {
     fuzzySearchTerm,
     setFuzzySearchTerm,
     modalFilters,
+    modalFiltersCount,
     setModalFilters,
   } = usePrivacyRequestsFilters({
     pagination,
@@ -102,6 +105,11 @@ export const PrivacyRequestsDashboard = () => {
           />
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
+            <Badge
+              size="small"
+              color={palette.FIDESUI_MINOS}
+              count={modalFiltersCount}
+            />
           </Button>
           <Button
             aria-label="Export report"
