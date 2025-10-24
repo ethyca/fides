@@ -306,6 +306,7 @@ class PrivacyRequestStatus(str, EnumType):
     requires_manual_finalization = "requires_manual_finalization"
     canceled = "canceled"
     error = "error"
+    duplicate = "duplicate"  # Request identified as duplicate of another request
 
 
 class PrivacyRequestResponse(FidesSchema):
