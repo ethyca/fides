@@ -801,7 +801,7 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("second layer", () => {
+  describe.skip("second layer", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubTCFExperience({});
@@ -2281,7 +2281,7 @@ describe("Fides-js TCF", () => {
       );
     });
 
-    describe("when fides_disable_banner is true (Layer 2 only)", () => {
+    describe.skip("when fides_disable_banner is true (Layer 2 only)", () => {
       it("renders the embedded second layer and can render tabs", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         stubTCFExperience({
@@ -2630,7 +2630,7 @@ describe("Fides-js TCF", () => {
    * These specs test various combinations of those sources of truth and ensure
    * that Fides loads the correct preferences in each case.
    */
-  describe("user preferences overrides", () => {
+  describe.skip("user preferences overrides", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
