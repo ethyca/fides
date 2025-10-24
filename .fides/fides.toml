@@ -70,4 +70,4 @@ override_vendor_purposes = false
 [privacy_request_duplicate_detection]
 enabled = false
 time_window_days = 365
-match_fields = ["privacy_request.provided_identities.email"]
+match_fields = ["email"]
