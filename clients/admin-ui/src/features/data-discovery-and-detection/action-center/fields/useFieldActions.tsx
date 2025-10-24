@@ -138,14 +138,14 @@ export const useFieldActions = (monitorId: string) => {
   };
 
   return {
-    mute: handleIgnore,
-    promote: handlePromote,
-    "un-mute": handleUnMute,
-    classify: handleClassifyStagedResources,
     "assign-categories": handleSetDataCategories,
-    approve: handleApprove,
     "promote-removals": () => {},
     "un-approve": () => {},
+    "un-mute": handleUnMute,
+    approve: handleApprove,
+    classify: handleClassifyStagedResources,
+    mute: handleIgnore,
+    promote: handlePromote,
   } satisfies Record<
     FieldActionType,
     (urns: string[], field?: Partial<Field>) => Promise<void> | void
