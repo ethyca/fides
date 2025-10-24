@@ -145,10 +145,7 @@ NULLABLE_FIELDS = {
     "resume_endpoint": None,
     "deleted_at": None,
     "deleted_by": None,
-    "is_duplicate": None,
     "duplicate_request_group_id": None,
-    "duplicate_detected_at": None,
-    "duplicate_detection_method": None,
 }
 
 page_size = Params().size
