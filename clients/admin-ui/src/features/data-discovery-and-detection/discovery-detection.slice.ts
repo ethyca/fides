@@ -251,7 +251,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ staged_resource_urns, monitor_config_key }) => ({
-        method: "PATCH",
+        method: "POST",
         url: `/plus/discovery-monitor/${monitor_config_key}/approve`,
         body: {
           staged_resource_urns,
