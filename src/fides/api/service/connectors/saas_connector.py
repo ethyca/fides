@@ -355,7 +355,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Guard clause to ensure we only run async access requests
         if the access request is enabled and we are in an Access Request
         """
-        if self.configuration.enabled_actions is None or ActionType.access in self.configuration.enabled_actions:
+        if (
+            self.configuration.enabled_actions is None
+            or ActionType.access in self.configuration.enabled_actions
+        ):
             if policy.get_rules_for_action(ActionType.access):
                 return True
         return False
