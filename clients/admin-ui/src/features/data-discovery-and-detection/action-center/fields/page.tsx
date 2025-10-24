@@ -18,7 +18,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, useEffect, useRef, useState } from "react";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -54,7 +54,7 @@ import {
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
-import MonitorTree from "./MonitorTree";
+import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { useBulkActions } from "./useBulkActions";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
@@ -70,6 +70,7 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
 const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
+  const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -110,8 +111,12 @@ const ActionCenterFields: NextPage = () => {
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
   const resource = stagedResourceDetailsResult.data;
-  const bulkActions = useBulkActions(monitorId);
-  const fieldActions = useFieldActions(monitorId);
+  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
@@ -201,6 +206,7 @@ const ActionCenterFields: NextPage = () => {
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
           <MonitorTree
+            ref={monitorTreeRef}
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
             onClickClassifyButton={() => {

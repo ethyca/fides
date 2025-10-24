@@ -30,7 +30,10 @@ export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
   );
 };
 
-export const useFieldActions = (monitorId: string) => {
+export const useFieldActions = (
+  monitorId: string,
+  onRefreshTree?: (urns: string[]) => Promise<void>,
+) => {
   const [ignoreMonitorResultAssetsMutation] = useMuteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
 
@@ -87,6 +90,11 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.PROMOTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleClassifyStagedResources = async (urns: string[]) => {
@@ -101,6 +109,11 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.CLASSIFY, urns.length);
+
+    // Refresh the tree to reflect updated status
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleSetDataCategories = async (
@@ -121,6 +134,11 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.ASSIGN_CATEGORIES, urns.length);
+
+    // Refresh the tree to reflect updated status
+    if (!!field?.user_assigned_data_categories && onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleApprove = async (urns: string[]) => {
