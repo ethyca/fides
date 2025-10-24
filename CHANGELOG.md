@@ -51,6 +51,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed a bug where the "Request manager" navigation item wouldn't return users to the main request view [#6814](https://github.com/ethyca/fides/pull/6814)
 - Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 - Fixed missing reference value validation in SaaS requests to apply to all access requests [#6782](https://github.com/ethyca/fides/pull/6782)
+- Fixed an issue where some Special purpose vendors were displaying incorrectly in the TCF modal [#6830](https://github.com/ethyca/fides/pull/6830)
 
 ### Changed
 - Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)
