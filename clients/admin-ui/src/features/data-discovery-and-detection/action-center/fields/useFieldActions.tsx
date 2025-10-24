@@ -33,7 +33,6 @@ export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
 export const useFieldActions = (monitorId: string) => {
   const [ignoreMonitorResultAssetsMutation] = useMuteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
-
   const [classifyStagedResourcesMutation] =
     useClassifyStagedResourcesMutation();
   const [updateResourcesCategoryMutation] = useUpdateResourceCategoryMutation();
