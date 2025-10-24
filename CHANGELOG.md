@@ -24,6 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
 - Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
+- Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
+
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 

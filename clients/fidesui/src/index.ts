@@ -47,6 +47,7 @@ export type {
 export {
   Alert as AntAlert,
   Avatar as AntAvatar,
+  Badge as AntBadge,
   Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
