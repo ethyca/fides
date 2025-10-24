@@ -9,7 +9,9 @@ from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
 from loguru import logger as log
+from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.schema import SchemaItem
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
@@ -19,6 +21,26 @@ from fides.api.db.session import get_db_engine
 from fides.api.util.errors import get_full_exception_name
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
+
+# Tables to exclude from migration auto-generation (e.g., tables without SQLAlchemy models)
+EXCLUDED_TABLES = {
+    "privacy_preferences",
+    "privacy_preferences_current",
+    "privacy_preferences_historic",
+}
+
+
+def include_object(
+    object: SchemaItem,  # pylint: disable=redefined-builtin
+    name: str,
+    type_: str,
+    reflected: bool,
+    compare_to: SchemaItem,
+) -> bool:
+    """Filter out excluded tables from migration comparison and auto-generation."""
+    if type_ == "table" and name in EXCLUDED_TABLES:
+        return False
+    return True
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -91,6 +113,10 @@ def reset_db(database_url: str) -> None:
         log.info("Dropping tables...")
         Base.metadata.drop_all(connection)
 
+        log.info("Dropping excluded tables without models...")
+        for table_name in EXCLUDED_TABLES:
+            connection.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+
         log.info("Dropping Alembic table...")
         migration_context = migration.MigrationContext.configure(connection)
         version = migration_context._version  # pylint: disable=protected-access
@@ -151,13 +177,18 @@ def check_missing_migrations(database_url: str) -> None:
     Tries to autogenerate migrations, returns True if a migration
     was generated.
     """
-
     engine = get_db_engine(database_uri=database_url)
     connection = engine.connect()
 
-    migration_context = migration.MigrationContext.configure(connection)
+    migration_context = migration.MigrationContext.configure(
+        connection, opts={"include_object": include_object}
+    )
     result = command.autogen.compare_metadata(migration_context, Base.metadata)  # type: ignore[attr-defined]
 
     if result:
+        log.error("Migration needs to be generated!")
+        log.error("Detected the following schema differences:")
+        for item in result:
+            log.error(f"  - {item}")
         raise SystemExit("Migration needs to be generated!")
     print("No migrations need to be generated.")
