@@ -123,6 +123,31 @@ from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
 
+NULLABLE_FIELDS = {
+    "custom_privacy_request_fields": None,
+    "custom_privacy_request_fields_approved_at": None,
+    "custom_privacy_request_fields_approved_by": None,
+    "days_left": None,
+    "finished_processing_at": None,
+    "identity_verified_at": None,
+    "finalized_at": None,
+    "finalized_by": None,
+    "identity": None,
+    "reviewed_at": None,
+    "reviewed_by": None,
+    "submitted_by": None,
+    "paused_at": None,
+    "reviewer": None,
+    "submitter": None,
+    "source": None,
+    "location": None,
+    "action_required_details": None,
+    "resume_endpoint": None,
+    "deleted_at": None,
+    "deleted_by": None,
+    "duplicate_request_group_id": None,
+}
+
 page_size = Params().size
 
 
@@ -1056,34 +1081,17 @@ class TestGetPrivacyRequests:
             url + f"?request_id={privacy_request.id}", headers=auth_header
         )
         assert 200 == response.status_code
-
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -1096,10 +1104,6 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                 }
             ],
             "total": 1,
@@ -1132,30 +1136,14 @@ class TestGetPrivacyRequests:
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1168,10 +1156,6 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                 }
             ],
             "total": 1,
@@ -1846,30 +1830,14 @@ class TestGetPrivacyRequests:
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1882,10 +1850,6 @@ class TestGetPrivacyRequests:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                     "results": {
                         "Request approved": [
                             {
@@ -2423,30 +2387,14 @@ class TestPrivacyRequestSearch:
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -2459,10 +2407,6 @@ class TestPrivacyRequestSearch:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                 }
             ],
             "total": 1,
@@ -2495,30 +2439,14 @@ class TestPrivacyRequestSearch:
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -2531,10 +2459,6 @@ class TestPrivacyRequestSearch:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                 }
             ],
             "total": 1,
@@ -3072,30 +2996,14 @@ class TestPrivacyRequestSearch:
         expected_resp = {
             "items": [
                 {
+                    **NULLABLE_FIELDS,
                     "id": privacy_request.id,
                     "created_at": stringify_date(privacy_request.created_at),
-                    "custom_privacy_request_fields": None,
-                    "custom_privacy_request_fields_approved_at": None,
-                    "custom_privacy_request_fields_approved_by": None,
-                    "days_left": None,
                     "started_processing_at": stringify_date(
                         privacy_request.started_processing_at
                     ),
-                    "finished_processing_at": None,
-                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
-                    "finalized_at": None,
-                    "finalized_by": None,
-                    "identity": None,
-                    "reviewed_at": None,
-                    "reviewed_by": None,
-                    "submitted_by": None,
-                    "paused_at": None,
-                    "reviewer": None,
-                    "submitter": None,
-                    "source": None,
-                    "location": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -3108,10 +3016,6 @@ class TestPrivacyRequestSearch:
                             ).rules
                         ],
                     },
-                    "action_required_details": None,
-                    "resume_endpoint": None,
-                    "deleted_at": None,
-                    "deleted_by": None,
                     "results": {
                         "Request approved": [
                             {
@@ -5063,30 +4967,14 @@ class TestResumePrivacyRequest:
         response_body = json.loads(response.text)
         assert submit_mock.called
         assert response_body == {
+            **NULLABLE_FIELDS,
             "id": privacy_request.id,
             "created_at": stringify_date(privacy_request.created_at),
-            "custom_privacy_request_fields": None,
-            "custom_privacy_request_fields_approved_at": None,
-            "custom_privacy_request_fields_approved_by": None,
-            "days_left": None,
             "started_processing_at": stringify_date(
                 privacy_request.started_processing_at
             ),
-            "finished_processing_at": None,
-            "identity_verified_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
-            "finalized_at": None,
-            "finalized_by": None,
-            "identity": None,
-            "reviewed_at": None,
-            "reviewed_by": None,
-            "submitted_by": None,
-            "reviewer": None,
-            "submitter": None,
-            "source": None,
-            "location": None,
-            "paused_at": None,
             "policy": {
                 "execution_timeframe": 7,
                 "drp_action": None,
@@ -5099,10 +4987,6 @@ class TestResumePrivacyRequest:
                     ).rules
                 ],
             },
-            "action_required_details": None,
-            "resume_endpoint": None,
-            "deleted_at": None,
-            "deleted_by": None,
         }
 
         privacy_request.delete(db)
