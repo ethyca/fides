@@ -73,8 +73,8 @@ const usePrivacyRequestsFilters = ({
     },
   );
 
-  const filterQueryParams: FilterQueryParams = useMemo(() => {
-    return {
+  const filterQueryParams: FilterQueryParams = useMemo(
+    () => ({
       fuzzy_search_str: fuzzySearchTerm,
       from: modalFilters.from,
       to: modalFilters.to,
@@ -82,16 +82,17 @@ const usePrivacyRequestsFilters = ({
       action_type: modalFilters.action_type,
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
-    };
-  }, [
-    fuzzySearchTerm,
-    modalFilters.from,
-    modalFilters.to,
-    modalFilters.status,
-    modalFilters.action_type,
-    sortState.sort_field,
-    sortState.sort_direction,
-  ]);
+    }),
+    [
+      fuzzySearchTerm,
+      modalFilters.from,
+      modalFilters.to,
+      modalFilters.status,
+      modalFilters.action_type,
+      sortState.sort_field,
+      sortState.sort_direction,
+    ],
+  );
 
   // Reset pagination whenever filters change
   const { resetPagination } = pagination;
