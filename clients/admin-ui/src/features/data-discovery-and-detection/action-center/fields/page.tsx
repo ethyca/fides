@@ -63,7 +63,7 @@ import { useMultiSelect } from "./useMultiSelect";
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
     MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
-    resourceStatusLabel
+      resourceStatusLabel
       ? [status]
       : [],
   );
@@ -139,7 +139,16 @@ const ActionCenterFields: NextPage = () => {
       ? responseCount - excluded.length
       : selectedItems.length;
 
+  /** This is not ideal but we don't have a robust page caching mechanism required to do this correctly **/
   useEffect(() => {
+    if (!selected.length) {
+      resetMultiSelect()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex]);
+
+  useEffect(() => {
+    console.log("Data update")
     if (fieldsDataResponse) {
       updateListItems(
         fieldsDataResponse.items.map(({ urn, ...rest }) => ({
@@ -158,6 +167,8 @@ const ActionCenterFields: NextPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailsUrn]);
+
+
   /**
    * @todo: this should be handled on a form/state action level
    */
@@ -375,12 +386,12 @@ const ActionCenterFields: NextPage = () => {
           bordered: false,
           color: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
-                .color
+              .color
             : undefined,
           className: "font-normal text-[var(--ant-font-size-sm)]",
           children: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
-                .label
+              .label
             : null,
         }}
         actions={DRAWER_ACTIONS.map((action) => ({
@@ -445,10 +456,10 @@ const ActionCenterFields: NextPage = () => {
                   disabled={
                     resource?.diff_status
                       ? ![
-                          ...AVAILABLE_ACTIONS[
-                            DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                          ],
-                        ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                        ...AVAILABLE_ACTIONS[
+                        DIFF_TO_RESOURCE_STATUS[resource.diff_status]
+                        ],
+                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
                       : true
                   }
                   onChange={(values) =>
