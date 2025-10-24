@@ -25,7 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
 
 ### Fixed
-- Added Action guards on polling requests to avoid running access polling requests on erasure tasks [#6827](https://github.com/ethyca/fides/pull/6827)
+- Added action guards on polling requests to avoid running access polling requests on erasure tasks [#6827](https://github.com/ethyca/fides/pull/6827)
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
