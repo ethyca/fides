@@ -1504,6 +1504,7 @@ class TestPatchDuplicateDetectionConfig:
             "privacy_request_duplicate_detection": {
                 "enabled": True,
                 "time_window_days": 30,
+                "match_identity_fields": ["email", "phone_number"],
             }
         }
 
@@ -1521,6 +1522,9 @@ class TestPatchDuplicateDetectionConfig:
             response_settings["privacy_request_duplicate_detection"]["time_window_days"]
             == 30
         )
+        assert response_settings["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
 
         # Verify in database
         db_settings = db.query(ApplicationConfig).first()
@@ -1534,6 +1538,9 @@ class TestPatchDuplicateDetectionConfig:
             ]
             == 30
         )
+        assert db_settings.api_set["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
 
         # Patch single property
         updated_payload = {"privacy_request_duplicate_detection": {"enabled": False}}
@@ -1552,6 +1559,9 @@ class TestPatchDuplicateDetectionConfig:
             response_settings["privacy_request_duplicate_detection"]["time_window_days"]
             == 30
         )
+        assert response_settings["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
 
     def test_patch_duplicate_detection_invalid_time_window(
         self,
@@ -1616,3 +1626,6 @@ class TestPatchDuplicateDetectionConfig:
             assert (
                 config["privacy_request_duplicate_detection"]["time_window_days"] == 365
             )
+            assert config["privacy_request_duplicate_detection"][
+                "match_identity_fields"
+            ] == ["email"]

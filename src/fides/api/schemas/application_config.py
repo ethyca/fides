@@ -118,6 +118,11 @@ class DuplicateDetectionApplicationConfig(FidesSchema):
         le=3650,  # Max 10 years
     )
 
+    match_identity_fields: Optional[List[str]] = Field(
+        default=["email"],
+        description="Identity field names to match on for duplicate detection (e.g., 'email', 'phone_number'). Default is email only.",
+    )
+
     model_config = ConfigDict(extra="forbid")
 
 

@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
@@ -17,6 +19,11 @@ class DuplicateDetectionSettings(FidesSettings):
         description="Time window in days for duplicate detection. Default is 1 year.",
         ge=1,
         le=3650,  # Max 10 years
+    )
+
+    match_identity_fields: List[str] = Field(
+        default=["email"],
+        description="Identity field names to match on for duplicate detection (e.g., 'email', 'phone_number'). Default is email only.",
     )
 
     model_config = SettingsConfigDict(

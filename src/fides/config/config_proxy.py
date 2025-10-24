@@ -160,6 +160,7 @@ class DuplicateDetectionSettingsProxy(ConfigProxyBase):
 
     enabled: bool
     time_window_days: int
+    match_identity_fields: List[str]
 
 
 # pylint: disable=too-many-instance-attributes
