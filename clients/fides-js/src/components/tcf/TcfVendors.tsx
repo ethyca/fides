@@ -272,9 +272,7 @@ const PagedVendorData = ({
   } = useMemo(
     () => ({
       nonGVLVendors: activeChunk?.filter((v) => !v.isGvl),
-      consentGvlVendors: activeChunk?.filter(
-        (v) => v.isGvl && v.isConsent && !v.isSpecial && !v.isLegint,
-      ),
+      consentGvlVendors: activeChunk?.filter((v) => v.isGvl && v.isConsent),
       legintGvlVendors: activeChunk?.filter(
         (v) => v.isGvl && v.isLegint && !v.isConsent,
       ),
@@ -397,10 +395,8 @@ const TcfVendors = ({
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       // Consent tab: show consent GVL vendors first, then non-GVL vendors
       return [
-        ...vendors.filter(
-          (v) => v.isGvl && v.isConsent && !v.isSpecial && !v.isLegint,
-        ),
-        ...vendors.filter((v) => !v.isGvl && v.isConsent),
+        ...vendors.filter((v) => v.isGvl && v.isConsent),
+        ...vendors.filter((v) => !v.isGvl),
       ];
     }
     // Legitimate interests tab: show legint GVL vendors first, then special purpose GVL vendors
