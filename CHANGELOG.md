@@ -21,6 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.73.0..main)
 
+### Changed
+- Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
+- Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
+
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
 ### Added
@@ -34,9 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added confirmation modals for bulk actions on the new privacy requests page [#6784](https://github.com/ethyca/fides/pull/6784)
 - Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 - Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
-
-### Changed
-- Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
+- Added database model for the v3 consent documents [#6790](https://github.com/ethyca/fides/pull/6790) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
@@ -51,6 +53,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where the FidesJS would sometimes incorrectly display "GPC Overridden" on initial load. [#6728](https://github.com/ethyca/fides/pull/6728)
 - Allow external provider consent migration to get saved to BE [#6747](https://github.com/ethyca/fides/pull/6747)
 - Fixed action center routing to prevent empty page when reloading data explorer [#6791](https://github.com/ethyca/fides/pull/6791)
+- Fixed a bug where the "Request manager" navigation item wouldn't return users to the main request view [#6814](https://github.com/ethyca/fides/pull/6814)
 - Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 - Fixed missing reference value validation in SaaS requests to apply to all access requests [#6782](https://github.com/ethyca/fides/pull/6782)
 

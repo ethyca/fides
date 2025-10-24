@@ -16,7 +16,7 @@ const AddSystemsMenu = () => {
   const { dictionaryService: isCompassEnabled } = useFeatures();
   const router = useRouter();
   return (
-    <Flex>
+    <Flex className="absolute right-8 top-8">
       {isCompassEnabled && (
         <Dropdown
           trigger={["click"]}
