@@ -63,8 +63,8 @@ interface TreeDataNode {
   children?: TreeDataNode[];
 }
 
-// API Preview Component
-const ApiPreview = ({
+// POST API Preview Component
+const PostApiPreview = ({
   currentSavedKeys,
   previousSavedKeys,
 }: {
@@ -134,7 +134,7 @@ const ApiPreview = ({
           border: "1px solid #e9ecef",
           borderRadius: "8px",
           padding: "16px",
-          minHeight: "400px",
+          height: "400px",
           fontFamily: "monospace",
           fontSize: "12px",
           overflow: "auto",
@@ -154,6 +154,132 @@ const ApiPreview = ({
             No API request will be made until preferences are selected.
           </Text>
         )}
+      </div>
+    </div>
+  );
+};
+
+// GET API Preview Component
+const GetApiPreview = ({
+  dbState,
+  consentMechanism,
+}: {
+  dbState: Record<string, "opt_in" | "opt_out">;
+  consentMechanism: ConsentMechanism;
+}) => {
+  const generateGetResponse = useCallback(() => {
+    const parentValue = dbState[PARENT_KEY];
+
+    // If no parent value in DB, use mechanism default
+    // opt-in mechanism = default is opt_out (must actively opt in)
+    // opt-out mechanism = default is opt_in (must actively opt out)
+    let effectiveParentValue: "opt_in" | "opt_out";
+    if (parentValue !== undefined) {
+      effectiveParentValue = parentValue;
+    } else {
+      effectiveParentValue =
+        consentMechanism === "opt-in" ? "opt_out" : "opt_in";
+    }
+
+    const preferences: any[] = [];
+
+    // Add parent preference
+    preferences.push({
+      notice_key: PARENT_KEY,
+      preference: effectiveParentValue,
+      notice_history_id: PARENT_KEY_WITH_UUID,
+      parent_key: null,
+    });
+
+    // Add child preferences with consolidation logic
+    TREE_NODES.forEach((node) => {
+      let childValue: "opt_in" | "opt_out";
+
+      if (effectiveParentValue === "opt_out") {
+        // Rule 1: Parent opt_out overrides all children
+        childValue = "opt_out";
+      } else {
+        // Parent is opt_in
+        const explicitChildValue = dbState[node.title];
+        if (explicitChildValue) {
+          // Rule 3: Use explicit child value
+          childValue = explicitChildValue;
+        } else {
+          // Rule 2: Inherit parent value (or use mechanism default if no parent in DB)
+          childValue = effectiveParentValue;
+        }
+      }
+
+      preferences.push({
+        notice_key: node.title,
+        preference: childValue,
+        notice_history_id: node.key,
+        parent_key: PARENT_KEY,
+      });
+    });
+
+    return { preferences };
+  }, [dbState, consentMechanism]);
+
+  const getResponse = generateGetResponse();
+
+  return (
+    <div>
+      <Text fontSize="md" fontWeight="bold" mb={4}>
+        Current Preferences (consolidated)
+      </Text>
+      <div
+        style={{
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #e9ecef",
+          borderRadius: "8px",
+          padding: "16px",
+          height: "400px",
+          fontFamily: "monospace",
+          fontSize: "12px",
+          overflow: "auto",
+        }}
+      >
+        <Text fontSize="sm" fontWeight="bold" mb={2} color="green.600">
+          GET /api/v3/privacy-preferences/current?notice_key=email_marketing
+        </Text>
+        <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+          {JSON.stringify(getResponse, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+};
+
+// DB State Preview Component
+const DbStatePreview = ({
+  dbState,
+}: {
+  dbState: Record<string, "opt_in" | "opt_out">;
+}) => {
+  return (
+    <div>
+      <Text fontSize="md" fontWeight="bold" mb={4}>
+        Current DB State
+      </Text>
+      <div
+        style={{
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #e9ecef",
+          borderRadius: "8px",
+          padding: "16px",
+          height: "300px",
+          fontFamily: "monospace",
+          fontSize: "12px",
+          overflow: "auto",
+        }}
+      >
+        <Text fontSize="sm" fontWeight="bold" mb={2} color="purple.600">
+          Raw DB State
+        </Text>
+        <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+          {JSON.stringify(dbState, null, 2)}
+        </pre>
       </div>
     </div>
   );
@@ -338,6 +464,9 @@ const PrivacyNoticesSandbox: NextPage = () => {
   const [previousSavedKeys, setPreviousSavedKeys] = useState<CheckedKeysType>(
     [],
   );
+  const [dbState, setDbState] = useState<Record<string, "opt_in" | "opt_out">>(
+    {},
+  );
 
   const handleMechanismChange = useCallback((mechanism: ConsentMechanism) => {
     setConsentMechanism(mechanism);
@@ -346,22 +475,48 @@ const PrivacyNoticesSandbox: NextPage = () => {
     setCheckedKeys(newCheckedKeys);
     setSavedCheckedKeys(newCheckedKeys); // Set saved state to match the new default
     setPreviousSavedKeys(newCheckedKeys); // Reset previous saved state too
+
+    // Clear DB state when mechanism changes (reset to empty)
+    setDbState({});
   }, []);
 
   const handleSave = useCallback(() => {
     setPreviousSavedKeys(savedCheckedKeys); // Store the previous saved state
     setSavedCheckedKeys(checkedKeys); // Update saved state to current
+
+    // Update DB state with changes
+    const currentArray = Array.isArray(checkedKeys)
+      ? checkedKeys
+      : checkedKeys.checked || [];
+    const previousArray = Array.isArray(savedCheckedKeys)
+      ? savedCheckedKeys
+      : savedCheckedKeys.checked || [];
+
+    const changedKeys = ALL_KEYS.filter((key) => {
+      const isCurrentlyChecked = currentArray.includes(key);
+      const wasPreviouslyChecked = previousArray.includes(key);
+      return isCurrentlyChecked !== wasPreviouslyChecked;
+    });
+
+    setDbState((prev) => {
+      const newState = { ...prev };
+      changedKeys.forEach((key) => {
+        const noticeKey =
+          key === PARENT_KEY_WITH_UUID
+            ? PARENT_KEY
+            : TREE_NODES.find((node) => node.key === key)?.title ||
+              key.toString();
+        const isChecked = currentArray.includes(key);
+        newState[noticeKey] = isChecked ? "opt_in" : "opt_out";
+      });
+      return newState;
+    });
   }, [checkedKeys, savedCheckedKeys]);
 
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Privacy Notices Sandbox">
-          <Text fontSize="sm" width={{ base: "100%", lg: "60%" }}>
-            Sandbox page for testing privacy notice components and
-            functionality.
-          </Text>
-        </PageHeader>
+        <PageHeader heading="Privacy Notices Sandbox" />
 
         <div style={{ marginTop: "20px", display: "flex", gap: "24px" }}>
           {/* Left Column - Consent Management */}
@@ -391,13 +546,26 @@ const PrivacyNoticesSandbox: NextPage = () => {
             </Button>
           </div>
 
-          {/* Right Column - API Preview */}
+          {/* Right Column - POST API Preview */}
           <div style={{ flex: "1", minWidth: "0" }}>
-            <ApiPreview
+            <PostApiPreview
               currentSavedKeys={savedCheckedKeys}
               previousSavedKeys={previousSavedKeys}
             />
           </div>
+        </div>
+
+        {/* GET API Preview Section */}
+        <div style={{ marginTop: "24px" }}>
+          <GetApiPreview
+            dbState={dbState}
+            consentMechanism={consentMechanism}
+          />
+        </div>
+
+        {/* DB State Preview Section */}
+        <div style={{ marginTop: "24px" }}>
+          <DbStatePreview dbState={dbState} />
         </div>
       </Content>
     </Layout>
