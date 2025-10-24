@@ -83,7 +83,15 @@ const usePrivacyRequestsFilters = ({
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
     };
-  }, [fuzzySearchTerm, modalFilters, sortState]);
+  }, [
+    fuzzySearchTerm,
+    modalFilters.from,
+    modalFilters.to,
+    modalFilters.status,
+    modalFilters.action_type,
+    sortState.sort_field,
+    sortState.sort_direction,
+  ]);
 
   // Reset pagination whenever filters change
   const { resetPagination } = pagination;
