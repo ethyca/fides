@@ -303,8 +303,6 @@ const MonitorTree = ({
       const currentNodePagination = nodePagination[key];
 
       if (currentNodePagination) {
-        const newPage = currentNodePagination.pageIndex + 1;
-
         // Show skeleton loaders while loading
         setTreeData((origin) => {
           return appendTreeNodeData(
@@ -324,7 +322,7 @@ const MonitorTree = ({
             monitor_config_id: monitorId,
             staged_resource_urn: key,
             size: TREE_PAGE_SIZE,
-            page: newPage,
+            page: currentNodePagination.pageIndex + 1,
           },
           fastUpdateFn: (data) => {
             // Fast query: append the new nodes
@@ -333,7 +331,10 @@ const MonitorTree = ({
             );
             setNodePaginationState((prevState) => ({
               ...prevState,
-              [key]: { pageSize: TREE_PAGE_SIZE, pageIndex: newPage },
+              [key]: {
+                pageSize: TREE_PAGE_SIZE,
+                pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
+              },
             }));
           },
           detailedUpdateFn: (data) => {
