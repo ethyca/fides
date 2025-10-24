@@ -90,7 +90,7 @@ const ActionCenterFields: NextPage = () => {
     DatastoreStagedResourceAPIResponse[]
   >([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
+  const { data: fieldsDataResponse, isFetching } = useGetMonitorFieldsQuery({
     path: {
       monitor_config_id: monitorId,
     },
@@ -319,7 +319,8 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="overflow-scroll"
+              className="h-full overflow-scroll"
+              loading={isFetching}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
