@@ -7,14 +7,14 @@ import { ResourceStatusLabel } from "./MonitorFields.const";
 import { FieldActionTypeValue } from "./types";
 
 export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
-  "assign-categories": "Assign categories",
-  "promote-removals": "Promote removals",
-  "un-approve": "Un-approve",
-  "un-mute": "Restore",
   approve: "Approve",
+  "assign-categories": "Assign categories",
   classify: "Classify",
   mute: "Ignore",
   promote: "Confirm",
+  "promote-removals": "Promote removals",
+  "un-approve": "Un-approve",
+  "un-mute": "Restore",
 };
 
 export const DRAWER_ACTIONS = [
@@ -45,6 +45,7 @@ export const AVAILABLE_ACTIONS = {
   Ignored: [FieldActionType.UN_MUTE],
   Removed: [],
   Unlabeled: [FieldActionType.ASSIGN_CATEGORIES, FieldActionType.CLASSIFY],
+  Confirming: [],
 } as const satisfies Readonly<
   Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
 >;
