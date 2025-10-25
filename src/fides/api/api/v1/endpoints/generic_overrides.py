@@ -368,7 +368,7 @@ async def create_data_use(
     """
     try:
         return taxonomy_service.create_or_update_element(
-            "data_uses", data_use.model_dump()
+            "data_use", data_use.model_dump()
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
@@ -399,7 +399,7 @@ async def create_data_category(
 
     try:
         return taxonomy_service.create_or_update_element(
-            "data_categories", data_category.model_dump()
+            "data_category", data_category.model_dump()
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
@@ -430,7 +430,7 @@ async def create_data_subject(
 
     try:
         return taxonomy_service.create_or_update_element(
-            "data_subjects", data_subject.model_dump()
+            "data_subject", data_subject.model_dump()
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
