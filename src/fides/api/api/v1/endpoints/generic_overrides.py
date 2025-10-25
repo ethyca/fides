@@ -465,7 +465,7 @@ async def update_data_use(
         )
     try:
         result = taxonomy_service.update_element(
-            "data_uses", data_use.fides_key, data_use.model_dump()
+            "data_use", data_use.fides_key, data_use.model_dump()
         )
         if not result:
             raise HTTPException(
@@ -501,7 +501,7 @@ async def update_data_category(
         )
     try:
         result = taxonomy_service.update_element(
-            "data_categories", data_category.fides_key, data_category.model_dump()
+            "data_category", data_category.fides_key, data_category.model_dump()
         )
         if not result:
             raise HTTPException(
@@ -534,7 +534,7 @@ async def update_data_category_tagging_instructions(
     """
     try:
         result = taxonomy_service.update_element(
-            "data_categories",
+            "data_category",
             fides_key,
             {"tagging_instructions": tagging_instructions},
         )
@@ -568,7 +568,7 @@ async def delete_data_category_tagging_instructions(
     """
     try:
         result = taxonomy_service.update_element(
-            "data_categories",
+            "data_category",
             fides_key,
             {"tagging_instructions": None},
         )

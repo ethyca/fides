@@ -866,7 +866,7 @@ class TestTaxonomyServiceAuditEvents:
         self, db, taxonomy_service
     ):
         """Test that multiple operations create separate audit events."""
-        taxonomy_type = "data_categories"
+        taxonomy_type = "data_category"
 
         # Track initial audit event count
         initial_count = db.query(EventAudit).count()
