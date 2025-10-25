@@ -21,15 +21,15 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
-# Used for validation logic
-LEGACY_TAXONOMY_KEYS_WITHOUT_SYSTEM_GROUP = {
+# Legacy Fideslang taxonomy keys
+LEGACY_TAXONOMY_KEYS = {
     "data_category",
     "data_use",
     "data_subject",
 }
 
-# Includes all DB-pre-populated Taxonomy entries
-LEGACY_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
+# Taxonomies that are managed by Fides (legacy taxonomies and system group)
+MANAGED_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
 
 
 class TargetType(str, Enum):
@@ -91,7 +91,7 @@ class Taxonomy(Base, FidesBase):
         fides_key = data.get("fides_key")
         # Specifically exclude system_group to allow for creation during tests
         # We already have unique constraints on fides_key to prevent duplicates on DB level
-        if fides_key in LEGACY_TAXONOMY_KEYS_WITHOUT_SYSTEM_GROUP:
+        if fides_key in MANAGED_TAXONOMY_KEYS:
             raise ValidationError(
                 f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
             )
