@@ -278,7 +278,6 @@ export const WithSearch: Story = {
         <div>
           <Filter
             activeFiltersCount={checkedKeys.length}
-            showSearch={true}
             treeProps={{
               selectable: false,
               checkable: true,
