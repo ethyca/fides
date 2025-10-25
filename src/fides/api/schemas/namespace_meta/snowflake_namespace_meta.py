@@ -1,5 +1,7 @@
 from typing import Literal, Set, Tuple
 
+from pydantic import ConfigDict, Field
+
 from fides.api.schemas.connection_configuration import secrets_schemas
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 
@@ -15,7 +17,13 @@ class SnowflakeNamespaceMeta(NamespaceMeta):
 
     connection_type: Literal["snowflake"] = "snowflake"
     database_name: str
-    schema: str  # type: ignore[assignment]
+    schema_name: str = Field(
+        alias="schema",
+        title="Schema",
+        description="The Snowflake schema inside the database.",
+    )
+
+    model_config = ConfigDict(populate_by_name=True)
 
     @classmethod
     def get_fallback_secret_fields(cls) -> Set[Tuple]:
