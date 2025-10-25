@@ -25,6 +25,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
 - Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
 
+### Developer Experience
+- Added reusable Filter component with optional search and tree-based filtering to FidesUI design system [#6845](https://github.com/ethyca/fides/pull/6845)
+
 ### Fixed
 - Added action guards on polling requests to avoid running access polling requests on erasure tasks [#6827](https://github.com/ethyca/fides/pull/6827)
 
