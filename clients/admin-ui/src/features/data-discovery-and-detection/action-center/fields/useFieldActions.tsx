@@ -64,6 +64,12 @@ export const useFieldActions = (
     }
 
     toastSuccess(FieldActionType.MUTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // An indicator may change to empty if there are no child resources that the user is expected to act upon.
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleUnMute = async (urns: string[]) => {
@@ -77,6 +83,12 @@ export const useFieldActions = (
     }
 
     toastSuccess(FieldActionType.UN_MUTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // An indicator can change to "addition" or "change" since the user could now act on its unmuted children
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handlePromote = async (urns: string[]) => {
@@ -92,6 +104,7 @@ export const useFieldActions = (
     toastSuccess(FieldActionType.PROMOTE, urns.length);
 
     // Refresh the tree to reflect updated status
+    // An indicator can change to empty if all its children were promoted.
     if (onRefreshTree) {
       await onRefreshTree(urns);
     }
@@ -111,6 +124,7 @@ export const useFieldActions = (
     toastSuccess(FieldActionType.CLASSIFY, urns.length);
 
     // Refresh the tree to reflect updated status
+    // The indicators of the parents of affected children may change to "change" if it was not already in that state.
     if (onRefreshTree) {
       await onRefreshTree(urns);
     }
@@ -136,7 +150,8 @@ export const useFieldActions = (
     toastSuccess(FieldActionType.ASSIGN_CATEGORIES, urns.length);
 
     // Refresh the tree to reflect updated status
-    if (!!field?.user_assigned_data_categories && onRefreshTree) {
+    // The indicators for the parents of affected children may change to "change" if all of their children were additions.
+    if (onRefreshTree) {
       await onRefreshTree(urns);
     }
   };
@@ -153,6 +168,9 @@ export const useFieldActions = (
     }
 
     toastSuccess(FieldActionType.APPROVE, urns.length);
+
+    // The indicators are not refreshed because the resource approved by the approve action had already been classified,
+    // and its parent already had the "change" indicator.
   };
 
   return {

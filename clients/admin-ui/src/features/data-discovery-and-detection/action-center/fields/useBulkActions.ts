@@ -46,9 +46,13 @@ export const useBulkActions = (
 
       // Refresh the tree to reflect updated status
       // Note: For bulk actions we can't get the specific URNs affected,
-      // so we pass the staged_resource_urn filter if available
-      if (onRefreshTree && filterParams.query.staged_resource_urn) {
-        await onRefreshTree(filterParams.query.staged_resource_urn);
+      // so we pass the staged_resource_urn filter if available.
+      // If the action is APPROVE, the indicators are not refreshed because the
+      // resource approved by the approve action had already been classified,
+      // and its parent already had the "change" indicator.
+      if (onRefreshTree && actionType !== FieldActionType.APPROVE) {
+        const resources = filterParams.query.staged_resource_urn || [];
+        await onRefreshTree(resources);
       }
     };
 

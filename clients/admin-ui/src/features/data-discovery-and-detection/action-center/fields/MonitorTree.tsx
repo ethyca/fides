@@ -18,7 +18,10 @@ import {
 } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
-import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useLazyGetMonitorTreeAncestorsStatusesQuery,
+  useLazyGetMonitorTreeQuery,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
   Page_DatastoreStagedResourceTreeAPIResponse_,
   StagedResourceTypeValue,
@@ -32,6 +35,7 @@ import {
   TREE_PAGE_SIZE,
 } from "./MonitorFields.const";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
+import { removeChildrenFromNode, updateNodeStatus } from "./treeUtils";
 import { CustomTreeDataNode } from "./types";
 
 const mapResponseToTreeData = (
@@ -124,65 +128,6 @@ const updateTreeData = (
     return node;
   });
 
-/**
- * Finds a node and all its ancestors in the tree
- * @param treeData The complete tree
- * @param targetUrn The URN of the node to search for
- * @param currentPath The current path of ancestors (used in recursion)
- * @returns An array with the found node and all its ancestors, or an empty array if not found
- */
-const findNodeWithAncestors = (
-  treeData: CustomTreeDataNode[],
-  targetUrn: string,
-  currentPath: CustomTreeDataNode[] = [],
-): CustomTreeDataNode[] => {
-  // eslint-disable-next-line no-restricted-syntax
-  for (const node of treeData) {
-    // If we find the node, return the complete path (ancestors + current node)
-    if (node.key === targetUrn) {
-      return [...currentPath, node];
-    }
-
-    // If the node has children, search recursively
-    if (node.children && node.children.length > 0) {
-      const result = findNodeWithAncestors(node.children, targetUrn, [
-        ...currentPath,
-        node,
-      ]);
-
-      // If we found the node in this subtree, return the result
-      if (result.length > 0) {
-        return result;
-      }
-    }
-  }
-
-  // Node was not found at this level
-  return [];
-};
-
-/**
- * Gets all unique URNs of the resources and their ancestors
- * @param treeData The complete tree
- * @param urns The URNs of the resources that were updated
- * @returns A Map with original URNs as keys and their full paths as values (path includes ancestors)
- */
-const getUrnsWithAncestors = (
-  treeData: CustomTreeDataNode[],
-  urns: string[],
-): Map<string, CustomTreeDataNode[]> => {
-  const urnPaths = new Map<string, CustomTreeDataNode[]>();
-
-  urns.forEach((urn) => {
-    const pathToNode = findNodeWithAncestors(treeData, urn);
-    if (pathToNode.length > 0) {
-      urnPaths.set(urn, pathToNode);
-    }
-  });
-
-  return urnPaths;
-};
-
 export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
@@ -198,11 +143,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
     const router = useRouter();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
     const [trigger] = useLazyGetMonitorTreeQuery();
+    const [triggerAncestorsStatuses] =
+      useLazyGetMonitorTreeAncestorsStatusesQuery();
     const [nodePagination, setNodePaginationState] = useState<
       Record<string, PaginationState>
     >({});
     const [treeData, setTreeData] = useState<CustomTreeDataNode[]>([]);
-    console.log("VITO treeData", treeData);
+    const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
     // Track request sequences to prevent race conditions
     const requestSequenceRef = useRef<Record<string, number>>({});
     // Track whether detailed query has completed for each node to prevent fast query from overwriting it
@@ -234,7 +181,6 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         requestSequenceRef.current[nodeKey] = currentSequence;
 
         // Trigger both queries simultaneously
-        // ACA SE HACE LA QUERY
         const fastQuery = trigger({
           ...queryParams,
           include_descendant_details: false,
@@ -274,38 +220,45 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       [trigger],
     );
 
-    const onLoadData: TreeProps["loadData"] = ({ children, key }) => {
-      return new Promise<void>((resolve) => {
-        // if already loaded children, state will be used
-        if (children) {
+    const onLoadData: TreeProps["loadData"] = useCallback(
+      ({ children, key }: { children?: any; key: React.Key }) => {
+        return new Promise<void>((resolve) => {
+          // if already loaded children, state will be used
+          if (children) {
+            resolve();
+            return;
+          }
+
+          const nodeKey = key.toString();
+          fetchTreeDataWithDetails({
+            nodeKey,
+            queryParams: {
+              monitor_config_id: monitorId,
+              staged_resource_urn: nodeKey,
+              size: TREE_PAGE_SIZE,
+            },
+            updateFn: (data) => {
+              setTreeData((origin) =>
+                updateTreeData(
+                  origin,
+                  key,
+                  mapResponseToTreeData(data, nodeKey),
+                ),
+              );
+            },
+            onFastDataLoaded: () => {
+              setNodePaginationState({
+                ...nodePagination,
+                [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
+              });
+            },
+          });
+
           resolve();
-          return;
-        }
-
-        const nodeKey = key.toString();
-        fetchTreeDataWithDetails({
-          nodeKey,
-          queryParams: {
-            monitor_config_id: monitorId,
-            staged_resource_urn: nodeKey,
-            size: TREE_PAGE_SIZE,
-          },
-          updateFn: (data) => {
-            setTreeData((origin) =>
-              updateTreeData(origin, key, mapResponseToTreeData(data, nodeKey)),
-            );
-          },
-          onFastDataLoaded: () => {
-            setNodePaginationState({
-              ...nodePagination,
-              [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
-            });
-          },
         });
-
-        resolve();
-      });
-    };
+      },
+      [fetchTreeDataWithDetails, monitorId, nodePagination],
+    );
 
     const onLoadMore = (key: string) => {
       const currentNodePagination = nodePagination?.[key];
@@ -350,50 +303,97 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
     };
 
     /**
+     * Collapses a node by removing it from expandedKeys and removing its children from the tree
+     * @param urn The URN of the node to collapse
+     */
+    const collapseNodeAndRemoveChildren = useCallback((urn: string) => {
+      // Remove the URN from expandedKeys to collapse it
+      setExpandedKeys((currentExpandedKeys) =>
+        currentExpandedKeys.filter((key) => key.toString() !== urn),
+      );
+
+      // Remove children from the tree
+      setTreeData((origin) => removeChildrenFromNode(origin, urn));
+
+      // Clear pagination state for this node to force re-fetch
+      setNodePaginationState((currentPagination) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [urn]: removedPagination, ...rest } = currentPagination;
+        return rest;
+      });
+
+      // Clear request tracking refs for this node
+      delete requestSequenceRef.current[urn];
+      delete detailedQueryCompletedRef.current[urn];
+    }, []);
+
+    /**
      * Refreshes the specified resources and all their ancestors in the tree
      * @param urns The URNs of the resources that were updated
      */
     const refreshResourcesAndAncestors = useCallback(
       async (urns: string[]) => {
-        console.log("VITO refreshResourcesAndAncestors called");
-        // Get paths for each updated resource
-        const urnPathsMap = getUrnsWithAncestors(treeData, urns);
-
-        // Collect all unique URNs that need to be refreshed
-        const urnsToRefresh = new Set<string>();
-        urnPathsMap.forEach((pathToNode) => {
-          pathToNode.forEach((node) => {
-            if (typeof node.key === "string") {
-              urnsToRefresh.add(node.key);
-            }
+        const updateAncestorsForUrn = async (urn?: string) => {
+          const { data: ancestorsData } = await triggerAncestorsStatuses({
+            monitor_config_id: monitorId,
+            ...(urn && { staged_resource_urn: urn }),
           });
-        });
 
-        // Refresh each unique URN in parallel
-        await Promise.all(
-          Array.from(urnsToRefresh).map(async (urnToRefresh) => {
-            const isRootNode = urnToRefresh === monitorId;
-            await fetchTreeDataWithDetails({
-              nodeKey: urnToRefresh,
-              queryParams: {
-                monitor_config_id: monitorId,
-                staged_resource_urn: isRootNode ? undefined : urnToRefresh,
-                size: TREE_PAGE_SIZE,
-              },
-              updateFn: (data) => {
-                setTreeData((origin) =>
-                  updateTreeData(
-                    origin,
-                    urnToRefresh,
-                    mapResponseToTreeData(data, urnToRefresh),
-                  ),
-                );
-              },
+          if (!ancestorsData) {
+            return;
+          }
+
+          // Collapse the affected URN and remove its children
+          if (urn) {
+            collapseNodeAndRemoveChildren(urn);
+          } else {
+            // ancestorsData contains the databases of the monitor
+            ancestorsData.forEach((ancestorNode) => {
+              collapseNodeAndRemoveChildren(ancestorNode.urn);
             });
-          }),
-        );
+          }
+
+          // Update the status of each ancestor node
+          setTreeData((origin) => {
+            let updatedTree = origin;
+
+            ancestorsData.forEach((ancestorNode) => {
+              updatedTree = updateNodeStatus(
+                updatedTree,
+                ancestorNode.urn,
+                ancestorNode.update_status,
+                ancestorNode.has_grandchildren ?? false,
+              );
+            });
+
+            return updatedTree;
+          });
+        };
+
+        if (urns.length === 0) {
+          await updateAncestorsForUrn();
+          return;
+        }
+
+        // Process all URNs in parallel
+        await Promise.all(urns.map((urn) => updateAncestorsForUrn(urn)));
       },
-      [treeData, fetchTreeDataWithDetails, monitorId],
+      [triggerAncestorsStatuses, monitorId, collapseNodeAndRemoveChildren],
+    );
+
+    /**
+     * Handles tree expansion - if a node without children is being expanded, load its data
+     */
+    const handleExpand = useCallback(
+      (newExpandedKeys: Key[], info: { expanded: boolean; node: any }) => {
+        setExpandedKeys(newExpandedKeys);
+
+        // If expanding a node without children, manually trigger loadData
+        if (info.expanded && !info.node.children && onLoadData) {
+          onLoadData(info.node);
+        }
+      },
+      [onLoadData],
     );
 
     // Expose the function through the ref
@@ -431,13 +431,14 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         <Tree
           loadData={onLoadData}
           treeData={treeData}
+          expandedKeys={expandedKeys}
+          onExpand={handleExpand}
           onSelect={(_, info) =>
             setSelectedNodeKeys(info.selectedNodes.map(({ key }) => key))
           }
           showIcon
           showLine
           blockNode
-          multiple
           rootClassName="h-full overflow-x-hidden"
           // eslint-disable-next-line react/no-unstable-nested-components
           titleRender={(node) => (
