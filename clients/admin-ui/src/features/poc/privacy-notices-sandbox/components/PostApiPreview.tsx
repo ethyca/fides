@@ -82,7 +82,7 @@ const PostApiPreview = ({
           <Text fontSize="sm" fontWeight="bold" mb={2} color="blue.600">
             POST /api/v3/privacy-preferences
           </Text>
-          <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+          <pre className="m-0 whitespace-pre-wrap">
             {JSON.stringify(mockRequest, null, 2)}
           </pre>
         </>

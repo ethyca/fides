@@ -73,7 +73,7 @@ const GetApiPreview = ({
       <Text fontSize="sm" fontWeight="bold" mb={2} color="green.600">
         GET /api/v3/privacy-preferences/current?notice_key=email_marketing
       </Text>
-      <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+      <pre className="m-0 whitespace-pre-wrap">
         {JSON.stringify(getResponse, null, 2)}
       </pre>
     </PreviewCard>

@@ -12,7 +12,7 @@ const DbStatePreview = ({
       <Text fontSize="sm" fontWeight="bold" mb={2} color="purple.600">
         Raw DB State
       </Text>
-      <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+      <pre className="m-0 whitespace-pre-wrap">
         {JSON.stringify(dbState, null, 2)}
       </pre>
     </PreviewCard>
