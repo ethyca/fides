@@ -35,6 +35,7 @@ export const LIST_ITEM_ACTIONS = [
 
 export const AVAILABLE_ACTIONS = {
   "In Review": [
+    FieldActionType.CLASSIFY,
     FieldActionType.MUTE,
     FieldActionType.APPROVE,
     FieldActionType.PROMOTE,
