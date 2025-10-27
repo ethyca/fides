@@ -10,14 +10,17 @@ import {
   DisableChildrenTree,
   GetApiPreview,
   PostApiPreview,
-} from "./components";
+} from "../../features/poc/privacy-notices-sandbox/components";
 import {
   ALL_KEYS,
   PARENT_KEY,
   PARENT_KEY_WITH_UUID,
   TREE_NODES,
-} from "./constants";
-import type { CheckedKeysType, ConsentMechanism } from "./types";
+} from "../../features/poc/privacy-notices-sandbox/constants";
+import type {
+  CheckedKeysType,
+  ConsentMechanism,
+} from "../../features/poc/privacy-notices-sandbox/types";
 
 const { Content } = Layout;
 
