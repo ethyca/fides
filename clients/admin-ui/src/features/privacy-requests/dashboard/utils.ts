@@ -9,7 +9,7 @@ interface IdentityWithKey {
 interface CustomFieldWithKey {
   key: string;
   label: string;
-  value: any;
+  value: unknown;
 }
 
 export const getPrimaryIdentity = (
