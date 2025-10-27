@@ -13,6 +13,7 @@ import {
   useToast,
 } from "fidesui";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { capitalize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
@@ -208,10 +209,17 @@ export const InProgressMonitorTaskItem = ({
               )}
             </Space>
             {task.status === "error" && (
-              <Space className="pl-1">
+              <Space className="pl-1" align="center">
                 <Text type="secondary" size="sm">
-                  {task.message || "Unknown error"}
+                  {task.message?.split("\n")[0] || "Unknown error"}
                 </Text>
+                {task.message && (
+                  <ClipboardButton
+                    copyText={task.message}
+                    size="small"
+                    className="ml-1"
+                  />
+                )}
               </Space>
             )}
           </Space>
