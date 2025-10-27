@@ -5,7 +5,7 @@ import {
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui";
-import { isArray } from "lodash";
+import { isArray, toString } from "lodash";
 import React from "react";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
@@ -78,7 +78,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 <LabeledTag key={field.key} label={field.label}>
                   {isArray(field.value)
                     ? field.value.join(" - ")
-                    : field.value.toString()}
+                    : toString(field.value)}
                 </LabeledTag>
               ))}
             </Flex>
