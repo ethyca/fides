@@ -118,8 +118,13 @@ export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 
 // Export utils
+export * from "./components/data-display/filter.utils";
 export * from "./components/data-display/location.utils";
 export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
+
+// Export data-display components
+export type { FilterProps } from "./components/data-display/Filter";
+export { Filter } from "./components/data-display/Filter";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
