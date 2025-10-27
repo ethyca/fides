@@ -93,9 +93,9 @@ const PrivacyNoticesSandbox: NextPage = () => {
       <Content className="overflow-auto px-10 py-6">
         <PageHeader heading="Privacy Notices Sandbox" />
 
-        <div style={{ marginTop: "20px", display: "flex", gap: "24px" }}>
+        <div className="mt-5 flex gap-6">
           {/* Left Column - Consent Management */}
-          <div style={{ flex: "1", minWidth: "0" }}>
+          <div className="min-w-0 flex-1">
             <Text fontSize="md" fontWeight="bold" mb={4}>
               Notice configuration
             </Text>
@@ -112,17 +112,13 @@ const PrivacyNoticesSandbox: NextPage = () => {
               onCheckedKeysChange={setCheckedKeys}
             />
 
-            <Button
-              type="primary"
-              onClick={handleSave}
-              style={{ marginTop: "16px" }}
-            >
+            <Button type="primary" onClick={handleSave} className="mt-4">
               Save Preferences
             </Button>
           </div>
 
           {/* Right Column - POST API Preview */}
-          <div style={{ flex: "1", minWidth: "0" }}>
+          <div className="min-w-0 flex-1">
             <PostApiPreview
               currentSavedKeys={savedCheckedKeys}
               previousSavedKeys={previousSavedKeys}
@@ -132,7 +128,7 @@ const PrivacyNoticesSandbox: NextPage = () => {
         </div>
 
         {/* GET API Preview Section */}
-        <div style={{ marginTop: "24px" }}>
+        <div className="mt-6">
           <GetApiPreview
             dbState={dbState}
             consentMechanism={consentMechanism}
@@ -140,7 +136,7 @@ const PrivacyNoticesSandbox: NextPage = () => {
         </div>
 
         {/* DB State Preview Section */}
-        <div style={{ marginTop: "24px" }}>
+        <div className="mt-6">
           <DbStatePreview dbState={dbState} />
         </div>
       </Content>

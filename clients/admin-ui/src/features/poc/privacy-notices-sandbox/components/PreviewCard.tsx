@@ -16,16 +16,8 @@ const PreviewCard = ({
         {title}
       </Text>
       <div
-        style={{
-          backgroundColor: "#f8f9fa",
-          border: "1px solid #e9ecef",
-          borderRadius: "8px",
-          padding: "16px",
-          height,
-          fontFamily: "monospace",
-          fontSize: "12px",
-          overflow: "auto",
-        }}
+        className="overflow-auto rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-xs"
+        style={{ height }}
       >
         {children}
       </div>

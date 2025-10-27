@@ -19,18 +19,11 @@ const ConsentMechanismToggle = ({
   );
 
   return (
-    <div
-      style={{
-        marginBottom: "16px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-      }}
-    >
+    <div className="mb-4 flex items-center gap-3">
       <Text fontSize="sm" fontWeight="medium">
         Consent Mechanism:
       </Text>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div className="flex items-center gap-2">
         <Text
           fontSize="sm"
           color={mechanism === "opt-in" ? "primary.500" : "gray.500"}
