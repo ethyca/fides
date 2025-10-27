@@ -9,11 +9,13 @@ from fides.api.models.fides_user import FidesUser
 
 class IdentityDefinitionType(str, Enum):
     """Enum for the type of identity"""
+
     EMAIL = "email"
     PHONE_NUMBER = "phone_number"
     UUID = "uuid"
     STRING = "string"
     INTEGER = "integer"
+
 
 class IdentityDefinition(Base):
     """Identity definition model for registering identities in Fides."""

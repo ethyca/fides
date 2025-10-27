@@ -38,9 +38,11 @@ class TestIdentityDefinition:
         assert identity_definition.created_by == user.id
 
         # Verify persistence by retrieving from database
-        retrieved = db.query(IdentityDefinition).filter(
-            IdentityDefinition.identity_key == identity_key
-        ).first()
+        retrieved = (
+            db.query(IdentityDefinition)
+            .filter(IdentityDefinition.identity_key == identity_key)
+            .first()
+        )
         assert retrieved is not None
         assert retrieved.identity_key == identity_key
         assert retrieved.name == name
