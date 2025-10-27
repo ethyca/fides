@@ -1,4 +1,10 @@
-import { AntFlex as Flex, AntList as List, AntTag as Tag } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntList as List,
+  AntTag as Tag,
+  formatIsoLocation,
+  isoStringToEntry,
+} from "fidesui";
 import { isArray } from "lodash";
 import React from "react";
 
@@ -30,7 +36,12 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
   const otherIdentities = getOtherIdentities(item.identity, primaryIdentity);
   const customFields = getCustomFields(item.custom_privacy_request_fields);
 
-  const hasExtraDetails = otherIdentities.length > 0 || customFields.length > 0;
+  const hasExtraDetails =
+    otherIdentities.length > 0 || customFields.length > 0 || item.location;
+
+  const locationIsoEntry = item.location
+    ? isoStringToEntry(item.location)
+    : undefined;
 
   return (
     <List.Item>
@@ -48,6 +59,16 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
 
           {hasExtraDetails && (
             <Flex wrap gap="middle">
+              {item.location && (
+                <LabeledTag key="location" label="Location">
+                  {locationIsoEntry
+                    ? formatIsoLocation({
+                        isoEntry: locationIsoEntry,
+                        showFlag: true,
+                      })
+                    : item.location}
+                </LabeledTag>
+              )}
               {otherIdentities.map((identity) => (
                 <LabeledTag key={identity.key} label={identity.label}>
                   {identity.value}
