@@ -390,10 +390,10 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
      * Also cleans up all descendant nodes from all state tracking
      * @param urn The URN of the node to collapse
      */
-    const collapseNodeAndRemoveChildren = useCallback(
-      (urn: string) => {
+    const collapseNodeAndRemoveChildren = useCallback((urn: string) => {
+      setTreeData((currentTreeData) => {
         // First, find the node to get all its descendants
-        const node = findNodeByUrn(treeData, urn);
+        const node = findNodeByUrn(currentTreeData, urn);
         const allUrnsToClean = [urn];
 
         if (node) {
@@ -407,9 +407,6 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             (key) => !allUrnsToClean.includes(key.toString()),
           ),
         );
-
-        // Remove children from the tree
-        setTreeData((origin) => removeChildrenFromNode(origin, urn));
 
         // Clear pagination state for this node and all descendants
         setNodePaginationState((currentPagination) => {
@@ -425,9 +422,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           delete requestSequenceRef.current[urnToClean];
           delete detailedQueryCompletedRef.current[urnToClean];
         });
-      },
-      [treeData],
-    );
+
+        // Remove children from the tree
+        return removeChildrenFromNode(currentTreeData, urn);
+      });
+    }, []);
 
     /**
      * Refreshes the specified resources and all their ancestors in the tree
@@ -456,19 +455,17 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           }
 
           // Update the status of each ancestor node
-          setTreeData((origin) => {
-            let updatedTree = origin;
-
-            ancestorsData.forEach((ancestorNode) => {
-              updatedTree = updateNodeStatus(
-                updatedTree,
-                ancestorNode.urn,
-                ancestorNode.update_status,
-              );
-            });
-
-            return updatedTree;
-          });
+          setTreeData((origin) =>
+            ancestorsData.reduce(
+              (tree, ancestorNode) =>
+                updateNodeStatus(
+                  tree,
+                  ancestorNode.urn,
+                  ancestorNode.update_status,
+                ),
+              origin,
+            ),
+          );
         };
 
         if (urns.length === 0) {
