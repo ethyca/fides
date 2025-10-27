@@ -3,7 +3,6 @@ import {
   AntFlex as Flex,
   AntTitle as Title,
   AntTree as Tree,
-  AntTreeProps as TreeProps,
   SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -116,6 +115,64 @@ const updateTreeData = (
     return node;
   });
 
+/**
+ * Merges new children into existing children by updating nodes with matching keys.
+ * Used when the detailed query returns to update nodes that were initially added by the fast query.
+ */
+const mergeTreeNodeData = (
+  list: CustomTreeDataNode[],
+  key: React.Key,
+  newChildren: CustomTreeDataNode[],
+): CustomTreeDataNode[] =>
+  list.map((node) => {
+    if (node.key === key) {
+      const existingChildren = node.children ?? [];
+
+      // Filter out skeleton and load more nodes
+      const filteredChildren = existingChildren.filter(
+        (child) =>
+          !(
+            child.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX) ||
+            child.key.toString().startsWith(TREE_NODE_SKELETON_KEY_PREFIX)
+          ),
+      );
+
+      // Create maps for efficient O(1) lookups
+      const newChildrenMap = new Map(
+        newChildren.map((child) => [child.key, child]),
+      );
+      const existingChildrenMap = new Map(
+        filteredChildren.map((child) => [child.key, child]),
+      );
+
+      // Merge new children: update existing ones with detailed data, keep order
+      const mergedChildren = filteredChildren.map((existingChild) => {
+        const matchingNewChild = newChildrenMap.get(existingChild.key);
+        return matchingNewChild ?? existingChild;
+      });
+
+      // Add any new children that weren't in the existing list
+      newChildren.forEach((newChild) => {
+        if (!existingChildrenMap.has(newChild.key)) {
+          mergedChildren.push(newChild);
+        }
+      });
+
+      return {
+        ...node,
+        children: mergedChildren,
+      };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: mergeTreeNodeData(node.children, key, newChildren),
+      };
+    }
+
+    return node;
+  });
+
 const MonitorTree = ({
   selectedNodeKeys,
   setSelectedNodeKeys,
@@ -145,8 +202,8 @@ const MonitorTree = ({
     async ({
       nodeKey,
       queryParams,
-      updateFn,
-      onFastDataLoaded,
+      fastUpdateFn,
+      detailedUpdateFn,
     }: {
       nodeKey: string;
       queryParams: {
@@ -155,8 +212,12 @@ const MonitorTree = ({
         size: number;
         page?: number;
       };
-      updateFn: (data: Page_DatastoreStagedResourceTreeAPIResponse_) => void;
-      onFastDataLoaded?: (pageIndex: number) => void;
+      fastUpdateFn: (
+        data: Page_DatastoreStagedResourceTreeAPIResponse_,
+      ) => void;
+      detailedUpdateFn?: (
+        data: Page_DatastoreStagedResourceTreeAPIResponse_,
+      ) => void;
     }) => {
       // Increment sequence for this node to track this request
       const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
@@ -181,8 +242,7 @@ const MonitorTree = ({
           requestSequenceRef.current[nodeKey] === currentSequence &&
           detailedQueryCompletedRef.current[nodeKey] !== currentSequence
         ) {
-          updateFn(fastData);
-          onFastDataLoaded?.(queryParams.page ?? 1);
+          fastUpdateFn(fastData);
         }
       });
 
@@ -195,87 +255,100 @@ const MonitorTree = ({
         ) {
           // Mark that detailed query has completed for this sequence
           detailedQueryCompletedRef.current[nodeKey] = currentSequence;
-          updateFn(detailedData);
+          // Use the detailed update function if provided, otherwise fall back to the fast one
+          (detailedUpdateFn ?? fastUpdateFn)(detailedData);
         }
       });
     },
     [trigger],
   );
 
-  const onLoadData: TreeProps["loadData"] = ({ children, key }) => {
-    return new Promise<void>((resolve) => {
-      // if already loaded children, state will be used
-      if (children) {
+  const onLoadData = useCallback(
+    (treeNode: CustomTreeDataNode) => {
+      return new Promise<void>((resolve) => {
+        const { children, key } = treeNode;
+        // if already loaded children, state will be used
+        if (children) {
+          resolve();
+          return;
+        }
+
+        const nodeKey = key.toString();
+        fetchTreeDataWithDetails({
+          nodeKey,
+          queryParams: {
+            monitor_config_id: monitorId,
+            staged_resource_urn: nodeKey,
+            size: TREE_PAGE_SIZE,
+          },
+          fastUpdateFn: (data) => {
+            setTreeData((origin) =>
+              updateTreeData(origin, key, mapResponseToTreeData(data, nodeKey)),
+            );
+            setNodePaginationState((prevState) => ({
+              ...prevState,
+              [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
+            }));
+          },
+        });
+
         resolve();
-        return;
+      });
+    },
+    [fetchTreeDataWithDetails, monitorId],
+  );
+
+  const onLoadMore = useCallback(
+    (key: string) => {
+      const currentNodePagination = nodePagination[key];
+
+      if (currentNodePagination) {
+        // Show skeleton loaders while loading
+        setTreeData((origin) => {
+          return appendTreeNodeData(
+            origin,
+            key,
+            [...Array(TREE_PAGE_SIZE)].map((_, i) => ({
+              key: `${TREE_NODE_SKELETON_KEY_PREFIX}-${key}-${i}`,
+              title: "SKELETON",
+              isLeaf: true,
+            })),
+          );
+        });
+
+        fetchTreeDataWithDetails({
+          nodeKey: key,
+          queryParams: {
+            monitor_config_id: monitorId,
+            staged_resource_urn: key,
+            size: TREE_PAGE_SIZE,
+            page: currentNodePagination.pageIndex + 1,
+          },
+          fastUpdateFn: (data) => {
+            // Fast query: append the new nodes
+            setTreeData((origin) =>
+              appendTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
+            );
+            // Note: pagination state is updated in detailedUpdateFn to avoid double increment
+          },
+          detailedUpdateFn: (data) => {
+            // Detailed query: merge/update the nodes with the same keys
+            setTreeData((origin) =>
+              mergeTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
+            );
+            setNodePaginationState((prevState) => ({
+              ...prevState,
+              [key]: {
+                pageSize: TREE_PAGE_SIZE,
+                pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
+              },
+            }));
+          },
+        });
       }
-
-      const nodeKey = key.toString();
-      fetchTreeDataWithDetails({
-        nodeKey,
-        queryParams: {
-          monitor_config_id: monitorId,
-          staged_resource_urn: nodeKey,
-          size: TREE_PAGE_SIZE,
-        },
-        updateFn: (data) => {
-          setTreeData((origin) =>
-            updateTreeData(origin, key, mapResponseToTreeData(data, nodeKey)),
-          );
-        },
-        onFastDataLoaded: () => {
-          setNodePaginationState({
-            ...nodePagination,
-            [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
-          });
-        },
-      });
-
-      resolve();
-    });
-  };
-
-  const onLoadMore = (key: string) => {
-    const currentNodePagination = nodePagination?.[key];
-
-    if (currentNodePagination) {
-      const newPage = currentNodePagination.pageIndex + 1;
-
-      // Show skeleton loaders while loading
-      setTreeData((origin) => {
-        return appendTreeNodeData(
-          origin,
-          key,
-          [...Array(TREE_PAGE_SIZE)].map((_, i) => ({
-            key: `${TREE_NODE_SKELETON_KEY_PREFIX}-${key}-${i}`,
-            title: "SKELETON",
-            isLeaf: true,
-          })),
-        );
-      });
-
-      fetchTreeDataWithDetails({
-        nodeKey: key,
-        queryParams: {
-          monitor_config_id: monitorId,
-          staged_resource_urn: key,
-          size: TREE_PAGE_SIZE,
-          page: newPage,
-        },
-        updateFn: (data) => {
-          setTreeData((origin) =>
-            appendTreeNodeData(origin, key, mapResponseToTreeData(data, key)),
-          );
-        },
-        onFastDataLoaded: (pageIndex) => {
-          setNodePaginationState({
-            ...nodePagination,
-            [key]: { pageSize: TREE_PAGE_SIZE, pageIndex },
-          });
-        },
-      });
-    }
-  };
+    },
+    [nodePagination, fetchTreeDataWithDetails, monitorId],
+  );
 
   useEffect(() => {
     const getInitTreeData = async () => {
@@ -290,7 +363,7 @@ const MonitorTree = ({
           monitor_config_id: monitorId,
           size: TREE_PAGE_SIZE,
         },
-        updateFn: (data) => {
+        fastUpdateFn: (data) => {
           setTreeData(mapResponseToTreeData(data));
         },
       });
@@ -313,7 +386,6 @@ const MonitorTree = ({
         showIcon
         showLine
         blockNode
-        multiple
         rootClassName="h-full overflow-x-hidden"
         // eslint-disable-next-line react/no-unstable-nested-components
         titleRender={(node) => (

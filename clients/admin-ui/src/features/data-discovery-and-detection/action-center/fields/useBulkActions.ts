@@ -43,12 +43,14 @@ export const useBulkActions = (monitorId: string) => {
     };
 
   return {
+    "assign-categories": handleBulkAction(FieldActionType.ASSIGN_CATEGORIES),
+    "promote-removals": handleBulkAction(FieldActionType.PROMOTE_REMOVALS),
+    "un-approve": handleBulkAction(FieldActionType.UN_APPROVE),
+    "un-mute": handleBulkAction(FieldActionType.UN_MUTE),
+    approve: handleBulkAction(FieldActionType.APPROVE),
+    classify: handleBulkAction(FieldActionType.CLASSIFY),
     mute: handleBulkAction(FieldActionType.MUTE),
     promote: handleBulkAction(FieldActionType.PROMOTE),
-    "un-mute": handleBulkAction(FieldActionType.UN_MUTE),
-    classify: handleBulkAction(FieldActionType.CLASSIFY),
-    "assign-categories": handleBulkAction(FieldActionType.ASSIGN_CATEGORIES),
-    approve: handleBulkAction(FieldActionType.APPROVE),
   } satisfies Record<
     FieldActionType,
     null | ((filterParams: MonitorFieldParameters) => Promise<void> | void)
