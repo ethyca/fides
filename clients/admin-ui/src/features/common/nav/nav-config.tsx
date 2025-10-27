@@ -163,13 +163,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
-      // TODO: Remove this test route
-      {
-        title: "Privacy notices sandbox",
-        path: routes.PRIVACY_NOTICES_SANDBOX_ROUTE,
-        scopes: [],
-        hidden: true,
-      },
       {
         title: "Experiences",
         path: routes.PRIVACY_EXPERIENCE_ROUTE,
@@ -343,6 +336,12 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Table Migration POC",
         path: routes.TABLE_MIGRATION_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Privacy Notices Sandbox",
+        path: routes.PRIVACY_NOTICES_SANDBOX_ROUTE,
+        requiresFlag: "alphaPrivacyNoticesSandbox",
         scopes: [],
       },
     ],
