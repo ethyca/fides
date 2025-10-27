@@ -36,11 +36,17 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
   const otherIdentities = getOtherIdentities(item.identity, primaryIdentity);
   const customFields = getCustomFields(item.custom_privacy_request_fields);
 
-  const hasExtraDetails =
-    otherIdentities.length > 0 || customFields.length > 0 || item.location;
+  const hasExtraDetails: boolean =
+    otherIdentities.length > 0 || customFields.length > 0 || !!item.location;
 
   const locationIsoEntry = item.location
-    ? isoStringToEntry(item.location)
+    ? (() => {
+        try {
+          return isoStringToEntry(item.location);
+        } catch {
+          return undefined;
+        }
+      })()
     : undefined;
 
   return (
