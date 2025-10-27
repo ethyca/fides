@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 import type { ConsentMechanism } from "../types";
 
-export const ConsentMechanismToggle = ({
+const ConsentMechanismToggle = ({
   mechanism,
   onMechanismChange,
 }: {
@@ -59,3 +59,5 @@ export const ConsentMechanismToggle = ({
     </div>
   );
 };
+
+export default ConsentMechanismToggle;

@@ -9,9 +9,9 @@ import {
   TREE_NODES,
 } from "../constants";
 import type { CheckedKeysType } from "../types";
-import { PreviewCard } from "./PreviewCard";
+import PreviewCard from "./PreviewCard";
 
-export const PostApiPreview = ({
+const PostApiPreview = ({
   currentSavedKeys,
   previousSavedKeys,
   mechanismDefaults,
@@ -94,3 +94,5 @@ export const PostApiPreview = ({
     </PreviewCard>
   );
 };
+
+export default PostApiPreview;

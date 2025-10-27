@@ -1,8 +1,8 @@
 import { Text } from "fidesui";
 
-import { PreviewCard } from "./PreviewCard";
+import PreviewCard from "./PreviewCard";
 
-export const DbStatePreview = ({
+const DbStatePreview = ({
   dbState,
 }: {
   dbState: Record<string, "opt_in" | "opt_out">;
@@ -18,3 +18,5 @@ export const DbStatePreview = ({
     </PreviewCard>
   );
 };
+
+export default DbStatePreview;

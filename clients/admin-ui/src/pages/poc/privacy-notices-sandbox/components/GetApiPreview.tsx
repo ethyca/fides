@@ -3,9 +3,9 @@ import { useCallback } from "react";
 
 import { PARENT_KEY, PARENT_KEY_WITH_UUID, TREE_NODES } from "../constants";
 import type { ConsentMechanism } from "../types";
-import { PreviewCard } from "./PreviewCard";
+import PreviewCard from "./PreviewCard";
 
-export const GetApiPreview = ({
+const GetApiPreview = ({
   dbState,
   consentMechanism,
 }: {
@@ -79,3 +79,5 @@ export const GetApiPreview = ({
     </PreviewCard>
   );
 };
+
+export default GetApiPreview;

@@ -10,7 +10,7 @@ import {
 } from "../constants";
 import type { CheckedKeysType, TreeDataNode } from "../types";
 
-export const DisableChildrenTree = ({
+const DisableChildrenTree = ({
   checkedKeys,
   onCheckedKeysChange,
 }: {
@@ -85,3 +85,5 @@ export const DisableChildrenTree = ({
     />
   );
 };
+
+export default DisableChildrenTree;

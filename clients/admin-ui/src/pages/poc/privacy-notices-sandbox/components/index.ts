@@ -1,6 +1,6 @@
-export { ConsentMechanismToggle } from "./ConsentMechanismToggle";
-export { DbStatePreview } from "./DbStatePreview";
-export { DisableChildrenTree } from "./DisableChildrenTree";
-export { GetApiPreview } from "./GetApiPreview";
-export { PostApiPreview } from "./PostApiPreview";
-export { PreviewCard } from "./PreviewCard";
+export { default as ConsentMechanismToggle } from "./ConsentMechanismToggle";
+export { default as DbStatePreview } from "./DbStatePreview";
+export { default as DisableChildrenTree } from "./DisableChildrenTree";
+export { default as GetApiPreview } from "./GetApiPreview";
+export { default as PostApiPreview } from "./PostApiPreview";
+export { default as PreviewCard } from "./PreviewCard";

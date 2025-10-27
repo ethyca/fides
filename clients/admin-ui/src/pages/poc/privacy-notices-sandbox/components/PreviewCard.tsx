@@ -1,7 +1,7 @@
 import { Text } from "fidesui";
 import type { ReactNode } from "react";
 
-export const PreviewCard = ({
+const PreviewCard = ({
   title,
   height = "400px",
   children,
@@ -32,3 +32,5 @@ export const PreviewCard = ({
     </div>
   );
 };
+
+export default PreviewCard;
