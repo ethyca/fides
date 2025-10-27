@@ -1,4 +1,5 @@
 import { AntFlex as Flex, AntList as List, AntTag as Tag } from "fidesui";
+import { isArray } from "lodash";
 import React from "react";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
@@ -54,9 +55,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
               ))}
               {customFields.map((field) => (
                 <LabeledTag key={field.key} label={field.label}>
-                  {typeof field.value === "string"
-                    ? field.value
-                    : field.value.join(" - ")}
+                  {isArray(field.value) ? field.value.join(" - ") : field.value}
                 </LabeledTag>
               ))}
             </Flex>
