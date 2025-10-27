@@ -4,6 +4,7 @@ from sqlalchemy import Column, ForeignKey, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 from fides.api.models.fides_user import FidesUser
 
 
@@ -18,7 +19,20 @@ class IdentityDefinitionType(str, Enum):
 
 
 class IdentityDefinition(Base):
-    """Identity definition model for registering identities in Fides."""
+    """
+    Model for identity definitions in Fides. This isn't for specific identity values,
+    but for the types of identities that can be used in Fides.
+
+    For example:
+    ```json
+    {
+        "identity_key": "customer_id",
+        "name": "Customer ID",
+        "description": "The unique identifier for the customer",
+        "type": "string"
+    }
+    ```
+    """
 
     @declared_attr
     def __tablename__(self) -> str:
@@ -30,5 +44,14 @@ class IdentityDefinition(Base):
     # Schema definition
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    type = Column(String(255), nullable=False)
+    type = Column(
+        EnumColumn(
+            IdentityDefinitionType,
+            native_enum=False,
+            values_callable=lambda x: [
+                i.value for i in x
+            ],  # allows enum _values_ to be stored rather than name
+        ),
+        nullable=False,
+    )
     created_by = Column(String(255), ForeignKey(FidesUser.id_field_path), nullable=True)

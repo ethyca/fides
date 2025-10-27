@@ -1,5 +1,6 @@
 """Tests for the IdentityDefinition model."""
 
+import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
@@ -49,3 +50,19 @@ class TestIdentityDefinition:
         assert retrieved.description == description
         assert retrieved.type == identity_type
         assert retrieved.created_by == user.id
+
+    def test_create_identity_definition_invalid_type(
+        self, db: Session, user: FidesUser
+    ):
+        """Test that creating an IdentityDefinition with an invalid type raises an error."""
+        with pytest.raises(LookupError, match="is not among the defined enum values"):
+            IdentityDefinition.create(
+                db=db,
+                data={
+                    "identity_key": "invalid_key",
+                    "name": "Invalid Identity",
+                    "type": "invalid_type",  # This should fail
+                    "created_by": user.id,
+                },
+            )
+            db.commit()
