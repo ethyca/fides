@@ -502,7 +502,7 @@ class TestCanonicalRequestFunctionality:
                     "external_id": f"test_external_id_duplicate_{i}",
                     "started_processing_at": datetime.now(timezone.utc),
                     "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.duplicate,
+                    "status": PrivacyRequestStatus.duplicate.value,
                     "policy_id": policy.id,
                     "duplicate_request_group_id": duplicate_group_id,
                 },

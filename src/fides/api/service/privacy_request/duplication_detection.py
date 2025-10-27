@@ -29,6 +29,7 @@ ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.awaiting_email_send,
 ]
 
+
 class DuplicateDetectionService:
     def __init__(self, db: Session):
         self.db = db
