@@ -353,10 +353,13 @@ class TestFindDuplicatePrivacyRequests:
         )
         assert len(duplicates) == 0
 
+
 class TestCanonicalRequestFunctionality:
     """Tests for is_canonical_request function."""
 
-    def test_is_canonical_request_single_request(self, duplicate_detection_service, privacy_request_with_email_identity):
+    def test_is_canonical_request_single_request(
+        self, duplicate_detection_service, privacy_request_with_email_identity
+    ):
         """Test that a single request is the canonical request."""
         duplicate_detection_config = get_detection_config()
         is_canonical = duplicate_detection_service.is_canonical_request(
@@ -364,7 +367,13 @@ class TestCanonicalRequestFunctionality:
         )
         assert is_canonical
 
-    def test_is_canonical_first_unverified_request(self, db, duplicate_detection_service, privacy_request_with_email_identity, policy):
+    def test_is_canonical_first_unverified_request(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
         """Test that a first unverified request is the canonical request."""
         duplicate_requests = []
         for i in range(3):
@@ -392,14 +401,20 @@ class TestCanonicalRequestFunctionality:
                 duplicate_request, duplicate_detection_config
             )
 
-    def test_is_canonical_only_verified_identity_request(self, db, duplicate_detection_service, privacy_request_with_email_identity, policy):
+    def test_is_canonical_only_verified_identity_request(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
         """Test that a first verified identity request is the canonical request."""
         privacy_request_with_email_identity.update(
             db=db,
             data={
                 "status": PrivacyRequestStatus.pending,
-                "identity_verified_at": datetime.now(timezone.utc)
-            }
+                "identity_verified_at": datetime.now(timezone.utc),
+            },
         )
 
         duplicate_requests = []
@@ -428,10 +443,20 @@ class TestCanonicalRequestFunctionality:
                 duplicate_request, duplicate_detection_config
             )
 
-    def test_is_canonical_first_verified_identity_request(self, db, duplicate_detection_service, privacy_request_with_email_identity, policy):
+    def test_is_canonical_first_verified_identity_request(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
         """Test that a first verified identity request in a group is the canonical request."""
         privacy_request_with_email_identity.update(
-            db=db, data={"status": PrivacyRequestStatus.pending, "identity_verified_at": datetime.now(timezone.utc)}
+            db=db,
+            data={
+                "status": PrivacyRequestStatus.pending,
+                "identity_verified_at": datetime.now(timezone.utc),
+            },
         )
         duplicate_requests = []
         for i in range(3):
@@ -460,7 +485,13 @@ class TestCanonicalRequestFunctionality:
                 duplicate_request, duplicate_detection_config
             )
 
-    def test_all_duplicate_requests_marked_as_duplicate(self, db, duplicate_detection_service, privacy_request_with_email_identity, policy):
+    def test_all_duplicate_requests_marked_as_duplicate(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
         """Test that all duplicate requests are marked as duplicate."""
         duplicate_group_id = str(uuid4())
         duplicate_requests = []
