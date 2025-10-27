@@ -65,6 +65,21 @@ describe("getPrimaryIdentity", () => {
       value: "12345",
     });
   });
+
+  it("should return email with value 0 as primary identity", () => {
+    const identity: PrivacyRequestEntity["identity"] = {
+      email: { label: "Email", value: 0 },
+      phone_number: { label: "Phone", value: "+1234567890" },
+    };
+
+    const result = getPrimaryIdentity(identity);
+
+    expect(result).toEqual({
+      key: "email",
+      label: "Email",
+      value: 0,
+    });
+  });
 });
 
 describe("getOtherIdentities", () => {
@@ -120,6 +135,26 @@ describe("getOtherIdentities", () => {
     const result = getOtherIdentities(allIdentities, primaryIdentity);
 
     expect(result).toEqual([]);
+  });
+
+  it("should include identities with value 0", () => {
+    const allIdentities: PrivacyRequestEntity["identity"] = {
+      email: { label: "Email", value: "user@example.com" },
+      count: { label: "Count", value: 0 },
+      age: { label: "Age", value: 25 },
+    };
+    const primaryIdentity = {
+      key: "email",
+      label: "Email",
+      value: "user@example.com",
+    };
+
+    const result = getOtherIdentities(allIdentities, primaryIdentity);
+
+    expect(result).toEqual([
+      { key: "count", label: "Count", value: 0 },
+      { key: "age", label: "Age", value: 25 },
+    ]);
   });
 });
 
