@@ -27,6 +27,7 @@ ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.requires_input,
     PrivacyRequestStatus.paused,
     PrivacyRequestStatus.awaiting_email_send,
+    PrivacyRequestStatus.error,
 ]
 
 
@@ -161,28 +162,10 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
-    def assign_duplicate_request_group_id(
-        self,
-        request: PrivacyRequest,
-        group_id: str,
-    ) -> None:
-        """
-        Assign a duplicate request group id to a request.
-        """
-        if request.duplicate_request_group_id is not None:
-            if request.duplicate_request_group_id != group_id:
-                logger.warning(
-                    f"Request {request.id} already has a duplicate request group id {request.duplicate_request_group_id}, but is being assigned a new group id {group_id}"
-                )
-            return
-        request.update(
-            db=self.db,
-            data={"duplicate_request_group_id": group_id},
-        )
-
     def get_duplicate_request_group_id(self, duplicates: list[PrivacyRequest]) -> str:
         """
         Get the duplicate request group id for a list of requests.
+        Ideally there will only be one group id, but if there are multiple, we return the most recent group id.
         """
         duplicate_group_ids: set[str] = {
             duplicate.duplicate_request_group_id
@@ -289,7 +272,7 @@ class DuplicateDetectionService:
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
         group_id = self.get_duplicate_request_group_id(duplicates)
-        self.assign_duplicate_request_group_id(request, group_id)
+        request.update(db=self.db, data={"duplicate_request_group_id": group_id})
 
         if request.status == PrivacyRequestStatus.duplicate:
             return False
@@ -305,9 +288,6 @@ class DuplicateDetectionService:
         ]
         # If no canonical requests are found, this request is the canonical request.
         if len(canonical_requests) == 0:
-            logger.warning(
-                f"No canonical requests found in group {request.duplicate_request_group_id}"
-            )
             return True
 
         # If any requests in group are actioned, this request is not canonical.
