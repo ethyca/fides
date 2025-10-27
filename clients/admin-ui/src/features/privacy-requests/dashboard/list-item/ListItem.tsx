@@ -76,7 +76,9 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
               ))}
               {customFields.map((field) => (
                 <LabeledTag key={field.key} label={field.label}>
-                  {isArray(field.value) ? field.value.join(" - ") : field.value}
+                  {isArray(field.value)
+                    ? field.value.join(" - ")
+                    : field.value.toString()}
                 </LabeledTag>
               ))}
             </Flex>

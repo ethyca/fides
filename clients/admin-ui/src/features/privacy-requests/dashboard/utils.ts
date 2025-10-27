@@ -3,7 +3,7 @@ import { PrivacyRequestEntity } from "../types";
 interface IdentityWithKey {
   key: string;
   label: string;
-  value: string;
+  value: string | null;
 }
 
 interface CustomFieldWithKey {
@@ -39,13 +39,7 @@ export const getOtherIdentities = (
   primaryIdentity: IdentityWithKey | null,
 ): IdentityWithKey[] => {
   return Object.entries(allIdentities)
-    .filter(
-      ([key, identity]) =>
-        identity.value !== null &&
-        identity.value !== undefined &&
-        identity.value !== "" &&
-        key !== primaryIdentity?.key,
-    )
+    .filter(([key, identity]) => identity.value && key !== primaryIdentity?.key)
     .map(([key, identity]) => ({
       key,
       ...identity,

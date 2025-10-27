@@ -65,21 +65,6 @@ describe("getPrimaryIdentity", () => {
       value: "12345",
     });
   });
-
-  it("should return email with value 0 as primary identity", () => {
-    const identity: PrivacyRequestEntity["identity"] = {
-      email: { label: "Email", value: 0 },
-      phone_number: { label: "Phone", value: "+1234567890" },
-    };
-
-    const result = getPrimaryIdentity(identity);
-
-    expect(result).toEqual({
-      key: "email",
-      label: "Email",
-      value: 0,
-    });
-  });
 });
 
 describe("getOtherIdentities", () => {
@@ -136,26 +121,6 @@ describe("getOtherIdentities", () => {
 
     expect(result).toEqual([]);
   });
-
-  it("should include identities with value 0", () => {
-    const allIdentities: PrivacyRequestEntity["identity"] = {
-      email: { label: "Email", value: "user@example.com" },
-      count: { label: "Count", value: 0 },
-      age: { label: "Age", value: 25 },
-    };
-    const primaryIdentity = {
-      key: "email",
-      label: "Email",
-      value: "user@example.com",
-    };
-
-    const result = getOtherIdentities(allIdentities, primaryIdentity);
-
-    expect(result).toEqual([
-      { key: "count", label: "Count", value: 0 },
-      { key: "age", label: "Age", value: 25 },
-    ]);
-  });
 });
 
 describe("getCustomFields", () => {
@@ -201,5 +166,37 @@ describe("getCustomFields", () => {
     const result = getCustomFields(customFields);
 
     expect(result).toEqual([]);
+  });
+
+  it("should include custom fields with value 0", () => {
+    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+      {
+        department: { label: "Department", value: "Engineering" },
+        priority: { label: "Priority", value: 0 },
+        count: { label: "Count", value: 5 },
+      };
+
+    const result = getCustomFields(customFields);
+
+    expect(result).toEqual([
+      { key: "department", label: "Department", value: "Engineering" },
+      { key: "priority", label: "Priority", value: 0 },
+      { key: "count", label: "Count", value: 5 },
+    ]);
+  });
+
+  it("should include custom fields with value false", () => {
+    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+      {
+        department: { label: "Department", value: "Engineering" },
+        is_urgent: { label: "Is Urgent", value: false },
+      };
+
+    const result = getCustomFields(customFields);
+
+    expect(result).toEqual([
+      { key: "department", label: "Department", value: "Engineering" },
+      { key: "is_urgent", label: "Is Urgent", value: false },
+    ]);
   });
 });
