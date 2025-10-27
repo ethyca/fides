@@ -1,0 +1,38 @@
+"""adding identity definition model
+
+Revision ID: 67f0f2f4748e
+Revises: 5093e92e2a5a
+Create Date: 2025-10-27 18:34:38.326608
+
+"""
+import sqlalchemy as sa
+from alembic import op
+
+# revision identifiers, used by Alembic.
+revision = '67f0f2f4748e'
+down_revision = '5093e92e2a5a'
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    op.create_table('identity_definition',
+    sa.Column('id', sa.String(length=255), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('identity_key', sa.String(length=255), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('type', sa.String(length=255), nullable=False),
+    sa.Column('created_by', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['created_by'], ['fidesuser.id'], ),
+    sa.PrimaryKeyConstraint('id', 'identity_key')
+    )
+    op.create_index(op.f('ix_identity_definition_id'), 'identity_definition', ['id'], unique=False)
+    op.create_index(op.f('ix_identity_definition_identity_key'), 'identity_definition', ['identity_key'], unique=False)
+
+
+def downgrade():
+    op.drop_index(op.f('ix_identity_definition_identity_key'), table_name='identity_definition')
+    op.drop_index(op.f('ix_identity_definition_id'), table_name='identity_definition')
+    op.drop_table('identity_definition')
