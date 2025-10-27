@@ -71,6 +71,30 @@ def get_detection_config(
     )
 
 
+# Helper function to create duplicate requests
+def create_duplicate_requests(
+    db: Session, policy: Policy, count: int, status: PrivacyRequestStatus
+) -> list[PrivacyRequest]:
+    duplicate_requests = []
+    for i in range(count):
+        duplicate_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"test_external_id_duplicate_{i}",
+                "started_processing_at": datetime.now(timezone.utc),
+                "requested_at": datetime.now(timezone.utc),
+                "status": status,
+                "policy_id": policy.id,
+            },
+        )
+        duplicate_request.persist_identity(
+            db=db,
+            identity=Identity(email="customer-1@example.com"),
+        )
+        duplicate_requests.append(duplicate_request)
+    return duplicate_requests
+
+
 class TestCreateDuplicateDetectionConditions:
     """Tests for create_duplicate_detection_conditions function."""
 
@@ -143,24 +167,10 @@ class TestFindDuplicatePrivacyRequests:
     ):
         """Test finding duplicate request within time window with matching identity."""
         duplicate_detection_config = get_detection_config()
-        duplicate_ids = []
-        for i in range(duplicate_count):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.in_processing,
-                    "policy_id": policy.id,
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_ids.append(duplicate_request.id)
-
+        duplicate_requests = create_duplicate_requests(
+            db, policy, duplicate_count, PrivacyRequestStatus.in_processing
+        )
+        duplicate_ids = [duplicate.id for duplicate in duplicate_requests]
         duplicates = duplicate_detection_service.find_duplicate_privacy_requests(
             privacy_request_with_email_identity, duplicate_detection_config
         )
@@ -367,156 +377,107 @@ class TestCanonicalRequestFunctionality:
         )
         assert is_canonical
 
-    def test_is_canonical_first_unverified_request(
+    @pytest.mark.parametrize(
+        "request_status, duplicate_status",
+        [
+            pytest.param(
+                PrivacyRequestStatus.identity_unverified,
+                PrivacyRequestStatus.identity_unverified,
+                id="all_unverified_identity_first_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.identity_unverified,
+                id="only_verified_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.pending,
+                id="first_created_verified_identity_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.identity_unverified,
+                PrivacyRequestStatus.duplicate,
+                id="unverified_request_is_canonical_if_all_duplicates_status",
+            ),
+        ],
+    )
+    def test_is_canonical_hierarchy_decistions_returns_true(
         self,
         db,
         duplicate_detection_service,
         privacy_request_with_email_identity,
         policy,
+        request_status,
+        duplicate_status,
     ):
         """Test that a first unverified request is the canonical request."""
-        duplicate_requests = []
-        for i in range(3):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.identity_unverified,
-                    "policy_id": policy.id,
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_requests.append(duplicate_request)
         duplicate_detection_config = get_detection_config()
+
+        update_data = {
+            "status": request_status,
+        }
+        if request_status != PrivacyRequestStatus.identity_unverified:
+            update_data["identity_verified_at"] = datetime.now(timezone.utc)
+        privacy_request_with_email_identity.update(db=db, data=update_data)
+
+        duplicate_requests = create_duplicate_requests(db, policy, 3, duplicate_status)
+        if duplicate_status != PrivacyRequestStatus.identity_unverified:
+            for duplicate_request in duplicate_requests:
+                duplicate_request.update(
+                    db=db,
+                    data={"identity_verified_at": datetime.now(timezone.utc)},
+                )
+
         assert duplicate_detection_service.is_canonical_request(
             privacy_request_with_email_identity, duplicate_detection_config
+        )
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id is not None
         )
         for duplicate_request in duplicate_requests:
             assert not duplicate_detection_service.is_canonical_request(
                 duplicate_request, duplicate_detection_config
             )
+            assert (
+                duplicate_request.duplicate_request_group_id
+                == privacy_request_with_email_identity.duplicate_request_group_id
+            )
 
-    def test_is_canonical_only_verified_identity_request(
+    def test_assign_duplicate_request_group_id_multiple_group_ids(
         self,
         db,
         duplicate_detection_service,
         privacy_request_with_email_identity,
         policy,
     ):
-        """Test that a first verified identity request is the canonical request."""
-        privacy_request_with_email_identity.update(
+        """Test that a single request is assigned a duplicate request id with a canonical request."""
+        duplicate_requests = create_duplicate_requests(
+            db, policy, 3, PrivacyRequestStatus.identity_unverified
+        )
+        duplicate_detection_config = get_detection_config()
+        assert duplicate_detection_service.is_canonical_request(
+            privacy_request_with_email_identity, duplicate_detection_config
+        )
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id is not None
+        )
+        duplicate_requests[0].update(
             db=db,
-            data={
-                "status": PrivacyRequestStatus.pending,
-                "identity_verified_at": datetime.now(timezone.utc),
-            },
+            data={"duplicate_request_group_id": str(uuid4())},
+        )
+        # run is_canonical_request to assign the group id
+        duplicate_detection_service.is_canonical_request(
+            duplicate_requests[1], duplicate_detection_config
         )
 
-        duplicate_requests = []
-        for i in range(3):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.identity_unverified,
-                    "policy_id": policy.id,
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_requests.append(duplicate_request)
-        duplicate_detection_config = get_detection_config()
-        assert duplicate_detection_service.is_canonical_request(
-            privacy_request_with_email_identity, duplicate_detection_config
+        assert duplicate_requests[1].duplicate_request_group_id is not None
+        assert (
+            duplicate_requests[1].duplicate_request_group_id
+            != privacy_request_with_email_identity.duplicate_request_group_id
         )
-        for duplicate_request in duplicate_requests:
-            assert not duplicate_detection_service.is_canonical_request(
-                duplicate_request, duplicate_detection_config
-            )
-
-    def test_is_canonical_first_verified_identity_request(
-        self,
-        db,
-        duplicate_detection_service,
-        privacy_request_with_email_identity,
-        policy,
-    ):
-        """Test that a first verified identity request in a group is the canonical request."""
-        privacy_request_with_email_identity.update(
-            db=db,
-            data={
-                "status": PrivacyRequestStatus.pending,
-                "identity_verified_at": datetime.now(timezone.utc),
-            },
+        # should match the most recently created request's group id.
+        assert (
+            duplicate_requests[1].duplicate_request_group_id
+            == duplicate_requests[0].duplicate_request_group_id
         )
-        duplicate_requests = []
-        for i in range(3):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.pending,
-                    "policy_id": policy.id,
-                    "identity_verified_at": datetime.now(timezone.utc),
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_requests.append(duplicate_request)
-        duplicate_detection_config = get_detection_config()
-        assert duplicate_detection_service.is_canonical_request(
-            privacy_request_with_email_identity, duplicate_detection_config
-        )
-        for duplicate_request in duplicate_requests:
-            assert not duplicate_detection_service.is_canonical_request(
-                duplicate_request, duplicate_detection_config
-            )
-
-    def test_all_duplicate_requests_marked_as_duplicate(
-        self,
-        db,
-        duplicate_detection_service,
-        privacy_request_with_email_identity,
-        policy,
-    ):
-        """Test that all duplicate requests are marked as duplicate."""
-        duplicate_group_id = str(uuid4())
-        duplicate_requests = []
-        for i in range(3):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.duplicate.value,
-                    "policy_id": policy.id,
-                    "duplicate_request_group_id": duplicate_group_id,
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_requests.append(duplicate_request)
-        duplicate_detection_config = get_detection_config()
-        assert duplicate_detection_service.is_canonical_request(
-            privacy_request_with_email_identity, duplicate_detection_config
-        )
-        for duplicate_request in duplicate_requests:
-            assert not duplicate_detection_service.is_canonical_request(
-                duplicate_request, duplicate_detection_config
-            )
