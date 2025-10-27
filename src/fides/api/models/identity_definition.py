@@ -1,11 +1,10 @@
 from enum import Enum
 
-from sqlalchemy import Column, ForeignKey, String, Text
+from sqlalchemy import Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base
 from fides.api.db.util import EnumColumn
-from fides.api.models.fides_user import FidesUser
 
 
 class IdentityDefinitionType(str, Enum):
@@ -54,4 +53,4 @@ class IdentityDefinition(Base):
         ),
         nullable=False,
     )
-    created_by = Column(String(255), ForeignKey(FidesUser.id_field_path), nullable=True)
+    created_by = Column(String(255), nullable=True)

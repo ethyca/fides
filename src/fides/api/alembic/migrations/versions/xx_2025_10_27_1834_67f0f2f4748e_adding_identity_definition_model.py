@@ -37,10 +37,6 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("type", sa.String(length=255), nullable=False),
         sa.Column("created_by", sa.String(length=255), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["created_by"],
-            ["fidesuser.id"],
-        ),
         sa.PrimaryKeyConstraint("id", "identity_key"),
     )
     op.create_index(
