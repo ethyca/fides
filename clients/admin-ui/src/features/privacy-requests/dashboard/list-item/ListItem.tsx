@@ -50,9 +50,11 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
         <Header privacyRequest={item} />
         <Flex vertical gap="small" wrap className="pt-1">
           <Flex gap="small" wrap>
-            <LabeledText label={primaryIdentity?.label}>
-              {primaryIdentity?.value}
-            </LabeledText>
+            {primaryIdentity && (
+              <LabeledText label={primaryIdentity.label}>
+                {primaryIdentity.value}
+              </LabeledText>
+            )}
             <PolicyActionTypes rules={item.policy.rules} />
             <Tag>{item.source}</Tag>
           </Flex>
