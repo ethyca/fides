@@ -37,8 +37,8 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
       <div className="pr-4">{checkbox}</div>
       <div className="grow">
         <Header privacyRequest={item} />
-        <Flex vertical gap={8} wrap className="pt-1">
-          <Flex gap={8} wrap>
+        <Flex vertical gap="small" wrap className="pt-1">
+          <Flex gap="small" wrap>
             <LabeledText label={primaryIdentity?.label}>
               {primaryIdentity?.value}
             </LabeledText>
@@ -47,7 +47,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           </Flex>
 
           {hasExtraDetails && (
-            <Flex wrap gap={16}>
+            <Flex wrap gap="middle">
               {otherIdentities.map((identity) => (
                 <LabeledTag key={identity.key} label={identity.label}>
                   {identity.value}
@@ -62,7 +62,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           )}
         </Flex>
       </div>
-      <Flex gap={16} wrap className="pr-2">
+      <Flex gap="middle" wrap className="pr-2">
         <ReceivedOn createdAt={item.created_at} />
         <DaysLeft
           daysLeft={item.days_left}
@@ -70,7 +70,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           timeframe={item.policy.execution_timeframe}
         />
       </Flex>
-      <Flex className="min-w-[125px]" align="center" justify="end" gap={8}>
+      <Flex className="min-w-[125px]" align="center" justify="end" gap="small">
         <ViewButton key="view" id={item.id} />
         <RequestTableActions key="other-actions" subjectRequest={item} />
       </Flex>

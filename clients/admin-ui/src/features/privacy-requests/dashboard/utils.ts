@@ -9,7 +9,7 @@ interface IdentityWithKey {
 interface CustomFieldWithKey {
   key: string;
   label: string;
-  value: string;
+  value: any;
 }
 
 export const getPrimaryIdentity = (
@@ -39,7 +39,7 @@ export const getOtherIdentities = (
   primaryIdentity: IdentityWithKey | null,
 ): IdentityWithKey[] => {
   return Object.entries(allIdentities)
-    .filter(([key, identity]) => identity.value && key !== primaryIdentity?.key)
+    .filter(([key, identity]) => (identity.value !== null && identity.value !== undefined && identity.value !== "") && key !== primaryIdentity?.key)
     .map(([key, identity]) => ({
       key,
       ...identity,
@@ -51,7 +51,7 @@ export const getCustomFields = (
 ): CustomFieldWithKey[] => {
   return customFields
     ? Object.entries(customFields)
-        .filter(([, field]) => field.value)
+        .filter(([, field]) => field.value !== null && field.value !== undefined && field.value !== "")
         .map(([key, field]) => ({
           key,
           label: field.label,
