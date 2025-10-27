@@ -1,5 +1,5 @@
 import type { TreeProps } from "antd/lib";
-import { Key } from "react";
+import type { Key } from "react";
 
 /**
  * Filters tree data based on a search term, returning only nodes that match
