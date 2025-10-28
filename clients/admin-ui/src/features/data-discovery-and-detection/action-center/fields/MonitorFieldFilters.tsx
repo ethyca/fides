@@ -372,8 +372,9 @@ export const MonitorFieldFilters = ({
     });
 
     // Update LOCAL state only (not applied until "Apply" is clicked)
-    setLocalResourceStatus(statusKeys.length > 0 ? statusKeys : null);
-    setLocalDataCategory(categoryKeys.length > 0 ? categoryKeys : null);
+    // Use empty array for "no filters" instead of null
+    setLocalResourceStatus(statusKeys.length > 0 ? statusKeys : []);
+    setLocalDataCategory(categoryKeys.length > 0 ? categoryKeys : []);
   };
 
   const handleReset = () => {
@@ -383,14 +384,14 @@ export const MonitorFieldFilters = ({
     const defaultStatuses = availableResourceFilters
       ? getFilterableStatuses(availableResourceFilters)
       : [];
-    setLocalResourceStatus(defaultStatuses.length > 0 ? defaultStatuses : null);
-    setLocalDataCategory(null);
+    setLocalResourceStatus(defaultStatuses);
+    setLocalDataCategory([]);
   };
 
   const handleClear = () => {
-    // Clear local state immediately
-    setLocalResourceStatus(null);
-    setLocalDataCategory(null);
+    // Clear local state immediately - use empty array for "no filters"
+    setLocalResourceStatus([]);
+    setLocalDataCategory([]);
   };
 
   const handleApply = () => {
