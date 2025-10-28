@@ -1,4 +1,3 @@
-import type { Key } from "antd/es/table/interface";
 import { AntTypography as Typography } from "fidesui";
 import { useCallback } from "react";
 

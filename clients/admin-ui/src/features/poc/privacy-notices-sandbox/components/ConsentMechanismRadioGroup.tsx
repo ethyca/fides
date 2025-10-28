@@ -34,7 +34,7 @@ const ConsentMechanismRadioGroup = ({
         <Radio value="opt-out">Opt-out</Radio>
         <Radio value="opt-in">Opt-in</Radio>
       </Radio.Group>
-      <Typography.Text type="secondary" className="text-xs ml-2">
+      <Typography.Text type="secondary" className="ml-2 text-xs">
         (
         {mechanism === "opt-out"
           ? "All checked by default"
