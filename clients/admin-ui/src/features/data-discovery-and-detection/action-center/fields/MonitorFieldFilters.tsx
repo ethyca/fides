@@ -71,14 +71,13 @@ const buildDataCategoryTree = (
 
       if (!nodeMap.has(key)) {
         const taxonomyInfo = findCategoryInTaxonomy(key, taxonomyNodes);
-        const isLeaf = index === parts.length - 1;
 
         nodeMap.set(key, {
           title: taxonomyInfo?.title || capitalize(key.split(".").pop() || key),
           key,
           checkable: true,
           selectable: false,
-          isLeaf,
+          // isLeaf will be determined during tree building based on actual children
         });
       }
     });
