@@ -17,7 +17,7 @@ from fides.api.task.conditional_dependencies.schemas import (
 from fides.api.task.conditional_dependencies.sql_translator import (
     SQLConditionTranslator,
 )
-from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
+from fides.config.config_proxy import DuplicateDetectionSettingsProxy
 
 ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.approved,
@@ -36,7 +36,7 @@ class DuplicateDetectionService:
         self.db = db
 
     def _create_identity_conditions(
-        self, current_request: PrivacyRequest, config: DuplicateDetectionSettings
+        self, current_request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
     ) -> list[Condition]:
         """Creates conditions for matching identity fields.
 
@@ -99,7 +99,7 @@ class DuplicateDetectionService:
     def create_duplicate_detection_conditions(
         self,
         current_request: PrivacyRequest,
-        config: DuplicateDetectionSettings,
+        config: DuplicateDetectionSettingsProxy,
     ) -> Optional[ConditionGroup]:
         """
         Create conditions for duplicate detection based on configuration.
@@ -131,7 +131,7 @@ class DuplicateDetectionService:
     def find_duplicate_privacy_requests(
         self,
         current_request: PrivacyRequest,
-        config: DuplicateDetectionSettings,
+        config: DuplicateDetectionSettingsProxy,
     ) -> list[PrivacyRequest]:
         """
         Find potential duplicate privacy requests based on duplicate detection configuration.
@@ -258,7 +258,7 @@ class DuplicateDetectionService:
         return True
 
     def is_duplicate_request(
-        self, request: PrivacyRequest, config: DuplicateDetectionSettings
+        self, request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
     ) -> bool:
         """
         Determine if a request is a duplicate request and assign a duplicate request group id.
