@@ -204,7 +204,7 @@ class DuplicateDetectionService:
             duplicate for duplicate in duplicates if duplicate.identity_verified_at
         ]
 
-        ### The request identity is not verified.
+        # The request identity is not verified.
         if not request.identity_verified_at:
             if len(verified_in_group) > 0:
                 logger.debug(
