@@ -367,15 +367,15 @@ class TestFindDuplicatePrivacyRequests:
 class TestCanonicalRequestFunctionality:
     """Tests for is_canonical_request function."""
 
-    def test_is_canonical_request_single_request(
+    def test_is_duplicate_request_single_request(
         self, duplicate_detection_service, privacy_request_with_email_identity
     ):
         """Test that a single request is the canonical request."""
         duplicate_detection_config = get_detection_config()
-        is_canonical = duplicate_detection_service.is_canonical_request(
+        is_duplicate = duplicate_detection_service.is_duplicate_request(
             privacy_request_with_email_identity, duplicate_detection_config
         )
-        assert is_canonical
+        assert not is_duplicate
 
     @pytest.mark.parametrize(
         "request_status, duplicate_status",
@@ -402,7 +402,7 @@ class TestCanonicalRequestFunctionality:
             ),
         ],
     )
-    def test_is_canonical_hierarchy_decistions_returns_true(
+    def test_is_duplicate_hierarchy_decistions_returns_false(
         self,
         db,
         duplicate_detection_service,
@@ -429,14 +429,14 @@ class TestCanonicalRequestFunctionality:
                     data={"identity_verified_at": datetime.now(timezone.utc)},
                 )
 
-        assert duplicate_detection_service.is_canonical_request(
+        assert not duplicate_detection_service.is_duplicate_request(
             privacy_request_with_email_identity, duplicate_detection_config
         )
         assert (
             privacy_request_with_email_identity.duplicate_request_group_id is not None
         )
         for duplicate_request in duplicate_requests:
-            assert not duplicate_detection_service.is_canonical_request(
+            assert duplicate_detection_service.is_duplicate_request(
                 duplicate_request, duplicate_detection_config
             )
             assert (
@@ -444,7 +444,7 @@ class TestCanonicalRequestFunctionality:
                 == privacy_request_with_email_identity.duplicate_request_group_id
             )
 
-    def test_assign_duplicate_request_group_id_multiple_group_ids(
+    def test_is_duplicate_request_multiple_group_ids(
         self,
         db,
         duplicate_detection_service,
@@ -456,7 +456,7 @@ class TestCanonicalRequestFunctionality:
             db, policy, 3, PrivacyRequestStatus.identity_unverified
         )
         duplicate_detection_config = get_detection_config()
-        assert duplicate_detection_service.is_canonical_request(
+        assert not duplicate_detection_service.is_duplicate_request(
             privacy_request_with_email_identity, duplicate_detection_config
         )
         assert (
@@ -467,7 +467,7 @@ class TestCanonicalRequestFunctionality:
             data={"duplicate_request_group_id": str(uuid4())},
         )
         # run is_canonical_request to assign the group id
-        duplicate_detection_service.is_canonical_request(
+        duplicate_detection_service.is_duplicate_request(
             duplicate_requests[1], duplicate_detection_config
         )
 
