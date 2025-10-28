@@ -404,6 +404,14 @@ export const MonitorFieldFilters = ({
     setExpandedKeys(keys);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    // When popover closes without applying, reset local state to match applied state
+    if (!open) {
+      setLocalResourceStatus(resourceStatus);
+      setLocalDataCategory(dataCategory);
+    }
+  };
+
   return (
     <Filter
       treeProps={{
@@ -417,6 +425,7 @@ export const MonitorFieldFilters = ({
       onApply={handleApply}
       onReset={handleReset}
       onClear={handleClear}
+      onOpenChange={handleOpenChange}
       activeFiltersCount={activeFiltersCount}
     />
   );
