@@ -10,6 +10,7 @@ import { DiffStatus } from "~/types/api";
 
 import {
   DIFF_TO_RESOURCE_STATUS,
+  FIELDS_FILTER_SECTION_KEYS,
   getFilterableStatuses,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
@@ -155,7 +156,7 @@ export const MonitorFieldFilters = ({
 
   // Initialize with status section expanded by default
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([
-    "status-section",
+    FIELDS_FILTER_SECTION_KEYS.STATUS,
   ]);
 
   // Sync local state when external state changes
@@ -276,7 +277,7 @@ export const MonitorFieldFilters = ({
     if (statusTreeData.length > 0) {
       sections.push({
         title: "Status",
-        key: "status-section",
+        key: FIELDS_FILTER_SECTION_KEYS.STATUS,
         checkable: true,
         selectable: false,
         isLeaf: false,
@@ -288,7 +289,7 @@ export const MonitorFieldFilters = ({
     /* if (availableConfidenceScores && availableConfidenceScores.length > 0) {
       sections.push({
         title: "Confidence",
-        key: "confidence-section",
+        key: FIELDS_FILTER_SECTION_KEYS.CONFIDENCE,
         checkable: true,
         selectable: false,
         isLeaf: false,
@@ -305,7 +306,7 @@ export const MonitorFieldFilters = ({
     if (dataCategoryTreeData.length > 0) {
       sections.push({
         title: "Data category",
-        key: "data-category-section",
+        key: FIELDS_FILTER_SECTION_KEYS.DATA_CATEGORY,
         checkable: true,
         selectable: false,
         isLeaf: false,
@@ -349,11 +350,7 @@ export const MonitorFieldFilters = ({
     const categoryKeys: string[] = [];
 
     // Section keys that should be excluded from filter values
-    const sectionKeys = [
-      "status-section",
-      "data-category-section",
-      "confidence-section",
-    ];
+    const sectionKeys = Object.values(FIELDS_FILTER_SECTION_KEYS) as string[];
 
     // Helper to check if a key is a parent of any other key in the list
     // For nested categories like "user.account.settings", we only want the leaf nodes
@@ -391,7 +388,6 @@ export const MonitorFieldFilters = ({
   const handleReset = () => {
     // Reset to initial state (preselect statuses except Confirmed and Ignored)
     resetToInitialState();
-    // Also reset local state
     const defaultStatuses = availableResourceFilters
       ? getFilterableStatuses(availableResourceFilters)
       : [];

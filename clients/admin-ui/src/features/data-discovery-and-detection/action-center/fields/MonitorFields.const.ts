@@ -86,3 +86,9 @@ export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
   [StagedResourceTypeValue.SCHEMA]: Icons.Db2Database,
   [StagedResourceTypeValue.TABLE]: Icons.Table,
 } as const;
+
+export const FIELDS_FILTER_SECTION_KEYS = {
+  STATUS: "status-section",
+  DATA_CATEGORY: "data-category-section",
+  CONFIDENCE: "confidence-section",
+} as const;
