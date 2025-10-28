@@ -71,6 +71,7 @@ from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
 )
+from fides.api.service.privacy_request.duplication_detection import DuplicateDetectionService
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -445,6 +446,19 @@ def run_privacy_request(
             if privacy_request.deleted_at is not None:
                 logger.info("Terminating privacy request: request deleted.")
                 return
+
+            # Check if the privacy request is a duplicate
+            logger.info("\n----------------------------------Checking if privacy request is a duplicate----------------------------------")
+            logger.info(f"Duplicate detection enabled: {ConfigProxy(session).privacy_request_duplicate_detection.enabled}")
+            logger.info(f"Duplicate detection time window: {ConfigProxy(session).privacy_request_duplicate_detection.time_window_days}")
+            logger.info(f"Duplicate detection match identity fields: {ConfigProxy(session).privacy_request_duplicate_detection.match_identity_fields}")
+            if ConfigProxy(session).privacy_request_duplicate_detection.enabled:
+                logger.info("Duplicate detection is enabled. Checking if privacy request is a duplicate.")
+                duplicate_detection_service = DuplicateDetectionService(session)
+                if not duplicate_detection_service.is_canonical_request(privacy_request, ConfigProxy(session).privacy_request_duplicate_detection):
+                    logger.info("Terminating privacy request: request is a duplicate.")
+                    privacy_request.update(session, data={"status": PrivacyRequestStatus.duplicate})
+                    return
 
             logger.info("Dispatching privacy request")
             privacy_request.start_processing(session)

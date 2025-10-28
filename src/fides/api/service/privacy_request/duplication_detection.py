@@ -208,7 +208,7 @@ class DuplicateDetectionService:
             duplicate for duplicate in duplicates if duplicate.identity_verified_at
         ]
 
-        # The request identity is not verified.
+        ### The request identity is not verified.
         if not request.identity_verified_at:
             # If other requests in group are verified, this request is not canonical.
             if len(verified_in_group) > 0:
@@ -227,13 +227,11 @@ class DuplicateDetectionService:
             # This request is not the first request to be created or first verified.
             return False
 
-        # The request identity is verified.
-        # No other requests in group are verified.
+        ### The request identity is verified.
         if not verified_in_group:
-
+            # No other requests in group are verified.
             return True
 
-        # This request is the first with verified identity.
         min_verified_at = min(
             (d.identity_verified_at for d in duplicates if d.identity_verified_at),
             default=None,
