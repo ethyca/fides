@@ -15,10 +15,12 @@ const PostApiPreview = ({
   currentSavedKeys,
   previousSavedKeys,
   mechanismDefaults,
+  cascadeConsent,
 }: {
   currentSavedKeys: CheckedKeysType;
   previousSavedKeys: CheckedKeysType;
   mechanismDefaults: Key[];
+  cascadeConsent?: boolean;
 }) => {
   const generateMockRequest = useCallback(() => {
     const currentArray = Array.isArray(currentSavedKeys)
@@ -32,20 +34,24 @@ const PostApiPreview = ({
     // Find notices that have changed from baseline
     const changedKeys = ALL_KEYS.filter((key) => {
       const isInCurrentSave = currentArray.includes(key);
-      const wasInBaseline =
-        previousArray.length > 0
-          ? previousArray.includes(key)
-          : mechanismDefaults.includes(key);
+      const wasInBaseline = previousArray.includes(key);
       return isInCurrentSave !== wasInBaseline;
     });
 
+    // If cascade is enabled and parent is among the changed keys,
+    // when setting parent opt_in, children are auto-checked so they show as "changed"
+    // but we only want to show the parent in the API request
+    const parentChanged = changedKeys.includes(PARENT_KEY_WITH_UUID);
+    const keysToProcess =
+      cascadeConsent && parentChanged ? [PARENT_KEY_WITH_UUID] : changedKeys;
+
     // If no notices have changed, don't show a request
-    if (changedKeys.length === 0) {
+    if (keysToProcess.length === 0) {
       return null;
     }
 
     // Generate preferences array only for changed items
-    const preferences = changedKeys.map((key) => {
+    const preferences = keysToProcess.map((key) => {
       const isChecked = currentArray.includes(key);
       const value = isChecked ? "opt_in" : "opt_out";
 
@@ -71,16 +77,27 @@ const PostApiPreview = ({
     return {
       preferences,
     };
-  }, [currentSavedKeys, previousSavedKeys, mechanismDefaults]);
+  }, [currentSavedKeys, previousSavedKeys, mechanismDefaults, cascadeConsent]);
 
   const mockRequest = generateMockRequest();
+
+  // Determine if we need the query parameter
+  const needsQueryParam =
+    cascadeConsent &&
+    mockRequest &&
+    mockRequest.preferences.length > 0 &&
+    mockRequest.preferences.some((p: any) => p.notice_key === PARENT_KEY);
+
+  const endpoint = needsQueryParam
+    ? "POST /api/v3/privacy-preferences?override_children=true"
+    : "POST /api/v3/privacy-preferences";
 
   return (
     <PreviewCard title="API Calls Preview">
       {mockRequest ? (
         <>
           <Typography.Text strong className="mb-2 block text-sm text-blue-600">
-            POST /api/v3/privacy-preferences
+            {endpoint}
           </Typography.Text>
           <pre className="m-0 whitespace-pre-wrap">
             {JSON.stringify(mockRequest, null, 2)}

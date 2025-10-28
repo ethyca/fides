@@ -9,7 +9,8 @@ import { useCallback, useMemo, useState } from "react";
 import PageHeader from "~/features/common/PageHeader";
 
 import {
-  ConsentMechanismToggle,
+  CascadeConsentToggle,
+  ConsentMechanismRadioGroup,
   DbStatePreview,
   DisableChildrenTree,
   GetApiPreview,
@@ -31,6 +32,7 @@ const { Content } = Layout;
 const PrivacyNoticesSandbox: NextPage = () => {
   const [consentMechanism, setConsentMechanism] =
     useState<ConsentMechanism>("opt-out");
+  const [cascadeConsent, setCascadeConsent] = useState<boolean>(false);
   const [checkedKeys, setCheckedKeys] = useState<CheckedKeysType>(ALL_KEYS);
   const [savedCheckedKeys, setSavedCheckedKeys] =
     useState<CheckedKeysType>(ALL_KEYS);
@@ -58,6 +60,19 @@ const PrivacyNoticesSandbox: NextPage = () => {
     setPreviousSavedKeys(newDefaults);
     setDbState({});
   }, []);
+
+  const handleCascadeToggle = useCallback(
+    (enabled: boolean) => {
+      setCascadeConsent(enabled);
+
+      // Reset all states to match current mechanism defaults
+      setCheckedKeys(mechanismDefaults);
+      setSavedCheckedKeys(mechanismDefaults);
+      setPreviousSavedKeys(mechanismDefaults);
+      setDbState({});
+    },
+    [mechanismDefaults],
+  );
 
   const handleSave = useCallback(() => {
     setPreviousSavedKeys(savedCheckedKeys); // Store the previous saved state
@@ -87,10 +102,18 @@ const PrivacyNoticesSandbox: NextPage = () => {
               key.toString();
         const isChecked = currentArray.includes(key);
         newState[noticeKey] = isChecked ? "opt_in" : "opt_out";
+
+        // If cascade is enabled and parent was changed, also update all children
+        if (cascadeConsent && key === PARENT_KEY_WITH_UUID) {
+          const value = isChecked ? "opt_in" : "opt_out";
+          TREE_NODES.forEach((node) => {
+            newState[node.title] = value;
+          });
+        }
       });
       return newState;
     });
-  }, [checkedKeys, savedCheckedKeys]);
+  }, [checkedKeys, savedCheckedKeys, cascadeConsent]);
 
   return (
     <Layout>
@@ -103,9 +126,16 @@ const PrivacyNoticesSandbox: NextPage = () => {
             <Typography.Text strong className="mb-4 block text-base">
               Notice configuration
             </Typography.Text>
-            <ConsentMechanismToggle
+            <ConsentMechanismRadioGroup
               mechanism={consentMechanism}
               onMechanismChange={handleMechanismChange}
+            />
+            <Typography.Text strong className="mb-4 block text-base">
+              Consent behavior
+            </Typography.Text>
+            <CascadeConsentToggle
+              isEnabled={cascadeConsent}
+              onToggle={handleCascadeToggle}
             />
 
             <Typography.Text strong className="mb-4 block text-base">
@@ -114,6 +144,7 @@ const PrivacyNoticesSandbox: NextPage = () => {
             <DisableChildrenTree
               checkedKeys={checkedKeys}
               onCheckedKeysChange={setCheckedKeys}
+              cascadeConsent={cascadeConsent}
             />
 
             <Button type="primary" onClick={handleSave} className="mt-4">
@@ -127,6 +158,7 @@ const PrivacyNoticesSandbox: NextPage = () => {
               currentSavedKeys={savedCheckedKeys}
               previousSavedKeys={previousSavedKeys}
               mechanismDefaults={mechanismDefaults}
+              cascadeConsent={cascadeConsent}
             />
           </div>
         </div>

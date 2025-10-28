@@ -13,9 +13,11 @@ import type { CheckedKeysType, TreeDataNode } from "../types";
 const DisableChildrenTree = ({
   checkedKeys,
   onCheckedKeysChange,
+  cascadeConsent,
 }: {
   checkedKeys: CheckedKeysType;
   onCheckedKeysChange: (checkedKeys: CheckedKeysType) => void;
+  cascadeConsent?: boolean;
 }) => {
   // State
   const [expandedKeys, setExpandedKeys] = useState<Key[]>(
@@ -44,9 +46,37 @@ const DisableChildrenTree = ({
 
   const handleCheck = useCallback(
     (checkedKeysValue: CheckedKeysType) => {
-      onCheckedKeysChange(checkedKeysValue);
+      const currentCheckedArray = getCheckedArray(checkedKeysValue);
+      const previousCheckedArray = getCheckedArray(checkedKeys);
+
+      // Check if parent state changed
+      const parentWasChecked =
+        previousCheckedArray.includes(PARENT_KEY_WITH_UUID);
+      const parentIsChecked =
+        currentCheckedArray.includes(PARENT_KEY_WITH_UUID);
+      const parentChanged = parentWasChecked !== parentIsChecked;
+
+      // If cascade is enabled and parent changed, propagate to children
+      if (cascadeConsent && parentChanged) {
+        const childKeys = TREE_NODES.map((node) => node.key);
+
+        if (parentIsChecked) {
+          // Parent is now checked, check all children
+          const newCheckedKeys = [...currentCheckedArray, ...childKeys];
+          onCheckedKeysChange(newCheckedKeys);
+        } else {
+          // Parent is now unchecked, uncheck all children
+          const newCheckedKeys = currentCheckedArray.filter(
+            (key) => !childKeys.includes(key as string),
+          );
+          onCheckedKeysChange(newCheckedKeys);
+        }
+      } else {
+        // No cascade or parent didn't change, pass through as normal
+        onCheckedKeysChange(checkedKeysValue);
+      }
     },
-    [onCheckedKeysChange],
+    [onCheckedKeysChange, cascadeConsent, checkedKeys, getCheckedArray],
   );
 
   // Memoized tree data
