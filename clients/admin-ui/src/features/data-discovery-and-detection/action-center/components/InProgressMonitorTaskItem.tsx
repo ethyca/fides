@@ -212,7 +212,7 @@ export const InProgressMonitorTaskItem = ({
             {task.status === "error" && (
               <Space className="pl-1" align="center">
                 <Tooltip title={task.message || "Unknown error"}>
-                  <Text type="secondary" size="sm" className="truncate">
+                  <Text type="secondary" size="sm">
                     {task.message?.split("\n")[0] || "Unknown error"}
                   </Text>
                 </Tooltip>
