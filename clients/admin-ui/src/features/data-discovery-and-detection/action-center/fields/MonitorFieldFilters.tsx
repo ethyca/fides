@@ -10,6 +10,7 @@ import { DiffStatus } from "~/types/api";
 
 import {
   DIFF_TO_RESOURCE_STATUS,
+  getFilterableStatuses,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
@@ -217,9 +218,7 @@ export const MonitorFieldFilters = ({
   // Filter resourceStatus to only include statuses that are in available filters
   useEffect(() => {
     if (resourceStatus && availableResourceFilters) {
-      const filteredStatuses = availableResourceFilters.filter(
-        (status) => status !== "Confirmed" && status !== "Ignored",
-      );
+      const filteredStatuses = getFilterableStatuses(availableResourceFilters);
 
       // Filter resourceStatus to only include statuses that are in filteredStatuses
       const validStatuses = resourceStatus.filter((status) =>
@@ -236,10 +235,9 @@ export const MonitorFieldFilters = ({
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(() => {
     // Filter out "Confirmed" and "Ignored" from available filters
-    const filteredStatuses =
-      availableResourceFilters?.filter(
-        (status) => status !== "Confirmed" && status !== "Ignored",
-      ) || [];
+    const filteredStatuses = availableResourceFilters
+      ? getFilterableStatuses(availableResourceFilters)
+      : [];
 
     return filteredStatuses.map((label) => ({
       title: label,
@@ -376,10 +374,9 @@ export const MonitorFieldFilters = ({
     // Reset to initial state (preselect statuses except Confirmed and Ignored)
     resetToInitialState();
     // Also reset local state
-    const defaultStatuses =
-      availableResourceFilters?.filter(
-        (status) => status !== "Confirmed" && status !== "Ignored",
-      ) || [];
+    const defaultStatuses = availableResourceFilters
+      ? getFilterableStatuses(availableResourceFilters)
+      : [];
     setLocalResourceStatus(defaultStatuses.length > 0 ? defaultStatuses : null);
     setLocalDataCategory(null);
   };

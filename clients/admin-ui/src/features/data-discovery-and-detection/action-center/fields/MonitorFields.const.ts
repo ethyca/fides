@@ -22,6 +22,20 @@ export const RESOURCE_STATUS = [
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
 
+// Statuses to exclude from filters by default
+export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
+  "Confirmed",
+  "Ignored",
+];
+
+/**
+ * Filter out excluded statuses (Confirmed and Ignored) from a list of statuses.
+ */
+export const getFilterableStatuses = (
+  statuses: ResourceStatusLabel[],
+): ResourceStatusLabel[] =>
+  statuses.filter((status) => !EXCLUDED_FILTER_STATUSES.includes(status));
+
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
     addition: "Unlabeled",

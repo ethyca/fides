@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 
-import { RESOURCE_STATUS } from "./MonitorFields.const";
+import { getFilterableStatuses, RESOURCE_STATUS } from "./MonitorFields.const";
 
 export const useMonitorFieldsFilters = () => {
   const [resourceStatus, setResourceStatus] = useQueryState(
@@ -32,17 +32,13 @@ export const useMonitorFieldsFilters = () => {
   // Set initial state: preselect all statuses except "Confirmed" and "Ignored"
   useEffect(() => {
     if (resourceStatus === null) {
-      const defaultStatuses = RESOURCE_STATUS.filter(
-        (status) => status !== "Confirmed" && status !== "Ignored",
-      );
+      const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
       setResourceStatus(defaultStatuses);
     }
   }, [resourceStatus, setResourceStatus]);
 
   const resetToInitialState = () => {
-    const defaultStatuses = RESOURCE_STATUS.filter(
-      (status) => status !== "Confirmed" && status !== "Ignored",
-    );
+    const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
     setResourceStatus(defaultStatuses);
     setConfidenceScore(null);
     setDataCategory(null);
