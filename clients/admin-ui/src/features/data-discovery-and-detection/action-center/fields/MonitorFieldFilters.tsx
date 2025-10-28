@@ -12,6 +12,7 @@ import {
   DIFF_TO_RESOURCE_STATUS,
   FIELDS_FILTER_SECTION_KEYS,
   getFilterableStatuses,
+  RESOURCE_STATUS,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
@@ -198,7 +199,10 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  const availableResourceFilters = datastoreFilterResponse?.diff_status?.reduce(
+  const availableResourceFilters = useMemo(() => [...RESOURCE_STATUS], []);
+  // Hardcoded for now, uncomment and replace the line above when we have
+  // better UI state handling to support these being dynamic
+  /* const availableResourceFilters = datastoreFilterResponse?.diff_status?.reduce(
     (agg, current) => {
       const diffStatus = Object.values(DiffStatus).find((rs) => rs === current);
       const currentResourceStatus = diffStatus
@@ -212,7 +216,7 @@ export const MonitorFieldFilters = ({
       return agg;
     },
     [] as ResourceStatusLabel[],
-  );
+  ); */
 
   /* TODO: Uncomment this when we have a proper confidence score from the backend */
   /* const availableConfidenceScores =
@@ -284,7 +288,7 @@ export const MonitorFieldFilters = ({
     }
 
     return availableResourceFilters.map((label) => ({
-      title: label,
+      title: label.replace(/\.{3}$/, ""), // Remove trailing ellipsis for display
       key: label,
       checkable: true,
       selectable: false,

@@ -10,14 +10,14 @@ export const TREE_NODE_SKELETON_KEY_PREFIX = "skeleton";
 export const FIELD_PAGE_SIZE = 25;
 
 export const RESOURCE_STATUS = [
-  "Approved",
-  "Classifying",
-  "Confirmed",
-  "Ignored",
-  "In Review",
-  "Removed",
   "Unlabeled",
+  "Classifying",
+  "In Review",
+  "Approved",
   "Confirming...",
+  "Confirmed",
+  "Removed",
+  "Ignored",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -26,10 +26,11 @@ export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
 export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
   "Confirmed",
   "Ignored",
+  "Confirming...",
 ];
 
 /**
- * Filter out excluded statuses (Confirmed and Ignored) from a list of statuses.
+ * Filter out excluded statuses from a list of statuses.
  */
 export const getFilterableStatuses = (
   statuses: ResourceStatusLabel[],
