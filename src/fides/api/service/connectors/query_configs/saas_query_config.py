@@ -327,7 +327,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             input_data: Optional upstream data from other collections
         """
         if param_values is None:
-            param_values = {}
+            param_values: Dict[str, Any] = {}
 
         for param_value in request.param_values or []:
             if param_value.references:
