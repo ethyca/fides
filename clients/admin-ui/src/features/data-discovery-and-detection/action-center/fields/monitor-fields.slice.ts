@@ -68,7 +68,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
           body,
         };
       },
-      invalidatesTags: ["Monitor Field Results"],
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
   }),
 });
