@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "identity_definition",
-        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("id", sa.String(length=255), nullable=False, unique=True),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -37,10 +37,7 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("type", sa.String(length=255), nullable=False),
         sa.Column("created_by", sa.String(length=255), nullable=True),
-        sa.PrimaryKeyConstraint("id", "identity_key"),
-    )
-    op.create_index(
-        op.f("ix_identity_definition_id"), "identity_definition", ["id"], unique=False
+        sa.PrimaryKeyConstraint("identity_key"),
     )
     op.create_index(
         op.f("ix_identity_definition_identity_key"),
@@ -54,5 +51,4 @@ def downgrade():
     op.drop_index(
         op.f("ix_identity_definition_identity_key"), table_name="identity_definition"
     )
-    op.drop_index(op.f("ix_identity_definition_id"), table_name="identity_definition")
     op.drop_table("identity_definition")

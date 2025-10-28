@@ -3,7 +3,7 @@ from enum import Enum
 from sqlalchemy import Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 
 
@@ -36,6 +36,15 @@ class IdentityDefinition(Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "identity_definition"
+
+    # Overriding the id definition from Base so we don't treat this as the primary key
+    id = Column(
+        String(255),
+        nullable=False,
+        index=False,
+        unique=True,
+        default=FidesBase.generate_uuid,
+    )
 
     # Primary key
     identity_key = Column(String(255), primary_key=True, index=True)
