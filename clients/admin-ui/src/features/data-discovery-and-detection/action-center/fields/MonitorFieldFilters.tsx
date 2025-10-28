@@ -51,13 +51,11 @@ const buildDataCategoryTree = (
       return null;
     };
 
-    for (let index = 0; index < nodes.length; index += 1) {
-      const found = findInNode(nodes[index]);
-      if (found) {
-        return found;
-      }
-    }
-    return null;
+    const result = nodes.reduce<ReturnType<typeof findInNode>>(
+      (found, node) => found ?? findInNode(node),
+      null,
+    );
+    return result;
   };
 
   // Build a map of all category nodes
@@ -86,32 +84,48 @@ const buildDataCategoryTree = (
   });
 
   // Build hierarchical structure by organizing parent-child relationships
-  const rootNodes: DataNode[] = [];
   const allNodes = Array.from(nodeMap.values());
 
-  allNodes.forEach((node) => {
-    const keyStr = node.key as string;
-    const parts = keyStr.split(".");
-
-    if (parts.length === 1) {
-      // Root level node
-      const children = allNodes.filter((n) => {
+  // Helper to recursively build children for a node
+  const buildChildren = (parentKey: string): DataNode[] => {
+    return allNodes
+      .filter((n) => {
         const nKey = n.key as string;
         const nParts = nKey.split(".");
-        return nParts.length === 2 && nParts[0] === parts[0];
+        const parentParts = parentKey.split(".");
+        // Check if this node is a direct child (one level deeper)
+        return (
+          nParts.length === parentParts.length + 1 &&
+          nKey.startsWith(`${parentKey}.`)
+        );
+      })
+      .map((child) => {
+        const childKey = child.key as string;
+        const grandchildren = buildChildren(childKey);
+        return {
+          ...child,
+          children: grandchildren.length > 0 ? grandchildren : undefined,
+          isLeaf: grandchildren.length === 0,
+        };
       });
+  };
 
-      if (children.length > 0) {
-        rootNodes.push({
-          ...node,
-          children,
-          isLeaf: false,
-        });
-      } else {
-        rootNodes.push(node);
-      }
-    }
-  });
+  // Get root level nodes (no parent)
+  const rootNodes: DataNode[] = allNodes
+    .filter((node) => {
+      const keyStr = node.key as string;
+      const parts = keyStr.split(".");
+      return parts.length === 1;
+    })
+    .map((node) => {
+      const nodeKey = node.key as string;
+      const children = buildChildren(nodeKey);
+      return {
+        ...node,
+        children: children.length > 0 ? children : undefined,
+        isLeaf: children.length === 0,
+      };
+    });
 
   return rootNodes;
 };
@@ -174,7 +188,7 @@ export const MonitorFieldFilters = ({
         ? DIFF_TO_RESOURCE_STATUS[diffStatus]
         : null;
 
-      if (!!currentResourceStatus && !agg.includes(currentResourceStatus)) {
+      if (currentResourceStatus && !agg.includes(currentResourceStatus)) {
         return [...agg, currentResourceStatus];
       }
 

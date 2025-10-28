@@ -37,8 +37,7 @@ export const useMonitorFieldsFilters = () => {
       );
       setResourceStatus(defaultStatuses);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [resourceStatus, setResourceStatus]);
 
   const resetToInitialState = () => {
     const defaultStatuses = RESOURCE_STATUS.filter(
