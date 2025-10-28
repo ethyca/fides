@@ -316,6 +316,10 @@ class DuplicateDetectionService:
             for duplicate in canonical_requests
             if duplicate.status in ACTIONED_REQUEST_STATUSES
         ]
-
+        if len(actioned_in_group) > 0:
+            logger.debug(
+                f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {actioned_in_group}."
+            )
+            return True
         # Check against verified identity rules.
         return self.verified_identity_cases(request, canonical_requests)
