@@ -67,7 +67,7 @@ type MonitorFieldListItemRenderParams = Parameters<
   NonNullable<ListRenderItem>
 >[0] & {
   selected?: boolean;
-  onSelect?: (key: string, selected?: boolean) => void;
+  onSelect?: (key: React.Key, selected: boolean) => void;
   onNavigate?: (key: string) => void;
   onSetDataCategories: (urn: string, dataCategories: string[]) => void;
 };
