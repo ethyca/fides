@@ -17,7 +17,7 @@ export const RESOURCE_STATUS = [
   "In Review",
   "Removed",
   "Unlabeled",
-  "Confirming",
+  "Confirming...",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -32,7 +32,7 @@ export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
     classifying: "Classifying",
     monitored: "Confirmed",
     muted: "Ignored",
-    promoting: "Confirming",
+    promoting: "Confirming...",
     removal: "Removed",
     removing: "In Review",
   } as const;
@@ -58,7 +58,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
   monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
-  promoting: { label: "Confirming", color: CUSTOM_TAG_COLOR.CAUTION },
+  promoting: { label: "Confirming...", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
   removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
 } as const;

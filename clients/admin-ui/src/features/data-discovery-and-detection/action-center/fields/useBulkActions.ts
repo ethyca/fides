@@ -10,7 +10,10 @@ import { FIELD_ACTION_LABEL } from "./FieldActions.const";
 import { useFieldActionsMutation } from "./monitor-fields.slice";
 import { MonitorFieldParameters } from "./types";
 
-export const useBulkActions = (monitorId: string) => {
+export const useBulkActions = (
+  monitorId: string,
+  onRefreshTree?: (urns: string[]) => Promise<void>,
+) => {
   const [bulkAction] = useFieldActionsMutation();
 
   const toast = useToast();
@@ -18,7 +21,10 @@ export const useBulkActions = (monitorId: string) => {
 
   const handleBulkAction =
     (actionType: FieldActionType) =>
-    async (filterParams: MonitorFieldParameters) => {
+    async (
+      filterParams: MonitorFieldParameters,
+      excluded_resource_urns: string[],
+    ) => {
       const mutationResult = await bulkAction({
         query: {
           ...filterParams.query,
@@ -26,6 +32,9 @@ export const useBulkActions = (monitorId: string) => {
         path: {
           monitor_config_id: monitorId,
           action_type: actionType,
+        },
+        body: {
+          excluded_resource_urns,
         },
       });
 
@@ -40,6 +49,17 @@ export const useBulkActions = (monitorId: string) => {
           `Successful ${FIELD_ACTION_LABEL[actionType]} action for ${actionItemCount} item${actionItemCount !== 1 ? "s" : ""}`,
         ),
       );
+
+      // Refresh the tree to reflect updated status
+      // Note: For bulk actions we can't get the specific URNs affected,
+      // so we pass the staged_resource_urn filter if available.
+      // If the action is APPROVE, the indicators are not refreshed because the
+      // resource approved by the approve action had already been classified,
+      // and its parent already had the "change" indicator.
+      if (onRefreshTree && actionType !== FieldActionType.APPROVE) {
+        const resources = filterParams.query.staged_resource_urn || [];
+        await onRefreshTree(resources);
+      }
     };
 
   return {
@@ -53,6 +73,10 @@ export const useBulkActions = (monitorId: string) => {
     promote: handleBulkAction(FieldActionType.PROMOTE),
   } satisfies Record<
     FieldActionType,
-    null | ((filterParams: MonitorFieldParameters) => Promise<void> | void)
+    | null
+    | ((
+        filterParams: MonitorFieldParameters,
+        excluded_resource_urns: string[],
+      ) => Promise<void> | void)
   >;
 };
