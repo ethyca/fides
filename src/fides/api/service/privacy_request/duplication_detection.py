@@ -40,10 +40,8 @@ class DuplicateDetectionService:
     ) -> list[Condition]:
         """Creates conditions for matching identity fields.
 
-        For identity field matching using the EAV pattern in ProvidedIdentity,
-        we need to match both field_name and hashed_value. This function
-        creates the required nested conditions for each identity field.
-
+        For identity field matching using the EAV pattern in ProvidedIdentity, we need to match both field_name
+        and hashed_value. This function creates the required nested conditions for each identity field.
         Also adds a condition for the policy_id to ensure that we are only matching requests for the same policy.
         """
         current_identities: dict[str, str] = {}
@@ -150,7 +148,6 @@ class DuplicateDetectionService:
             List of PrivacyRequest objects that match the duplicate criteria,
             does not include the current request
         """
-        # Create conditions from config
         condition = self.create_duplicate_detection_conditions(current_request, config)
 
         if condition is None:
