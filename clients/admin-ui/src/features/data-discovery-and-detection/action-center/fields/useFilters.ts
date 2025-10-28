@@ -35,7 +35,8 @@ export const useMonitorFieldsFilters = () => {
       const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
       setResourceStatus(defaultStatuses);
     }
-  }, [resourceStatus, setResourceStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount, or we could get in an infinite loop if all items are filtered out
 
   const resetToInitialState = () => {
     const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
