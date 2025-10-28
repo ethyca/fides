@@ -46,7 +46,7 @@ export const AVAILABLE_ACTIONS = {
   Ignored: [FieldActionType.UN_MUTE],
   Removed: [],
   Unlabeled: [FieldActionType.ASSIGN_CATEGORIES, FieldActionType.CLASSIFY],
-  Confirming: [],
+  "Confirming...": [],
 } as const satisfies Readonly<
   Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
 >;
