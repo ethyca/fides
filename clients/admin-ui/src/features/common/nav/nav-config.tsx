@@ -316,7 +316,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   // to prevent them from being shown in the navigation
   {
     title: "Sandbox",
-    icon: <Icons.Code />,
+    icon: <Icons.Chemistry />,
     routes: [
       {
         title: "Privacy Notices Sandbox",
