@@ -1,5 +1,5 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -149,9 +149,6 @@ export const MonitorFieldFilters = ({
   monitorId: string;
   stagedResourceUrn: string[];
 }) => {
-  // Track previously available filters to detect new ones
-  const previousAvailableFiltersRef = useRef<ResourceStatusLabel[]>([]);
-
   // Local state for filter changes (not applied until "Apply" is clicked)
   const [localResourceStatus, setLocalResourceStatus] = useState<
     ResourceStatusLabel[] | null
@@ -197,24 +194,8 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
+  // All statuses are always available (hardcoded)
   const availableResourceFilters = useMemo(() => [...RESOURCE_STATUS], []);
-  // Hardcoded for now, uncomment and replace the line above when we have
-  // better UI state handling to support these being dynamic
-  /* const availableResourceFilters = datastoreFilterResponse?.diff_status?.reduce(
-    (agg, current) => {
-      const diffStatus = Object.values(DiffStatus).find((rs) => rs === current);
-      const currentResourceStatus = diffStatus
-        ? DIFF_TO_RESOURCE_STATUS[diffStatus]
-        : null;
-
-      if (currentResourceStatus && !agg.includes(currentResourceStatus)) {
-        return [...agg, currentResourceStatus];
-      }
-
-      return agg;
-    },
-    [] as ResourceStatusLabel[],
-  ); */
 
   /* TODO: Uncomment this when we have a proper confidence score from the backend */
   /* const availableConfidenceScores =
@@ -233,66 +214,18 @@ export const MonitorFieldFilters = ({
       [] as typeof ConfidenceScoreRangeValues,
     ); */
 
-  // Auto-select new default statuses when they appear for the first time
-  useEffect(() => {
-    if (!availableResourceFilters || !resourceStatus) {
-      return;
-    }
-
-    const filteredStatuses = getFilterableStatuses(availableResourceFilters);
-    const previousFilters = previousAvailableFiltersRef.current;
-
-    // Find truly new statuses (appeared in API but weren't there before)
-    const newlyAvailableStatuses = filteredStatuses.filter(
-      (status) => !previousFilters.includes(status),
-    );
-
-    // Deduplicate and filter resourceStatus to only include statuses that are still available
-    const uniqueResourceStatus = Array.from(new Set(resourceStatus));
-    const validStatuses = uniqueResourceStatus.filter((status) =>
-      availableResourceFilters.includes(status),
-    );
-
-    // Auto-add newly available default statuses to the selection
-    if (newlyAvailableStatuses.length > 0) {
-      const updatedStatuses = Array.from(
-        new Set([...validStatuses, ...newlyAvailableStatuses]),
-      );
-      // Only update if there's an actual change
-      if (
-        updatedStatuses.length !== uniqueResourceStatus.length ||
-        !updatedStatuses.every((s) => uniqueResourceStatus.includes(s))
-      ) {
-        setResourceStatus(updatedStatuses.length > 0 ? updatedStatuses : null);
-      }
-    } else if (
-      validStatuses.length !== uniqueResourceStatus.length ||
-      !validStatuses.every((s) => uniqueResourceStatus.includes(s))
-    ) {
-      // Otherwise, just update if there's a difference (removing invalid ones or deduplicating)
-      setResourceStatus(validStatuses.length > 0 ? validStatuses : null);
-    }
-
-    // Update the ref to track current available filters
-    previousAvailableFiltersRef.current = filteredStatuses;
-  }, [availableResourceFilters, resourceStatus, setResourceStatus]);
-
   // Build tree data for filters
-  const statusTreeData: DataNode[] = useMemo(() => {
-    // Show all available statuses (including "Confirmed" and "Ignored")
-    // They will be unchecked by default based on the initial selection state
-    if (!availableResourceFilters) {
-      return [];
-    }
-
-    return availableResourceFilters.map((label) => ({
-      title: label.replace(/\.{3}$/, ""), // Remove trailing ellipsis for display
-      key: label,
-      checkable: true,
-      selectable: false,
-      isLeaf: true,
-    }));
-  }, [availableResourceFilters]);
+  const statusTreeData: DataNode[] = useMemo(
+    () =>
+      availableResourceFilters.map((label) => ({
+        title: label.replace(/\.{3}$/, ""), // Remove trailing ellipsis for display
+        key: label,
+        checkable: true,
+        selectable: false,
+        isLeaf: true,
+      })),
+    [availableResourceFilters],
+  );
 
   const dataCategoryTreeData: DataNode[] = useMemo(() => {
     if (
@@ -427,12 +360,9 @@ export const MonitorFieldFilters = ({
   };
 
   const handleReset = () => {
-    // Reset to initial state (preselect statuses except Confirmed and Ignored)
+    // Reset to initial state (preselect statuses except excluded ones)
     resetToInitialState();
-    const defaultStatuses = availableResourceFilters
-      ? getFilterableStatuses(availableResourceFilters)
-      : [];
-    setLocalResourceStatus(defaultStatuses);
+    setLocalResourceStatus(getFilterableStatuses(availableResourceFilters));
     setLocalDataCategory([]);
   };
 
@@ -462,7 +392,7 @@ export const MonitorFieldFilters = ({
 
   const handleOpenChange = (open: boolean) => {
     if (open) {
-      // When popover opens, refetch available filters to ensure they're up-to-date
+      // When popover opens, refetch data categories to ensure they're up-to-date
       refetchDatastoreFilters();
       return;
     }
