@@ -87,31 +87,38 @@ const buildDataCategoryTree = (
   // Build hierarchical structure by organizing parent-child relationships
   const allNodes = Array.from(nodeMap.values());
 
-  // Helper to recursively build children for a node
+  // Build a parent-child map for O(1) lookups instead of O(n) filtering
+  const childrenMap = new Map<string, DataNode[]>();
+  allNodes.forEach((node) => {
+    const keyStr = node.key as string;
+    const parts = keyStr.split(".");
+
+    if (parts.length > 1) {
+      // This node has a parent
+      const parentKey = parts.slice(0, -1).join(".");
+      if (!childrenMap.has(parentKey)) {
+        childrenMap.set(parentKey, []);
+      }
+      childrenMap.get(parentKey)!.push(node);
+    }
+  });
+
+  // Helper to recursively build children for a node using the map
   const buildChildren = (parentKey: string): DataNode[] => {
-    return allNodes
-      .filter((n) => {
-        const nKey = n.key as string;
-        const nParts = nKey.split(".");
-        const parentParts = parentKey.split(".");
-        // Check if this node is a direct child (one level deeper)
-        return (
-          nParts.length === parentParts.length + 1 &&
-          nKey.startsWith(`${parentKey}.`)
-        );
-      })
-      .map((child) => {
-        const childKey = child.key as string;
-        const grandchildren = buildChildren(childKey);
-        return {
-          ...child,
-          children: grandchildren.length > 0 ? grandchildren : undefined,
-          isLeaf: grandchildren.length === 0,
-        };
-      });
+    const children = childrenMap.get(parentKey) || [];
+
+    return children.map((child) => {
+      const childKey = child.key as string;
+      const grandchildren = buildChildren(childKey);
+      return {
+        ...child,
+        children: grandchildren.length > 0 ? grandchildren : undefined,
+        isLeaf: grandchildren.length === 0,
+      };
+    });
   };
 
-  // Get root level nodes (no parent)
+  // Get root level nodes (no parent) - these are nodes with only one part
   const rootNodes: DataNode[] = allNodes
     .filter((node) => {
       const keyStr = node.key as string;
