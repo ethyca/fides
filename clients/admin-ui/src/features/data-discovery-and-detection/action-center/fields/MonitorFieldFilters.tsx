@@ -90,7 +90,7 @@ const buildDataCategoryTree = (
   // Build a parent-child map for O(1) lookups instead of O(n) filtering
   const childrenMap = new Map<string, DataNode[]>();
   allNodes.forEach((node) => {
-    const keyStr = node.key as string;
+    const keyStr = node.key.toString();
     const parts = keyStr.split(".");
 
     if (parts.length > 1) {
@@ -108,7 +108,7 @@ const buildDataCategoryTree = (
     const children = childrenMap.get(parentKey) || [];
 
     return children.map((child) => {
-      const childKey = child.key as string;
+      const childKey = child.key.toString();
       const grandchildren = buildChildren(childKey);
       return {
         ...child,
@@ -121,12 +121,12 @@ const buildDataCategoryTree = (
   // Get root level nodes (no parent) - these are nodes with only one part
   const rootNodes: DataNode[] = allNodes
     .filter((node) => {
-      const keyStr = node.key as string;
+      const keyStr = node.key.toString();
       const parts = keyStr.split(".");
       return parts.length === 1;
     })
     .map((node) => {
-      const nodeKey = node.key as string;
+      const nodeKey = node.key.toString();
       const children = buildChildren(nodeKey);
       return {
         ...node,
