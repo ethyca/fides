@@ -1,4 +1,8 @@
-import { AntRadio as Radio, AntTypography as Typography } from "fidesui";
+import {
+  AntRadio as Radio,
+  AntTypography as Typography,
+  RadioChangeEvent,
+} from "fidesui";
 import { useCallback } from "react";
 
 import type { ConsentMechanism } from "../types";
@@ -11,7 +15,7 @@ const ConsentMechanismRadioGroup = ({
   onMechanismChange: (mechanism: ConsentMechanism) => void;
 }) => {
   const handleMechanismChange = useCallback(
-    (e: any) => {
+    (e: RadioChangeEvent) => {
       onMechanismChange(e.target.value);
     },
     [onMechanismChange],
