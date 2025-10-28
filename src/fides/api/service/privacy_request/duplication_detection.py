@@ -154,7 +154,6 @@ class DuplicateDetectionService:
 
         translator = SQLConditionTranslator(self.db)
         query = translator.generate_query_from_condition(condition)
-
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
@@ -281,6 +280,7 @@ class DuplicateDetectionService:
             True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
+        logger.info(f"DUPLICATES: {duplicates}")
         group_id = self.get_duplicate_request_group_id(duplicates)
         request.update(db=self.db, data={"duplicate_request_group_id": group_id})
 
