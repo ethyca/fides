@@ -1,9 +1,5 @@
-import {
-  AntFlex as Flex,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { AntFlex as Flex, AntTypography as Typography, Icons } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -35,13 +31,12 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
             copyable={{
               text: privacyRequest.id,
               icon: (
-                <Tooltip title="Copy request ID">
-                  <div className="mt-1">
-                    <Icons.Copy />
-                  </div>
-                </Tooltip>
+                <Icons.Copy
+                  className="size-3.5"
+                  style={{ color: palette.FIDESUI_MINOS }}
+                />
               ),
-              tooltips: null,
+              tooltips: ["Copy request ID", "Copied"],
             }}
           >
             {privacyRequest.policy.name}
