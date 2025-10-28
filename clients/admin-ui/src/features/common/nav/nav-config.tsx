@@ -311,6 +311,22 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
+  // This section is meant to be hidden but accessible outside of dev builds
+  // Any routes added in this section need to have hidden: true
+  // to prevent them from being shown in the navigation
+  {
+    title: "Sandbox",
+    icon: <Icons.Code />,
+    routes: [
+      {
+        title: "Privacy Notices Sandbox",
+        path: routes.SANDBOX_PRIVACY_NOTICES_ROUTE,
+        requiresFlag: "alphaPrivacyNoticesSandbox",
+        scopes: [],
+        hidden: true,
+      },
+    ],
+  },
 ];
 
 if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
@@ -336,12 +352,6 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Table Migration POC",
         path: routes.TABLE_MIGRATION_POC_ROUTE,
-        scopes: [],
-      },
-      {
-        title: "Privacy Notices Sandbox",
-        path: routes.PRIVACY_NOTICES_SANDBOX_ROUTE,
-        requiresFlag: "alphaPrivacyNoticesSandbox",
         scopes: [],
       },
     ],

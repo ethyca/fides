@@ -97,5 +97,7 @@ export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
 export const ANT_POC_ROUTE = "/poc/ant-components";
 export const FORMS_POC_ROUTE = "/poc/forms";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
-export const PRIVACY_NOTICES_SANDBOX_ROUTE = "/poc/privacy-notices-sandbox";
 export const FIDES_JS_DOCS = "/fides-js-docs";
+
+// Sandbox routes
+export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
