@@ -7,6 +7,8 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntList as List,
+  AntMessage as message,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -75,6 +77,8 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
+  const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = modal.useModal();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -122,12 +126,22 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
   const resource = stagedResourceDetailsResult.data;
-  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
-    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-  });
-  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
-    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-  });
+  const bulkActions = useBulkActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const fieldActions = useFieldActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
   const {
     excludedListItems,
     indeterminate,
@@ -299,6 +313,7 @@ const ActionCenterFields: NextPage = () => {
                               excludedListItems.map((k) =>
                                 k.itemKey.toString(),
                               ),
+                              selectedListItemCount,
                             );
                           } else {
                             fieldActions[actionType](
@@ -515,6 +530,8 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         ) : null}
       </DetailsDrawer>
+      {modalContext}
+      {messageContext}
     </FixedLayout>
   );
 };
