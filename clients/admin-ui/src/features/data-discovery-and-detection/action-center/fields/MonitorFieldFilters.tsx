@@ -354,6 +354,16 @@ export const MonitorFieldFilters = ({
       "confidence-section",
     ];
 
+    // Helper to check if a key is a parent of any other key in the list
+    // For nested categories like "user.account.settings", we only want the leaf nodes
+    const isParentKey = (key: string, allKeys: string[]): boolean => {
+      return allKeys.some(
+        (otherKey) => otherKey !== key && otherKey.startsWith(`${key}.`),
+      );
+    };
+
+    const allKeysAsStrings = checkedKeysArray.map((k) => k.toString());
+
     checkedKeysArray.forEach((key) => {
       const keyStr = key.toString();
 
@@ -366,8 +376,10 @@ export const MonitorFieldFilters = ({
       if (availableResourceFilters?.includes(keyStr as ResourceStatusLabel)) {
         statusKeys.push(keyStr as ResourceStatusLabel);
       } else {
-        // It's a data category key
-        categoryKeys.push(keyStr);
+        // Only include leaf data category keys (not parents)
+        if (!isParentKey(keyStr, allKeysAsStrings)) {
+          categoryKeys.push(keyStr);
+        }
       }
     });
 
