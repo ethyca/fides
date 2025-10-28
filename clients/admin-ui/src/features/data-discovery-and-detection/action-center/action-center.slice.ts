@@ -91,12 +91,12 @@ const actionCenterApi = baseApi.injectEndpoints({
       DatastoreMonitorResourcesDynamicFilters,
       {
         monitor_config_id: string;
+        staged_resource_urn?: string[];
       }
     >({
-      query: ({ monitor_config_id }) => ({
-        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
-      providesTags: ["Discovery Monitor Results"],
     }),
 
     getMonitorTree: build.query<

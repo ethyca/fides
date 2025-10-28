@@ -145,7 +145,11 @@ export const MonitorFieldFilters = ({
   setDataCategory,
   resetToInitialState,
   monitorId,
-}: ReturnType<typeof useMonitorFieldsFilters> & { monitorId: string }) => {
+  stagedResourceUrn,
+}: ReturnType<typeof useMonitorFieldsFilters> & {
+  monitorId: string;
+  stagedResourceUrn: string[];
+}) => {
   // Track previously available filters to detect new ones
   const previousAvailableFiltersRef = useRef<ResourceStatusLabel[]>([]);
 
@@ -175,6 +179,7 @@ export const MonitorFieldFilters = ({
     useGetDatastoreFiltersQuery(
       {
         monitor_config_id: monitorId,
+        staged_resource_urn: stagedResourceUrn,
       },
       { refetchOnMountOrArgChange: true },
     );

@@ -284,6 +284,9 @@ const ActionCenterFields: NextPage = () => {
                   dataCategory={dataCategory}
                   {...restMonitorFieldsFilters}
                   monitorId={monitorId}
+                  stagedResourceUrn={selectedNodeKeys.map((key) =>
+                    key.toString(),
+                  )}
                 />
                 <Dropdown
                   onOpenChange={onActionDropdownOpenChange}
