@@ -2,14 +2,10 @@ from datetime import datetime, timezone
 from unittest import mock
 
 import pytest
-from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.application_config import ApplicationConfig
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.request_runner_service import run_privacy_request
-from fides.config.config_proxy import ConfigProxy
 from tests.ops.service.privacy_request.conftest import (
     create_duplicate_requests,
     get_detection_config,

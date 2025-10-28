@@ -13,7 +13,7 @@ from fides.api.service.privacy_request.duplication_detection import (
     DuplicateDetectionService,
 )
 from fides.api.task.conditional_dependencies.schemas import ConditionGroup
-from fides.tests.ops.service.privacy_request.conftest import (
+from tests.ops.service.privacy_request.conftest import (
     create_duplicate_requests,
     get_detection_config,
 )
