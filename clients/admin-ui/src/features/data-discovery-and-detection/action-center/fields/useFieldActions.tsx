@@ -30,7 +30,10 @@ export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
   );
 };
 
-export const useFieldActions = (monitorId: string) => {
+export const useFieldActions = (
+  monitorId: string,
+  onRefreshTree?: (urns: string[]) => Promise<void>,
+) => {
   const [ignoreMonitorResultAssetsMutation] = useMuteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
 
@@ -61,6 +64,12 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.MUTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // An indicator may change to empty if there are no child resources that the user is expected to act upon.
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleUnMute = async (urns: string[]) => {
@@ -74,6 +83,12 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.UN_MUTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // An indicator can change to "addition" or "change" since the user could now act on its unmuted children
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handlePromote = async (urns: string[]) => {
@@ -87,6 +102,12 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.PROMOTE, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // An indicator can change to empty if all its children were promoted.
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleClassifyStagedResources = async (urns: string[]) => {
@@ -101,6 +122,12 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.CLASSIFY, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // The indicators of the parents of affected children may change to "change" if it was not already in that state.
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleSetDataCategories = async (
@@ -121,6 +148,12 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.ASSIGN_CATEGORIES, urns.length);
+
+    // Refresh the tree to reflect updated status
+    // The indicators for the parents of affected children may change to "change" if all of their children were additions.
+    if (onRefreshTree) {
+      await onRefreshTree(urns);
+    }
   };
 
   const handleApprove = async (urns: string[]) => {
@@ -135,6 +168,9 @@ export const useFieldActions = (monitorId: string) => {
     }
 
     toastSuccess(FieldActionType.APPROVE, urns.length);
+
+    // The indicators are not refreshed because the resource approved by the approve action had already been classified,
+    // and its parent already had the "change" indicator.
   };
 
   return {

@@ -24,6 +24,7 @@ import {
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
@@ -116,6 +117,20 @@ const actionCenterApi = baseApi.injectEndpoints({
         params: { staged_resource_urn, include_descendant_details, page, size },
       }),
     }),
+
+    getMonitorTreeAncestorsStatuses: build.query<
+      Array<DatastoreStagedResourceTreeAPIResponse>,
+      {
+        monitor_config_id: string;
+        staged_resource_urn?: string;
+      }
+    >({
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree/ancestors-statuses`,
+        params: { staged_resource_urn },
+      }),
+    }),
+
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
       {
@@ -533,6 +548,7 @@ export const {
   useUndismissMonitorTaskMutation,
   useGetMonitorTreeQuery,
   useLazyGetMonitorTreeQuery,
+  useLazyGetMonitorTreeAncestorsStatusesQuery,
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
