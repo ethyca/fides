@@ -6,10 +6,8 @@ import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detec
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import { useLazyGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
-import { DiffStatus } from "~/types/api";
 
 import {
-  DIFF_TO_RESOURCE_STATUS,
   FIELDS_FILTER_SECTION_KEYS,
   getFilterableStatuses,
   RESOURCE_STATUS,
