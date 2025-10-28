@@ -167,12 +167,13 @@ export const MonitorFieldFilters = ({
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
 
-  const { data: datastoreFilterResponse } = useGetDatastoreFiltersQuery(
-    {
-      monitor_config_id: monitorId,
-    },
-    { refetchOnMountOrArgChange: true },
-  );
+  const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
+    useGetDatastoreFiltersQuery(
+      {
+        monitor_config_id: monitorId,
+      },
+      { refetchOnMountOrArgChange: true },
+    );
 
   // Fetch full taxonomy for data categories to build nested tree
   const [triggerTaxonomyQuery, { data: dataCategoriesTaxonomy = [] }] =
@@ -375,11 +376,9 @@ export const MonitorFieldFilters = ({
       // Check if it's a status key
       if (availableResourceFilters?.includes(keyStr as ResourceStatusLabel)) {
         statusKeys.push(keyStr as ResourceStatusLabel);
-      } else {
+      } else if (!isParentKey(keyStr, allKeysAsStrings)) {
         // Only include leaf data category keys (not parents)
-        if (!isParentKey(keyStr, allKeysAsStrings)) {
-          categoryKeys.push(keyStr);
-        }
+        categoryKeys.push(keyStr);
       }
     });
 
@@ -417,11 +416,15 @@ export const MonitorFieldFilters = ({
   };
 
   const handleOpenChange = (open: boolean) => {
-    // When popover closes without applying, reset local state to match applied state
-    if (!open) {
-      setLocalResourceStatus(resourceStatus);
-      setLocalDataCategory(dataCategory);
+    if (open) {
+      // When popover opens, refetch available filters to ensure they're up-to-date
+      refetchDatastoreFilters();
+      return;
     }
+
+    // When popover closes without applying, reset local state to match applied state
+    setLocalResourceStatus(resourceStatus);
+    setLocalDataCategory(dataCategory);
   };
 
   return (
