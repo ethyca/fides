@@ -8,6 +8,7 @@ import {
   AntSpace as Space,
   AntSpin as Spin,
   AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   CUSTOM_TAG_COLOR,
   useToast,
@@ -210,9 +211,11 @@ export const InProgressMonitorTaskItem = ({
             </Space>
             {task.status === "error" && (
               <Space className="pl-1" align="center">
-                <Text type="secondary" size="sm">
-                  {task.message?.split("\n")[0] || "Unknown error"}
-                </Text>
+                <Tooltip title={task.message || "Unknown error"}>
+                  <Text type="secondary" size="sm" className="truncate">
+                    {task.message?.split("\n")[0] || "Unknown error"}
+                  </Text>
+                </Tooltip>
                 {task.message && (
                   <ClipboardButton
                     copyText={task.message}
