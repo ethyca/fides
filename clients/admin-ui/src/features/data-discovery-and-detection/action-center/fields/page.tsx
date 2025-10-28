@@ -386,7 +386,9 @@ const ActionCenterFields: NextPage = () => {
             />
             <Pagination
               {...paginationProps}
-              showSizeChanger={false}
+              showSizeChanger={{
+                suffixIcon: <Icons.ChevronDown />,
+              }}
               total={fieldsDataResponse?.total || 0}
             />
           </Flex>
