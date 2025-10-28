@@ -85,7 +85,7 @@ export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
   identity: {
-    [key: string]: { label: string; value: any };
+    [key: string]: { label: string; value: string | null };
   };
   identity_verified_at?: string;
   custom_privacy_request_fields?: {
