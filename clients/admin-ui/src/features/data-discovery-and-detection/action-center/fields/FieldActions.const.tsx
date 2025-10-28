@@ -81,7 +81,7 @@ export const FIELD_ACTION_ICON = {
   "un-approve": null,
   "un-mute": <Icons.View />,
   approve: <Icons.Checkmark />,
-  classify: <SparkleIcon size={14} />,
+  classify: <SparkleIcon />,
   mute: <Icons.ViewOff />,
   promote: <Icons.Checkmark />,
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
