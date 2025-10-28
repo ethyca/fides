@@ -326,6 +326,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             identity_data: Identity data for parameter resolution
             input_data: Optional upstream data from other collections
         """
+        if param_values is None:
+            param_values = {}
+
         for param_value in request.param_values or []:
             if param_value.references:
                 # we resolve the param reference here for consistency,
