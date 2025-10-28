@@ -1,4 +1,4 @@
-import { Text } from "fidesui";
+import { AntTypography as Typography } from "fidesui";
 import type { ReactNode } from "react";
 
 const PreviewCard = ({
@@ -12,9 +12,9 @@ const PreviewCard = ({
 }) => {
   return (
     <div>
-      <Text fontSize="md" fontWeight="bold" mb={4}>
+      <Typography.Text strong className="mb-4 block text-base">
         {title}
-      </Text>
+      </Typography.Text>
       <div
         className="overflow-auto rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-xs"
         style={{ height }}

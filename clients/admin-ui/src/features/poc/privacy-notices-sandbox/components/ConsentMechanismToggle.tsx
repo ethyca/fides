@@ -1,4 +1,4 @@
-import { Switch, Text } from "fidesui";
+import { AntTypography as Typography, Switch } from "fidesui";
 import { useCallback } from "react";
 
 import type { ConsentMechanism } from "../types";
@@ -20,35 +20,35 @@ const ConsentMechanismToggle = ({
 
   return (
     <div className="mb-4 flex items-center gap-3">
-      <Text fontSize="sm" fontWeight="medium">
+      <Typography.Text className="text-sm font-medium">
         Consent Mechanism:
-      </Text>
+      </Typography.Text>
       <div className="flex items-center gap-2">
-        <Text
-          fontSize="sm"
-          color={mechanism === "opt-in" ? "primary.500" : "gray.500"}
+        <Typography.Text
+          className="text-sm"
+          type={mechanism === "opt-in" ? undefined : "secondary"}
         >
           Opt-in
-        </Text>
+        </Typography.Text>
         <Switch
           isChecked={mechanism === "opt-out"}
           onChange={(e) => handleToggle(e.target.checked)}
           size="sm"
         />
-        <Text
-          fontSize="sm"
-          color={mechanism === "opt-out" ? "primary.500" : "gray.500"}
+        <Typography.Text
+          className="text-sm"
+          type={mechanism === "opt-out" ? undefined : "secondary"}
         >
           Opt-out
-        </Text>
+        </Typography.Text>
       </div>
-      <Text fontSize="xs" color="gray.600">
+      <Typography.Text type="secondary" className="text-xs">
         (
         {mechanism === "opt-out"
           ? "All checked by default"
           : "All unchecked by default"}
         )
-      </Text>
+      </Typography.Text>
     </div>
   );
 };

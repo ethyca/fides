@@ -1,5 +1,5 @@
 import type { Key } from "antd/es/table/interface";
-import { Text } from "fidesui";
+import { AntTypography as Typography } from "fidesui";
 import { useCallback } from "react";
 
 import {
@@ -79,17 +79,18 @@ const PostApiPreview = ({
     <PreviewCard title="API Calls Preview">
       {mockRequest ? (
         <>
-          <Text fontSize="sm" fontWeight="bold" mb={2} color="blue.600">
+          <Typography.Text strong className="mb-2 block text-sm text-blue-600">
             POST /api/v3/privacy-preferences
-          </Text>
+          </Typography.Text>
           <pre className="m-0 whitespace-pre-wrap">
             {JSON.stringify(mockRequest, null, 2)}
           </pre>
         </>
       ) : (
-        <Text fontSize="sm" color="gray.500" fontStyle="italic">
-          No API request will be made until preferences are selected.
-        </Text>
+        <Typography.Text type="secondary" italic className="text-sm">
+          No API request made because preferences were not changed from last
+          save.
+        </Typography.Text>
       )}
     </PreviewCard>
   );

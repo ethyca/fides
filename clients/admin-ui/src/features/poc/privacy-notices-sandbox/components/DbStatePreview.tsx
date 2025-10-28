@@ -1,4 +1,4 @@
-import { Text } from "fidesui";
+import { AntTypography as Typography } from "fidesui";
 
 import PreviewCard from "./PreviewCard";
 
@@ -9,9 +9,9 @@ const DbStatePreview = ({
 }) => {
   return (
     <PreviewCard title="Current DB State">
-      <Text fontSize="sm" fontWeight="bold" mb={2} color="purple.600">
+      <Typography.Text strong className="mb-2 block text-sm text-purple-600">
         Raw DB State
-      </Text>
+      </Typography.Text>
       <pre className="m-0 whitespace-pre-wrap">
         {JSON.stringify(dbState, null, 2)}
       </pre>

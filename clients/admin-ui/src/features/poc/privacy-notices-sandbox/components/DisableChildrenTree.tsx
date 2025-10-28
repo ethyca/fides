@@ -21,7 +21,6 @@ const DisableChildrenTree = ({
   const [expandedKeys, setExpandedKeys] = useState<Key[]>(
     INITIAL_EXPANDED_KEYS,
   );
-  const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
 
   // Helper functions
@@ -50,10 +49,6 @@ const DisableChildrenTree = ({
     [onCheckedKeysChange],
   );
 
-  const handleSelect = useCallback((selectedKeysValue: Key[]) => {
-    setSelectedKeys(selectedKeysValue);
-  }, []);
-
   // Memoized tree data
   const treeData: TreeDataNode[] = useMemo(
     () => [
@@ -79,8 +74,7 @@ const DisableChildrenTree = ({
       autoExpandParent={autoExpandParent}
       onCheck={handleCheck}
       checkedKeys={checkedKeys}
-      onSelect={handleSelect}
-      selectedKeys={selectedKeys}
+      selectable={false}
       treeData={treeData}
     />
   );

@@ -1,4 +1,8 @@
-import { AntButton as Button, AntLayout as Layout, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntLayout as Layout,
+  AntTypography as Typography,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useCallback, useMemo, useState } from "react";
 
@@ -96,24 +100,24 @@ const PrivacyNoticesSandbox: NextPage = () => {
         <div className="mt-5 flex gap-6">
           {/* Left Column - Consent Management */}
           <div className="min-w-0 flex-1">
-            <Text fontSize="md" fontWeight="bold" mb={4}>
+            <Typography.Text strong className="mb-4 block text-base">
               Notice configuration
-            </Text>
+            </Typography.Text>
             <ConsentMechanismToggle
               mechanism={consentMechanism}
               onMechanismChange={handleMechanismChange}
             />
 
-            <Text fontSize="md" fontWeight="bold" mb={4}>
-              Manage your consent preferences
-            </Text>
+            <Typography.Text strong className="mb-4 block text-base">
+              User preferences
+            </Typography.Text>
             <DisableChildrenTree
               checkedKeys={checkedKeys}
               onCheckedKeysChange={setCheckedKeys}
             />
 
             <Button type="primary" onClick={handleSave} className="mt-4">
-              Save Preferences
+              Save preferences
             </Button>
           </div>
 
