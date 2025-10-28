@@ -96,6 +96,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ monitor_config_id }) => ({
         url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
       }),
+      providesTags: ["Discovery Monitor Results"],
     }),
 
     getMonitorTree: build.query<

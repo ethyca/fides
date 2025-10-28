@@ -1,5 +1,5 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -146,6 +146,9 @@ export const MonitorFieldFilters = ({
   resetToInitialState,
   monitorId,
 }: ReturnType<typeof useMonitorFieldsFilters> & { monitorId: string }) => {
+  // Track previously available filters to detect new ones
+  const previousAvailableFiltersRef = useRef<ResourceStatusLabel[]>([]);
+
   // Local state for filter changes (not applied until "Apply" is clicked)
   const [localResourceStatus, setLocalResourceStatus] = useState<
     ResourceStatusLabel[] | null
@@ -223,31 +226,59 @@ export const MonitorFieldFilters = ({
       [] as typeof ConfidenceScoreRangeValues,
     ); */
 
-  // Filter resourceStatus to only include statuses that are in available filters
+  // Auto-select new default statuses when they appear for the first time
   useEffect(() => {
-    if (resourceStatus && availableResourceFilters) {
-      const filteredStatuses = getFilterableStatuses(availableResourceFilters);
-
-      // Filter resourceStatus to only include statuses that are in filteredStatuses
-      const validStatuses = resourceStatus.filter((status) =>
-        filteredStatuses.includes(status),
-      );
-
-      // Only update if there's a difference
-      if (validStatuses.length !== resourceStatus.length) {
-        setResourceStatus(validStatuses.length > 0 ? validStatuses : null);
-      }
+    if (!availableResourceFilters || !resourceStatus) {
+      return;
     }
+
+    const filteredStatuses = getFilterableStatuses(availableResourceFilters);
+    const previousFilters = previousAvailableFiltersRef.current;
+
+    // Find truly new statuses (appeared in API but weren't there before)
+    const newlyAvailableStatuses = filteredStatuses.filter(
+      (status) => !previousFilters.includes(status),
+    );
+
+    // Deduplicate and filter resourceStatus to only include statuses that are still available
+    const uniqueResourceStatus = Array.from(new Set(resourceStatus));
+    const validStatuses = uniqueResourceStatus.filter((status) =>
+      availableResourceFilters.includes(status),
+    );
+
+    // Auto-add newly available default statuses to the selection
+    if (newlyAvailableStatuses.length > 0) {
+      const updatedStatuses = Array.from(
+        new Set([...validStatuses, ...newlyAvailableStatuses]),
+      );
+      // Only update if there's an actual change
+      if (
+        updatedStatuses.length !== uniqueResourceStatus.length ||
+        !updatedStatuses.every((s) => uniqueResourceStatus.includes(s))
+      ) {
+        setResourceStatus(updatedStatuses.length > 0 ? updatedStatuses : null);
+      }
+    } else if (
+      validStatuses.length !== uniqueResourceStatus.length ||
+      !validStatuses.every((s) => uniqueResourceStatus.includes(s))
+    ) {
+      // Otherwise, just update if there's a difference (removing invalid ones or deduplicating)
+      setResourceStatus(validStatuses.length > 0 ? validStatuses : null);
+    }
+
+    // Update the ref to track current available filters
+    previousAvailableFiltersRef.current = filteredStatuses;
   }, [availableResourceFilters, resourceStatus, setResourceStatus]);
 
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(() => {
-    // Filter out "Confirmed" and "Ignored" from available filters
-    const filteredStatuses = availableResourceFilters
-      ? getFilterableStatuses(availableResourceFilters)
-      : [];
+    // Show all available statuses (including "Confirmed" and "Ignored")
+    // They will be unchecked by default based on the initial selection state
+    if (!availableResourceFilters) {
+      return [];
+    }
 
-    return filteredStatuses.map((label) => ({
+    return availableResourceFilters.map((label) => ({
       title: label,
       key: label,
       checkable: true,
@@ -326,17 +357,20 @@ export const MonitorFieldFilters = ({
     if (localDataCategory) {
       keys.push(...localDataCategory);
     }
-    return keys;
+    // Deduplicate to avoid duplicate keys in the tree
+    return Array.from(new Set(keys));
   }, [localResourceStatus, localDataCategory]);
 
   // Calculate active filters count from APPLIED state (not local)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (resourceStatus) {
-      count += resourceStatus.length;
+      // Deduplicate to get accurate count
+      count += new Set(resourceStatus).size;
     }
     if (dataCategory) {
-      count += dataCategory.length;
+      // Deduplicate to get accurate count
+      count += new Set(dataCategory).size;
     }
     return count;
   }, [resourceStatus, dataCategory]);
@@ -402,9 +436,17 @@ export const MonitorFieldFilters = ({
   };
 
   const handleApply = () => {
-    // Apply the local state to the actual filter state
-    setResourceStatus(localResourceStatus);
-    setDataCategory(localDataCategory);
+    // Apply the local state to the actual filter state (deduplicated)
+    setResourceStatus(
+      localResourceStatus && localResourceStatus.length > 0
+        ? Array.from(new Set(localResourceStatus))
+        : localResourceStatus,
+    );
+    setDataCategory(
+      localDataCategory && localDataCategory.length > 0
+        ? Array.from(new Set(localDataCategory))
+        : localDataCategory,
+    );
   };
 
   const handleExpand = (keys: React.Key[]) => {
