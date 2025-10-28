@@ -52,7 +52,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
   return (
     <List.Item>
       <div className="pr-4">{checkbox}</div>
-      <div className="grow">
+      <div className="grow pr-8">
         <Header privacyRequest={item} />
         <Flex vertical gap="small" wrap className="pt-1">
           <Flex gap="small" wrap>
@@ -93,14 +93,14 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           )}
         </Flex>
       </div>
-      <Flex gap="middle" wrap className="pr-2">
+      <div className="flex shrink-0 flex-col items-end gap-2 pr-2 2xl:flex-row 2xl:gap-4">
         <ReceivedOn createdAt={item.created_at} />
         <DaysLeft
           daysLeft={item.days_left}
           status={item.status}
           timeframe={item.policy.execution_timeframe}
         />
-      </Flex>
+      </div>
       <Flex className="min-w-[125px]" align="center" justify="end" gap="small">
         <ViewButton key="view" id={item.id} />
         <RequestTableActions key="other-actions" subjectRequest={item} />
