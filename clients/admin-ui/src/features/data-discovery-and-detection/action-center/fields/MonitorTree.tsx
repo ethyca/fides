@@ -16,6 +16,8 @@ import {
   useState,
 } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import { PaginationState } from "~/features/common/pagination";
 import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
@@ -203,6 +205,7 @@ interface MonitorTreeProps {
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
   ({ selectedNodeKeys, setSelectedNodeKeys, onClickClassifyButton }, ref) => {
     const router = useRouter();
+    const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
     const [trigger] = useLazyGetMonitorTreeQuery();
     const [triggerAncestorsStatuses] =
@@ -435,37 +438,52 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
     const refreshResourcesAndAncestors = useCallback(
       async (urns: string[]) => {
         const updateAncestorsForUrn = async (urn?: string) => {
-          const { data: ancestorsData } = await triggerAncestorsStatuses({
-            monitor_config_id: monitorId,
-            ...(urn && { staged_resource_urn: urn }),
-          });
-
-          if (!ancestorsData) {
-            return;
-          }
-
-          // Collapse the affected URN and remove its children
-          if (urn) {
-            collapseNodeAndRemoveChildren(urn);
-          } else {
-            // ancestorsData contains the databases of the monitor
-            ancestorsData.forEach((ancestorNode) => {
-              collapseNodeAndRemoveChildren(ancestorNode.urn);
+          try {
+            const result = await triggerAncestorsStatuses({
+              monitor_config_id: monitorId,
+              ...(urn && { staged_resource_urn: urn }),
             });
-          }
 
-          // Update the status of each ancestor node
-          setTreeData((origin) =>
-            ancestorsData.reduce(
-              (tree, ancestorNode) =>
-                updateNodeStatus(
-                  tree,
-                  ancestorNode.urn,
-                  ancestorNode.update_status,
-                ),
-              origin,
-            ),
-          );
+            if (result.error) {
+              errorAlert(
+                getErrorMessage(result.error),
+                "Failed to get schema explorer ancestors statuses",
+              );
+              return;
+            }
+
+            const ancestorsData = result.data;
+            if (!ancestorsData) {
+              return;
+            }
+
+            // Collapse the affected URN and remove its children
+            if (urn) {
+              collapseNodeAndRemoveChildren(urn);
+            } else {
+              // ancestorsData contains the databases of the monitor
+              ancestorsData.forEach((ancestorNode) => {
+                collapseNodeAndRemoveChildren(ancestorNode.urn);
+              });
+            }
+
+            // Update the status of each ancestor node
+            setTreeData((origin) =>
+              ancestorsData.reduce(
+                (tree, ancestorNode) =>
+                  updateNodeStatus(
+                    tree,
+                    ancestorNode.urn,
+                    ancestorNode.update_status,
+                  ),
+                origin,
+              ),
+            );
+          } catch (error) {
+            errorAlert(
+              "An unexpected error occurred while refreshing the schema explorer",
+            );
+          }
         };
 
         if (urns.length === 0) {
@@ -476,14 +494,22 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         // Process all URNs in parallel
         await Promise.all(urns.map((urn) => updateAncestorsForUrn(urn)));
       },
-      [triggerAncestorsStatuses, monitorId, collapseNodeAndRemoveChildren],
+      [
+        triggerAncestorsStatuses,
+        monitorId,
+        collapseNodeAndRemoveChildren,
+        errorAlert,
+      ],
     );
 
     /**
      * Handles tree expansion - if a node without children is being expanded, load its data
      */
     const handleExpand = useCallback(
-      (newExpandedKeys: Key[], info: { expanded: boolean; node: any }) => {
+      (
+        newExpandedKeys: Key[],
+        info: { expanded: boolean; node: CustomTreeDataNode },
+      ) => {
         setExpandedKeys(newExpandedKeys);
 
         // If expanding a node without children, manually trigger loadData
