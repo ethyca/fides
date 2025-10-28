@@ -157,7 +157,6 @@ const PrivacyNoticesSandbox: NextPage = () => {
             <PostApiPreview
               currentSavedKeys={savedCheckedKeys}
               previousSavedKeys={previousSavedKeys}
-              mechanismDefaults={mechanismDefaults}
               cascadeConsent={cascadeConsent}
             />
           </div>

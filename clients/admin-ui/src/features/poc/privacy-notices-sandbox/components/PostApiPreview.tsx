@@ -14,12 +14,10 @@ import PreviewCard from "./PreviewCard";
 const PostApiPreview = ({
   currentSavedKeys,
   previousSavedKeys,
-  mechanismDefaults,
   cascadeConsent,
 }: {
   currentSavedKeys: CheckedKeysType;
   previousSavedKeys: CheckedKeysType;
-  mechanismDefaults: Key[];
   cascadeConsent?: boolean;
 }) => {
   const generateMockRequest = useCallback(() => {
@@ -77,7 +75,7 @@ const PostApiPreview = ({
     return {
       preferences,
     };
-  }, [currentSavedKeys, previousSavedKeys, mechanismDefaults, cascadeConsent]);
+  }, [currentSavedKeys, previousSavedKeys, cascadeConsent]);
 
   const mockRequest = generateMockRequest();
 
