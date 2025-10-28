@@ -1,5 +1,4 @@
 import { AntTypography as Typography, Switch } from "fidesui";
-import { useCallback } from "react";
 
 const CascadeConsentToggle = ({
   isEnabled,
@@ -8,13 +7,6 @@ const CascadeConsentToggle = ({
   isEnabled: boolean;
   onToggle: (enabled: boolean) => void;
 }) => {
-  const handleToggle = useCallback(
-    (checked: boolean) => {
-      onToggle(checked);
-    },
-    [onToggle],
-  );
-
   return (
     <div className="mb-4 flex items-center gap-3">
       <Typography.Text className="text-sm font-medium">
@@ -22,7 +14,7 @@ const CascadeConsentToggle = ({
       </Typography.Text>
       <Switch
         isChecked={isEnabled}
-        onChange={(e) => handleToggle(e.target.checked)}
+        onChange={(e) => onToggle(e.target.checked)}
         size="sm"
       />
     </div>

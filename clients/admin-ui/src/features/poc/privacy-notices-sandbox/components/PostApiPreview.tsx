@@ -8,7 +8,7 @@ import {
   PARENT_KEY_WITH_UUID,
   TREE_NODES,
 } from "../constants";
-import type { CheckedKeysType } from "../types";
+import type { CheckedKeysType, PreferenceItem } from "../types";
 import PreviewCard from "./PreviewCard";
 
 const PostApiPreview = ({
@@ -51,12 +51,12 @@ const PostApiPreview = ({
     }
 
     // Generate preferences array only for changed items
-    const preferences = keysToProcess.map((key) => {
+    const preferences: PreferenceItem[] = keysToProcess.map((key) => {
       const isChecked = currentArray.includes(key);
-      const value = isChecked ? "opt_in" : "opt_out";
+      const value: "opt_in" | "opt_out" = isChecked ? "opt_in" : "opt_out";
 
       // Find the title from the tree structure
-      let noticeKey;
+      let noticeKey: string;
       if (key === PARENT_KEY_WITH_UUID) {
         noticeKey = PARENT_KEY;
       } else {
@@ -81,16 +81,11 @@ const PostApiPreview = ({
 
   const mockRequest = generateMockRequest();
 
-  // Determine if we need the query parameter
-  const needsQueryParam =
-    cascadeConsent &&
-    mockRequest &&
-    mockRequest.preferences.length > 0 &&
-    mockRequest.preferences.some((p: any) => p.notice_key === PARENT_KEY);
-
-  const endpoint = needsQueryParam
-    ? "POST /api/v3/privacy-preferences?override_children=true"
-    : "POST /api/v3/privacy-preferences";
+  // Always show override_children query param when cascade is enabled
+  const endpoint =
+    cascadeConsent && mockRequest
+      ? "POST /api/v3/privacy-preferences?override_children=true"
+      : "POST /api/v3/privacy-preferences";
 
   return (
     <PreviewCard title="API Calls Preview">
