@@ -87,6 +87,10 @@ const findNodeByUrn = (
   treeData: CustomTreeDataNode[],
   urn: string,
 ): CustomTreeDataNode | undefined => {
+  // Use for loop for true early termination - unlike reduce() which continues
+  // iterating through all remaining elements even after finding a match,
+  // for loop allows immediate exit when the target is found, improving
+  // performance on large trees by avoiding unnecessary iterations
   // eslint-disable-next-line no-restricted-syntax
   for (const node of treeData) {
     if (node.key === urn) {
