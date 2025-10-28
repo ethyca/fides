@@ -44,9 +44,8 @@ class DuplicateDetectionService:
         and hashed_value. This function creates the required nested conditions for each identity field.
         Also adds a condition for the policy_id to ensure that we are only matching requests for the same policy.
         """
-        current_identities: dict[str, str] = {}
         conditions: list[Condition] = []
-        current_identities = {
+        current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
             for pi in current_request.provided_identities  # type: ignore [attr-defined]
             if pi.field_name in config.match_identity_fields
