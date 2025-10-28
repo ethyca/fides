@@ -10,3 +10,12 @@ export interface TreeDataNode {
   disabled?: boolean;
   children?: TreeDataNode[];
 }
+
+export interface PreferenceItem {
+  notice_key: string;
+  value: "opt_in" | "opt_out";
+  notice_history_id: string;
+  meta: {
+    timestamp: string;
+  };
+}
