@@ -40,10 +40,8 @@ class DuplicateDetectionService:
     ) -> list[Condition]:
         """Creates conditions for matching identity fields.
 
-        For identity field matching using the EAV pattern in ProvidedIdentity,
-        we need to match both field_name and hashed_value. This function
-        creates the required nested conditions for each identity field.
-
+        For identity field matching using the EAV pattern in ProvidedIdentity, we need to match both field_name
+        and hashed_value. This function creates the required nested conditions for each identity field.
         Also adds a condition for the policy_id to ensure that we are only matching requests for the same policy.
         """
         current_identities: dict[str, str] = {}
@@ -150,7 +148,6 @@ class DuplicateDetectionService:
             List of PrivacyRequest objects that match the duplicate criteria,
             does not include the current request
         """
-        # Create conditions from config
         condition = self.create_duplicate_detection_conditions(current_request, config)
 
         if condition is None:
@@ -177,7 +174,7 @@ class DuplicateDetectionService:
         if len(duplicate_group_ids) == 1:
             return duplicate_group_ids.pop()
         logger.warning(
-            f"Multiple duplicate request group ids found for requests: {duplicates}"
+            f"Multiple duplicate request group ids found for requests: {duplicates}. Returning the most recent group id."
         )
         # return the most recent group id.
         ordered_group_ids = [
@@ -193,10 +190,10 @@ class DuplicateDetectionService:
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
     ) -> bool:
         """
-        Apply verified identity rules to determine if a request is the canonical request.
-        - If this request does not have a verified identity, it may be canonical if no other requests in group are verified.
-        - If this is the first request to be verified, it is the canonical request
-        - If other requests identities that were verified before this request, it is not the canonical request
+        Apply verified identity rules to determine if a request is a duplicate request.
+        - If this request does not have a verified identity, it may be a duplicate if another request in the group is verified.
+        - If this is the first request to be verified, it is not a duplicate request
+        - If other requests identities were verified before this request, it is a duplicate request
         Args:
             request: The privacy request to check
             duplicates: The list of duplicate requests
@@ -210,10 +207,12 @@ class DuplicateDetectionService:
 
         ### The request identity is not verified.
         if not request.identity_verified_at:
-            # If other requests in group are verified, this request is not canonical.
             if len(verified_in_group) > 0:
-                return False
-            # If this is the first request to be created, it is the canonical request.
+                logger.debug(
+                    f"Request {request.id} is a duplicate: it is not verified and duplicating verified request(s) {verified_in_group}."
+                )
+                return True
+
             min_created_at = min(
                 (d.created_at for d in duplicates if d.created_at), default=None
             ) or datetime.now(timezone.utc)
@@ -223,15 +222,23 @@ class DuplicateDetectionService:
                 else datetime.now(timezone.utc)
             )
             if request_created_at < min_created_at:
-                return True
-            # This request is not the first request to be created or first verified.
-            return False
-
-        ### The request identity is verified.
-        if not verified_in_group:
-            # No other requests in group are verified.
+                logger.debug(
+                    f"Request {request.id} is not a duplicate: it is the first request to be created in the group."
+                )
+                return False
+            logger.debug(
+                f"Request {request.id} is a duplicate: it is not verified and is not the first request to be created in the group."
+            )
             return True
 
+        # The request identity is verified.
+        if not verified_in_group:
+            logger.debug(
+                f"Request {request.id} is not a duplicate: it is verified and no other requests in the group are verified."
+            )
+            return False
+
+        # If this request is the first with a verified identity, it is not a duplicate.
         min_verified_at = min(
             (d.identity_verified_at for d in duplicates if d.identity_verified_at),
             default=None,
@@ -242,60 +249,79 @@ class DuplicateDetectionService:
             else datetime.now(timezone.utc)
         )
         if request_verified_at < min_verified_at:
-            return True  # This request is the first with verified identity.
-        return False
+            logger.debug(
+                f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
+            )
+            return False
+        logger.debug(
+            f"Request {request.id} is a duplicate: it is verified but not the first request to be verified in the group."
+        )
+        return True
 
-    def is_canonical_request(
+    def is_duplicate_request(
         self, request: PrivacyRequest, config: DuplicateDetectionSettings
     ) -> bool:
         """
-        Determine if a request is the canonical request in a duplicate group.
+        Determine if a request is a duplicate request and assign a duplicate request group id.
 
         The hierarchy is:
-        - Actioned requests: if this request duplicates and actioned request, it is not canonical.
-        - Verified identity requests:
-          - if this request has a verified identity:
-            - If none of the duplicates have a verified identity, it is canonical.
-            - If duplicates have verified identities, but this request is the first with a verified identity, it is canonical.
-          - if this request does not have a verified identity:
-            - If no duplicates have a verified identity, and this was the first created request, it is canonical.
-        - First created request: if this is the first created request in the group, it is canonical.
-        - If no canonical requests are found (meaning all requests are marked as duplicates), this request is canonical.
+        1. Actioned requests: if this request duplicates and actioned request, it is a duplicate.
+        2. Verified identity requests:
+          a. if this request has a verified identity:
+            - If none of the duplicates have a verified identity, it is not a duplicate.
+            - If duplicates have verified identities, but this request is the first with a verified identity, it is not a duplicate.
+          b. if this request does not have a verified identity:
+            - If no duplicates have a verified identity, and this was the first created request, it is not a duplicate.
+        3. First created request: if this is the first created request in the group, it is not a duplicate.
+        4. If no canonical requests are found (meaning all requests are marked as duplicates), this request is not a duplicate.
 
         Args:
             request: The privacy request to check
-
+            config: Duplicate detection configuration settings
         Returns:
-            True if the request is the canonical request, False otherwise
+            True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
         group_id = self.get_duplicate_request_group_id(duplicates)
         request.update(db=self.db, data={"duplicate_request_group_id": group_id})
 
-        if request.status == PrivacyRequestStatus.duplicate:
-            return False
-        # if this is the only request in the group, it is the canonical request
+        # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
+            logger.debug(
+                f"Request {request.id} is not a duplicate: no matching requests were found."
+            )
+            return False
+
+        if request.status == PrivacyRequestStatus.duplicate:
+            logger.warning(
+                f"Request {request.id} is a duplicate request that was requeued. This should not happen."
+            )
             return True
 
-        # only consider canonical requests for the following cases
+        # only compare to non-duplicate requests for the following cases
         canonical_requests = [
             request
             for request in duplicates
             if request.status != PrivacyRequestStatus.duplicate
         ]
-        # If no canonical requests are found, this request is the canonical request.
+        # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
-            return True
+            logger.debug(
+                f"Request {request.id} is not a duplicate: all matching requests have been marked as duplicate requests."
+            )
+            return False
 
-        # If any requests in group are actioned, this request is not canonical.
+        # If any requests in group are actioned, this request is a duplicate.
         actioned_in_group = [
             duplicate
             for duplicate in duplicates
             if duplicate.status in ACTIONED_REQUEST_STATUSES
         ]
         if len(actioned_in_group) > 0:
-            return False
+            logger.debug(
+                f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {actioned_in_group}."
+            )
+            return True
 
         # Check against verified identity rules.
         return self.verified_identity_cases(request, canonical_requests)

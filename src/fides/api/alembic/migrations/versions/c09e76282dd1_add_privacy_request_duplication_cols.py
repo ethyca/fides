@@ -46,7 +46,7 @@ def downgrade():
 
     # Remove 'duplicate' status from enum
     # First delete any requests with duplicate status
-    op.execute("delete from privacyrequest where status = 'duplicate'")
+    op.execute("UPDATE privacyrequest SET status = 'error' WHERE status = 'duplicate'")
 
     # Recreate enum without 'duplicate'
     op.execute("alter type privacyrequeststatus rename to privacyrequeststatus_old")
