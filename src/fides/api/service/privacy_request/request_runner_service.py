@@ -449,32 +449,15 @@ def run_privacy_request(
                 logger.info("Terminating privacy request: request deleted.")
                 return
 
-            # Check if the privacy request is a duplicate
-            logger.info(
-                "\n----------------------------------Checking if privacy request is a duplicate----------------------------------"
-            )
-            logger.info(
-                f"Duplicate detection enabled: {ConfigProxy(session).privacy_request_duplicate_detection.enabled}"
-            )
-            logger.info(
-                f"Duplicate detection time window: {ConfigProxy(session).privacy_request_duplicate_detection.time_window_days}"
-            )
-            logger.info(
-                f"Duplicate detection match identity fields: {ConfigProxy(session).privacy_request_duplicate_detection.match_identity_fields}"
-            )
             if ConfigProxy(session).privacy_request_duplicate_detection.enabled:
                 logger.info(
                     "Duplicate detection is enabled. Checking if privacy request is a duplicate."
                 )
                 duplicate_detection_service = DuplicateDetectionService(session)
-                duplicate_indicator = duplicate_detection_service.is_duplicate_request(
+                if duplicate_detection_service.is_duplicate_request(
                     privacy_request,
                     ConfigProxy(session).privacy_request_duplicate_detection,
-                )
-                logger.info(
-                    f"privacy request group id: {privacy_request.duplicate_request_group_id}"
-                )
-                if duplicate_indicator:
+                ):
                     logger.info("Terminating privacy request: request is a duplicate.")
                     privacy_request.update(
                         session, data={"status": PrivacyRequestStatus.duplicate}

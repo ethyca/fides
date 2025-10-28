@@ -220,9 +220,6 @@ class DuplicateDetectionService:
                 else datetime.now(timezone.utc)
             )
             if request_created_at < min_created_at:
-                logger.debug(
-                    f"Request {request.id} is not a duplicate: it is the first request to be created in the group."
-                )
                 return False
             logger.debug(
                 f"Request {request.id} is a duplicate: it is not verified and is not the first request to be created in the group."
@@ -231,9 +228,6 @@ class DuplicateDetectionService:
 
         # The request identity is verified.
         if not verified_in_group:
-            logger.debug(
-                f"Request {request.id} is not a duplicate: it is verified and no other requests in the group are verified."
-            )
             return False
 
         # If this request is the first with a verified identity, it is not a duplicate.
@@ -247,9 +241,6 @@ class DuplicateDetectionService:
             else datetime.now(timezone.utc)
         )
         if request_verified_at < min_verified_at:
-            logger.debug(
-                f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
-            )
             return False
         logger.debug(
             f"Request {request.id} is a duplicate: it is verified but not the first request to be verified in the group."
@@ -280,15 +271,11 @@ class DuplicateDetectionService:
             True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
-        logger.info(f"DUPLICATES: {duplicates}")
         group_id = self.get_duplicate_request_group_id(duplicates)
         request.update(db=self.db, data={"duplicate_request_group_id": group_id})
 
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
-            logger.debug(
-                f"Request {request.id} is not a duplicate: no matching requests were found."
-            )
             return False
 
         if request.status == PrivacyRequestStatus.duplicate:
@@ -305,9 +292,6 @@ class DuplicateDetectionService:
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
-            logger.debug(
-                f"Request {request.id} is not a duplicate: all matching requests have been marked as duplicate requests."
-            )
             return False
 
         # If any requests in group are actioned, this request is a duplicate.
