@@ -57,6 +57,21 @@ export const LIST_ITEM_ACTIONS = [
   FieldActionType.PROMOTE,
 ] as const;
 
+export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
+  (typeof DROPDOWN_ACTIONS)[number],
+  string
+> = {
+  [FieldActionType.APPROVE]:
+    "You can only approve resources with a data category applied",
+  [FieldActionType.CLASSIFY]:
+    "You cannot classify resources that are already in classification or ignored. ",
+  [FieldActionType.MUTE]:
+    "You cannot ignore resources that are already ignored",
+  [FieldActionType.PROMOTE]:
+    "You can only confirm resources that have a data category applied",
+  [FieldActionType.UN_MUTE]: "You can only restore resources that are ignored",
+};
+
 export const AVAILABLE_ACTIONS = {
   "In Review": [
     FieldActionType.CLASSIFY,

@@ -43,6 +43,7 @@ import {
   AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
+  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
@@ -298,7 +299,19 @@ const ActionCenterFields: NextPage = () => {
                     items: [
                       ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
-                        label: FIELD_ACTION_LABEL[actionType],
+                        label:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType) ? (
+                            <Tooltip
+                              title={
+                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
+                              }
+                            >
+                              {FIELD_ACTION_LABEL[actionType]}
+                            </Tooltip>
+                          ) : (
+                            FIELD_ACTION_LABEL[actionType]
+                          ),
                         disabled:
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
