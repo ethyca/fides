@@ -30,14 +30,8 @@ export const DaysLeft = ({
 
   if (showBadge) {
     const percentage = (100 * daysLeft) / timeframe;
-    let color = CUSTOM_TAG_COLOR.ERROR;
-    if (percentage < 25) {
-      color = CUSTOM_TAG_COLOR.ERROR;
-    } else if (percentage >= 75) {
-      color = CUSTOM_TAG_COLOR.SUCCESS;
-    } else {
-      color = CUSTOM_TAG_COLOR.WARNING;
-    }
+    const color =
+      percentage < 25 ? CUSTOM_TAG_COLOR.ERROR : CUSTOM_TAG_COLOR.DEFAULT;
     return (
       <div>
         <Tag color={color} bordered={false}>

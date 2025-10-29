@@ -50,7 +50,7 @@ const ClassificationSelect = ({
       placeholder=""
       suffixIcon={null}
       classNames={{
-        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer",
+        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer -ml-5",
       }}
       variant="borderless"
       autoFocus={false}
