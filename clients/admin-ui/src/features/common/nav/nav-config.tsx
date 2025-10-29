@@ -311,6 +311,22 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       },
     ],
   },
+  // This section is meant to be hidden but accessible outside of dev builds
+  // Any routes added in this section need to have hidden: true
+  // to prevent them from being shown in the navigation
+  {
+    title: "Sandbox",
+    icon: <Icons.Chemistry />,
+    routes: [
+      {
+        title: "Privacy Notices Sandbox",
+        path: routes.SANDBOX_PRIVACY_NOTICES_ROUTE,
+        requiresFlag: "alphaPrivacyNoticesSandbox",
+        scopes: [],
+        hidden: true,
+      },
+    ],
+  },
 ];
 
 if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
