@@ -177,7 +177,7 @@ class DuplicateDetectionService:
             raise ValueError(
                 "This request does not contain the required identity fields for duplicate detection."
             )
-        return "|".join([f"{value}" for _, value in current_identities.items()])
+        return "|".join([current_identities[field] for field in sorted(config.match_identity_fields)])
 
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
