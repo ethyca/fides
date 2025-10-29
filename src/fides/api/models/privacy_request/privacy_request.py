@@ -224,6 +224,9 @@ class PrivacyRequest(
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
     location = Column(String, nullable=True)
 
+    # Duplicate detection - group ID to link duplicates together
+    duplicate_request_group_id = Column(String, index=True, nullable=True)
+
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
     deleted_at = Column(DateTime(timezone=True), nullable=True)
     # and who deleted it
