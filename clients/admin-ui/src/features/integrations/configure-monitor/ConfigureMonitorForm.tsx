@@ -12,6 +12,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ClassifyLlmPromptTemplateOptions,
@@ -93,7 +94,15 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
   const { flags } = useFeatures();
-  const hasFullActionCenter = !!flags.alphaFullActionCenter;
+  const hasFullActionCenter = !!flags.llmClassifier;
+  const { data: appConfig } = useGetConfigurationSettingsQuery(
+    {
+      api_set: false,
+    },
+    { skip: !hasFullActionCenter },
+  );
+  const llmClassifierEnabled =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
@@ -163,7 +172,7 @@ const ConfigureMonitorForm = ({
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
-    use_llm_classifier: isLlmClassifierEnabled,
+    use_llm_classifier: isLlmClassifierEnabled && llmClassifierEnabled,
     llm_model_override: isLlmClassifierEnabled
       ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
@@ -216,22 +225,28 @@ const ConfigureMonitorForm = ({
                 <CustomSwitch
                   name="use_llm_classifier"
                   id="use_llm_classifier"
-                  label="Use LLM Classifier"
+                  label="Use LLM classifier"
                   variant="stacked"
+                  disabled={!llmClassifierEnabled}
+                  tooltip={
+                    !llmClassifierEnabled
+                      ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
+                      : undefined
+                  }
                 />
                 {values.use_llm_classifier && (
                   <>
                     <CustomTextInput
                       name="llm_model_override"
                       id="llm_model_override"
-                      label="Model Override"
+                      label="Model override"
                       variant="stacked"
                       tooltip="Optionally specify a custom model to use for LLM classification"
                     />
                     <ControlledSelect
                       name="prompt_template"
                       id="prompt_template"
-                      label="Prompt Template"
+                      label="Prompt template"
                       options={PROMPT_TEMPLATE_OPTIONS}
                       layout="stacked"
                       tooltip="Select the prompt template to use for LLM classification"
