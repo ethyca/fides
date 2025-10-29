@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
-from uuid import uuid4
 
 import pytest
 from sqlalchemy.orm import Session
