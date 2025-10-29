@@ -38,8 +38,9 @@ const ActionCenterPage = () => {
     useGetConfigurationSettingsQuery({
       api_set: false,
     });
-  const webMonitorEnabled =
-    !!appConfig?.detection_discovery?.website_monitor_enabled;
+  const actionCenterEnabled =
+    !!appConfig?.detection_discovery?.website_monitor_enabled ??
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const { data, isError, isLoading, isFetching } =
     useGetAggregateMonitorResultsQuery(
@@ -48,7 +49,7 @@ const ActionCenterPage = () => {
         size: pageSize,
         search: searchQuery,
       },
-      { skip: isConfigLoading || !webMonitorEnabled },
+      { skip: isConfigLoading || !actionCenterEnabled },
     );
 
   useEffect(() => {
@@ -57,14 +58,14 @@ const ActionCenterPage = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (isError && webMonitorEnabled) {
+    if (isError && actionCenterEnabled) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast, webMonitorEnabled]);
+  }, [isError, toast, actionCenterEnabled]);
 
   /*
    * Filtering paginated results can lead to odd behaviors
@@ -122,7 +123,7 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled) {
+  if (!actionCenterEnabled) {
     return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
   }
 
