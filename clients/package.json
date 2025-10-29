@@ -33,7 +33,16 @@
     "openapi:generate": "turbo run openapi:generate"
   },
   "devDependencies": {
-    "turbo": "^2.2.3"
+    "@eslint/compat": "^1.4.1",
+    "@eslint/js": "^9.38.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^16.4.0",
+    "turbo": "^2.2.3",
+    "typescript-eslint": "^8.46.2"
   },
   "dependencies": {
     "@types/react": "^18.3.2",

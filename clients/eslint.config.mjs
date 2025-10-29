@@ -1,5 +1,4 @@
 import js from "@eslint/js";
-import { fixupPluginRules } from "@eslint/compat";
 import tseslint from "typescript-eslint";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -9,7 +8,14 @@ import prettier from "eslint-plugin-prettier/recommended";
 
 export default tseslint.config(
   {
-    ignores: ["**/.eslintrc*"],
+    ignores: [
+      "**/.eslintrc*",
+      "**/.next/**",
+      "**/dist/**",
+      "**/out/**",
+      "**/build/**",
+      "**/coverage/**",
+    ],
   },
   js.configs.recommended,
   // TODO: Migrate to recommendedTypeChecked for stricter type safety
@@ -20,7 +26,7 @@ export default tseslint.config(
   {
     plugins: {
       react,
-      "react-hooks": fixupPluginRules(reactHooks),
+      "react-hooks": reactHooks,
       "simple-import-sort": simpleImportSort,
     },
     languageOptions: {
@@ -71,6 +77,27 @@ export default tseslint.config(
       },
     },
     rules: {
+      // === TIER 1: CRITICAL RULES - Bug Prevention ===
+      // Prevent debug code in production
+      "no-console": "warn",
+      "no-debugger": "error",
+      "no-alert": "error",
+      // Prevent async/await bugs
+      "no-await-in-loop": "error",
+      "no-return-await": "error",
+      "require-await": "error",
+      "no-promise-executor-return": "error",
+      // Force modern variable declarations
+      "no-var": "error",
+      "prefer-const": [
+        "error",
+        {
+          destructuring: "all",
+          ignoreReadBeforeAssign: false,
+        },
+      ],
+
+      // === Existing Rules ===
       "jsx-a11y/label-has-associated-control": [
         "error",
         { assert: "either", depth: 25 },
@@ -100,17 +127,8 @@ export default tseslint.config(
           ignorePropertyModificationsForRegex: ["^draft"],
         },
       ],
-      "@typescript-eslint/ban-types": [
-        "error",
-        {
-          types: {
-            "React.FC": {
-              message:
-                "Remove entirely and allow Typescript to infer JSX.Element.",
-            },
-          },
-        },
-      ],
+      // Note: @typescript-eslint/ban-types was deprecated in v6 and removed in v8
+      // Use @typescript-eslint/no-restricted-types instead if needed
       "prettier/prettier": "warn",
     },
   }

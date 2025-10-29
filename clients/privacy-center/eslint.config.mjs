@@ -1,19 +1,17 @@
+import baseConfig from "../eslint.config.mjs";
 import jsdoc from "eslint-plugin-jsdoc";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  // Extend base config (includes all React, React Hooks, JSX A11y, Tier 1 rules, etc.)
+  ...baseConfig,
+
+  // Privacy-Center specific ignores
   {
-    ignores: [
-      "node_modules/**",
-      "dist/**",
-      "out/**",
-      "public/**/*.js",
-      "next.config.js",
-      "jest.config.js",
-      "cypress.config.ts",
-      ".eslintrc*",
-    ],
+    ignores: ["cypress/**"],
   },
+
+  // Privacy-Center specific configuration
   {
     plugins: {
       jsdoc,
@@ -22,14 +20,17 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ["eslint.config.mjs"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {},
   },
+
+  // Require Swagger JSdoc for all /api routes
   {
-    // Require Swagger JSdoc for all /api routes
     files: ["pages/api/**/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",

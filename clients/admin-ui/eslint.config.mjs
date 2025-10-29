@@ -1,23 +1,18 @@
+import baseConfig from "../eslint.config.mjs";
 import tailwindcss from "eslint-plugin-tailwindcss";
 import importPlugin from "eslint-plugin-import";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  // Extend base config (includes all React, React Hooks, JSX A11y, Tier 1 rules, etc.)
+  ...baseConfig,
+
+  // Admin-UI specific ignores
   {
-    ignores: [
-      "node_modules/**",
-      "dist/**",
-      "out/**",
-      "public/**/*.js",
-      "next.config.js",
-      "jest.config.js",
-      "cypress.config.ts",
-      "cypress/screenshots/**",
-      ".eslintrc*",
-      "postcss.config.js",
-      "tailwind.config.js",
-    ],
+    ignores: ["cypress/**", "postcss.config.js", "tailwind.config.js"],
   },
+
+  // Admin-UI specific configuration
   {
     plugins: {
       tailwindcss,
@@ -40,6 +35,7 @@ export default tseslint.config(
             "**/*.spec.ts",
             "**/*.spec.tsx",
             "cypress/**",
+            "eslint.config.mjs", // ESLint config can import dev dependencies
           ],
         },
       ],
