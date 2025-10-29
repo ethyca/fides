@@ -18,8 +18,11 @@ if TYPE_CHECKING:
 def generate_deterministic_uuid(rule_version: str, dedup_key: str) -> uuid.UUID:
     """Overrides the base class method to generate a deterministic group id.
 
-    So under rule "email", duplicate@example.com → group A,
-    and under rule "email|phone, duplicate@example.com|1234567890", the same user → group B.
+    The actual rule version is a hash of the duplicate detection settings config,
+    using simple examples here for illustration:
+    - under rule "email", duplicate@example.com → group A,
+    - under rule "email|phone", duplicate@example.com|1234567890 → group B.
+    - ... and so on.
 
     No collisions, no overlap.
     """
