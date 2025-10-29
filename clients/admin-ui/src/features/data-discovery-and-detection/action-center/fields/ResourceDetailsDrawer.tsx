@@ -6,6 +6,7 @@ import {
   AntList as List,
   AntParagraph as Paragraph,
   AntTabs as Tabs,
+  Icons,
   SparkleIcon,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -170,7 +171,9 @@ export const ResourceDetailsDrawer = ({
                           expandable: "collapsible",
                           rows: 3,
                         }}
-                        copyable
+                        copyable={{
+                          icon: <Icons.Copy className="pt-1" size={18} />,
+                        }}
                       >
                         {item.content}
                       </Paragraph>
