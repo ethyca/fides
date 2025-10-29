@@ -71,6 +71,6 @@ class PrivacyPreferences(Base):
         value_str = str(value)
         hashed_value = hash_value_with_salt(
             value_str.encode(encoding),
-            SALT.encode(encoding),
+            salt.encode(encoding),
         )
         return hashed_value
