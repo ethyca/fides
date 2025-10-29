@@ -408,6 +408,12 @@ const ActionCenterFields: NextPage = () => {
                                   ].includes(action)
                                 : true
                             }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
                           />
                         </Tooltip>
                       ))
