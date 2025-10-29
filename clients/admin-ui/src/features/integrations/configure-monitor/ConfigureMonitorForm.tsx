@@ -227,7 +227,7 @@ const ConfigureMonitorForm = ({
                   id="use_llm_classifier"
                   label="Use LLM classifier"
                   variant="stacked"
-                  disabled={!llmClassifierEnabled}
+                  isDisabled={!llmClassifierEnabled}
                   tooltip={
                     !llmClassifierEnabled
                       ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
