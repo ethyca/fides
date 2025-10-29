@@ -30,7 +30,7 @@ export type DatastoreStagedResourceAPIResponse = {
    * The monitor config that detected this resource
    */
   monitor_config_id: string;
- /**
+  /**
    * List of errors encountered during processing
    */
   errors?: Array<ResourceError> | null;

@@ -31,15 +31,14 @@ export const ResourceDetailsDrawer = ({
   fieldActions,
   ...drawerProps
 }: ResourceDetailsDrawerProps) => {
-
   return (
     <DetailsDrawer {...drawerProps}>
       {resource ? (
         <Tabs
           defaultActiveKey="details"
-          items={
-            [{
-              key: 'details',
+          items={[
+            {
+              key: "details",
               label: "Details",
               children: (
                 <Flex gap="middle" vertical>
@@ -79,7 +78,9 @@ export const ResourceDetailsDrawer = ({
                         mode="tags"
                         maxTagCount="responsive"
                         value={[
-                          ...(resource.classifications?.map(({ label }) => label) ?? []),
+                          ...(resource.classifications?.map(
+                            ({ label }) => label,
+                          ) ?? []),
                           ...(resource.user_assigned_data_categories?.map(
                             (value) => value,
                           ) ?? []),
@@ -88,8 +89,10 @@ export const ResourceDetailsDrawer = ({
                         disabled={
                           resource?.diff_status
                             ? ![
-                              ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[resource.diff_status],
-                            ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                                ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[
+                                  resource.diff_status
+                                ],
+                              ].includes(FieldActionType.ASSIGN_CATEGORIES)
                             : true
                         }
                         onChange={(values) =>
@@ -100,50 +103,59 @@ export const ResourceDetailsDrawer = ({
                       />
                     </Form.Item>
                   </Form>
-                  {resource.classifications && resource.classifications.length > 0 && (
-                    <List
-                      dataSource={resource.classifications}
-                      renderItem={(item) => (
-                        <List.Item>
-                          <List.Item.Meta
-                            avatar={
-                              <Avatar
-                                /* Ant only provides style prop for altering the background color */
-                                style={{
-                                  backgroundColor: palette?.FIDESUI_BG_DEFAULT,
-                                }}
-                                icon={<SparkleIcon color="black" />}
-                              />
-                            }
-                            title={
-                              <Flex align="center" gap="middle">
-                                <div>{item.label}</div>
-                                <ClassifierProgress percent={item.score * 100} />
-                              </Flex>
-                            }
-                            description={item.rationale}
-                          />
-                        </List.Item>
-                      )}
-                    />
-                  )}
+                  {resource.classifications &&
+                    resource.classifications.length > 0 && (
+                      <List
+                        dataSource={resource.classifications}
+                        renderItem={(item) => (
+                          <List.Item>
+                            <List.Item.Meta
+                              avatar={
+                                <Avatar
+                                  /* Ant only provides style prop for altering the background color */
+                                  style={{
+                                    backgroundColor:
+                                      palette?.FIDESUI_BG_DEFAULT,
+                                  }}
+                                  icon={<SparkleIcon color="black" />}
+                                />
+                              }
+                              title={
+                                <Flex align="center" gap="middle">
+                                  <div>{item.label}</div>
+                                  <ClassifierProgress
+                                    percent={item.score * 100}
+                                  />
+                                </Flex>
+                              }
+                              description={item.rationale}
+                            />
+                          </List.Item>
+                        )}
+                      />
+                    )}
                 </Flex>
-              )
+              ),
             },
             {
-              key: 'activity',
+              key: "activity",
               label: "Activity",
-              children:
+              children: (
                 <List
-                  dataSource={resource.errors?.map((error, i) => ({
-                    key: i,
-                    title: error.phase,
-                    description: new Date(error.timestamp).toLocaleString(),
-                    content: error.message,
-                  }))}
+                  dataSource={
+                    "errors" in resource && resource.errors
+                      ? resource.errors?.map((error, i) => ({
+                          key: i,
+                          title: error.phase,
+                          description: new Date(
+                            error.timestamp,
+                          ).toLocaleString(),
+                          content: error.message,
+                        }))
+                      : []
+                  }
                   renderItem={(item, index) => (
-                    <List.Item key={index}
-                    >
+                    <List.Item key={index}>
                       <List.Item.Meta
                         title={item.title}
                         description={item.description}
@@ -153,9 +165,11 @@ export const ResourceDetailsDrawer = ({
                   )}
                   itemLayout="vertical"
                 />
-            }
-            ]} />
+              ),
+            },
+          ]}
+        />
       ) : null}
     </DetailsDrawer>
   );
-}
+};

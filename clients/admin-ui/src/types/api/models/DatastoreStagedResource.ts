@@ -35,8 +35,7 @@ export type DatastoreStagedResource = {
   source_modified?: string | null;
   classifications?: Array<Classification>;
   /**
-    * List of errors encountered during processing
-    */
+   * List of errors encountered during processing
+   */
   errors?: Array<ResourceError> | null;
-
 };
