@@ -71,6 +71,8 @@ export const AVAILABLE_ACTIONS = {
   Removed: [],
   Unlabeled: [FieldActionType.ASSIGN_CATEGORIES, FieldActionType.CLASSIFY],
   "Confirming...": [],
+  "Classification error": [FieldActionType.CLASSIFY],
+  "Promotion error": [FieldActionType.PROMOTE],
 } as const satisfies Readonly<
   Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
 >;

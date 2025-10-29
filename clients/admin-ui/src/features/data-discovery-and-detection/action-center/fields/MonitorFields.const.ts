@@ -18,6 +18,8 @@ export const RESOURCE_STATUS = [
   "Confirmed",
   "Removed",
   "Ignored",
+  "Classification error",
+  "Promotion error",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -42,12 +44,14 @@ export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
     addition: "Unlabeled",
     approved: "Approved",
     classification_addition: "In Review",
+    classification_error: "Classification error",
     classification_queued: "Classifying",
     classification_update: "In Review",
     classifying: "Classifying",
     monitored: "Confirmed",
     muted: "Ignored",
     promoting: "Confirming...",
+    promotion_error: "Promotion error",
     removal: "Removed",
     removing: "In Review",
   } as const;
@@ -65,6 +69,10 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     label: "In Review",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
+  classification_error: {
+    label: "Classification error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
   classification_queued: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
   classification_update: {
     label: "In Review",
@@ -74,6 +82,10 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
   promoting: { label: "Confirming...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promotion_error: {
+    label: "Promotion error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
   removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
 } as const;
