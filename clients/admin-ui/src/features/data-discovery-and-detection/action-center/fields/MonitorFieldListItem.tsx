@@ -9,6 +9,7 @@ import {
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
+  AntTooltip as Tooltip,
   SparkleIcon,
 } from "fidesui";
 
@@ -160,17 +161,22 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
                 {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
               </Tag>
             )}
-            <Breadcrumb
-              className={styles["monitor-field__breadcrumb"]}
-              items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
-              // @ts-expect-error - role works here, but Ant's type system doesn't know that
-              role="presentation"
-            />
+            <Tooltip title={urn} mouseEnterDelay={0.5}>
+              <Breadcrumb
+                className={styles["monitor-field__breadcrumb"]}
+                items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+                // @ts-expect-error - role works here, but Ant's type system doesn't know that
+                role="presentation"
+                style={{
+                  overflow: "hidden",
+                }}
+              />
+            </Tooltip>
           </Flex>
         }
         description={
           <ClassificationSelect
-            mode="tags"
+            mode="multiple"
             value={preferred_data_categories ?? []}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(

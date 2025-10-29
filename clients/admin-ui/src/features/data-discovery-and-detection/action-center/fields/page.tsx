@@ -7,6 +7,8 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntList as List,
+  AntMessage as message,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -41,6 +43,7 @@ import {
   AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
+  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
@@ -75,6 +78,8 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
+  const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = modal.useModal();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -105,7 +110,11 @@ const ActionCenterFields: NextPage = () => {
     },
   };
 
-  const { data: fieldsDataResponse, isFetching } = useGetMonitorFieldsQuery({
+  const {
+    data: fieldsDataResponse,
+    isFetching,
+    refetch,
+  } = useGetMonitorFieldsQuery({
     ...baseMonitorFilters,
     query: {
       ...baseMonitorFilters.query,
@@ -122,12 +131,22 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
   const resource = stagedResourceDetailsResult.data;
-  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
-    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-  });
-  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
-    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-  });
+  const bulkActions = useBulkActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const fieldActions = useFieldActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
   const {
     excludedListItems,
     indeterminate,
@@ -264,31 +283,35 @@ const ActionCenterFields: NextPage = () => {
                 placeholder="Search"
               />
               <Flex gap="small">
-                <Dropdown
-                  trigger={["click"]}
-                  /* I don't like disabling linting but this pattern is inherit to ant-d */
-                  /* eslint-disable-next-line react/no-unstable-nested-components */
-                  popupRender={() => (
-                    <MonitorFieldFilters
-                      resourceStatus={resourceStatus}
-                      confidenceScore={confidenceScore}
-                      dataCategory={dataCategory}
-                      {...restMonitorFieldsFilters}
-                      monitorId={monitorId}
-                    />
+                <MonitorFieldFilters
+                  resourceStatus={resourceStatus}
+                  confidenceScore={confidenceScore}
+                  dataCategory={dataCategory}
+                  {...restMonitorFieldsFilters}
+                  monitorId={monitorId}
+                  stagedResourceUrn={selectedNodeKeys.map((key) =>
+                    key.toString(),
                   )}
-                >
-                  <Button icon={<Icons.ChevronDown />} iconPosition="end">
-                    Filter
-                  </Button>
-                </Dropdown>
+                />
                 <Dropdown
                   onOpenChange={onActionDropdownOpenChange}
                   menu={{
                     items: [
                       ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
-                        label: FIELD_ACTION_LABEL[actionType],
+                        label:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType) ? (
+                            <Tooltip
+                              title={
+                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
+                              }
+                            >
+                              {FIELD_ACTION_LABEL[actionType]}
+                            </Tooltip>
+                          ) : (
+                            FIELD_ACTION_LABEL[actionType]
+                          ),
                         disabled:
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
@@ -299,6 +322,7 @@ const ActionCenterFields: NextPage = () => {
                               excludedListItems.map((k) =>
                                 k.itemKey.toString(),
                               ),
+                              selectedListItemCount,
                             );
                           } else {
                             fieldActions[actionType](
@@ -322,6 +346,13 @@ const ActionCenterFields: NextPage = () => {
                     Actions
                   </Button>
                 </Dropdown>
+                <Tooltip title="Refresh">
+                  <Button
+                    icon={<Icons.Renew />}
+                    onClick={() => refetch()}
+                    aria-label="Refresh"
+                  />
+                </Tooltip>
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
@@ -377,6 +408,12 @@ const ActionCenterFields: NextPage = () => {
                                   ].includes(action)
                                 : true
                             }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
                           />
                         </Tooltip>
                       ))
@@ -386,7 +423,9 @@ const ActionCenterFields: NextPage = () => {
             />
             <Pagination
               {...paginationProps}
-              showSizeChanger={false}
+              showSizeChanger={{
+                suffixIcon: <Icons.ChevronDown />,
+              }}
               total={fieldsDataResponse?.total || 0}
             />
           </Flex>
@@ -457,7 +496,7 @@ const ActionCenterFields: NextPage = () => {
               <Form.Item label="Data categories">
                 <DataCategorySelect
                   variant="outlined"
-                  mode="tags"
+                  mode="multiple"
                   maxTagCount="responsive"
                   value={[
                     ...(resource.classifications?.map(({ label }) => label) ??
@@ -515,6 +554,8 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         ) : null}
       </DetailsDrawer>
+      {modalContext}
+      {messageContext}
     </FixedLayout>
   );
 };

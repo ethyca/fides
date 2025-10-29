@@ -1,30 +1,56 @@
-import { useToast } from "fidesui";
+import { AntMessage as Message, AntModal as Modal } from "fidesui";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
-import { successToastParams } from "~/features/common/toast";
+import { pluralize } from "~/features/common/utils";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult } from "~/types/errors";
 
-import { FIELD_ACTION_LABEL } from "./FieldActions.const";
+import {
+  FIELD_ACTION_CONFIRMATION_MESSAGE,
+  FIELD_ACTION_INTERMEDIATE,
+  FIELD_ACTION_LABEL,
+} from "./FieldActions.const";
 import { useFieldActionsMutation } from "./monitor-fields.slice";
 import { MonitorFieldParameters } from "./types";
+import {
+  getActionErrorMessage,
+  getActionModalProps,
+  getActionSuccessMessage,
+} from "./utils";
 
 export const useBulkActions = (
   monitorId: string,
+  modalApi: ReturnType<typeof Modal.useModal>[0],
+  messageApi: ReturnType<typeof Message.useMessage>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
   const [bulkAction] = useFieldActionsMutation();
-
-  const toast = useToast();
-  const { errorAlert } = useAlert();
 
   const handleBulkAction =
     (actionType: FieldActionType) =>
     async (
       filterParams: MonitorFieldParameters,
       excluded_resource_urns: string[],
+      targetItemCount: number,
     ) => {
+      const key = Date.now();
+      const confirmed = await modalApi.confirm(
+        getActionModalProps(
+          FIELD_ACTION_LABEL[actionType],
+          FIELD_ACTION_CONFIRMATION_MESSAGE[actionType](targetItemCount),
+        ),
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      messageApi.open({
+        key,
+        type: "loading",
+        content: `${FIELD_ACTION_INTERMEDIATE[actionType]} ${targetItemCount} ${pluralize(targetItemCount, "resource", "resources")}...`,
+        duration: 0,
+      });
+
       const mutationResult = await bulkAction({
         query: {
           ...filterParams.query,
@@ -39,16 +65,22 @@ export const useBulkActions = (
       });
 
       if (isErrorResult(mutationResult)) {
-        errorAlert(getErrorMessage(mutationResult.error));
+        messageApi.open({
+          key,
+          type: "error",
+          content: getActionErrorMessage(actionType),
+          duration: 5,
+        });
+
         return;
       }
 
-      const actionItemCount = mutationResult.data.task_ids?.length ?? 0;
-      toast(
-        successToastParams(
-          `Successful ${FIELD_ACTION_LABEL[actionType]} action for ${actionItemCount} item${actionItemCount !== 1 ? "s" : ""}`,
-        ),
-      );
+      messageApi.open({
+        key,
+        type: "success",
+        content: getActionSuccessMessage(actionType, targetItemCount),
+        duration: 5,
+      });
 
       // Refresh the tree to reflect updated status
       // Note: For bulk actions we can't get the specific URNs affected,
@@ -77,6 +109,7 @@ export const useBulkActions = (
     | ((
         filterParams: MonitorFieldParameters,
         excluded_resource_urns: string[],
+        targetItemCount: number,
       ) => Promise<void> | void)
   >;
 };
