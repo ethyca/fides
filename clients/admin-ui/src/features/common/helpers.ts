@@ -46,7 +46,7 @@ export const getErrorMessage = (
 export function isFetchBaseQueryError(
   error: unknown,
 ): error is FetchBaseQueryError {
-  return typeof error === "object" && error != null && "status" in error;
+  return typeof error === "object" && error !== null && "status" in error;
 }
 
 /**
@@ -57,7 +57,7 @@ export function isErrorWithMessage(
 ): error is { message: string } {
   return (
     typeof error === "object" &&
-    error != null &&
+    error !== null &&
     "message" in error &&
     typeof (error as any).message === "string"
   );
@@ -90,9 +90,9 @@ interface ValidationError {
 export function isErrorWithDetail(error: unknown): error is ResponseError {
   return (
     typeof error === "object" &&
-    error != null &&
+    error !== null &&
     "data" in error &&
-    (error as any).data != null &&
+    (error as any).data !== null &&
     typeof (error as any).data.detail === "string"
   );
 }
@@ -102,9 +102,9 @@ export function isErrorWithDetailArray(
 ): error is ValidationError {
   return (
     typeof error === "object" &&
-    error != null &&
+    error !== null &&
     "data" in error &&
-    (error as any).data != null &&
+    (error as any).data !== null &&
     Array.isArray((error as any).data.detail)
   );
 }
