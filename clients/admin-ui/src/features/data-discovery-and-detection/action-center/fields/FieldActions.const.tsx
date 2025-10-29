@@ -81,17 +81,17 @@ export const DIFF_STATUS_TO_AVAILABLE_ACTIONS = {
   addition: AVAILABLE_ACTIONS.Unlabeled,
   approved: AVAILABLE_ACTIONS.Approved,
   classification_addition: AVAILABLE_ACTIONS["In Review"],
-  classification_error: AVAILABLE_ACTIONS.Error,
+  classification_error: [CLASSIFY, MUTE, ASSIGN_CATEGORIES],
   classification_queued: AVAILABLE_ACTIONS.Classifying,
   classification_update: AVAILABLE_ACTIONS["In Review"],
   classifying: AVAILABLE_ACTIONS.Classifying,
   monitored: AVAILABLE_ACTIONS.Confirmed,
   muted: AVAILABLE_ACTIONS.Ignored,
   promoting: AVAILABLE_ACTIONS["Confirming..."],
-  promotion_error: AVAILABLE_ACTIONS.Error,
+  promotion_error: [PROMOTE, MUTE, ASSIGN_CATEGORIES],
   removal: AVAILABLE_ACTIONS.Removed,
   removing: AVAILABLE_ACTIONS["In Review"],
-  removal_promotion_error: AVAILABLE_ACTIONS.Error,
+  removal_promotion_error: [PROMOTE_REMOVALS, MUTE],
 } as const satisfies Readonly<
   Record<DiffStatus, Readonly<Array<FieldActionType>>>
 >;
