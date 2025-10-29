@@ -34,6 +34,7 @@ import {
   DIFF_STATUS_TO_AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
+  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
@@ -289,7 +290,19 @@ const ActionCenterFields: NextPage = () => {
                     items: [
                       ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
-                        label: FIELD_ACTION_LABEL[actionType],
+                        label:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType) ? (
+                            <Tooltip
+                              title={
+                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
+                              }
+                            >
+                              {FIELD_ACTION_LABEL[actionType]}
+                            </Tooltip>
+                          ) : (
+                            FIELD_ACTION_LABEL[actionType]
+                          ),
                         disabled:
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
@@ -324,11 +337,13 @@ const ActionCenterFields: NextPage = () => {
                     Actions
                   </Button>
                 </Dropdown>
-                <Button
-                  icon={<Icons.Renew />}
-                  onClick={() => refetch()}
-                  aria-label="Refresh"
-                />
+                <Tooltip title="Refresh">
+                  <Button
+                    icon={<Icons.Renew />}
+                    onClick={() => refetch()}
+                    aria-label="Refresh"
+                  />
+                </Tooltip>
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
@@ -384,6 +399,12 @@ const ActionCenterFields: NextPage = () => {
                                   ].includes(action)
                                 : true
                             }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
                           />
                         </Tooltip>
                       ))

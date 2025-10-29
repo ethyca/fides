@@ -32,7 +32,7 @@ export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
 /** TODO: fix all */
 export const FIELD_ACTION_INTERMEDIATE: Record<FieldActionTypeValue, string> = {
   approve: "Approving",
-  "assign-categories": "Adding data categories",
+  "assign-categories": "Updating data categories",
   classify: "Classifying",
   mute: "Ignoring",
   promote: "Confirming",
@@ -43,7 +43,7 @@ export const FIELD_ACTION_INTERMEDIATE: Record<FieldActionTypeValue, string> = {
 
 export const FIELD_ACTION_COMPLETED: Record<FieldActionTypeValue, string> = {
   approve: "Approved",
-  "assign-categories": "Data category added",
+  "assign-categories": "Data category updated",
   classify: "Classified",
   mute: "Ignored",
   promote: "Confirmed",
@@ -62,6 +62,18 @@ export const DROPDOWN_ACTIONS = [
 ] as const;
 
 export const LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
+
+export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
+  (typeof DROPDOWN_ACTIONS)[number],
+  string
+> = {
+  [APPROVE]: "You can only approve resources with a data category applied",
+  [CLASSIFY]:
+    "You cannot classify resources that are already in classification or ignored",
+  [MUTE]: "You cannot ignore resources that are already ignored",
+  [PROMOTE]: "You can only confirm resources that have a data category applied",
+  [UN_MUTE]: "You can only restore resources that are ignored",
+};
 
 export const AVAILABLE_ACTIONS = {
   "In Review": [CLASSIFY, MUTE, APPROVE, PROMOTE],
@@ -102,7 +114,7 @@ export const FIELD_ACTION_ICON = {
   "un-approve": null,
   "un-mute": <Icons.View />,
   approve: <Icons.Checkmark />,
-  classify: <SparkleIcon />,
+  classify: <SparkleIcon size={14} />,
   mute: <Icons.ViewOff />,
   promote: <Icons.Checkmark />,
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
