@@ -35,7 +35,7 @@ def upgrade():
         ),
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("rule_version", sa.Text(), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("is_active", sa.Boolean(), server_default="t", nullable=False),
         sa.Column("dedup_key", sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )

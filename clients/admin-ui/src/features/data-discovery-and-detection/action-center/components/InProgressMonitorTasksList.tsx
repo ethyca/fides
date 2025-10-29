@@ -4,6 +4,7 @@ import {
   AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
+  AntPagination as Pagination,
   AntPopover as Popover,
   Icons,
 } from "fidesui";
@@ -52,6 +53,8 @@ export const InProgressMonitorTasksList = () => {
 
     // Ant Design list integration
     listProps,
+
+    paginationProps,
   } = useInProgressMonitorTasksList();
 
   const handleStatusesChanged = useCallback(
@@ -110,9 +113,9 @@ export const InProgressMonitorTasksList = () => {
   );
 
   return (
-    <>
+    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
       {/* Search Row */}
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex justify="space-between" align="center">
         <div className="min-w-[300px]">
           <DebouncedSearchInput
             value={searchQuery ?? ""}
@@ -137,12 +140,19 @@ export const InProgressMonitorTasksList = () => {
 
       <List
         {...listProps}
+        className="h-full overflow-scroll"
         renderItem={(task: MonitorTaskInProgressResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
           </List.Item>
         )}
       />
-    </>
+      <Pagination
+        {...paginationProps}
+        showSizeChanger={{
+          suffixIcon: <Icons.ChevronDown />,
+        }}
+      />
+    </Flex>
   );
 };
