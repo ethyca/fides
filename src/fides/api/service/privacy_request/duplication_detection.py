@@ -250,6 +250,7 @@ class DuplicateDetectionService:
         )
         return True
 
+    # pylint: disable=too-many-return-statements
     def is_duplicate_request(
         self, request: PrivacyRequest, config: DuplicateDetectionSettings
     ) -> bool:
