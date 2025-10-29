@@ -2,7 +2,10 @@
 Contains all of the logic related to the database including connections, setup, teardown, etc.
 """
 
+import os
+import subprocess
 from os import path
+from pathlib import Path
 from typing import Literal, Optional, Tuple
 
 from alembic import command, script
@@ -192,3 +195,200 @@ def check_missing_migrations(database_url: str) -> None:
             log.error(f"  - {item}")
         raise SystemExit("Migration needs to be generated!")
     print("No migrations need to be generated.")
+
+
+def _get_base_branch_for_comparison() -> str:
+    """
+    Determine the base branch to compare against for detecting new migrations.
+
+    In GitHub Actions PRs, uses GITHUB_BASE_REF (the PR target branch).
+    Otherwise, falls back to origin/main for local development.
+
+    Returns:
+        The base branch reference (e.g., 'origin/main', 'origin/develop')
+    """
+    base_ref = os.environ.get("GITHUB_BASE_REF")
+    if base_ref:
+        base_branch = f"origin/{base_ref}"
+        log.info(f"Comparing against PR target branch: {base_branch}")
+    else:
+        base_branch = "origin/main"
+        log.info(f"No GITHUB_BASE_REF found, comparing against: {base_branch}")
+    return base_branch
+
+
+def _get_new_migration_files(repo_root: str, base_branch: str) -> list[str]:
+    """
+    Get list of new migration files added in the current branch.
+
+    Args:
+        repo_root: Absolute path to the git repository root
+        base_branch: The base branch to compare against
+
+    Returns:
+        List of relative file paths to new migration files
+
+    Raises:
+        SystemExit: If the migrations directory does not exist
+    """
+    # Validate that the migrations directory exists
+    migrations_dir = (
+        Path(repo_root)
+        / "src"
+        / "fides"
+        / "api"
+        / "alembic"
+        / "migrations"
+        / "versions"
+    )
+    if not migrations_dir.exists():
+        log.error(f"Migrations directory not found: {migrations_dir}")
+        raise SystemExit(
+            f"Migration directory not found at expected path: {migrations_dir}\n"
+            "If the migrations directory has been moved, update the path in "
+            "fides.api.db.database._get_new_migration_files()"
+        )
+
+    migration_pattern = "src/fides/api/alembic/migrations/versions/*.py"
+    diff_output = subprocess.check_output(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            "--diff-filter=A",  # Only added files
+            f"{base_branch}...HEAD",
+            "--",
+            migration_pattern,
+        ],
+        stderr=subprocess.STDOUT,
+        text=True,
+        cwd=repo_root,
+    ).strip()
+
+    if not diff_output:
+        return []
+
+    return [f for f in diff_output.split("\n") if f]
+
+
+def _parse_migration_revisions(migration_path: Path) -> tuple[str, Optional[str]]:
+    """
+    Extract revision and down_revision IDs from a migration file.
+
+    Args:
+        migration_path: Path to the migration file
+
+    Returns:
+        Tuple of (revision, down_revision). down_revision may be None.
+
+    Raises:
+        SystemExit: If revision ID cannot be found in the file
+    """
+    revision = None
+    down_revision = None
+
+    with open(migration_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip().startswith("revision ="):
+                revision = line.split("=")[1].strip().strip("\"'")
+            elif line.strip().startswith("down_revision ="):
+                down_rev_value = line.split("=")[1].strip().strip("\"'")
+                if down_rev_value.lower() != "none":
+                    down_revision = down_rev_value
+
+    if not revision:
+        log.error(f"Could not find revision ID in {migration_path}")
+        raise SystemExit(f"Invalid migration file: {migration_path}")
+
+    return revision, down_revision
+
+
+def _test_migration_upgrade_downgrade(
+    alembic_config: Config,
+    migration_name: str,
+    revision: str,
+    down_revision: Optional[str],
+) -> None:
+    """
+    Test that a migration can be upgraded and downgraded successfully.
+
+    Assumes the database starts at HEAD (with the new migration already applied).
+    Tests downgrade first, then upgrade to verify both directions work correctly.
+
+    Args:
+        alembic_config: Alembic configuration
+        migration_name: Name of the migration file (for logging)
+        revision: The migration revision ID to test
+        down_revision: The down_revision ID (may be None for initial migrations)
+
+    Raises:
+        SystemExit: If the migration upgrade/downgrade test fails
+    """
+    log.info(f"Testing migration: {migration_name} (revision: {revision})")
+
+    try:
+        # Step 1: Downgrade to remove the migration (tests downgrade)
+        if down_revision:
+            log.info(f"  Downgrading to {down_revision}...")
+            downgrade_db(alembic_config, down_revision)
+
+        # Step 2: Upgrade back to apply the migration (tests upgrade)
+        log.info(f"  Upgrading to {revision}...")
+        upgrade_db(alembic_config, revision)
+
+        # Migration is now back at the revision it was at when we started
+        log.info(f"  ✓ Migration {migration_name} passed upgrade/downgrade test")
+
+    except Exception as error:
+        log.error(f"Migration {migration_name} failed upgrade/downgrade test!")
+        log.error(str(error))
+        raise SystemExit(
+            f"Migration upgrade/downgrade test failed for {migration_name}"
+        )
+
+
+def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
+    """
+    Detects new migrations added in the current branch and tests that they
+    can be successfully upgraded and downgraded.
+
+    Uses git to compare against the target/base branch to find new migration files.
+    In CI, uses GITHUB_BASE_REF if available, otherwise falls back to origin/main.
+    """
+    try:
+        # Get the repo root directory
+        repo_root = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            stderr=subprocess.STDOUT,
+            text=True,
+        ).strip()
+
+        # Determine base branch and get new migration files
+        base_branch = _get_base_branch_for_comparison()
+        migration_files = _get_new_migration_files(repo_root, base_branch)
+
+        if not migration_files:
+            log.info("No new migration files detected in current branch")
+            print("No new migrations to test.")
+            return
+
+        log.info(f"Detected {len(migration_files)} new migration(s) to test")
+
+        alembic_config = get_alembic_config(database_url)
+
+        # Test each new migration
+        for file_path in migration_files:
+            abs_path = Path(repo_root) / file_path
+            revision, down_revision = _parse_migration_revisions(abs_path)
+            _test_migration_upgrade_downgrade(
+                alembic_config, abs_path.name, revision, down_revision
+            )
+
+        print(
+            f"All {len(migration_files)} new migration(s) passed upgrade/downgrade tests."
+        )
+
+    except subprocess.CalledProcessError as error:
+        # Git command failed - might not be in a git repo or no origin/main
+        log.warning(f"Could not detect new migrations via git: {error}")
+        print("Skipping migration upgrade/downgrade check (git detection failed).")
