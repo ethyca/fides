@@ -21,7 +21,7 @@ export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
 /** TODO: fix all */
 export const FIELD_ACTION_INTERMEDIATE: Record<FieldActionTypeValue, string> = {
   approve: "Approving",
-  "assign-categories": "Adding data categories",
+  "assign-categories": "Updating data categories",
   classify: "Classifying",
   mute: "Ignoring",
   promote: "Confirming",
@@ -32,7 +32,7 @@ export const FIELD_ACTION_INTERMEDIATE: Record<FieldActionTypeValue, string> = {
 
 export const FIELD_ACTION_COMPLETED: Record<FieldActionTypeValue, string> = {
   approve: "Approved",
-  "assign-categories": "Data category added",
+  "assign-categories": "Data category updated",
   classify: "Classified",
   mute: "Ignored",
   promote: "Confirmed",
