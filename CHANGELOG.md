@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added automatic refresh of monitor tree ancestor statuses after field actions [#6853](https://github.com/ethyca/fides/pull/6853)
+- Added privacy preferences database model [#6875](https://github.com/ethyca/fides/pull/6875)
 
 ### Changed
 - Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
