@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added automatic refresh of monitor tree ancestor statuses after field actions [#6853](https://github.com/ethyca/fides/pull/6853)
+- Added database model for identity definitions [#6852](https://github.com/ethyca/fides/pull/6852) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
@@ -34,6 +35,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Reorganized FidesUI components into logical directories by design system and function [#6844](https://github.com/ethyca/fides/pull/6844)
 - Added reusable Filter component with optional search and tree-based filtering to FidesUI design system [#6845](https://github.com/ethyca/fides/pull/6845)
 - Added Privacy Notice Sandbox for Consent v3 development and demos [#6841](https://github.com/ethyca/fides/pull/6841)
+- Added strict equality ESLint rule to prevent type coercion bugs [#6879](https://github.com/ethyca/fides/pull/6879)
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
