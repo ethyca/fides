@@ -11,7 +11,7 @@ const MonitorFeatureError = () => (
   </>
 );
 
-const AlphaMonitorResultSystems: NextPage = () => {
+const DatastoreMonitorResultSystems: NextPage = () => {
   const { flags } = useFeatures();
 
   return flags.llmClassifier ? (
@@ -21,4 +21,4 @@ const AlphaMonitorResultSystems: NextPage = () => {
   );
 };
 
-export default AlphaMonitorResultSystems;
+export default DatastoreMonitorResultSystems;

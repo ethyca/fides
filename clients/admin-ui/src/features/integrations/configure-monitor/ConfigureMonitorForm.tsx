@@ -94,14 +94,26 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
   const { flags } = useFeatures();
-  const hasFullActionCenter = !!flags.llmClassifier;
+
+  /**
+   * Feature flag for LLM classifier functionality within action center.
+   * Note: Action center can exist for web monitoring without this feature.
+   * This flag specifically gates the LLM-based classification capabilities.
+   */
+  const llmClassifierFeatureEnabled = !!flags.llmClassifier;
+
   const { data: appConfig } = useGetConfigurationSettingsQuery(
     {
       api_set: false,
     },
-    { skip: !hasFullActionCenter },
+    { skip: !llmClassifierFeatureEnabled },
   );
-  const llmClassifierEnabled =
+
+  /**
+   * Server-side LLM classifier capability.
+   * This determines if the backend supports LLM-based classification for monitors.
+   */
+  const serverSupportsLlmClassifier =
     !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const router = useRouter();
@@ -163,7 +175,11 @@ const ConfigureMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
-  const isLlmClassifierEnabled =
+  /**
+   * Check if this monitor is currently configured to use LLM classification.
+   * This is independent of whether the server supports it or the feature is enabled.
+   */
+  const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
   const initialValues = {
@@ -172,14 +188,14 @@ const ConfigureMonitorForm = ({
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
-    use_llm_classifier: isLlmClassifierEnabled && llmClassifierEnabled,
-    llm_model_override: isLlmClassifierEnabled
+    use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
+    llm_model_override: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
-    prompt_template: isLlmClassifierEnabled
+    prompt_template: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.prompt_template ?? undefined)
       : undefined,
-    content_classification_enabled: !isLlmClassifierEnabled
+    content_classification_enabled: !monitorUsesLlmClassifier
       ? (monitor?.classify_params?.content_classification_enabled ?? undefined)
       : undefined, // for now, content classification is always disabled for LLM classification
   };
@@ -220,16 +236,16 @@ const ConfigureMonitorForm = ({
               }
               id="execution_start_date"
             />
-            {hasFullActionCenter && (
+            {llmClassifierFeatureEnabled && (
               <>
                 <CustomSwitch
                   name="use_llm_classifier"
                   id="use_llm_classifier"
                   label="Use LLM classifier"
                   variant="stacked"
-                  isDisabled={!llmClassifierEnabled}
+                  isDisabled={!serverSupportsLlmClassifier}
                   tooltip={
-                    !llmClassifierEnabled
+                    !serverSupportsLlmClassifier
                       ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
                       : undefined
                   }
