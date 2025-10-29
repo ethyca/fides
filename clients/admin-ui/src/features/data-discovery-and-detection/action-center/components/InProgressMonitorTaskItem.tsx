@@ -211,7 +211,7 @@ export const InProgressMonitorTaskItem = ({
             </Space>
             {task.status === "error" && (
               <Space>
-                <Paragraph type="secondary" size="sm" ellipsis={{tooltip:task.message}}>
+                <Paragraph type="secondary" size="sm" ellipsis={{ rows: 1, expandable: true, symbol: 'more', tooltip: true }}>
                   {task.message || "Unknown error"}
                 </Paragraph>
                 {task.message && (
