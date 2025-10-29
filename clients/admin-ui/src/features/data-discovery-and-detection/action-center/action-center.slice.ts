@@ -6,10 +6,7 @@ import {
 import {
   ConnectionType,
   ConsentStatus,
-  Database,
-  DatastoreStagedResource,
   DiffStatus,
-  Field,
   MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
@@ -18,7 +15,6 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
-  Table,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
@@ -35,6 +31,7 @@ import {
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
+import { MonitorResource } from "./fields/types";
 import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
@@ -372,7 +369,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
     }),
     getStagedResourceDetails: build.query<
-      DatastoreStagedResource | Database | Schema | Table | Field,
+      MonitorResource,
       { stagedResourceUrn: string }
     >({
       query: ({ stagedResourceUrn }) => ({

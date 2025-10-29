@@ -1,11 +1,8 @@
 import {
-  AntAvatar as Avatar,
   AntButton as Button,
   AntCheckbox as Checkbox,
-  AntDescriptions as Descriptions,
   AntDropdown as Dropdown,
   AntFlex as Flex,
-  AntForm as Form,
   AntList as List,
   AntMessage as message,
   AntModal as modal,
@@ -15,16 +12,12 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
-  SparkleIcon,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useSearch } from "~/features/common/hooks";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
@@ -36,9 +29,7 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
-import { FieldActionType } from "~/types/api/models/FieldActionType";
 
-import { DetailsDrawer } from "./DetailsDrawer";
 import {
   AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
@@ -60,6 +51,7 @@ import {
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
@@ -410,7 +402,7 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         </Splitter.Panel>
       </Splitter>
-      <DetailsDrawer
+      <ResourceDetailsDrawer
         itemKey={resource?.urn ?? ""}
         title={resource?.name ?? null}
         titleIcon={<Icons.Column />}
@@ -439,100 +431,9 @@ const ActionCenterFields: NextPage = () => {
         }))}
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
-      >
-        {resource ? (
-          <Flex gap="middle" vertical>
-            <Descriptions
-              bordered
-              size="small"
-              column={1}
-              items={[
-                {
-                  key: "system",
-                  label: "System",
-                  children: resource.system_key,
-                },
-                {
-                  key: "path",
-                  label: "Path",
-                  children: resource.urn,
-                },
-
-                {
-                  key: "data-type",
-                  label: "Data type",
-                  children:
-                    resource.resource_type /** data type is not yet returned from the BE for the details query * */,
-                },
-                {
-                  key: "description",
-                  label: "Description",
-                  children: resource.description,
-                },
-              ]}
-            />
-            <Form layout="vertical">
-              <Form.Item label="Data categories">
-                <DataCategorySelect
-                  variant="outlined"
-                  mode="tags"
-                  maxTagCount="responsive"
-                  value={[
-                    ...(resource.classifications?.map(({ label }) => label) ??
-                      []),
-                    ...(resource.user_assigned_data_categories?.map(
-                      (value) => value,
-                    ) ?? []),
-                  ]}
-                  autoFocus={false}
-                  disabled={
-                    resource?.diff_status
-                      ? ![
-                          ...AVAILABLE_ACTIONS[
-                            DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                          ],
-                        ].includes(FieldActionType.ASSIGN_CATEGORIES)
-                      : true
-                  }
-                  onChange={(values) =>
-                    fieldActions["assign-categories"]([resource.urn], {
-                      user_assigned_data_categories: values,
-                    })
-                  }
-                />
-              </Form.Item>
-            </Form>
-            {resource.classifications &&
-              resource.classifications.length > 0 && (
-                <List
-                  dataSource={resource.classifications}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar
-                            /* Ant only provides style prop for altering the background color */
-                            style={{
-                              backgroundColor: palette?.FIDESUI_BG_DEFAULT,
-                            }}
-                            icon={<SparkleIcon color="black" />}
-                          />
-                        }
-                        title={
-                          <Flex align="center" gap="middle">
-                            <div>{item.label}</div>
-                            <ClassifierProgress percent={item.score * 100} />
-                          </Flex>
-                        }
-                        description={item.rationale}
-                      />
-                    </List.Item>
-                  )}
-                />
-              )}
-          </Flex>
-        ) : null}
-      </DetailsDrawer>
+        resource={resource}
+        fieldActions={fieldActions}
+      />
       {modalContext}
       {messageContext}
     </FixedLayout>

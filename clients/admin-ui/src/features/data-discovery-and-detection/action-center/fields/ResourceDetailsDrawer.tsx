@@ -1,0 +1,125 @@
+import {
+  AntAvatar as Avatar,
+  AntDescriptions as Descriptions,
+  AntFlex as Flex,
+  AntForm as Form,
+  AntList as List,
+  SparkleIcon,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
+
+import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
+
+import { DetailsDrawer } from "./DetailsDrawer";
+import { DetailsDrawerProps } from "./DetailsDrawer/types";
+import { AVAILABLE_ACTIONS } from "./FieldActions.const";
+import { DIFF_TO_RESOURCE_STATUS } from "./MonitorFields.const";
+import { MonitorResource } from "./types";
+import { useFieldActions } from "./useFieldActions";
+
+interface ResourceDetailsDrawerProps extends DetailsDrawerProps {
+  resource?: MonitorResource;
+  /** TODO: would be nice to have generic action/forms available native with details drawer */
+  fieldActions: ReturnType<typeof useFieldActions>;
+}
+
+export const ResourceDetailsDrawer = ({
+  resource,
+  fieldActions,
+  ...drawerProps
+}: ResourceDetailsDrawerProps) => (
+  <DetailsDrawer {...drawerProps}>
+    {resource ? (
+      <Flex gap="middle" vertical>
+        <Descriptions
+          bordered
+          size="small"
+          column={1}
+          items={[
+            {
+              key: "system",
+              label: "System",
+              children: resource.system_key,
+            },
+            {
+              key: "path",
+              label: "Path",
+              children: resource.urn,
+            },
+
+            {
+              key: "data-type",
+              label: "Data type",
+              children:
+                resource.resource_type /** data type is not yet returned from the BE for the details query * */,
+            },
+            {
+              key: "description",
+              label: "Description",
+              children: resource.description,
+            },
+          ]}
+        />
+        <Form layout="vertical">
+          <Form.Item label="Data categories">
+            <DataCategorySelect
+              variant="outlined"
+              mode="tags"
+              maxTagCount="responsive"
+              value={[
+                ...(resource.classifications?.map(({ label }) => label) ?? []),
+                ...(resource.user_assigned_data_categories?.map(
+                  (value) => value,
+                ) ?? []),
+              ]}
+              autoFocus={false}
+              disabled={
+                resource?.diff_status
+                  ? ![
+                      ...AVAILABLE_ACTIONS[
+                        DIFF_TO_RESOURCE_STATUS[resource.diff_status]
+                      ],
+                    ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                  : true
+              }
+              onChange={(values) =>
+                fieldActions["assign-categories"]([resource.urn], {
+                  user_assigned_data_categories: values,
+                })
+              }
+            />
+          </Form.Item>
+        </Form>
+        {resource.classifications && resource.classifications.length > 0 && (
+          <List
+            dataSource={resource.classifications}
+            renderItem={(item) => (
+              <List.Item>
+                <List.Item.Meta
+                  avatar={
+                    <Avatar
+                      /* Ant only provides style prop for altering the background color */
+                      style={{
+                        backgroundColor: palette?.FIDESUI_BG_DEFAULT,
+                      }}
+                      icon={<SparkleIcon color="black" />}
+                    />
+                  }
+                  title={
+                    <Flex align="center" gap="middle">
+                      <div>{item.label}</div>
+                      <ClassifierProgress percent={item.score * 100} />
+                    </Flex>
+                  }
+                  description={item.rationale}
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Flex>
+    ) : null}
+  </DetailsDrawer>
+);
