@@ -1,7 +1,7 @@
 """add privacy request duplication cols
 
 Revision ID: c09e76282dd1
-Revises: 5093e92e2a5a
+Revises: 67f0f2f4748e
 Create Date: 2025-10-21 21:46:38.006328
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c09e76282dd1"
-down_revision = "5093e92e2a5a"
+down_revision = "67f0f2f4748e"
 branch_labels = None
 depends_on = None
 
