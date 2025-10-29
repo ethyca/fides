@@ -175,7 +175,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: ({ staged_resource_urn }) => ({
@@ -197,7 +201,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     muteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -207,7 +215,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           staged_resource_urns,
         },
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -217,7 +229,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     updateResourceCategory: build.mutation<
       Array<{

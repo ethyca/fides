@@ -65,5 +65,11 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaPrivacyNoticesSandbox": {
+    "description": "Enable privacy notices sandbox page for testing consent v3",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
