@@ -316,7 +316,7 @@ class DuplicateDetectionService:
                 dataset_name="Duplicate Request Detection",
                 collection_name=None,
                 message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
-                action_type=ActionType.access,
+                action_type=request.policy.get_rules()[0].action_type if request.policy and request.policy.get_rules() else ActionType.access,
             )
             return True
 
