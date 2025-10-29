@@ -9,6 +9,7 @@ from sqlalchemy import (  # type: ignore[attr-defined]
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -30,12 +31,14 @@ class PrivacyPreferences(Base):
     based on the is_latest flag, splitting records into current and historic partitions.
     """
 
-    __tablename__ = "privacy_preferences"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "privacy_preferences"
 
     # Override the default id column from Base (which is a String UUID)
     # with a BigInteger identity column for this table
     id = Column(
-        BigInteger,
+        BigInteger,  # type: ignore[arg-type]
         Identity(start=1, increment=1, always=True),
         primary_key=True,
     )
