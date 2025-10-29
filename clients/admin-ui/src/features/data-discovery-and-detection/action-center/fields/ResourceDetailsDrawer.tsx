@@ -4,8 +4,8 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntList as List,
+  AntParagraph as Paragraph,
   AntTabs as Tabs,
-  AntText as Text,
   SparkleIcon,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -36,6 +36,12 @@ export const ResourceDetailsDrawer = ({
       {resource ? (
         <Tabs
           defaultActiveKey="details"
+          tabBarStyle={{
+            position: "sticky",
+            top: "calc(0px - var(--ant-padding-lg)",
+            backgroundColor: palette.FIDESUI_FULL_WHITE,
+            zIndex: 2,
+          }}
           items={[
             {
               key: "details",
@@ -57,7 +63,6 @@ export const ResourceDetailsDrawer = ({
                         label: "Path",
                         children: resource.urn,
                       },
-
                       {
                         key: "data-type",
                         label: "Data type",
@@ -160,7 +165,15 @@ export const ResourceDetailsDrawer = ({
                         title={item.title}
                         description={item.description}
                       />
-                      <Text>{item.content}</Text>
+                      <Paragraph
+                        ellipsis={{
+                          expandable: "collapsible",
+                          rows: 3,
+                        }}
+                        copyable
+                      >
+                        {item.content}
+                      </Paragraph>
                     </List.Item>
                   )}
                   itemLayout="vertical"
