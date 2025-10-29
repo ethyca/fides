@@ -322,9 +322,9 @@ class DuplicateDetectionService:
 
         # only compare to non-duplicate requests for the following cases
         canonical_requests = [
-            request
-            for request in duplicates
-            if request.status != PrivacyRequestStatus.duplicate
+            duplicate
+            for duplicate in duplicates
+            if duplicate.status != PrivacyRequestStatus.duplicate
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
