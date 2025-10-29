@@ -221,12 +221,15 @@ def _get_new_migration_files(repo_root: str, base_branch: str) -> list[str]:
     """
     Get list of new migration files added in the current branch.
 
+    Files are sorted by the timestamp in their filename to ensure chronological order.
+    Migration files follow the pattern: xx_YYYY_MM_DD_HHMM_revision_description.py
+
     Args:
         repo_root: Absolute path to the git repository root
         base_branch: The base branch to compare against
 
     Returns:
-        List of relative file paths to new migration files
+        List of relative file paths to new migration files, sorted chronologically
 
     Raises:
         SystemExit: If the migrations directory does not exist
@@ -268,7 +271,14 @@ def _get_new_migration_files(repo_root: str, base_branch: str) -> list[str]:
     if not diff_output:
         return []
 
-    return [f for f in diff_output.split("\n") if f]
+    migration_files = [f for f in diff_output.split("\n") if f]
+
+    # Sort by filename to ensure chronological order
+    # Files are named: xx_YYYY_MM_DD_HHMM_revision_description.py
+    # Sorting alphabetically will sort them chronologically due to the date format
+    migration_files.sort()
+
+    return migration_files
 
 
 def _parse_migration_revisions(migration_path: Path) -> tuple[str, Optional[str]]:
@@ -382,6 +392,10 @@ def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
             return
 
         log.info(f"Detected {len(migration_files)} new migration(s) to test")
+
+        # Log the migrations in order
+        for i, file_path in enumerate(migration_files, 1):
+            log.info(f"  {i}. {Path(file_path).name}")
 
         alembic_config = get_alembic_config(database_url)
 
