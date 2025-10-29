@@ -22,7 +22,6 @@ import {
   LabeledText,
   PolicyActionTypes,
   ReceivedOn,
-  ViewButton,
 } from "./components";
 
 interface ListItemProps {
@@ -100,8 +99,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
         />
         <ReceivedOn createdAt={item.created_at} />
       </div>
-      <Flex className="min-w-[125px]" align="center" justify="end" gap="small">
-        <ViewButton key="view" id={item.id} />
+      <Flex className="min-w-[90px]" align="center" justify="end" gap="small">
         <RequestTableActions key="other-actions" subjectRequest={item} />
       </Flex>
     </List.Item>
