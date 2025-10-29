@@ -5,9 +5,11 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
+  Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
   PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
+  PrivacyRequestFilter,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
 } from "~/types/api";
@@ -337,6 +339,16 @@ export const privacyRequestApi = baseApi.injectEndpoints({
           }
         });
       },
+    }),
+    searchPrivacyRequests: build.query<
+      Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
+      Partial<PrivacyRequestFilter>
+    >({
+      query: (filters) => ({
+        url: `privacy-request/search`,
+        method: "POST",
+        body: filters,
+      }),
     }),
     downloadPrivacyRequestCsv: build.query<any, Partial<PrivacyRequestParams>>({
       query: (filters) => {
