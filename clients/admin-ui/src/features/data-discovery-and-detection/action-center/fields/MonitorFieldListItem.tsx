@@ -198,9 +198,6 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               });
             }}
             onSelectDataCategory={onSelectDataCategory}
-            classNames={{
-              root: "-ml-5", // align the + with the row above
-            }}
           />
         }
       />
