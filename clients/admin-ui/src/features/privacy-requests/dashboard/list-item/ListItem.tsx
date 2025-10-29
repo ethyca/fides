@@ -16,13 +16,7 @@ import {
   getOtherIdentities,
   getPrimaryIdentity,
 } from "../utils";
-import {
-  DaysLeft,
-  Header,
-  LabeledText,
-  PolicyActionTypes,
-  ReceivedOn,
-} from "./components";
+import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
 
 interface ListItemProps {
   item: PrivacyRequestEntity;
@@ -59,7 +53,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 {primaryIdentity.value}
               </LabeledText>
             )}
-            <PolicyActionTypes rules={item.policy.rules} />
+            <Tag>{item.policy.name}</Tag>
             <Tag>{item.source}</Tag>
           </Flex>
 
