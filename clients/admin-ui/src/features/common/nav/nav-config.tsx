@@ -13,6 +13,10 @@ export type NavConfigRoute = {
   requiresPlus?: boolean;
   requiresOss?: boolean;
   requiresFlag?: FlagNames;
+  /** Show route if ANY of these flags are enabled (OR logic) */
+  requiresAnyFlag?: FlagNames[];
+  /** Hide route if this flag is enabled */
+  hidesIfFlag?: FlagNames;
   requiresFidesCloud?: boolean;
   /** Hide this route from the navigation UI but still allow access */
   hidden?: boolean;
@@ -49,7 +53,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresFlag: "webMonitor",
+        requiresAnyFlag: ["webMonitor", "llmClassifier"],
         requiresPlus: true,
       },
       {
@@ -57,18 +61,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        hidesIfFlag: "llmClassifier",
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        hidesIfFlag: "llmClassifier",
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
+        hidesIfFlag: "llmClassifier",
       },
       {
         title: "Data catalog",
@@ -471,6 +478,19 @@ const configureNavRoute = ({
   // If the target route is protected by a feature flag that is not enabled,
   // exclude it from the group
   if (route.requiresFlag && (!flags || !flags[route.requiresFlag])) {
+    return undefined;
+  }
+
+  // If the target route requires ANY of these flags (OR logic), check if at least one is enabled
+  if (
+    route.requiresAnyFlag &&
+    (!flags || !route.requiresAnyFlag.some((flag) => flags[flag]))
+  ) {
+    return undefined;
+  }
+
+  // If the target route should be hidden when a specific flag is enabled, exclude it
+  if (route.hidesIfFlag && flags && flags[route.hidesIfFlag]) {
     return undefined;
   }
 

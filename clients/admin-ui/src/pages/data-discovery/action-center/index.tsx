@@ -75,11 +75,12 @@ const ActionCenterPage = () => {
       ?.flatMap((monitor) =>
         !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
       )
-      .filter(
-        (monitor) =>
-          flags.alphaFullActionCenter ||
-          monitor.monitorType === MONITOR_TYPES.WEBSITE,
-      ) || [];
+      .filter((monitor) => {
+        const isWebsite = monitor.monitorType === MONITOR_TYPES.WEBSITE;
+        // Show website monitors only if webMonitor flag is enabled
+        // Show non-website monitors only if llmClassifier flag is enabled
+        return isWebsite ? flags.webMonitor : flags.llmClassifier;
+      }) || [];
 
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
