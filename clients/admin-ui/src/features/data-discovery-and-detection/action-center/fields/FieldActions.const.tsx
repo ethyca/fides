@@ -64,7 +64,7 @@ export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
   [FieldActionType.APPROVE]:
     "You can only approve resources with a data category applied",
   [FieldActionType.CLASSIFY]:
-    "You cannot classify resources that are already in classification or ignored. ",
+    "You cannot classify resources that are already in classification or ignored",
   [FieldActionType.MUTE]:
     "You cannot ignore resources that are already ignored",
   [FieldActionType.PROMOTE]:

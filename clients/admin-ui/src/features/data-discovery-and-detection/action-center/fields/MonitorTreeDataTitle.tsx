@@ -6,12 +6,9 @@ import {
   AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
-// TODO: fix this export to be better encapsulated in fidesui
-import palette from "fidesui/src/palette/palette.module.scss";
-
-import { TreeResourceChangeIndicator } from "~/types/api";
 
 import {
+  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
@@ -81,27 +78,9 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
-  const statusInfo = (() => {
-    switch (node.status) {
-      case TreeResourceChangeIndicator.ADDITION:
-        return {
-          color: palette.FIDESUI_SUCCESS,
-          tooltip: "This resource was added in the latest scan",
-        };
-      case TreeResourceChangeIndicator.REMOVAL:
-        return {
-          color: palette.FIDESUI_ERROR,
-          tooltip: "This resource was removed in the latest scan",
-        };
-      case TreeResourceChangeIndicator.CHANGE:
-        return {
-          color: palette.FIDESUI_WARNING,
-          tooltip: "This resource was modified in the latest scan",
-        };
-      default:
-        return null;
-    }
-  })();
+  const statusInfo = node.status
+    ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[node.status]
+    : null;
 
   return (
     <Flex gap={4} align="center" className="inline-flex">
