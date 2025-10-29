@@ -5,7 +5,7 @@ from zipfile import BadZipFile, ZipFile
 from fastapi import Body, Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
@@ -49,6 +49,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
     CustomConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
@@ -56,6 +57,7 @@ from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -64,6 +66,8 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
+    CONNECTOR_TEMPLATE_CONFIG,
+    CONNECTOR_TEMPLATE_DATASET,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
@@ -405,4 +409,60 @@ def register_custom_connector_template(
 
     return JSONResponse(
         content={"message": "Connector template successfully registered."}
+    )
+
+
+@router.get(
+    CONNECTOR_TEMPLATE_CONFIG,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
+)
+def get_connector_template_config(
+    key: str,
+) -> Response:
+    """
+    Retrieves the SaaS config YAML for a connector template by its key.
+
+    Returns the raw YAML configuration that can be used to understand
+    or customize the connector template.
+    """
+    logger.info("Finding connector template with key '{}'", key)
+    template = ConnectorRegistry.get_connector_template(key)
+
+    if not template:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connector template found with key '{key}'",
+        )
+
+    return Response(
+        content=template.config,
+        media_type="text/yaml",
+    )
+
+
+@router.get(
+    CONNECTOR_TEMPLATE_DATASET,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
+)
+def get_connector_template_dataset(
+    key: str,
+) -> Response:
+    """
+    Retrieves the dataset YAML for a connector template by its key.
+
+    Returns the raw dataset YAML configuration that defines the data structure
+    for the connector template.
+    """
+    logger.info("Finding connector template dataset with key '{}'", key)
+    template = ConnectorRegistry.get_connector_template(key)
+
+    if not template:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connector template found with key '{key}'",
+        )
+
+    return Response(
+        content=template.dataset,
+        media_type="text/yaml",
     )
