@@ -9,6 +9,7 @@ from fides.api.models.privacy_request.duplicate_group import (
     generate_rule_version,
 )
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -258,7 +259,7 @@ class DuplicateDetectionService:
         Determine if a request is a duplicate request and assigns a duplicate request group id.
 
         The hierarchy is:
-        1. Actioned requests: if this request duplicates and actioned request, it is a duplicate.
+        1. Actioned requests: if this request duplicates an actioned request, it is a duplicate.
         2. Verified identity requests:
           a. if this request has a verified identity:
             - If none of the duplicates have a verified identity, it is not a duplicate.
@@ -267,6 +268,7 @@ class DuplicateDetectionService:
             - If no duplicates have a verified identity, and this was the first created request, it is not a duplicate.
         3. First created request: if this is the first created request in the group, it is not a duplicate.
         4. If no canonical requests are found (meaning all requests are marked as duplicates), this request is not a duplicate.
+            - Could occur if configuration changes and previous requests were already marked as duplicates.
 
         Args:
             request: The privacy request to check
@@ -307,6 +309,14 @@ class DuplicateDetectionService:
         if request.status == PrivacyRequestStatus.duplicate:
             logger.warning(
                 f"Request {request.id} is a duplicate request that was requeued. This should not happen."
+            )
+            request.add_error_execution_log(
+                db=self.db,
+                connection_key=None,
+                dataset_name="Duplicate Request Detection",
+                collection_name=None,
+                message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
+                action_type=ActionType.access,
             )
             return True
 
