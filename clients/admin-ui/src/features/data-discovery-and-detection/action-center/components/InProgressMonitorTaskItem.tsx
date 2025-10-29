@@ -31,7 +31,7 @@ import {
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
 
-const { Text, Title } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
@@ -210,12 +210,10 @@ export const InProgressMonitorTaskItem = ({
               )}
             </Space>
             {task.status === "error" && (
-              <Space className="pl-1" align="center">
-                <Tooltip title={task.message || "Unknown error"}>
-                  <Text type="secondary" size="sm">
-                    {task.message?.split("\n")[0] || "Unknown error"}
-                  </Text>
-                </Tooltip>
+              <Space>
+                <Paragraph type="secondary" size="sm" ellipsis={{tooltip:task.message}}>
+                  {task.message || "Unknown error"}
+                </Paragraph>
                 {task.message && (
                   <ClipboardButton
                     copyText={task.message}
