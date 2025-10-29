@@ -159,7 +159,7 @@ export const PrivacyRequestsDashboard = () => {
               `${range[0]}-${range[1]} of ${total} items`
             }
             total={totalRows ?? 0}
-            align="end"
+            align="start"
           />
         </Flex>
       )}
