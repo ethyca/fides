@@ -176,7 +176,12 @@ class DuplicateDetectionService:
             raise ValueError(
                 "This request does not contain the required identity fields for duplicate detection."
             )
-        return "|".join([f"{value}" for _, value in current_identities.items()])
+        return "|".join(
+            [
+                current_identities[field]
+                for field in sorted(config.match_identity_fields)
+            ]
+        )
 
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
@@ -303,15 +308,19 @@ class DuplicateDetectionService:
                 dataset_name="Duplicate Request Detection",
                 collection_name=None,
                 message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
-                action_type=ActionType.access,
+                action_type=(
+                    request.policy.get_action_type()  # type: ignore [arg-type]
+                    if request.policy
+                    else ActionType.access
+                ),
             )
             return True
 
         # only compare to non-duplicate requests for the following cases
         canonical_requests = [
-            request
-            for request in duplicates
-            if request.status != PrivacyRequestStatus.duplicate
+            duplicate
+            for duplicate in duplicates
+            if duplicate.status != PrivacyRequestStatus.duplicate
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
