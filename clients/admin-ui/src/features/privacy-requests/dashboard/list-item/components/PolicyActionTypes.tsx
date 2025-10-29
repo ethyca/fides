@@ -21,7 +21,7 @@ export const PolicyActionTypes = ({ rules }: { rules: Rule[] }) => {
       {getActionTypesFromRules(rules)
         .map((actionType) => SubjectRequestActionTypeMap.get(actionType))
         .map((actionType) => (
-          <Tag key={actionType}>{actionType}</Tag>
+          <Tag key={actionType}>{actionType} request</Tag>
         ))}
     </>
   );
