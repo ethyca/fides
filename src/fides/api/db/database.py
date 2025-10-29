@@ -303,48 +303,57 @@ def _parse_migration_revisions(migration_path: Path) -> tuple[str, Optional[str]
     return revision, down_revision
 
 
-def _test_migration_upgrade_downgrade(
+def _test_migrations_upgrade_downgrade_sequence(
     alembic_config: Config,
-    migration_name: str,
-    revision: str,
-    down_revision: Optional[str],
+    migrations: list[tuple[str, str, Optional[str]]],
 ) -> None:
     """
-    Test that a migration can be upgraded and downgraded successfully.
+    Test multiple migrations can be upgraded and downgraded successfully in sequence.
 
-    Assumes the database starts at HEAD (with the new migration already applied).
-    Tests downgrade first, then upgrade to verify both directions work correctly.
+    Tests all new migrations together by:
+    1. Downgrading incrementally through all migrations (newest to oldest)
+    2. Upgrading incrementally back through all migrations (oldest to newest)
+
+    After Phase 2, the database is at the newest migration revision, which should
+    match HEAD for the new migrations being tested.
+
+    This approach tests migrations in a realistic sequence and can catch
+    interaction issues between migrations.
 
     Args:
         alembic_config: Alembic configuration
-        migration_name: Name of the migration file (for logging)
-        revision: The migration revision ID to test
-        down_revision: The down_revision ID (may be None for initial migrations)
+        migrations: List of (migration_name, revision, down_revision) tuples
 
     Raises:
-        SystemExit: If the migration upgrade/downgrade test fails
+        SystemExit: If any migration upgrade/downgrade test fails
     """
-    log.info(f"Testing migration: {migration_name} (revision: {revision})")
+    if not migrations:
+        return
+
+    log.info(f"Testing {len(migrations)} migration(s) in sequence")
 
     try:
-        # Step 1: Downgrade to remove the migration (tests downgrade)
-        if down_revision:
-            log.info(f"  Downgrading to {down_revision}...")
-            downgrade_db(alembic_config, down_revision)
+        # Phase 1: Downgrade through all migrations (newest to oldest)
+        log.info("Phase 1: Downgrading through all new migrations...")
+        for migration_name, revision, down_revision in reversed(migrations):
+            if down_revision:
+                log.info(f"  Downgrading {migration_name} to {down_revision}...")
+                downgrade_db(alembic_config, down_revision)
+            else:
+                log.info(f"  Skipping {migration_name} (no down_revision)")
 
-        # Step 2: Upgrade back to apply the migration (tests upgrade)
-        log.info(f"  Upgrading to {revision}...")
-        upgrade_db(alembic_config, revision)
+        # Phase 2: Upgrade back through all migrations (oldest to newest)
+        log.info("Phase 2: Upgrading back through all new migrations...")
+        for migration_name, revision, down_revision in migrations:
+            log.info(f"  Upgrading {migration_name} to {revision}...")
+            upgrade_db(alembic_config, revision)
 
-        # Migration is now back at the revision it was at when we started
-        log.info(f"  ✓ Migration {migration_name} passed upgrade/downgrade test")
+        log.info(f"✓ All {len(migrations)} migration(s) passed upgrade/downgrade test")
 
     except Exception as error:
-        log.error(f"Migration {migration_name} failed upgrade/downgrade test!")
+        log.error("Migration upgrade/downgrade sequence test failed!")
         log.error(str(error))
-        raise SystemExit(
-            f"Migration upgrade/downgrade test failed for {migration_name}"
-        )
+        raise SystemExit("Migration upgrade/downgrade test failed")
 
 
 def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
@@ -376,13 +385,15 @@ def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
 
         alembic_config = get_alembic_config(database_url)
 
-        # Test each new migration
+        # Parse all migrations first
+        migrations = []
         for file_path in migration_files:
             abs_path = Path(repo_root) / file_path
             revision, down_revision = _parse_migration_revisions(abs_path)
-            _test_migration_upgrade_downgrade(
-                alembic_config, abs_path.name, revision, down_revision
-            )
+            migrations.append((abs_path.name, revision, down_revision))
+
+        # Test all migrations in sequence
+        _test_migrations_upgrade_downgrade_sequence(alembic_config, migrations)
 
         print(
             f"All {len(migration_files)} new migration(s) passed upgrade/downgrade tests."
