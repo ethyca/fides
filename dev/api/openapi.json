@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.73.1b0.post0.dev6"
+    "version": "2.73.1b0.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15013,6 +15013,16 @@
                 "type": "null"
               }
             ]
+          },
+          "privacy_request_duplicate_detection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DuplicateDetectionApplicationConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -18998,6 +19008,60 @@
         ],
         "title": "DryRunDatasetResponse",
         "description": "Response model for dataset dry run"
+      },
+      "DuplicateDetectionApplicationConfig": {
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled",
+            "description": "Whether duplicate detection is enabled. Disabled by default.",
+            "default": false
+          },
+          "time_window_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3650.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Window Days",
+            "description": "Time window in days for duplicate detection. Default is 1 year.",
+            "default": 365
+          },
+          "match_identity_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Identity Fields",
+            "description": "Identity field names to match on for duplicate detection (e.g., 'email', 'phone_number'). Default is email only.",
+            "default": [
+              "email"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DuplicateDetectionApplicationConfig",
+        "description": "API model - configuration settings for duplicate privacy request detection."
       },
       "DynamicErasureEmailDocsSchema": {
         "properties": {
@@ -24850,6 +24914,17 @@
               }
             ],
             "title": "Finalized By"
+          },
+          "duplicate_request_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Request Group Id"
           }
         },
         "type": "object",
@@ -24906,7 +24981,8 @@
           "awaiting_email_send",
           "requires_manual_finalization",
           "canceled",
-          "error"
+          "error",
+          "duplicate"
         ],
         "title": "PrivacyRequestStatus",
         "description": "Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"
@@ -25278,6 +25354,17 @@
               }
             ],
             "title": "Finalized By"
+          },
+          "duplicate_request_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Request Group Id"
           },
           "results": {
             "additionalProperties": {
