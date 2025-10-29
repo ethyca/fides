@@ -24,7 +24,7 @@ from fides.config import CONFIG
 
 class PrivacyPreferences(Base):
     """
-    Model for the v3privacy_preferences table.
+    Model for the v3 privacy_preferences table.
     This is used for the v3 privacy preferences API.
 
     This table stores privacy preference records with a partitioning scheme
