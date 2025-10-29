@@ -8,7 +8,6 @@ import {
   AntSpace as Space,
   AntSpin as Spin,
   AntTag as Tag,
-  AntTooltip as Tooltip,
   AntTypography as Typography,
   CUSTOM_TAG_COLOR,
   useToast,
@@ -211,7 +210,16 @@ export const InProgressMonitorTaskItem = ({
             </Space>
             {task.status === "error" && (
               <Space>
-                <Paragraph type="secondary" size="sm" ellipsis={{ rows: 1, expandable: true, symbol: 'more', tooltip: true }}>
+                <Paragraph
+                  type="secondary"
+                  size="sm"
+                  ellipsis={{
+                    rows: 1,
+                    expandable: true,
+                    symbol: "more",
+                    tooltip: true,
+                  }}
+                >
                   {task.message || "Unknown error"}
                 </Paragraph>
                 {task.message && (
