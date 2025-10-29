@@ -4,6 +4,7 @@ from sqlalchemy import (  # type: ignore[attr-defined]
     BigInteger,
     Boolean,
     Column,
+    DateTime,
     Identity,
     Text,
     text,
@@ -54,11 +55,19 @@ class PrivacyPreferences(Base):
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
-        nullable=False,
+        nullable=True,
     )
 
     # Partition key - determines if record goes to _current or _historic partition
-    is_latest = Column(Boolean, nullable=False, server_default=text("false"))
+    is_latest = Column(
+        Boolean, nullable=False, server_default=text("false"), primary_key=True
+    )
+
+    # Override base class timestamp columns to match migration
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+    updated_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
     def hash_value(
