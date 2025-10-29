@@ -28,7 +28,7 @@ export const MonitorResultDescription = ({
     return Object.entries(updates)
       .filter(
         ([key, count]) =>
-          count != null &&
+          count !== null &&
           count > 0 &&
           !MONITOR_UPDATES_TO_IGNORE.includes(key as MonitorUpdateKey),
       )
