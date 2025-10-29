@@ -176,7 +176,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         }
         description={
           <ClassificationSelect
-            mode="tags"
+            mode="multiple"
             value={preferred_data_categories ?? []}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(

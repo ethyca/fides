@@ -496,7 +496,7 @@ const ActionCenterFields: NextPage = () => {
               <Form.Item label="Data categories">
                 <DataCategorySelect
                   variant="outlined"
-                  mode="tags"
+                  mode="multiple"
                   maxTagCount="responsive"
                   value={[
                     ...(resource.classifications?.map(({ label }) => label) ??
