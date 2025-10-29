@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List
 
 import pytest
@@ -6,16 +5,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.schemas.redis_cache import Identity
-from fides.api.service.privacy_request.duplication_detection import (
-    DuplicateDetectionService,
-)
-from fides.api.task.conditional_dependencies.schemas import ConditionGroup
-from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from tests.fixtures.application_fixtures import load_dataset
 from tests.ops.graph.conftest import create_dataset_config_fixture
 
@@ -177,78 +167,3 @@ def bigquery_missing_customer_config(
 def bigquery_missing_table_resources(bigquery_resources):
     """Reuse existing bigquery_resources since test data setup is the same."""
     return bigquery_resources
-
-
-@pytest.fixture
-def privacy_request_with_multiple_identities(
-    db: Session,
-    privacy_request_with_email_identity: PrivacyRequest,
-) -> Generator[PrivacyRequest, None, None]:
-    """Privacy request with email and phone_number identities."""
-    privacy_request_with_email_identity.persist_identity(
-        db=db,
-        identity=Identity(email="customer-1@example.com", phone_number="+15555555555"),
-    )
-    return privacy_request_with_email_identity
-
-
-@pytest.fixture
-def old_privacy_request_with_email(
-    db: Session,
-    policy: Policy,
-) -> Generator[PrivacyRequest, None, None]:
-    """Privacy request created 40 days ago with email identity."""
-    old_date = datetime.now(timezone.utc) - timedelta(days=40)
-    privacy_request = PrivacyRequest.create(
-        db=db,
-        data={
-            "external_id": "test_external_id_old",
-            "started_processing_at": old_date,
-            "requested_at": old_date,
-            "status": PrivacyRequestStatus.complete,
-            "policy_id": policy.id,
-        },
-    )
-    # Manually update created_at since it's auto-set
-    privacy_request.update(db, data={"created_at": old_date})
-    privacy_request.persist_identity(
-        db=db,
-        identity=Identity(email="customer-1@example.com"),
-    )
-    return privacy_request
-
-
-# Helper function to get a detection config with default values
-def get_detection_config(
-    time_window_days: int = 30, match_identity_fields: list[str] = ["email"]
-) -> DuplicateDetectionSettings:
-    return DuplicateDetectionSettings(
-        enabled=True,
-        time_window_days=time_window_days,
-        match_identity_fields=match_identity_fields,
-    )
-
-
-# Helper function to create duplicate requests
-def create_duplicate_requests(
-    db: Session, policy: Policy, count: int, status: PrivacyRequestStatus
-) -> list[PrivacyRequest]:
-    duplicate_requests = []
-    for i in range(count):
-        duplicate_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"test_external_id_duplicate_{i}",
-                "started_processing_at": datetime.now(timezone.utc),
-                "requested_at": datetime.now(timezone.utc),
-                "status": status,
-                "policy_id": policy.id,
-            },
-        )
-        duplicate_request.persist_identity(
-            db=db,
-            identity=Identity(email="customer-1@example.com"),
-        )
-        duplicate_request.save(db=db)
-        duplicate_requests.append(duplicate_request)
-    return duplicate_requests

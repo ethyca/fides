@@ -162,7 +162,7 @@ class DuplicateDetectionService:
         return query.all()
 
     def generate_dedup_key(
-        self, request: PrivacyRequest, config: DuplicateDetectionSettings
+        self, request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
     ) -> str:
         """
         Generate a dedup key for a request based on the duplicate detection settings.
