@@ -381,9 +381,9 @@ class MonitorConfig(Base):
                 # Calculate which month of the quarter (0-2) this is
                 month_of_quarter = (execution_start_date.month - 1) % 3
                 # Set to run in the same month of each quarter (1, 4, 7, 10 for first month)
-                cron_trigger_dict["month"] = (
-                    f"{1 + month_of_quarter},{4 + month_of_quarter},{7 + month_of_quarter},{10 + month_of_quarter}"
-                )
+                cron_trigger_dict[
+                    "month"
+                ] = f"{1 + month_of_quarter},{4 + month_of_quarter},{7 + month_of_quarter},{10 + month_of_quarter}"
             if execution_frequency == MonitorFrequency.YEARLY:
                 cron_trigger_dict["day"] = execution_start_date.day
                 cron_trigger_dict["month"] = execution_start_date.month
@@ -627,6 +627,14 @@ class StagedResource(Base):
     meta = Column(
         MutableDict.as_mutable(JSONB),
         nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
+    # Error tracking for resources
+    errors = Column(
+        JSONB,
+        nullable=True,  # nullable for backwards compatibility
         server_default="{}",
         default=dict,
     )
