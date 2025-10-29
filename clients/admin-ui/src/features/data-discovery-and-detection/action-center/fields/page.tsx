@@ -109,7 +109,11 @@ const ActionCenterFields: NextPage = () => {
     },
   };
 
-  const { data: fieldsDataResponse, isFetching } = useGetMonitorFieldsQuery({
+  const {
+    data: fieldsDataResponse,
+    isFetching,
+    refetch,
+  } = useGetMonitorFieldsQuery({
     ...baseMonitorFilters,
     query: {
       ...baseMonitorFilters.query,
@@ -337,6 +341,11 @@ const ActionCenterFields: NextPage = () => {
                     Actions
                   </Button>
                 </Dropdown>
+                <Button
+                  icon={<Icons.Renew />}
+                  onClick={() => refetch()}
+                  aria-label="Refresh"
+                />
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
