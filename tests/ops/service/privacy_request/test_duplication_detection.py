@@ -402,7 +402,7 @@ class TestCanonicalRequestFunctionality:
             ),
         ],
     )
-    def test_is_duplicate_hierarchy_decistions_returns_false(
+    def test_is_duplicate_hierarchy_decisions_returns_false(
         self,
         db,
         duplicate_detection_service,
