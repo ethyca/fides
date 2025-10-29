@@ -6,6 +6,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request.duplicate_group import DuplicateGroup, generate_rule_version, generate_deterministic_uuid
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -158,32 +159,16 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
-    def get_duplicate_request_group_id(self, duplicates: list[PrivacyRequest]) -> str:
+    def generate_dedup_key(self, request: PrivacyRequest, config: DuplicateDetectionSettings) -> str:
         """
-        Get the duplicate request group id for a list of requests.
-        Ideally there will only be one group id, but if there are multiple, we return the most recent group id.
+        Generate a dedup key for a request based on the duplicate detection settings.
         """
-        duplicate_group_ids: set[str] = {
-            duplicate.duplicate_request_group_id
-            for duplicate in duplicates
-            if duplicate.duplicate_request_group_id is not None
+        current_identities: dict[str, str] = {
+            pi.field_name: pi.hashed_value
+            for pi in current_request.provided_identities  # type: ignore [attr-defined]
+            if pi.field_name in config.match_identity_fields
         }
-        if len(duplicate_group_ids) == 0:
-            return str(uuid4())
-        if len(duplicate_group_ids) == 1:
-            return duplicate_group_ids.pop()
-        logger.warning(
-            f"Multiple duplicate request group ids found for requests: {duplicates}. Returning the most recent group id."
-        )
-        # return the most recent group id.
-        ordered_group_ids = [
-            (duplicate.duplicate_request_group_id, duplicate.created_at)
-            for duplicate in duplicates
-            if duplicate.duplicate_request_group_id is not None
-            and duplicate.created_at is not None
-        ]
-        ordered_group_ids.sort(key=lambda x: x[1], reverse=True)
-        return ordered_group_ids[0][0]
+        return "|".join([f"{value}" for _, value in current_identities.items()])
 
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
@@ -281,7 +266,9 @@ class DuplicateDetectionService:
             True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
-        group_id = self.get_duplicate_request_group_id(duplicates)
+        rule_version = generate_rule_version(config)
+        dedup_key = generate_dedup_key(request, config)
+
         request.update(db=self.db, data={"duplicate_request_group_id": group_id})
 
         # if this is the only request in the group, it is not a duplicate
