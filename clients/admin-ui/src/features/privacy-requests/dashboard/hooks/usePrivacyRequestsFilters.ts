@@ -8,7 +8,7 @@ import {
 import { useEffect, useMemo } from "react";
 
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
 export interface FilterQueryParams {
   fuzzy_search_str?: string;
@@ -17,7 +17,7 @@ export interface FilterQueryParams {
   status?: PrivacyRequestStatus[];
   action_type?: ActionType[];
   sort_field?: string;
-  sort_direction?: string;
+  sort_direction?: ColumnSort;
 }
 
 interface UsePrivacyRequestsFiltersProps {
@@ -66,7 +66,9 @@ const usePrivacyRequestsFilters = ({
   const [sortState, setSortState] = useQueryStates(
     {
       sort_field: parseAsString.withDefault(""),
-      sort_direction: parseAsString.withDefault(""),
+      sort_direction: parseAsStringEnum(Object.values(ColumnSort)).withDefault(
+        ColumnSort.DESC,
+      ),
     },
     {
       history: "push",
