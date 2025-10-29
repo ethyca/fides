@@ -342,10 +342,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     }),
     searchPrivacyRequests: build.query<
       Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
-      Partial<PrivacyRequestFilter>
+      Partial<PrivacyRequestFilter> & { page: number; size: number }
     >({
-      query: (filters) => ({
-        url: `privacy-request/search`,
+      query: ({ page, size, ...filters }) => ({
+        url: `privacy-request?${mapFiltersToSearchParams({ page, size }).toString()}`,
         method: "POST",
         body: filters,
       }),
@@ -542,6 +542,7 @@ export const {
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
+  useSearchPrivacyRequestsQuery,
   usePostPrivacyRequestMutation,
   useGetNotificationQuery,
   useResumePrivacyRequestFromRequiresInputMutation,
