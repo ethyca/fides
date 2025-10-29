@@ -1,11 +1,15 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from uuid import uuid4
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from fides.api.models.privacy_request.duplicate_group import (
+    DuplicateGroup,
+    generate_rule_version,
+)
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -157,32 +161,22 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
-    def get_duplicate_request_group_id(self, duplicates: list[PrivacyRequest]) -> str:
+    def generate_dedup_key(
+        self, request: PrivacyRequest, config: DuplicateDetectionSettings
+    ) -> str:
         """
-        Get the duplicate request group id for a list of requests.
-        Ideally there will only be one group id, but if there are multiple, we return the most recent group id.
+        Generate a dedup key for a request based on the duplicate detection settings.
         """
-        duplicate_group_ids: set[str] = {
-            duplicate.duplicate_request_group_id
-            for duplicate in duplicates
-            if duplicate.duplicate_request_group_id is not None
+        current_identities: dict[str, str] = {
+            pi.field_name: pi.hashed_value
+            for pi in request.provided_identities  # type: ignore [attr-defined]
+            if pi.field_name in config.match_identity_fields
         }
-        if len(duplicate_group_ids) == 0:
-            return str(uuid4())
-        if len(duplicate_group_ids) == 1:
-            return duplicate_group_ids.pop()
-        logger.warning(
-            f"Multiple duplicate request group ids found for requests: {duplicates}. Returning the most recent group id."
-        )
-        # return the most recent group id.
-        ordered_group_ids = [
-            (duplicate.duplicate_request_group_id, duplicate.created_at)
-            for duplicate in duplicates
-            if duplicate.duplicate_request_group_id is not None
-            and duplicate.created_at is not None
-        ]
-        ordered_group_ids.sort(key=lambda x: x[1], reverse=True)
-        return ordered_group_ids[0][0]
+        if len(current_identities) != len(config.match_identity_fields):
+            raise ValueError(
+                "This request does not contain the required identity fields for duplicate detection."
+            )
+        return "|".join([f"{value}" for _, value in current_identities.items()])
 
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
@@ -197,7 +191,7 @@ class DuplicateDetectionService:
             duplicates: The list of duplicate requests
 
         Returns:
-            True if the request is the canonical request, False otherwise
+            True if the request is a duplicate request, False otherwise
         """
         verified_in_group = [
             duplicate for duplicate in duplicates if duplicate.identity_verified_at
@@ -247,14 +241,15 @@ class DuplicateDetectionService:
         )
         return True
 
+    # pylint: disable=too-many-return-statements
     def is_duplicate_request(
         self, request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
     ) -> bool:
         """
-        Determine if a request is a duplicate request and assign a duplicate request group id.
+        Determine if a request is a duplicate request and assigns a duplicate request group id.
 
         The hierarchy is:
-        1. Actioned requests: if this request duplicates and actioned request, it is a duplicate.
+        1. Actioned requests: if this request duplicates an actioned request, it is a duplicate.
         2. Verified identity requests:
           a. if this request has a verified identity:
             - If none of the duplicates have a verified identity, it is not a duplicate.
@@ -263,6 +258,7 @@ class DuplicateDetectionService:
             - If no duplicates have a verified identity, and this was the first created request, it is not a duplicate.
         3. First created request: if this is the first created request in the group, it is not a duplicate.
         4. If no canonical requests are found (meaning all requests are marked as duplicates), this request is not a duplicate.
+            - Could occur if configuration changes and previous requests were already marked as duplicates.
 
         Args:
             request: The privacy request to check
@@ -271,8 +267,27 @@ class DuplicateDetectionService:
             True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
-        group_id = self.get_duplicate_request_group_id(duplicates)
-        request.update(db=self.db, data={"duplicate_request_group_id": group_id})
+        rule_version = generate_rule_version(config)
+        try:
+            dedup_key = self.generate_dedup_key(request, config)
+        except ValueError as e:
+            logger.debug(f"Request {request.id} is not a duplicate: {e}")
+            return False
+
+        _, duplicate_group = DuplicateGroup.get_or_create(
+            db=self.db, data={"rule_version": rule_version, "dedup_key": dedup_key}
+        )
+        if duplicate_group is None:
+            logger.error(
+                f"Failed to create duplicate group for request {request.id} with dedup key {dedup_key}"
+            )
+            return False
+        logger.info(
+            f"Duplicate group {duplicate_group.id} created for request {request.id} with dedup key {dedup_key}"
+        )
+        request.update(
+            db=self.db, data={"duplicate_request_group_id": duplicate_group.id}
+        )
 
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
@@ -281,6 +296,14 @@ class DuplicateDetectionService:
         if request.status == PrivacyRequestStatus.duplicate:
             logger.warning(
                 f"Request {request.id} is a duplicate request that was requeued. This should not happen."
+            )
+            request.add_error_execution_log(
+                db=self.db,
+                connection_key=None,
+                dataset_name="Duplicate Request Detection",
+                collection_name=None,
+                message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
+                action_type=ActionType.access,
             )
             return True
 

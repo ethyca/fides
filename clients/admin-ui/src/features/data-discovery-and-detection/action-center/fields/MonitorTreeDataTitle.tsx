@@ -3,14 +3,12 @@ import {
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
+  AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
-// TODO: fix this export to be better encapsulated in fidesui
-import palette from "fidesui/src/palette/palette.module.scss";
-
-import { TreeResourceChangeIndicator } from "~/types/api";
 
 import {
+  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
@@ -80,26 +78,19 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
-  const statusIconColor = (() => {
-    switch (node.status) {
-      case TreeResourceChangeIndicator.ADDITION:
-        return palette.FIDESUI_SUCCESS;
-      case TreeResourceChangeIndicator.REMOVAL:
-        return palette.FIDESUI_ERROR;
-      case TreeResourceChangeIndicator.CHANGE:
-        return palette.FIDESUI_WARNING;
-      default:
-        return null;
-    }
-  })();
+  const statusInfo = node.status
+    ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[node.status]
+    : null;
 
   return (
     <Flex gap={4} align="center" className="inline-flex">
-      {statusIconColor && (
-        <Icons.CircleSolid
-          className="size-2"
-          style={{ color: statusIconColor }}
-        />
+      {statusInfo && (
+        <Tooltip title={statusInfo.tooltip}>
+          <Icons.CircleSolid
+            className="size-2"
+            style={{ color: statusInfo.color }}
+          />
+        </Tooltip>
       )}
       <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
     </Flex>
