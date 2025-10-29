@@ -1,4 +1,4 @@
-import { AntResult as Result, AntText as Text } from "fidesui";
+import { AntResult as Result } from "fidesui";
 import { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";
@@ -6,7 +6,8 @@ import ActionCenterFields from "~/features/data-discovery-and-detection/action-c
 
 const MonitorFeatureError = () => (
   <>
-    Attempting to access monitor results without the required feature flag enabled
+    Attempting to access monitor results without the required feature flag
+    enabled
   </>
 );
 
