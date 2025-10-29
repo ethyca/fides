@@ -94,12 +94,12 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
         </Flex>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-2 pr-2 2xl:flex-row 2xl:gap-4">
-        <ReceivedOn createdAt={item.created_at} />
         <DaysLeft
           daysLeft={item.days_left}
           status={item.status}
           timeframe={item.policy.execution_timeframe}
         />
+        <ReceivedOn createdAt={item.created_at} />
       </div>
       <Flex className="min-w-[125px]" align="center" justify="end" gap="small">
         <ViewButton key="view" id={item.id} />
