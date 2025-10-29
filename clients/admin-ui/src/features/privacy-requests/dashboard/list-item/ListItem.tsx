@@ -19,7 +19,6 @@ import {
 import {
   DaysLeft,
   Header,
-  LabeledTag,
   LabeledText,
   PolicyActionTypes,
   ReceivedOn,
@@ -68,19 +67,19 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           {hasExtraDetails && (
             <Flex wrap gap="middle">
               {item.location && (
-                <LabeledTag key="location" label="Location">
+                <LabeledText key="location" label="Location">
                   {locationIsoEntry
                     ? formatIsoLocation({
                         isoEntry: locationIsoEntry,
                         showFlag: true,
                       })
                     : item.location}
-                </LabeledTag>
+                </LabeledText>
               )}
               {otherIdentities.map((identity) => (
-                <LabeledTag key={identity.key} label={identity.label}>
+                <LabeledText key={identity.key} label={identity.label}>
                   {identity.value}
-                </LabeledTag>
+                </LabeledText>
               ))}
               {customFields.map((field) => (
                 <LabeledText key={field.key} label={field.label}>
