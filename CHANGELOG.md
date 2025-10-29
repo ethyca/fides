@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added automatic refresh of monitor tree ancestor statuses after field actions [#6853](https://github.com/ethyca/fides/pull/6853)
 - Added database model for identity definitions [#6852](https://github.com/ethyca/fides/pull/6852) https://github.com/ethyca/fides/labels/db-migration
+- Added config proxy settings for Duplicate DSR detection[#6811](https://github.com/ethyca/fides/pull/6811) https://github.com/ethyca/fides/labels/db-migration
 - Added privacy preferences database model [#6875](https://github.com/ethyca/fides/pull/6875)
 
 ### Changed
