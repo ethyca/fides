@@ -1,6 +1,12 @@
 import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
+// TODO: fix this export to be better encapsulated in fidesui
+import palette from "fidesui/src/palette/palette.module.scss";
 
-import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResourceTypeValue,
+  TreeResourceChangeIndicator,
+} from "~/types/api";
 
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";
@@ -92,4 +98,26 @@ export const FIELDS_FILTER_SECTION_KEYS = {
   STATUS: "status-section",
   DATA_CATEGORY: "data-category-section",
   CONFIDENCE: "confidence-section",
+} as const;
+
+// Map tree resource change indicator to status info
+export const MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO: Record<
+  TreeResourceChangeIndicator,
+  {
+    color: string;
+    tooltip: string;
+  }
+> = {
+  [TreeResourceChangeIndicator.ADDITION]: {
+    color: palette.FIDESUI_SUCCESS,
+    tooltip: "This resource was added in the latest scan",
+  },
+  [TreeResourceChangeIndicator.REMOVAL]: {
+    color: palette.FIDESUI_ERROR,
+    tooltip: "This resource was removed in the latest scan",
+  },
+  [TreeResourceChangeIndicator.CHANGE]: {
+    color: palette.FIDESUI_WARNING,
+    tooltip: "This resource was modified in the latest scan",
+  },
 } as const;
