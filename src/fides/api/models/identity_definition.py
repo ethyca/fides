@@ -47,7 +47,7 @@ class IdentityDefinition(Base):
     )
 
     # Primary key
-    identity_key = Column(String(255), primary_key=True, index=True)
+    identity_key = Column(String(255), primary_key=True)
 
     # Schema definition
     name = Column(String(255), nullable=False)

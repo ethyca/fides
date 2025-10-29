@@ -39,16 +39,7 @@ def upgrade():
         sa.Column("created_by", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("identity_key"),
     )
-    op.create_index(
-        op.f("ix_identity_definition_identity_key"),
-        "identity_definition",
-        ["identity_key"],
-        unique=False,
-    )
 
 
 def downgrade():
-    op.drop_index(
-        op.f("ix_identity_definition_identity_key"), table_name="identity_definition"
-    )
     op.drop_table("identity_definition")
