@@ -1,4 +1,5 @@
-export { default as ConsentMechanismToggle } from "./ConsentMechanismToggle";
+export { default as CascadeConsentToggle } from "./CascadeConsentToggle";
+export { default as ConsentMechanismRadioGroup } from "./ConsentMechanismRadioGroup";
 export { default as DbStatePreview } from "./DbStatePreview";
 export { default as DisableChildrenTree } from "./DisableChildrenTree";
 export { default as GetApiPreview } from "./GetApiPreview";

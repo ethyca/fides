@@ -314,7 +314,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_values: Dict[str, Row],
         identity_data: Dict[str, Any],
         input_data: Optional[Dict[str, List[Any]]] = None,
-        param_values: Dict[str, Any] = {},
+        param_values: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Process param_values for update generation (erasure requests).
@@ -326,6 +326,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             identity_data: Identity data for parameter resolution
             input_data: Optional upstream data from other collections
         """
+        if param_values is None:
+            param_values = {}
+
         for param_value in request.param_values or []:
             if param_value.references:
                 # we resolve the param reference here for consistency,

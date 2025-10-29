@@ -66,3 +66,8 @@ notification_service_type = "mailgun"
 tcf_enabled = false
 ac_enabled = false
 override_vendor_purposes = false
+
+[privacy_request_duplicate_detection]
+enabled = false
+time_window_days = 365
+match_fields = ["email"]

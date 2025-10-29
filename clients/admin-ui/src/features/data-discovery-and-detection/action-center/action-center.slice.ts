@@ -91,10 +91,11 @@ const actionCenterApi = baseApi.injectEndpoints({
       DatastoreMonitorResourcesDynamicFilters,
       {
         monitor_config_id: string;
+        staged_resource_urn?: string[];
       }
     >({
-      query: ({ monitor_config_id }) => ({
-        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
     }),
 
@@ -275,7 +276,11 @@ const actionCenterApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     restoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
@@ -523,7 +528,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Monitor Field Results"],
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
   }),
 });
