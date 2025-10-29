@@ -165,7 +165,7 @@ class DuplicateDetectionService:
         """
         current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
-            for pi in current_request.provided_identities  # type: ignore [attr-defined]
+            for pi in request.provided_identities  # type: ignore [attr-defined]
             if pi.field_name in config.match_identity_fields
         }
         return "|".join([f"{value}" for _, value in current_identities.items()])
@@ -267,9 +267,10 @@ class DuplicateDetectionService:
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
         rule_version = generate_rule_version(config)
-        dedup_key = generate_dedup_key(request, config)
+        dedup_key = self.generate_dedup_key(request, config)
 
-        request.update(db=self.db, data={"duplicate_request_group_id": group_id})
+        _, duplicate_group = DuplicateGroup.get_or_create(db=self.db, data={"rule_version": rule_version, "dedup_key": dedup_key})
+        request.update(db=self.db, data={"duplicate_request_group_id": duplicate_group.id})
 
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
