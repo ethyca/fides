@@ -3,6 +3,7 @@ import {
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
+  AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
@@ -80,14 +81,23 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
-  const statusIconColor = (() => {
+  const statusInfo = (() => {
     switch (node.status) {
       case TreeResourceChangeIndicator.ADDITION:
-        return palette.FIDESUI_SUCCESS;
+        return {
+          color: palette.FIDESUI_SUCCESS,
+          tooltip: "This resource was added in the latest scan",
+        };
       case TreeResourceChangeIndicator.REMOVAL:
-        return palette.FIDESUI_ERROR;
+        return {
+          color: palette.FIDESUI_ERROR,
+          tooltip: "This resource was removed in the latest scan",
+        };
       case TreeResourceChangeIndicator.CHANGE:
-        return palette.FIDESUI_WARNING;
+        return {
+          color: palette.FIDESUI_WARNING,
+          tooltip: "This resource was modified in the latest scan",
+        };
       default:
         return null;
     }
@@ -95,11 +105,13 @@ export const MonitorTreeDataTitle = ({
 
   return (
     <Flex gap={4} align="center" className="inline-flex">
-      {statusIconColor && (
-        <Icons.CircleSolid
-          className="size-2"
-          style={{ color: statusIconColor }}
-        />
+      {statusInfo && (
+        <Tooltip title={statusInfo.tooltip}>
+          <Icons.CircleSolid
+            className="size-2"
+            style={{ color: statusInfo.color }}
+          />
+        </Tooltip>
       )}
       <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
     </Flex>

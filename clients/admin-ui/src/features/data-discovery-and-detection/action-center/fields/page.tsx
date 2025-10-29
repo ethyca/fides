@@ -333,11 +333,13 @@ const ActionCenterFields: NextPage = () => {
                     Actions
                   </Button>
                 </Dropdown>
-                <Button
-                  icon={<Icons.Renew />}
-                  onClick={() => refetch()}
-                  aria-label="Refresh"
-                />
+                <Tooltip title="Refresh">
+                  <Button
+                    icon={<Icons.Renew />}
+                    onClick={() => refetch()}
+                    aria-label="Refresh"
+                  />
+                </Tooltip>
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
