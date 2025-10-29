@@ -60,7 +60,6 @@ class DuplicateGroup(Base):
         back_populates="duplicate_group",
         lazy="dynamic",
         primaryjoin="and_(DuplicateGroup.id == PrivacyRequest.duplicate_request_group_id)",
-        uselist=True,
     )
 
     @classmethod
