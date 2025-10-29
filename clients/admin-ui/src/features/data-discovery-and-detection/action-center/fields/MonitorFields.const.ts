@@ -10,17 +10,32 @@ export const TREE_NODE_SKELETON_KEY_PREFIX = "skeleton";
 export const FIELD_PAGE_SIZE = 25;
 
 export const RESOURCE_STATUS = [
-  "Approved",
-  "Classifying",
-  "Confirmed",
-  "Ignored",
-  "In Review",
-  "Removed",
   "Unlabeled",
+  "Classifying",
+  "In Review",
+  "Approved",
   "Confirming...",
+  "Confirmed",
+  "Removed",
+  "Ignored",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
+
+// Statuses to exclude from filters by default
+export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
+  "Confirmed",
+  "Ignored",
+  "Confirming...",
+];
+
+/**
+ * Filter out excluded statuses from a list of statuses.
+ */
+export const getFilterableStatuses = (
+  statuses: ResourceStatusLabel[],
+): ResourceStatusLabel[] =>
+  statuses.filter((status) => !EXCLUDED_FILTER_STATUSES.includes(status));
 
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
@@ -71,4 +86,10 @@ export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
   [StagedResourceTypeValue.FIELD]: Icons.Column,
   [StagedResourceTypeValue.SCHEMA]: Icons.Db2Database,
   [StagedResourceTypeValue.TABLE]: Icons.Table,
+} as const;
+
+export const FIELDS_FILTER_SECTION_KEYS = {
+  STATUS: "status-section",
+  DATA_CATEGORY: "data-category-section",
+  CONFIDENCE: "confidence-section",
 } as const;

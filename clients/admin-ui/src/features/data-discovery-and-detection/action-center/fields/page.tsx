@@ -282,24 +282,16 @@ const ActionCenterFields: NextPage = () => {
                 placeholder="Search"
               />
               <Flex gap="small">
-                <Dropdown
-                  trigger={["click"]}
-                  /* I don't like disabling linting but this pattern is inherit to ant-d */
-                  /* eslint-disable-next-line react/no-unstable-nested-components */
-                  popupRender={() => (
-                    <MonitorFieldFilters
-                      resourceStatus={resourceStatus}
-                      confidenceScore={confidenceScore}
-                      dataCategory={dataCategory}
-                      {...restMonitorFieldsFilters}
-                      monitorId={monitorId}
-                    />
+                <MonitorFieldFilters
+                  resourceStatus={resourceStatus}
+                  confidenceScore={confidenceScore}
+                  dataCategory={dataCategory}
+                  {...restMonitorFieldsFilters}
+                  monitorId={monitorId}
+                  stagedResourceUrn={selectedNodeKeys.map((key) =>
+                    key.toString(),
                   )}
-                >
-                  <Button icon={<Icons.ChevronDown />} iconPosition="end">
-                    Filter
-                  </Button>
-                </Dropdown>
+                />
                 <Dropdown
                   onOpenChange={onActionDropdownOpenChange}
                   menu={{
