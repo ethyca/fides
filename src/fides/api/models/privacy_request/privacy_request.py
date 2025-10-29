@@ -234,9 +234,7 @@ class PrivacyRequest(
     duplicate_group = relationship(
         DuplicateGroup,
         back_populates="privacy_requests",
-        lazy="dynamic",
-        primaryjoin="and_(DuplicateGroup.id == PrivacyRequest.duplicate_request_group_id)",
-        uselist=True,
+        uselist=False,
     )
 
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
