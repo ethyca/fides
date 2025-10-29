@@ -2,10 +2,21 @@ import type { ModalFuncProps } from "antd/es/modal";
 import { Icons, SparkleIcon } from "fidesui";
 import { ReactNode } from "react";
 
+import { DiffStatus } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import { ResourceStatusLabel } from "./MonitorFields.const";
 import { FieldActionTypeValue } from "./types";
+
+const {
+  APPROVE,
+  CLASSIFY,
+  PROMOTE,
+  MUTE,
+  UN_MUTE,
+  PROMOTE_REMOVALS,
+  ASSIGN_CATEGORIES,
+} = FieldActionType;
 
 export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
   approve: "Approve",
@@ -41,43 +52,48 @@ export const FIELD_ACTION_COMPLETED: Record<FieldActionTypeValue, string> = {
   "un-mute": "Restored",
 };
 
-export const DRAWER_ACTIONS = [
-  FieldActionType.APPROVE,
-  FieldActionType.PROMOTE,
-] as const;
+export const DRAWER_ACTIONS = [APPROVE, PROMOTE] as const;
 export const DROPDOWN_ACTIONS = [
-  FieldActionType.CLASSIFY,
-  FieldActionType.APPROVE,
-  FieldActionType.PROMOTE,
-  FieldActionType.MUTE,
-  FieldActionType.UN_MUTE,
-] as const;
-export const LIST_ITEM_ACTIONS = [
-  FieldActionType.CLASSIFY,
-  FieldActionType.PROMOTE,
+  CLASSIFY,
+  APPROVE,
+  PROMOTE,
+  MUTE,
+  UN_MUTE,
 ] as const;
 
+export const LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
+
 export const AVAILABLE_ACTIONS = {
-  "In Review": [
-    FieldActionType.CLASSIFY,
-    FieldActionType.MUTE,
-    FieldActionType.APPROVE,
-    FieldActionType.PROMOTE,
-  ],
-  Approved: [FieldActionType.MUTE, FieldActionType.PROMOTE],
+  "In Review": [CLASSIFY, MUTE, APPROVE, PROMOTE],
+  Approved: [MUTE, PROMOTE],
   Classifying: [],
   Confirmed: [],
-  Ignored: [FieldActionType.UN_MUTE],
+  Ignored: [UN_MUTE],
   Removed: [],
-  Unlabeled: [FieldActionType.ASSIGN_CATEGORIES, FieldActionType.CLASSIFY],
+  Unlabeled: [ASSIGN_CATEGORIES, CLASSIFY],
   "Confirming...": [],
-  Error: [
-    FieldActionType.CLASSIFY,
-    FieldActionType.PROMOTE,
-    FieldActionType.PROMOTE_REMOVALS,
-  ],
+  Error: [CLASSIFY, PROMOTE, PROMOTE_REMOVALS],
 } as const satisfies Readonly<
   Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
+>;
+
+export const DIFF_STATUS_TO_AVAILABLE_ACTIONS = {
+  addition: AVAILABLE_ACTIONS.Unlabeled,
+  approved: AVAILABLE_ACTIONS.Approved,
+  classification_addition: AVAILABLE_ACTIONS["In Review"],
+  classification_error: AVAILABLE_ACTIONS.Error,
+  classification_queued: AVAILABLE_ACTIONS.Classifying,
+  classification_update: AVAILABLE_ACTIONS["In Review"],
+  classifying: AVAILABLE_ACTIONS.Classifying,
+  monitored: AVAILABLE_ACTIONS.Confirmed,
+  muted: AVAILABLE_ACTIONS.Ignored,
+  promoting: AVAILABLE_ACTIONS["Confirming..."],
+  promotion_error: AVAILABLE_ACTIONS.Error,
+  removal: AVAILABLE_ACTIONS.Removed,
+  removing: AVAILABLE_ACTIONS["In Review"],
+  removal_promotion_error: AVAILABLE_ACTIONS.Error,
+} as const satisfies Readonly<
+  Record<DiffStatus, Readonly<Array<FieldActionType>>>
 >;
 
 export const FIELD_ACTION_ICON = {

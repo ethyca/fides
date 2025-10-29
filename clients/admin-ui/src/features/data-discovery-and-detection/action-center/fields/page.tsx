@@ -31,7 +31,7 @@ import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
 
 import {
-  AVAILABLE_ACTIONS,
+  DIFF_STATUS_TO_AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
   FIELD_ACTION_ICON,
@@ -45,7 +45,6 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
-  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
@@ -176,7 +175,7 @@ const ActionCenterFields: NextPage = () => {
     ? allowedActionsResult?.allowed_actions
     : getAvailableActions(
         selectedListItems.flatMap((field) =>
-          field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
+          field.diff_status ? [field.diff_status] : [],
         ),
       );
   const responseCount = fieldsDataResponse?.total ?? 0;
@@ -379,8 +378,8 @@ const ActionCenterFields: NextPage = () => {
                             disabled={
                               props?.diff_status
                                 ? ![
-                                    ...AVAILABLE_ACTIONS[
-                                      DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                                    ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[
+                                      props.diff_status
                                     ],
                                   ].includes(action)
                                 : true
@@ -423,9 +422,7 @@ const ActionCenterFields: NextPage = () => {
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
             ? ![
-                ...AVAILABLE_ACTIONS[
-                  DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                ],
+                ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[resource.diff_status],
               ].includes(action)
             : false,
         }))}

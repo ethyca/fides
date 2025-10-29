@@ -14,8 +14,7 @@ import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import { DetailsDrawer } from "./DetailsDrawer";
 import { DetailsDrawerProps } from "./DetailsDrawer/types";
-import { AVAILABLE_ACTIONS } from "./FieldActions.const";
-import { DIFF_TO_RESOURCE_STATUS } from "./MonitorFields.const";
+import { DIFF_STATUS_TO_AVAILABLE_ACTIONS } from "./FieldActions.const";
 import { MonitorResource } from "./types";
 import { useFieldActions } from "./useFieldActions";
 
@@ -78,9 +77,7 @@ export const ResourceDetailsDrawer = ({
               disabled={
                 resource?.diff_status
                   ? ![
-                      ...AVAILABLE_ACTIONS[
-                        DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                      ],
+                      ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[resource.diff_status],
                     ].includes(FieldActionType.ASSIGN_CATEGORIES)
                   : true
               }
