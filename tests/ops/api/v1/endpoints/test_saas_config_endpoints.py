@@ -15,6 +15,7 @@ from fides.api.models.connectionconfig import (
 from fides.common.api.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
+    CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -22,12 +23,13 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
+    CONNECTOR_TEMPLATE_CONFIG,
+    CONNECTOR_TEMPLATE_DATASET,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
@@ -743,3 +745,237 @@ class TestRegisterConnectorTemplate:
         )
         assert response.status_code == status_code
         assert response.json() == details
+
+
+class TestGetConnectorTemplateConfig:
+    @pytest.fixture
+    def get_connector_template_config_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATE_CONFIG
+
+    @pytest.fixture
+    def complete_connector_template(
+        self,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ):
+        return create_zip_file(
+            {
+                "config.yml": planet_express_config,
+                "dataset.yml": planet_express_dataset,
+                "icon.svg": planet_express_icon,
+            }
+        )
+
+    def test_get_connector_template_config_not_authenticated(
+        self, get_connector_template_config_url: str, api_client
+    ) -> None:
+        response = api_client.get(
+            get_connector_template_config_url.format(key="stripe"), headers={}
+        )
+        assert response.status_code == 401
+
+    def test_get_connector_template_config_wrong_scope(
+        self,
+        get_connector_template_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CLIENT_READ])
+        response = api_client.get(
+            get_connector_template_config_url.format(key="stripe"),
+            headers=auth_header,
+        )
+        assert response.status_code == 403
+
+    def test_get_connector_template_config_not_found(
+        self,
+        get_connector_template_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_config_url.format(key="nonexistent_connector"),
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert (
+            "No connector template found with key 'nonexistent_connector'"
+            in response.json()["detail"]
+        )
+
+    def test_get_connector_template_config_file_based_success(
+        self,
+        get_connector_template_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_config_url.format(key="stripe"),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/yaml; charset=utf-8"
+
+        # Verify the YAML content contains expected fields
+        yaml_content = response.text
+        assert "saas_config:" in yaml_content
+        assert "type: stripe" in yaml_content
+        assert "name: Stripe" in yaml_content
+
+    def test_get_connector_template_config_custom_template_success(
+        self,
+        db: Session,
+        get_connector_template_config_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        complete_connector_template,
+    ) -> None:
+        # First register a custom connector template
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        register_url = V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
+        api_client.post(
+            register_url,
+            files={
+                "file": (
+                    "connector_template.zip",
+                    complete_connector_template,
+                    "application/zip",
+                )
+            },
+            headers=auth_header,
+        )
+
+        # Now retrieve the config
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_config_url.format(key="planet_express"),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/yaml; charset=utf-8"
+
+        # Verify the YAML content contains expected fields
+        yaml_content = response.text
+        assert "saas_config:" in yaml_content
+        assert "type: planet_express" in yaml_content
+        assert "name: Planet Express" in yaml_content
+
+
+class TestGetConnectorTemplateDataset:
+    @pytest.fixture
+    def get_connector_template_dataset_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATE_DATASET
+
+    @pytest.fixture
+    def complete_connector_template(
+        self,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ):
+        return create_zip_file(
+            {
+                "config.yml": planet_express_config,
+                "dataset.yml": planet_express_dataset,
+                "icon.svg": planet_express_icon,
+            }
+        )
+
+    def test_get_connector_template_dataset_not_authenticated(
+        self, get_connector_template_dataset_url: str, api_client
+    ) -> None:
+        response = api_client.get(
+            get_connector_template_dataset_url.format(key="stripe"), headers={}
+        )
+        assert response.status_code == 401
+
+    def test_get_connector_template_dataset_wrong_scope(
+        self,
+        get_connector_template_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CLIENT_READ])
+        response = api_client.get(
+            get_connector_template_dataset_url.format(key="stripe"),
+            headers=auth_header,
+        )
+        assert response.status_code == 403
+
+    def test_get_connector_template_dataset_not_found(
+        self,
+        get_connector_template_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_dataset_url.format(key="nonexistent_connector"),
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert (
+            "No connector template found with key 'nonexistent_connector'"
+            in response.json()["detail"]
+        )
+
+    def test_get_connector_template_dataset_file_based_success(
+        self,
+        get_connector_template_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_dataset_url.format(key="stripe"),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/yaml; charset=utf-8"
+
+        # Verify the YAML content contains expected fields
+        yaml_content = response.text
+        assert "dataset:" in yaml_content
+        assert "fides_key: <instance_fides_key>" in yaml_content
+        assert "name: Stripe Dataset" in yaml_content
+
+    def test_get_connector_template_dataset_custom_template_success(
+        self,
+        db: Session,
+        get_connector_template_dataset_url: str,
+        api_client: TestClient,
+        generate_auth_header,
+        complete_connector_template,
+    ) -> None:
+        # First register a custom connector template
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        register_url = V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
+        api_client.post(
+            register_url,
+            files={
+                "file": (
+                    "connector_template.zip",
+                    complete_connector_template,
+                    "application/zip",
+                )
+            },
+            headers=auth_header,
+        )
+
+        # Now retrieve the dataset
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        response = api_client.get(
+            get_connector_template_dataset_url.format(key="planet_express"),
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/yaml; charset=utf-8"
+
+        # Verify the YAML content contains expected fields
+        yaml_content = response.text
+        assert "dataset:" in yaml_content
+        assert "fides_key: <instance_fides_key>" in yaml_content
+        assert "name: Planet Express Dataset" in yaml_content
