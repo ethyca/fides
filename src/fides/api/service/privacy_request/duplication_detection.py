@@ -177,7 +177,12 @@ class DuplicateDetectionService:
             raise ValueError(
                 "This request does not contain the required identity fields for duplicate detection."
             )
-        return "|".join([current_identities[field] for field in sorted(config.match_identity_fields)])
+        return "|".join(
+            [
+                current_identities[field]
+                for field in sorted(config.match_identity_fields)
+            ]
+        )
 
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
@@ -316,7 +321,11 @@ class DuplicateDetectionService:
                 dataset_name="Duplicate Request Detection",
                 collection_name=None,
                 message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
-                action_type=request.policy.get_rules()[0].action_type if request.policy and request.policy.get_rules() else ActionType.access,
+                action_type=(
+                    request.policy.get_action_type()  # type: ignore [arg-type]
+                    if request.policy
+                    else ActionType.access
+                ),
             )
             return True
 
