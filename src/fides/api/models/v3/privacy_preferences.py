@@ -67,7 +67,7 @@ class PrivacyPreferences(Base):
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
-        SALT = get_identity_salt()
+        salt = get_identity_salt()
         value_str = str(value)
         hashed_value = hash_value_with_salt(
             value_str.encode(encoding),
