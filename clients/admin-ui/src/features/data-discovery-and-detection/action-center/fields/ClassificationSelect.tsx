@@ -35,7 +35,6 @@ const ClassificationSelect = ({
       description: dataCategory.description || "",
     };
   });
-
   return (
     <TaxonomySelect
       options={options}
@@ -45,6 +44,7 @@ const ClassificationSelect = ({
           type="text"
           size="small"
           icon={<Icons.Add />}
+          disabled={props.disabled}
         />
       }
       placeholder=""
@@ -52,6 +52,11 @@ const ClassificationSelect = ({
       classNames={{
         root: "w-full max-w-full overflow-hidden p-0 cursor-pointer -ml-5",
       }}
+      style={
+        {
+          "--ant-select-multiple-selector-bg-disabled": "transparent",
+        } as React.CSSProperties
+      }
       variant="borderless"
       autoFocus={false}
       maxTagCount="responsive"
