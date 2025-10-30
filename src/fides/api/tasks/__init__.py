@@ -133,7 +133,6 @@ def configure_celery_logging(**kwargs: Any) -> None:
     from overriding our Loguru logging configuration. Our logging setup in _create_celery
     has already configured logging with InterceptHandler to capture all stdlib logs.
     """
-    pass
 
 
 def get_worker_ids() -> List[Optional[str]]:

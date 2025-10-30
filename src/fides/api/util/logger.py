@@ -41,7 +41,7 @@ class InterceptHandler(logging.Handler):
             level = str(record.levelno)
 
         frame, depth = logging.currentframe(), 2
-        while frame and frame.f_code.co_filename == logging.__file__:
+        while frame is not None and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
 
@@ -160,18 +160,25 @@ def create_handler_dicts(
         "catch": True,
     }
 
+    # Helper function to check if a log record has custom extra context
+    # Loguru always includes an 'extra' dict, so we need to check if it has any keys
+    def has_custom_extra(log_record: Dict) -> bool:
+        """Check if log record has custom extra context beyond Loguru's defaults."""
+        extra = log_record.get("extra", {})
+        return len(extra) > 0
+
     # Configure handler
     standard_dict = {
         **base_config,
         "sink": sink,
-        "filter": lambda logRecord: not bool(logRecord["extra"]),
+        "filter": lambda logRecord: not has_custom_extra(logRecord),
     }
 
     # Create extra dict with additional formatting for logs with extra context
     extra_dict = {
         **standard_dict,
         "format": log_format + " | <dim>{extra}</dim>",
-        "filter": lambda logRecord: bool(logRecord["extra"]),
+        "filter": lambda logRecord: has_custom_extra(logRecord),
     }
 
     return [standard_dict, extra_dict]
