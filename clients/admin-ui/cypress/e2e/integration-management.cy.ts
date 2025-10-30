@@ -793,19 +793,10 @@ describe("Integration management for data detection & discovery", () => {
 
           // LLM fields should now exist (not checking visibility due to modal overlay issues)
           cy.getByTestId("input-llm_model_override").should("exist");
-          cy.getByTestId("controlled-select-prompt_template").should("exist");
 
           // Give fields a moment to render before interacting
           cy.getByTestId("input-llm_model_override").should("have.value", "");
           cy.getByTestId("input-llm_model_override").type("gpt-4");
-
-          // Use force: true for the select to work around modal overlay issues
-          cy.getByTestId("controlled-select-prompt_template").antSelect(
-            "Full",
-            {
-              force: true,
-            },
-          );
 
           cy.getByTestId("controlled-select-execution_frequency").antSelect(
             "Daily",
@@ -824,9 +815,6 @@ describe("Integration management for data detection & discovery", () => {
             expect(
               interception.request.body.classify_params.llm_model_override,
             ).to.equal("gpt-4");
-            expect(
-              interception.request.body.classify_params.prompt_template,
-            ).to.equal("full");
           });
         });
 

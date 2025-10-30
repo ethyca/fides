@@ -23,8 +23,6 @@ import {
   MonitorFrequency,
 } from "~/types/api";
 
-import { PROMPT_TEMPLATE_OPTIONS } from "./constants";
-
 interface MonitorConfigFormValues {
   name: string;
   execution_frequency?: MonitorFrequency;
@@ -251,23 +249,13 @@ const ConfigureMonitorForm = ({
                   }
                 />
                 {values.use_llm_classifier && (
-                  <>
-                    <CustomTextInput
-                      name="llm_model_override"
-                      id="llm_model_override"
-                      label="Model override"
-                      variant="stacked"
-                      tooltip="Optionally specify a custom model to use for LLM classification"
-                    />
-                    <ControlledSelect
-                      name="prompt_template"
-                      id="prompt_template"
-                      label="Prompt template"
-                      options={PROMPT_TEMPLATE_OPTIONS}
-                      layout="stacked"
-                      tooltip="Select the prompt template to use for LLM classification"
-                    />
-                  </>
+                  <CustomTextInput
+                    name="llm_model_override"
+                    id="llm_model_override"
+                    label="Model override"
+                    variant="stacked"
+                    tooltip="Optionally specify a custom model to use for LLM classification"
+                  />
                 )}
               </>
             )}
