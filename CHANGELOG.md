@@ -35,6 +35,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
 - Custom fields are now shown in the list view of the new request manager [#6849](https://github.com/ethyca/fides/pull/6849)
 - Improved action center filters with tree-based UI and nested data categories [#6855](https://github.com/ethyca/fides/pull/6855)
+- Updates legacy taxonomy consts for custom taxonomy API [#6824](https://github.com/ethyca/fides/pull/6824)
+
 
 ### Developer Experience
 - Reorganized FidesUI components into logical directories by design system and function [#6844](https://github.com/ethyca/fides/pull/6844)
