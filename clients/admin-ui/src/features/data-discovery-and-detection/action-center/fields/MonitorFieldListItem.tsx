@@ -70,6 +70,7 @@ type MonitorFieldListItemRenderParams = Parameters<
   selected?: boolean;
   onSelect?: (key: React.Key, selected: boolean) => void;
   onNavigate?: (key: string) => void;
+  dataCategoriesDisabled?: boolean;
   onSetDataCategories: (urn: string, dataCategories: string[]) => void;
 };
 
@@ -101,6 +102,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   selected,
   onSelect,
   onSetDataCategories,
+  dataCategoriesDisabled,
   onNavigate,
   preferred_data_categories,
   actions,
@@ -198,6 +200,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
               });
             }}
             onSelectDataCategory={onSelectDataCategory}
+            disabled={dataCategoriesDisabled}
           />
         }
       />
