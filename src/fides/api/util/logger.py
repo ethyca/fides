@@ -7,6 +7,7 @@ Defines the logging format and other helper functions to be used throughout the 
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from contextlib import contextmanager
 from types import FrameType
@@ -44,7 +45,7 @@ class InterceptHandler(logging.Handler):
         frame: Optional[FrameType] = logging.currentframe()
         depth = 2
         # Get the directory path of the logging module to match all files within it
-        logging_module_path = logging.__file__.rsplit("/", 1)[0] + "/"
+        logging_module_path = os.path.dirname(logging.__file__) + os.sep
         while frame is not None and frame.f_code.co_filename.startswith(
             logging_module_path
         ):
