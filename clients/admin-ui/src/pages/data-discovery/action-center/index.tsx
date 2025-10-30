@@ -16,7 +16,6 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
@@ -34,23 +33,15 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: appConfig, isLoading: isConfigLoading } =
-    useGetConfigurationSettingsQuery({
-      api_set: false,
-    });
-  const actionCenterEnabled =
-    !!appConfig?.detection_discovery?.website_monitor_enabled ??
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+  const { webMonitor: webMonitorEnabled, llmClassifier: llmClassifierEnabled } =
+    flags;
 
   const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery(
-      {
-        page: pageIndex,
-        size: pageSize,
-        search: searchQuery,
-      },
-      { skip: isConfigLoading || !actionCenterEnabled },
-    );
+    useGetAggregateMonitorResultsQuery({
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+    });
 
   useEffect(() => {
     resetPagination();
@@ -58,14 +49,14 @@ const ActionCenterPage = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (isError && actionCenterEnabled) {
+    if (isError) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast, actionCenterEnabled]);
+  }, [isError, toast]);
 
   /*
    * Filtering paginated results can lead to odd behaviors
@@ -80,7 +71,7 @@ const ActionCenterPage = () => {
         const isWebsite = monitor.monitorType === MONITOR_TYPES.WEBSITE;
         // Show website monitors only if webMonitor flag is enabled
         // Show non-website monitors only if llmClassifier flag is enabled
-        return isWebsite ? flags.webMonitor : flags.llmClassifier;
+        return isWebsite ? webMonitorEnabled : llmClassifierEnabled;
       }) || [];
 
   const loadingResults = isFetching
@@ -123,8 +114,8 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!actionCenterEnabled) {
-    return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
+  if (!webMonitorEnabled && !llmClassifierEnabled) {
+    return <DisabledMonitorsPage />;
   }
 
   return (
