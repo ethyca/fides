@@ -1121,6 +1121,21 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: duplicate_group
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: rule_version
+      data_categories: [system.operations]
+    - name: dedup_key
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
   - name: executionlog
     data_categories: []
     fields:
