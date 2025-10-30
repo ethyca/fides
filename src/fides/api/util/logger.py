@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import sys
 from contextlib import contextmanager
+from types import FrameType
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional
 
 from loguru import logger
@@ -40,7 +41,8 @@ class InterceptHandler(logging.Handler):
         except ValueError:
             level = str(record.levelno)
 
-        frame, depth = logging.currentframe(), 2
+        frame: Optional[FrameType] = logging.currentframe()
+        depth = 2
         while frame is not None and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
@@ -167,18 +169,23 @@ def create_handler_dicts(
         extra = log_record.get("extra", {})
         return len(extra) > 0
 
+    # Helper to filter logs without custom extra
+    def filter_standard(log_record: Dict) -> bool:
+        """Filter for logs without custom extra context."""
+        return not has_custom_extra(log_record)
+
     # Configure handler
     standard_dict = {
         **base_config,
         "sink": sink,
-        "filter": lambda logRecord: not has_custom_extra(logRecord),
+        "filter": filter_standard,
     }
 
     # Create extra dict with additional formatting for logs with extra context
     extra_dict = {
         **standard_dict,
         "format": log_format + " | <dim>{extra}</dim>",
-        "filter": lambda logRecord: has_custom_extra(logRecord),
+        "filter": has_custom_extra,
     }
 
     return [standard_dict, extra_dict]
