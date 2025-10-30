@@ -21,9 +21,9 @@ class LegacyTaxonomyHandler(TaxonomyHandler):
     def __init__(self, db: Session, taxonomy_type: str) -> None:
         super().__init__(db, taxonomy_type)
         self.models = {
-            "data_categories": DataCategory,
-            "data_uses": DataUse,
-            "data_subjects": DataSubject,
+            "data_category": DataCategory,
+            "data_use": DataUse,
+            "data_subject": DataSubject,
         }
         if taxonomy_type not in self.models:
             raise ValueError(
