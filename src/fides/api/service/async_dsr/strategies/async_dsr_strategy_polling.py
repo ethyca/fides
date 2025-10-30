@@ -561,7 +561,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
             # Store results on the sub-request
             self._store_sub_request_result(polling_result, sub_request, polling_task)
-
+        else:
+            logger.info(
+                f"No result response for sub-request {sub_request.id} for task {polling_task.id}"
+            )
         # Mark as complete using existing method
         sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
 
