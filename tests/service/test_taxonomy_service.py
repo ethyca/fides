@@ -9,7 +9,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataSubject,
     DataUse,
 )
-from fides.api.models.taxonomy import Taxonomy, TaxonomyUsage
+from fides.api.models.taxonomy import LEGACY_TAXONOMY_KEYS, Taxonomy, TaxonomyUsage
 from fides.api.service.deps import get_taxonomy_service
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.service.event_audit_service import EventAuditService
@@ -17,24 +17,18 @@ from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.taxonomy.utils import generate_taxonomy_fides_key
 
-LEGACY_TAXONOMY_TYPES = [
-    "data_categories",
-    "data_uses",
-    "data_subjects",
-]
-
 HIERARCHICAL_TAXONOMY_TYPES = [
-    "data_categories",
-    "data_uses",
+    "data_category",
+    "data_use",
 ]
 
 
 def _model_for_taxonomy(taxonomy_type: str):
-    if taxonomy_type == "data_categories":
+    if taxonomy_type == "data_category":
         return DataCategory
-    if taxonomy_type == "data_uses":
+    if taxonomy_type == "data_use":
         return DataUse
-    if taxonomy_type == "data_subjects":
+    if taxonomy_type == "data_subject":
         return DataSubject
     raise ValueError("Unsupported taxonomy type for tests")
 
@@ -47,7 +41,7 @@ def taxonomy_service(db):
 
 class TestTaxonomyServiceGetters:
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_element_returns_element_when_exists(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -60,13 +54,13 @@ class TestTaxonomyServiceGetters:
             saved_element is not None and saved_element.fides_key == element.fides_key
         )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_element_returns_none_when_missing(
         self, taxonomy_service, taxonomy_type
     ):
         assert taxonomy_service.get_element(taxonomy_type, "no_such_key") is None
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_elements_active_only_returns_only_active(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -83,7 +77,7 @@ class TestTaxonomyServiceGetters:
         keys = {e.fides_key for e in elements}
         assert a_element.fides_key in keys and b_element.fides_key not in keys
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_elements_include_inactive_returns_all(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -139,7 +133,7 @@ class TestTaxonomyServiceGetters:
     ):
         assert taxonomy_service.get_elements(taxonomy_type, parent_key="no.such") == []
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_elements_with_unsupported_taxonomy_raise_value_error(
         self, taxonomy_service, taxonomy_type
     ):
@@ -148,7 +142,7 @@ class TestTaxonomyServiceGetters:
 
 
 class TestTaxonomyServiceCreate:
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_explicit_key_succeeds(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -161,7 +155,7 @@ class TestTaxonomyServiceCreate:
         assert saved_element is not None
         assert saved_element.fides_key == "custom_root"
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_generates_key_from_name(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -175,7 +169,7 @@ class TestTaxonomyServiceCreate:
         expected_key = get_key_from_data({"name": name}, model_cls.__name__)
         assert element.fides_key == expected_key
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_missing_name_and_key_fails(
         self, taxonomy_service, taxonomy_type
     ):
@@ -205,9 +199,7 @@ class TestTaxonomyServiceCreate:
     def test_create_element_with_parent_in_wrong_taxonomy_raises_validation_error(
         self, db, taxonomy_service, taxonomy_type
     ):
-        other_taxonomy = (
-            "data_categories" if taxonomy_type == "data_uses" else "data_uses"
-        )
+        other_taxonomy = "data_category" if taxonomy_type == "data_use" else "data_use"
         other_parent = taxonomy_service.create_element(
             other_taxonomy, {"fides_key": "other.parent", "name": "Other Parent"}
         )
@@ -217,7 +209,7 @@ class TestTaxonomyServiceCreate:
                 taxonomy_type, {"name": "Child", "parent_key": other_parent.fides_key}
             )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_nonexistent_parent_raises_validation_error(
         self, taxonomy_service, taxonomy_type
     ):
@@ -227,7 +219,7 @@ class TestTaxonomyServiceCreate:
                 {"name": "Child", "parent_key": "does.not.exist"},
             )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_is_default_true_raises_forbidden_error(
         self, taxonomy_service, taxonomy_type
     ):
@@ -237,7 +229,7 @@ class TestTaxonomyServiceCreate:
                 {"name": "Default", "is_default": True},
             )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_duplicate_key_raises_integrity_error(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -254,7 +246,7 @@ class TestTaxonomyServiceCreate:
 
 
 class TestTaxonomyServiceUpdate:
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_update_nonexistent_element_returns_none(
         self, taxonomy_service, taxonomy_type
     ):
@@ -263,7 +255,7 @@ class TestTaxonomyServiceUpdate:
             is None
         )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_update_element_updates_basic_fields(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -381,7 +373,7 @@ class TestTaxonomyServiceUpdate:
         db.flush()
         assert first.active is False and second.active is False
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_update_element_change_parent_to_nonexistent_raises_validation_error(
         self, taxonomy_service, taxonomy_type
     ):
@@ -438,7 +430,7 @@ class TestTaxonomyServiceUpdate:
 
 
 class TestTaxonomyServiceDelete:
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_delete_nonexistent_returns_false(self, taxonomy_service, taxonomy_type):
         taxonomy_service.delete_element(taxonomy_type, "missing")
 
@@ -476,7 +468,7 @@ class TestTaxonomyServiceDelete:
         self, db, taxonomy_service
     ):
         # Create a legacy element in data_categories
-        taxonomy_type = "data_categories"
+        taxonomy_type = "data_category"
         element = taxonomy_service.create_element(
             taxonomy_type, {"fides_key": "del_target", "name": "Del Target"}
         )
@@ -522,7 +514,7 @@ class TestTaxonomyServiceDelete:
         self, db, taxonomy_service
     ):
         # Create a legacy element in data_uses
-        taxonomy_type = "data_uses"
+        taxonomy_type = "data_use"
         element = taxonomy_service.create_element(
             taxonomy_type, {"fides_key": "del_source", "name": "Del Source"}
         )
@@ -564,7 +556,7 @@ class TestTaxonomyServiceDelete:
             == 0
         )
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_delete_leaf_returns_true_and_removes_element(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -682,7 +674,7 @@ class TestTaxonomyServiceCreateOrUpdateReactivation:
         if hasattr(updated, "description"):
             assert updated.description == "newdesc"
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_or_update_without_name_and_key_fails(
         self, taxonomy_service, taxonomy_type
     ):
@@ -740,7 +732,7 @@ class TestTaxonomyServiceCreateOrUpdateReactivation:
 class TestTaxonomyServiceAuditEvents:
     """Tests that TaxonomyService creates appropriate audit events."""
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_creates_audit_event(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -775,7 +767,7 @@ class TestTaxonomyServiceAuditEvents:
         assert audit_event.event_details["fides_key"] == element.fides_key
         assert audit_event.event_details["name"] == element_data["name"]
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_update_element_creates_audit_event(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -800,9 +792,7 @@ class TestTaxonomyServiceAuditEvents:
             "name": "Updated Test Name",
             "description": "Updated description",
         }
-        updated_element = taxonomy_service.update_element(
-            taxonomy_type, element.fides_key, update_data
-        )
+        taxonomy_service.update_element(taxonomy_type, element.fides_key, update_data)
         db.flush()
 
         # Verify audit event was created
@@ -828,7 +818,7 @@ class TestTaxonomyServiceAuditEvents:
         assert audit_event.event_details["name"] == update_data["name"]
         assert audit_event.event_details["description"] == update_data["description"]
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_delete_element_creates_audit_event(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -876,7 +866,7 @@ class TestTaxonomyServiceAuditEvents:
         self, db, taxonomy_service
     ):
         """Test that multiple operations create separate audit events."""
-        taxonomy_type = "data_categories"
+        taxonomy_type = "data_category"
 
         # Track initial audit event count
         initial_count = db.query(EventAudit).count()
@@ -974,7 +964,7 @@ class TestTaxonomyServiceCascadesAndHierarchy:
 
 
 class TestTaxonomyServiceRoundTrip:
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_round_trip_create_get_update_delete(
         self, db, taxonomy_service, taxonomy_type
     ):
@@ -1002,7 +992,7 @@ class TestTaxonomyServiceDI:
 
 
 class TestTaxonomyServiceKeyGeneration:
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_generate_key_from_name_slugifies_and_lowercases(self, db, taxonomy_type):
         handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "My Special Name"
@@ -1013,7 +1003,7 @@ class TestTaxonomyServiceKeyGeneration:
         expected = get_key_from_data({"name": name}, model_cls.__name__)
         assert generated_key == expected
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_generate_key_with_parent_prefixes_parent_key(self, db, taxonomy_type):
         handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "Child"
@@ -1025,7 +1015,7 @@ class TestTaxonomyServiceKeyGeneration:
         expected_child = get_key_from_data({"name": name}, model_cls.__name__)
         assert generated_key == f"{parent_key}.{expected_child}"
 
-    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_TYPES)
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_generate_key_is_stable_for_same_inputs(self, db, taxonomy_type):
         handler = LegacyTaxonomyHandler(db, taxonomy_type)
         name = "Stability Check"
