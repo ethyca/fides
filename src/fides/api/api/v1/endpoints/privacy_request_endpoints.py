@@ -1357,8 +1357,9 @@ def restart_privacy_request_from_failure(
     )
 
     # Automatically resubmit the request if the cache has expired
+
     if (
-        not privacy_request.get_cached_identity_data()
+        not privacy_request.verify_cache_for_identity_data()
         and privacy_request.status
         not in [PrivacyRequestStatus.complete, PrivacyRequestStatus.pending]
     ):

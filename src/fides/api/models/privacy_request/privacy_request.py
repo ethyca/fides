@@ -124,6 +124,12 @@ if TYPE_CHECKING:
     )
 
 
+IDENTITY_DATA_CACHE_KEY_PREFIX = "id-{self.id}-identity-*"
+CUSTOM_PRIVACY_REQUEST_FIELDS_CACHE_KEY_PREFIX = (
+    "id-{self.id}-custom-privacy-request-field-*"
+)
+
+
 class PrivacyRequest(
     IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904,too-many-instance-attributes
@@ -682,12 +688,26 @@ class PrivacyRequest(
                 },
             )
 
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
-        prefix = f"id-{self.id}-identity-*"
+    def verify_cache_for_identity_data(self) -> bool:
+        """Verifies if the identity data is cached for this request"""
+        prefix = IDENTITY_DATA_CACHE_KEY_PREFIX.format(id=self.id)
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+        return len(keys) > 0
+
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
+        prefix = IDENTITY_DATA_CACHE_KEY_PREFIX.format(id=self.id)
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            identity = self.get_persisted_identity()
+            self.cache_identity(identity)
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:
@@ -705,10 +725,25 @@ class PrivacyRequest(
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
+
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            custom_privacy_request_fields = (
+                self.get_persisted_custom_privacy_request_fields()
+            )
+            self.cache_custom_privacy_request_fields(
+                {
+                    key: CustomPrivacyRequestFieldSchema(**value)
+                    for key, value in custom_privacy_request_fields.items()
+                }
+            )
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:
