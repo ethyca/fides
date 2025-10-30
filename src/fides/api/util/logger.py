@@ -45,9 +45,8 @@ class InterceptHandler(logging.Handler):
         depth = 2
         # Get the directory path of the logging module to match all files within it
         logging_module_path = logging.__file__.rsplit("/", 1)[0] + "/"
-        while (
-            frame is not None
-            and frame.f_code.co_filename.startswith(logging_module_path)
+        while frame is not None and frame.f_code.co_filename.startswith(
+            logging_module_path
         ):
             frame = frame.f_back
             depth += 1
