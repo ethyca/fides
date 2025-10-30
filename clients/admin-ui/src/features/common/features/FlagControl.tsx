@@ -6,8 +6,6 @@ import {
   Text,
 } from "fidesui";
 
-import { camelToSentenceCase } from "~/features/common/utils";
-
 import { FLAG_CONFIG, FLAG_NAMES } from "./features.slice";
 import { FlagValue } from "./types";
 
@@ -60,7 +58,7 @@ export const FlagControl = ({
           htmlFor={`flag-${flag}`}
           title={flag}
         >
-          {camelToSentenceCase(flag)}
+          {FLAG_CONFIG[flag].label}
         </FormLabel>
       </Box>
 

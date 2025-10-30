@@ -12,6 +12,7 @@ export type FlagEnvs<Value> = {
   development: Value;
   test: Value;
   production: Value;
+  label?: string;
   description?: string;
   /**
    * If true, this flag will not show up in the UI as a toggle
