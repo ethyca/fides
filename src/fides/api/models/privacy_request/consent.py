@@ -100,11 +100,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        if not keys:
-            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
-            identity = self.get_persisted_identity()
-            self.cache_identity(identity)
-            keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def verify_identity(
