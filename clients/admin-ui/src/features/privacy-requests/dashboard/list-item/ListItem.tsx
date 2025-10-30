@@ -1,7 +1,7 @@
 import { AntFlex as Flex, AntList as List, AntTag as Tag } from "fidesui";
 import React from "react";
 
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {
@@ -15,7 +15,7 @@ import {
 } from "./components";
 
 interface ListItemProps {
-  item: PrivacyRequestEntity;
+  item: PrivacyRequestResponse;
   checkbox?: React.ReactNode;
 }
 
@@ -37,7 +37,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => (
       </Flex>
     </div>
     <Flex gap={16} wrap className="pr-2">
-      <ReceivedOn createdAt={item.created_at} />
+      {item.created_at && <ReceivedOn createdAt={item.created_at} />}
       <DaysLeft
         daysLeft={item.days_left}
         status={item.status}

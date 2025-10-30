@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import dayjs, { Dayjs } from "dayjs";
+import { isEmpty, pickBy } from "lodash";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -29,7 +30,7 @@ import {
 } from "./types";
 
 // Helpers
-export function mapFiltersToSearchParams({
+export function deprecatedMapFiltersToSearchParams({
   status,
   action_type,
   id,
@@ -106,6 +107,34 @@ export function mapFiltersToSearchParams({
 
   return params;
 }
+
+// Friendlier interface for date range params
+// These get converted to created_gt and created_lt with the correct timezone in processFilterParams
+interface DateRangeParams {
+  from?: string | null;
+  to?: string | null;
+}
+
+interface SearchFilterParams
+  extends Partial<PrivacyRequestFilter>,
+    Partial<DateRangeParams> {}
+
+const processFilterParams = (filters: SearchFilterParams) => ({
+  // Include identities and custom privacy request fields by default
+  include_identities: true,
+  include_custom_privacy_request_fields: true,
+
+  // Include any filter that is not empty
+  ...pickBy(filters, (value) => !isEmpty(value)),
+
+  // Convert from and to to ISO strings on local time for the date range
+  created_gt: filters.from
+    ? dayjs(filters.from).startOf("day").utc().toISOString()
+    : undefined,
+  created_lt: filters.to
+    ? dayjs(filters.to).endOf("day").utc().toISOString()
+    : undefined,
+});
 
 export const selectPrivacyRequestFilters = (
   state: RootState,
@@ -328,7 +357,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
-        url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
+        url: `privacy-request?${deprecatedMapFiltersToSearchParams(filters).toString()}`,
       }),
       providesTags: () => ["Request"],
       async onQueryStarted(_key, { dispatch, queryFulfilled }) {
@@ -342,18 +371,36 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     }),
     searchPrivacyRequests: build.query<
       Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
-      Partial<PrivacyRequestFilter> & { page: number; size: number }
+      SearchFilterParams & { page: number; size: number }
     >({
-      query: ({ page, size, ...filters }) => ({
-        url: `privacy-request?${mapFiltersToSearchParams({ page, size }).toString()}`,
-        method: "POST",
-        body: filters,
-      }),
+      query: (params) => {
+        const { page, size, from, to, ...filters } = params;
+
+        return {
+          url: `privacy-request/search`,
+          method: "POST",
+          params: {
+            page,
+            size,
+          },
+          body: processFilterParams(filters),
+        };
+      },
+    }),
+    downloadPrivacyRequestCsvV2: build.query<any, SearchFilterParams>({
+      query: (filters) => {
+        return {
+          url: `privacy-request/search`,
+          method: "POST",
+          body: { ...processFilterParams(filters), download_csv: true },
+          responseHandler: "content-type",
+        };
+      },
     }),
     downloadPrivacyRequestCsv: build.query<any, Partial<PrivacyRequestParams>>({
       query: (filters) => {
         return {
-          url: `privacy-request?${mapFiltersToSearchParams(filters).toString()}`,
+          url: `privacy-request?${deprecatedMapFiltersToSearchParams(filters).toString()}`,
           params: {
             download_csv: true,
           },
@@ -560,4 +607,5 @@ export const {
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,
   useLazyDownloadPrivacyRequestCsvQuery,
+  useLazyDownloadPrivacyRequestCsvV2Query,
 } = privacyRequestApi;

@@ -1,10 +1,10 @@
 import React from "react";
 
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { LabeledTag, LabeledText } from "./labels";
 
-export const EmailIdentity = ({ value }: { value?: string }) => {
+export const EmailIdentity = ({ value }: { value?: string | null }) => {
   return (value ?? "").length > 0 ? (
     <LabeledText label="Email">{value}</LabeledText>
   ) : null;
@@ -13,7 +13,7 @@ export const EmailIdentity = ({ value }: { value?: string }) => {
 export const NonEmailIdentities = ({
   identities,
 }: {
-  identities: PrivacyRequestEntity["identity"];
+  identities: PrivacyRequestResponse["identity"];
 }) => {
   return (
     <>

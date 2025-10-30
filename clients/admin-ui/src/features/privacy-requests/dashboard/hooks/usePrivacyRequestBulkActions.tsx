@@ -7,6 +7,7 @@ import {
 import { useCallback, useEffect, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import {
   BulkActionType,
@@ -19,13 +20,12 @@ import {
   useBulkDenyRequestMutation,
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../../types";
 
 type MessageInstance = ReturnType<typeof message.useMessage>[0];
 type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
-  requests: PrivacyRequestEntity[];
+  requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
   clearSelectedIds: () => void;
   messageApi: MessageInstance;
