@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added database model for identity definitions [#6852](https://github.com/ethyca/fides/pull/6852) https://github.com/ethyca/fides/labels/db-migration
 - Added config proxy settings for duplicate DSR detection[#6811](https://github.com/ethyca/fides/pull/6811) https://github.com/ethyca/fides/labels/db-migration
 - Added privacy preferences database model [#6875](https://github.com/ethyca/fides/pull/6875)
+- Added beta feature flag for LLM classifier [#6880](https://github.com/ethyca/fides/pull/6880)
 
 ### Changed
 - Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
