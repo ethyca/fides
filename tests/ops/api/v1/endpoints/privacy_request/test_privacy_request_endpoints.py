@@ -1250,29 +1250,31 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][0].get("custom_privacy_request_fields") is None
 
+    @pytest.mark.parametrize(
+        "action_type, expected_count",
+        [
+            (ActionType.access, 1),
+            (ActionType.consent, 1),
+            (ActionType.erasure, 0),
+        ],
+    )
     def test_filter_privacy_requests_by_action(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
+        action_type,
+        expected_count,
         privacy_request,
         executable_consent_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        response = api_client.get(
+            url + f"?action_type={action_type}", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 0
+        assert len(resp["items"]) == expected_count
 
     def test_filter_privacy_requests_by_status(
         self,
@@ -2623,35 +2625,31 @@ class TestPrivacyRequestSearch:
         resp = response.json()
         assert len(resp["items"]) == 2
 
+    @pytest.mark.usefixtures("privacy_request", "executable_consent_request")
+    @pytest.mark.parametrize(
+        "action_type, expected_count",
+        [
+            (ActionType.access, 1),
+            ([ActionType.access, ActionType.consent], 2),
+            (ActionType.consent, 1),
+            (ActionType.erasure, 0),
+        ],
+    )
     def test_privacy_request_search_by_action(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        privacy_request,
-        executable_consent_request,
+        action_type,
+        expected_count,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
-            url, headers=auth_header, json={"action_type": "access"}
+            url, headers=auth_header, json={"action_type": action_type}
         )
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.post(
-            url, headers=auth_header, json={"action_type": "consent"}
-        )
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.post(
-            url, headers=auth_header, json={"action_type": "erasure"}
-        )
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 0
+        assert len(resp["items"]) == expected_count
 
     def test_privacy_request_search_by_status(
         self,
