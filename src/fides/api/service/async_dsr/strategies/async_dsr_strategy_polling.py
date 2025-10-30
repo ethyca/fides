@@ -555,7 +555,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if polling_result:
             # Ensure we have the expected polling result type
             if not isinstance(polling_result, PollingResult):
-                raise PrivacyRequestError("Polling result must be PollingResult instance")
+                raise PrivacyRequestError(
+                    "Polling result must be PollingResult instance"
+                )
 
             # Store results on the sub-request
             self._store_sub_request_result(polling_result, sub_request, polling_task)

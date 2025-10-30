@@ -323,7 +323,7 @@ def validate_polling_result_override_function(f: Callable) -> None:
         PollingResult,
         "PollingResult",
         Optional[PollingResult],
-        "Optional[PollingResult]"
+        "Optional[PollingResult]",
     ):
         raise InvalidSaaSRequestOverrideException(
             "Polling result override function must return a PollingResult"
