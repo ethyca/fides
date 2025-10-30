@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
 
+### Developer Experience
+- Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
+
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
 ### Added
@@ -49,7 +52,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added reusable Filter component with optional search and tree-based filtering to FidesUI design system [#6845](https://github.com/ethyca/fides/pull/6845)
 - Added Privacy Notice Sandbox for Consent v3 development and demos [#6841](https://github.com/ethyca/fides/pull/6841)
 - Added strict equality ESLint rule to prevent type coercion bugs [#6879](https://github.com/ethyca/fides/pull/6879)
-- Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
