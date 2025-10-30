@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -508,3 +509,22 @@ class TestDuplicateRequestFunctionality:
             privacy_request_with_email_identity.duplicate_request_group_id
             == original_group_id
         )
+
+    def test_duplicate_request_group_returns_none_is_false(
+        self,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+    ):
+        """Test that the duplicate request group returns None if the request is not a duplicate."""
+        with patch(
+            "fides.api.service.privacy_request.duplication_detection.DuplicateGroup.get_or_create"
+        ) as mock_get_or_create:
+            mock_get_or_create.return_value = None, None
+            duplicate_detection_config = get_detection_config()
+            is_duplicate = duplicate_detection_service.is_duplicate_request(
+                privacy_request_with_email_identity, duplicate_detection_config
+            )
+            assert not is_duplicate
+            assert (
+                privacy_request_with_email_identity.duplicate_request_group_id is None
+            )
