@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
+from uuid import UUID
 
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
