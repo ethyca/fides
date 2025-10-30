@@ -28,10 +28,12 @@ export type FlagEnvs<Value> = {
  * {
  *   falseEverywhere: false,
  *   envDependent: {
+ *     label: "Environment dependent feature",
+ *     description: "This feature is enabled in development and test only",
  *     development: true,
  *     test: true,
  *     production: false,
- *     description: "Flag changes per environment."
+ *     userCannotModify: false
  *   }
  * }
  */
@@ -50,10 +52,12 @@ export type FlagConfigDefaults<Flags> = {
  *     production: false,
  *   },
  *   envDependent: {
+ *     label: "Environment dependent feature",
+ *     description: "This feature is enabled in development and test only",
  *     development: true,
  *     test: true,
  *     production: false,
- *     description: "Flag changes per environment."
+ *     userCannotModify: false
  *   }
  * }
  */
