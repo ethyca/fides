@@ -124,9 +124,9 @@ if TYPE_CHECKING:
     )
 
 
-IDENTITY_DATA_CACHE_KEY_PREFIX = "id-{self.id}-identity-*"
+IDENTITY_DATA_CACHE_KEY_PREFIX = "id-{{self.id}}-identity-*"
 CUSTOM_PRIVACY_REQUEST_FIELDS_CACHE_KEY_PREFIX = (
-    "id-{self.id}-custom-privacy-request-field-*"
+    "id-{{self.id}}-custom-privacy-request-field-*"
 )
 
 
