@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.73.1..main)
 
+### Added
+- Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
+
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
 ### Added
