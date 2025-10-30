@@ -81,6 +81,31 @@ class TestDuplicateGroup:
         assert duplicate_group.dedup_key == "duplicate@example.com"
         assert duplicate_group.is_active is True  # default is True
 
+    def test_create_duplicate_group_existing_active_is_false(self, db: Session):
+        """Test that duplicate group creation is successful when the existing group has is_active set to False."""
+        duplicate_group = DuplicateGroup.create(
+            db=db,
+            data={
+                "rule_version": generate_rule_version(
+                    DUPLICATE_DETECTION_SETTINGS_EMAIL
+                ),
+                "dedup_key": "duplicate@example.com",
+                "is_active": False,
+            },
+        )
+        assert duplicate_group.is_active is False
+        re_created_duplicate_group = DuplicateGroup.create(
+            db=db,
+            data={
+                "rule_version": generate_rule_version(
+                    DUPLICATE_DETECTION_SETTINGS_EMAIL
+                ),
+                "dedup_key": "duplicate@example.com",
+            },
+        )
+        assert re_created_duplicate_group.is_active is True
+        assert re_created_duplicate_group.id == duplicate_group.id
+
     def test_relationship_with_privacy_request(
         self, db: Session, privacy_request_with_email_identity: PrivacyRequest
     ):
