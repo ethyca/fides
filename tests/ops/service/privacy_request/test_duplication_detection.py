@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.duplication_detection import (
@@ -544,100 +545,177 @@ class TestDuplicateRequestFunctionality:
             assert (
                 privacy_request_with_email_identity.duplicate_request_group_id is None
             )
-            
-            
+
+    def test_duplicate_request_group_updated_config(
+        self, db, duplicate_detection_service, privacy_request_with_multiple_identities
+    ):
+        """Test that the duplicate request group is updated when the duplicate detection configuration is updated."""
+        # First run with original config to set the group id
+        duplicate_detection_config = get_detection_config()
+        is_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_multiple_identities, duplicate_detection_config
+        )
+        assert not is_duplicate
+        group_id = privacy_request_with_multiple_identities.duplicate_request_group_id
+        assert group_id is not None
+
+        # Create a duplicate request with only an email identity - should be duplicates under first config
+        duplicates = create_duplicate_requests(
+            db,
+            privacy_request_with_multiple_identities.policy,
+            1,
+            PrivacyRequestStatus.pending,
+        )
+        for duplicate in duplicates:
+            duplicate.persist_identity(
+                db=db,
+                identity=Identity(email="customer-1@example.com"),
+            )
+            is_duplicate = duplicate_detection_service.is_duplicate_request(
+                duplicate, duplicate_detection_config
+            )
+            assert is_duplicate
+            assert duplicate.duplicate_request_group_id is not None
+            assert duplicate.duplicate_request_group_id == group_id
+
+        # Now run with updated config to ensure the group id is updated
+        duplicate_detection_config_updated = get_detection_config(
+            match_identity_fields=["email", "phone_number"]
+        )
+        is_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_multiple_identities, duplicate_detection_config_updated
+        )
+        assert not is_duplicate
+        new_group_id = (
+            privacy_request_with_multiple_identities.duplicate_request_group_id
+        )
+        assert new_group_id != group_id
+        assert new_group_id != None
+        # verify group is not updated for duplicates becasue they do not match under updated config
+        for duplicate in duplicates:
+            assert duplicate.duplicate_request_group_id is not None
+            assert duplicate.duplicate_request_group_id == group_id
+
+        # add the phone number identity to the duplicates to make them match under updated config
+        for duplicate in duplicates:
+            duplicate.persist_identity(
+                db=db,
+                identity=Identity(
+                    email="customer-1@example.com", phone_number="+15555555555"
+                ),
+            )
+        is_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_multiple_identities, duplicate_detection_config_updated
+        )
+        assert not is_duplicate
+        # group id for original request should not have changed because it matches under updated config
+        assert (
+            privacy_request_with_multiple_identities.duplicate_request_group_id
+            == new_group_id
+        )
+        # group id for duplicates should have changed because they now match under updated config
+        for duplicate in duplicates:
+            assert duplicate.duplicate_request_group_id is not None
+            assert duplicate.duplicate_request_group_id == new_group_id
+
+
 class TestDuplicateRequestRunnerService:
 
-    def test_request_runner_service_duplicates(
+    @pytest.mark.parametrize(
+        "request_verified_at, duplicate_verified_at, expected_status",
+        [
+            pytest.param(
+                None,
+                None,
+                PrivacyRequestStatus.duplicate,
+                id="requests_not_verified_but_created_first",
+            ),
+            pytest.param(
+                datetime.now(timezone.utc),
+                None,
+                PrivacyRequestStatus.duplicate,
+                id="request_verified_but_not_duplicates",
+            ),
+            pytest.param(
+                None,
+                datetime.now(timezone.utc),
+                PrivacyRequestStatus.error,
+                id="duplicate_verified_but_not_request",
+            ),
+            pytest.param(
+                datetime.now(timezone.utc),
+                datetime.now(timezone.utc) - timedelta(days=1),
+                PrivacyRequestStatus.error,
+                id="both_verified_duplicate_verified_first",
+            ),
+            pytest.param(
+                datetime.now(timezone.utc) - timedelta(days=1),
+                datetime.now(timezone.utc),
+                PrivacyRequestStatus.duplicate,
+                id="both_verified_request_verified_first",
+            ),
+        ],
+    )
+    def test_request_runner_service_duplicates_all_verified_cases(
         self,
         db: Session,
         run_privacy_request_task,
         privacy_request_with_email_identity: PrivacyRequest,
+        request_verified_at,
+        duplicate_verified_at,
+        expected_status,
         loguru_caplog,
         mock_config_proxy,
     ):
         """Test that the request runner service identifies and marks duplicate privacy requests."""
         with mock_config_proxy:
-            run_privacy_request_task.delay(privacy_request_with_email_identity.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+            privacy_request_with_email_identity.update(
+                db=db,
+                data={
+                    "status": PrivacyRequestStatus.pending,
+                    "identity_verified_at": request_verified_at,
+                },
             )
-            assert (
-                privacy_request_with_email_identity.status
-                != PrivacyRequestStatus.duplicate
-            )
-
             duplicate_request = create_duplicate_requests(
                 db,
                 privacy_request_with_email_identity.policy,
                 1,
-                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.pending,
             )[0]
+
+            duplicate_request.update(
+                db=db, data={"identity_verified_at": duplicate_verified_at}
+            )
             run_privacy_request_task.delay(duplicate_request.id).get(
                 timeout=PRIVACY_REQUEST_TASK_TIMEOUT
             )
             db.refresh(duplicate_request)
-            assert duplicate_request.status == PrivacyRequestStatus.duplicate
+            assert duplicate_request.status == expected_status
+            if expected_status == PrivacyRequestStatus.duplicate:
+                error_log = duplicate_request.execution_logs.filter_by(
+                    status=ExecutionLogStatus.error
+                ).first()
+                assert error_log is not None
+                assert (
+                    error_log.message
+                    == f"Request {duplicate_request.id} is a duplicate: it is duplicating request(s) ['{privacy_request_with_email_identity.id}']."
+                )
 
-            assert (
-                "Terminating privacy request: request is a duplicate."
-                in loguru_caplog.text
-            )
-
-    def test_request_runner_service_verified_identity_duplicates(
-        self,
-        db: Session,
-        run_privacy_request_task,
-        privacy_request_with_email_identity: PrivacyRequest,
-        loguru_caplog,
-        mock_config_proxy,
-    ):
-        """Test that the request runner service identifies and marks duplicate privacy requests with verified identities."""
-        privacy_request_with_email_identity.update(
-            db=db, data={"identity_verified_at": None}
-        )
-        duplicate_request = create_duplicate_requests(
-            db,
-            privacy_request_with_email_identity.policy,
-            1,
-            PrivacyRequestStatus.in_processing,
-        )[0]
-        duplicate_request.update(
-            db=db, data={"identity_verified_at": datetime.now(timezone.utc)}
-        )
-        with mock_config_proxy:
+                assert (
+                    "Terminating privacy request: request is a duplicate."
+                    in loguru_caplog.text
+                )
             run_privacy_request_task.delay(privacy_request_with_email_identity.id).get(
                 timeout=PRIVACY_REQUEST_TASK_TIMEOUT
             )
             db.refresh(privacy_request_with_email_identity)
-            assert (
-                privacy_request_with_email_identity.status
-                == PrivacyRequestStatus.duplicate
-            )
-
-            run_privacy_request_task.delay(duplicate_request.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-            )
-            db.refresh(duplicate_request)
-            assert duplicate_request.status != PrivacyRequestStatus.duplicate
-
-            # Set as verified (after the other request)
-            privacy_request_with_email_identity.update(
-                db=db, data={"identity_verified_at": datetime.now(timezone.utc)}
-            )
-            run_privacy_request_task.delay(privacy_request_with_email_identity.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-            )
-            assert (
-                privacy_request_with_email_identity.status
-                == PrivacyRequestStatus.duplicate
-            )
+            assert privacy_request_with_email_identity.status != expected_status
 
     def test_request_runner_service_actioned_duplicates(
         self,
         db: Session,
         run_privacy_request_task,
         privacy_request_with_email_identity: PrivacyRequest,
-        loguru_caplog,
         mock_config_proxy,
     ):
         """Test that the request runner service identifies and marks duplicate privacy requests with actioned identities."""
@@ -664,3 +742,13 @@ class TestDuplicateRequestRunnerService:
             )
             db.refresh(duplicate_request)
             assert duplicate_request.status == PrivacyRequestStatus.duplicate
+            # verify execution log is added
+            assert duplicate_request.execution_logs is not None
+            error_log = duplicate_request.execution_logs.filter_by(
+                status=ExecutionLogStatus.error
+            ).first()
+            assert error_log is not None
+            assert (
+                error_log.message
+                == f"Request {duplicate_request.id} is a duplicate: it is duplicating actioned request(s) ['{privacy_request_with_email_identity.id}']."
+            )

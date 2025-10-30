@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -183,6 +184,55 @@ class DuplicateDetectionService:
             ]
         )
 
+    def update_duplicate_group_ids(
+        self,
+        request: PrivacyRequest,
+        duplicates: list[PrivacyRequest],
+        duplicate_group_id: UUID,
+    ) -> None:
+        """
+        Update the duplicate request group ids for a request and its duplicates.
+        Args:
+            request: The privacy request to update
+            duplicates: The list of duplicate requests to update
+            duplicate_group_id: The duplicate request group id to update
+        """
+        update_all = [request] + duplicates
+        try:
+            for privacy_request in update_all:
+                privacy_request.duplicate_request_group_id = duplicate_group_id  # type: ignore [assignment]
+        except Exception as e:
+            logger.error(f"Failed to update duplicate request group ids: {e}")
+            raise e
+
+    def add_error_execution_log(self, request: PrivacyRequest, message: str) -> None:
+        request.add_error_execution_log(
+            db=self.db,
+            connection_key=None,
+            dataset_name="Duplicate Request Detection",
+            collection_name=None,
+            message=message,
+            action_type=(
+                request.policy.get_action_type()  # type: ignore [arg-type]
+                if request.policy
+                else ActionType.access
+            ),
+        )
+
+    def add_success_execution_log(self, request: PrivacyRequest, message: str) -> None:
+        request.add_success_execution_log(
+            db=self.db,
+            connection_key=None,
+            dataset_name="Duplicate Request Detection",
+            collection_name=None,
+            message=message,
+            action_type=(
+                request.policy.get_action_type()  # type: ignore [arg-type]
+                if request.policy
+                else ActionType.access
+            ),
+        )
+
     def verified_identity_cases(
         self, request: PrivacyRequest, duplicates: list[PrivacyRequest]
     ) -> bool:
@@ -205,45 +255,48 @@ class DuplicateDetectionService:
         # The request identity is not verified.
         if not request.identity_verified_at:
             if len(verified_in_group) > 0:
-                logger.debug(
-                    f"Request {request.id} is a duplicate: it is not verified and duplicating verified request(s) {verified_in_group}."
-                )
+                message = f"Request {request.id} is a duplicate: it is duplicating request(s) {[duplicate.id for duplicate in verified_in_group]}."
+                logger.debug(message)
+                self.add_error_execution_log(request, message)
                 return True
 
-            min_created_at = min(
-                (d.created_at for d in duplicates if d.created_at), default=None
-            ) or datetime.now(timezone.utc)
-            request_created_at = (
-                request.created_at
-                if request.created_at is not None
-                else datetime.now(timezone.utc)
+            canonical_request = min(duplicates, key=lambda x: x.created_at)  # type: ignore [arg-type, return-value]
+            canonical_request_created_at = canonical_request.created_at or datetime.now(
+                timezone.utc
             )
-            if request_created_at < min_created_at:
+            request_created_at = request.created_at or datetime.now(timezone.utc)
+            if request_created_at < canonical_request_created_at:
+                message = f"Request {request.id} is not a duplicate: it is the first request to be created in the group."
+                logger.debug(message)
+                self.add_success_execution_log(request, message)
                 return False
-            logger.debug(
-                f"Request {request.id} is a duplicate: it is not verified and is not the first request to be created in the group."
-            )
+
+            message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
+            logger.debug(message)
+            self.add_error_execution_log(request, message)
             return True
 
         # The request identity is verified.
         if not verified_in_group:
+            message = f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
             return False
 
         # If this request is the first with a verified identity, it is not a duplicate.
-        min_verified_at = min(
-            (d.identity_verified_at for d in duplicates if d.identity_verified_at),
-            default=None,
-        ) or datetime.now(timezone.utc)
-        request_verified_at = (
-            request.identity_verified_at
-            if request.identity_verified_at is not None
-            else datetime.now(timezone.utc)
+        canonical_request = min(duplicates, key=lambda x: x.identity_verified_at)  # type: ignore [arg-type, return-value]
+        canonical_request_verified_at = (
+            canonical_request.identity_verified_at or datetime.now(timezone.utc)
         )
-        if request_verified_at < min_verified_at:
+        request_verified_at = request.identity_verified_at or datetime.now(timezone.utc)
+        if request_verified_at < canonical_request_verified_at:
+            message = f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
             return False
-        logger.debug(
-            f"Request {request.id} is a duplicate: it is verified but not the first request to be verified in the group."
-        )
+        message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
+        logger.debug(message)
+        self.add_error_execution_log(request, message)
         return True
 
     # pylint: disable=too-many-return-statements
@@ -276,44 +329,33 @@ class DuplicateDetectionService:
         try:
             dedup_key = self.generate_dedup_key(request, config)
         except ValueError as e:
-            logger.debug(f"Request {request.id} is not a duplicate: {e}")
+            message = f"Request {request.id} is not a duplicate: {e}"
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
             return False
 
         _, duplicate_group = DuplicateGroup.get_or_create(
             db=self.db, data={"rule_version": rule_version, "dedup_key": dedup_key}
         )
         if duplicate_group is None:
-            logger.error(
-                f"Failed to create duplicate group for request {request.id} with dedup key {dedup_key}"
-            )
+            message = f"Failed to create duplicate group for request {request.id} with dedup key {dedup_key}"
+            logger.error(message)
+            self.add_error_execution_log(request, message)
             return False
-        logger.info(
-            f"Duplicate group {duplicate_group.id} created for request {request.id} with dedup key {dedup_key}"
-        )
-        request.update(
-            db=self.db, data={"duplicate_request_group_id": duplicate_group.id}
-        )
+
+        self.update_duplicate_group_ids(request, duplicates, duplicate_group.id)  # type: ignore [arg-type]
 
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
+            message = f"Request {request.id} is not a duplicate."
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
             return False
 
         if request.status == PrivacyRequestStatus.duplicate:
-            logger.warning(
-                f"Request {request.id} is a duplicate request that was requeued. This should not happen."
-            )
-            request.add_error_execution_log(
-                db=self.db,
-                connection_key=None,
-                dataset_name="Duplicate Request Detection",
-                collection_name=None,
-                message=f"Request {request.id} is a duplicate request that was requeued. This should not happen.",
-                action_type=(
-                    request.policy.get_action_type()  # type: ignore [arg-type]
-                    if request.policy
-                    else ActionType.access
-                ),
-            )
+            message = f"Request {request.id} is a duplicate request that was requeued. This should not happen."
+            logger.warning(message)
+            self.add_error_execution_log(request, message)
             return True
 
         # only compare to non-duplicate requests for the following cases
@@ -324,6 +366,9 @@ class DuplicateDetectionService:
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
+            message = f"Request {request.id} is not a duplicate."
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
             return False
 
         # If any requests in group are actioned, this request is a duplicate.
@@ -333,9 +378,9 @@ class DuplicateDetectionService:
             if duplicate.status in ACTIONED_REQUEST_STATUSES
         ]
         if len(actioned_in_group) > 0:
-            logger.debug(
-                f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {actioned_in_group}."
-            )
+            message = f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {[duplicate.id for duplicate in actioned_in_group]}."
+            logger.debug(message)
+            self.add_error_execution_log(request, message)
             return True
         # Check against verified identity rules.
         return self.verified_identity_cases(request, canonical_requests)
