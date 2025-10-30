@@ -418,6 +418,11 @@ const ActionCenterFields: NextPage = () => {
                 suffixIcon: <Icons.ChevronDown />,
               }}
               total={fieldsDataResponse?.total || 0}
+              hideOnSinglePage={
+                // if we're on the smallest page size, and there's only one page, hide the pagination
+                paginationProps.pageSize?.toString() ===
+                paginationProps.pageSizeOptions?.[0]
+              }
             />
           </Flex>
         </Splitter.Panel>
