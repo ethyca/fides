@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.73.1b0.post0.dev10"
+    "version": "2.73.1b0.post0.dev11"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -27093,9 +27093,6 @@
           "system_manager:read",
           "system_manager:delete",
           "system_manager:update",
-          "taxonomy:create",
-          "taxonomy:delete",
-          "taxonomy:update",
           "user:create",
           "user:update",
           "user:delete",
