@@ -10,7 +10,7 @@ export enum TopLevelActionCenterTabHash {
 
 const useTopLevelActionCenterTabs = () => {
   const { flags } = useFeatures();
-  const hasFullActionCenter = !!flags.llmClassifier;
+  const hasFullActionCenter = !!flags.heliosV2;
 
   const availableTabKeys = useMemo(() => {
     return hasFullActionCenter
