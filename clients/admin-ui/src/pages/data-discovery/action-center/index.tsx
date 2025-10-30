@@ -33,14 +33,20 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { webMonitor: webMonitorEnabled, llmClassifier: llmClassifierEnabled } =
-    flags;
+  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
+
+  // Build monitor_type filter based on enabled feature flags
+  const monitorTypes: MONITOR_TYPES[] = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+  ];
 
   const { data, isError, isLoading, isFetching } =
     useGetAggregateMonitorResultsQuery({
       page: pageIndex,
       size: pageSize,
       search: searchQuery,
+      monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
     });
 
   useEffect(() => {
@@ -58,21 +64,10 @@ const ActionCenterPage = () => {
     }
   }, [isError, toast]);
 
-  /*
-   * Filtering paginated results can lead to odd behaviors
-   * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
-   */
   const results =
-    data?.items
-      ?.flatMap((monitor) =>
-        !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
-      )
-      .filter((monitor) => {
-        const isWebsite = monitor.monitorType === MONITOR_TYPES.WEBSITE;
-        // Show website monitors only if webMonitor flag is enabled
-        // Show non-website monitors only if llmClassifier flag is enabled
-        return isWebsite ? webMonitorEnabled : llmClassifierEnabled;
-      }) || [];
+    data?.items?.flatMap((monitor) =>
+      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+    ) || [];
 
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
@@ -114,7 +109,7 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled && !llmClassifierEnabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
   }
 
@@ -193,6 +188,11 @@ const ActionCenterPage = () => {
             showSizeChanger={{
               suffixIcon: <Icons.ChevronDown />,
             }}
+            hideOnSinglePage={
+              // if we're on the smallest page size, and there's only one page, hide the pagination
+              paginationProps.pageSize?.toString() ===
+              paginationProps.pageSizeOptions?.[0]
+            }
           />
         </Flex>
       )}
