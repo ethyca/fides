@@ -14,7 +14,7 @@ const ClassificationSelect = ({
 }: { onSelectDataCategory: (value: string) => void } & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
-  const dataCategories = getDataCategories();
+  const dataCategories = getDataCategories().filter((c) => c.active);
   const [open, setOpen] = useState(false);
 
   const options: TaxonomySelectOption[] = dataCategories.map((dataCategory) => {
@@ -35,7 +35,6 @@ const ClassificationSelect = ({
       description: dataCategory.description || "",
     };
   });
-
   return (
     <TaxonomySelect
       options={options}
@@ -45,13 +44,19 @@ const ClassificationSelect = ({
           type="text"
           size="small"
           icon={<Icons.Add />}
+          disabled={props.disabled}
         />
       }
       placeholder=""
       suffixIcon={null}
       classNames={{
-        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer",
+        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer -ml-5",
       }}
+      style={
+        {
+          "--ant-select-multiple-selector-bg-disabled": "transparent",
+        } as React.CSSProperties
+      }
       variant="borderless"
       autoFocus={false}
       maxTagCount="responsive"

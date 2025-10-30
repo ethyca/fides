@@ -43,11 +43,13 @@ def original_cors_middleware_origins() -> Generator:
     )
 
 
+@pytest.fixture(scope="function")
+def url() -> str:
+    return urls.V1_URL_PREFIX + urls.CONFIG
+
+
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPatchApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -667,9 +669,6 @@ class TestPatchApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPutApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1040,9 +1039,6 @@ class TestPutApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestGetApplicationConfigApiSet:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1156,9 +1152,6 @@ class TestGetApplicationConfigApiSet:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestDeleteApplicationConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -1335,9 +1328,6 @@ class TestDeleteApplicationConfig:
 
 
 class TestGetConfig:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return urls.V1_URL_PREFIX + urls.CONFIG
 
     def test_get_config(
         self,
@@ -1364,6 +1354,7 @@ class TestGetConfig:
             "storage",
             "consent",
             "privacy_center",
+            "privacy_request_duplicate_detection",
         }
 
         for key in config.keys():
@@ -1493,3 +1484,148 @@ class TestGetConfig:
         assert (
             len(privacy_center_keys.difference(set(["url"]))) == 0
         ), "Unexpected config API change, please review with Ethyca security team"
+
+
+class TestPatchDuplicateDetectionConfig:
+    """Tests for duplicate detection configuration."""
+
+    def test_patch_duplicate_detection_config(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """Test patching duplicate detection configuration."""
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Patch duplicate detection settings
+        payload = {
+            "privacy_request_duplicate_detection": {
+                "enabled": True,
+                "time_window_days": 30,
+                "match_identity_fields": ["email", "phone_number"],
+            }
+        }
+
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert (
+            response_settings["privacy_request_duplicate_detection"]["enabled"] is True
+        )
+        assert (
+            response_settings["privacy_request_duplicate_detection"]["time_window_days"]
+            == 30
+        )
+        assert response_settings["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
+
+        # Verify in database
+        db_settings = db.query(ApplicationConfig).first()
+        assert (
+            db_settings.api_set["privacy_request_duplicate_detection"]["enabled"]
+            is True
+        )
+        assert (
+            db_settings.api_set["privacy_request_duplicate_detection"][
+                "time_window_days"
+            ]
+            == 30
+        )
+        assert db_settings.api_set["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
+
+        # Patch single property
+        updated_payload = {"privacy_request_duplicate_detection": {"enabled": False}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert (
+            response_settings["privacy_request_duplicate_detection"]["enabled"] is False
+        )
+        # Other properties should remain unchanged
+        assert (
+            response_settings["privacy_request_duplicate_detection"]["time_window_days"]
+            == 30
+        )
+        assert response_settings["privacy_request_duplicate_detection"][
+            "match_identity_fields"
+        ] == ["email", "phone_number"]
+
+    def test_patch_duplicate_detection_invalid_time_window(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+    ):
+        """Test validation of time_window_days."""
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Test value too low (< 1)
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"privacy_request_duplicate_detection": {"time_window_days": 0}},
+        )
+        assert response.status_code == 422
+
+        # Test value too high (> 3650)
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"privacy_request_duplicate_detection": {"time_window_days": 3651}},
+        )
+        assert response.status_code == 422
+
+        # Test boundary values (should succeed)
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"privacy_request_duplicate_detection": {"time_window_days": 1}},
+        )
+        assert response.status_code == 200
+
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json={"privacy_request_duplicate_detection": {"time_window_days": 3650}},
+        )
+        assert response.status_code == 200
+
+    def test_get_duplicate_detection_defaults(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """Test that default values are returned when no config is set."""
+        auth_header = generate_auth_header([scopes.CONFIG_READ])
+
+        response = api_client.get(
+            urls.V1_URL_PREFIX + urls.CONFIG,
+            headers=auth_header,
+            params={"api_set": True},
+        )
+        assert response.status_code == 200
+
+        # Should return empty dict or defaults when not configured
+        config = response.json()
+        # Either key doesn't exist or has default values
+        if "privacy_request_duplicate_detection" in config:
+            assert config["privacy_request_duplicate_detection"]["enabled"] is False
+            assert (
+                config["privacy_request_duplicate_detection"]["time_window_days"] == 365
+            )
+            assert config["privacy_request_duplicate_detection"][
+                "match_identity_fields"
+            ] == ["email"]

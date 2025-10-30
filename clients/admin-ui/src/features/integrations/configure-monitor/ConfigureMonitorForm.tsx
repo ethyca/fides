@@ -12,6 +12,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ClassifyLlmPromptTemplateOptions,
@@ -21,8 +22,6 @@ import {
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
-
-import { PROMPT_TEMPLATE_OPTIONS } from "./constants";
 
 interface MonitorConfigFormValues {
   name: string;
@@ -93,7 +92,27 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
   const { flags } = useFeatures();
-  const hasFullActionCenter = !!flags.alphaFullActionCenter;
+
+  /**
+   * Feature flag for LLM classifier functionality within action center.
+   * Note: Action center can exist for web monitoring without this feature.
+   * This flag specifically gates the LLM-based classification capabilities.
+   */
+  const llmClassifierFeatureEnabled = !!flags.heliosV2;
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery(
+    {
+      api_set: false,
+    },
+    { skip: !llmClassifierFeatureEnabled },
+  );
+
+  /**
+   * Server-side LLM classifier capability.
+   * This determines if the backend supports LLM-based classification for monitors.
+   */
+  const serverSupportsLlmClassifier =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
@@ -154,7 +173,11 @@ const ConfigureMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
-  const isLlmClassifierEnabled =
+  /**
+   * Check if this monitor is currently configured to use LLM classification.
+   * This is independent of whether the server supports it or the feature is enabled.
+   */
+  const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
   const initialValues = {
@@ -163,14 +186,14 @@ const ConfigureMonitorForm = ({
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
-    use_llm_classifier: isLlmClassifierEnabled,
-    llm_model_override: isLlmClassifierEnabled
+    use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
+    llm_model_override: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
-    prompt_template: isLlmClassifierEnabled
+    prompt_template: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.prompt_template ?? undefined)
       : undefined,
-    content_classification_enabled: !isLlmClassifierEnabled
+    content_classification_enabled: !monitorUsesLlmClassifier
       ? (monitor?.classify_params?.content_classification_enabled ?? undefined)
       : undefined, // for now, content classification is always disabled for LLM classification
   };
@@ -211,32 +234,28 @@ const ConfigureMonitorForm = ({
               }
               id="execution_start_date"
             />
-            {hasFullActionCenter && (
+            {llmClassifierFeatureEnabled && (
               <>
                 <CustomSwitch
                   name="use_llm_classifier"
                   id="use_llm_classifier"
-                  label="Use LLM Classifier"
+                  label="Use LLM classifier"
                   variant="stacked"
+                  isDisabled={!serverSupportsLlmClassifier}
+                  tooltip={
+                    !serverSupportsLlmClassifier
+                      ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
+                      : undefined
+                  }
                 />
                 {values.use_llm_classifier && (
-                  <>
-                    <CustomTextInput
-                      name="llm_model_override"
-                      id="llm_model_override"
-                      label="Model Override"
-                      variant="stacked"
-                      tooltip="Optionally specify a custom model to use for LLM classification"
-                    />
-                    <ControlledSelect
-                      name="prompt_template"
-                      id="prompt_template"
-                      label="Prompt Template"
-                      options={PROMPT_TEMPLATE_OPTIONS}
-                      layout="stacked"
-                      tooltip="Select the prompt template to use for LLM classification"
-                    />
-                  </>
+                  <CustomTextInput
+                    name="llm_model_override"
+                    id="llm_model_override"
+                    label="Model override"
+                    variant="stacked"
+                    tooltip="Optionally specify a custom model to use for LLM classification"
+                  />
                 )}
               </>
             )}

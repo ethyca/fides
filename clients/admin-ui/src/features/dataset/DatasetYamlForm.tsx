@@ -30,7 +30,7 @@ interface NestedDataset {
 export function isDatasetArray(value: unknown): value is NestedDataset {
   return (
     typeof value === "object" &&
-    value != null &&
+    value !== null &&
     "dataset" in value &&
     Array.isArray((value as any).dataset)
   );

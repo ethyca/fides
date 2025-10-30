@@ -152,6 +152,11 @@ export const InProgressMonitorTasksList = () => {
         showSizeChanger={{
           suffixIcon: <Icons.ChevronDown />,
         }}
+        hideOnSinglePage={
+          // if we're on the smallest page size, and there's only one page, hide the pagination
+          paginationProps.pageSize?.toString() ===
+          paginationProps.pageSizeOptions?.[0]
+        }
       />
     </Flex>
   );

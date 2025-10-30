@@ -13,6 +13,7 @@ import {
   useToast,
 } from "fidesui";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { capitalize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
@@ -29,7 +30,7 @@ import {
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
 
-const { Text, Title } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
@@ -208,10 +209,26 @@ export const InProgressMonitorTaskItem = ({
               )}
             </Space>
             {task.status === "error" && (
-              <Space className="pl-1">
-                <Text type="secondary" size="sm">
+              <Space>
+                <Paragraph
+                  type="secondary"
+                  size="sm"
+                  ellipsis={{
+                    rows: 1,
+                    expandable: true,
+                    symbol: "more",
+                    tooltip: true,
+                  }}
+                >
                   {task.message || "Unknown error"}
-                </Text>
+                </Paragraph>
+                {task.message && (
+                  <ClipboardButton
+                    copyText={task.message}
+                    size="small"
+                    className="ml-1"
+                  />
+                )}
               </Space>
             )}
           </Space>

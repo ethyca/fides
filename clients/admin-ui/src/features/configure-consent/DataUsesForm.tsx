@@ -92,7 +92,7 @@ const DataUsesForm = ({
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
-    { skip: !showSuggestions || vendorId == null },
+    { skip: !showSuggestions || vendorId === null || vendorId === undefined },
   );
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
 

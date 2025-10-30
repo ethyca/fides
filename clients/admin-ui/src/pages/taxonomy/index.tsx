@@ -176,33 +176,31 @@ const TaxonomyPage: NextPage = () => {
             />
           </div>
 
-          {!!taxonomyItems.length && (
-            <TaxonomyInteractiveTree
-              userCanAddLabels={userCanAddLabels}
-              taxonomyItems={
-                showDisabledItems ? taxonomyItems : activeTaxonomyItems
-              }
-              draftNewItem={draftNewItem}
-              lastCreatedItemKey={lastCreatedItemKey}
-              resetLastCreatedItemKey={() => setLastCreatedItemKey(null)}
-              onTaxonomyItemClick={(taxonomyItem) => {
-                setTaxonomyItemToEdit(taxonomyItem);
-              }}
-              onAddButtonClick={(taxonomyItem) => {
-                const newItem = {
-                  parent_key: taxonomyItem?.fides_key ?? null,
-                  is_default: false,
-                  description: "",
-                };
+          <TaxonomyInteractiveTree
+            userCanAddLabels={userCanAddLabels}
+            taxonomyItems={
+              showDisabledItems ? taxonomyItems : activeTaxonomyItems
+            }
+            draftNewItem={draftNewItem}
+            lastCreatedItemKey={lastCreatedItemKey}
+            resetLastCreatedItemKey={() => setLastCreatedItemKey(null)}
+            onTaxonomyItemClick={(taxonomyItem) => {
+              setTaxonomyItemToEdit(taxonomyItem);
+            }}
+            onAddButtonClick={(taxonomyItem) => {
+              const newItem = {
+                parent_key: taxonomyItem?.fides_key ?? null,
+                is_default: false,
+                description: "",
+              };
 
-                setDraftNewItem(newItem);
-              }}
-              taxonomyType={taxonomyType as any}
-              onCancelDraftItem={() => setDraftNewItem(null)}
-              onSubmitDraftItem={createNewLabel}
-              isCreating={isCreating}
-            />
-          )}
+              setDraftNewItem(newItem);
+            }}
+            taxonomyType={taxonomyType as any}
+            onCancelDraftItem={() => setDraftNewItem(null)}
+            onSubmitDraftItem={createNewLabel}
+            isCreating={isCreating}
+          />
         </div>
       </Flex>
       {taxonomyItemToEdit && (

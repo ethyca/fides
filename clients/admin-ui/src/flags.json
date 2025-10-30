@@ -54,8 +54,8 @@
     "test": true,
     "production": false
   },
-  "alphaFullActionCenter": {
-    "description": "Enable additional Action Center features",
+  "heliosV2": {
+    "description": "Support LLM classifier for Helios datastore monitor and updated Action Center view that replaces Activity, Detection, and Discovery pages",
     "development": true,
     "test": true,
     "production": false

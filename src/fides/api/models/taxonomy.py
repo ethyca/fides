@@ -21,7 +21,15 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
-LEGACY_TAXONOMIES = {"data_categories", "data_uses", "data_subjects"}
+# Legacy Fideslang taxonomy keys
+LEGACY_TAXONOMY_KEYS = {
+    "data_category",
+    "data_use",
+    "data_subject",
+}
+
+# Taxonomies that are managed by Fides (legacy taxonomies and system group)
+MANAGED_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
 
 
 class TargetType(str, Enum):
@@ -81,7 +89,9 @@ class Taxonomy(Base, FidesBase):
         """Create a new Taxonomy with proper handling of applies_to."""
         # Disallow creating taxonomies that represent legacy types
         fides_key = data.get("fides_key")
-        if fides_key in LEGACY_TAXONOMIES:
+        # Specifically exclude system_group to allow for creation during tests
+        # We already have unique constraints on fides_key to prevent duplicates on DB level
+        if fides_key in MANAGED_TAXONOMY_KEYS:
             raise ValidationError(
                 f"Cannot create taxonomy '{fides_key}'. This is a taxonomy managed by the system."
             )
@@ -166,7 +176,7 @@ class TaxonomyAllowedUsage(Base):
 
     target_type can be either:
     - A generic type: "system", "privacy_declaration", "taxonomy"
-    - A taxonomy key: "data_categories", "data_uses", etc.
+    - A taxonomy key: "data_category", "data_use", etc.
     """
 
     @declared_attr
@@ -193,7 +203,7 @@ class TaxonomyAllowedUsage(Base):
     )
     target_type: Column[str] = Column(
         String, primary_key=True
-    )  # Can be "system", "dataset", OR a taxonomy key like "data_categories"
+    )  # Can be "system", "dataset", OR a taxonomy key like "data_category"
 
 
 class TaxonomyElement(Base, FidesBase):

@@ -166,7 +166,9 @@ export const useTableState = <TSortKey extends string = string>(
       } else {
         // Clean up filters by removing null/undefined values before syncing to URL
         const cleanFilters = Object.fromEntries(
-          Object.entries(filters).filter(([, value]) => value != null),
+          Object.entries(filters).filter(
+            ([, value]) => value !== null && value !== undefined,
+          ),
         );
         setQueryState({
           filters: Object.keys(cleanFilters).length > 0 ? cleanFilters : null, // Use null to remove from URL when empty

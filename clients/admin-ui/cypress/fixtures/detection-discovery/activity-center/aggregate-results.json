@@ -46,8 +46,7 @@
         "classifying": 22,
         "approved": 0,
         "classified_low_confidence": 100,
-        "classified_high_confidence": 100,
-        "classified_manually": 100
+        "classified_high_confidence": 100
       },
       "total_updates": 253,
       "monitorType": "datastore",

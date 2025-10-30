@@ -16,7 +16,6 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
@@ -34,22 +33,21 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: appConfig, isLoading: isConfigLoading } =
-    useGetConfigurationSettingsQuery({
-      api_set: false,
-    });
-  const webMonitorEnabled =
-    !!appConfig?.detection_discovery?.website_monitor_enabled;
+  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
+
+  // Build monitor_type filter based on enabled feature flags
+  const monitorTypes: MONITOR_TYPES[] = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+  ];
 
   const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery(
-      {
-        page: pageIndex,
-        size: pageSize,
-        search: searchQuery,
-      },
-      { skip: isConfigLoading || !webMonitorEnabled },
-    );
+    useGetAggregateMonitorResultsQuery({
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+    });
 
   useEffect(() => {
     resetPagination();
@@ -57,29 +55,19 @@ const ActionCenterPage = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (isError && webMonitorEnabled) {
+    if (isError) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast, webMonitorEnabled]);
+  }, [isError, toast]);
 
-  /*
-   * Filtering paginated results can lead to odd behaviors
-   * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
-   */
   const results =
-    data?.items
-      ?.flatMap((monitor) =>
-        !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
-      )
-      .filter(
-        (monitor) =>
-          flags.alphaFullActionCenter ||
-          monitor.monitorType === MONITOR_TYPES.WEBSITE,
-      ) || [];
+    data?.items?.flatMap((monitor) =>
+      !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
+    ) || [];
 
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
@@ -121,8 +109,8 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled) {
-    return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
+  if (!webMonitorEnabled && !heliosV2Enabled) {
+    return <DisabledMonitorsPage />;
   }
 
   return (
@@ -200,6 +188,11 @@ const ActionCenterPage = () => {
             showSizeChanger={{
               suffixIcon: <Icons.ChevronDown />,
             }}
+            hideOnSinglePage={
+              // if we're on the smallest page size, and there's only one page, hide the pagination
+              paginationProps.pageSize?.toString() ===
+              paginationProps.pageSizeOptions?.[0]
+            }
           />
         </Flex>
       )}

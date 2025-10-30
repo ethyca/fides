@@ -43,7 +43,7 @@ class TaxonomyService:
     @overload
     def get_elements(
         self,
-        taxonomy_type: Literal["data_categories"],
+        taxonomy_type: Literal["data_category"],
         active_only: bool = True,
         parent_key: Optional[str] = None,
     ) -> List[DataCategory]: ...
@@ -51,7 +51,7 @@ class TaxonomyService:
     @overload
     def get_elements(
         self,
-        taxonomy_type: Literal["data_uses"],
+        taxonomy_type: Literal["data_use"],
         active_only: bool = True,
         parent_key: Optional[str] = None,
     ) -> List[DataUse]: ...
@@ -59,7 +59,7 @@ class TaxonomyService:
     @overload
     def get_elements(
         self,
-        taxonomy_type: Literal["data_subjects"],
+        taxonomy_type: Literal["data_subject"],
         active_only: bool = True,
         parent_key: Optional[str] = None,
     ) -> List[DataSubject]: ...
@@ -75,17 +75,17 @@ class TaxonomyService:
 
     @overload
     def get_element(
-        self, taxonomy_type: Literal["data_categories"], fides_key: str
+        self, taxonomy_type: Literal["data_category"], fides_key: str
     ) -> Optional[DataCategory]: ...
 
     @overload
     def get_element(
-        self, taxonomy_type: Literal["data_uses"], fides_key: str
+        self, taxonomy_type: Literal["data_use"], fides_key: str
     ) -> Optional[DataUse]: ...
 
     @overload
     def get_element(
-        self, taxonomy_type: Literal["data_subjects"], fides_key: str
+        self, taxonomy_type: Literal["data_subject"], fides_key: str
     ) -> Optional[DataSubject]: ...
 
     def get_element(self, taxonomy_type: str, fides_key: str) -> Optional[Any]:
@@ -94,17 +94,17 @@ class TaxonomyService:
 
     @overload
     def create_element(
-        self, taxonomy_type: Literal["data_categories"], element_data: Dict
+        self, taxonomy_type: Literal["data_category"], element_data: Dict
     ) -> DataCategory: ...
 
     @overload
     def create_element(
-        self, taxonomy_type: Literal["data_uses"], element_data: Dict
+        self, taxonomy_type: Literal["data_use"], element_data: Dict
     ) -> DataUse: ...
 
     @overload
     def create_element(
-        self, taxonomy_type: Literal["data_subjects"], element_data: Dict
+        self, taxonomy_type: Literal["data_subject"], element_data: Dict
     ) -> DataSubject: ...
 
     def create_element(
@@ -144,20 +144,20 @@ class TaxonomyService:
     @overload
     def update_element(
         self,
-        taxonomy_type: Literal["data_categories"],
+        taxonomy_type: Literal["data_category"],
         fides_key: str,
         element_data: Dict,
     ) -> Optional[DataCategory]: ...
 
     @overload
     def update_element(
-        self, taxonomy_type: Literal["data_uses"], fides_key: str, element_data: Dict
+        self, taxonomy_type: Literal["data_use"], fides_key: str, element_data: Dict
     ) -> Optional[DataUse]: ...
 
     @overload
     def update_element(
         self,
-        taxonomy_type: Literal["data_subjects"],
+        taxonomy_type: Literal["data_subject"],
         fides_key: str,
         element_data: Dict,
     ) -> Optional[DataSubject]: ...
@@ -244,17 +244,17 @@ class TaxonomyService:
 
     @overload
     def create_or_update_element(
-        self, taxonomy_type: Literal["data_categories"], element_data: Dict
+        self, taxonomy_type: Literal["data_category"], element_data: Dict
     ) -> DataCategory: ...
 
     @overload
     def create_or_update_element(
-        self, taxonomy_type: Literal["data_uses"], element_data: Dict
+        self, taxonomy_type: Literal["data_use"], element_data: Dict
     ) -> DataUse: ...
 
     @overload
     def create_or_update_element(
-        self, taxonomy_type: Literal["data_subjects"], element_data: Dict
+        self, taxonomy_type: Literal["data_subject"], element_data: Dict
     ) -> DataSubject: ...
 
     def create_or_update_element(self, taxonomy_type: str, element_data: Dict) -> Any:

@@ -10,7 +10,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       query: () => ({ url: `taxonomies` }),
     }),
     getTaxonomy: build.query<TaxonomyEntity[], string>({
-      query: (taxonomyType) => ({ url: `taxonomies/${taxonomyType}` }),
+      query: (taxonomyType) => ({ url: `taxonomies/${taxonomyType}/elements` }),
       providesTags: (result, error, taxonomyType) => [
         { type: "Taxonomy", id: taxonomyType },
       ],
@@ -52,7 +52,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       { taxonomyType: string } & Partial<TaxonomyEntity>
     >({
       query: ({ taxonomyType, ...body }) => ({
-        url: `taxonomies/${taxonomyType}`,
+        url: `taxonomies/${taxonomyType}/elements`,
         method: "POST",
         body,
       }),
@@ -66,7 +66,7 @@ const taxonomyApi = baseApi.injectEndpoints({
         Pick<TaxonomyEntity, "fides_key">
     >({
       query: ({ taxonomyType, ...body }) => ({
-        url: `taxonomies/${taxonomyType}`,
+        url: `taxonomies/${taxonomyType}/elements/${body.fides_key}`,
         method: "PUT",
         body,
       }),

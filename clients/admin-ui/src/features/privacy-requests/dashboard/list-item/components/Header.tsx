@@ -1,14 +1,10 @@
-import {
-  AntFlex as Flex,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { AntFlex as Flex, AntTypography as Typography, Icons } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
+import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 interface HeaderProps {
@@ -35,16 +31,19 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
             copyable={{
               text: privacyRequest.id,
               icon: (
-                <Tooltip title="Copy request ID">
-                  <div className="mt-1">
-                    <Icons.Copy />
-                  </div>
-                </Tooltip>
+                <Icons.Copy className="size-3.5 text-[var(--ant-color-text-secondary)]" />
               ),
-              tooltips: null,
+              tooltips: ["Copy request ID", "Copied"],
             }}
           >
-            {privacyRequest.policy.name}
+            {/*
+            Convert different action types to a single string
+            (e.g. "Access/Erasure request"
+            */}
+            {privacyRequest.policy.rules
+              .map((rule) => SubjectRequestActionTypeMap.get(rule.action_type))
+              .join("/")}{" "}
+            request
           </Typography.Link>
         </Typography.Title>
       </div>

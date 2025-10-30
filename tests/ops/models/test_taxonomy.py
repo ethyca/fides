@@ -15,7 +15,7 @@ class TestTaxonomyModels:
             Taxonomy.create(
                 db=db,
                 data={
-                    "fides_key": "data_categories",
+                    "fides_key": "data_category",
                     "name": "Data Categories",
                 },
             )
@@ -27,7 +27,7 @@ class TestTaxonomyModels:
             data={
                 "fides_key": "sensitivity",
                 "name": "Sensitivity",
-                "applies_to": ["data_categories"],
+                "applies_to": ["data_category"],
             },
         )
 
@@ -38,10 +38,10 @@ class TestTaxonomyModels:
             data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
         updated_taxonomy = taxonomy.update(
-            db=db, data={"applies_to": ["data_categories"]}
+            db=db, data={"applies_to": ["data_category"]}
         )
         db.flush()
-        assert updated_taxonomy.applies_to == ["data_categories"]
+        assert updated_taxonomy.applies_to == ["data_category"]
 
     def test_can_update_applies_to_with_custom_taxonomy(self, db: Session):
         """Taxonomy applies_to can be updated."""
@@ -67,18 +67,18 @@ class TestTaxonomyModels:
             data={
                 "fides_key": "sensitivity",
                 "name": "Sensitivity",
-                "applies_to": ["data_categories"],
+                "applies_to": ["data_category"],
             },
         )
 
-        assert "data_categories" in taxonomy.applies_to
+        assert "data_category" in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
         # Duplicate update – should be idempotent
-        taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
 
-        assert "data_categories" in taxonomy.applies_to
+        assert "data_category" in taxonomy.applies_to
         assert len(taxonomy.applies_to) == 1
 
     def test_save_updates_applies_to(self, db: Session):
@@ -89,10 +89,10 @@ class TestTaxonomyModels:
         )
 
         # Set applies_to directly and save
-        taxonomy.applies_to = ["data_categories"]
+        taxonomy.applies_to = ["data_category"]
         taxonomy.save(db)
         db.refresh(taxonomy)
-        assert taxonomy.applies_to == ["data_categories"]
+        assert taxonomy.applies_to == ["data_category"]
 
         # Change target list and save again
         taxonomy.applies_to = ["data_uses"]
@@ -107,17 +107,17 @@ class TestTaxonomyModels:
             data={
                 "fides_key": "sensitivity",
                 "name": "Sensitivity",
-                "applies_to": ["data_categories"],
+                "applies_to": ["data_category"],
             },
         )
 
-        assert taxonomy.applies_to == ["data_categories"]
+        assert taxonomy.applies_to == ["data_category"]
 
         # Set the same values and save; should remain a single entry
-        taxonomy.applies_to = ["data_categories", "data_categories"]
+        taxonomy.applies_to = ["data_category", "data_category"]
         taxonomy.save(db)
         db.refresh(taxonomy)
-        assert taxonomy.applies_to == ["data_categories"]
+        assert taxonomy.applies_to == ["data_category"]
 
     def test_save_remove_applies_to_succeeds_when_unused(self, db: Session):
         """Removing applies_to via save works when there are no usages."""
@@ -126,7 +126,7 @@ class TestTaxonomyModels:
             data={
                 "fides_key": "sensitivity",
                 "name": "Sensitivity",
-                "applies_to": ["data_categories"],
+                "applies_to": ["data_category"],
             },
         )
 
@@ -142,7 +142,7 @@ class TestTaxonomyModels:
             data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
         # Allow mapping to legacy taxonomy
-        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        source_taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
 
         source_element = TaxonomyElement.create(
@@ -158,7 +158,7 @@ class TestTaxonomyModels:
             source_element_key=source_element.fides_key,
             target_element_key="user.contact.email",
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy="data_categories",
+            target_taxonomy="data_category",
         )
         db.add(usage)
         db.flush()
@@ -206,8 +206,8 @@ class TestTaxonomyModels:
             data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        # Allow sensitivity to apply to data_categories
-        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        # Allow sensitivity to apply to data_category
+        source_taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
 
         # Create elements
@@ -225,12 +225,12 @@ class TestTaxonomyModels:
             source_element_key=source_element.fides_key,
             target_element_key="user.contact.email",
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy="data_categories",
+            target_taxonomy="data_category",
         )
         db.add(usage)
         db.flush()
 
-        # Now attempt to remove "data_categories" from applies_to, it should raise due to FK constraint
+        # Now attempt to remove "data_category" from applies_to, it should raise due to FK constraint
         with pytest.raises(IntegrityError):
             # Try to remove the allowed usage
             source_taxonomy.update(db=db, data={"applies_to": []})
@@ -245,8 +245,8 @@ class TestTaxonomyModels:
             data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        # Allow sensitivity to be applied to data_categories
-        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        # Allow sensitivity to be applied to data_category
+        source_taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
 
         # Create source element (sensitivity level)
@@ -259,7 +259,7 @@ class TestTaxonomyModels:
             },
         )
 
-        target_taxonomy_key = "data_categories"
+        target_taxonomy_key = "data_category"
         email_target = "user.email"
         name_target = "user.name"
 
@@ -294,7 +294,7 @@ class TestTaxonomyModels:
             data={
                 "fides_key": "sensitivity",
                 "name": "Sensitivity",
-                "applies_to": ["data_categories"],
+                "applies_to": ["data_category"],
             },
         )
 
@@ -304,11 +304,11 @@ class TestTaxonomyModels:
         db.refresh(taxonomy)
         assert taxonomy.applies_to == []
 
-        # Re-add data_categories and verify
-        taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        # Re-add data_category and verify
+        taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
         db.refresh(taxonomy)
-        assert taxonomy.applies_to == ["data_categories"]
+        assert taxonomy.applies_to == ["data_category"]
 
     def test_create_element_hierarchy_for_sensitivity(self, db: Session):
         """Parent/child relationships on `TaxonomyElement` work for sensitivity elements."""
@@ -375,11 +375,11 @@ class TestTaxonomyModels:
             data={"fides_key": "sensitivity", "name": "Sensitivity"},
         )
 
-        target_taxonomy_key = "data_categories"
+        target_taxonomy_key = "data_category"
         target_taxonomy_element_key = "user.name"
 
         # Allow sensitivity to be applied to data categories
-        source_taxonomy.update(db=db, data={"applies_to": ["data_categories"]})
+        source_taxonomy.update(db=db, data={"applies_to": ["data_category"]})
         db.flush()
 
         # Create elements
@@ -501,7 +501,7 @@ class TestTaxonomyModels:
             source_element_key=source_element.fides_key,
             target_element_key="user.email",
             source_taxonomy=source_taxonomy.fides_key,
-            target_taxonomy="data_categories",
+            target_taxonomy="data_category",
         )
         db.add(usage)
         with pytest.raises(IntegrityError):

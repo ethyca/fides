@@ -28,6 +28,7 @@ export const MonitorResultDescription = ({
     return Object.entries(updates)
       .filter(
         ([key, count]) =>
+          count !== null &&
           count > 0 &&
           !MONITOR_UPDATES_TO_IGNORE.includes(key as MonitorUpdateKey),
       )
@@ -47,7 +48,7 @@ export const MonitorResultDescription = ({
         return indexA - indexB;
       })
       .map(([key, count]) => {
-        return `${nFormatter(count)} ${getMonitorUpdateName(key)}${isAssetList && count !== 1 ? "s" : ""}`;
+        return `${nFormatter(count!)} ${getMonitorUpdateName(key)}${isAssetList && count !== 1 ? "s" : ""}`;
       });
   }, [updates, isAssetList]);
 

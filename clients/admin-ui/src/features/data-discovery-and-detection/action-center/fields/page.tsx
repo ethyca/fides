@@ -389,6 +389,13 @@ const ActionCenterFields: NextPage = () => {
                     fieldActions["assign-categories"]([urn], {
                       user_assigned_data_categories: values,
                     }),
+                  dataCategoriesDisabled: props?.diff_status
+                    ? ![
+                        ...AVAILABLE_ACTIONS[
+                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                        ],
+                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
                         <Tooltip
@@ -427,6 +434,11 @@ const ActionCenterFields: NextPage = () => {
                 suffixIcon: <Icons.ChevronDown />,
               }}
               total={fieldsDataResponse?.total || 0}
+              hideOnSinglePage={
+                // if we're on the smallest page size, and there's only one page, hide the pagination
+                paginationProps.pageSize?.toString() ===
+                paginationProps.pageSizeOptions?.[0]
+              }
             />
           </Flex>
         </Splitter.Panel>

@@ -59,12 +59,12 @@ const TaxonomyInteractiveTree = ({
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
-  // Reset the zoom level and center the view when the taxonomy type changes
+  // Reset the zoom level and center the view when the taxonomy type changes or items are added/removed
   useEffect(() => {
     // A small delay is needed because fitView doesn't work if it's
     // called before the nodes are rendered
     setTimeout(() => fitView(), 150);
-  }, [fitView, taxonomyType]);
+  }, [fitView, taxonomyType, taxonomyItems.length]);
 
   // Root node (the taxonomy type)
   const rootNode: Node = useMemo(
