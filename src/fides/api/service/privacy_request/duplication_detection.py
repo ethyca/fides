@@ -23,6 +23,7 @@ from fides.api.task.conditional_dependencies.sql_translator import (
     SQLConditionTranslator,
 )
 from fides.config.config_proxy import DuplicateDetectionSettingsProxy
+from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 
 ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.approved,
@@ -325,7 +326,13 @@ class DuplicateDetectionService:
             True if the request is a duplicate request, False otherwise
         """
         duplicates = self.find_duplicate_privacy_requests(request, config)
-        rule_version = generate_rule_version(config)
+        rule_version = generate_rule_version(
+            DuplicateDetectionSettings(
+                enabled=config.enabled,
+                time_window_days=config.time_window_days,
+                match_identity_fields=config.match_identity_fields,
+            )
+        )
         try:
             dedup_key = self.generate_dedup_key(request, config)
         except ValueError as e:

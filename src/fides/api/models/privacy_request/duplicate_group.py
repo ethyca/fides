@@ -9,7 +9,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.config.config_proxy import DuplicateDetectionSettingsProxy
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 
 if TYPE_CHECKING:
@@ -32,9 +31,7 @@ def generate_deterministic_uuid(rule_version: str, dedup_key: str) -> uuid.UUID:
     return uuid.UUID(hashlib.md5(hash_input).hexdigest())
 
 
-def generate_rule_version(
-    config: Union[DuplicateDetectionSettings, DuplicateDetectionSettingsProxy]
-) -> str:
+def generate_rule_version(config: Union[DuplicateDetectionSettings]) -> str:
     """Generate a stable short hash for the dedup rule config."""
     normalized = json.dumps(config.model_dump(), sort_keys=True)
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:8]
