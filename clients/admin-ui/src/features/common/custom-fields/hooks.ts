@@ -15,7 +15,7 @@ import { CustomFieldsFormValues, CustomFieldValues } from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
-  resourceType: ResourceTypes;
+  resourceType?: ResourceTypes;
 };
 
 export const useCustomFields = ({
@@ -31,11 +31,11 @@ export const useCustomFields = ({
   const queryFidesKey = useMemo(() => resourceFidesKey ?? "", []);
 
   const allAllowListQuery = useGetAllAllowListQuery(true, {
-    skip: !isEnabled,
+    skip: !isEnabled || !resourceType,
   });
   const customFieldDefinitionsQuery =
-    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType, {
-      skip: !isEnabled,
+    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType!, {
+      skip: !isEnabled || !resourceType,
     });
   const {
     data,
@@ -43,7 +43,8 @@ export const useCustomFields = ({
     error,
     isError,
   } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
-    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
+    skip:
+      !resourceType || (queryFidesKey !== "" && !(isEnabled && queryFidesKey)),
   });
 
   const [bulkUpdateCustomFieldsMutationTrigger] =
@@ -130,7 +131,7 @@ export const useCustomFields = ({
    */
   const upsertCustomFields = useCallback(
     async (formValues: CustomFieldsFormValues) => {
-      if (!isEnabled) {
+      if (!isEnabled || !resourceType) {
         return;
       }
 
