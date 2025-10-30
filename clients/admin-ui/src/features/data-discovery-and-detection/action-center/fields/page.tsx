@@ -380,6 +380,13 @@ const ActionCenterFields: NextPage = () => {
                     fieldActions["assign-categories"]([urn], {
                       user_assigned_data_categories: values,
                     }),
+                  dataCategoriesDisabled: props?.diff_status
+                    ? ![
+                        ...AVAILABLE_ACTIONS[
+                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                        ],
+                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
                         <Tooltip
