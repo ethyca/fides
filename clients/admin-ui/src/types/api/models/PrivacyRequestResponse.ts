@@ -25,7 +25,10 @@ export type PrivacyRequestResponse = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<string, string | null> | null;
+  identity?: Record<
+    string,
+    string | { label: string; value: string } | null
+  > | null;
   custom_privacy_request_fields?: null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
