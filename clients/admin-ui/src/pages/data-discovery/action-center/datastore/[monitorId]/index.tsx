@@ -14,7 +14,7 @@ const MonitorFeatureError = () => (
 const DatastoreMonitorResultSystems: NextPage = () => {
   const { flags } = useFeatures();
 
-  return flags.llmClassifier ? (
+  return flags.heliosV2 ? (
     <ActionCenterFields />
   ) : (
     <Result status="error" title={<MonitorFeatureError />} />
