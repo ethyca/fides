@@ -5,6 +5,7 @@ import { defaultAntTheme } from "../src/ant-theme";
 import { FidesUIProvider } from "../src/FidesUIProvider";
 
 import "../src/ant-theme/global.scss";
+import "../src/tailwind.css";
 
 const preview: Preview = {
   parameters: {

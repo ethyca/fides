@@ -1,24 +1,24 @@
-import { AntResult as Result, AntText as Text } from "fidesui";
+import { AntResult as Result } from "fidesui";
 import { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";
 import ActionCenterFields from "~/features/data-discovery-and-detection/action-center/fields/page";
 
-const AlphaMonitorError = () => (
+const MonitorFeatureError = () => (
   <>
-    Attempting to access the alpha version of monitor results without setting
-    the <Text code>alphaFullActionCenter</Text> flag
+    Attempting to access monitor results without the required feature flag
+    enabled
   </>
 );
 
-const AlphaMonitorResultSystems: NextPage = () => {
+const DatastoreMonitorResultSystems: NextPage = () => {
   const { flags } = useFeatures();
 
-  return flags.alphaFullActionCenter ? (
+  return flags.llmClassifier ? (
     <ActionCenterFields />
   ) : (
-    <Result status="error" title={<AlphaMonitorError />} />
+    <Result status="error" title={<MonitorFeatureError />} />
   );
 };
 
-export default AlphaMonitorResultSystems;
+export default DatastoreMonitorResultSystems;

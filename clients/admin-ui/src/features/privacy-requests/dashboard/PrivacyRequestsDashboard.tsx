@@ -17,7 +17,7 @@ import React, { useMemo } from "react";
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
+import { GlobalFilterV2 } from "~/features/common/table/v2";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
   useSearchPrivacyRequestsQuery,
@@ -94,7 +94,7 @@ export const PrivacyRequestsDashboard = () => {
 
   return (
     <div>
-      <TableActionBar>
+      <Flex justify="space-between" align="center" className="my-2">
         <GlobalFilterV2
           globalFilter={fuzzySearchTerm}
           setGlobalFilter={setFuzzySearchTerm}
@@ -128,9 +128,9 @@ export const PrivacyRequestsDashboard = () => {
             setModalFilters={setModalFilters}
           />
         </Portal>
-      </TableActionBar>
+      </Flex>
       {isLoading ? (
-        <div className="border p-2">
+        <div className=" p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
@@ -144,7 +144,6 @@ export const PrivacyRequestsDashboard = () => {
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
             <List<PrivacyRequestResponse>
-              bordered
               dataSource={requests}
               rowSelection={{
                 selectedRowKeys: selectedIds,
@@ -161,7 +160,7 @@ export const PrivacyRequestsDashboard = () => {
               `${range[0]}-${range[1]} of ${total} items`
             }
             total={totalRows ?? 0}
-            align="end"
+            align="start"
           />
         </Flex>
       )}

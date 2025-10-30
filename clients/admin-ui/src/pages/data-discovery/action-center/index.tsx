@@ -1,9 +1,10 @@
 import {
   AntButton as Button,
-  AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
   AntMenu as Menu,
+  AntPagination as Pagination,
+  Icons,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
@@ -11,14 +12,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
@@ -33,57 +30,33 @@ const ActionCenterPage = () => {
   const toast = useToast();
   const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
   const { flags } = useFeatures();
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
+  const { paginationProps, pageIndex, pageSize, resetPagination } =
+    useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: appConfig, isLoading: isConfigLoading } =
-    useGetConfigurationSettingsQuery({
-      api_set: false,
-    });
-  const webMonitorEnabled =
-    !!appConfig?.detection_discovery?.website_monitor_enabled;
-
-  useEffect(() => {
-    resetPageIndexToDefault();
-  }, [searchQuery, resetPageIndexToDefault]);
+  const { webMonitor: webMonitorEnabled, llmClassifier: llmClassifierEnabled } =
+    flags;
 
   const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery(
-      {
-        page: pageIndex,
-        size: pageSize,
-        search: searchQuery,
-      },
-      { skip: isConfigLoading || !webMonitorEnabled },
-    );
+    useGetAggregateMonitorResultsQuery({
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+    });
 
   useEffect(() => {
-    if (isError && !!toast && webMonitorEnabled) {
+    resetPagination();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (isError) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast, webMonitorEnabled]);
-
-  useEffect(() => {
-    if (data) {
-      setTotalPages(data.total ?? 1);
-    }
-  }, [data, setTotalPages]);
+  }, [isError, toast]);
 
   /*
    * Filtering paginated results can lead to odd behaviors
@@ -94,11 +67,13 @@ const ActionCenterPage = () => {
       ?.flatMap((monitor) =>
         !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
       )
-      .filter(
-        (monitor) =>
-          flags.alphaFullActionCenter ||
-          monitor.monitorType === MONITOR_TYPES.WEBSITE,
-      ) || [];
+      .filter((monitor) => {
+        const isWebsite = monitor.monitorType === MONITOR_TYPES.WEBSITE;
+        // Show website monitors only if webMonitor flag is enabled
+        // Show non-website monitors only if llmClassifier flag is enabled
+        return isWebsite ? webMonitorEnabled : llmClassifierEnabled;
+      }) || [];
+
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),
@@ -139,17 +114,21 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled) {
-    return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
+  if (!webMonitorEnabled && !llmClassifierEnabled) {
+    return <DisabledMonitorsPage />;
   }
 
   return (
-    <Layout title="Action center">
+    <FixedLayout
+      title="Action center"
+      mainProps={{ overflow: "hidden" }}
+      fullHeight
+    >
       <PageHeader
         heading="Action center"
         breadcrumbItems={[{ title: "All activity" }]}
+        isSticky={false}
       />
-
       <Menu
         aria-label="Action center tabs"
         mode="horizontal"
@@ -169,24 +148,27 @@ const ActionCenterPage = () => {
         className="mb-4"
         data-testid="action-center-tabs"
       />
-
       {activeTab === TopLevelActionCenterTabHash.IN_PROGRESS ? (
         <InProgressMonitorTasksList />
       ) : (
-        <>
-          <Flex className="justify-between py-6">
+        <Flex
+          className="h-[calc(100%-48px)] overflow-hidden"
+          gap="middle"
+          vertical
+        >
+          <Flex className="justify-between ">
             <DebouncedSearchInput
               value={searchQuery}
               onChange={setSearchQuery}
             />
           </Flex>
-
           <List
             loading={isLoading}
             dataSource={results || loadingResults}
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
+            className="h-full overflow-scroll"
             renderItem={(summary) => {
               const link =
                 summary.key && summary.monitorType
@@ -205,26 +187,16 @@ const ActionCenterPage = () => {
               );
             }}
           />
-
-          {!!results && !!data?.total && data.total > pageSize && (
-            <>
-              <Divider className="mb-6 mt-0" />
-              <PaginationBar
-                totalRows={data?.total || 0}
-                pageSizes={PAGE_SIZES}
-                setPageSize={setPageSize}
-                onPreviousPageClick={onPreviousPageClick}
-                isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-                onNextPageClick={onNextPageClick}
-                isNextPageDisabled={isNextPageDisabled || isFetching}
-                startRange={startRange}
-                endRange={endRange}
-              />
-            </>
-          )}
-        </>
+          <Pagination
+            {...paginationProps}
+            total={data?.total || 0}
+            showSizeChanger={{
+              suffixIcon: <Icons.ChevronDown />,
+            }}
+          />
+        </Flex>
       )}
-    </Layout>
+    </FixedLayout>
   );
 };
 

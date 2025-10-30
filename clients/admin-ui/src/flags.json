@@ -54,14 +54,20 @@
     "test": true,
     "production": false
   },
-  "alphaFullActionCenter": {
-    "description": "Enable additional Action Center features",
+  "llmClassifier": {
+    "description": "Support LLM classifier for Helios datastore monitor and updated Action Center view that replaces Activity, Detection, and Discovery pages",
     "development": true,
     "test": true,
     "production": false
   },
   "privacyRequestV2": {
     "description": "Enable new privacy request dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaPrivacyNoticesSandbox": {
+    "description": "Enable privacy notices sandbox page for testing consent v3",
     "development": true,
     "test": false,
     "production": false
