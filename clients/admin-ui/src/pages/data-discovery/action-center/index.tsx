@@ -33,13 +33,12 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { webMonitor: webMonitorEnabled, llmClassifier: llmClassifierEnabled } =
-    flags;
+  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
 
   // Build monitor_type filter based on enabled feature flags
   const monitorTypes: MONITOR_TYPES[] = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(llmClassifierEnabled ? [MONITOR_TYPES.DATASTORE] : []),
+    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
   ];
 
   const { data, isError, isLoading, isFetching } =
@@ -110,7 +109,7 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled && !llmClassifierEnabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
   }
 

@@ -54,7 +54,7 @@
     "test": true,
     "production": false
   },
-  "llmClassifier": {
+  "heliosV2": {
     "description": "Support LLM classifier for Helios datastore monitor and updated Action Center view that replaces Activity, Detection, and Discovery pages",
     "development": true,
     "test": true,
