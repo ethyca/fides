@@ -192,7 +192,7 @@ const ActionCenterPage = () => {
             hideOnSinglePage={
               // if we're on the smallest page size, and there's only one page, hide the pagination
               paginationProps.pageSize?.toString() ===
-              paginationProps.pageSizeOptions?.[0]?.toString()
+              paginationProps.pageSizeOptions?.[0]
             }
           />
         </Flex>
