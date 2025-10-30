@@ -14,7 +14,7 @@ const ClassificationSelect = ({
 }: { onSelectDataCategory: (value: string) => void } & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
-  const dataCategories = getDataCategories();
+  const dataCategories = getDataCategories().filter((c) => c.active);
   const [open, setOpen] = useState(false);
 
   const options: TaxonomySelectOption[] = dataCategories.map((dataCategory) => {

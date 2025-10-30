@@ -98,7 +98,7 @@ const ConfigureMonitorForm = ({
    * Note: Action center can exist for web monitoring without this feature.
    * This flag specifically gates the LLM-based classification capabilities.
    */
-  const llmClassifierFeatureEnabled = !!flags.llmClassifier;
+  const llmClassifierFeatureEnabled = !!flags.heliosV2;
 
   const { data: appConfig } = useGetConfigurationSettingsQuery(
     {
