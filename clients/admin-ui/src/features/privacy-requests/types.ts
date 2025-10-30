@@ -85,7 +85,7 @@ export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
   identity: {
-    [key: string]: { label: string; value: any };
+    [key: string]: { label: string; value: string | null };
   };
   identity_verified_at?: string;
   custom_privacy_request_fields?: {
@@ -223,7 +223,7 @@ export const TimelineItemColorMap: Record<
   ActivityTimelineItemTypeEnum,
   CUSTOM_TAG_COLOR
 > = {
-  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: CUSTOM_TAG_COLOR.SANDSTONE,
+  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: CUSTOM_TAG_COLOR.DEFAULT,
   [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: CUSTOM_TAG_COLOR.MARBLE,
   [ActivityTimelineItemTypeEnum.MANUAL_TASK]: CUSTOM_TAG_COLOR.NECTAR,
 };

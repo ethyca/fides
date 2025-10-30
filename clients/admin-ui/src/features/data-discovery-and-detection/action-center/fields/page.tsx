@@ -7,6 +7,8 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntList as List,
+  AntMessage as message,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -18,7 +20,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, useEffect, useRef, useState } from "react";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -41,11 +43,15 @@ import {
   AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
+  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
 } from "./FieldActions.const";
-import { useGetMonitorFieldsQuery } from "./monitor-fields.slice";
+import {
+  useGetMonitorFieldsQuery,
+  useLazyGetAllowedActionsQuery,
+} from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
@@ -54,8 +60,9 @@ import {
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
-import MonitorTree from "./MonitorTree";
+import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { useBulkActions } from "./useBulkActions";
+import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
@@ -70,6 +77,9 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
 const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
+  const monitorTreeRef = useRef<MonitorTreeRef>(null);
+  const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = modal.useModal();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -85,18 +95,11 @@ const ActionCenterFields: NextPage = () => {
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
-  const [selectedFields, setSelectedFields] = useState<
-    DatastoreStagedResourceAPIResponse[]
-  >([]);
-  const [selectAll, setSelectAll] = useState<boolean>(false);
-  const { data: fieldsDataResponse, isFetching } = useGetMonitorFieldsQuery({
+  const baseMonitorFilters = {
     path: {
       monitor_config_id: monitorId,
     },
     query: {
-      size: pageSize,
-      page: pageIndex,
       staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       search: search.searchProps.value,
       diff_status: resourceStatus
@@ -105,60 +108,104 @@ const ActionCenterFields: NextPage = () => {
       confidence_score: confidenceScore || undefined,
       data_category: dataCategory || undefined,
     },
+  };
+
+  const {
+    data: fieldsDataResponse,
+    isFetching,
+    refetch,
+  } = useGetMonitorFieldsQuery({
+    ...baseMonitorFilters,
+    query: {
+      ...baseMonitorFilters.query,
+      size: pageSize,
+      page: pageIndex,
+    },
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
+
+  const [
+    allowedActionsTrigger,
+    { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
+  ] = useLazyGetAllowedActionsQuery();
   const resource = stagedResourceDetailsResult.data;
-  const bulkActions = useBulkActions(monitorId);
-  const fieldActions = useFieldActions(monitorId);
+  const bulkActions = useBulkActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const fieldActions = useFieldActions(
+    monitorId,
+    modalApi,
+    messageApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const {
+    excludedListItems,
+    indeterminate,
+    isBulkSelect,
+    listSelectMode,
+    resetListSelect,
+    selectedListItems,
+    updateListItems,
+    updateListSelectMode,
+    updateSelectedListItem,
+  } = useBulkListSelect<
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
   };
 
-  const availableActions = getAvailableActions(
-    selectedFields.flatMap((field) =>
-      field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
-    ),
-  );
-
-  const handleOnSelectAll = (nextSelectAll: boolean) => {
-    setSelectAll(nextSelectAll);
-    setSelectedFields(
-      nextSelectAll && fieldsDataResponse ? fieldsDataResponse.items : [],
-    );
-
-    setSelectedFieldIds(
-      nextSelectAll && fieldsDataResponse
-        ? fieldsDataResponse.items.map((item) => item.urn)
-        : [],
-    );
-  };
-
-  const handleOnSelect = (key: string, selected?: boolean) => {
-    setSelectAll(false);
-    const targetField = fieldsDataResponse?.items.find(
-      (item) => item.urn === key,
-    );
-
-    if (selected && targetField) {
-      setSelectedFields([...selectedFields, targetField]);
-    } else {
-      setSelectedFields(selectedFields.filter((val) => val.urn !== key));
+  const onActionDropdownOpenChange = (open: boolean) => {
+    if (open && isBulkSelect) {
+      allowedActionsTrigger({
+        ...baseMonitorFilters,
+        query: {
+          ...baseMonitorFilters.query,
+        },
+        body: {
+          excluded_resource_urns: extractListItemKeys(excludedListItems).map(
+            (itemKey) => itemKey.toString(),
+          ),
+        },
+      });
     }
-
-    setSelectedFieldIds(
-      selected
-        ? [...selectedFieldIds, key]
-        : selectedFieldIds.filter((val) => val !== key),
-    );
   };
 
-  const selectedFieldCount =
-    selectAll && fieldsDataResponse?.total
-      ? fieldsDataResponse?.total
-      : selectedFieldIds.length;
+  const availableActions = isBulkSelect
+    ? allowedActionsResult?.allowed_actions
+    : getAvailableActions(
+        selectedListItems.flatMap((field) =>
+          field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
+        ),
+      );
+  const responseCount = fieldsDataResponse?.total ?? 0;
+  const selectedListItemCount =
+    listSelectMode === "exclusive" && fieldsDataResponse?.total
+      ? responseCount - excludedListItems.length
+      : selectedListItems.length;
+
+  useEffect(() => {
+    if (fieldsDataResponse) {
+      updateListItems(
+        fieldsDataResponse.items.map(({ urn, ...rest }) => ({
+          itemKey: urn,
+          urn,
+          ...rest,
+        })),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldsDataResponse?.items]);
 
   useEffect(() => {
     if (detailsUrn) {
@@ -166,11 +213,13 @@ const ActionCenterFields: NextPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detailsUrn]);
+
   /**
    * @todo: this should be handled on a form/state action level
    */
   useEffect(() => {
     resetPagination();
+    resetListSelect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
@@ -201,6 +250,7 @@ const ActionCenterFields: NextPage = () => {
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
           <MonitorTree
+            ref={monitorTreeRef}
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
             onClickClassifyButton={() => {
@@ -233,87 +283,93 @@ const ActionCenterFields: NextPage = () => {
                 placeholder="Search"
               />
               <Flex gap="small">
-                <Dropdown
-                  trigger={["click"]}
-                  /* I don't like disabling linting but this pattern is inherit to ant-d */
-                  /* eslint-disable-next-line react/no-unstable-nested-components */
-                  popupRender={() => (
-                    <MonitorFieldFilters
-                      resourceStatus={resourceStatus}
-                      confidenceScore={confidenceScore}
-                      dataCategory={dataCategory}
-                      {...restMonitorFieldsFilters}
-                      monitorId={monitorId}
-                    />
+                <MonitorFieldFilters
+                  resourceStatus={resourceStatus}
+                  confidenceScore={confidenceScore}
+                  dataCategory={dataCategory}
+                  {...restMonitorFieldsFilters}
+                  monitorId={monitorId}
+                  stagedResourceUrn={selectedNodeKeys.map((key) =>
+                    key.toString(),
                   )}
-                >
-                  <Button icon={<Icons.ChevronDown />} iconPosition="end">
-                    Filter
-                  </Button>
-                </Dropdown>
+                />
                 <Dropdown
+                  onOpenChange={onActionDropdownOpenChange}
                   menu={{
                     items: [
                       ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
-                        label: FIELD_ACTION_LABEL[actionType],
-                        disabled: selectAll
-                          ? false
-                          : !availableActions?.includes(actionType),
+                        label:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType) ? (
+                            <Tooltip
+                              title={
+                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
+                              }
+                            >
+                              {FIELD_ACTION_LABEL[actionType]}
+                            </Tooltip>
+                          ) : (
+                            FIELD_ACTION_LABEL[actionType]
+                          ),
+                        disabled:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType),
                         onClick: () => {
-                          if (selectAll) {
-                            const callback = bulkActions[actionType];
-
-                            if (callback) {
-                              callback({
-                                path: {
-                                  monitor_config_id: monitorId,
-                                },
-                                query: {
-                                  staged_resource_urn: selectedNodeKeys.map(
-                                    (key) => key.toString(),
-                                  ),
-                                  search: search.searchProps.value,
-                                  diff_status: resourceStatus
-                                    ? resourceStatus.flatMap(intoDiffStatus)
-                                    : undefined,
-                                  confidence_score:
-                                    confidenceScore || undefined,
-                                  data_category: dataCategory || undefined,
-                                },
-                              });
-                            }
+                          if (isBulkSelect) {
+                            bulkActions[actionType](
+                              baseMonitorFilters,
+                              excludedListItems.map((k) =>
+                                k.itemKey.toString(),
+                              ),
+                              selectedListItemCount,
+                            );
                           } else {
-                            const callback = fieldActions[actionType];
-                            if (callback) {
-                              callback(selectedFieldIds);
-                            }
+                            fieldActions[actionType](
+                              selectedListItems.map(({ itemKey }) =>
+                                itemKey.toString(),
+                              ),
+                            );
                           }
                         },
                       })),
                     ],
                   }}
-                  disabled={selectedFieldIds.length <= 0}
+                  disabled={selectedListItems.length <= 0}
                 >
                   <Button
                     type="primary"
                     icon={<Icons.ChevronDown />}
                     iconPosition="end"
+                    loading={isFetchingAllowedActions}
                   >
                     Actions
                   </Button>
                 </Dropdown>
+                <Tooltip title="Refresh">
+                  <Button
+                    icon={<Icons.Renew />}
+                    onClick={() => refetch()}
+                    aria-label="Refresh"
+                  />
+                </Tooltip>
               </Flex>
             </Flex>
-            <Flex gap="middle">
+            <Flex gap="middle" align="center">
               <Checkbox
-                checked={selectAll}
-                onChange={(e) => handleOnSelectAll(e.target.checked)}
+                id="select-all"
+                checked={isBulkSelect}
+                indeterminate={indeterminate}
+                onChange={(e) =>
+                  updateListSelectMode(
+                    e.target.checked ? "exclusive" : "inclusive",
+                  )
+                }
               />
-              <Text>Select all</Text>
-              {!!selectedFieldCount && (
+              <label htmlFor="select-all">Select all</label>
+              {!!selectedListItemCount && (
                 <Text strong>
-                  {selectedFieldCount.toLocaleString()} selected
+                  {selectedListItemCount.toLocaleString()} selected
                 </Text>
               )}
             </Flex>
@@ -324,13 +380,22 @@ const ActionCenterFields: NextPage = () => {
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: selectedFieldIds.includes(props.urn),
-                  onSelect: handleOnSelect,
+                  selected: extractListItemKeys(selectedListItems).includes(
+                    props.urn,
+                  ),
+                  onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
                     fieldActions["assign-categories"]([urn], {
                       user_assigned_data_categories: values,
                     }),
+                  dataCategoriesDisabled: props?.diff_status
+                    ? ![
+                        ...AVAILABLE_ACTIONS[
+                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
+                        ],
+                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
                         <Tooltip
@@ -350,6 +415,12 @@ const ActionCenterFields: NextPage = () => {
                                   ].includes(action)
                                 : true
                             }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
                           />
                         </Tooltip>
                       ))
@@ -359,8 +430,15 @@ const ActionCenterFields: NextPage = () => {
             />
             <Pagination
               {...paginationProps}
-              showSizeChanger={false}
+              showSizeChanger={{
+                suffixIcon: <Icons.ChevronDown />,
+              }}
               total={fieldsDataResponse?.total || 0}
+              hideOnSinglePage={
+                // if we're on the smallest page size, and there's only one page, hide the pagination
+                paginationProps.pageSize?.toString() ===
+                paginationProps.pageSizeOptions?.[0]
+              }
             />
           </Flex>
         </Splitter.Panel>
@@ -430,7 +508,7 @@ const ActionCenterFields: NextPage = () => {
               <Form.Item label="Data categories">
                 <DataCategorySelect
                   variant="outlined"
-                  mode="tags"
+                  mode="multiple"
                   maxTagCount="responsive"
                   value={[
                     ...(resource.classifications?.map(({ label }) => label) ??
@@ -488,6 +566,8 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         ) : null}
       </DetailsDrawer>
+      {modalContext}
+      {messageContext}
     </FixedLayout>
   );
 };
