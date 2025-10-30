@@ -36,7 +36,7 @@ import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
 } from "./types";
-import { getMonitorType } from "./utils/getMonitorType";
+import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -54,12 +54,29 @@ const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAggregateMonitorResults: build.query<
       MonitorSummaryPaginatedResponse,
-      SearchQueryParams & PaginationQueryParams
+      SearchQueryParams &
+        PaginationQueryParams & {
+          monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+        }
     >({
-      query: ({ page = 1, size = 20, search }) => ({
-        url: `/plus/discovery-monitor/aggregate-results`,
-        params: { page, size, search, diff_status: "addition" },
-      }),
+      query: ({ page = 1, size = 20, search, monitor_type }) => {
+        const params: SearchQueryParams &
+          PaginationQueryParams & { diff_status: string } = {
+          page,
+          size,
+          search,
+          diff_status: "addition",
+        };
+
+        const urlParams = buildArrayQueryParams({
+          monitor_type,
+        });
+
+        return {
+          url: `/plus/discovery-monitor/aggregate-results?${urlParams.toString()}`,
+          params,
+        };
+      },
       transformResponse: (
         response: PaginatedResponse<MonitorAggregatedResults>,
       ) => ({
