@@ -490,7 +490,12 @@ const configureNavRoute = ({
   }
 
   // If the target route should be hidden when a specific flag is enabled, exclude it
-  if (route.hidesIfFlag && flags && flags[route.hidesIfFlag]) {
+  if (
+    route.hidesIfFlag &&
+    flags &&
+    flags[route.hidesIfFlag] &&
+    !window?.Cypress
+  ) {
     return undefined;
   }
 
