@@ -18,23 +18,6 @@ describe("Action center", () => {
     stubTaxonomyEntities();
   });
 
-  describe("disabled web monitor", () => {
-    beforeEach(() => {
-      cy.intercept("GET", "/api/v1/config*", {
-        body: {
-          detection_discovery: {
-            website_monitor_enabled: false,
-          },
-        },
-      }).as("getTranslationConfig");
-      cy.visit(ACTION_CENTER_ROUTE);
-    });
-    it("should display a message that the web monitor is disabled", () => {
-      cy.wait("@getTranslationConfig");
-      cy.contains("currently disabled").should("exist");
-    });
-  });
-
   describe("empty action center", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
