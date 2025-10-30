@@ -24,6 +24,32 @@ if TYPE_CHECKING:
 MASKED = "MASKED"
 
 
+class InterceptHandler(logging.Handler):
+    """
+    Intercept standard library logging and redirect to Loguru.
+
+    This handler is added to the root logger to capture logs from libraries
+    that use standard library logging (SQLAlchemy, Alembic, Celery, etc.)
+    and route them through Loguru for consistent formatting and serialization.
+    """
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Emit a log record by routing it through Loguru."""
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = str(record.levelno)
+
+        frame, depth = logging.currentframe(), 2
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
+
+
 class RedisSink:
     """A sink that writes log messages to Redis."""
 
@@ -171,13 +197,14 @@ def setup(config: FidesConfig) -> None:
     # Configure main sink from config
     destination = config.logging.destination
     main_sink = sys.stdout if not destination else destination
+    is_json_serialization = config.logging.serialization == "json"
     handlers.extend(
         create_handler_dicts(
             level=config.logging.level,
             include_called_from=config.dev_mode,
             sink=main_sink,
-            serialize=config.logging.serialization == "json",
-            colorize=config.logging.colorize,
+            serialize=is_json_serialization,
+            colorize=config.logging.colorize and not is_json_serialization,
         )
     )
 
@@ -195,6 +222,14 @@ def setup(config: FidesConfig) -> None:
         )
 
     logger.configure(handlers=handlers)
+
+    # Add InterceptHandler to root logger to capture standard library logs
+    # This intercepts logs from SQLAlchemy, Alembic, Celery, etc.
+    logging.root.handlers = [InterceptHandler()]
+    logging.root.setLevel(config.logging.level)
+
+    # Capture Python warnings and redirect them to logging so they get formatted by Loguru
+    logging.captureWarnings(True)
 
 
 def obfuscate_message(message: str) -> str:
