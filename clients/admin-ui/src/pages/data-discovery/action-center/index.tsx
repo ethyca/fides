@@ -33,7 +33,7 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { webMonitor: webMonitorEnabled, llmClassifier: llmClassifierEnabled } =
+  const { webMonitor: webMonitorEnabled, heliosV2: llmClassifierEnabled } =
     flags;
 
   // Build monitor_type filter based on enabled feature flags
