@@ -551,12 +551,14 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 self.result_request.result_path,
             )
 
-        # Ensure we have the expected polling result type
-        if not isinstance(polling_result, PollingResult):
-            raise PrivacyRequestError("Polling result must be PollingResult instance")
+        # Checks if we have a polling result, response could be empty in case there was no data to access
+        if polling_result:
+            # Ensure we have the expected polling result type
+            if not isinstance(polling_result, PollingResult):
+                raise PrivacyRequestError("Polling result must be PollingResult instance")
 
-        # Store results on the sub-request
-        self._store_sub_request_result(polling_result, sub_request, polling_task)
+            # Store results on the sub-request
+            self._store_sub_request_result(polling_result, sub_request, polling_task)
 
         # Mark as complete using existing method
         sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
