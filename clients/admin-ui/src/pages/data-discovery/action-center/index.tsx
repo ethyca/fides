@@ -37,13 +37,10 @@ const ActionCenterPage = () => {
     flags;
 
   // Build monitor_type filter based on enabled feature flags
-  const monitorTypes: MONITOR_TYPES[] = [];
-  if (webMonitorEnabled) {
-    monitorTypes.push(MONITOR_TYPES.WEBSITE);
-  }
-  if (llmClassifierEnabled) {
-    monitorTypes.push(MONITOR_TYPES.DATASTORE);
-  }
+  const monitorTypes: MONITOR_TYPES[] = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    ...(llmClassifierEnabled ? [MONITOR_TYPES.DATASTORE] : []),
+  ];
 
   const { data, isError, isLoading, isFetching } =
     useGetAggregateMonitorResultsQuery({
