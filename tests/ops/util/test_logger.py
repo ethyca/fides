@@ -15,11 +15,21 @@ from fides.api.util.logger import (
     RedisSink,
     _log_exception,
     _log_warning,
-    setup,
+    setup as setup_logger,
     suppress_logging,
 )
 from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 from fides.config import CONFIG
+
+
+@pytest.fixture(scope="function", autouse=True)
+def setup_test_logging():
+    """
+    Setup logger configuration before each test.
+    This fixture runs automatically before each test function.
+    """
+    setup_logger(CONFIG)
+    yield
 
 
 @pytest.mark.unit
