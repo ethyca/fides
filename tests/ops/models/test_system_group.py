@@ -13,15 +13,14 @@ from fides.api.models.taxonomy import Taxonomy, TaxonomyElement
 def system_group_element(db: Session) -> TaxonomyElement:
     """Create a dedicated taxonomy and element to back a SystemGroup fides_key."""
     taxonomy_key = "system_group"
-    taxonomy = Taxonomy.create(
-        db=db,
-        data={
-            "fides_key": taxonomy_key,
-            "name": "System Groups",
-            # Allow application to systems
-            "applies_to": ["system"],
-        },
+    taxonomy = Taxonomy(
+        fides_key=taxonomy_key,
+        name="System Groups",
+        # Allow application to systems
+        applies_to=["system"],
     )
+    db.add(taxonomy)
+    db.commit()
 
     element = TaxonomyElement.create(
         db=db,

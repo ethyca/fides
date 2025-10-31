@@ -1104,8 +1104,8 @@ describe("Fides-js TCF", () => {
                 cy.get("input").should("be.checked");
               });
               cy.get("button").contains("Legitimate interest").click();
-              cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
-                cy.get("input").should("not.be.checked");
+              cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+                cy.get("input").should("be.checked");
               });
             });
             cy.get("@FidesUIChanged").should("have.been.calledOnce");

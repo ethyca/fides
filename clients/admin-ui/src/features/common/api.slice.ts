@@ -86,6 +86,7 @@ export const baseApi = createApi({
     "Monitor",
     "Monitor Field Results",
     "Monitor Field Details",
+    "Allowed Monitor Field Actions",
   ],
   endpoints: () => ({}),
 });

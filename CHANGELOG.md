@@ -19,13 +19,36 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.73.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.73.1..main)
+
+### Added
+- Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
-- Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6813)
-- Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
 
+## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
+
+### Added
+- Added automatic refresh of monitor tree ancestor statuses after field actions [#6853](https://github.com/ethyca/fides/pull/6853)
+- Added database model for identity definitions [#6852](https://github.com/ethyca/fides/pull/6852) https://github.com/ethyca/fides/labels/db-migration
+- Added config proxy settings for duplicate DSR detection[#6811](https://github.com/ethyca/fides/pull/6811) https://github.com/ethyca/fides/labels/db-migration
+- Added privacy preferences database model [#6875](https://github.com/ethyca/fides/pull/6875)
+- Added beta feature flag for LLM classifier [#6880](https://github.com/ethyca/fides/pull/6880)
+
+### Changed
+- Updated border radius on our design system theme [#6512](https://github.com/ethyca/fides/pull/6512)
+- Simplified data category selection logic in monitor field list items by replacing `user_assigned_data_categories` with unified `preferred_data_categories` field [#6817](https://github.com/ethyca/fides/pull/6817)
+- Custom fields are now shown in the list view of the new request manager [#6849](https://github.com/ethyca/fides/pull/6849)
+- Improved action center filters with tree-based UI and nested data categories [#6855](https://github.com/ethyca/fides/pull/6855)
+- Updates legacy taxonomy consts for custom taxonomy API [#6824](https://github.com/ethyca/fides/pull/6824)
+
+
+### Developer Experience
+- Reorganized FidesUI components into logical directories by design system and function [#6844](https://github.com/ethyca/fides/pull/6844)
+- Added reusable Filter component with optional search and tree-based filtering to FidesUI design system [#6845](https://github.com/ethyca/fides/pull/6845)
+- Added Privacy Notice Sandbox for Consent v3 development and demos [#6841](https://github.com/ethyca/fides/pull/6841)
+- Added strict equality ESLint rule to prevent type coercion bugs [#6879](https://github.com/ethyca/fides/pull/6879)
 
 ## [2.73.0](https://github.com/ethyca/fides/compare/2.72.3..2.73.0)
 
@@ -58,6 +81,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed a bug where the "Request manager" navigation item wouldn't return users to the main request view [#6814](https://github.com/ethyca/fides/pull/6814)
 - Fixed incorrect positioning on "Add system" button on system inventory page when Compass was disabled [#6812](https://github.com/ethyca/fides/pull/6812)
 - Fixed missing reference value validation in SaaS requests to apply to all access requests [#6782](https://github.com/ethyca/fides/pull/6782)
+- Fixed an issue where some Special purpose vendors were displaying incorrectly in the TCF modal [#6830](https://github.com/ethyca/fides/pull/6830)
+- Added action guards on polling requests to avoid running access polling requests on erasure tasks [#6827](https://github.com/ethyca/fides/pull/6827)
 
 ### Changed
 - Switch to use `classify_params.llm_model_override` instead of `classify_params.model_override` in monitor config form [#6805](https://github.com/ethyca/fides/pull/6805)

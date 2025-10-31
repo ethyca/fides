@@ -1121,6 +1121,21 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: duplicate_group
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: rule_version
+      data_categories: [system.operations]
+    - name: dedup_key
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
   - name: executionlog
     data_categories: []
     fields:
@@ -1751,6 +1766,8 @@ dataset:
     - name: deleted_at
       data_categories: [ system.operations ]
     - name: deleted_by
+      data_categories: [ system.operations ]
+    - name: duplicate_request_group_id
       data_categories: [ system.operations ]
   - name: privacyrequesterror
     data_categories: []
@@ -3286,3 +3303,23 @@ dataset:
     - name: updated_at
       description: 'Timestamp when the preferences were last updated'
       data_categories: [ system.operations ]
+  - name: identity_definition
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: identity_key
+        data_categories: [system.operations]
+      - name: name
+        description: 'The UI label for the identity'
+        data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
+      - name: type
+        description: 'The type of identity (email, phone_number, uuid, string, integer)'
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: created_by
+        data_categories: [user.unique_id]

@@ -24,6 +24,7 @@ import {
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
@@ -38,7 +39,7 @@ import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
 } from "./types";
-import { getMonitorType } from "./utils/getMonitorType";
+import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -56,12 +57,29 @@ const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAggregateMonitorResults: build.query<
       MonitorSummaryPaginatedResponse,
-      SearchQueryParams & PaginationQueryParams
+      SearchQueryParams &
+        PaginationQueryParams & {
+          monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+        }
     >({
-      query: ({ page = 1, size = 20, search }) => ({
-        url: `/plus/discovery-monitor/aggregate-results`,
-        params: { page, size, search, diff_status: "addition" },
-      }),
+      query: ({ page = 1, size = 20, search, monitor_type }) => {
+        const params: SearchQueryParams &
+          PaginationQueryParams & { diff_status: string } = {
+          page,
+          size,
+          search,
+          diff_status: "addition",
+        };
+
+        const urlParams = buildArrayQueryParams({
+          monitor_type,
+        });
+
+        return {
+          url: `/plus/discovery-monitor/aggregate-results?${urlParams.toString()}`,
+          params,
+        };
+      },
       transformResponse: (
         response: PaginatedResponse<MonitorAggregatedResults>,
       ) => ({
@@ -90,10 +108,11 @@ const actionCenterApi = baseApi.injectEndpoints({
       DatastoreMonitorResourcesDynamicFilters,
       {
         monitor_config_id: string;
+        staged_resource_urn?: string[];
       }
     >({
-      query: ({ monitor_config_id }) => ({
-        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
     }),
 
@@ -116,6 +135,20 @@ const actionCenterApi = baseApi.injectEndpoints({
         params: { staged_resource_urn, include_descendant_details, page, size },
       }),
     }),
+
+    getMonitorTreeAncestorsStatuses: build.query<
+      Array<DatastoreStagedResourceTreeAPIResponse>,
+      {
+        monitor_config_id: string;
+        staged_resource_urn?: string;
+      }
+    >({
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree/ancestors-statuses`,
+        params: { staged_resource_urn },
+      }),
+    }),
+
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
       {
@@ -260,7 +293,11 @@ const actionCenterApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     restoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
@@ -508,7 +545,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Monitor Field Results"],
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
   }),
 });
@@ -533,6 +570,7 @@ export const {
   useUndismissMonitorTaskMutation,
   useGetMonitorTreeQuery,
   useLazyGetMonitorTreeQuery,
+  useLazyGetMonitorTreeAncestorsStatusesQuery,
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
