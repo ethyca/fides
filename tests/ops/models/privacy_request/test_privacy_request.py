@@ -43,7 +43,12 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key, get_custom_privacy_request_field_cache_key
+from fides.api.util.cache import (
+    FidesopsRedis,
+    get_cache,
+    get_custom_privacy_request_field_cache_key,
+    get_identity_cache_key,
+)
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -302,11 +307,17 @@ def test_custom_privacy_request_fields_fallback_to_db(
         privacy_request_id=privacy_request.id,
         custom_privacy_request_field_name=custom_privacy_request_field.field_name,
     )
-    cached_custom_privacy_request_fields = privacy_request.get_cached_custom_privacy_request_fields()
+    cached_custom_privacy_request_fields = (
+        privacy_request.get_cached_custom_privacy_request_fields()
+    )
     assert cached_custom_privacy_request_fields is not None
     cache.delete(key)
     assert cache.get(key) is None
-    assert privacy_request.get_cached_custom_privacy_request_fields() == cached_custom_privacy_request_fields
+    assert (
+        privacy_request.get_cached_custom_privacy_request_fields()
+        == cached_custom_privacy_request_fields
+    )
+
 
 @pytest.mark.parametrize(
     "privacy_request,expected_status",
