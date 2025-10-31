@@ -528,10 +528,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       [onLoadData],
     );
 
-    const handleSelect = (keys: Key[], nodes: { node: CustomTreeDataNode }) => {
-      const classifyableKeys = keys.filter(
-        (key) => nodes.node.key === key && nodes.node.classifyable,
-      );
+    const handleSelect = (
+      _: Key[],
+      info: { selectedNodes: CustomTreeDataNode[] },
+    ) => {
+      const classifyableKeys = info.selectedNodes
+        .filter((node) => node.classifyable)
+        .map((node) => node.key);
       setSelectedNodeKeys(classifyableKeys);
     };
 
