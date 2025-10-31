@@ -29,7 +29,10 @@ export type PrivacyRequestResponse = {
     string,
     string | { label: string; value: string } | null
   > | null;
-  custom_privacy_request_fields?: null;
+  custom_privacy_request_fields?: Record<
+    string,
+    { label: string; value: string }
+  > | null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
   resume_endpoint?: string | null;

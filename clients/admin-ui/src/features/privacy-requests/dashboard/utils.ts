@@ -2,8 +2,6 @@ import { isEmpty } from "lodash";
 
 import { PrivacyRequestResponse } from "~/types/api";
 
-import { PrivacyRequestEntity } from "../types";
-
 // to be replaced with IdentityValue from api models when available
 interface IdentityValue {
   key: string;
@@ -83,16 +81,15 @@ export const getOtherIdentities = (
 };
 
 export const getCustomFields = (
-  customFields: PrivacyRequestEntity["custom_privacy_request_fields"],
+  customFields: PrivacyRequestResponse["custom_privacy_request_fields"],
 ): CustomFieldWithKey[] => {
+  if (!customFields) {
+    return [];
+  }
+
   return customFields
     ? Object.entries(customFields)
-        .filter(
-          ([, field]) =>
-            field.value !== null &&
-            field.value !== undefined &&
-            field.value !== "",
-        )
+        .filter(([, field]) => !isEmpty(field.value))
         .map(([key, field]) => ({
           key,
           label: field.label,
