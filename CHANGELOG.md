@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
+- Added duplicate DSR checking to request runner [#6860](https://github.com/ethyca/fides/pull/6860/)
 
 ### Changed
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
