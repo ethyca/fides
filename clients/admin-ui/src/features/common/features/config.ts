@@ -9,9 +9,12 @@ import { Env, FlagConfig, FlagConfigDefaults, FlagEnvs } from "./types";
  * configureFlags({
  *   falseEverywhere: false,
  *   envDependent: {
+ *     label: "Environment dependent feature",
+ *     description: "This feature is enabled in development and test only",
  *     development: true,
  *     test: true,
  *     production: false,
+ *     userCannotModify: false,
  *   }
  * })
  * ```
