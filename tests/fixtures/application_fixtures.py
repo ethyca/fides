@@ -1767,7 +1767,7 @@ def duplicate_privacy_request_group(
     db: Session,
     policy: Policy,
     application_user: FidesUser,
-) -> Generator[PrivacyRequest, None, None]:
+) -> Generator[DuplicateGroup, None, None]:
     config = DuplicateDetectionSettings(
         enabled=True,
         time_window_days=30,
