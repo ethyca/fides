@@ -2796,7 +2796,7 @@ class TestPrivacyRequestSearch:
         response = api_client.post(
             url,
             headers=auth_header,
-            json={"status": "in_processing", f"include_{include_type}_requests": True},
+            json={f"include_{include_type}_requests": True},
         )
         assert 200 == response.status_code
         resp = response.json()
