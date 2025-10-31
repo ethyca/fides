@@ -124,12 +124,6 @@ if TYPE_CHECKING:
     )
 
 
-IDENTITY_DATA_CACHE_KEY_PREFIX = "id-{{self.id}}-identity-*"
-CUSTOM_PRIVACY_REQUEST_FIELDS_CACHE_KEY_PREFIX = (
-    "id-{{self.id}}-custom-privacy-request-field-*"
-)
-
-
 class PrivacyRequest(
     IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904,too-many-instance-attributes
@@ -690,7 +684,7 @@ class PrivacyRequest(
 
     def verify_cache_for_identity_data(self) -> bool:
         """Verifies if the identity data is cached for this request"""
-        prefix = IDENTITY_DATA_CACHE_KEY_PREFIX.format(id=self.id)
+        prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
         return len(keys) > 0
@@ -698,7 +692,7 @@ class PrivacyRequest(
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         result: Dict[str, Any] = {}
-        prefix = IDENTITY_DATA_CACHE_KEY_PREFIX.format(id=self.id)
+        prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
 
