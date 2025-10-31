@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
 from celery.result import AsyncResult
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
@@ -69,6 +69,7 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.privacy_request.duplicate_group import DuplicateGroup
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
@@ -225,7 +226,16 @@ class PrivacyRequest(
     location = Column(String, nullable=True)
 
     # Duplicate detection - group ID to link duplicates together
-    duplicate_request_group_id = Column(String, index=True, nullable=True)
+    duplicate_request_group_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("duplicate_group.id"),
+        nullable=True,
+    )
+    duplicate_group = relationship(
+        DuplicateGroup,
+        back_populates="privacy_requests",
+        uselist=False,
+    )
 
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
     deleted_at = Column(DateTime(timezone=True), nullable=True)
