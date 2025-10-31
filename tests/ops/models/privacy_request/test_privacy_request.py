@@ -43,7 +43,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key
+from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key, get_custom_privacy_request_field_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -253,6 +253,60 @@ def test_delete_privacy_request_removes_cached_data(
     assert from_db is None
     assert cache.get(key) is None
 
+
+def test_cache_identity_fallback_to_db(
+    db: Session,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    cache: FidesopsRedis,
+) -> None:
+    identity_attribute = "email"
+    identity_value = "test@example.com"
+    identity_kwargs = {identity_attribute: identity_value}
+    identity = Identity(**identity_kwargs)
+    privacy_request.persist_identity(
+        db=db,
+        identity=identity,
+    )
+    privacy_request.cache_identity(identity)
+    key = get_identity_cache_key(
+        privacy_request_id=privacy_request.id,
+        identity_attribute=identity_attribute,
+    )
+    cached_identity_data = privacy_request.get_cached_identity_data()
+    assert cached_identity_data is not None
+    cache.delete(key)
+    assert cache.get(key) is None
+    assert privacy_request.get_cached_identity_data() == cached_identity_data
+
+
+def test_custom_privacy_request_fields_fallback_to_db(
+    db: Session,
+    policy: Policy,
+    privacy_request: PrivacyRequest,
+    cache: FidesopsRedis,
+) -> None:
+    custom_privacy_request_field = CustomPrivacyRequestField(
+        field_name="test",
+        field_label="Test",
+        value="test",
+    )
+    privacy_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields=[custom_privacy_request_field],
+    )
+    privacy_request.cache_custom_privacy_request_fields(
+        custom_privacy_request_fields=[custom_privacy_request_field],
+    )
+    key = get_custom_privacy_request_field_cache_key(
+        privacy_request_id=privacy_request.id,
+        custom_privacy_request_field_name=custom_privacy_request_field.field_name,
+    )
+    cached_custom_privacy_request_fields = privacy_request.get_cached_custom_privacy_request_fields()
+    assert cached_custom_privacy_request_fields is not None
+    cache.delete(key)
+    assert cache.get(key) is None
+    assert privacy_request.get_cached_custom_privacy_request_fields() == cached_custom_privacy_request_fields
 
 @pytest.mark.parametrize(
     "privacy_request,expected_status",
