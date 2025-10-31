@@ -44,6 +44,7 @@ class RequestOrigin(Enum):
     banner_and_modal = "banner_and_modal"
     api = "api"
     tcf_overlay = "tcf_overlay"
+    headless = "headless"
 
 
 class ConsentMethod(Enum):
@@ -516,9 +517,9 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
         """
         if not self.affected_system_status:
             self.affected_system_status = {}
-        self.affected_system_status[system] = (
-            status.name
-        )  # To avoid using "ExecutionLogStatus.paused" in the logs
+        self.affected_system_status[
+            system
+        ] = status.name  # To avoid using "ExecutionLogStatus.paused" in the logs
         self.save(db)
 
     def update_secondary_user_ids(
