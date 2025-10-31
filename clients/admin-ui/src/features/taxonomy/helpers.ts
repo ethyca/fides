@@ -51,6 +51,7 @@ export const taxonomyTypeToResourceType = (taxonomyType: string) => {
       return ResourceTypes.DATA_USE;
 
     default:
-      return undefined;
+      // Non-legacy taxonomy types can be any string
+      return taxonomyType;
   }
 };
