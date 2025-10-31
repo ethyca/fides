@@ -165,7 +165,7 @@ def request_details(
 
     if response is not None:
         if CONFIG.dev_mode and response.content:
-            details[LoggerContextKeys.response.value] = response.content.decode("utf-8")
+            details[LoggerContextKeys.response.value] = response.content.decode("utf-8", errors="replace")
 
         details[LoggerContextKeys.status_code.value] = response.status_code
 
