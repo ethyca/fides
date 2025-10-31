@@ -1758,6 +1758,27 @@ def soft_deleted_privacy_request(
 
 
 @pytest.fixture(scope="function")
+def duplicate_privacy_request(
+    db: Session,
+    policy: Policy,
+    application_user: FidesUser,
+) -> Generator[PrivacyRequest, None, None]:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.update(
+        db=db,
+        data={
+            "status": PrivacyRequestStatus.duplicate,
+            "duplicate_request_group_id": str(uuid4()),
+        },
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def bulk_privacy_requests_with_various_identities(db: Session, policy: Policy) -> None:
     num_records = 2000000  # 2 million
     for i in range(num_records):
