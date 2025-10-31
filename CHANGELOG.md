@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)
 
 ### Developer Experience
+- Added keyboard navigation to CustomList component with j/k/space/escape shortcuts
 - Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
 - Added Cypress command to override feature flags in tests without UI interaction [#6890](https://github.com/ethyca/fides/pull/6890)
 
