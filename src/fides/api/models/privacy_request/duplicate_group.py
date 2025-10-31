@@ -31,7 +31,7 @@ def generate_deterministic_uuid(rule_version: str, dedup_key: str) -> uuid.UUID:
     return uuid.UUID(hashlib.md5(hash_input).hexdigest())
 
 
-def generate_rule_version(config: Union[DuplicateDetectionSettings]) -> str:
+def generate_rule_version(config: DuplicateDetectionSettings) -> str:
     """Generate a stable short hash for the dedup rule config."""
     normalized = json.dumps(config.model_dump(), sort_keys=True)
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:8]
