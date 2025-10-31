@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
+from uuid import UUID
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, field_serializer, field_validator
@@ -343,7 +344,7 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
-    duplicate_request_group_id: Optional[str] = None
+    duplicate_request_group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
