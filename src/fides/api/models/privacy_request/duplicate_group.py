@@ -1,7 +1,7 @@
 import hashlib
 import json
 import uuid
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Boolean, Column, Text
 from sqlalchemy.dialects.postgresql import UUID
