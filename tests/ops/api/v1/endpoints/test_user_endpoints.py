@@ -1,5 +1,6 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Generator
 from unittest import mock
 from uuid import uuid4
 
@@ -28,6 +29,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import INVITE_CODE_TTL_HOURS, FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
@@ -2595,3 +2597,202 @@ class TestAcceptUserInvite:
         )
         assert response.status_code == HTTP_404_NOT_FOUND
         assert response.json()["detail"] == "User not found."
+
+
+class TestReinviteUser:
+    @pytest.fixture(scope="function")
+    def url(self, user) -> str:
+        return V1_URL_PREFIX + f"/user/{user.id}/reinvite"
+
+    @pytest.fixture(scope="function")
+    def invited_user(self, db) -> Generator:
+        """Create a user with a pending invitation"""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "invited_user",
+                "email_address": "invited@example.com",
+                "disabled": True,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        FidesUserInvite.create(
+            db=db,
+            data={"username": "invited_user", "invite_code": "original_code"},
+        )
+        yield user
+        user.delete(db)
+
+    @pytest.fixture(scope="function")
+    def enabled_user(self, db) -> Generator:
+        """Create an enabled user (no pending invitation)"""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "enabled_user",
+                "email_address": "enabled@example.com",
+                "hashed_password": "hashed_password",
+                "salt": "salt",
+                "disabled": False,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        yield user
+        user.delete(db)
+
+    def test_reinvite_valid_user_with_permission(
+        self, db, api_client, generate_auth_header, invited_user
+    ):
+        """Test reinviting a user with pending invitation and proper permissions"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        original_invite = FidesUserInvite.get_by(
+            db, field="username", value=invited_user.username
+        )
+        original_hashed_code = original_invite.hashed_invite_code
+        original_updated_at = original_invite.updated_at
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+        ) as mock_dispatch:
+            response = api_client.post(url, headers=auth_header)
+
+            assert response.status_code == HTTP_204_NO_CONTENT
+            mock_dispatch.assert_called_once()
+
+            db.refresh(original_invite)
+            assert original_invite.hashed_invite_code != original_hashed_code
+            assert original_invite.updated_at > original_updated_at
+
+    def test_reinvite_without_permission(
+        self, api_client, generate_auth_header, invited_user
+    ):
+        """Test reinviting without USER_CREATE scope returns 403"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_READ])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_reinvite_unauthenticated(self, api_client, invited_user):
+        """Test reinviting without authentication returns 401"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+
+        response = api_client.post(url)
+        assert response.status_code == HTTP_401_UNAUTHORIZED
+
+    def test_reinvite_nonexistent_user(self, api_client, generate_auth_header):
+        """Test reinviting a non-existent user returns 404"""
+        url = V1_URL_PREFIX + "/user/nonexistent_id/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == HTTP_404_NOT_FOUND
+        assert response.json()["detail"] == "User not found."
+
+    def test_reinvite_enabled_user(
+        self, api_client, generate_auth_header, enabled_user
+    ):
+        """Test reinviting an enabled user (no pending invitation) returns 400"""
+        url = V1_URL_PREFIX + f"/user/{enabled_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "User does not have a pending invitation."
+
+    def test_reinvite_user_without_invite_record(
+        self, db, api_client, generate_auth_header
+    ):
+        """Test reinviting a disabled user without FidesUserInvite record returns 400"""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "disabled_no_invite",
+                "email_address": "disabled@example.com",
+                "disabled": True,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+
+        url = V1_URL_PREFIX + f"/user/{user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "User does not have a pending invitation."
+
+        user.delete(db)
+
+    def test_reinvite_expired_invite(
+        self, db, api_client, generate_auth_header, invited_user
+    ):
+        """Test reinviting a user with expired invitation succeeds"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        invite = FidesUserInvite.get_by(
+            db, field="username", value=invited_user.username
+        )
+        invite.updated_at = datetime.now(timezone.utc) - timedelta(hours=25)
+        invite.save(db)
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+        ) as mock_dispatch:
+            response = api_client.post(url, headers=auth_header)
+
+            assert response.status_code == HTTP_204_NO_CONTENT
+            mock_dispatch.assert_called_once()
+
+    def test_reinvite_generates_new_code(
+        self, db, api_client, generate_auth_header, invited_user
+    ):
+        """Test that reinviting generates a new invite code and old one doesn't work"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        invite = FidesUserInvite.get_by(
+            db, field="username", value=invited_user.username
+        )
+        assert invite.invite_code_valid("original_code")
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+        ):
+            response = api_client.post(url, headers=auth_header)
+            assert response.status_code == HTTP_204_NO_CONTENT
+
+        db.refresh(invite)
+        assert not invite.invite_code_valid("original_code")
+
+    def test_reinvite_sends_email(
+        self, db, api_client, generate_auth_header, invited_user
+    ):
+        """Test that reinviting sends an email with the new invite code"""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+        ) as mock_dispatch:
+            response = api_client.post(url, headers=auth_header)
+
+            assert response.status_code == HTTP_204_NO_CONTENT
+            mock_dispatch.assert_called_once()
+
+            call_args = mock_dispatch.call_args
+            assert call_args[1]["action_type"] == MessagingActionType.USER_INVITE
+            assert call_args[1]["to_identity"].email == invited_user.email_address
+            assert call_args[1]["message_body_params"].username == invited_user.username
+            assert call_args[1]["message_body_params"].invite_code != "original_code"
