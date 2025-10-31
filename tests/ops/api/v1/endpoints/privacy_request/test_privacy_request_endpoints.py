@@ -1384,13 +1384,6 @@ class TestGetPrivacyRequests:
     @pytest.mark.usefixtures(
         "soft_deleted_privacy_request", "duplicate_privacy_request"
     )
-    @pytest.mark.parametrize(
-        "exclude_type",
-        [
-            pytest.param("deleted", id="deleted"),
-            pytest.param("duplicate", id="duplicate"),
-        ],
-    )
     def test_filter_privacy_requests_excludes_type_requests_by_default(
         self,
         api_client: TestClient,
