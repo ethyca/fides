@@ -15,9 +15,9 @@ from fides.api.util.logger import (
     RedisSink,
     _log_exception,
     _log_warning,
-    setup as setup_logger,
-    suppress_logging,
 )
+from fides.api.util.logger import setup as setup_logger
+from fides.api.util.logger import suppress_logging
 from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 from fides.config import CONFIG
 
