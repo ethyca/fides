@@ -44,6 +44,7 @@ class RequestOrigin(Enum):
     banner_and_modal = "banner_and_modal"
     api = "api"
     tcf_overlay = "tcf_overlay"
+    headless = "headless"
 
 
 class ConsentMethod(Enum):
