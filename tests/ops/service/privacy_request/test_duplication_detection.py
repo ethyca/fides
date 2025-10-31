@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -68,6 +69,30 @@ def get_detection_config(
         time_window_days=time_window_days,
         match_identity_fields=match_identity_fields,
     )
+
+
+# Helper function to create duplicate requests
+def create_duplicate_requests(
+    db: Session, policy: Policy, count: int, status: PrivacyRequestStatus
+) -> list[PrivacyRequest]:
+    duplicate_requests = []
+    for i in range(count):
+        duplicate_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"test_external_id_duplicate_{i}",
+                "started_processing_at": datetime.now(timezone.utc),
+                "requested_at": datetime.now(timezone.utc),
+                "status": status,
+                "policy_id": policy.id,
+            },
+        )
+        duplicate_request.persist_identity(
+            db=db,
+            identity=Identity(email="customer-1@example.com"),
+        )
+        duplicate_requests.append(duplicate_request)
+    return duplicate_requests
 
 
 class TestCreateDuplicateDetectionConditions:
@@ -142,24 +167,10 @@ class TestFindDuplicatePrivacyRequests:
     ):
         """Test finding duplicate request within time window with matching identity."""
         duplicate_detection_config = get_detection_config()
-        duplicate_ids = []
-        for i in range(duplicate_count):
-            duplicate_request = PrivacyRequest.create(
-                db=db,
-                data={
-                    "external_id": f"test_external_id_duplicate_{i}",
-                    "started_processing_at": datetime.now(timezone.utc),
-                    "requested_at": datetime.now(timezone.utc),
-                    "status": PrivacyRequestStatus.in_processing,
-                    "policy_id": policy.id,
-                },
-            )
-            duplicate_request.persist_identity(
-                db=db,
-                identity=Identity(email="customer-1@example.com"),
-            )
-            duplicate_ids.append(duplicate_request.id)
-
+        duplicate_requests = create_duplicate_requests(
+            db, policy, duplicate_count, PrivacyRequestStatus.in_processing
+        )
+        duplicate_ids = [duplicate.id for duplicate in duplicate_requests]
         duplicates = duplicate_detection_service.find_duplicate_privacy_requests(
             privacy_request_with_email_identity, duplicate_detection_config
         )
@@ -351,3 +362,169 @@ class TestFindDuplicatePrivacyRequests:
             privacy_request_with_email_identity, duplicate_detection_config
         )
         assert len(duplicates) == 0
+
+
+class TestDuplicateRequestFunctionality:
+    """Tests for is_canonical_request function."""
+
+    def test_is_duplicate_request_single_request(
+        self, duplicate_detection_service, privacy_request_with_email_identity
+    ):
+        """Test that a single request is the canonical request."""
+        duplicate_detection_config = get_detection_config()
+        is_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_email_identity, duplicate_detection_config
+        )
+        assert not is_duplicate
+
+    @pytest.mark.parametrize(
+        "request_status, duplicate_status",
+        [
+            pytest.param(
+                PrivacyRequestStatus.identity_unverified,
+                PrivacyRequestStatus.identity_unverified,
+                id="all_unverified_identity_first_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.identity_unverified,
+                id="only_verified_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.pending,
+                id="first_created_verified_identity_request_is_canonical",
+            ),
+            pytest.param(
+                PrivacyRequestStatus.identity_unverified,
+                PrivacyRequestStatus.duplicate,
+                id="unverified_request_is_canonical_if_all_duplicates_status",
+            ),
+        ],
+    )
+    def test_is_duplicate_hierarchy_decisions_returns_false(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+        request_status,
+        duplicate_status,
+    ):
+        """Test that a first unverified request is the canonical request."""
+        duplicate_detection_config = get_detection_config()
+
+        update_data = {
+            "status": request_status,
+        }
+        if request_status != PrivacyRequestStatus.identity_unverified:
+            update_data["identity_verified_at"] = datetime.now(timezone.utc)
+        privacy_request_with_email_identity.update(db=db, data=update_data)
+
+        duplicate_requests = create_duplicate_requests(db, policy, 3, duplicate_status)
+        if duplicate_status != PrivacyRequestStatus.identity_unverified:
+            for duplicate_request in duplicate_requests:
+                duplicate_request.update(
+                    db=db,
+                    data={"identity_verified_at": datetime.now(timezone.utc)},
+                )
+
+        assert not duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_email_identity, duplicate_detection_config
+        )
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id is not None
+        )
+        for duplicate_request in duplicate_requests:
+            assert duplicate_detection_service.is_duplicate_request(
+                duplicate_request, duplicate_detection_config
+            )
+            assert (
+                duplicate_request.duplicate_request_group_id
+                == privacy_request_with_email_identity.duplicate_request_group_id
+            )
+
+    def test_duplicate_request_group_id_for_different_configs(
+        self,
+        db,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+        policy,
+    ):
+        """Test that the duplicate request group id is different for different duplicate detection configurations."""
+        config_1 = get_detection_config(match_identity_fields=["email"])
+        config_2 = get_detection_config(match_identity_fields=["email", "phone_number"])
+
+        email_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_email_identity, config_1
+        )
+        assert not email_duplicate
+
+        duplicate_request_with_multiple_identities = create_duplicate_requests(
+            db, policy, 1, PrivacyRequestStatus.in_processing
+        )[0]
+        duplicate_request_with_multiple_identities.persist_identity(
+            db=db,
+            identity=Identity(
+                email="customer-1@example.com", phone_number="+15555555555"
+            ),
+        )
+
+        multiple_identity_duplicate = duplicate_detection_service.is_duplicate_request(
+            duplicate_request_with_multiple_identities, config_1
+        )
+        assert multiple_identity_duplicate
+        # This group should be the same for both requests since they have the same dedup key
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id
+            == duplicate_request_with_multiple_identities.duplicate_request_group_id
+        )
+
+        original_group_id = (
+            privacy_request_with_email_identity.duplicate_request_group_id
+        )
+        email_duplicate = duplicate_detection_service.is_duplicate_request(
+            privacy_request_with_email_identity, config_2
+        )
+        assert (
+            not email_duplicate
+        )  # This request is not a duplicate since it only has an email identity
+        multiple_identity_duplicate = duplicate_detection_service.is_duplicate_request(
+            duplicate_request_with_multiple_identities, config_2
+        )
+        assert (
+            not multiple_identity_duplicate
+        )  # This request is not a duplicate since it has both an email and phone number identity and is the first
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id
+            != duplicate_request_with_multiple_identities.duplicate_request_group_id
+        )
+
+        # This group should not be the same for both requests since the first request only has an email identity
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id
+            != duplicate_request_with_multiple_identities.duplicate_request_group_id
+        )
+        assert (
+            privacy_request_with_email_identity.duplicate_request_group_id
+            == original_group_id
+        )
+
+    def test_duplicate_request_group_returns_none_is_false(
+        self,
+        duplicate_detection_service,
+        privacy_request_with_email_identity,
+    ):
+        """Test that the duplicate request group returns None if the request is not a duplicate."""
+        with patch(
+            "fides.api.service.privacy_request.duplication_detection.DuplicateGroup.get_or_create"
+        ) as mock_get_or_create:
+            mock_get_or_create.return_value = None, None
+            duplicate_detection_config = get_detection_config()
+            is_duplicate = duplicate_detection_service.is_duplicate_request(
+                privacy_request_with_email_identity, duplicate_detection_config
+            )
+            assert not is_duplicate
+            assert (
+                privacy_request_with_email_identity.duplicate_request_group_id is None
+            )
