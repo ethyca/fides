@@ -59,15 +59,19 @@ interface IsoOption extends DefaultOptionType {
 const mapIsoObjects = (
   countries: ISO31661Entry[],
   subdivisions: ISO31662Entry[],
+  showStandaloneCountries?: boolean,
 ): [ISO31661Entry, ISO31662Entry | null][] => {
   const mapped = countries.map((country) => {
     const children: [ISO31661Entry, ISO31662Entry][] = subdivisions
       .filter(({ parent }) => country.alpha2 === parent)
       .map((child) => [country, child]);
 
-    return children.length > 0
-      ? children
-      : [[country, null] as [ISO31661Entry, null]];
+    if (children.length > 0) {
+      return showStandaloneCountries
+        ? [[country, null] as [ISO31661Entry, null], ...children]
+        : children;
+    }
+    return [[country, null] as [ISO31661Entry, null]];
   });
 
   return mapped.flat();
@@ -83,6 +87,7 @@ export type LocationSelectProps = (
   | ILocationMultiSelectProps
 ) & {
   options?: LocationOptions;
+  showStandaloneCountries?: boolean;
 };
 
 export const LocationSelect = (props: LocationSelectProps) => {
@@ -92,6 +97,7 @@ export const LocationSelect = (props: LocationSelectProps) => {
       countries: iso31661,
       regions: iso31662,
     },
+    showStandaloneCountries,
   } = props;
 
   const defaultProps = {
@@ -117,23 +123,25 @@ export const LocationSelect = (props: LocationSelectProps) => {
 
   const isoSelectOptions = useMemo(
     () =>
-      mapIsoObjects(countries, regions).map(([country, subdivision]) => ({
-        value: subdivision?.code ?? country.alpha2,
-        label: formatIsoLocation({
-          userTranslation,
-          isoEntry: subdivision ?? country,
-          showFlag: true,
+      mapIsoObjects(countries, regions, showStandaloneCountries).map(
+        ([country, subdivision]) => ({
+          value: subdivision?.code ?? country.alpha2,
+          label: formatIsoLocation({
+            userTranslation,
+            isoEntry: subdivision ?? country,
+            showFlag: true,
+          }),
+          title: formatIsoLocation({
+            userTranslation,
+            isoEntry: subdivision ?? country,
+            showFlag: false,
+          }),
+          country: formatIsoLocation({ userTranslation, isoEntry: country }),
+          subdivision: subdivision?.name,
+          flag: isoCodeToFlag(country.alpha2),
         }),
-        title: formatIsoLocation({
-          userTranslation,
-          isoEntry: subdivision ?? country,
-          showFlag: false,
-        }),
-        country: formatIsoLocation({ userTranslation, isoEntry: country }),
-        subdivision: subdivision?.name,
-        flag: isoCodeToFlag(country.alpha2),
-      })),
-    [countries, regions, navigator.language],
+      ),
+    [countries, regions, navigator.language, showStandaloneCountries],
   );
 
   return (

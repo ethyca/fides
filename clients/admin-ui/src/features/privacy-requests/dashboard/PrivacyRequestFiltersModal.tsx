@@ -5,6 +5,7 @@ import {
   AntForm as Form,
   AntModal as Modal,
   AntSelect as Select,
+  LocationSelect,
 } from "fidesui";
 
 import {
@@ -21,12 +22,14 @@ interface PrivacyRequestFiltersModalProps {
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    location: string | null;
   };
   setModalFilters: (filters: {
     from: string | null;
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    location: string | null;
   }) => void;
 }
 
@@ -34,6 +37,7 @@ interface FormValues {
   dateRange?: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null;
   status?: PrivacyRequestStatus[] | null;
   action_type?: ActionType[] | null;
+  location?: string | null;
 }
 
 export const PrivacyRequestFiltersModal = ({
@@ -62,6 +66,7 @@ export const PrivacyRequestFiltersModal = ({
     dateRange: getDateRange(),
     status: modalFilters.status,
     action_type: modalFilters.action_type,
+    location: modalFilters.location,
   };
 
   const handleDone = async () => {
@@ -73,6 +78,7 @@ export const PrivacyRequestFiltersModal = ({
       to: to ? to.format("YYYY-MM-DD") : "",
       status: values.status || [],
       action_type: values.action_type || [],
+      location: values.location || "",
     });
     onClose();
   };
@@ -82,6 +88,7 @@ export const PrivacyRequestFiltersModal = ({
       dateRange: undefined,
       status: [],
       action_type: [],
+      location: undefined,
     });
 
     setModalFilters({
@@ -89,6 +96,7 @@ export const PrivacyRequestFiltersModal = ({
       to: "",
       status: [],
       action_type: [],
+      location: "",
     });
   };
 
@@ -144,6 +152,14 @@ export const PrivacyRequestFiltersModal = ({
             options={SubjectRequestActionTypeOptions}
             data-testid="request-action-type-filter"
             aria-label="Request type"
+          />
+        </Form.Item>
+
+        <Form.Item label="Location" name="location">
+          <LocationSelect
+            data-testid="request-location-filter"
+            aria-label="Location"
+            showStandaloneCountries
           />
         </Form.Item>
       </Form>

@@ -16,6 +16,7 @@ export interface FilterQueryParams {
   to: string | null;
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
+  location: string | null;
   sort_field: string | null;
   sort_direction: ColumnSort | null;
 }
@@ -27,7 +28,7 @@ interface UsePrivacyRequestsFiltersProps {
 /**
  * Hook for managing privacy request filters with URL query parameter synchronization.
  * Provides separate state groups for fuzzy search (throttled), modal filters
- * (id, from, to, status, action_type), and sort state (sort_field, sort_direction).
+ * (id, from, to, status, action_type, location), and sort state (sort_field, sort_direction).
  * Automatically resets pagination when filters change.
  */
 const usePrivacyRequestsFilters = ({
@@ -46,6 +47,7 @@ const usePrivacyRequestsFilters = ({
         parseAsStringEnum(Object.values(PrivacyRequestStatus)),
       ),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
+      location: parseAsString,
     },
     {
       history: "push",
@@ -78,6 +80,7 @@ const usePrivacyRequestsFilters = ({
       to: modalFilters.to,
       status: modalFilters.status,
       action_type: modalFilters.action_type,
+      location: modalFilters.location,
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
     }),
@@ -87,6 +90,7 @@ const usePrivacyRequestsFilters = ({
       modalFilters.to,
       modalFilters.status,
       modalFilters.action_type,
+      modalFilters.location,
       sortState.sort_field,
       sortState.sort_direction,
     ],
