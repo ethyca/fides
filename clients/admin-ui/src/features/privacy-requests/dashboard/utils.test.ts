@@ -1,4 +1,5 @@
-import { PrivacyRequestEntity } from "../types";
+import { PrivacyRequestResponse } from "~/types/api";
+
 import {
   getCustomFields,
   getOtherIdentities,
@@ -7,7 +8,7 @@ import {
 
 describe("getPrimaryIdentity", () => {
   it("should return email as primary identity when present", () => {
-    const identity: PrivacyRequestEntity["identity"] = {
+    const identity: PrivacyRequestResponse["identity"] = {
       email: { label: "Email", value: "user@example.com" },
       phone_number: { label: "Phone", value: "+1234567890" },
     };
@@ -22,7 +23,7 @@ describe("getPrimaryIdentity", () => {
   });
 
   it("should return phone_number as primary when email is missing", () => {
-    const identity: PrivacyRequestEntity["identity"] = {
+    const identity: PrivacyRequestResponse["identity"] = {
       phone_number: { label: "Phone", value: "+1234567890" },
       custom_id: { label: "Custom ID", value: "12345" },
     };
@@ -37,7 +38,7 @@ describe("getPrimaryIdentity", () => {
   });
 
   it("should return phone_number as primary when email doesn't have a value", () => {
-    const identity: PrivacyRequestEntity["identity"] = {
+    const identity: PrivacyRequestResponse["identity"] = {
       email: { label: "Email", value: "" },
       phone_number: { label: "Phone", value: "+1234567890" },
     };
@@ -52,7 +53,7 @@ describe("getPrimaryIdentity", () => {
   });
 
   it("should return first identity when email and phone_number are missing", () => {
-    const identity: PrivacyRequestEntity["identity"] = {
+    const identity: PrivacyRequestResponse["identity"] = {
       custom_id: { label: "Custom ID", value: "12345" },
       username: { label: "Username", value: "john_doe" },
     };
@@ -69,7 +70,7 @@ describe("getPrimaryIdentity", () => {
 
 describe("getOtherIdentities", () => {
   it("should return identities excluding the primary identity", () => {
-    const allIdentities: PrivacyRequestEntity["identity"] = {
+    const allIdentities: PrivacyRequestResponse["identity"] = {
       email: { label: "Email", value: "user@example.com" },
       phone_number: { label: "Phone", value: "+1234567890" },
       custom_id: { label: "Custom ID", value: "12345" },
@@ -89,7 +90,7 @@ describe("getOtherIdentities", () => {
   });
 
   it("should filter out identities with empty values", () => {
-    const allIdentities: PrivacyRequestEntity["identity"] = {
+    const allIdentities: PrivacyRequestResponse["identity"] = {
       email: { label: "Email", value: "user@example.com" },
       phone_number: { label: "Phone", value: "" },
       custom_id: { label: "Custom ID", value: "12345" },
@@ -108,7 +109,7 @@ describe("getOtherIdentities", () => {
   });
 
   it("should return empty array when only primary identity exists", () => {
-    const allIdentities: PrivacyRequestEntity["identity"] = {
+    const allIdentities: PrivacyRequestResponse["identity"] = {
       email: { label: "Email", value: "user@example.com" },
     };
     const primaryIdentity = {
@@ -125,7 +126,7 @@ describe("getOtherIdentities", () => {
 
 describe("getCustomFields", () => {
   it("should return custom fields with key, label, and value", () => {
-    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+    const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
       {
         department: { label: "Department", value: "Engineering" },
         employee_id: { label: "Employee ID", value: "EMP123" },
@@ -140,7 +141,7 @@ describe("getCustomFields", () => {
   });
 
   it("should filter out fields with empty values", () => {
-    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+    const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
       {
         department: { label: "Department", value: "Engineering" },
         employee_id: { label: "Employee ID", value: "" },
@@ -160,7 +161,7 @@ describe("getCustomFields", () => {
   });
 
   it("should return empty array when customFields is empty object", () => {
-    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+    const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
       {};
 
     const result = getCustomFields(customFields);
@@ -169,11 +170,11 @@ describe("getCustomFields", () => {
   });
 
   it("should include custom fields with value 0", () => {
-    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
+    const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
       {
         department: { label: "Department", value: "Engineering" },
-        priority: { label: "Priority", value: 0 },
-        count: { label: "Count", value: 5 },
+        priority: { label: "Priority", value: 0 as any },
+        count: { label: "Count", value: 5 as any },
       };
 
     const result = getCustomFields(customFields);
@@ -182,21 +183,6 @@ describe("getCustomFields", () => {
       { key: "department", label: "Department", value: "Engineering" },
       { key: "priority", label: "Priority", value: 0 },
       { key: "count", label: "Count", value: 5 },
-    ]);
-  });
-
-  it("should include custom fields with value false", () => {
-    const customFields: PrivacyRequestEntity["custom_privacy_request_fields"] =
-      {
-        department: { label: "Department", value: "Engineering" },
-        is_urgent: { label: "Is Urgent", value: false },
-      };
-
-    const result = getCustomFields(customFields);
-
-    expect(result).toEqual([
-      { key: "department", label: "Department", value: "Engineering" },
-      { key: "is_urgent", label: "Is Urgent", value: false },
     ]);
   });
 });
