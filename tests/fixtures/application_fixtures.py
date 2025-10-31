@@ -67,6 +67,10 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
+from fides.api.models.privacy_request.duplicate_group import (
+    DuplicateGroup,
+    generate_rule_version,
+)
 from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
@@ -109,6 +113,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 )
 from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
+from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.config.helpers import load_file
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
@@ -1758,10 +1763,31 @@ def soft_deleted_privacy_request(
 
 
 @pytest.fixture(scope="function")
+def duplicate_privacy_request_group(
+    db: Session,
+    policy: Policy,
+    application_user: FidesUser,
+) -> Generator[PrivacyRequest, None, None]:
+    config = DuplicateDetectionSettings(
+        enabled=True,
+        time_window_days=30,
+        match_identity_fields=["email"],
+    )
+    rule_version = generate_rule_version(config)
+    dedup_key = "duplicate@example.com"
+    duplicate_group = DuplicateGroup.create(
+        db=db,
+        data={"rule_version": rule_version, "dedup_key": dedup_key},
+    )
+    yield duplicate_group
+
+
+@pytest.fixture(scope="function")
 def duplicate_privacy_request(
     db: Session,
     policy: Policy,
     application_user: FidesUser,
+    duplicate_privacy_request_group: DuplicateGroup,
 ) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1771,7 +1797,7 @@ def duplicate_privacy_request(
         db=db,
         data={
             "status": PrivacyRequestStatus.duplicate,
-            "duplicate_request_group_id": str(uuid4()),
+            "duplicate_request_group_id": duplicate_privacy_request_group.id,
         },
     )
     yield privacy_request
