@@ -113,12 +113,12 @@ const withCustomProps = (WrappedComponent: typeof List) => {
                   outline: "2px solid var(--ant-color-border)",
                   outlineOffset: "-1px", // Works well with existing dividers
                 }
-              : props.style,
+              : itemProps.style,
           } as ListItemProps);
         }
         return renderedItem;
       },
-      [listId, props.style],
+      [listId],
     );
 
     // If no renderItem provided, render basic list
