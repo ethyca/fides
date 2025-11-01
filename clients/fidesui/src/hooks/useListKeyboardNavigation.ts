@@ -29,7 +29,7 @@ interface UseListKeyboardNavigationOptions {
  * @param onToggleSelection - Callback to toggle selection of an item by key
  * @param getItemKey - Get the key for an item at a specific index
  * @param listId - Unique list ID for data attribute selector
- * @param enabled - Whether keyboard shortcuts are enabled (default: true)
+ * @param enabled - Whether keyboard shortcuts are enabled
  *
  * Keyboard shortcuts:
  * - j: Navigate down (next item)
@@ -43,7 +43,7 @@ export const useListKeyboardNavigation = ({
   onToggleSelection,
   getItemKey,
   listId,
-  enabled = true,
+  enabled,
 }: UseListKeyboardNavigationOptions) => {
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null);
 

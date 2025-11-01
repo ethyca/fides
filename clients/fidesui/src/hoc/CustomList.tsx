@@ -18,7 +18,9 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
     checkbox?: React.ReactNode,
     focused?: boolean,
   ) => React.ReactNode;
-  /** Whether to enable keyboard shortcuts for navigation and selection (default: true) */
+  /** Whether to enable keyboard shortcuts for navigation and selection.
+   * Never enable this on more than one list on the same page or these will conflict.
+   * Defaults to false. */
   enableKeyboardShortcuts?: boolean;
 }
 
@@ -34,7 +36,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     rowSelection,
     renderItem,
     dataSource,
-    enableKeyboardShortcuts = true,
+    enableKeyboardShortcuts,
     ...props
   }: CustomListProps<T>) => {
     // Generate a unique ID for this list instance
