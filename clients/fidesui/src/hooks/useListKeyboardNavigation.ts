@@ -14,7 +14,7 @@ const LIST_HOTKEYS = {
 interface UseListKeyboardNavigationOptions {
   itemCount: number;
   selectedKeys: React.Key[];
-  onToggleSelection: (key: React.Key, checked: boolean) => void;
+  onToggleSelection?: (key: React.Key, checked: boolean) => void;
   getItemKey: (index: number) => React.Key;
   listId: string;
   enabled?: boolean;
@@ -26,7 +26,7 @@ interface UseListKeyboardNavigationOptions {
  *
  * @param itemCount - Total number of items in the list
  * @param selectedKeys - Selected item keys
- * @param onToggleSelection - Callback to toggle selection of an item by key
+ * @param onToggleSelection - Optional callback to toggle selection of an item by key (space is disabled if not provided)
  * @param getItemKey - Get the key for an item at a specific index
  * @param listId - Unique list ID for data attribute selector
  * @param enabled - Whether keyboard shortcuts are enabled
@@ -34,7 +34,7 @@ interface UseListKeyboardNavigationOptions {
  * Keyboard shortcuts:
  * - j: Navigate down (next item)
  * - k: Navigate up (previous item)
- * - space: Toggle selection of focused item
+ * - space: Toggle selection of focused item (only if onToggleSelection is provided)
  * - escape: Clear focus
  */
 export const useListKeyboardNavigation = ({
@@ -103,18 +103,22 @@ export const useListKeyboardNavigation = ({
     { enabled },
   );
 
-  // Toggle selection of focused item
+  // Toggle selection of focused item (only if onToggleSelection is provided)
   useHotkeys(
     LIST_HOTKEYS.TOGGLE_SELECTION,
     (e) => {
-      if (focusedItemIndex !== null && focusedItemIndex < itemCount) {
+      if (
+        onToggleSelection &&
+        focusedItemIndex !== null &&
+        focusedItemIndex < itemCount
+      ) {
         e.preventDefault(); // Prevent page scroll
         const itemKey = getItemKey(focusedItemIndex);
         const isSelected = selectedKeys.includes(itemKey);
         onToggleSelection(itemKey, !isSelected);
       }
     },
-    { enabled },
+    { enabled: enabled && !!onToggleSelection },
     [focusedItemIndex, itemCount, selectedKeys, getItemKey, onToggleSelection],
   );
 

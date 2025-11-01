@@ -87,11 +87,34 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       [selectedRowKeys, onChange, keyToDataMap],
     );
 
+    // Wrapper for keyboard toggle that checks disabled state
+    const handleKeyboardToggle = useCallback(
+      (itemKey: React.Key, checked: boolean) => {
+        if (!dataSource || !getCheckboxProps) {
+          handleCheckboxChange(itemKey, checked);
+          return;
+        }
+
+        // Find the item and check if it's disabled
+        const index = dataSource.findIndex(
+          (item, idx) => getItemKey(item, idx) === itemKey,
+        );
+        if (index !== -1) {
+          const item = dataSource[index];
+          const checkboxProps = getCheckboxProps(item);
+          if (!checkboxProps?.disabled) {
+            handleCheckboxChange(itemKey, checked);
+          }
+        }
+      },
+      [dataSource, getCheckboxProps, handleCheckboxChange],
+    );
+
     // Keyboard navigation hook - always enabled, works with or without rowSelection
     const { focusedItemIndex } = useListKeyboardNavigation({
       itemCount: dataSource?.length ?? 0,
       selectedKeys: selectedRowKeys,
-      onToggleSelection: handleCheckboxChange,
+      onToggleSelection: rowSelection ? handleKeyboardToggle : undefined,
       getItemKey: (index) =>
         dataSource ? getItemKey(dataSource[index], index) : index,
       listId,
