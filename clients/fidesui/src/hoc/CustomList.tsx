@@ -118,7 +118,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
         }
         return renderedItem;
       },
-      [listId],
+      [listId, props.style],
     );
 
     // If no renderItem provided, render basic list
