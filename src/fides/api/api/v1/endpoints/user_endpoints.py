@@ -719,10 +719,14 @@ def get_users(
 
     logger.debug("Returning a paginated list of users.")
 
-    paginated_result = paginate(query.order_by(FidesUser.created_at.desc()), params=params)
+    paginated_result = paginate(
+        query.order_by(FidesUser.created_at.desc()), params=params
+    )
 
     # Transform each user to include invite status
-    paginated_result.items = [populate_invite_status(db, user) for user in paginated_result.items]
+    paginated_result.items = [
+        populate_invite_status(db, user) for user in paginated_result.items
+    ]
 
     return paginated_result
 

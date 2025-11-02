@@ -29,11 +29,11 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import INVITE_CODE_TTL_HOURS, FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
+from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -2767,9 +2767,7 @@ class TestReinviteUser:
         )
         assert invite.invite_code_valid("original_code")
 
-        with mock.patch(
-            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
-        ):
+        with mock.patch("fides.api.api.v1.endpoints.user_endpoints.dispatch_message"):
             response = api_client.post(url, headers=auth_header)
             assert response.status_code == HTTP_204_NO_CONTENT
 
