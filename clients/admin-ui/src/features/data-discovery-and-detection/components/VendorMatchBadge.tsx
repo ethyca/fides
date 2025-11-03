@@ -45,7 +45,6 @@ export const VendorMatchBadge = ({
           {vendorLogoUrl && (
             <Image
               src={vendorLogoUrl}
-            //   src={"https://impulso06.com/wp-content/uploads/2023/10/Guia-de-Tamanos-de-Imagenes-para-Publicar-en-Redes-Sociales-2023.png"}
               alt={vendorName}
               boxSize={4}
               objectFit="contain"
