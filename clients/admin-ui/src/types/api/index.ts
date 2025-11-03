@@ -476,8 +476,6 @@ export type { PrivacyRequestDRPStatusResponse } from "./models/PrivacyRequestDRP
 export type { PrivacyRequestFilter } from "./models/PrivacyRequestFilter";
 export type { PrivacyRequestNotificationInfo } from "./models/PrivacyRequestNotificationInfo";
 export type { PrivacyRequestOption } from "./models/PrivacyRequestOption";
-export type { PrivacyRequestRedactionPatternsRequest } from "./models/PrivacyRequestRedactionPatternsRequest";
-export type { PrivacyRequestRedactionPatternsResponse } from "./models/PrivacyRequestRedactionPatternsResponse";
 export type { PrivacyRequestResponse } from "./models/PrivacyRequestResponse";
 export type { PrivacyRequestResumeFormat } from "./models/PrivacyRequestResumeFormat";
 export type { PrivacyRequestUser } from "./models/PrivacyRequestUser";
