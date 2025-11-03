@@ -157,7 +157,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
-  >();
+  >({ enableKeyboardShortcuts: true });
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);

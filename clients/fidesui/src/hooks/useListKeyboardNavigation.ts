@@ -43,7 +43,7 @@ export const useListKeyboardNavigation = ({
   onToggleSelection,
   getItemKey,
   listId,
-  enabled,
+  enabled = false,
 }: UseListKeyboardNavigationOptions) => {
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null);
 

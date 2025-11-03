@@ -1,5 +1,11 @@
 import _ from "lodash";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+
+const BULK_LIST_HOTKEYS = {
+  SELECT_ALL: "h",
+  DESELECT_ALL: "l",
+} as const;
 
 type SelectMode = "inclusive" | "exclusive";
 
@@ -10,7 +16,14 @@ interface ListItem {
 export const extractListItemKeys = <T extends ListItem>(data: Array<T>) =>
   data.map(({ itemKey }) => itemKey);
 
-export const useBulkListSelect = <T extends ListItem>() => {
+interface UseBulkListSelectOptions {
+  enableKeyboardShortcuts?: boolean;
+}
+
+export const useBulkListSelect = <T extends ListItem>(
+  options: UseBulkListSelectOptions = {},
+) => {
+  const { enableKeyboardShortcuts } = options;
   const [mode, setMode] = useState<SelectMode>("inclusive");
   /** list of items currently in view */
   const [listItems, setListItemsState] = useState<Array<T>>([]);
@@ -60,6 +73,24 @@ export const useBulkListSelect = <T extends ListItem>() => {
   );
   const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
   const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
+
+  // Keyboard shortcuts for bulk selection (select all / deselect all)
+  // Note: Navigation shortcuts (j, k, space, escape) are handled by CustomList component
+  useHotkeys(
+    BULK_LIST_HOTKEYS.SELECT_ALL,
+    () => {
+      updateListSelectMode("exclusive");
+    },
+    { enabled: enableKeyboardShortcuts },
+  );
+
+  useHotkeys(
+    BULK_LIST_HOTKEYS.DESELECT_ALL,
+    () => {
+      updateListSelectMode("inclusive");
+    },
+    { enabled: enableKeyboardShortcuts },
+  );
 
   return {
     excludedListItems,

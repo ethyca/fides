@@ -37,7 +37,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     rowSelection,
     renderItem,
     dataSource,
-    enableKeyboardShortcuts,
+    enableKeyboardShortcuts = false,
     ...props
   }: CustomListProps<T>) => {
     // Generate a unique ID for this list instance
