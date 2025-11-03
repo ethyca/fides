@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntInput as Input,
+  AntModal as Modal,
   AntSpace as Space,
   FloatingMenu,
   useToast,
@@ -21,6 +22,7 @@ import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import {
@@ -32,6 +34,9 @@ import {
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
+
+// include spaces to avoid collision with taxonomy fides_keys
+const ADD_NEW_ITEM_KEY = "add new item";
 
 const TaxonomyPage: NextPage = () => {
   // taxonomyType now stores the fides_key string (e.g. "data_category")
@@ -65,6 +70,8 @@ const TaxonomyPage: NextPage = () => {
   const [lastCreatedItemKey, setLastCreatedItemKey] = useState<string | null>(
     null,
   );
+
+  const [isAddNewItemModalOpen, setIsAddNewItemModalOpen] = useState(false);
 
   // reset state when changing taxonomy type
   useEffect(() => {
@@ -115,6 +122,14 @@ const TaxonomyPage: NextPage = () => {
     taxonomyKeyToScopeRegistryEnum(taxonomyType).CREATE,
   ]);
 
+  const handleMenuItemSelected = ({ key }: { key: string }) => {
+    if (key === ADD_NEW_ITEM_KEY) {
+      setIsAddNewItemModalOpen(true);
+      return;
+    }
+    setTaxonomyType(key as string);
+  };
+
   return (
     <Layout title="Taxonomy">
       <Flex vertical className="h-full">
@@ -139,7 +154,7 @@ const TaxonomyPage: NextPage = () => {
           <div className="absolute left-2 top-2 z-[1]">
             <FloatingMenu
               selectedKeys={[taxonomyType]}
-              onSelect={({ key }) => setTaxonomyType(key as string)}
+              onSelect={handleMenuItemSelected}
               items={(() => {
                 // Core taxonomies, excluding system groups if plus is not enabled
                 const coreMapping: Record<CoreTaxonomiesEnum, string> = {
@@ -170,11 +185,24 @@ const TaxonomyPage: NextPage = () => {
                   });
                 }
 
+                items.push({ label: "+ Create new", key: ADD_NEW_ITEM_KEY });
+
                 return items;
               })()}
               data-testid="taxonomy-type-selector"
             />
           </div>
+
+          <Modal
+            open={isAddNewItemModalOpen}
+            destroyOnHidden
+            onCancel={() => setIsAddNewItemModalOpen(false)}
+            width={768}
+            footer={null}
+            centered
+          >
+            <CreateCustomTaxonomyForm />
+          </Modal>
 
           <TaxonomyInteractiveTree
             userCanAddLabels={userCanAddLabels}

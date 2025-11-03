@@ -86,6 +86,17 @@ const taxonomyApi = baseApi.injectEndpoints({
         { type: "Taxonomy", id: taxonomyType },
       ],
     }),
+    createCustomTaxonomy: build.mutation<
+      TaxonomyEntity,
+      Partial<TaxonomyEntity>
+    >({
+      query: (body) => ({
+        url: `taxonomies`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
   }),
 });
 
