@@ -65,6 +65,12 @@ const mapResponseToTreeData = (
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
+      classifyable: [
+        StagedResourceTypeValue.SCHEMA,
+        StagedResourceTypeValue.TABLE,
+        StagedResourceTypeValue.ENDPOINT,
+        StagedResourceTypeValue.FIELD,
+      ].includes(treeNode.resource_type as StagedResourceTypeValue),
     };
   });
 
@@ -522,6 +528,16 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       [onLoadData],
     );
 
+    const handleSelect = (
+      _: Key[],
+      info: { selectedNodes: CustomTreeDataNode[] },
+    ) => {
+      const classifyableKeys = info.selectedNodes
+        .filter((node) => node.classifyable)
+        .map((node) => node.key);
+      setSelectedNodeKeys(classifyableKeys);
+    };
+
     // Expose the function through the ref
     useImperativeHandle(ref, () => ({
       refreshResourcesAndAncestors,
@@ -559,9 +575,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           treeData={treeData}
           expandedKeys={expandedKeys}
           onExpand={handleExpand}
-          onSelect={(_, info) =>
-            setSelectedNodeKeys(info.selectedNodes.map(({ key }) => key))
-          }
+          onSelect={handleSelect}
           showIcon
           showLine
           blockNode
