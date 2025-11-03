@@ -8,13 +8,14 @@ from sqlalchemy.orm import Session
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestCreate, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.duplication_detection import (
     DuplicateDetectionService,
 )
 from fides.api.task.conditional_dependencies.schemas import ConditionGroup
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 
@@ -45,7 +46,7 @@ def mock_config_proxy():
 @pytest.fixture
 def duplicate_detection_service(db: Session) -> DuplicateDetectionService:
     service = DuplicateDetectionService(db)
-    service.config = get_detection_config()
+    service._config = get_detection_config()
     return service
 
 
@@ -133,7 +134,7 @@ class TestCreateDuplicateDetectionConditions:
         self, duplicate_detection_service, privacy_request_with_multiple_identities
     ):
         """Test creating conditions with multiple identity fields returns expected structure."""
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             match_identity_fields=["email", "phone_number"]
         )
         conditions = duplicate_detection_service.create_duplicate_detection_conditions(
@@ -162,7 +163,7 @@ class TestCreateDuplicateDetectionConditions:
         match_identity_fields,
     ):
         """Test returns None when request has no identities matching configured fields."""
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             match_identity_fields=match_identity_fields
         )
         conditions = duplicate_detection_service.create_duplicate_detection_conditions(
@@ -215,7 +216,7 @@ class TestFindDuplicatePrivacyRequests:
         old_privacy_request_with_email,
     ):
         """Test finding duplicate when extending time window to include older requests."""
-        duplicate_detection_service.config = get_detection_config(time_window_days=60)
+        duplicate_detection_service._config = get_detection_config(time_window_days=60)
         duplicates = duplicate_detection_service.find_duplicate_privacy_requests(
             privacy_request_with_email_identity
         )
@@ -256,7 +257,7 @@ class TestFindDuplicatePrivacyRequests:
         self, duplicate_detection_service, privacy_request_with_email_identity
     ):
         """Test returns empty list when config specifies unmatched identity fields."""
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             match_identity_fields=["phone_number"]
         )
         duplicates = duplicate_detection_service.find_duplicate_privacy_requests(
@@ -286,7 +287,7 @@ class TestFindDuplicatePrivacyRequests:
         policy,
     ):
         """Test finding duplicates when matching on multiple identity fields."""
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             time_window_days=365, match_identity_fields=["email", "phone_number"]
         )
         duplicate_request = PrivacyRequest.create(
@@ -321,7 +322,7 @@ class TestFindDuplicatePrivacyRequests:
         policy,
     ):
         """Test that request with only partial identity match is not returned as duplicate."""
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             time_window_days=365, match_identity_fields=["email", "phone_number"]
         )
         partial_match_request = PrivacyRequest.create(
@@ -488,7 +489,7 @@ class TestDuplicateRequestFunctionality:
         original_group_id = (
             privacy_request_with_email_identity.duplicate_request_group_id
         )
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             match_identity_fields=["email", "phone_number"]
         )
         email_duplicate = duplicate_detection_service.is_duplicate_request(
@@ -566,7 +567,7 @@ class TestDuplicateRequestFunctionality:
             assert duplicate.duplicate_request_group_id == group_id
 
         # Now run with updated config to ensure the group id is updated
-        duplicate_detection_service.config = get_detection_config(
+        duplicate_detection_service._config = get_detection_config(
             match_identity_fields=["email", "phone_number"]
         )
         is_duplicate = duplicate_detection_service.is_duplicate_request(
@@ -739,3 +740,26 @@ class TestDuplicateRequestRunnerService:
                 error_log.message
                 == f"Request {duplicate_request.id} is a duplicate: it is duplicating actioned request(s) ['{privacy_request_with_email_identity.id}']."
             )
+
+
+class TestDuplicatePrivacyRequestService:
+
+    def test_privacy_request_service_duplicate_detection(
+        self,
+        db: Session,
+        privacy_request_with_email_identity: PrivacyRequest,
+    ):
+        """Test that the privacy request service identifies and marks duplicate privacy requests."""
+        data = PrivacyRequestCreate(
+            identity=Identity(email="customer-1@example.com"),
+            policy_key=privacy_request_with_email_identity.policy.key,
+        )
+        privacy_request = PrivacyRequestService(db).create_privacy_request(
+            privacy_request_data=data,
+        )
+        assert privacy_request.status == PrivacyRequestStatus.duplicate
+        assert privacy_request.duplicate_request_group_id is not None
+        assert (
+            privacy_request.duplicate_request_group_id
+            == privacy_request_with_email_identity.duplicate_request_group_id
+        )
