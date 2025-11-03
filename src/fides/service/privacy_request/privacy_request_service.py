@@ -376,7 +376,9 @@ class PrivacyRequestService:
                 authenticated,
             )
 
-            if self.duplicate_detection_service.is_enabled():
+            if self.duplicate_detection_service.is_enabled() and not isinstance(
+                privacy_request_data, PrivacyRequestResubmit
+            ):
                 logger.info(
                     "Duplicate detection is enabled. Checking if privacy request is a duplicate."
                 )

@@ -28,7 +28,6 @@ from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.approved,
     PrivacyRequestStatus.in_processing,
-    PrivacyRequestStatus.complete,
     PrivacyRequestStatus.requires_manual_finalization,
     PrivacyRequestStatus.requires_input,
     PrivacyRequestStatus.paused,

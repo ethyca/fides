@@ -15,6 +15,7 @@ from fides.api.service.privacy_request.duplication_detection import (
 )
 from fides.api.task.conditional_dependencies.schemas import ConditionGroup
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
+from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -707,9 +708,6 @@ class TestDuplicateRequestRunnerService:
         mock_config_proxy,
     ):
         """Test that the request runner service identifies and marks duplicate privacy requests with actioned identities."""
-        privacy_request_with_email_identity.update(
-            db=db, data={"status": PrivacyRequestStatus.approved}
-        )
         with mock_config_proxy:
             run_privacy_request_task.delay(privacy_request_with_email_identity.id).get(
                 timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -719,6 +717,10 @@ class TestDuplicateRequestRunnerService:
                 != PrivacyRequestStatus.duplicate
             )
 
+            privacy_request_with_email_identity.update(
+                db=db, data={"status": PrivacyRequestStatus.approved}
+            )
+            db.refresh(privacy_request_with_email_identity)
             duplicate_request = create_duplicate_requests(
                 db,
                 privacy_request_with_email_identity.policy,
@@ -744,22 +746,34 @@ class TestDuplicateRequestRunnerService:
 
 class TestDuplicatePrivacyRequestService:
 
+    @pytest.fixture
+    def mock_messaging_service(self) -> MessagingService:
+        return mock.create_autospec(MessagingService)
+
+    @pytest.fixture
+    def privacy_request_service(
+        self, db: Session, mock_config_proxy, mock_messaging_service
+    ) -> PrivacyRequestService:
+        return PrivacyRequestService(db, mock_config_proxy, mock_messaging_service)
+
     def test_privacy_request_service_duplicate_detection(
         self,
-        db: Session,
         privacy_request_with_email_identity: PrivacyRequest,
+        privacy_request_service: PrivacyRequestService,
     ):
         """Test that the privacy request service identifies and marks duplicate privacy requests."""
         data = PrivacyRequestCreate(
             identity=Identity(email="customer-1@example.com"),
             policy_key=privacy_request_with_email_identity.policy.key,
         )
-        privacy_request = PrivacyRequestService(db).create_privacy_request(
-            privacy_request_data=data,
-        )
-        assert privacy_request.status == PrivacyRequestStatus.duplicate
-        assert privacy_request.duplicate_request_group_id is not None
-        assert (
-            privacy_request.duplicate_request_group_id
-            == privacy_request_with_email_identity.duplicate_request_group_id
-        )
+        with mock.patch(
+            "fides.service.privacy_request.privacy_request_service._handle_notifications_and_processing"
+        ) as mock_handle_notifications_and_processing:
+            mock_handle_notifications_and_processing.return_value = None
+            privacy_request = privacy_request_service.create_privacy_request(data)
+            assert privacy_request.status == PrivacyRequestStatus.duplicate
+            assert privacy_request.duplicate_request_group_id is not None
+            assert (
+                privacy_request.duplicate_request_group_id
+                == privacy_request_with_email_identity.duplicate_request_group_id
+            )
