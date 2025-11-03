@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
+import type { IdentityValue } from "./IdentityValue";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
@@ -25,10 +26,9 @@ export type PrivacyRequestResponse = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<
-    string,
-    string | { label: string; value: string } | null
-  > | null;
+  identity?: Record<string, string | IdentityValue | null> | null;
+  // custom_privacy_request_fields was manually overriden to have the correct type
+  // until the generated types work correctly
   custom_privacy_request_fields?: Record<
     string,
     { label: string; value: string }
@@ -45,4 +45,5 @@ export type PrivacyRequestResponse = {
   deleted_by?: string | null;
   finalized_at?: string | null;
   finalized_by?: string | null;
+  duplicate_request_group_id?: string | null;
 };
