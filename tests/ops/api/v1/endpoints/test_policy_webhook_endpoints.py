@@ -577,13 +577,13 @@ class TestPutPolicyPreExecutionWebhooks:
         request_body = [
             {
                 "connection_config_key": https_connection_config.key,
-                "direction": policy_pre_execution_webhooks[1].direction.value,
+                "direction": policy_pre_execution_webhooks[1].direction,
                 "name": policy_pre_execution_webhooks[1].name,
                 "key": policy_pre_execution_webhooks[1].key,
             },
             {
                 "connection_config_key": https_connection_config.key,
-                "direction": policy_pre_execution_webhooks[0].direction.value,
+                "direction": policy_pre_execution_webhooks[0].direction,
                 "name": policy_pre_execution_webhooks[0].name,
                 "key": policy_pre_execution_webhooks[0].key,
             },
@@ -615,7 +615,7 @@ class TestPutPolicyPreExecutionWebhooks:
         request_body = [
             {
                 "connection_config_key": https_connection_config.key,
-                "direction": policy_pre_execution_webhooks[0].direction.value,
+                "direction": policy_pre_execution_webhooks[0].direction,
                 "name": policy_pre_execution_webhooks[0].name,
                 "key": policy_pre_execution_webhooks[0].key,
             },

@@ -356,7 +356,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         db = Session.object_session(self)
 
         # Raw sql for performance
-        experience_regions_cursor_result = db.execute(
+        experience_regions = db.execute(
             text(
                 """
             SELECT array_agg(distinct(privacyexperience.region) order by privacyexperience.region) AS regions
@@ -371,9 +371,8 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             """
             ),
             {"privacy_notice_id": self.id},
-        )
-        res = [result for result in experience_regions_cursor_result]
-        return res[0]["regions"] if res else []
+        ).scalar_one_or_none()
+        return experience_regions or []
 
     @classmethod
     def fetch_and_validate_notices(
@@ -592,7 +591,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         "PrivacyNoticeHistory",
         backref="notice_translation",
         lazy="dynamic",
-        order_by="PrivacyNoticeHistory.created_at",
+        order_by="PrivacyNoticeHistory.created_at.desc()",
     )
 
     __table_args__ = (
@@ -614,7 +613,7 @@ class NoticeTranslation(NoticeTranslationBase, Base):
         corresponding historical record.
         """
         # Histories are sorted at the relationship level
-        return self.histories[-1] if self.histories.count() else None
+        return self.histories.first()
 
     @property
     def privacy_notice_history_id(self) -> Optional[str]:

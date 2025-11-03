@@ -381,8 +381,7 @@ def postgres_integration_session_cls(connection_config):
     SessionLocal = get_db_session(
         config=CONFIG,
         engine=engine,
-        autocommit=True,
-        autoflush=True,
+        expire_on_commit=False,
     )
     yield SessionLocal
 
