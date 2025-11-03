@@ -21,6 +21,9 @@ export const LOG_LEVEL_LABELS = [
 ] as const;
 export type LogLevels = (typeof LOG_LEVEL_LABELS)[number];
 
+export const SECURITY_HEADER_MODES = ["none", "recommended"] as const;
+export type SecurityHeaderModes = (typeof SECURITY_HEADER_MODES)[number];
+
 /**
  * Settings that can be controlled using ENV vars on the server.
  *
@@ -41,6 +44,7 @@ export interface PrivacyCenterSettings {
   MISSING_EXPERIENCE_BEHAVIOR: MissingExperienceBehaviors; // (optional) controls what Privacy Center does when the api call to fetch an experience fails
   LOG_LEVEL: LogLevels; // (optional) controls the log level of the Privacy Center. Defaults to info.
   ENABLE_EXTERNAL_TASK_PORTAL: boolean; // whether the external task portal is enabled
+  SECURITY_HEADERS_MODE: "none" | "recommended"; // (optional) controls what security headers are included in Privacy Center responses.
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
