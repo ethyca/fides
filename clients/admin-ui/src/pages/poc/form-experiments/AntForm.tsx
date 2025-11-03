@@ -29,8 +29,8 @@ export const AntFormPOC = () => {
       <Col span={12}>
         <Title level={2}>Pure Ant</Title>
         <div className="mb-4">
-          <Tag color="green">functional</Tag>
-          <Tag color="green">low effort</Tag>
+          <Tag color="success">functional</Tag>
+          <Tag color="success">low effort</Tag>
         </div>
         <Form
           initialValues={{ ...initialValues }}

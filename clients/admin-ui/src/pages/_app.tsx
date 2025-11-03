@@ -2,7 +2,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
-import "../theme/tailwind.css";
+import "fidesui/src/tailwind.css";
 import "fidesui/src/ant-theme/global.scss";
 
 import dayjs from "dayjs";
@@ -38,36 +38,46 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const MyApp = ({ Component, pageProps }: AppProps) => (
-  <SafeHydrate>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
-          <DndProvider backend={HTML5Backend}>
-            <NuqsAdapter>
-              {Component === Login || Component === LoginWithOIDC ? (
-                // Only the login page is accessible while logged out. If there is
-                // a use case for more unprotected routes, Next has a guide for
-                // per-page layouts:
-                // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-                <Component {...pageProps} />
-              ) : (
-                <ProtectedRoute>
-                  <CommonSubscriptions />
-                  <Flex width="100%" height="100%" flex={1}>
-                    <MainSideNav />
-                    <Flex direction="column" width="100%">
-                      <Component {...pageProps} />
+const MyApp = ({ Component, pageProps }: AppProps) => {
+  // Expose Redux store to window for Cypress testing
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.Cypress) {
+      // eslint-disable-next-line no-underscore-dangle
+      window.__REDUX_STORE__ = store;
+    }
+  }, []);
+
+  return (
+    <SafeHydrate>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
+            <DndProvider backend={HTML5Backend}>
+              <NuqsAdapter>
+                {Component === Login || Component === LoginWithOIDC ? (
+                  // Only the login page is accessible while logged out. If there is
+                  // a use case for more unprotected routes, Next has a guide for
+                  // per-page layouts:
+                  // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
+                  <Component {...pageProps} />
+                ) : (
+                  <ProtectedRoute>
+                    <CommonSubscriptions />
+                    <Flex width="100%" height="100%" flex={1}>
+                      <MainSideNav />
+                      <Flex direction="column" width="100%">
+                        <Component {...pageProps} />
+                      </Flex>
                     </Flex>
-                  </Flex>
-                </ProtectedRoute>
-              )}
-            </NuqsAdapter>
-          </DndProvider>
-        </FidesUIProvider>
-      </PersistGate>
-    </Provider>
-  </SafeHydrate>
-);
+                  </ProtectedRoute>
+                )}
+              </NuqsAdapter>
+            </DndProvider>
+          </FidesUIProvider>
+        </PersistGate>
+      </Provider>
+    </SafeHydrate>
+  );
+};
 
 export default MyApp;

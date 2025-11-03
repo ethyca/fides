@@ -1,6 +1,10 @@
 import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
-import { TreeResourceChangeIndicator } from "~/types/api";
+import {
+  ConfidenceScoreRange,
+  DiffStatus,
+  TreeResourceChangeIndicator,
+} from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 /**
@@ -11,14 +15,22 @@ export interface CustomTreeDataNode extends TreeDataNode {
   title?: string | null;
   status?: TreeResourceChangeIndicator | null;
   children?: CustomTreeDataNode[];
+  classifyable?: boolean;
 }
 
 export type FieldActionTypeValue = `${FieldActionType}`;
 
-export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-export type ResourceStatusLabelColor =
-  | "nectar"
-  | "red"
-  | "orange"
-  | "blue"
-  | "green";
+interface MonitorFieldQueryParameters {
+  staged_resource_urn?: Array<string>;
+  search?: string;
+  diff_status?: Array<DiffStatus>;
+  confidence_score?: Array<ConfidenceScoreRange>;
+  data_category?: Array<string>;
+}
+
+export interface MonitorFieldParameters {
+  path: {
+    monitor_config_id: string;
+  };
+  query: MonitorFieldQueryParameters;
+}

@@ -13,7 +13,9 @@
       "consent_status": {
         "status": "alert",
         "message": "One or more assets were detected with compliance issues"
-      }
+      },
+      "monitorType": "website",
+      "isTestMonitor": false
     },
     {
       "name": "my web monitor 1",
@@ -28,7 +30,9 @@
       "consent_status": {
         "status": "alert",
         "message": "One or more assets were detected with compliance issues"
-      }
+      },
+      "monitorType": "website",
+      "isTestMonitor": false
     },
     {
       "name": "My New BQ Monitor",
@@ -42,10 +46,11 @@
         "classifying": 22,
         "approved": 0,
         "classified_low_confidence": 100,
-        "classified_high_confidence": 100,
-        "classified_manually": 100
+        "classified_high_confidence": 100
       },
-      "total_updates": 253
+      "total_updates": 253,
+      "monitorType": "datastore",
+      "isTestMonitor": false
     }
   ],
   "total": 3,

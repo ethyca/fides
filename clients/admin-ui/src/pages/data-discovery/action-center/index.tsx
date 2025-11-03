@@ -1,9 +1,10 @@
 import {
   AntButton as Button,
-  AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
   AntMenu as Menu,
+  AntPagination as Pagination,
+  Icons,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
@@ -11,14 +12,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features";
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
@@ -27,83 +24,51 @@ import useTopLevelActionCenterTabs, {
   TopLevelActionCenterTabHash,
 } from "~/features/data-discovery-and-detection/action-center/hooks/useTopLevelActionCenterTabs";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { ConnectionType } from "~/types/api";
-
-const buildMonitorLink = (
-  isAlphaFlat: boolean,
-  monitorType: ConnectionType,
-  monitorKey: string,
-) =>
-  isAlphaFlat &&
-  monitorType !== ConnectionType.TEST_WEBSITE &&
-  monitorType !== ConnectionType.WEBSITE
-    ? `${ACTION_CENTER_ROUTE}/data-explorer/${monitorKey}`
-    : `${ACTION_CENTER_ROUTE}/${monitorKey}`;
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 const ActionCenterPage = () => {
   const toast = useToast();
   const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
   const { flags } = useFeatures();
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
+  const { paginationProps, pageIndex, pageSize, resetPagination } =
+    useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: appConfig, isLoading: isConfigLoading } =
-    useGetConfigurationSettingsQuery({
-      api_set: false,
-    });
-  const webMonitorEnabled =
-    !!appConfig?.detection_discovery?.website_monitor_enabled;
+  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
 
-  useEffect(() => {
-    resetPageIndexToDefault();
-  }, [searchQuery, resetPageIndexToDefault]);
+  // Build monitor_type filter based on enabled feature flags
+  const monitorTypes: MONITOR_TYPES[] = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+  ];
 
   const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery(
-      {
-        page: pageIndex,
-        size: pageSize,
-        search: searchQuery,
-      },
-      { skip: isConfigLoading || !webMonitorEnabled },
-    );
+    useGetAggregateMonitorResultsQuery({
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+    });
 
   useEffect(() => {
-    if (isError && !!toast && webMonitorEnabled) {
+    resetPagination();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (isError) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast, webMonitorEnabled]);
+  }, [isError, toast]);
 
-  useEffect(() => {
-    if (data) {
-      setTotalPages(data.total ?? 1);
-    }
-  }, [data, setTotalPages]);
-
-  /*
-   * Filtering paginated results can lead to odd behaviors
-   * Either key should be constructed on the FE to display result, or BE should provide this functionality via the api
-   */
   const results =
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
+
   const loadingResults = isFetching
     ? Array.from({ length: pageSize }, (_, index) => ({
         key: index.toString(),
@@ -144,17 +109,21 @@ const ActionCenterPage = () => {
     [],
   );
 
-  if (!webMonitorEnabled) {
-    return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
+  if (!webMonitorEnabled && !heliosV2Enabled) {
+    return <DisabledMonitorsPage />;
   }
 
   return (
-    <Layout title="Action center">
+    <FixedLayout
+      title="Action center"
+      mainProps={{ overflow: "hidden" }}
+      fullHeight
+    >
       <PageHeader
         heading="Action center"
         breadcrumbItems={[{ title: "All activity" }]}
+        isSticky={false}
       />
-
       <Menu
         aria-label="Action center tabs"
         mode="horizontal"
@@ -174,32 +143,32 @@ const ActionCenterPage = () => {
         className="mb-4"
         data-testid="action-center-tabs"
       />
-
       {activeTab === TopLevelActionCenterTabHash.IN_PROGRESS ? (
         <InProgressMonitorTasksList />
       ) : (
-        <>
-          <Flex className="justify-between py-6">
+        <Flex
+          className="h-[calc(100%-48px)] overflow-hidden"
+          gap="middle"
+          vertical
+        >
+          <Flex className="justify-between ">
             <DebouncedSearchInput
               value={searchQuery}
               onChange={setSearchQuery}
             />
           </Flex>
-
           <List
             loading={isLoading}
             dataSource={results || loadingResults}
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
+            className="h-full overflow-scroll"
             renderItem={(summary) => {
-              const link = summary.key
-                ? buildMonitorLink(
-                    flags.alphaFullActionCenter,
-                    summary.connection_type,
-                    summary.key,
-                  )
-                : "";
+              const link =
+                summary.key && summary.monitorType
+                  ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}`
+                  : "";
               return (
                 !!summary?.key && (
                   <MonitorResult
@@ -213,26 +182,21 @@ const ActionCenterPage = () => {
               );
             }}
           />
-
-          {!!results && !!data?.total && data.total > pageSize && (
-            <>
-              <Divider className="mb-6 mt-0" />
-              <PaginationBar
-                totalRows={data?.total || 0}
-                pageSizes={PAGE_SIZES}
-                setPageSize={setPageSize}
-                onPreviousPageClick={onPreviousPageClick}
-                isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-                onNextPageClick={onNextPageClick}
-                isNextPageDisabled={isNextPageDisabled || isFetching}
-                startRange={startRange}
-                endRange={endRange}
-              />
-            </>
-          )}
-        </>
+          <Pagination
+            {...paginationProps}
+            total={data?.total || 0}
+            showSizeChanger={{
+              suffixIcon: <Icons.ChevronDown />,
+            }}
+            hideOnSinglePage={
+              // if we're on the smallest page size, and there's only one page, hide the pagination
+              paginationProps.pageSize?.toString() ===
+              paginationProps.pageSizeOptions?.[0]
+            }
+          />
+        </Flex>
       )}
-    </Layout>
+    </FixedLayout>
   );
 };
 

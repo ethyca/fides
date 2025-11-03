@@ -1,67 +1,63 @@
-import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTagProps as TagProps,
+  CUSTOM_TAG_COLOR,
+} from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: Omit<TagProps, "color"> & {
-    color:
-      | "success"
-      | "marble"
-      | "error"
-      | "warning"
-      | "info"
-      | "alert"
-      | "caution"
-      | "minos";
+    color: CUSTOM_TAG_COLOR;
     label?: string;
   };
 } = {
   approved: {
-    color: "success",
+    color: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Approved",
   },
   complete: {
-    color: "success",
+    color: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Completed",
   },
   awaiting_email_send: {
-    color: "marble",
+    color: CUSTOM_TAG_COLOR.MARBLE,
     label: "Awaiting Email Send",
   },
   denied: {
-    color: "warning",
+    color: CUSTOM_TAG_COLOR.WARNING,
     label: "Denied",
   },
   canceled: {
-    color: "marble",
+    color: CUSTOM_TAG_COLOR.MARBLE,
     label: "Canceled",
   },
   error: {
-    color: "error",
+    color: CUSTOM_TAG_COLOR.ERROR,
     label: "Error",
   },
   in_processing: {
-    color: "caution",
+    color: CUSTOM_TAG_COLOR.CAUTION,
     label: "In Progress",
   },
   paused: {
-    color: "marble",
+    color: CUSTOM_TAG_COLOR.MARBLE,
     label: "Paused",
   },
   pending: {
-    color: "info",
+    color: CUSTOM_TAG_COLOR.INFO,
     label: "New",
   },
   identity_unverified: {
-    color: "marble",
+    color: CUSTOM_TAG_COLOR.MARBLE,
     label: "Unverified",
   },
   requires_input: {
-    color: "minos",
+    color: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Input",
   },
   requires_manual_finalization: {
-    color: "minos",
+    color: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Finalization",
   },
 };

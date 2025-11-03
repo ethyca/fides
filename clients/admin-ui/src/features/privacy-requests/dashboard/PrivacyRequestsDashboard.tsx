@@ -1,53 +1,57 @@
 import {
+  AntBadge as Badge,
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
   AntMessage as message,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Portal,
   useDisclosure,
 } from "fidesui";
-import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import palette from "fidesui/src/palette/palette.module.scss";
+import React, { useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
-import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
-import {
-  selectPrivacyRequestFilters,
-  useGetAllPrivacyRequestsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
-import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
+import { GlobalFilterV2 } from "~/features/common/table/v2";
+import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
+import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
+import { PrivacyRequestFiltersModal } from "./PrivacyRequestFiltersModal";
 
 export const PrivacyRequestsDashboard = () => {
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
-    "search",
-    parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
-  );
-  const filters = useSelector(selectPrivacyRequestFilters);
-  const [messageApi, messageContext] = message.useMessage();
-  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
   const pagination = useAntPagination();
-  const { pageIndex, pageSize, resetPagination } = pagination;
+  const {
+    filterQueryParams,
+    fuzzySearchTerm,
+    setFuzzySearchTerm,
+    modalFilters,
+    modalFiltersCount,
+    setModalFilters,
+  } = usePrivacyRequestsFilters({
+    pagination,
+  });
+
+  const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = modal.useModal();
+
+  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
-    ...filters,
-    page: pageIndex,
-    size: pageSize,
-    fuzzy_search_str: fuzzySearchTerm,
+    ...filterQueryParams,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
   });
 
   const { items: requests, total: totalRows } = useMemo(() => {
@@ -62,18 +66,10 @@ export const PrivacyRequestsDashboard = () => {
 
   const { downloadReport } = useDownloadPrivacyRequestReport();
 
-  const handleSearch = useCallback(
-    (searchTerm: string) => {
-      setFuzzySearchTerm(searchTerm ?? "");
-      resetPagination();
-    },
-    [resetPagination, setFuzzySearchTerm],
-  );
-
   const handleExport = async () => {
     let messageStr;
     try {
-      await downloadReport(filters);
+      await downloadReport(filterQueryParams);
     } catch (error) {
       if (error instanceof Error) {
         messageStr = error.message;
@@ -91,14 +87,15 @@ export const PrivacyRequestsDashboard = () => {
     selectedIds,
     clearSelectedIds,
     messageApi,
+    modalApi,
   });
 
   return (
     <div>
-      <TableActionBar>
+      <Flex justify="space-between" align="center" className="my-2">
         <GlobalFilterV2
           globalFilter={fuzzySearchTerm}
-          setGlobalFilter={handleSearch}
+          setGlobalFilter={setFuzzySearchTerm}
           placeholder="Search by request ID or identity value"
         />
         <div className="flex items-center gap-2">
@@ -108,6 +105,11 @@ export const PrivacyRequestsDashboard = () => {
           />
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
+            <Badge
+              size="small"
+              color={palette.FIDESUI_MINOS}
+              count={modalFiltersCount}
+            />
           </Button>
           <Button
             aria-label="Export report"
@@ -117,15 +119,16 @@ export const PrivacyRequestsDashboard = () => {
           />
         </div>
         <Portal>
-          <RequestTableFilterModal
-            isOpen={isOpen}
+          <PrivacyRequestFiltersModal
+            open={isOpen}
             onClose={onClose}
-            onFilterChange={resetPagination}
+            modalFilters={modalFilters}
+            setModalFilters={setModalFilters}
           />
         </Portal>
-      </TableActionBar>
+      </Flex>
       {isLoading ? (
-        <div className="border p-2">
+        <div className=" p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
@@ -139,7 +142,6 @@ export const PrivacyRequestsDashboard = () => {
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
             <List<PrivacyRequestEntity>
-              bordered
               dataSource={requests}
               rowSelection={{
                 selectedRowKeys: selectedIds,
@@ -156,11 +158,12 @@ export const PrivacyRequestsDashboard = () => {
               `${range[0]}-${range[1]} of ${total} items`
             }
             total={totalRows ?? 0}
-            align="end"
+            align="start"
           />
         </Flex>
       )}
       {messageContext}
+      {modalContext}
     </div>
   );
 };
