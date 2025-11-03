@@ -1,6 +1,6 @@
 import { Checkbox, List, ListProps } from "antd/lib";
 import type { ListItemProps } from "antd/lib/list";
-import React, { useCallback, useId, useMemo } from "react";
+import React, { useCallback, useEffect, useId, useMemo } from "react";
 
 import { useListKeyboardNavigation } from "../hooks/useListKeyboardNavigation";
 import styles from "./CustomList.module.scss";
@@ -23,6 +23,9 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
    * Never enable this on more than one list on the same page or these will conflict.
    * Defaults to false. */
   enableKeyboardShortcuts?: boolean;
+  /** Callback that fires when the focused item index changes.
+   * Receives the focused item data and the new focused index (or null if no item is focused). */
+  onFocusChange?: (focusedItem: T | null, focusedIndex?: number | null) => void;
 }
 
 const getItemKey = <T,>(item: T, index: number): React.Key => {
@@ -38,6 +41,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     renderItem,
     dataSource,
     enableKeyboardShortcuts = false,
+    onFocusChange,
     ...props
   }: CustomListProps<T>) => {
     // Generate a unique ID for this list instance
@@ -121,6 +125,15 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       listId,
       enabled: enableKeyboardShortcuts,
     });
+
+    // Call onFocusChange callback when focused item changes
+    useEffect(() => {
+      if (onFocusChange && dataSource) {
+        const focusedItem =
+          focusedItemIndex !== null ? dataSource[focusedItemIndex] : null;
+        onFocusChange(focusedItem, focusedItemIndex);
+      }
+    }, [focusedItemIndex, dataSource, onFocusChange]);
 
     // Helper function to apply focus styling and data attributes
     const applyFocusStyling = useCallback(
@@ -220,6 +233,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  * - Automatic focus styling with `var(--ant-color-primary-bg)` background color
  * - Focus state provided to renderItem for additional custom styling
  * - Optional row selection with checkboxes
+ * - onFocusChange callback to track currently focused item
  *
  * Everything is automatic - keyboard shortcuts, scroll, styling, and data attributes
  * are all handled internally. Just provide your data and renderItem!
