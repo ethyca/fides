@@ -709,6 +709,8 @@ class PrivacyRequest(
         if not keys:
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
             identity = self.get_persisted_identity()
+            if identity is None:
+                return result
             self.cache_identity(identity)
             keys = cache.keys(prefix)
 
