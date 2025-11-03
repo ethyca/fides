@@ -1063,3 +1063,30 @@ export const stubSystemGroups = () => {
     statusCode: 200,
   }).as("updateSystemGroup");
 };
+
+export const stubOktaApps = () => {
+  // GET - List Okta apps (staged resources with resource_type = okta_app)
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+    fixture: "detection-discovery/results/okta-apps-list.json",
+  }).as("getOktaApps");
+
+  // POST - Create/Update Okta app
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/results", {
+    statusCode: 200,
+    body: { message: "Okta app updated successfully" },
+  }).as("updateOktaApp");
+
+  // DELETE - Remove Okta app
+  cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*/results/*", {
+    statusCode: 204,
+  }).as("deleteOktaApp");
+
+  // Mute/Unmute Okta app
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
+    statusCode: 200,
+  }).as("muteOktaApp");
+
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    statusCode: 200,
+  }).as("unmuteOktaApp");
+};

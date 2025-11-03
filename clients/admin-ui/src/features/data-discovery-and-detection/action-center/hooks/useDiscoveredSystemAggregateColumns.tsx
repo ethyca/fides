@@ -16,7 +16,10 @@ import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
+  StagedResourceTypeValue,
 } from "~/types/api";
+
+import { VendorMatchBadge } from "../../components/VendorMatchBadge";
 
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
@@ -32,6 +35,8 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   consentStatus?: ConsentAlertInfo;
   rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
+  isOktaApp?: boolean;
+  resourceType?: StagedResourceTypeValue;
 }
 
 export const useDiscoveredSystemAggregateColumns = ({
@@ -41,6 +46,8 @@ export const useDiscoveredSystemAggregateColumns = ({
   onTabChange,
   consentStatus,
   rowClickUrl,
+  isOktaApp = false,
+  resourceType,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
@@ -50,6 +57,78 @@ export const useDiscoveredSystemAggregateColumns = ({
   const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
+      // Okta-specific columns
+      if (isOktaApp && resourceType === StagedResourceTypeValue.OKTA_APP) {
+        return [
+          {
+            title: "App Name",
+            dataIndex: "name",
+            key: "app_name",
+            fixed: "left",
+            render: (_, record) => (
+              <DiscoveredSystemStatusCell
+                system={record}
+                rowClickUrl={rowClickUrl}
+              />
+            ),
+          },
+          {
+            title: "Type",
+            dataIndex: "metadata",
+            key: "app_type",
+            render: (metadata: any) => (
+              <span>{metadata?.app_type || "-"}</span>
+            ),
+          },
+          {
+            title: "Status",
+            dataIndex: "metadata",
+            key: "status",
+            render: (metadata: any) => (
+              <span>{metadata?.status || "-"}</span>
+            ),
+          },
+          {
+            title: "Vendor",
+            dataIndex: "vendor_id",
+            key: "vendor",
+            render: (vendorId: string, record: any) => (
+              <VendorMatchBadge
+                vendorName={vendorId}
+                vendorLogoUrl={record.metadata?.vendor_logo_url}
+                confidence={record.metadata?.vendor_match_confidence}
+                isUnknown={!vendorId}
+              />
+            ),
+          },
+          {
+            title: "Sign-on URL",
+            dataIndex: "metadata",
+            key: "sign_on_url",
+            render: (metadata: any) => (
+              metadata?.sign_on_url ? (
+                <a href={metadata.sign_on_url} target="_blank" rel="noopener noreferrer">
+                  View
+                </a>
+              ) : (
+                <span>-</span>
+              )
+            ),
+          },
+          {
+            title: "Created",
+            dataIndex: "metadata",
+            key: "created",
+            render: (metadata: any) => (
+              <span>
+                {metadata?.created ? new Date(metadata.created).toLocaleDateString() : "-"}
+              </span>
+            ),
+          },
+        ];
+      }
+
+      // Default system columns
       const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
         {
           title: () => (
@@ -200,6 +279,8 @@ export const useDiscoveredSystemAggregateColumns = ({
       monitorId,
       allowIgnore,
       onTabChange,
+      isOktaApp,
+      resourceType,
     ]);
 
   return { columns };

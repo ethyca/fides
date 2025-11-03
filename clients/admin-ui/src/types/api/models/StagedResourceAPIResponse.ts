@@ -9,6 +9,7 @@ import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
+import { OktaAppMetadata } from "~/features/data-discovery-and-detection/types/OktaAppMetadata";
 /**
  * Pydantic Schema used to represent any StageResource plus extra fields, used only for API responses.
  * It includes all the StagedResource fields, plus all the fields from Database, Schema, Table, and Field,
@@ -100,4 +101,9 @@ export type StagedResourceAPIResponse = {
    * that will use either user_assigned_data_uses or data_uses, depending on their values.
    */
   preferred_data_uses?: Array<string> | null;
+
+  /**
+   * The metadata of the staged resource, if applicable okta app metadata
+   */
+  metadata?: OktaAppMetadata | null;
 };
