@@ -43,7 +43,7 @@ module.exports = {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
   transformIgnorePatterns: [
-    "/node_modules/",
+    "/node_modules/(?!(react-hotkeys-hook)/)",
     "^.+\\.module\\.(css|sass|scss)$",
   ],
   watchPathIgnorePatterns: ["node_modules"],
