@@ -167,6 +167,18 @@ def check_migrations(session: nox.Session) -> None:
 
 
 @nox.session()
+def check_migration_downgrade(session: nox.Session) -> None:
+    """Check that new migrations can be upgraded and downgraded successfully."""
+    db(session, "init")
+    check_upgrade_downgrade_command = (
+        "python",
+        "-c",
+        "from fides.api.db.database import check_new_migrations_upgrade_downgrade; from fides.config import get_config; config = get_config(); check_new_migrations_upgrade_downgrade(config.database.sync_database_uri);",
+    )
+    session.run(*RUN, *check_upgrade_downgrade_command, external=True)
+
+
+@nox.session()
 def check_fides_annotations(session: nox.Session) -> None:
     """Run a fides evaluation."""
     run_command = (*RUN_NO_DEPS, "fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
@@ -558,9 +570,11 @@ def validate_test_coverage(session: nox.Session) -> None:
     all_excluded_dirs = []
 
     for test_dir in existing_test_dirs:
-        missing_coverage, uncovered_dirs, excluded_dirs = (
-            _check_test_directory_coverage(test_dir)
-        )
+        (
+            missing_coverage,
+            uncovered_dirs,
+            excluded_dirs,
+        ) = _check_test_directory_coverage(test_dir)
         all_missing_coverage.extend(missing_coverage)
         all_uncovered_dirs.extend(uncovered_dirs)
         all_excluded_dirs.extend(excluded_dirs)
