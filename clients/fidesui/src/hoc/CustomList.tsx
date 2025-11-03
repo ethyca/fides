@@ -3,6 +3,7 @@ import type { ListItemProps } from "antd/lib/list";
 import React, { useCallback, useId, useMemo } from "react";
 
 import { useListKeyboardNavigation } from "../hooks/useListKeyboardNavigation";
+import styles from "./CustomList.module.scss";
 
 export interface RowSelection<T> {
   selectedRowKeys?: React.Key[];
@@ -130,15 +131,9 @@ const withCustomProps = (WrappedComponent: typeof List) => {
             ...itemProps,
             "data-listitem": `${listId}-${index}`,
             "aria-current": isFocused ? "true" : undefined,
-            style: isFocused
-              ? {
-                  ...(itemProps.style ?? {}),
-                  backgroundColor: "var(--ant-color-primary-bg)",
-                  // Meets WCAG rule 1.4.1 (Use of Color) by including an outline
-                  outline: "2px solid var(--ant-color-border)",
-                  outlineOffset: "-1px", // Works well with existing dividers
-                }
-              : itemProps.style,
+            className: isFocused
+              ? `${itemProps.className ?? ""} ${styles["pseudo-focus"]}`.trim()
+              : itemProps.className,
           } as ListItemProps);
         }
         return renderedItem;

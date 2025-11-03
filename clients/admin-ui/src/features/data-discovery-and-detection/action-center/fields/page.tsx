@@ -375,7 +375,6 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              enableKeyboardShortcuts
               className="h-full overflow-scroll"
               loading={isFetching}
               renderItem={(props) =>
