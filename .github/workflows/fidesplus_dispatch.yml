@@ -1,0 +1,40 @@
+name: Test Dispatch Token
+
+on:
+  pull_request:
+
+jobs:
+  test-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test token access to Fidesplus
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+          script: |
+            try {
+              // Check if we can access the repo
+              const { data: repo } = await github.rest.repos.get({
+                owner: 'ethyca',
+                repo: 'fidesplus'
+              });
+              console.log(`✅ Token has access to ${repo.full_name}`);
+
+              // Check if we can view actions
+              const { data: workflows } = await github.rest.actions.listRepoWorkflows({
+                owner: 'ethyca',
+                repo: 'fidesplus'
+              });
+              console.log(`✅ Can see ${workflows.total_count} workflows`);
+
+              console.log('Token appears to have the necessary permissions!');
+            } catch (error) {
+              console.error(`❌ Error: ${error.message}`);
+              if (error.status === 404) {
+                core.setFailed('Token does not have access to fidesplus repo');
+              } else if (error.status === 403) {
+                core.setFailed('Token lacks necessary permissions');
+              } else {
+                core.setFailed(`Unexpected error: ${error.message}`);
+              }
+            }
