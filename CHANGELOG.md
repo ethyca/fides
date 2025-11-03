@@ -26,6 +26,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
+- Added replace mode for decoding context loggers to avoid decode errors with zip files[#6899](https://github.com/ethyca/fides/pull/6899/files)
+
+### Changed
+- Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
+- Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)
+
+### Developer Experience
+- Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
+- Added Cypress command to override feature flags in tests without UI interaction [#6890](https://github.com/ethyca/fides/pull/6890)
 
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
