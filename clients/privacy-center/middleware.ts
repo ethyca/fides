@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 } from "uuid";
 
+import loadEnvironmentVariables from "./app/server-utils/loadEnvironmentVariables";
 import { createLogger } from "./app/server-utils/logger";
+import {
+  configureResponseSecurityHeaders,
+  configureSecurityHeaderContext,
+} from "./app/server-utils/securityHeaders";
 
 export default function middleware(request: NextRequest) {
+  const settings = loadEnvironmentVariables();
   const log = createLogger();
   const requestId = v4();
 
@@ -15,13 +21,25 @@ export default function middleware(request: NextRequest) {
 
   log.debug(logDict, "Request received");
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-request-id", requestId);
+  // internalResponseHeaders are used to pass data between different contexts in NextJS.
+  // These headers will not appear on the actual response headers on a network call.
+  const internalResponseHeaders = new Headers(request.headers);
+  internalResponseHeaders.set("x-request-id", requestId);
+
+  configureSecurityHeaderContext(settings, internalResponseHeaders);
+
   const response = NextResponse.next({
     request: {
-      headers: requestHeaders,
+      headers: internalResponseHeaders,
     },
   });
+
+  configureResponseSecurityHeaders(
+    settings,
+    request,
+    response,
+    internalResponseHeaders,
+  );
 
   return response;
 }

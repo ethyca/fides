@@ -31,6 +31,7 @@ export type PrivacyCenterServerSettings = Pick<
   | "FIDES_JS_SERVE_STALE_SECONDS"
   | "MISSING_EXPERIENCE_BEHAVIOR"
   | "LOG_LEVEL"
+  | "SECURITY_HEADERS_MODE"
 >;
 
 /**
@@ -292,6 +293,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
     FIDES_JS_SERVE_STALE_SECONDS: settings.FIDES_JS_SERVE_STALE_SECONDS,
     MISSING_EXPERIENCE_BEHAVIOR: settings.MISSING_EXPERIENCE_BEHAVIOR,
     LOG_LEVEL: settings.LOG_LEVEL,
+    SECURITY_HEADERS_MODE: settings.SECURITY_HEADERS_MODE,
   };
 
   return serverSideSettings;
