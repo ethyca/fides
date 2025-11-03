@@ -76,8 +76,8 @@ export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
 };
 
 export const AVAILABLE_ACTIONS = {
-  "In Review": [CLASSIFY, MUTE, APPROVE, PROMOTE],
-  Approved: [MUTE, PROMOTE],
+  "In Review": [CLASSIFY, MUTE, APPROVE, PROMOTE, ASSIGN_CATEGORIES],
+  Approved: [MUTE, PROMOTE, ASSIGN_CATEGORIES],
   Classifying: [],
   Confirmed: [],
   Ignored: [UN_MUTE],
