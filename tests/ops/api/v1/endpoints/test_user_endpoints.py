@@ -985,6 +985,98 @@ class TestGetUsers:
         for user in regular_users:
             assert user.id in user_ids
 
+    def test_get_users_includes_invite_status(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url: str,
+        db,
+    ):
+        """Test that get_users includes invite status fields for all users"""
+        from datetime import timedelta, timezone
+
+        password = str_to_b64_str("Password123!")
+
+        # User with active invite
+        user_with_invite = FidesUser.create(
+            db=db,
+            data={
+                "username": "user_with_invite",
+                "email_address": "invite@example.com",
+                "disabled": True,
+            },
+        )
+        FidesUserInvite.create(
+            db=db,
+            data={"username": "user_with_invite", "invite_code": "test_code"},
+        )
+
+        # User with expired invite
+        user_with_expired = FidesUser.create(
+            db=db,
+            data={
+                "username": "user_expired",
+                "email_address": "expired@example.com",
+                "disabled": True,
+            },
+        )
+        expired_invite = FidesUserInvite.create(
+            db=db,
+            data={"username": "user_expired", "invite_code": "test_code"},
+        )
+        expired_invite.updated_at = datetime.now(timezone.utc) - timedelta(
+            hours=INVITE_CODE_TTL_HOURS + 1
+        )
+        expired_invite.save(db)
+
+        # User without invite
+        user_no_invite = FidesUser.create(
+            db=db,
+            data={
+                "username": "user_no_invite",
+                "password": password,
+                "email_address": "noinvite@example.com",
+            },
+        )
+
+        # User without username
+        user_no_username = FidesUser.create(
+            db=db,
+            data={
+                "username": None,
+                "email_address": "nousername@example.com",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Find users in response
+        users_by_id = {user["id"]: user for user in response_body["items"]}
+
+        # Check user with active invite
+        assert users_by_id[user_with_invite.id]["has_invite"] is True
+        assert users_by_id[user_with_invite.id]["invite_expired"] is False
+
+        # Check user with expired invite
+        assert users_by_id[user_with_expired.id]["has_invite"] is True
+        assert users_by_id[user_with_expired.id]["invite_expired"] is True
+
+        # Check user without invite
+        assert users_by_id[user_no_invite.id]["has_invite"] is False
+        assert users_by_id[user_no_invite.id]["invite_expired"] is None
+
+        # Check user without username
+        assert users_by_id[user_no_username.id]["has_invite"] is False
+        assert users_by_id[user_no_username.id]["invite_expired"] is None
+
+        user_with_invite.delete(db)
+        user_with_expired.delete(db)
+        user_no_invite.delete(db)
+        user_no_username.delete(db)
+
 
 class TestGetUser:
     @pytest.fixture(scope="function")
@@ -1054,6 +1146,9 @@ class TestGetUser:
         assert user_data["username"] == respondent.username
         assert user_data["id"] == respondent.id
         assert user_data["created_at"] == stringify_date(respondent.created_at)
+        # Verify invite status fields are included
+        assert "has_invite" in user_data
+        assert "invite_expired" in user_data
 
     def test_get_user_with_user_read_own_scope_other_user_data(
         self,
@@ -1178,6 +1273,124 @@ class TestGetUser:
             assert user_data["username"] == test_user.username
             assert user_data["id"] == test_user.id
             assert user_data["created_at"] == stringify_date(test_user.created_at)
+
+    def test_get_user_includes_invite_status_with_active_invite(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        db,
+    ):
+        """Test that get_user includes invite status fields when user has an active invite"""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "invited_user",
+                "email_address": "invited@example.com",
+                "disabled": True,
+            },
+        )
+        FidesUserInvite.create(
+            db=db,
+            data={"username": "invited_user", "invite_code": "test_code"},
+        )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["has_invite"] is True
+        assert user_data["invite_expired"] is False
+
+        user.delete(db)
+
+    def test_get_user_includes_invite_status_with_expired_invite(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        db,
+    ):
+        """Test that get_user includes invite status fields when user has an expired invite"""
+        from datetime import timedelta, timezone
+
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "invited_user",
+                "email_address": "invited@example.com",
+                "disabled": True,
+            },
+        )
+        invite = FidesUserInvite.create(
+            db=db,
+            data={"username": "invited_user", "invite_code": "test_code"},
+        )
+        invite.updated_at = datetime.now(timezone.utc) - timedelta(
+            hours=INVITE_CODE_TTL_HOURS + 1
+        )
+        invite.save(db)
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["has_invite"] is True
+        assert user_data["invite_expired"] is True
+
+        user.delete(db)
+
+    def test_get_user_includes_invite_status_without_invite(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        db,
+    ):
+        """Test that get_user includes invite status fields when user has no invite"""
+        password = str_to_b64_str("Password123!")
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "no_invite_user",
+                "password": password,
+                "email_address": "noinvite@example.com",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["has_invite"] is False
+        assert user_data["invite_expired"] is None
+
+        user.delete(db)
+
+    def test_get_user_includes_invite_status_without_username(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        db,
+    ):
+        """Test that get_user includes invite status fields when user has no username"""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": None,
+                "email_address": "nousername@example.com",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["has_invite"] is False
+        assert user_data["invite_expired"] is None
+
+        user.delete(db)
 
 
 class TestUpdateUser:
@@ -2595,8 +2808,8 @@ class TestAcceptUserInvite:
                 "new_password": "Testpassword1!",
             },
         )
-        assert response.status_code == HTTP_404_NOT_FOUND
-        assert response.json()["detail"] == "User not found."
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "Invite code is invalid."
 
 
 class TestReinviteUser:

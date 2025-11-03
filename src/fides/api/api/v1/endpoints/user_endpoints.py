@@ -841,12 +841,6 @@ def verify_invite_code(
 
     if not user_invite:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="User not found.",
-        )
-
-    if not user_invite.invite_code_valid(invite_code):
-        raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invite code is invalid.",
         )
@@ -855,6 +849,12 @@ def verify_invite_code(
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invite code has expired.",
+        )
+
+    if not user_invite.invite_code_valid(invite_code):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code is invalid.",
         )
 
     return user_invite

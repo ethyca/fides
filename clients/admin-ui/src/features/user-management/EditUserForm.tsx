@@ -93,7 +93,7 @@ const ReinviteSection = ({ user }: ReinviteSectionProps) => {
           message={user.invite_expired ? "Invite expired" : "Invite pending"}
           description={
             user.invite_expired
-              ? "This user's invitation has expired. Click the button below to send a new invitation email."
+              ? "This user's invitation has expired. Use the button to send a new invitation email."
               : "This user has not yet accepted their invitation. You can resend the invitation if needed."
           }
           type={user.invite_expired ? "warning" : "info"}
