@@ -20,7 +20,12 @@ depends_on = None
 def upgrade():
     op.add_column(
         "stagedresource",
-        sa.Column("errors", postgresql.JSONB(), nullable=True, server_default="{}"),
+        sa.Column(
+            "errors",
+            postgresql.ARRAY(postgresql.JSONB(astext_type=sa.Text())),
+            nullable=True,
+            server_default="{}",
+        ),
     )
 
 
