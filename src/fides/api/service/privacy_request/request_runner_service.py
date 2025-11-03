@@ -451,7 +451,7 @@ def run_privacy_request(
 
             duplicate_detection_service = DuplicateDetectionService(session)
             # Service initializes with ConfigProxy, so we can check if duplicate detection is enabled
-            if duplicate_detection_service.config.enabled:
+            if duplicate_detection_service.is_enabled():
                 logger.info(
                     "Duplicate detection is enabled. Checking if privacy request is a duplicate."
                 )

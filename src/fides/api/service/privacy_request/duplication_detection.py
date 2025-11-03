@@ -28,7 +28,6 @@ from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 ACTIONED_REQUEST_STATUSES = [
     PrivacyRequestStatus.approved,
     PrivacyRequestStatus.in_processing,
-    PrivacyRequestStatus.complete,
     PrivacyRequestStatus.requires_manual_finalization,
     PrivacyRequestStatus.requires_input,
     PrivacyRequestStatus.paused,
@@ -40,7 +39,10 @@ ACTIONED_REQUEST_STATUSES = [
 class DuplicateDetectionService:
     def __init__(self, db: Session):
         self.db = db
-        self.config = ConfigProxy(db).privacy_request_duplicate_detection
+        self._config = ConfigProxy(db).privacy_request_duplicate_detection
+
+    def is_enabled(self) -> bool:
+        return self._config.enabled
 
     def _create_identity_conditions(
         self, current_request: PrivacyRequest
@@ -55,12 +57,12 @@ class DuplicateDetectionService:
         current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
             for pi in current_request.provided_identities  # type: ignore [attr-defined]
-            if pi.field_name in self.config.match_identity_fields
+            if pi.field_name in self._config.match_identity_fields
         }
-        if len(current_identities) != len(self.config.match_identity_fields):
+        if len(current_identities) != len(self._config.match_identity_fields):
             missing_fields = [
                 field
-                for field in self.config.match_identity_fields
+                for field in self._config.match_identity_fields
                 if field not in current_identities.keys()
             ]
             logger.debug(
@@ -117,7 +119,7 @@ class DuplicateDetectionService:
         Returns:
             A ConditionGroup with AND operator, or None if no conditions can be created
         """
-        if len(self.config.match_identity_fields) == 0:
+        if len(self._config.match_identity_fields) == 0:
             return None
 
         identity_conditions = self._create_identity_conditions(current_request)
@@ -125,7 +127,7 @@ class DuplicateDetectionService:
             return None  # Only proceed if we have identity conditions
 
         time_window_condition = self._create_time_window_condition(
-            self.config.time_window_days
+            self._config.time_window_days
         )
 
         # Combine all conditions with AND operator
@@ -170,16 +172,16 @@ class DuplicateDetectionService:
         current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
             for pi in request.provided_identities  # type: ignore [attr-defined]
-            if pi.field_name in self.config.match_identity_fields
+            if pi.field_name in self._config.match_identity_fields
         }
-        if len(current_identities) != len(self.config.match_identity_fields):
+        if len(current_identities) != len(self._config.match_identity_fields):
             raise ValueError(
                 "This request does not contain the required identity fields for duplicate detection."
             )
         return "|".join(
             [
                 current_identities[field]
-                for field in sorted(self.config.match_identity_fields)
+                for field in sorted(self._config.match_identity_fields)
             ]
         )
 
@@ -283,7 +285,7 @@ class DuplicateDetectionService:
             return False
 
         # If this request is the first with a verified identity, it is not a duplicate.
-        canonical_request = min(duplicates, key=lambda x: x.identity_verified_at)  # type: ignore [arg-type, return-value]
+        canonical_request = min(verified_in_group, key=lambda x: x.identity_verified_at)  # type: ignore [arg-type, return-value]
         canonical_request_verified_at = (
             canonical_request.identity_verified_at or datetime.now(timezone.utc)
         )
@@ -324,9 +326,9 @@ class DuplicateDetectionService:
         duplicates = self.find_duplicate_privacy_requests(request)
         rule_version = generate_rule_version(
             DuplicateDetectionSettings(
-                enabled=self.config.enabled,
-                time_window_days=self.config.time_window_days,
-                match_identity_fields=self.config.match_identity_fields,
+                enabled=self._config.enabled,
+                time_window_days=self._config.time_window_days,
+                match_identity_fields=self._config.match_identity_fields,
             )
         )
         try:
