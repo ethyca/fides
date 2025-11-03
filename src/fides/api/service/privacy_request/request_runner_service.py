@@ -449,15 +449,13 @@ def run_privacy_request(
                 logger.info("Terminating privacy request: request deleted.")
                 return
 
-            if ConfigProxy(session).privacy_request_duplicate_detection.enabled:
+            duplicate_detection_service = DuplicateDetectionService(session)
+            # Service initializes with ConfigProxy, so we can check if duplicate detection is enabled
+            if duplicate_detection_service.config.enabled:
                 logger.info(
                     "Duplicate detection is enabled. Checking if privacy request is a duplicate."
                 )
-                duplicate_detection_service = DuplicateDetectionService(session)
-                if duplicate_detection_service.is_duplicate_request(
-                    privacy_request,
-                    ConfigProxy(session).privacy_request_duplicate_detection,
-                ):
+                if duplicate_detection_service.is_duplicate_request(privacy_request):
                     logger.info("Terminating privacy request: request is a duplicate.")
                     privacy_request.update(
                         session, data={"status": PrivacyRequestStatus.duplicate}

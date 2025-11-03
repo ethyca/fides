@@ -22,7 +22,7 @@ from fides.api.task.conditional_dependencies.schemas import (
 from fides.api.task.conditional_dependencies.sql_translator import (
     SQLConditionTranslator,
 )
-from fides.config.config_proxy import DuplicateDetectionSettingsProxy
+from fides.config.config_proxy import ConfigProxy
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 
 ACTIONED_REQUEST_STATUSES = [
@@ -40,9 +40,10 @@ ACTIONED_REQUEST_STATUSES = [
 class DuplicateDetectionService:
     def __init__(self, db: Session):
         self.db = db
+        self.config = ConfigProxy(db).privacy_request_duplicate_detection
 
     def _create_identity_conditions(
-        self, current_request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
+        self, current_request: PrivacyRequest
     ) -> list[Condition]:
         """Creates conditions for matching identity fields.
 
@@ -54,12 +55,12 @@ class DuplicateDetectionService:
         current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
             for pi in current_request.provided_identities  # type: ignore [attr-defined]
-            if pi.field_name in config.match_identity_fields
+            if pi.field_name in self.config.match_identity_fields
         }
-        if len(current_identities) != len(config.match_identity_fields):
+        if len(current_identities) != len(self.config.match_identity_fields):
             missing_fields = [
                 field
-                for field in config.match_identity_fields
+                for field in self.config.match_identity_fields
                 if field not in current_identities.keys()
             ]
             logger.debug(
@@ -105,7 +106,6 @@ class DuplicateDetectionService:
     def create_duplicate_detection_conditions(
         self,
         current_request: PrivacyRequest,
-        config: DuplicateDetectionSettingsProxy,
     ) -> Optional[ConditionGroup]:
         """
         Create conditions for duplicate detection based on configuration.
@@ -117,15 +117,15 @@ class DuplicateDetectionService:
         Returns:
             A ConditionGroup with AND operator, or None if no conditions can be created
         """
-        if len(config.match_identity_fields) == 0:
+        if len(self.config.match_identity_fields) == 0:
             return None
 
-        identity_conditions = self._create_identity_conditions(current_request, config)
+        identity_conditions = self._create_identity_conditions(current_request)
         if not identity_conditions:
             return None  # Only proceed if we have identity conditions
 
         time_window_condition = self._create_time_window_condition(
-            config.time_window_days
+            self.config.time_window_days
         )
 
         # Combine all conditions with AND operator
@@ -137,7 +137,6 @@ class DuplicateDetectionService:
     def find_duplicate_privacy_requests(
         self,
         current_request: PrivacyRequest,
-        config: DuplicateDetectionSettingsProxy,
     ) -> list[PrivacyRequest]:
         """
         Find potential duplicate privacy requests based on duplicate detection configuration.
@@ -153,7 +152,7 @@ class DuplicateDetectionService:
             List of PrivacyRequest objects that match the duplicate criteria,
             does not include the current request
         """
-        condition = self.create_duplicate_detection_conditions(current_request, config)
+        condition = self.create_duplicate_detection_conditions(current_request)
 
         if condition is None:
             return []
@@ -163,25 +162,23 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
-    def generate_dedup_key(
-        self, request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
-    ) -> str:
+    def generate_dedup_key(self, request: PrivacyRequest) -> str:
         """
         Generate a dedup key for a request based on the duplicate detection settings.
         """
         current_identities: dict[str, str] = {
             pi.field_name: pi.hashed_value
             for pi in request.provided_identities  # type: ignore [attr-defined]
-            if pi.field_name in config.match_identity_fields
+            if pi.field_name in self.config.match_identity_fields
         }
-        if len(current_identities) != len(config.match_identity_fields):
+        if len(current_identities) != len(self.config.match_identity_fields):
             raise ValueError(
                 "This request does not contain the required identity fields for duplicate detection."
             )
         return "|".join(
             [
                 current_identities[field]
-                for field in sorted(config.match_identity_fields)
+                for field in sorted(self.config.match_identity_fields)
             ]
         )
 
@@ -301,9 +298,7 @@ class DuplicateDetectionService:
         return True
 
     # pylint: disable=too-many-return-statements
-    def is_duplicate_request(
-        self, request: PrivacyRequest, config: DuplicateDetectionSettingsProxy
-    ) -> bool:
+    def is_duplicate_request(self, request: PrivacyRequest) -> bool:
         """
         Determine if a request is a duplicate request and assigns a duplicate request group id.
 
@@ -325,16 +320,16 @@ class DuplicateDetectionService:
         Returns:
             True if the request is a duplicate request, False otherwise
         """
-        duplicates = self.find_duplicate_privacy_requests(request, config)
+        duplicates = self.find_duplicate_privacy_requests(request)
         rule_version = generate_rule_version(
             DuplicateDetectionSettings(
-                enabled=config.enabled,
-                time_window_days=config.time_window_days,
-                match_identity_fields=config.match_identity_fields,
+                enabled=self.config.enabled,
+                time_window_days=self.config.time_window_days,
+                match_identity_fields=self.config.match_identity_fields,
             )
         )
         try:
-            dedup_key = self.generate_dedup_key(request, config)
+            dedup_key = self.generate_dedup_key(request)
         except ValueError as e:
             message = f"Request {request.id} is not a duplicate: {e}"
             logger.debug(message)
