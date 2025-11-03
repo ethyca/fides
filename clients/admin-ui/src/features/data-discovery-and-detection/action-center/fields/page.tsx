@@ -383,6 +383,11 @@ const ActionCenterFields: NextPage = () => {
               rowSelection={{
                 selectedRowKeys: extractListItemKeys(selectedListItems),
                 onChange: setSelectedItemKeys,
+                getCheckboxProps: (
+                  item: DatastoreStagedResourceAPIResponse,
+                ) => ({
+                  title: `Select ${item.name}`,
+                }),
               }}
               renderItem={(
                 props: DatastoreStagedResourceAPIResponse & { key: React.Key },

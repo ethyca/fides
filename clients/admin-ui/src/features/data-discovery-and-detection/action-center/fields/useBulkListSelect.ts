@@ -25,6 +25,23 @@ export const useBulkListSelect = <T extends ListItem>() => {
     setDeltaState(_.uniqBy(newDelta, "itemKey"));
   };
 
+  /**
+   * Helper to compute the inverse delta (items not in delta)
+   * Uses a Set for O(n) performance instead of nested loops
+   */
+  const computeInverseDelta = () => {
+    const deltaKeysSet = new Set(delta.map((d) => d.itemKey));
+    return listItems.filter(({ itemKey }) => !deltaKeysSet.has(itemKey));
+  };
+
+  /**
+   * Helper to get currently selected items based on mode
+   */
+  const computeSelectedItems = () => {
+    const inverseDelta = computeInverseDelta();
+    return mode === "inclusive" ? delta : inverseDelta;
+  };
+
   const updateSelectedListItem = (itemKey: React.Key, isSelected: boolean) => {
     const updatedItem = listItems.find((item) => itemKey === item.itemKey);
 
@@ -46,11 +63,7 @@ export const useBulkListSelect = <T extends ListItem>() => {
   };
 
   const setSelectedItemKeys = (selectedKeys: React.Key[]) => {
-    // Compute currently selected items based on current mode
-    const inverseDelta = listItems.filter(
-      ({ itemKey }) => !delta.find((d) => d.itemKey === itemKey),
-    );
-    const currentlySelected = mode === "inclusive" ? delta : inverseDelta;
+    const currentlySelected = computeSelectedItems();
     const currentlySelectedKeys = extractListItemKeys(currentlySelected);
 
     // Determine which items in the current page changed selection
@@ -82,9 +95,8 @@ export const useBulkListSelect = <T extends ListItem>() => {
     setMode("inclusive");
   };
 
-  const inverseDelta = listItems.filter(
-    ({ itemKey }) => !delta.find((d) => d.itemKey === itemKey),
-  );
+  // Use the helper to compute selected and excluded items
+  const inverseDelta = computeInverseDelta();
   const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
   const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
 
@@ -106,6 +118,5 @@ export const useBulkListSelect = <T extends ListItem>() => {
     setSelectedItemKeys,
     updateListItems: setListItemsState,
     updateListSelectMode,
-    updateSelectedListItem,
   };
 };

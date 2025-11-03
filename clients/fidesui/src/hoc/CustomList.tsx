@@ -1,4 +1,4 @@
-import { Checkbox, List, ListProps } from "antd/lib";
+import { Checkbox, CheckboxProps, List, ListProps } from "antd/lib";
 import type { ListItemProps } from "antd/lib/list";
 import React, { useCallback, useId, useMemo } from "react";
 
@@ -8,7 +8,7 @@ import styles from "./CustomList.module.scss";
 export interface RowSelection<T> {
   selectedRowKeys?: React.Key[];
   onChange?: (selectedRowKeys: React.Key[], selectedRows: T[]) => void;
-  getCheckboxProps?: (record: T) => { disabled?: boolean };
+  getCheckboxProps?: (record: T) => CheckboxProps;
 }
 
 export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
@@ -178,8 +178,8 @@ const withCustomProps = (WrappedComponent: typeof List) => {
           <Checkbox
             checked={isSelected}
             onChange={(e) => handleCheckboxChange(itemKey, e.target.checked)}
+            aria-label={checkboxProps.title ?? `Select item ${itemKey}`}
             {...checkboxProps}
-            aria-label={`Select item ${itemKey}`}
             className={enableKeyboardShortcuts ? "ml-2" : undefined} // focused rows need a bit of padding to the left or it will be too close to edge
           />
         );
