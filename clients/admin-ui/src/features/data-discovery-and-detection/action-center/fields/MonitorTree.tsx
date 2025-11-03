@@ -62,7 +62,9 @@ const mapResponseToTreeData = (
         ? () => <IconComponent className="h-full" />
         : undefined,
       status: treeNode.update_status,
-      isLeaf: !treeNode.has_grandchildren,
+      isLeaf:
+        treeNode.resource_type === StagedResourceTypeValue.FIELD ||
+        !treeNode.has_grandchildren,
     };
   });
 
