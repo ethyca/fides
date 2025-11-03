@@ -66,22 +66,23 @@ export const useBulkListSelect = <T extends ListItem>() => {
     const currentlySelected = computeSelectedItems();
     const currentlySelectedKeys = extractListItemKeys(currentlySelected);
 
-    // Determine which items in the current page changed selection
-    const currentPageKeys = listItems.map((item) => item.itemKey);
+    // Determine which items in the current page changed selection. Convert to Sets for lookup performance
+    const currentPageKeysSet = new Set(listItems.map((item) => item.itemKey));
+    const currentlySelectedKeysSet = new Set(currentlySelectedKeys);
+    const selectedKeysSet = new Set(selectedKeys);
 
     // Find items that were toggled on this page
     const addedKeys = selectedKeys.filter(
       (key) =>
-        currentPageKeys.includes(key) && !currentlySelectedKeys.includes(key),
+        currentPageKeysSet.has(key) && !currentlySelectedKeysSet.has(key),
     );
-    const removedKeys = currentPageKeys.filter(
-      (key) =>
-        currentlySelectedKeys.includes(key) && !selectedKeys.includes(key),
+    const removedKeys = currentlySelectedKeys.filter(
+      (key) => currentPageKeysSet.has(key) && !selectedKeysSet.has(key),
     );
 
     // Update selection for each changed item using the existing logic
     [...addedKeys, ...removedKeys].forEach((key) => {
-      updateSelectedListItem(key, selectedKeys.includes(key));
+      updateSelectedListItem(key, selectedKeysSet.has(key));
     });
   };
 
