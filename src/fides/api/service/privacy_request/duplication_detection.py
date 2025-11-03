@@ -159,6 +159,7 @@ class DuplicateDetectionService:
 
         translator = SQLConditionTranslator(self.db)
         query = translator.generate_query_from_condition(condition)
+
         query = query.filter(PrivacyRequest.id != current_request.id)
         return query.all()
 
