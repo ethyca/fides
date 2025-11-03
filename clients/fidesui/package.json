@@ -20,6 +20,7 @@
     "@chakra-ui/react": "^2.8.2",
     "antd": "^5.26.2",
     "iso-3166": "^4.3.0",
+    "react-hotkeys-hook": "^5.2.1",
     "typescript": "^4.9.5"
   },
   "peerDependencies": {
