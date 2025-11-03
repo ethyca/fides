@@ -1,7 +1,6 @@
 import {
   AntBreadcrumb as Breadcrumb,
   AntButton as Button,
-  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntListItemProps as ListItemProps,
@@ -67,8 +66,7 @@ type ListRenderItem = ListProps<
 type MonitorFieldListItemRenderParams = Parameters<
   NonNullable<ListRenderItem>
 >[0] & {
-  selected?: boolean;
-  onSelect?: (key: React.Key, selected: boolean) => void;
+  checkbox?: React.ReactNode;
   onNavigate?: (key: string) => void;
   dataCategoriesDisabled?: boolean;
   onSetDataCategories: (urn: string, dataCategories: string[]) => void;
@@ -99,8 +97,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   classifications,
   name,
   diff_status,
-  selected,
-  onSelect,
+  checkbox,
   onSetDataCategories,
   dataCategoriesDisabled,
   onNavigate,
@@ -133,12 +130,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
       ]}
     >
       <List.Item.Meta
-        avatar={
-          <Checkbox
-            checked={selected}
-            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
-          />
-        }
+        avatar={checkbox}
         title={
           <Flex
             gap={12}

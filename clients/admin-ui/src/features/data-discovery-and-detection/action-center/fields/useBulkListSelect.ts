@@ -45,6 +45,33 @@ export const useBulkListSelect = <T extends ListItem>() => {
     }
   };
 
+  const setSelectedItemKeys = (selectedKeys: React.Key[]) => {
+    // Compute currently selected items based on current mode
+    const inverseDelta = listItems.filter(
+      ({ itemKey }) => !delta.find((d) => d.itemKey === itemKey),
+    );
+    const currentlySelected = mode === "inclusive" ? delta : inverseDelta;
+    const currentlySelectedKeys = extractListItemKeys(currentlySelected);
+
+    // Determine which items in the current page changed selection
+    const currentPageKeys = listItems.map((item) => item.itemKey);
+
+    // Find items that were toggled on this page
+    const addedKeys = selectedKeys.filter(
+      (key) =>
+        currentPageKeys.includes(key) && !currentlySelectedKeys.includes(key),
+    );
+    const removedKeys = currentPageKeys.filter(
+      (key) =>
+        currentlySelectedKeys.includes(key) && !selectedKeys.includes(key),
+    );
+
+    // Update selection for each changed item using the existing logic
+    [...addedKeys, ...removedKeys].forEach((key) => {
+      updateSelectedListItem(key, selectedKeys.includes(key));
+    });
+  };
+
   const updateListSelectMode = (newMode: SelectMode) => {
     setMode(newMode);
     setDeltaState([]);
@@ -76,6 +103,7 @@ export const useBulkListSelect = <T extends ListItem>() => {
     listSelectMode: mode,
     resetListSelect,
     selectedListItems,
+    setSelectedItemKeys,
     updateListItems: setListItemsState,
     updateListSelectMode,
     updateSelectedListItem,
