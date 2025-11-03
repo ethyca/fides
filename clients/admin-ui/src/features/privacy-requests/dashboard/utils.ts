@@ -1,13 +1,6 @@
 import { isEmpty } from "lodash";
 
-import { PrivacyRequestResponse } from "~/types/api";
-
-// to be replaced with IdentityValue from api models when available
-interface IdentityValue {
-  key: string;
-  label: string;
-  value: string;
-}
+import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
 
 interface CustomFieldWithKey {
   key: string;
@@ -17,7 +10,7 @@ interface CustomFieldWithKey {
 
 const getIdentityValues = (
   key: string,
-  identity: string | { label: string; value: string } | null,
+  identity: string | IdentityValue | null,
 ): IdentityValue | null => {
   if (!identity) {
     return null;
