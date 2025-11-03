@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
+- Refactored monitor fields to use CustomList row selection API with performance optimizations [#6910](https://github.com/ethyca/fides/pull/6910)
 - Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
 - Added Cypress command to override feature flags in tests without UI interaction [#6890](https://github.com/ethyca/fides/pull/6890)
 
