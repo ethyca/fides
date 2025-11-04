@@ -50,10 +50,16 @@ def merge_celery_environment(celery_dict: Dict[str, Any]) -> Dict[str, Any]:
             # Strip the prefix and convert to lowercase
             stripped_key = key[len(ENV_PREFIX) :].lower()
             if stripped_key:
+                # Normalize boolean strings only to preserve case-sensitive values
+                # like URLs (e.g., Redis://myhost) or passwords
+                normalized_value = value
+                if value.lower() in ("true", "false"):
+                    normalized_value = value.lower()
+
                 # Use JSON parsing to handle type conversion properly
                 # This handles booleans (true/false), integers, floats, etc.
                 try:
-                    celery_dict[stripped_key] = json.loads(value.lower())
+                    celery_dict[stripped_key] = json.loads(normalized_value)
                 except (JSONDecodeError, ValueError):
                     # If JSON parsing fails, keep it as a string
                     celery_dict[stripped_key] = value

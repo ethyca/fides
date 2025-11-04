@@ -88,3 +88,40 @@ def test_celery_arbitrary_env_vars() -> None:
 
     # Clear cache again for other tests
     get_config.cache_clear()
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CELERY__BROKER_URL": "Redis://myhost:6379/0",
+        "FIDES__CELERY__RESULT_BACKEND": "redis://SecretPassword@host:6379/1",
+        "FIDES__CELERY__TASK_ALWAYS_EAGER": "True",  # Capital T
+        "FIDES__CELERY__TASK_ACKS_LATE": "False",  # Capital F
+        "FIDES__CELERY__CUSTOM_STRING": "MixedCaseValue",
+    },
+    clear=False,
+)
+def test_celery_env_vars_preserve_case_sensitivity() -> None:
+    """
+    Test that case-sensitive values like URLs and passwords are preserved,
+    while boolean strings are still parsed correctly regardless of case.
+    """
+    # Clear the config cache to force reload with new env vars
+    get_config.cache_clear()
+
+    config = get_config()
+    celery_app = _create_celery(config=config)
+
+    # URLs with uppercase characters should be preserved
+    assert celery_app.conf["broker_url"] == "Redis://myhost:6379/0"
+    assert celery_app.conf["result_backend"] == "redis://SecretPassword@host:6379/1"
+
+    # Boolean strings should be parsed regardless of case
+    assert celery_app.conf["task_always_eager"] is True
+    assert celery_app.conf["task_acks_late"] is False
+
+    # Custom case-sensitive strings should be preserved
+    assert celery_app.conf["custom_string"] == "MixedCaseValue"
+
+    # Clear cache again for other tests
+    get_config.cache_clear()
