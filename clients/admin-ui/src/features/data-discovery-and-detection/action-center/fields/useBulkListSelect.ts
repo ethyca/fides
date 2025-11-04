@@ -5,6 +5,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 const BULK_LIST_HOTKEYS = {
   SELECT_ALL: "h",
   DESELECT_ALL: "l",
+  TOGGLE_SELECTION: "space",
 } as const;
 
 type SelectMode = "inclusive" | "exclusive";
@@ -97,7 +98,7 @@ export const useBulkListSelect = <T extends ListItem>(
   // This provides the same functionality as CustomList's built-in space hotkey,
   // but works with custom checkbox implementations that don't use rowSelection
   useHotkeys(
-    "space",
+    BULK_LIST_HOTKEYS.TOGGLE_SELECTION,
     (e) => {
       if (activeListItem) {
         e.preventDefault(); // Prevent page scroll

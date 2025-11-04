@@ -263,7 +263,7 @@ const ActionCenterFields: NextPage = () => {
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
-          <Flex vertical gap="middle" className="h-full overflow-hidden">
+          <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2}>Monitor results</Title>
               <Flex align="center">
@@ -376,7 +376,7 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="h-full overflow-scroll"
+              className="-ml-3 h-full overflow-y-scroll pl-1"
               loading={isFetching}
               enableKeyboardShortcuts
               onActiveItemChange={useCallback(
