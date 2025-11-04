@@ -281,7 +281,8 @@ class DuplicateDetectionService:
             request_created_at = request.created_at or datetime.now(timezone.utc)
             if request_created_at < canonical_request_created_at:
                 message = f"Request {request.id} is not a duplicate: it is the first request to be created in the group."
-                self.mark_as_duplicate(request, message)
+                logger.debug(message)
+                self.add_success_execution_log(request, message)
                 return False
 
             message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
@@ -337,13 +338,6 @@ class DuplicateDetectionService:
         Returns:
             True if the request is a duplicate request, False otherwise
         """
-        if request.status in ACTIONED_REQUEST_STATUSES:
-            message = (
-                f"Request {request.id} is not a duplicate: it is an actioned request."
-            )
-            logger.debug(message)
-            self.add_success_execution_log(request, message)
-            return False
 
         duplicates = self.find_duplicate_privacy_requests(request)
         logger.debug(
@@ -374,6 +368,14 @@ class DuplicateDetectionService:
             return False
 
         self.update_duplicate_group_ids(request, duplicates, duplicate_group.id)  # type: ignore [arg-type]
+
+        if request.status in ACTIONED_REQUEST_STATUSES:
+            message = (
+                f"Request {request.id} is not a duplicate: it is an actioned request."
+            )
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
+            return False
 
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:

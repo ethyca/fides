@@ -462,13 +462,16 @@ class TestDuplicateRequestFunctionality:
         policy,
     ):
         """Test that the duplicate request group id is different for different duplicate detection configurations."""
+        privacy_request_with_email_identity.update(
+            db=db, data={"status": PrivacyRequestStatus.pending}
+        )
         email_duplicate = duplicate_detection_service.is_duplicate_request(
             privacy_request_with_email_identity
         )
         assert not email_duplicate
 
         duplicate_request_with_multiple_identities = create_duplicate_requests(
-            db, policy, 1, PrivacyRequestStatus.in_processing
+            db, policy, 1, PrivacyRequestStatus.pending
         )[0]
         duplicate_request_with_multiple_identities.persist_identity(
             db=db,
@@ -543,6 +546,9 @@ class TestDuplicateRequestFunctionality:
     ):
         """Test that the duplicate request group is updated when the duplicate detection configuration is updated."""
         # First run with original config to set the group id
+        privacy_request_with_multiple_identities.update(
+            db=db, data={"status": PrivacyRequestStatus.in_processing}
+        )
         is_duplicate = duplicate_detection_service.is_duplicate_request(
             privacy_request_with_multiple_identities
         )
@@ -628,13 +634,13 @@ class TestDuplicateRequestRunnerService:
             pytest.param(
                 None,
                 datetime.now(timezone.utc),
-                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.complete,
                 id="duplicate_verified_but_not_request",
             ),
             pytest.param(
                 datetime.now(timezone.utc),
                 datetime.now(timezone.utc) - timedelta(days=1),
-                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.complete,
                 id="both_verified_duplicate_verified_first",
             ),
             pytest.param(
@@ -725,7 +731,7 @@ class TestDuplicateRequestRunnerService:
                 db,
                 privacy_request_with_email_identity.policy,
                 1,
-                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.pending,
             )[0]
             run_privacy_request_task.delay(duplicate_request.id).get(
                 timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -758,10 +764,14 @@ class TestDuplicatePrivacyRequestService:
 
     def test_privacy_request_service_duplicate_detection(
         self,
+        db: Session,
         privacy_request_with_email_identity: PrivacyRequest,
         privacy_request_service: PrivacyRequestService,
     ):
         """Test that the privacy request service identifies and marks duplicate privacy requests."""
+        privacy_request_with_email_identity.update(
+            db=db, data={"status": PrivacyRequestStatus.in_processing}
+        )
         data = PrivacyRequestCreate(
             identity=Identity(email="customer-1@example.com"),
             policy_key=privacy_request_with_email_identity.policy.key,

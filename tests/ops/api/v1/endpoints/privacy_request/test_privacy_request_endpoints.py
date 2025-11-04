@@ -1331,27 +1331,18 @@ class TestGetPrivacyRequests:
             == 1
         )
 
-    @pytest.mark.usefixtures(
-        "soft_deleted_privacy_request", "duplicate_privacy_request"
-    )
-    @pytest.mark.parametrize(
-        "exclude_type",
-        [
-            pytest.param("deleted", id="deleted"),
-            pytest.param("duplicate", id="duplicate"),
-        ],
-    )
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
     def test_filter_privacy_requests_exclude_type_requests(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
-        exclude_type,
+        soft_deleted_privacy_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?include_{exclude_type}_requests=false", headers=auth_header
+            url + f"?include_deleted_requests=false", headers=auth_header
         )
 
         assert response.status_code == 200
@@ -1360,9 +1351,7 @@ class TestGetPrivacyRequests:
 
         assert resp["items"][0]["id"] == privacy_request.id
 
-    @pytest.mark.usefixtures(
-        "soft_deleted_privacy_request", "duplicate_privacy_request"
-    )
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
     def test_filter_privacy_requests_excludes_type_requests_by_default(
         self,
         api_client: TestClient,
