@@ -305,7 +305,8 @@ class DuplicateDetectionService:
             logger.debug(message)
             self.add_success_execution_log(request, message)
             for duplicate in duplicates:
-                self.mark_as_duplicate(duplicate, message)
+                dup_message = f"Request {duplicate.id} is a duplicate: it is duplicating request(s) ['{request.id}']."
+                self.mark_as_duplicate(duplicate, dup_message)
             return False
         message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
         self.mark_as_duplicate(request, message)
