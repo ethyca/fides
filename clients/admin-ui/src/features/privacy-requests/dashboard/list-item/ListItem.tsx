@@ -10,13 +10,13 @@ import React from "react";
 
 import { PrivacyRequestResponse } from "~/types/api";
 
+import { RequestTableActions } from "../../RequestTableActions";
 import {
   getCustomFields,
   getOtherIdentities,
   getPrimaryIdentity,
 } from "../utils";
 import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
-import { ItemActions } from "./components/ItemActions";
 
 interface ListItemProps {
   item: PrivacyRequestResponse;
@@ -94,7 +94,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
         <ReceivedOn createdAt={item.created_at} />
       </div>
       <Flex className="min-w-[90px]" align="center" justify="end" gap="small">
-        <ItemActions key="other-actions" subjectRequest={item} />
+        <RequestTableActions key="other-actions" subjectRequest={item} />
       </Flex>
     </List.Item>
   );
