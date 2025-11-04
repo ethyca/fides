@@ -92,6 +92,8 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
                         ),
                         icon=icon,
                         human_readable=config.name,
+                        is_custom=False,
+                        default_connector_available=False,
                         authorization_required=authorization_required,
                         user_guide=config.user_guide,
                         supported_actions=config.supported_actions,
@@ -162,6 +164,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         )
 
         display_info = extract_display_info_from_config(config)
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        )
 
         connector_template = ConnectorTemplate(
             config=template.config,
@@ -171,6 +176,8 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             authorization_required=authorization_required,
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
+            is_custom=True,
+            default_connector_available=file_connector_template is not None,
             **display_info,
         )
 

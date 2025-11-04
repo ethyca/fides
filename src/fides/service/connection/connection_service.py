@@ -24,6 +24,7 @@ from fides.api.models.manual_task import (
     ManualTaskParentEntityType,
     ManualTaskType,
 )
+from fides.api.models.saas_official_dataset import SaasOfficialDataset
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_schema,
@@ -647,5 +648,34 @@ class ConnectionService:
             "fides_key": template_values.instance_key,
             "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
         }
+
+        connector_type = None
+        if (
+            connection_config.connection_type == ConnectionType.saas
+            and connection_config.saas_config
+        ):
+            connector_type = connection_config.saas_config.get("type")
+        if connector_type:
+            connector_template = ConnectorRegistry.get_connector_template(
+                connector_type
+            )
+            if connector_template and not connector_template.is_custom:
+                official_dataset = SaasOfficialDataset.get_by(
+                    db=self.db, field="connection_type", value=connector_type
+                )
+                if official_dataset:
+                    # TODO: implement three part diff and merge customer changes before updating the official dataset record
+                    official_dataset.dataset_json = dataset_from_template
+                    official_dataset.save(db=self.db)
+                else:
+                    # Create new record since its the first time we're seeing this connector type
+                    SaasOfficialDataset.create(
+                        db=self.db,
+                        data={
+                            "connection_type": connector_type,
+                            "dataset_json": dataset_from_template,
+                        },
+                    )
+
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
