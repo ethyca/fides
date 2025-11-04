@@ -54,7 +54,7 @@ export const DROPDOWN_ACTIONS = [
 
 export const LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
 
-export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
+export const ACTIONS_DISABLED_MESSAGE: Record<
   (typeof DROPDOWN_ACTIONS)[number],
   string
 > = {
@@ -122,6 +122,14 @@ export const FIELD_ACTION_ICON = {
   mute: <Icons.ViewOff />,
   promote: <Icons.Checkmark />,
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
+
+export const FIELD_ACTION_HOTKEYS = {
+  APPROVE: "a",
+  PROMOTE: "c",
+  MUTE: "i",
+  UN_MUTE: "r",
+  OPEN_DRAWER: "o",
+} as const;
 
 export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

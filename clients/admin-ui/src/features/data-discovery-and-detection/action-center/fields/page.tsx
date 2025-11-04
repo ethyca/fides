@@ -32,9 +32,9 @@ import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/Datastore
 
 import {
   ACTION_ALLOWED_STATUSES,
+  ACTIONS_DISABLED_MESSAGE,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
-  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
@@ -54,6 +54,7 @@ import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
@@ -223,6 +224,22 @@ const ActionCenterFields: NextPage = () => {
     dataCategory,
   ]);
 
+  // Update drawer content when focused item changes while drawer is open
+  useEffect(() => {
+    if (detailsUrn && activeListItem && activeListItem.urn !== detailsUrn) {
+      setDetailsUrn(activeListItem.urn);
+    }
+  }, [activeListItem, detailsUrn]);
+
+  // Set up keyboard shortcuts for field actions
+  useFieldActionHotkeys(
+    activeListItem,
+    fieldActions,
+    updateSelectedListItem,
+    handleNavigate,
+    messageApi,
+  );
+
   return (
     <FixedLayout
       title="Action center - Discovered assets by system"
@@ -297,9 +314,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType) ? (
                             <Tooltip
-                              title={
-                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
-                              }
+                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
                             >
                               {FIELD_ACTION_LABEL[actionType]}
                             </Tooltip>
