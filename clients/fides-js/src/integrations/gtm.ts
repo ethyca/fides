@@ -114,21 +114,24 @@ export const gtm = (options?: GtmOptions) => {
     // Lookup the timestamp of the original FidesInitialized performance mark
     const timestamp =
       performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
-    pushFidesVariableToGTM(
-      {
-        type: "FidesInitialized",
-        detail: {
-          consent,
-          fides_meta,
-          identity,
-          tcf_consent,
-          timestamp,
-          extraDetails: {
-            consentMethod: fides_meta?.consentMethod,
+
+    ["FidesInitialized", "FidesReady"].forEach((event) => {
+      pushFidesVariableToGTM(
+        {
+          type: event,
+          detail: {
+            consent,
+            fides_meta,
+            identity,
+            tcf_consent,
+            timestamp,
+            extraDetails: {
+              consentMethod: fides_meta?.consentMethod,
+            },
           },
         },
-      },
-      options,
-    );
+        options,
+      );
+    });
   }
 };
