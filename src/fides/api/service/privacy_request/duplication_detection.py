@@ -265,10 +265,6 @@ class DuplicateDetectionService:
 
         # The request identity is not verified.
         if not request.identity_verified_at:
-            logger.debug(f"Request {request.id} is not verified.")
-            logger.debug(
-                f"Verified in group: {[duplicate.id for duplicate in verified_in_group]}."
-            )
             if len(verified_in_group) > 0:
                 message = f"Request {request.id} is a duplicate: it is duplicating request(s) {[duplicate.id for duplicate in verified_in_group]}."
                 self.mark_as_duplicate(request, message)
