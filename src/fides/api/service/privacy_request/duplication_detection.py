@@ -393,9 +393,6 @@ class DuplicateDetectionService:
             if duplicate.status
             not in [PrivacyRequestStatus.duplicate, PrivacyRequestStatus.complete]
         ]
-        logger.debug(
-            f"Canonical requests: {[duplicate.id for duplicate in canonical_requests]}."
-        )
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
             message = f"Request {request.id} is not a duplicate."
