@@ -340,9 +340,6 @@ class DuplicateDetectionService:
             self.add_success_execution_log(request, message)
             return False
         duplicates = self.find_duplicate_privacy_requests(request)
-        logger.debug(
-            f"Initial Duplicates: {[duplicate.id for duplicate in duplicates]}."
-        )
         rule_version = generate_rule_version(
             DuplicateDetectionSettings(
                 enabled=self._config.enabled,
