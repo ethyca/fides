@@ -1,14 +1,15 @@
 import { AntEmpty as Empty } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
-import { usePagination, useSearch } from "~/features/common/hooks";
+import { useSearch } from "~/features/common/hooks";
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
 export const useInProgressMonitorTasksList = () => {
-  const { pageIndex, pageSize, updatePageIndex, showSizeChanger } =
-    usePagination({ defaultPageSize: 20, showSizeChanger: false });
+  const { resetPagination, pageIndex, pageSize, paginationProps } =
+    useAntPagination();
 
   const { searchQuery, updateSearch: setSearchQuery } = useSearch();
 
@@ -36,9 +37,9 @@ export const useInProgressMonitorTasksList = () => {
   const updateSearch = useCallback(
     (newSearch: string) => {
       setSearchQuery(newSearch);
-      updatePageIndex(1); // Reset to first page when searching
+      resetPagination();
     },
-    [setSearchQuery, updatePageIndex],
+    [setSearchQuery, resetPagination],
   );
 
   const updateStatusFilters = useCallback((filters: ExecutionLogStatus[]) => {
@@ -53,8 +54,8 @@ export const useInProgressMonitorTasksList = () => {
   const applyFilters = useCallback(() => {
     setAppliedStatusFilters(stagedStatusFilters);
     setAppliedShowDismissed(stagedShowDismissed);
-    updatePageIndex(1);
-  }, [stagedStatusFilters, stagedShowDismissed, updatePageIndex]);
+    resetPagination();
+  }, [stagedStatusFilters, stagedShowDismissed, resetPagination]);
 
   // Reset button: Reset to defaults and immediately apply them
   const resetAndApplyFilters = useCallback(() => {
@@ -62,8 +63,8 @@ export const useInProgressMonitorTasksList = () => {
     setStagedShowDismissed(false);
     setAppliedStatusFilters(defaultStatusFilters);
     setAppliedShowDismissed(false);
-    updatePageIndex(1);
-  }, [defaultStatusFilters, updatePageIndex]);
+    resetPagination();
+  }, [defaultStatusFilters, resetPagination]);
 
   // All possible status values from ExecutionLogStatus enum
   // Note: awaiting_processing displays as "Awaiting Processing" but maps to "paused" in the API
@@ -105,25 +106,8 @@ export const useInProgressMonitorTasksList = () => {
           />
         ),
       },
-      pagination: {
-        current: pageIndex,
-        pageSize,
-        total: data?.total,
-        showSizeChanger,
-        showQuickJumper: false,
-        onChange: (page: number) => updatePageIndex(page),
-      },
     }),
-    [
-      data?.items,
-      data?.total,
-      isLoading,
-      isFetching,
-      pageIndex,
-      pageSize,
-      showSizeChanger,
-      updatePageIndex,
-    ],
+    [data?.items, isLoading],
   );
 
   return {
@@ -146,6 +130,11 @@ export const useInProgressMonitorTasksList = () => {
 
     // Ant Design list integration
     listProps,
+
+    paginationProps: {
+      ...paginationProps,
+      total: data?.total,
+    },
 
     // Loading states
     isLoading,

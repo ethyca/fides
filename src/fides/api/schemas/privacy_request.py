@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
+from uuid import UUID
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, field_serializer, field_validator
@@ -306,6 +307,7 @@ class PrivacyRequestStatus(str, EnumType):
     requires_manual_finalization = "requires_manual_finalization"
     canceled = "canceled"
     error = "error"
+    duplicate = "duplicate"  # Request identified as duplicate of another request
 
 
 class PrivacyRequestResponse(FidesSchema):
@@ -342,6 +344,7 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
+    duplicate_request_group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 

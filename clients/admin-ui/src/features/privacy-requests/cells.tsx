@@ -1,4 +1,4 @@
-import { BadgeProps } from "fidesui";
+import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import { BadgeCell, GroupCountBadgeCell } from "~/features/common/table/v2";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
@@ -7,54 +7,57 @@ import { ActionType, PrivacyRequestStatus } from "~/types/api";
 import { Rule } from "./types";
 
 export const statusPropMap: {
-  [key in PrivacyRequestStatus]: BadgeProps & { label: string };
+  [key in PrivacyRequestStatus]: {
+    label: string;
+    colorScheme: CUSTOM_TAG_COLOR;
+  };
 } = {
   approved: {
-    colorScheme: "success",
+    colorScheme: CUSTOM_TAG_COLOR.SUCCESS,
     label: "Approved",
   },
   complete: {
     label: "Completed",
-    colorScheme: "success",
+    colorScheme: CUSTOM_TAG_COLOR.SUCCESS,
   },
   awaiting_email_send: {
     label: "Awaiting Email Send",
-    colorScheme: "marble",
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
   },
   denied: {
     label: "Denied",
-    colorScheme: "warning",
+    colorScheme: CUSTOM_TAG_COLOR.WARNING,
   },
   canceled: {
     label: "Canceled",
-    colorScheme: "marble",
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
   },
   error: {
     label: "Error",
-    colorScheme: "error",
+    colorScheme: CUSTOM_TAG_COLOR.ERROR,
   },
   in_processing: {
     label: "In Progress",
-    colorScheme: "caution",
+    colorScheme: CUSTOM_TAG_COLOR.CAUTION,
   },
   paused: {
     label: "Paused",
-    colorScheme: "marble",
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
   },
   pending: {
     label: "New",
-    colorScheme: "info",
+    colorScheme: CUSTOM_TAG_COLOR.INFO,
   },
   identity_unverified: {
     label: "Unverified",
-    colorScheme: "marble",
+    colorScheme: CUSTOM_TAG_COLOR.MARBLE,
   },
   requires_input: {
-    colorScheme: "minos",
+    colorScheme: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Input",
   },
   requires_manual_finalization: {
-    colorScheme: "minos",
+    colorScheme: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Finalization",
   },
 };
@@ -95,13 +98,13 @@ export const RequestDaysLeftCell = ({
 
   const percentage = (100 * daysLeft) / timeframe;
 
-  let colorScheme: string | undefined;
+  let colorScheme: CUSTOM_TAG_COLOR | undefined;
   if (percentage < 25) {
-    colorScheme = "error";
+    colorScheme = CUSTOM_TAG_COLOR.ERROR;
   } else if (percentage >= 75) {
-    colorScheme = "success";
+    colorScheme = CUSTOM_TAG_COLOR.SUCCESS;
   } else if (percentage >= 25) {
-    colorScheme = "warning";
+    colorScheme = CUSTOM_TAG_COLOR.WARNING;
   }
 
   return (

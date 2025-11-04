@@ -47,14 +47,7 @@ export const ModalMethodsCard = () => {
 
   const { openFormModal } = useFormModal<{
     name: string;
-  }>(modalApi as any, {
-    title: "Custom form modal",
-    content: renderFormContent,
-    okText: "Submit",
-    cancelText: "Cancel",
-    width: 500,
-    centered: true,
-  });
+  }>(modalApi as any);
 
   const showInfoModal = () => {
     modalApi.info({
@@ -98,7 +91,14 @@ export const ModalMethodsCard = () => {
   };
 
   const showCustomFormModal = async () => {
-    const result = await openFormModal();
+    const result = await openFormModal({
+      title: "Custom form modal",
+      content: renderFormContent,
+      okText: "Submit",
+      cancelText: "Cancel",
+      width: 500,
+      centered: true,
+    });
     if (result) {
       modalApi.success({
         title: "Form submitted",

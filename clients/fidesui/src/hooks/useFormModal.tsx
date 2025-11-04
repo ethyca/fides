@@ -19,20 +19,16 @@ export type UseFormModalOptions = Omit<
 /**
  * Generic hook for opening a modal with a form, validating and getting the result of the form
  * @param modalApi - The modal API from useModal
- * @param options - The options for the modal
- * @returns Promise that resolves with form values or null if cancelled
+ * @returns openFormModal function and form instance
  */
-export const useFormModal = <T = any,>(
-  modalApi: ModalStaticFunctions,
-  options: UseFormModalOptions,
-) => {
+export const useFormModal = <T = any,>(modalApi: ModalStaticFunctions) => {
   const [form] = Form.useForm();
 
-  const { content, ...modalOptions } = options;
-
   const openFormModal = React.useCallback(
-    () =>
-      new Promise<T | null>((resolve) => {
+    (options: UseFormModalOptions) => {
+      const { content, ...modalOptions } = options;
+
+      return new Promise<T | null>((resolve) => {
         modalApi.confirm({
           ...modalOptions,
           content: content(form),
@@ -56,8 +52,9 @@ export const useFormModal = <T = any,>(
             resolve(null);
           },
         });
-      }),
-    [modalApi, form, content, modalOptions],
+      });
+    },
+    [modalApi, form],
   );
 
   return { openFormModal, form };

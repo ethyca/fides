@@ -8,10 +8,7 @@ import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
-import {
-  getMonitorType,
-  MONITOR_TYPES,
-} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 describe("Action center", () => {
   beforeEach(() => {
@@ -19,23 +16,6 @@ describe("Action center", () => {
     stubPlus(true);
     stubWebsiteMonitor();
     stubTaxonomyEntities();
-  });
-
-  describe("disabled web monitor", () => {
-    beforeEach(() => {
-      cy.intercept("GET", "/api/v1/config*", {
-        body: {
-          detection_discovery: {
-            website_monitor_enabled: false,
-          },
-        },
-      }).as("getTranslationConfig");
-      cy.visit(ACTION_CENTER_ROUTE);
-    });
-    it("should display a message that the web monitor is disabled", () => {
-      cy.wait("@getTranslationConfig");
-      cy.contains("currently disabled").should("exist");
-    });
   });
 
   describe("empty action center", () => {
@@ -67,17 +47,16 @@ describe("Action center", () => {
       cy.wait("@getMonitorResults").then((interception) => {
         const results = interception.response.body.items;
         results.forEach((result) => {
-          const monitorKey = result.key;
-          const monitorType = getMonitorType(result.connection_type);
-          cy.getByTestId(`monitor-result-${monitorKey}`).should("exist");
-          cy.getByTestId(`monitor-result-${monitorKey}`).within(() => {
+          const { key, monitorType } = result;
+          cy.getByTestId(`monitor-result-${key}`).should("exist");
+          cy.getByTestId(`monitor-result-${key}`).within(() => {
             cy.get(".ant-list-item-meta-avatar").should("exist");
             cy.get("[data-testid='monitor-link']")
               .should("have.text", result.name)
               .should(
                 "have.attr",
                 "href",
-                `${ACTION_CENTER_ROUTE}${monitorType === MONITOR_TYPES.DATASTORE ? "/data-explorer" : ""}/${monitorKey}`,
+                `${ACTION_CENTER_ROUTE}/${monitorType}/${key}`,
               );
             cy.get("[data-testid='monitor-date']").should("contain", " ago");
           });
@@ -107,12 +86,12 @@ describe("Action center", () => {
       cy.getByTestId(`review-button-${webMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/${webMonitorKey}`,
+        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${webMonitorKey}`,
       );
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
         "href",
-        `${ACTION_CENTER_ROUTE}/data-explorer/${integrationMonitorKey}`,
+        `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.DATASTORE}/${integrationMonitorKey}`,
       );
     });
     it.skip("Should paginate results", () => {

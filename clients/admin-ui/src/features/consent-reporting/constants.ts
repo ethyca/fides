@@ -1,3 +1,5 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import {
   ConsentMethod,
   RequestOrigin,
@@ -16,12 +18,12 @@ export const USER_CONSENT_PREFERENCE_LABELS: Record<
 
 export const USER_CONSENT_PREFERENCE_COLOR: Record<
   UserConsentPreference,
-  string
+  CUSTOM_TAG_COLOR
 > = {
-  [UserConsentPreference.OPT_IN]: "success",
-  [UserConsentPreference.OPT_OUT]: "error",
-  [UserConsentPreference.ACKNOWLEDGE]: "default",
-  [UserConsentPreference.TCF]: "sandstone",
+  [UserConsentPreference.OPT_IN]: CUSTOM_TAG_COLOR.SUCCESS,
+  [UserConsentPreference.OPT_OUT]: CUSTOM_TAG_COLOR.ERROR,
+  [UserConsentPreference.ACKNOWLEDGE]: CUSTOM_TAG_COLOR.DEFAULT,
+  [UserConsentPreference.TCF]: CUSTOM_TAG_COLOR.SANDSTONE,
 };
 
 export const CONSENT_METHOD_LABELS: Record<ConsentMethod, string> = {

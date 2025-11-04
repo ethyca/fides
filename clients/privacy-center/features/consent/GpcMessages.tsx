@@ -2,6 +2,7 @@ import { GpcStatus } from "fides-js";
 import {
   AntTag as Tag,
   Box,
+  CUSTOM_TAG_COLOR,
   HStack,
   Stack,
   Text,
@@ -12,8 +13,8 @@ import useI18n from "~/common/hooks/useI18n";
 
 const BADGE_COLORS = {
   [GpcStatus.NONE]: undefined,
-  [GpcStatus.APPLIED]: "success",
-  [GpcStatus.OVERRIDDEN]: "error",
+  [GpcStatus.APPLIED]: CUSTOM_TAG_COLOR.SUCCESS,
+  [GpcStatus.OVERRIDDEN]: CUSTOM_TAG_COLOR.ERROR,
 };
 
 export const GpcBadge = ({ status }: { status: GpcStatus }) =>

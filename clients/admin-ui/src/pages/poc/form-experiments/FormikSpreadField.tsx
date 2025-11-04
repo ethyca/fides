@@ -28,8 +28,8 @@ export const FormikSpreadFieldPOC = () => (
         <Col span={12}>
           <Title level={2}>{`<Formik> + <Form> + {...field}`}</Title>
           <div className="mb-4">
-            <Tag color="red">non functional</Tag>
-            <Tag color="red">high effort</Tag>
+            <Tag color="error">non functional</Tag>
+            <Tag color="error">high effort</Tag>
           </div>
           <Form>
             <Flex vertical gap={16}>
