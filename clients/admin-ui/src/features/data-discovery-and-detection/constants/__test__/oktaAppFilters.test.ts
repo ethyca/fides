@@ -1,6 +1,6 @@
-import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
-
 import { MOCK_OKTA_APPS } from "~/mocks/data";
+
+import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
 
 // Test to verify filter counts match expected values
 describe("Okta App Filters", () => {
@@ -98,20 +98,18 @@ describe("Okta App Filters", () => {
     };
 
     // Verify each filter returns the expected count
-    Object.entries(expectedCounts).forEach(
-      ([filterValue, expectedCount]) => {
-        const filter = OKTA_APP_FILTER_TABS.find(
-          (tab) => tab.value === filterValue,
-        );
-        expect(filter).toBeDefined();
+    Object.entries(expectedCounts).forEach(([filterValue, expectedCount]) => {
+      const filter = OKTA_APP_FILTER_TABS.find(
+        (tab) => tab.value === filterValue,
+      );
+      expect(filter).toBeDefined();
 
-        const actualCount = MOCK_OKTA_APPS.filter((item) => {
-          const resource = item as any;
-          return filter?.filter(resource) ?? true;
-        }).length;
+      const actualCount = MOCK_OKTA_APPS.filter((item) => {
+        const resource = item as any;
+        return filter?.filter(resource) ?? true;
+      }).length;
 
-        expect(actualCount).toBe(expectedCount);
-      },
-    );
+      expect(actualCount).toBe(expectedCount);
+    });
   });
 });
