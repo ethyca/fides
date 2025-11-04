@@ -77,7 +77,7 @@ def old_privacy_request_with_email(
             "external_id": "test_external_id_old",
             "started_processing_at": old_date,
             "requested_at": old_date,
-            "status": PrivacyRequestStatus.complete,
+            "status": PrivacyRequestStatus.in_processing,
             "policy_id": policy.id,
         },
     )
@@ -364,7 +364,7 @@ class TestFindDuplicatePrivacyRequests:
                 "external_id": "test_external_id_erasure",
                 "started_processing_at": datetime.now(timezone.utc),
                 "requested_at": datetime.now(timezone.utc),
-                "status": PrivacyRequestStatus.complete,
+                "status": PrivacyRequestStatus.in_processing,
                 "policy_id": erasure_policy.id,
             },
         )
@@ -628,13 +628,13 @@ class TestDuplicateRequestRunnerService:
             pytest.param(
                 None,
                 datetime.now(timezone.utc),
-                PrivacyRequestStatus.complete,
+                PrivacyRequestStatus.in_processing,
                 id="duplicate_verified_but_not_request",
             ),
             pytest.param(
                 datetime.now(timezone.utc),
                 datetime.now(timezone.utc) - timedelta(days=1),
-                PrivacyRequestStatus.complete,
+                PrivacyRequestStatus.in_processing,
                 id="both_verified_duplicate_verified_first",
             ),
             pytest.param(

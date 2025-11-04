@@ -1298,13 +1298,6 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
-    @pytest.mark.parametrize(
-        "include_type",
-        [
-            pytest.param("deleted", id="deleted"),
-            pytest.param("duplicate", id="duplicate"),
-        ],
-    )
     def test_filter_privacy_requests_include_type_requests(
         self,
         api_client: TestClient,
@@ -1312,12 +1305,10 @@ class TestGetPrivacyRequests:
         generate_auth_header,
         privacy_request,
         soft_deleted_privacy_request,
-        duplicate_privacy_request,
-        include_type,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?include_{include_type}_requests=true", headers=auth_header
+            url + f"?include_deleted_requests=true", headers=auth_header
         )
 
         assert response.status_code == 200
@@ -1329,28 +1320,16 @@ class TestGetPrivacyRequests:
             len([item for item in resp["items"] if item["id"] == privacy_request.id])
             == 1
         )
-        if include_type == "deleted":
-            assert (
-                len(
-                    [
-                        item
-                        for item in resp["items"]
-                        if item["id"] == soft_deleted_privacy_request.id
-                    ]
-                )
-                == 1
+        assert (
+            len(
+                [
+                    item
+                    for item in resp["items"]
+                    if item["id"] == soft_deleted_privacy_request.id
+                ]
             )
-        elif include_type == "duplicate":
-            assert (
-                len(
-                    [
-                        item
-                        for item in resp["items"]
-                        if item["id"] == duplicate_privacy_request.id
-                    ]
-                )
-                == 1
-            )
+            == 1
+        )
 
     @pytest.mark.usefixtures(
         "soft_deleted_privacy_request", "duplicate_privacy_request"
@@ -2775,28 +2754,19 @@ class TestPrivacyRequestSearch:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
-    @pytest.mark.parametrize(
-        "include_type",
-        [
-            pytest.param("deleted", id="deleted"),
-            pytest.param("duplicate", id="duplicate"),
-        ],
-    )
-    def test_privacy_request_search_include_type_requests(
+    def test_privacy_request_search_include_deleted_requests(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
         soft_deleted_privacy_request,
-        duplicate_privacy_request,
-        include_type,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
             url,
             headers=auth_header,
-            json={f"include_{include_type}_requests": True},
+            json={"include_deleted_requests": True},
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -2804,10 +2774,7 @@ class TestPrivacyRequestSearch:
 
         item_ids = [item["id"] for item in resp["items"]]
         assert privacy_request.id in item_ids
-        if include_type == "deleted":
-            assert soft_deleted_privacy_request.id in item_ids
-        elif include_type == "duplicate":
-            assert duplicate_privacy_request.id in item_ids
+        assert soft_deleted_privacy_request.id in item_ids
 
     def test_privacy_request_search_by_internal_id(
         self,

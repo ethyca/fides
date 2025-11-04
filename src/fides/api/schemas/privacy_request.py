@@ -469,7 +469,6 @@ class PrivacyRequestFilter(FidesSchema):
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
     include_deleted_requests: Optional[bool] = False
-    include_duplicate_requests: Optional[bool] = False
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC
