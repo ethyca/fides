@@ -20,7 +20,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useRef, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -121,6 +121,9 @@ const ActionCenterFields: NextPage = () => {
     },
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
+  const [activeListItem, setActiveListItem] = useState<
+    (DatastoreStagedResourceAPIResponse & { itemKey: React.Key }) | null
+  >(null);
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -157,7 +160,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
-  >();
+  >({ activeListItem, enableKeyboardShortcuts: true });
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
@@ -260,7 +263,7 @@ const ActionCenterFields: NextPage = () => {
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
-          <Flex vertical gap="middle" className="h-full overflow-hidden">
+          <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2}>Monitor results</Title>
               <Flex align="center">
@@ -373,8 +376,23 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="h-full overflow-scroll"
+              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
               loading={isFetching}
+              enableKeyboardShortcuts
+              onActiveItemChange={useCallback(
+                // useCallback prevents infinite re-renders
+                (item: DatastoreStagedResourceAPIResponse | null) => {
+                  if (item?.urn) {
+                    setActiveListItem({
+                      ...item,
+                      itemKey: item.urn,
+                    });
+                  } else {
+                    setActiveListItem(null);
+                  }
+                },
+                [],
+              )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
