@@ -23,7 +23,7 @@ def upgrade():
         sa.Column(
             "errors",
             postgresql.ARRAY(postgresql.JSONB(astext_type=sa.Text())),
-            nullable=True,
+            nullable=False,
             server_default="{}",
         ),
     )

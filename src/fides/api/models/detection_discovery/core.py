@@ -634,9 +634,9 @@ class StagedResource(Base):
     # Error tracking for resources
     errors = Column(
         ARRAY(JSONB),
-        nullable=True,  # nullable for backwards compatibility
+        nullable=False,
         server_default="{}",
-        default=dict,
+        default=list,
     )
 
     data_uses = Column(
