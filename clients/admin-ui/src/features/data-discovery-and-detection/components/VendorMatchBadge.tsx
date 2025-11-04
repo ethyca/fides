@@ -1,5 +1,12 @@
-import { Badge, Box, HStack, Image, Text, Tooltip } from "fidesui";
-import { QuestionIcon } from "fidesui";
+import {
+  Badge,
+  Box,
+  HStack,
+  Image,
+  QuestionIcon,
+  Text,
+  Tooltip,
+} from "fidesui";
 
 interface VendorMatchBadgeProps {
   vendorName?: string | null;

@@ -325,5 +325,5 @@ export const MOCK_OKTA_APPS = [
     },
     vendor_id: "fds.1234",
     system_id: "okta_system_001",
-  }
+  },
 ];

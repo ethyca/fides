@@ -12,7 +12,7 @@ export const OKTA_APP_FILTER_TABS: OktaAppFilterTab[] = [
     label: "All Apps",
     value: "all",
     count: null,
-    filter: (resource: StagedResourceAPIResponse) => true,
+    filter: () => true,
   },
   {
     label: "New Apps",

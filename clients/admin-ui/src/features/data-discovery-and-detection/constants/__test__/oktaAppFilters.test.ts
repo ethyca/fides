@@ -1,5 +1,6 @@
-import { MOCK_OKTA_APPS } from "~/mocks/data";
 import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
+
+import { MOCK_OKTA_APPS } from "~/mocks/data";
 
 // Test to verify filter counts match expected values
 describe("Okta App Filters", () => {
@@ -9,58 +10,78 @@ describe("Okta App Filters", () => {
     expect(allAppsCount).toBe(1);
 
     // New Apps: Should show items with diff_status === "addition"
-    const newAppsCount = MOCK_OKTA_APPS.filter(app => app.diff_status === "addition").length;
+    const newAppsCount = MOCK_OKTA_APPS.filter(
+      (app) => app.diff_status === "addition",
+    ).length;
     expect(newAppsCount).toBe(1); // Salesforce
 
     // Active: Should show items with status === "ACTIVE"
-    const activeCount = MOCK_OKTA_APPS.filter(app => app.metadata?.status === "ACTIVE").length;
+    const activeCount = MOCK_OKTA_APPS.filter(
+      (app) => app.metadata?.status === "ACTIVE",
+    ).length;
     expect(activeCount).toBe(1); // Salesforce
 
     // Inactive: Should show items with status === "INACTIVE"
-    const inactiveCount = MOCK_OKTA_APPS.filter(app => app.metadata?.status === "INACTIVE").length;
+    const inactiveCount = MOCK_OKTA_APPS.filter(
+      (app) => app.metadata?.status === "INACTIVE",
+    ).length;
     expect(inactiveCount).toBe(0);
 
     // Known Vendors: Should show items with vendor_id
-    const knownVendorsCount = MOCK_OKTA_APPS.filter(app => !!app.vendor_id).length;
+    const knownVendorsCount = MOCK_OKTA_APPS.filter(
+      (app) => !!app.vendor_id,
+    ).length;
     expect(knownVendorsCount).toBe(1); // Salesforce
 
     // Unknown Vendors: Should show items without vendor_id
-    const unknownVendorsCount = MOCK_OKTA_APPS.filter(app => !app.vendor_id).length;
+    const unknownVendorsCount = MOCK_OKTA_APPS.filter(
+      (app) => !app.vendor_id,
+    ).length;
     expect(unknownVendorsCount).toBe(0);
 
     // Removed: Should show items with diff_status === "removal"
-    const removedCount = MOCK_OKTA_APPS.filter(app => app.diff_status === "removal").length;
+    const removedCount = MOCK_OKTA_APPS.filter(
+      (app) => app.diff_status === "removal",
+    ).length;
     expect(removedCount).toBe(0);
   });
 
   it("should filter correctly for each scenario", () => {
     // Test New Apps filter
-    const newApps = MOCK_OKTA_APPS.filter(app => app.diff_status === "addition");
+    const newApps = MOCK_OKTA_APPS.filter(
+      (app) => app.diff_status === "addition",
+    );
     expect(newApps).toHaveLength(1);
-    expect(newApps.map(app => app.name)).toEqual(["Salesforce"]);
+    expect(newApps.map((app) => app.name)).toEqual(["Salesforce"]);
 
     // Test Active filter
-    const activeApps = MOCK_OKTA_APPS.filter(app => app.metadata?.status === "ACTIVE");
+    const activeApps = MOCK_OKTA_APPS.filter(
+      (app) => app.metadata?.status === "ACTIVE",
+    );
     expect(activeApps).toHaveLength(1);
-    expect(activeApps.map(app => app.name)).toEqual(["Salesforce"]);
+    expect(activeApps.map((app) => app.name)).toEqual(["Salesforce"]);
 
     // Test Inactive filter
-    const inactiveApps = MOCK_OKTA_APPS.filter(app => app.metadata?.status === "INACTIVE");
+    const inactiveApps = MOCK_OKTA_APPS.filter(
+      (app) => app.metadata?.status === "INACTIVE",
+    );
     expect(inactiveApps).toHaveLength(0);
-    expect(inactiveApps.map(app => app.name)).toEqual([]);
+    expect(inactiveApps.map((app) => app.name)).toEqual([]);
 
     // Test Known Vendors filter
-    const knownVendors = MOCK_OKTA_APPS.filter(app => !!app.vendor_id);
+    const knownVendors = MOCK_OKTA_APPS.filter((app) => !!app.vendor_id);
     expect(knownVendors).toHaveLength(1);
-    expect(knownVendors.map(app => app.name)).toEqual(["Salesforce"]);
+    expect(knownVendors.map((app) => app.name)).toEqual(["Salesforce"]);
 
     // Test Unknown Vendors filter
-    const unknownVendors = MOCK_OKTA_APPS.filter(app => !app.vendor_id);
+    const unknownVendors = MOCK_OKTA_APPS.filter((app) => !app.vendor_id);
     expect(unknownVendors).toHaveLength(0);
-    expect(unknownVendors.map(app => app.name)).toEqual([]);
+    expect(unknownVendors.map((app) => app.name)).toEqual([]);
 
     // Test Removed filter
-    const removedApps = MOCK_OKTA_APPS.filter(app => app.diff_status === "removal");
+    const removedApps = MOCK_OKTA_APPS.filter(
+      (app) => app.diff_status === "removal",
+    );
     expect(removedApps).toHaveLength(0);
   });
 
@@ -77,16 +98,20 @@ describe("Okta App Filters", () => {
     };
 
     // Verify each filter returns the expected count
-    Object.entries(expectedCounts).forEach(([filterValue, expectedCount]) => {
-      const filter = OKTA_APP_FILTER_TABS.find(tab => tab.value === filterValue);
-      expect(filter).toBeDefined();
-      
-      const actualCount = MOCK_OKTA_APPS.filter((item) => {
-        const resource = item as any;
-        return filter?.filter(resource) ?? true;
-      }).length;
-      
-      expect(actualCount).toBe(expectedCount);
-    });
+    Object.entries(expectedCounts).forEach(
+      ([filterValue, expectedCount]) => {
+        const filter = OKTA_APP_FILTER_TABS.find(
+          (tab) => tab.value === filterValue,
+        );
+        expect(filter).toBeDefined();
+
+        const actualCount = MOCK_OKTA_APPS.filter((item) => {
+          const resource = item as any;
+          return filter?.filter(resource) ?? true;
+        }).length;
+
+        expect(actualCount).toBe(expectedCount);
+      },
+    );
   });
 });

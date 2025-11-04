@@ -15,19 +15,18 @@ import { expandCollapseAllMenuItems } from "~/features/common/table/cells/consta
 import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
-  SystemStagedResourcesAggregateRecord,
   StagedResourceTypeValue,
+  SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
 import { VendorMatchBadge } from "../../components/VendorMatchBadge";
-
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
 import DiscoveredSystemDataUseCell from "../tables/cells/DiscoveredSystemDataUseCell";
-import { ActionCenterTabHash } from "./useActionCenterTabs";
 import { OktaAppMetadata } from "../../types/OktaAppMetadata";
+import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
@@ -93,7 +92,10 @@ export const useDiscoveredSystemAggregateColumns = ({
             title: "Vendor",
             dataIndex: "vendor_id",
             key: "vendor",
-            render: (vendorId: string, record: SystemStagedResourcesAggregateRecord) => (
+            render: (
+              vendorId: string,
+              record: SystemStagedResourcesAggregateRecord,
+            ) => (
               <VendorMatchBadge
                 vendorName={vendorId}
                 vendorLogoUrl={record.metadata?.vendor_logo_url}
@@ -106,15 +108,18 @@ export const useDiscoveredSystemAggregateColumns = ({
             title: "Sign-on URL",
             dataIndex: "metadata",
             key: "sign_on_url",
-            render: (metadata: OktaAppMetadata) => (
+            render: (metadata: OktaAppMetadata) =>
               metadata?.sign_on_url ? (
-                <a href={metadata.sign_on_url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={metadata.sign_on_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   View
                 </a>
               ) : (
                 <span>-</span>
-              )
-            ),
+              ),
           },
           {
             title: "Created",
@@ -122,7 +127,9 @@ export const useDiscoveredSystemAggregateColumns = ({
             key: "created",
             render: (metadata: OktaAppMetadata) => (
               <span>
-                {metadata?.created ? new Date(metadata.created).toLocaleDateString() : "-"}
+                {metadata?.created
+                  ? new Date(metadata.created).toLocaleDateString()
+                  : "-"}
               </span>
             ),
           },
