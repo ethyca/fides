@@ -10,8 +10,9 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
 const ClassificationSelect = ({
   onSelectDataCategory,
+  urn,
   ...props
-}: { onSelectDataCategory: (value: string) => void } & TaxonomySelectProps) => {
+}: { onSelectDataCategory: (value: string) => void; urn?: string } & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
   const dataCategories = getDataCategories().filter((c) => c.active);
@@ -66,6 +67,7 @@ const ClassificationSelect = ({
         onSelectDataCategory(value);
         setOpen(false);
       }}
+      data-classification-select={urn}
       {...props}
     />
   );

@@ -238,6 +238,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
     handleNavigate,
     messageApi,
+    !!detailsUrn,
   );
 
   return (

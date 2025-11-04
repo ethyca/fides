@@ -129,6 +129,7 @@ export const FIELD_ACTION_HOTKEYS = {
   MUTE: "i",
   UN_MUTE: "r",
   OPEN_DRAWER: "o",
+  OPEN_CLASSIFICATION_SELECT: "e",
 } as const;
 
 export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
