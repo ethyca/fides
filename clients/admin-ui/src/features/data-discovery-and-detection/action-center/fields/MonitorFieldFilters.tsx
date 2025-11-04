@@ -1,5 +1,5 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
-import _ from "lodash";
+import { uniq } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
@@ -298,11 +298,10 @@ export const MonitorFieldFilters = ({
   }, [statusTreeData, dataCategoryTreeData]);
 
   // Get current checked keys from LOCAL state
-  const checkedKeys = useMemo(() => _.uniq([
-    ...(localResourceStatus ?? []), 
-    ...(localDataCategory ?? [])
-  ]) 
-, [localResourceStatus, localDataCategory]);
+  const checkedKeys = useMemo(
+    () => uniq([...(localResourceStatus ?? []), ...(localDataCategory ?? [])]),
+    [localResourceStatus, localDataCategory],
+  );
 
   // Calculate active filters count from APPLIED state (not local)
   const activeFiltersCount = useMemo(() => {
@@ -347,7 +346,7 @@ export const MonitorFieldFilters = ({
         return;
       }
 
-      const statusKey = RESOURCE_STATUS.find((rs) => rs === keyStr)
+      const statusKey = RESOURCE_STATUS.find((rs) => rs === keyStr);
       if (statusKey) {
         statusKeys.push(statusKey);
       } else if (!isParentKey(keyStr, allKeysAsStrings)) {

@@ -1,8 +1,8 @@
-import { useState, useEffect() } from "react";
 import { ChevronDown } from "@carbon/icons-react";
 import type { PopoverProps, TreeProps } from "antd/lib";
 import { Button, Divider, Flex, Input, Popover, Space, Tree } from "antd/lib";
 import _ from "lodash";
+import { useEffect, useState } from "react";
 
 import { filterTreeData, getAllTreeKeys } from "./filter.utils";
 
@@ -63,9 +63,9 @@ export const Filter = ({
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [internalChecked, setInternalChecked] = useState(
-    Array.isArray(treeProps.checkedKeys) ?
-      treeProps.checkedKeys :
-      treeProps?.checkedKeys?.checked
+    Array.isArray(treeProps.checkedKeys)
+      ? treeProps.checkedKeys
+      : treeProps?.checkedKeys?.checked,
   );
 
   const isControlled = open !== undefined;
@@ -97,14 +97,18 @@ export const Filter = ({
     ? filterTreeData(searchValue, treeProps.treeData)
     : treeProps.treeData;
 
-  const handleOnCheck: TreeProps['onCheck'] = (checked, info) => {
+  // Augmenting onCheck event to include checked values hidden by search filter
+  const handleOnCheck: TreeProps["onCheck"] = (checked, info) => {
     const checkedKeysArray = Array.isArray(checked) ? checked : checked.checked;
-    const hiddenKeys = _.without(getAllTreeKeys(treeProps.treeData), ...getAllTreeKeys(filteredData))
+    const hiddenKeys = _.without(
+      getAllTreeKeys(treeProps.treeData),
+      ...getAllTreeKeys(filteredData),
+    );
 
     const unfilteredChecked = [
-      ...(_.intersection(hiddenKeys, internalChecked)),
-      ...checkedKeysArray
-    ]
+      ..._.intersection(hiddenKeys, internalChecked),
+      ...checkedKeysArray,
+    ];
 
     setInternalChecked(unfilteredChecked);
     treeProps.onCheck?.(unfilteredChecked, info);
@@ -115,9 +119,14 @@ export const Filter = ({
       ? getAllTreeKeys(filteredData)
       : treeProps.expandedKeys;
 
-  useEffect(() => { 
-    setInternalChecked(treeProps.checkedKeys)
-  }, [treeProps.checkedKeys])
+  // Syncing externally controlled state
+  useEffect(() => {
+    const checkedKeysArray = Array.isArray(treeProps.checkedKeys)
+      ? treeProps.checkedKeys
+      : treeProps?.checkedKeys?.checked;
+
+    setInternalChecked(checkedKeysArray);
+  }, [treeProps.checkedKeys]);
 
   const content = (
     <Flex vertical gap="small" className="py-2 min-w-72">
