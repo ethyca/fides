@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
+from fides.api.models.privacy_experience import ComponentType
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import (
     ConsentIdentitiesMixin,
     LastServedNotice,
     PrivacyPreferenceHistory,
+    RequestOrigin,
     ServedNoticeHistory,
     ServingComponent,
 )
@@ -162,3 +164,32 @@ class TestServedNoticeHistory:
 class TestServedNoticeHistoryId:
     def test_generate_served_notice_history_id(self):
         assert LastServedNotice.generate_served_notice_history_id().startswith("ser_")
+
+
+class TestRequestOriginComponentTypeRelationship:
+    """
+    Test to enforce the constraint that RequestOrigin must be a superset of ComponentType.
+
+    This is critical because when saving privacy preferences, we derive the request_origin
+    from the experience config's component type. If a ComponentType value doesn't exist
+    in RequestOrigin, it will cause runtime errors.
+    """
+
+    def test_request_origin_is_superset_of_component_type(self):
+        """
+        Enforce that every ComponentType value has a corresponding RequestOrigin value.
+
+        This test will fail if someone adds a new ComponentType without adding it to RequestOrigin,
+        forcing them to update both enums together.
+        """
+        component_type_values = {ct.value for ct in ComponentType}
+        request_origin_values = {ro.value for ro in RequestOrigin}
+
+        missing_in_request_origin = component_type_values - request_origin_values
+
+        assert not missing_in_request_origin, (
+            f"ComponentType values {missing_in_request_origin} are missing from RequestOrigin enum. "
+            f"RequestOrigin must be a superset of ComponentType because request_origin is derived "
+            f"from component type when saving privacy preferences. Please add these values to the "
+            f"RequestOrigin enum in fides/api/models/privacy_preference.py"
+        )
