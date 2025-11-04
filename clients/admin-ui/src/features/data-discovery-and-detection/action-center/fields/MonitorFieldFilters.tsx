@@ -203,9 +203,6 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  // All statuses are always available (hardcoded)
-  // const availableResourceFilters = useMemo(() => [...RESOURCE_STATUS], []);
-
   /* TODO: Uncomment this when we have a proper confidence score from the backend */
   /* const availableConfidenceScores =
     datastoreFilterResponse?.confidence_score?.reduce(
