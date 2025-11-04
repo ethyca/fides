@@ -2695,10 +2695,8 @@ class TestPrivacyRequestSearch:
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
 
-    @pytest.mark.usefixtures(
-        "soft_deleted_privacy_request", "duplicate_privacy_request"
-    )
-    def test_privacy_request_search_excludes_types_by_default(
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
+    def test_privacy_request_search_excludes_deleted_requests_by_default(
         self,
         api_client: TestClient,
         url,
@@ -2714,29 +2712,19 @@ class TestPrivacyRequestSearch:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
-    @pytest.mark.usefixtures(
-        "soft_deleted_privacy_request", "duplicate_privacy_request"
-    )
-    @pytest.mark.parametrize(
-        "exclude_type",
-        [
-            pytest.param("deleted", id="deleted"),
-            pytest.param("duplicate", id="duplicate"),
-        ],
-    )
-    def test_privacy_request_search_exclude_type_requests(
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
+    def test_privacy_request_search_exclude_deleted_requests(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
-        exclude_type,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
             url,
             headers=auth_header,
-            json={"status": "in_processing", f"include_{exclude_type}_requests": False},
+            json={"status": "in_processing", "include_deleted_requests": False},
         )
         assert 200 == response.status_code
         resp = response.json()
