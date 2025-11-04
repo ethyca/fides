@@ -20,12 +20,12 @@ import {
 } from "~/types/api";
 
 import { VendorMatchBadge } from "../../components/VendorMatchBadge";
+import { OktaAppMetadata } from "../../types/OktaAppMetadata";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
 import DiscoveredSystemDataUseCell from "../tables/cells/DiscoveredSystemDataUseCell";
-import { OktaAppMetadata } from "../../types/OktaAppMetadata";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
