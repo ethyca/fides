@@ -1,3 +1,6 @@
+import os
+from unittest.mock import patch
+
 from fides.api.tasks import _create_celery
 from fides.config import CONFIG, CelerySettings, get_config
 
@@ -53,3 +56,35 @@ def test_celery_config_override() -> None:
     celery_app = _create_celery(config=config)
     assert celery_app.conf["event_queue_prefix"] == "overridden_fides_worker"
     assert celery_app.conf["task_default_queue"] == "overridden_fides"
+
+
+@patch.dict(
+    os.environ,
+    {
+        "FIDES__CELERY__WORKER_PREFETCH_MULTIPLIER": "4",
+        "FIDES__CELERY__TASK_ACKS_LATE": "true",
+        "FIDES__CELERY__WORKER_MAX_TASKS_PER_CHILD": "1000",
+        "FIDES__CELERY__TASK_ALWAYS_EAGER": "false",  # Override known field
+    },
+    clear=False,
+)
+def test_celery_arbitrary_env_vars() -> None:
+    """Test that arbitrary Celery configuration can be set via FIDES__CELERY__* env vars."""
+    # Clear the config cache to force reload with new env vars
+    get_config.cache_clear()
+
+    config = get_config()
+
+    # Create celery app with the config
+    celery_app = _create_celery(config=config)
+
+    # Known field that was overridden via env var
+    assert celery_app.conf["task_always_eager"] is False
+
+    # Arbitrary Celery settings that aren't explicitly defined in CelerySettings
+    assert celery_app.conf["worker_prefetch_multiplier"] == 4
+    assert celery_app.conf["task_acks_late"] is True
+    assert celery_app.conf["worker_max_tasks_per_child"] == 1000
+
+    # Clear cache again for other tests
+    get_config.cache_clear()

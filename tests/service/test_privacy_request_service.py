@@ -208,8 +208,9 @@ class TestPrivacyRequestService:
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("require_manual_request_approval")
-    def test_cannot_resubmit_pending_privacy_request(
+    def test_can_resubmit_pending_privacy_request(
         self,
+        db: Session,
         privacy_request_service: PrivacyRequestService,
         policy: Policy,
     ):
@@ -221,9 +222,24 @@ class TestPrivacyRequestService:
             authenticated=True,
         )
 
-        with pytest.raises(FidesopsException) as exc:
-            privacy_request_service.resubmit_privacy_request(privacy_request.id)
-        assert "Cannot resubmit a pending privacy request" in str(exc)
+        # Verify initial status is pending (requires manual approval)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+
+        original_id = privacy_request.id
+
+        # Resubmit the pending request - should succeed
+        resubmitted_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request.id
+        )
+        db.refresh(resubmitted_request)
+
+        # Verify the request was resubmitted successfully
+        assert resubmitted_request is not None
+        assert resubmitted_request.id == original_id
+        # Status should be approved since there are no pre-approval webhooks configured
+        # and the original request was already pending (awaiting approval)
+        assert resubmitted_request.status == PrivacyRequestStatus.approved
+        assert resubmitted_request.get_persisted_identity().email == "user@example.com"
 
     def test_cannot_resubmit_non_existent_privacy_request(
         self,
