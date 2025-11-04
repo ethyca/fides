@@ -29,8 +29,10 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
+  AVAILABLE_ACTIONS,
   DIFF_STATUS_TO_AVAILABLE_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
@@ -46,6 +48,7 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
