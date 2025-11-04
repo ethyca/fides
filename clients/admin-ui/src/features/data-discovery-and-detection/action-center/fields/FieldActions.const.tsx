@@ -2,10 +2,12 @@ import type { ModalFuncProps } from "antd/es/modal";
 import { Icons, SparkleIcon } from "fidesui";
 import { ReactNode } from "react";
 
+import { DiffStatus } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
-import { ResourceStatusLabel } from "./MonitorFields.const";
 import { FieldActionTypeValue } from "./types";
+
+const { APPROVE, CLASSIFY, PROMOTE, MUTE, UN_MUTE } = FieldActionType;
 
 export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
   approve: "Approve",
@@ -41,58 +43,66 @@ export const FIELD_ACTION_COMPLETED: Record<FieldActionTypeValue, string> = {
   "un-mute": "Restored",
 };
 
-export const DRAWER_ACTIONS = [
-  FieldActionType.APPROVE,
-  FieldActionType.PROMOTE,
-] as const;
+export const DRAWER_ACTIONS = [APPROVE, PROMOTE] as const;
 export const DROPDOWN_ACTIONS = [
-  FieldActionType.CLASSIFY,
-  FieldActionType.APPROVE,
-  FieldActionType.PROMOTE,
-  FieldActionType.MUTE,
-  FieldActionType.UN_MUTE,
+  CLASSIFY,
+  APPROVE,
+  PROMOTE,
+  MUTE,
+  UN_MUTE,
 ] as const;
-export const LIST_ITEM_ACTIONS = [
-  FieldActionType.CLASSIFY,
-  FieldActionType.PROMOTE,
-] as const;
+
+export const LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
 
 export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
   (typeof DROPDOWN_ACTIONS)[number],
   string
 > = {
-  [FieldActionType.APPROVE]:
-    "You can only approve resources with a data category applied",
-  [FieldActionType.CLASSIFY]:
+  [APPROVE]: "You can only approve resources with a data category applied",
+  [CLASSIFY]:
     "You cannot classify resources that are already in classification or ignored",
-  [FieldActionType.MUTE]:
-    "You cannot ignore resources that are already ignored",
-  [FieldActionType.PROMOTE]:
-    "You can only confirm resources that have a data category applied",
-  [FieldActionType.UN_MUTE]: "You can only restore resources that are ignored",
+  [MUTE]: "You cannot ignore resources that are already ignored",
+  [PROMOTE]: "You can only confirm resources that have a data category applied",
+  [UN_MUTE]: "You can only restore resources that are ignored",
 };
 
-export const AVAILABLE_ACTIONS = {
-  "In Review": [
-    FieldActionType.CLASSIFY,
-    FieldActionType.MUTE,
-    FieldActionType.APPROVE,
-    FieldActionType.PROMOTE,
-    FieldActionType.ASSIGN_CATEGORIES,
+/**
+ * Enum that exists in fidesplus. Keep in sync for correct logic
+ */
+export const ACTION_ALLOWED_STATUSES = {
+  classify: [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
   ],
-  Approved: [
-    FieldActionType.MUTE,
-    FieldActionType.PROMOTE,
-    FieldActionType.ASSIGN_CATEGORIES,
+  approve: [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
   ],
-  Classifying: [],
-  Confirmed: [],
-  Ignored: [FieldActionType.UN_MUTE],
-  Removed: [],
-  Unlabeled: [FieldActionType.ASSIGN_CATEGORIES, FieldActionType.CLASSIFY],
-  "Confirming...": [],
+  "un-approve": [DiffStatus.APPROVED],
+  promote: [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+  ],
+  "promote-removals": [DiffStatus.REMOVAL],
+  mute: [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+    DiffStatus.REMOVAL,
+  ],
+  "un-mute": [DiffStatus.MUTED],
+  "assign-categories": [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+  ],
 } as const satisfies Readonly<
-  Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
+  Record<FieldActionType, Readonly<Array<DiffStatus>>>
 >;
 
 export const FIELD_ACTION_ICON = {
