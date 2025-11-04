@@ -46,9 +46,7 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
         copyable={{
           text: privacyRequest.id,
           icon: (
-            <div className="size-4">
-              <Icons.Copy className="size-4 text-[var(--ant-color-text-secondary)]" />
-            </div>
+            <Icons.Copy className="size-4 text-[var(--ant-color-text-secondary)]" />
           ),
           tooltips: ["Copy request ID", "Copied"],
         }}
