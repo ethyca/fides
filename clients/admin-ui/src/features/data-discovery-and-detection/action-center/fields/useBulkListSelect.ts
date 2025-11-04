@@ -16,14 +16,15 @@ interface ListItem {
 export const extractListItemKeys = <T extends ListItem>(data: Array<T>) =>
   data.map(({ itemKey }) => itemKey);
 
-interface UseBulkListSelectOptions {
+interface UseBulkListSelectOptions<T extends ListItem> {
+  activeListItem?: T | null;
   enableKeyboardShortcuts?: boolean;
 }
 
 export const useBulkListSelect = <T extends ListItem>(
-  options: UseBulkListSelectOptions = {},
+  options: UseBulkListSelectOptions<T> = {},
 ) => {
-  const { enableKeyboardShortcuts } = options;
+  const { activeListItem = null, enableKeyboardShortcuts } = options;
   const [mode, setMode] = useState<SelectMode>("inclusive");
   /** list of items currently in view */
   const [listItems, setListItemsState] = useState<Array<T>>([]);
@@ -90,6 +91,24 @@ export const useBulkListSelect = <T extends ListItem>(
       updateListSelectMode("inclusive");
     },
     { enabled: enableKeyboardShortcuts },
+  );
+
+  // Space hotkey to toggle selection of focused item
+  // This provides the same functionality as CustomList's built-in space hotkey,
+  // but works with custom checkbox implementations that don't use rowSelection
+  useHotkeys(
+    "space",
+    (e) => {
+      if (activeListItem) {
+        e.preventDefault(); // Prevent page scroll
+        const isSelected = selectedListItems.some(
+          (item) => item.itemKey === activeListItem.itemKey,
+        );
+        updateSelectedListItem(activeListItem.itemKey, !isSelected);
+      }
+    },
+    { enabled: enableKeyboardShortcuts },
+    [activeListItem, selectedListItems, updateSelectedListItem],
   );
 
   return {
