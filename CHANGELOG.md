@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
 - Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)
 - Limit action center tree expansion to 4 levels (Database/Schema/Table/Field) by treating fields as leaf nodes [#6907](https://github.com/ethyca/fides/pull/6907)
+- PrivacyRequest cache now fallsback to the db for identity and custom fields [#6896](https://github.com/ethyca/fides/pull/6896)
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
