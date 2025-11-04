@@ -5,18 +5,9 @@ import { ReactNode } from "react";
 import { DiffStatus } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
-import { ResourceStatusLabel } from "./MonitorFields.const";
 import { FieldActionTypeValue } from "./types";
 
-const {
-  APPROVE,
-  CLASSIFY,
-  PROMOTE,
-  MUTE,
-  UN_MUTE,
-  PROMOTE_REMOVALS,
-  ASSIGN_CATEGORIES,
-} = FieldActionType;
+const { APPROVE, CLASSIFY, PROMOTE, MUTE, UN_MUTE } = FieldActionType;
 
 export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
   approve: "Approve",
@@ -75,47 +66,50 @@ export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
   [UN_MUTE]: "You can only restore resources that are ignored",
 };
 
-export const AVAILABLE_ACTIONS = {
-  "In Review": [
-    FieldActionType.CLASSIFY,
-    FieldActionType.MUTE,
-    FieldActionType.APPROVE,
-    FieldActionType.PROMOTE,
-    FieldActionType.ASSIGN_CATEGORIES,
+/**
+ * Enum that exists in fidesplus. Keep in sync for correct logic
+ */
+export const ACTION_ALLOWED_STATUSES = {
+  classify: [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.CLASSIFICATION_ERROR,
   ],
-  Approved: [
-    FieldActionType.MUTE,
-    FieldActionType.PROMOTE,
-    FieldActionType.ASSIGN_CATEGORIES,
+  approve: [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
   ],
-  Classifying: [],
-  Confirmed: [],
-  Ignored: [UN_MUTE],
-  Removed: [],
-  Unlabeled: [ASSIGN_CATEGORIES, CLASSIFY],
-  "Confirming...": [],
-  Error: [CLASSIFY, PROMOTE, PROMOTE_REMOVALS],
+  "un-approve": [DiffStatus.APPROVED],
+  promote: [
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+    DiffStatus.PROMOTION_ERROR,
+  ],
+  "promote-removals": [DiffStatus.REMOVAL, DiffStatus.REMOVAL_PROMOTION_ERROR],
+  mute: [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+    DiffStatus.REMOVAL,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
+    DiffStatus.REMOVAL_PROMOTION_ERROR,
+  ],
+  "un-mute": [DiffStatus.MUTED],
+  "assign-categories": [
+    DiffStatus.ADDITION,
+    DiffStatus.CLASSIFICATION_ADDITION,
+    DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.APPROVED,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
+  ],
 } as const satisfies Readonly<
-  Record<ResourceStatusLabel, Readonly<Array<FieldActionType>>>
->;
-
-export const DIFF_STATUS_TO_AVAILABLE_ACTIONS = {
-  addition: AVAILABLE_ACTIONS.Unlabeled,
-  approved: AVAILABLE_ACTIONS.Approved,
-  classification_addition: AVAILABLE_ACTIONS["In Review"],
-  classification_error: [CLASSIFY, MUTE, ASSIGN_CATEGORIES],
-  classification_queued: AVAILABLE_ACTIONS.Classifying,
-  classification_update: AVAILABLE_ACTIONS["In Review"],
-  classifying: AVAILABLE_ACTIONS.Classifying,
-  monitored: AVAILABLE_ACTIONS.Confirmed,
-  muted: AVAILABLE_ACTIONS.Ignored,
-  promoting: AVAILABLE_ACTIONS["Confirming..."],
-  promotion_error: [PROMOTE, MUTE, ASSIGN_CATEGORIES],
-  removal: AVAILABLE_ACTIONS.Removed,
-  removing: AVAILABLE_ACTIONS["In Review"],
-  removal_promotion_error: [PROMOTE_REMOVALS, MUTE],
-} as const satisfies Readonly<
-  Record<DiffStatus, Readonly<Array<FieldActionType>>>
+  Record<FieldActionType, Readonly<Array<DiffStatus>>>
 >;
 
 export const FIELD_ACTION_ICON = {

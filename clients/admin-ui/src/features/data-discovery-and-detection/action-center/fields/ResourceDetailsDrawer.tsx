@@ -13,11 +13,10 @@ import palette from "fidesui/src/palette/palette.module.scss";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
-import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import { DetailsDrawer } from "./DetailsDrawer";
 import { DetailsDrawerProps } from "./DetailsDrawer/types";
-import { DIFF_STATUS_TO_AVAILABLE_ACTIONS } from "./FieldActions.const";
+import { ACTION_ALLOWED_STATUSES } from "./FieldActions.const";
 import { MonitorResource } from "./types";
 import { useFieldActions } from "./useFieldActions";
 
@@ -94,11 +93,11 @@ export const ResourceDetailsDrawer = ({
                         autoFocus={false}
                         disabled={
                           resource?.diff_status
-                            ? ![
-                                ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[
-                                  resource.diff_status
-                                ],
-                              ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                            ? !ACTION_ALLOWED_STATUSES[
+                                "assign-categories"
+                              ].some(
+                                (status) => status === resource.diff_status,
+                              )
                             : true
                         }
                         onChange={(values) =>

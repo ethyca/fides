@@ -29,11 +29,9 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
-import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
-  AVAILABLE_ACTIONS,
-  DIFF_STATUS_TO_AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
   DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
@@ -48,7 +46,6 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
-  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
@@ -178,8 +175,8 @@ const ActionCenterFields: NextPage = () => {
   const availableActions = isBulkSelect
     ? allowedActionsResult?.allowed_actions
     : getAvailableActions(
-        selectedListItems.flatMap((field) =>
-          field.diff_status ? [field.diff_status] : [],
+        selectedListItems.flatMap(({ diff_status }) =>
+          diff_status ? [diff_status] : [],
         ),
       );
   const responseCount = fieldsDataResponse?.total ?? 0;
@@ -384,11 +381,9 @@ const ActionCenterFields: NextPage = () => {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
-                    ? ![
-                        ...AVAILABLE_ACTIONS[
-                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                        ],
-                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                        (status) => status === props.diff_status,
+                      )
                     : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
@@ -402,11 +397,9 @@ const ActionCenterFields: NextPage = () => {
                             onClick={() => fieldActions[action]([props.urn])}
                             disabled={
                               props?.diff_status
-                                ? ![
-                                    ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[
-                                      props.diff_status
-                                    ],
-                                  ].includes(action)
+                                ? !ACTION_ALLOWED_STATUSES[action].some(
+                                    (status) => status === props.diff_status,
+                                  )
                                 : true
                             }
                             style={{
@@ -457,10 +450,10 @@ const ActionCenterFields: NextPage = () => {
           label: FIELD_ACTION_LABEL[action],
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
-            ? ![
-                ...DIFF_STATUS_TO_AVAILABLE_ACTIONS[resource.diff_status],
-              ].includes(action)
-            : false,
+            ? !ACTION_ALLOWED_STATUSES[action].some(
+                (status) => status === resource.diff_status,
+              )
+            : true,
         }))}
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
