@@ -1,4 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
+import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
+import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 
 import { TaxonomyEntity } from "./types";
 
@@ -8,6 +10,7 @@ const taxonomyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getCustomTaxonomies: build.query<TaxonomySummary[], void>({
       query: () => ({ url: `taxonomies` }),
+      providesTags: () => [{ type: "Taxonomy" }],
     }),
     getTaxonomy: build.query<TaxonomyEntity[], string>({
       query: (taxonomyType) => ({ url: `taxonomies/${taxonomyType}/elements` }),
@@ -86,10 +89,7 @@ const taxonomyApi = baseApi.injectEndpoints({
         { type: "Taxonomy", id: taxonomyType },
       ],
     }),
-    createCustomTaxonomy: build.mutation<
-      TaxonomyEntity,
-      Partial<TaxonomyEntity>
-    >({
+    createCustomTaxonomy: build.mutation<TaxonomyResponse, TaxonomyCreate>({
       query: (body) => ({
         url: `taxonomies`,
         method: "POST",
@@ -106,4 +106,5 @@ export const {
   useCreateTaxonomyMutation,
   useUpdateTaxonomyMutation,
   useDeleteTaxonomyMutation,
+  useCreateCustomTaxonomyMutation,
 } = taxonomyApi;

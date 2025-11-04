@@ -201,7 +201,9 @@ const TaxonomyPage: NextPage = () => {
             footer={null}
             centered
           >
-            <CreateCustomTaxonomyForm />
+            <CreateCustomTaxonomyForm
+              onClose={() => setIsAddNewItemModalOpen(false)}
+            />
           </Modal>
 
           <TaxonomyInteractiveTree
