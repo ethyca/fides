@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import dayjs, { Dayjs } from "dayjs";
-import { isEmpty, pickBy } from "lodash";
+import { isEmpty, isNil, pickBy } from "lodash";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -124,8 +124,13 @@ const processFilterParams = (filters: SearchFilterParams) => ({
   include_identities: true,
   include_custom_privacy_request_fields: true,
 
-  // Include any filter that is not empty
-  ...pickBy(filters, (value) => !isEmpty(value)),
+  // Include any filter that has a value
+  ...pickBy(filters, (value) => {
+    if (Array.isArray(value)) {
+      return !isEmpty(value);
+    }
+    return !isNil(value) && value !== "";
+  }),
 
   // Convert from and to to ISO strings on local time for the date range
   created_gt: filters.from

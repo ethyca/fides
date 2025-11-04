@@ -1,4 +1,4 @@
-import { isEmpty } from "lodash";
+import { isEmpty, isNil } from "lodash";
 
 import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
 
@@ -86,7 +86,7 @@ export const getCustomFields = (
 
   return customFields
     ? Object.entries(customFields)
-        .filter(([, field]) => !isEmpty(field.value))
+        .filter(([, field]) => !isNil(field.value) && field.value !== "")
         .map(([key, field]) => ({
           key,
           label: field.label,

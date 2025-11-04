@@ -173,8 +173,8 @@ describe("getCustomFields", () => {
     const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
       {
         department: { label: "Department", value: "Engineering" },
-        priority: { label: "Priority", value: 0 as any },
-        count: { label: "Count", value: 5 as any },
+        priority: { label: "Priority", value: 0 },
+        count: { label: "Count", value: 5 },
       };
 
     const result = getCustomFields(customFields);
@@ -183,6 +183,19 @@ describe("getCustomFields", () => {
       { key: "department", label: "Department", value: "Engineering" },
       { key: "priority", label: "Priority", value: 0 },
       { key: "count", label: "Count", value: 5 },
+    ]);
+  });
+
+  it("should include custom fields with empty array value", () => {
+    const customFields: PrivacyRequestResponse["custom_privacy_request_fields"] =
+      {
+        departments: { label: "Departments", value: [] },
+      };
+
+    const result = getCustomFields(customFields);
+
+    expect(result).toEqual([
+      { key: "departments", label: "Departments", value: [] },
     ]);
   });
 });

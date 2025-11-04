@@ -31,7 +31,7 @@ export type PrivacyRequestResponse = {
   // until the generated types work correctly
   custom_privacy_request_fields?: Record<
     string,
-    { label: string; value: string }
+    { label: string; value: string | number | Array<string | number> }
   > | null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
