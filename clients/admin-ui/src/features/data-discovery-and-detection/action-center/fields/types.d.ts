@@ -15,6 +15,7 @@ export interface CustomTreeDataNode extends TreeDataNode {
   title?: string | null;
   status?: TreeResourceChangeIndicator | null;
   children?: CustomTreeDataNode[];
+  classifyable?: boolean;
 }
 
 export type FieldActionTypeValue = `${FieldActionType}`;
