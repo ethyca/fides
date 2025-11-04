@@ -191,6 +191,8 @@ class TestCustomConnectorTemplateLoader:
                 authorization_required=False,
                 user_guide=None,
                 supported_actions=[ActionType.access],
+                is_custom=True,
+                default_connector_available=False,
             )
         }
 
@@ -385,6 +387,8 @@ class TestCustomConnectorTemplateLoader:
                 authorization_required=False,
                 user_guide=None,
                 supported_actions=[ActionType.access],
+                is_custom=True,
+                default_connector_available=False,
             )
         }
         mock_delete.assert_not_called()
@@ -434,6 +438,8 @@ class TestCustomConnectorTemplateLoader:
                 category=ConnectionCategory.CRM,
                 tags=["API", "DSR Automation"],
                 enabled_features=[IntegrationFeature.DSR_AUTOMATION],
+                is_custom=True,
+                default_connector_available=True,
             )
         }
         mock_delete.assert_not_called()
