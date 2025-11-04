@@ -16,7 +16,9 @@ import { FIDES_SEPARATOR } from "./constants";
  * See the `CmpApi` docs for more details: https://github.com/InteractiveAdvertisingBureau/iabtcf-es/blob/master/modules/cmpapi/README.md#trigger-change-event
  */
 export const extractTCStringForCmpApi = (event: FidesEvent): string | null => {
-  if (!window.Fides?.options?.fidesTcfGdprApplies) {
+  // Only return null (gdprApplies = false) if explicitly set to false.
+  // For TCF experiences, gdprApplies should default to true.
+  if (window.Fides?.options?.fidesTcfGdprApplies === false) {
     // A `null` TC string means gdpr does not apply
     return null;
   }

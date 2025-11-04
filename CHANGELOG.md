@@ -36,6 +36,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
 - Added Cypress command to override feature flags in tests without UI interaction [#6890](https://github.com/ethyca/fides/pull/6890)
 
+### Fixed
+- Fixed race condition causing gdprApplies to flip during TCF initialization [#6895](https://github.com/ethyca/fides/pull/6895)
+
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
 ### Added
