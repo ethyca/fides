@@ -8,10 +8,14 @@ interface CustomFieldWithKey {
   value: unknown;
 }
 
+interface IdentityValueWithKey extends IdentityValue {
+  key: string;
+}
+
 const getIdentityValues = (
   key: string,
   identity: string | IdentityValue | null,
-): IdentityValue | null => {
+): IdentityValueWithKey | null => {
   if (!identity) {
     return null;
   }
@@ -30,7 +34,7 @@ const getIdentityValues = (
 
 export const getPrimaryIdentity = (
   identity: PrivacyRequestResponse["identity"],
-): IdentityValue | null => {
+): IdentityValueWithKey | null => {
   if (!identity) {
     return null;
   }
@@ -61,15 +65,15 @@ export const getPrimaryIdentity = (
 
 export const getOtherIdentities = (
   allIdentities: PrivacyRequestResponse["identity"],
-  primaryIdentity: IdentityValue | null,
-): IdentityValue[] => {
+  primaryIdentity: IdentityValueWithKey | null,
+): IdentityValueWithKey[] => {
   if (!allIdentities) {
     return [];
   }
 
   return Object.entries(allIdentities)
     .map(([key, identity]) => getIdentityValues(key, identity))
-    .filter((identity): identity is IdentityValue => Boolean(identity))
+    .filter((identity): identity is IdentityValueWithKey => Boolean(identity))
     .filter((identity) => identity.key !== primaryIdentity?.key);
 };
 
