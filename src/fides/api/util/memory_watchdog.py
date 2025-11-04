@@ -16,7 +16,6 @@ from __future__ import annotations
 import gc
 import os
 import signal
-import sys
 import threading
 import time
 from functools import wraps
@@ -124,7 +123,6 @@ def _capture_heap_dump() -> None:
         report_lines.append("")
 
         # Section 3: Garbage Collector Stats
-        gc_stats = gc.get_stats()
         gc_count = gc.get_count()
 
         report_lines.extend(
