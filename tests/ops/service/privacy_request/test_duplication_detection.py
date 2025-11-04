@@ -382,6 +382,19 @@ class TestFindDuplicatePrivacyRequests:
 class TestDuplicateRequestFunctionality:
     """Tests for is_canonical_request function."""
 
+    def test_consent_request_is_not_duplicate(
+        self, db, duplicate_detection_service, consent_policy
+    ):
+        """Test that a consent requests are not considered duplicates."""
+        duplicate_requests = create_duplicate_requests(db, consent_policy, 3, PrivacyRequestStatus.pending)
+        for duplicate_request in duplicate_requests:
+            duplicate_request.persist_identity(
+                db=db,
+                identity=Identity(email="customer-1@example.com"),
+            )
+            is_duplicate = duplicate_detection_service.is_duplicate_request(duplicate_request)
+            assert not is_duplicate
+
     def test_is_duplicate_request_single_request(
         self, duplicate_detection_service, privacy_request_with_email_identity
     ):

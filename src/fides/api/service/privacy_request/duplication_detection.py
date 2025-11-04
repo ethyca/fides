@@ -338,7 +338,11 @@ class DuplicateDetectionService:
         Returns:
             True if the request is a duplicate request, False otherwise
         """
-
+        if request.policy.get_action_type() == ActionType.consent:
+            message = f"Consent request {request.id} is not a duplicate."
+            logger.info(message)
+            self.add_success_execution_log(request, message)
+            return False
         duplicates = self.find_duplicate_privacy_requests(request)
         logger.debug(
             f"Initial Duplicates: {[duplicate.id for duplicate in duplicates]}."
