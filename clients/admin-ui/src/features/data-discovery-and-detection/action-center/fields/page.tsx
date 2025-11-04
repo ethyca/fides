@@ -376,13 +376,13 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="-ml-3 h-full overflow-y-scroll pl-1"
+              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
               loading={isFetching}
               enableKeyboardShortcuts
               onActiveItemChange={useCallback(
                 // useCallback prevents infinite re-renders
                 (item: DatastoreStagedResourceAPIResponse | null) => {
-                  if (item) {
+                  if (item?.urn) {
                     setActiveListItem({
                       ...item,
                       itemKey: item.urn,

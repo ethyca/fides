@@ -25,7 +25,7 @@ interface UseBulkListSelectOptions<T extends ListItem> {
 export const useBulkListSelect = <T extends ListItem>(
   options: UseBulkListSelectOptions<T> = {},
 ) => {
-  const { activeListItem = null, enableKeyboardShortcuts } = options;
+  const { activeListItem = null, enableKeyboardShortcuts = false } = options;
   const [mode, setMode] = useState<SelectMode>("inclusive");
   /** list of items currently in view */
   const [listItems, setListItemsState] = useState<Array<T>>([]);
@@ -76,8 +76,7 @@ export const useBulkListSelect = <T extends ListItem>(
   const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
   const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
 
-  // Keyboard shortcuts for bulk selection (select all / deselect all)
-  // Note: Navigation shortcuts (j, k, space, escape) are handled by CustomList component
+  // Note: Activation hotkeys (j, k, escape) are handled by CustomList component
   useHotkeys(
     BULK_LIST_HOTKEYS.SELECT_ALL,
     () => {
