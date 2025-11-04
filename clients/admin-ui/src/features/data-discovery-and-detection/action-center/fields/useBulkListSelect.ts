@@ -25,6 +25,23 @@ export const useBulkListSelect = <T extends ListItem>() => {
     setDeltaState(_.uniqBy(newDelta, "itemKey"));
   };
 
+  /**
+   * Helper to compute the inverse delta (items not in delta)
+   * Uses a Set for O(n) performance instead of nested loops
+   */
+  const computeInverseDelta = () => {
+    const deltaKeysSet = new Set(delta.map((d) => d.itemKey));
+    return listItems.filter(({ itemKey }) => !deltaKeysSet.has(itemKey));
+  };
+
+  /**
+   * Helper to get currently selected items based on mode
+   */
+  const computeSelectedItems = () => {
+    const inverseDelta = computeInverseDelta();
+    return mode === "inclusive" ? delta : inverseDelta;
+  };
+
   const updateSelectedListItem = (itemKey: React.Key, isSelected: boolean) => {
     const updatedItem = listItems.find((item) => itemKey === item.itemKey);
 
@@ -45,6 +62,30 @@ export const useBulkListSelect = <T extends ListItem>() => {
     }
   };
 
+  const setSelectedItemKeys = (selectedKeys: React.Key[]) => {
+    const currentlySelected = computeSelectedItems();
+    const currentlySelectedKeys = extractListItemKeys(currentlySelected);
+
+    // Determine which items in the current page changed selection. Convert to Sets for lookup performance
+    const currentPageKeysSet = new Set(listItems.map((item) => item.itemKey));
+    const currentlySelectedKeysSet = new Set(currentlySelectedKeys);
+    const selectedKeysSet = new Set(selectedKeys);
+
+    // Find items that were toggled on this page
+    const addedKeys = selectedKeys.filter(
+      (key) =>
+        currentPageKeysSet.has(key) && !currentlySelectedKeysSet.has(key),
+    );
+    const removedKeys = currentlySelectedKeys.filter(
+      (key) => currentPageKeysSet.has(key) && !selectedKeysSet.has(key),
+    );
+
+    // Update selection for each changed item using the existing logic
+    [...addedKeys, ...removedKeys].forEach((key) => {
+      updateSelectedListItem(key, selectedKeysSet.has(key));
+    });
+  };
+
   const updateListSelectMode = (newMode: SelectMode) => {
     setMode(newMode);
     setDeltaState([]);
@@ -55,9 +96,8 @@ export const useBulkListSelect = <T extends ListItem>() => {
     setMode("inclusive");
   };
 
-  const inverseDelta = listItems.filter(
-    ({ itemKey }) => !delta.find((d) => d.itemKey === itemKey),
-  );
+  // Use the helper to compute selected and excluded items
+  const inverseDelta = computeInverseDelta();
   const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
   const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
 
@@ -76,8 +116,8 @@ export const useBulkListSelect = <T extends ListItem>() => {
     listSelectMode: mode,
     resetListSelect,
     selectedListItems,
+    setSelectedItemKeys,
     updateListItems: setListItemsState,
     updateListSelectMode,
-    updateSelectedListItem,
   };
 };

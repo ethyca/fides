@@ -152,9 +152,9 @@ const ActionCenterFields: NextPage = () => {
     listSelectMode,
     resetListSelect,
     selectedListItems,
+    setSelectedItemKeys,
     updateListItems,
     updateListSelectMode,
-    updateSelectedListItem,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >();
@@ -372,16 +372,29 @@ const ActionCenterFields: NextPage = () => {
               )}
             </Flex>
             <List
-              dataSource={fieldsDataResponse?.items}
+              dataSource={fieldsDataResponse?.items?.map((item) => ({
+                ...item,
+                key: item.urn,
+              }))}
               className="h-full overflow-scroll"
               loading={isFetching}
-              renderItem={(props) =>
+              rowSelection={{
+                selectedRowKeys: extractListItemKeys(selectedListItems),
+                onChange: setSelectedItemKeys,
+                getCheckboxProps: (
+                  item: DatastoreStagedResourceAPIResponse,
+                ) => ({
+                  title: `Select ${item.name}`,
+                }),
+              }}
+              renderItem={(
+                props: DatastoreStagedResourceAPIResponse & { key: React.Key },
+                _index: number,
+                checkbox?: React.ReactNode,
+              ) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: extractListItemKeys(selectedListItems).includes(
-                    props.urn,
-                  ),
-                  onSelect: updateSelectedListItem,
+                  checkbox,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
                     fieldActions["assign-categories"]([urn], {
