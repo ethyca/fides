@@ -33,6 +33,7 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.DUPLICATE]: [BulkActionType.DELETE],
 } as const;
 
 /**

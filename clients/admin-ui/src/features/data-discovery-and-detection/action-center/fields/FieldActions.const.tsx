@@ -74,6 +74,7 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.ADDITION,
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.CLASSIFICATION_ERROR,
   ],
   approve: [
     DiffStatus.CLASSIFICATION_ADDITION,
@@ -85,14 +86,18 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
+    DiffStatus.PROMOTION_ERROR,
   ],
-  "promote-removals": [DiffStatus.REMOVAL],
+  "promote-removals": [DiffStatus.REMOVAL, DiffStatus.REMOVAL_PROMOTION_ERROR],
   mute: [
     DiffStatus.ADDITION,
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
     DiffStatus.REMOVAL,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
+    DiffStatus.REMOVAL_PROMOTION_ERROR,
   ],
   "un-mute": [DiffStatus.MUTED],
   "assign-categories": [
@@ -100,6 +105,8 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
   ],
 } as const satisfies Readonly<
   Record<FieldActionType, Readonly<Array<DiffStatus>>>

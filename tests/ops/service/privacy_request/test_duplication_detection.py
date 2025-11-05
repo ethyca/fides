@@ -77,7 +77,7 @@ def old_privacy_request_with_email(
             "external_id": "test_external_id_old",
             "started_processing_at": old_date,
             "requested_at": old_date,
-            "status": PrivacyRequestStatus.complete,
+            "status": PrivacyRequestStatus.in_processing,
             "policy_id": policy.id,
         },
     )
@@ -364,7 +364,7 @@ class TestFindDuplicatePrivacyRequests:
                 "external_id": "test_external_id_erasure",
                 "started_processing_at": datetime.now(timezone.utc),
                 "requested_at": datetime.now(timezone.utc),
-                "status": PrivacyRequestStatus.complete,
+                "status": PrivacyRequestStatus.in_processing,
                 "policy_id": erasure_policy.id,
             },
         )
@@ -381,6 +381,23 @@ class TestFindDuplicatePrivacyRequests:
 
 class TestDuplicateRequestFunctionality:
     """Tests for is_canonical_request function."""
+
+    def test_consent_request_is_not_duplicate(
+        self, db, duplicate_detection_service, consent_policy
+    ):
+        """Test that a consent requests are not considered duplicates."""
+        duplicate_requests = create_duplicate_requests(
+            db, consent_policy, 3, PrivacyRequestStatus.pending
+        )
+        for duplicate_request in duplicate_requests:
+            duplicate_request.persist_identity(
+                db=db,
+                identity=Identity(email="customer-1@example.com"),
+            )
+            is_duplicate = duplicate_detection_service.is_duplicate_request(
+                duplicate_request
+            )
+            assert not is_duplicate
 
     def test_is_duplicate_request_single_request(
         self, duplicate_detection_service, privacy_request_with_email_identity
@@ -462,13 +479,16 @@ class TestDuplicateRequestFunctionality:
         policy,
     ):
         """Test that the duplicate request group id is different for different duplicate detection configurations."""
+        privacy_request_with_email_identity.update(
+            db=db, data={"status": PrivacyRequestStatus.pending}
+        )
         email_duplicate = duplicate_detection_service.is_duplicate_request(
             privacy_request_with_email_identity
         )
         assert not email_duplicate
 
         duplicate_request_with_multiple_identities = create_duplicate_requests(
-            db, policy, 1, PrivacyRequestStatus.in_processing
+            db, policy, 1, PrivacyRequestStatus.pending
         )[0]
         duplicate_request_with_multiple_identities.persist_identity(
             db=db,
@@ -543,6 +563,9 @@ class TestDuplicateRequestFunctionality:
     ):
         """Test that the duplicate request group is updated when the duplicate detection configuration is updated."""
         # First run with original config to set the group id
+        privacy_request_with_multiple_identities.update(
+            db=db, data={"status": PrivacyRequestStatus.in_processing}
+        )
         is_duplicate = duplicate_detection_service.is_duplicate_request(
             privacy_request_with_multiple_identities
         )
@@ -725,7 +748,7 @@ class TestDuplicateRequestRunnerService:
                 db,
                 privacy_request_with_email_identity.policy,
                 1,
-                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.pending,
             )[0]
             run_privacy_request_task.delay(duplicate_request.id).get(
                 timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -758,10 +781,14 @@ class TestDuplicatePrivacyRequestService:
 
     def test_privacy_request_service_duplicate_detection(
         self,
+        db: Session,
         privacy_request_with_email_identity: PrivacyRequest,
         privacy_request_service: PrivacyRequestService,
     ):
         """Test that the privacy request service identifies and marks duplicate privacy requests."""
+        privacy_request_with_email_identity.update(
+            db=db, data={"status": PrivacyRequestStatus.in_processing}
+        )
         data = PrivacyRequestCreate(
             identity=Identity(email="customer-1@example.com"),
             policy_key=privacy_request_with_email_identity.policy.key,

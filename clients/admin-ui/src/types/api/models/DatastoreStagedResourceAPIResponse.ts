@@ -4,6 +4,7 @@
 
 import type { ClassificationWithConfidence } from "./ClassificationWithConfidence";
 import type { DiffStatus } from "./DiffStatus";
+import type { ResourceError } from "./ResourceError";
 
 /**
  * Pydantic Schema used to represent any StageResource in datastore monitor, used only for API responses.
@@ -19,9 +20,18 @@ export type DatastoreStagedResourceAPIResponse = {
    * that will use either user_assigned_data_categories or classifications, depending on their values.
    */
   preferred_data_categories?: Array<string> | null;
+  /**
+   * User assigned data categories overriding auto assigned classifications
+   */
+  user_assigned_data_categories?: Array<string> | null;
+
   data_type?: string | null;
   /**
    * The monitor config that detected this resource
    */
   monitor_config_id: string;
+  /**
+   * List of errors encountered during processing
+   */
+  errors?: Array<ResourceError> | null;
 };
