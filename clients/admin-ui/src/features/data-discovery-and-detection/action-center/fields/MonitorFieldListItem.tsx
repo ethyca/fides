@@ -134,10 +134,12 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     >
       <List.Item.Meta
         avatar={
-          <Checkbox
-            checked={selected}
-            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
-          />
+          <div className="ml-2">
+            <Checkbox
+              checked={selected}
+              onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
+            />
+          </div>
         }
         title={
           <Flex
