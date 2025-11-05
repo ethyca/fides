@@ -32,9 +32,9 @@ import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/Datastore
 
 import {
   ACTION_ALLOWED_STATUSES,
+  ACTIONS_DISABLED_MESSAGE,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
-  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
@@ -54,6 +54,7 @@ import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
@@ -115,8 +116,8 @@ const ActionCenterFields: NextPage = () => {
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
-    (DatastoreStagedResourceAPIResponse & { itemKey: React.Key }) | null
-  >(null);
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -155,7 +156,7 @@ const ActionCenterFields: NextPage = () => {
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >({ activeListItem, enableKeyboardShortcuts: true });
 
-  const handleNavigate = async (urn: string) => {
+  const handleNavigate = async (urn: string | undefined) => {
     setDetailsUrn(urn);
   };
 
@@ -222,6 +223,16 @@ const ActionCenterFields: NextPage = () => {
     search.searchQuery,
     dataCategory,
   ]);
+
+  // Set up keyboard shortcuts for field actions
+  useFieldActionHotkeys(
+    activeListItem,
+    fieldActions,
+    updateSelectedListItem,
+    handleNavigate,
+    messageApi,
+    !!detailsUrn,
+  );
 
   return (
     <FixedLayout
@@ -297,9 +308,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType) ? (
                             <Tooltip
-                              title={
-                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
-                              }
+                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
                             >
                               {FIELD_ACTION_LABEL[actionType]}
                             </Tooltip>
@@ -380,11 +389,14 @@ const ActionCenterFields: NextPage = () => {
                       ...item,
                       itemKey: item.urn,
                     });
+                    if (detailsUrn && item.urn !== detailsUrn) {
+                      setDetailsUrn(item.urn);
+                    }
                   } else {
-                    setActiveListItem(null);
+                    setActiveListItem(undefined);
                   }
                 },
-                [],
+                [detailsUrn],
               )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
