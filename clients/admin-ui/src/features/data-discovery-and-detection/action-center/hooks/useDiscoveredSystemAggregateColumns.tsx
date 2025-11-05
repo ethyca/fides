@@ -46,7 +46,6 @@ export const useDiscoveredSystemAggregateColumns = ({
   onTabChange,
   consentStatus,
   rowClickUrl,
-  isOktaApp = false,
   resourceType,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
@@ -58,7 +57,7 @@ export const useDiscoveredSystemAggregateColumns = ({
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
       // Okta-specific columns
-      if (isOktaApp && resourceType === StagedResourceTypeValue.OKTA_APP) {
+      if (resourceType === StagedResourceTypeValue.OKTA_APP) {
         return [
           {
             title: "App Name",
@@ -100,7 +99,6 @@ export const useDiscoveredSystemAggregateColumns = ({
                 vendorName={vendorId}
                 vendorLogoUrl={record.metadata?.vendor_logo_url}
                 confidence={record.metadata?.vendor_match_confidence}
-                isUnknown={!vendorId}
               />
             ),
           },
@@ -117,9 +115,7 @@ export const useDiscoveredSystemAggregateColumns = ({
                 >
                   View
                 </a>
-              ) : (
-                <span>-</span>
-              ),
+              ) : null,
           },
           {
             title: "Created",
@@ -213,8 +209,8 @@ export const useDiscoveredSystemAggregateColumns = ({
                     label: isoEntry
                       ? formatIsoLocation({ isoEntry })
                       : (PRIVACY_NOTICE_REGION_RECORD[
-                          location as PrivacyNoticeRegion
-                        ] ?? location) /* fallback on internal list for now */,
+                        location as PrivacyNoticeRegion
+                      ] ?? location) /* fallback on internal list for now */,
                     key: location,
                   };
                 }) ?? []
@@ -287,7 +283,6 @@ export const useDiscoveredSystemAggregateColumns = ({
       monitorId,
       allowIgnore,
       onTabChange,
-      isOktaApp,
       resourceType,
     ]);
 
