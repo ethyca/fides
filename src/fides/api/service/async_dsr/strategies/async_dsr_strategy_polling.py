@@ -310,9 +310,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(f"Prepared requests: {len(prepared_requests)}")
 
         for next_request, param_value_map in prepared_requests:
-            response = client.send(next_request)
+            response = client.send(next_request, read_request.ignore_errors)
 
-            if not response.ok:
+            if not response.ok and not read_request.ignore_errors:
                 raise FidesopsException(
                     f"Initial async request failed with status code {response.status_code}: {response.text}"
                 )
@@ -364,6 +364,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     row, policy, privacy_request
                 )
                 response = client.send(prepared_request, request.ignore_errors)
+
+                if not response.ok and not request.ignore_errors:
+                    raise FidesopsException(
+                        f"Initial erasure request failed with status code {response.status_code}: {response.text}"
+                    )
 
                 # Extract correlation ID from response (required, like access requests)
                 try:
