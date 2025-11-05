@@ -70,6 +70,7 @@ class PrivacyRequestService:
         self.db = db
         self.config_proxy = config_proxy
         self.messaging_service = messaging_service
+        self.duplicate_detection_service = DuplicateDetectionService(db)
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
         privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
