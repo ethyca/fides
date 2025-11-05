@@ -9,6 +9,7 @@ export enum PrivacyRequestStatus {
   PENDING = "pending",
   IDENTITY_UNVERIFIED = "identity_unverified",
   REQUIRES_INPUT = "requires_input",
+  DUPLICATE = "duplicate",
 }
 
 export enum Layer1ButtonOption {
