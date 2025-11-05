@@ -115,7 +115,12 @@ export const gtm = (options?: GtmOptions) => {
     const timestamp =
       performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
 
-    ["FidesInitialized", "FidesReady"].forEach((event) => {
+    const syntheticInitializationEvents: FidesEventType[] = [
+      "FidesInitialized",
+      "FidesReady",
+    ];
+
+    syntheticInitializationEvents.forEach((event) => {
       pushFidesVariableToGTM(
         {
           type: event,
