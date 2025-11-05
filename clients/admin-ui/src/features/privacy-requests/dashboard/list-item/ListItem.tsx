@@ -44,9 +44,9 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
   return (
     <List.Item>
       <div className="pr-4">{checkbox}</div>
-      <div className="grow pr-8">
+      <Flex vertical gap="small" className="grow pr-8">
         <Header privacyRequest={item} />
-        <Flex vertical gap="small" wrap className="pt-1">
+        <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
             {primaryIdentity && (
               <LabeledText label={primaryIdentity.label}>
@@ -84,7 +84,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
             </Flex>
           )}
         </Flex>
-      </div>
+      </Flex>
       <div className="flex shrink-0 flex-col items-end gap-2 pr-2 2xl:flex-row 2xl:gap-4">
         <DaysLeft
           daysLeft={item.days_left}
