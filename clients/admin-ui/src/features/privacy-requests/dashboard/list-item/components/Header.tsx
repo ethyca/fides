@@ -5,10 +5,10 @@ import React from "react";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 interface HeaderProps {
-  privacyRequest: PrivacyRequestEntity;
+  privacyRequest: PrivacyRequestResponse;
 }
 
 export const Header = ({ privacyRequest }: HeaderProps) => {
@@ -41,7 +41,7 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
             (e.g. "Access/Erasure request"
             */}
             {privacyRequest.policy.rules
-              .map((rule) => SubjectRequestActionTypeMap.get(rule.action_type))
+              ?.map((rule) => SubjectRequestActionTypeMap.get(rule.action_type))
               .join("/")}{" "}
             request
           </Typography.Link>

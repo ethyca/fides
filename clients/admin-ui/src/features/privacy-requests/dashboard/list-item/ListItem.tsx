@@ -8,7 +8,7 @@ import {
 import { isArray, toString } from "lodash";
 import React from "react";
 
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {
@@ -19,7 +19,7 @@ import {
 import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
 
 interface ListItemProps {
-  item: PrivacyRequestEntity;
+  item: PrivacyRequestResponse;
   checkbox?: React.ReactNode;
 }
 
