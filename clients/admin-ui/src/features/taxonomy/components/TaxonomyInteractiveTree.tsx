@@ -73,7 +73,6 @@ const TaxonomyInteractiveTree = ({
       id: TAXONOMY_ROOT_NODE_ID,
       position: { x: 0, y: 0 },
       data: {
-        // TODO: update this to use the taxonomy name if it exists
         label: rootNodeLabel || taxonomyType,
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
