@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.73.2b1.post0.dev21"
+    "version": "2.73.2b1.post0.dev22"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20444,6 +20444,30 @@
         ],
         "title": "IdentityTypes"
       },
+      "IdentityValue": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "IdentityValue"
+      },
       "IdentityVerificationConfigResponse": {
         "properties": {
           "identity_verification_required": {
@@ -24559,9 +24583,16 @@
                 "$ref": "#/components/schemas/ActionType"
               },
               {
+                "items": {
+                  "$ref": "#/components/schemas/ActionType"
+                },
+                "type": "array"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Action Type"
           },
           "verbose": {
             "anyOf": [
@@ -24842,7 +24873,7 @@
                       "type": "string"
                     },
                     {
-                      "type": "object"
+                      "$ref": "#/components/schemas/IdentityValue"
                     },
                     {
                       "type": "null"
@@ -25283,7 +25314,7 @@
                       "type": "string"
                     },
                     {
-                      "type": "object"
+                      "$ref": "#/components/schemas/IdentityValue"
                     },
                     {
                       "type": "null"
