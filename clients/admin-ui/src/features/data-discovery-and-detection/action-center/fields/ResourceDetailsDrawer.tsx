@@ -162,13 +162,7 @@ export const ResourceDetailsDrawer = ({
                           ).toLocaleString(),
                           content: error.message,
                         }))
-                      : [...Array(20)].map(() => ({
-                          title: "test%est test ",
-                          description: "ttsjsjsjsj",
-                          content: [...Array(25)]
-                            .map(() => "error error, ")
-                            .join(),
-                        }))
+                      : []
                   }
                   renderItem={(item, index) => (
                     <List.Item key={index}>
