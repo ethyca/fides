@@ -24,6 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
 - Added replace mode for decoding context loggers to avoid decode errors with zip files[#6899](https://github.com/ethyca/fides/pull/6899/files)
+- Added database model for staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867) https://github.com/ethyca/fides/labels/db-migration
+- Added action center support for displaying staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867)
 - Added keyboard shortcuts for bulk select/deselect in Action Center fields [#6911](https://github.com/ethyca/fides/pull/6911)
 - Added endpoint to bulk cancel requests [#6916](https://github.com/ethyca/fides/pull/6916)
 - Added a memory dump output to the logs when the memory watchdog hits the 90% memory limit [#6916](https://github.com/ethyca/fides/pull/6916)
