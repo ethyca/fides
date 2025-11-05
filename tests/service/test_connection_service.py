@@ -650,11 +650,6 @@ class TestUpsertDatasetConfigFromTemplate:
         assert created_dataset.connection_type == "mailchimp"
         assert created_dataset.dataset_json is not None
 
-        # Clean up
-        created_dataset.delete(db)
-        result.delete(db)
-        connection_config.delete(db)
-
     def test_update_saas_official_dataset_existing_record(
         self,
         connection_service: ConnectionService,
@@ -728,11 +723,6 @@ class TestUpsertDatasetConfigFromTemplate:
         )
         assert len(all_datasets) == 1
 
-        # Clean up
-        existing_dataset.delete(db)
-        result.delete(db)
-        connection_config.delete(db)
-
     def test_non_saas_connection_no_official_dataset(
         self,
         connection_service: ConnectionService,
@@ -762,9 +752,6 @@ class TestUpsertDatasetConfigFromTemplate:
         # Verify no SaasOfficialDataset was created
         all_datasets = db.query(SaasOfficialDataset).all()
         assert len(all_datasets) == 0
-
-        # Clean up
-        result.delete(db)
 
     def test_custom_connector_no_official_dataset(
         self,
@@ -827,11 +814,6 @@ class TestUpsertDatasetConfigFromTemplate:
         all_datasets = db.query(SaasOfficialDataset).all()
         assert len(all_datasets) == 0
 
-        # Clean up
-        result.delete(db)
-        connection_config.delete(db)
-        custom_template.delete(db)
-
     def test_saas_connection_without_saas_config_no_official_dataset(
         self,
         connection_service: ConnectionService,
@@ -874,10 +856,6 @@ class TestUpsertDatasetConfigFromTemplate:
         all_datasets = db.query(SaasOfficialDataset).all()
         assert len(all_datasets) == 0
 
-        # Clean up
-        result.delete(db)
-        saas_connection_without_config.delete(db)
-
     def test_connector_template_not_found_no_official_dataset(
         self,
         connection_service: ConnectionService,
@@ -919,7 +897,3 @@ class TestUpsertDatasetConfigFromTemplate:
         # Verify no SaasOfficialDataset was created (because connector type doesn't exist)
         all_datasets = db.query(SaasOfficialDataset).all()
         assert len(all_datasets) == 0
-
-        # Clean up
-        result.delete(db)
-        connection_config.delete(db)
