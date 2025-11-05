@@ -23,10 +23,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
-
-### Changed
-- Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
 - Added replace mode for decoding context loggers to avoid decode errors with zip files[#6899](https://github.com/ethyca/fides/pull/6899/files)
+- Added database model for staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867) https://github.com/ethyca/fides/labels/db-migration
+- Added action center support for displaying staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867)
 
 ### Changed
 - Restricted monitor tree selection to only classifiable resource types [#6900](https://github.com/ethyca/fides/pull/6900)
