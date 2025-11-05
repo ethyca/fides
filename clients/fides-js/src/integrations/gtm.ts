@@ -146,7 +146,7 @@ export const gtm = (options?: GtmOptions) => {
     const timestamp =
       performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
 
-    const syntheticInitializationEvents = Object.entries(fidesEvents)
+    const syntheticInitializationEvents = fidesEventConfiguration
       .filter(([, { dispatchSynthetic }]) => dispatchSynthetic)
       .map(([eventName]) => eventName);
 
