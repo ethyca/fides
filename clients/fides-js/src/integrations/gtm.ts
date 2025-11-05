@@ -144,7 +144,7 @@ export const gtm = (options?: GtmOptions) => {
     const { consent, fides_meta, identity, tcf_consent } = window.Fides;
     // Lookup the timestamp of the original FidesInitialized performance mark
     const timestamp =
-      performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
+      performance?.getEntriesByName?.("FidesInitialized")[0]?.startTime;
 
     const syntheticInitializationEvents = fidesEventConfiguration
       .filter(([, { dispatchSynthetic }]) => dispatchSynthetic)

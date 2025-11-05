@@ -3,60 +3,123 @@ import { gtm } from "../../src/integrations/gtm";
 import {
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
+  FidesGlobal,
 } from "../../src/lib/consent-types";
 
-const fidesEvents: Record<FidesEventType, boolean> = {
-  FidesInitializing: false,
-  FidesInitialized: true, // deprecated
-  FidesConsentLoaded: true,
-  FidesReady: true,
-  FidesUpdating: true,
-  FidesUpdated: true,
-  FidesUIChanged: true,
-  FidesUIShown: true,
-  FidesModalClosed: true,
+const fidesEvents: Record<
+  FidesEventType,
+  { forwardEvent: boolean; dispatchSynthetic: boolean }
+> = {
+  FidesInitializing: {
+    forwardEvent: false,
+    dispatchSynthetic: false,
+  },
+  FidesInitialized: {
+    forwardEvent: true,
+    dispatchSynthetic: true,
+  },
+  FidesConsentLoaded: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
+  FidesReady: {
+    forwardEvent: true,
+    dispatchSynthetic: true,
+  },
+  FidesUpdating: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
+  FidesUpdated: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
+  FidesUIChanged: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
+  FidesUIShown: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
+  FidesModalClosed: {
+    forwardEvent: true,
+    dispatchSynthetic: false,
+  },
 };
-const eventsThatFire = Object.entries(fidesEvents).filter(
-  ([, dispatchToGtm]) => dispatchToGtm,
+const fidesEventsArray = Object.entries(fidesEvents);
+
+const eventsThatAreForwarded = fidesEventsArray.filter(
+  ([, { forwardEvent }]) => forwardEvent,
 );
-const eventsThatDoNotFire = Object.entries(fidesEvents).filter(
-  ([, dispatchToGtm]) => !dispatchToGtm,
+const eventsThatAreNotForwarded = fidesEventsArray.filter(
+  ([, { forwardEvent }]) => !forwardEvent,
 );
+const eventsThatAreSyntheticallyDispatchedIfInitializationMissed =
+  fidesEventsArray.filter(([, { dispatchSynthetic }]) => dispatchSynthetic);
 
 describe("gtm", () => {
   afterEach(() => {
     window.dataLayer = undefined;
   });
 
-  test.each(eventsThatFire)(
-    "that fides forwards %s event to gtm if appropriate",
-    (eventName) => {
-      gtm();
-      window.dispatchEvent(
-        new CustomEvent(eventName, { detail: { consent: {} } }),
-      );
+  describe("Fides events", () => {
+    test.each(eventsThatAreForwarded)(
+      "fides forwards %s event to gtm if appropriate",
+      (eventName) => {
+        gtm();
+        window.dispatchEvent(
+          new CustomEvent(eventName, { detail: { consent: {} } }),
+        );
 
-      expect(
-        (window.dataLayer ?? []).filter((event) => event.event === eventName)
-          .length,
-      ).toBeGreaterThanOrEqual(1);
-    },
-  );
+        expect(
+          (window.dataLayer ?? []).filter((event) => event.event === eventName)
+            .length,
+        ).toBeGreaterThanOrEqual(1);
+      },
+    );
 
-  test.each(eventsThatDoNotFire)(
-    "that fides doesn't forward %s event to gtm",
-    (eventName) => {
-      gtm();
-      window.dispatchEvent(
-        new CustomEvent(eventName, { detail: { consent: {} } }),
-      );
+    test.each(eventsThatAreNotForwarded)(
+      "fides doesn't forward %s event to gtm",
+      (eventName) => {
+        gtm();
+        window.dispatchEvent(
+          new CustomEvent(eventName, { detail: { consent: {} } }),
+        );
 
-      expect(
-        (window.dataLayer ?? []).filter((event) => event.event === eventName)
-          .length,
-      ).toBeLessThan(1);
-    },
-  );
+        expect(
+          (window.dataLayer ?? []).filter((event) => event.event === eventName)
+            .length,
+        ).toBeLessThan(1);
+      },
+    );
+
+    describe.each(eventsThatAreSyntheticallyDispatchedIfInitializationMissed)(
+      "for synthetic event %s",
+      (eventName) => {
+        beforeEach(() => {
+          window.Fides = {} as FidesGlobal;
+          window.Fides.initialized = true;
+        });
+
+        test("that fides fires the event if it was already initialized when gtm was called", () => {
+          window.Fides.initialized = true;
+
+          gtm();
+
+          expect(
+            (window.dataLayer ?? []).filter(
+              (event) => event.event === eventName,
+            ).length,
+          ).toBe(1);
+        });
+
+        afterEach(() => {
+          window.Fides = undefined as unknown as FidesGlobal;
+        });
+      },
+    );
+  });
 
   test("that fides transforms consent values to strings when asStringValues is true", () => {
     // Mock the privacy notices
