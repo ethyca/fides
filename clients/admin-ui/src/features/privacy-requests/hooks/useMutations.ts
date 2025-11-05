@@ -4,12 +4,14 @@ import {
   usePostPrivacyRequestFinalizeMutation,
   useSoftDeleteRequestMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
+
+import { PrivacyRequestEntity } from "../types";
 
 export const useMutations = ({
   subjectRequest,
 }: {
-  subjectRequest: PrivacyRequestEntity;
+  subjectRequest: PrivacyRequestResponse | PrivacyRequestEntity;
 }) => {
   // The `fixedCacheKey` options allows multiple components to reference the same mutation state for
   // a subject request.
@@ -28,10 +30,11 @@ export const useMutations = ({
       fixedCacheKey: subjectRequest.id,
     });
 
-  const handleApproveRequest = () => approveRequest(subjectRequest);
+  const handleApproveRequest = () => approveRequest({ id: subjectRequest.id });
   const handleDenyRequest = (reason: string) =>
     denyRequest({ id: subjectRequest.id, reason });
-  const handleDeleteRequest = () => softDeleteRequest(subjectRequest);
+  const handleDeleteRequest = () =>
+    softDeleteRequest({ id: subjectRequest.id });
   const handleFinalizeRequest = () =>
     finalizeRequest({ privacyRequestId: subjectRequest.id });
 

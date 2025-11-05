@@ -8,16 +8,16 @@ import {
 import { useEffect, useMemo } from "react";
 
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
 export interface FilterQueryParams {
-  fuzzy_search_str?: string;
-  from?: string;
-  to?: string;
-  status?: PrivacyRequestStatus[];
-  action_type?: ActionType[];
-  sort_field?: string;
-  sort_direction?: string;
+  fuzzy_search_str: string | null;
+  from: string | null;
+  to: string | null;
+  status: PrivacyRequestStatus[] | null;
+  action_type: ActionType[] | null;
+  sort_field: string | null;
+  sort_direction: ColumnSort | null;
 }
 
 interface UsePrivacyRequestsFiltersProps {
@@ -35,19 +35,17 @@ const usePrivacyRequestsFilters = ({
 }: UsePrivacyRequestsFiltersProps) => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
     "search",
-    parseAsString.withDefault("").withOptions({ throttleMs: 300 }),
+    parseAsString.withOptions({ throttleMs: 300 }),
   );
 
   const [modalFilters, setModalFilters] = useQueryStates(
     {
-      from: parseAsString.withDefault(""),
-      to: parseAsString.withDefault(""),
+      from: parseAsString,
+      to: parseAsString,
       status: parseAsArrayOf(
         parseAsStringEnum(Object.values(PrivacyRequestStatus)),
-      ).withDefault([]),
-      action_type: parseAsArrayOf(
-        parseAsStringEnum(Object.values(ActionType)),
-      ).withDefault([]),
+      ),
+      action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
     },
     {
       history: "push",
@@ -65,8 +63,8 @@ const usePrivacyRequestsFilters = ({
 
   const [sortState, setSortState] = useQueryStates(
     {
-      sort_field: parseAsString.withDefault(""),
-      sort_direction: parseAsString.withDefault(""),
+      sort_field: parseAsString,
+      sort_direction: parseAsStringEnum(Object.values(ColumnSort)),
     },
     {
       history: "push",

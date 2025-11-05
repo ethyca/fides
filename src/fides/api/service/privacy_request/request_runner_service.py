@@ -71,6 +71,9 @@ from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
 )
+from fides.api.service.privacy_request.duplication_detection import (
+    DuplicateDetectionService,
+)
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -445,6 +448,19 @@ def run_privacy_request(
             if privacy_request.deleted_at is not None:
                 logger.info("Terminating privacy request: request deleted.")
                 return
+
+            duplicate_detection_service = DuplicateDetectionService(session)
+            # Service initializes with ConfigProxy, so we can check if duplicate detection is enabled
+            if duplicate_detection_service.is_enabled():
+                logger.info(
+                    "Duplicate detection is enabled. Checking if privacy request is a duplicate."
+                )
+                if duplicate_detection_service.is_duplicate_request(privacy_request):
+                    logger.info("Terminating privacy request: request is a duplicate.")
+                    privacy_request.update(
+                        session, data={"status": PrivacyRequestStatus.duplicate}
+                    )
+                    return
 
             logger.info("Dispatching privacy request")
             privacy_request.start_processing(session)
