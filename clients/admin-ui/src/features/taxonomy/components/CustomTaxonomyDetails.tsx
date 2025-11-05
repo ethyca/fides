@@ -9,7 +9,7 @@ import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
 interface CustomTaxonomyDetailsProps {
-  taxonomy?: TaxonomyResponse;
+  taxonomy?: TaxonomyResponse | null;
   onSubmit: (values: TaxonomyUpdate) => void;
   formId: string;
 }
@@ -22,13 +22,12 @@ const CustomTaxonomyDetails = ({
   if (!taxonomy) {
     return null;
   }
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { fides_key, ...initialValues } = taxonomy;
+  const { fides_key: fidesKey, ...initialValues } = taxonomy;
 
   return (
     <Flex vertical gap="large">
       <Descriptions>
-        <Descriptions.Item label="Fides key">{fides_key}</Descriptions.Item>
+        <Descriptions.Item label="Fides key">{fidesKey}</Descriptions.Item>
       </Descriptions>
       <Form
         id={formId}

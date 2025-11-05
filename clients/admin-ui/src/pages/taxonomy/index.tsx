@@ -289,7 +289,7 @@ const TaxonomyPage: NextPage = () => {
           onClose={() => setTaxonomyItemToEdit(null)}
         />
       )}
-      {taxonomyTypeToEdit && (
+      {isPlusEnabled && (
         <CustomTaxonomyEditDrawer
           title={
             customTaxonomyLabel

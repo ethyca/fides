@@ -54,7 +54,7 @@ const CreateCustomTaxonomyForm = ({
         <Form.Item
           label="Taxonomy name"
           name="name"
-          rules={[{ required: true, message: "Please enter a name" }]}
+          rules={[{ required: true, message: "Name is required" }]}
         >
           <Input data-testid="input-name" />
         </Form.Item>
