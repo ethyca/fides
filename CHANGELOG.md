@@ -34,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added duplicate DSR checking to request runner [#6860](https://github.com/ethyca/fides/pull/6860/)
 - Added keyboard shortcuts for field actions in Action Center [#6919](https://github.com/ethyca/fides/pull/6919)
 - Added keyboard shortcuts helper modal in Action Center fields [#6926](https://github.com/ethyca/fides/pull/6926)
+- Added UI for configuring custom taxonomies [#6921](https://github.com/ethyca/fides/pull/6921)
 
 ### Changed
 - Restricted monitor tree selection to only classifiable resource types [#6900](https://github.com/ethyca/fides/pull/6900)
