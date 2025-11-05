@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 
 
 class StagedResourceError(Base):
@@ -11,6 +11,7 @@ class StagedResourceError(Base):
     Linked to StagedResource via FK with cascade delete.
     """
 
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
     staged_resource_urn = Column(
         String,
         ForeignKey("stagedresource.urn", ondelete="CASCADE"),
