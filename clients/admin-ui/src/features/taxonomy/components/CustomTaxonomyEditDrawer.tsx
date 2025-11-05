@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntMessage as message,
+  AntMessageInstance as MessageInstance,
   AntModal as Modal,
 } from "fidesui";
 import { useState } from "react";
@@ -21,6 +21,7 @@ interface CustomTaxonomyEditDrawerProps
   extends Omit<DetailsDrawerProps, "itemKey"> {
   taxonomy?: TaxonomyResponse;
   onDelete: () => void;
+  messageApi: MessageInstance;
 }
 
 const FORM_ID = "custom-taxonomy-form";
@@ -29,10 +30,9 @@ const CustomTaxonomyEditDrawer = ({
   taxonomy,
   onClose,
   onDelete,
+  messageApi,
   ...props
 }: CustomTaxonomyEditDrawerProps) => {
-  const [messageApi, messageContext] = message.useMessage();
-
   const [updateCustomTaxonomy, { isLoading: isUpdating }] =
     useUpdateCustomTaxonomyMutation();
   const [deleteCustomTaxonomy, { isLoading: isDeleting }] =
@@ -64,53 +64,50 @@ const CustomTaxonomyEditDrawer = ({
   };
 
   return (
-    <>
-      {messageContext}
-      <DetailsDrawer
-        title={`Edit ${taxonomy?.name}`}
-        {...props}
-        itemKey=""
-        open={!!taxonomy}
-        destroyOnHidden
-        footer={
-          <Flex justify="space-between" className="w-full">
-            <Button
-              loading={isDeleting}
-              onClick={() => setDeleteModalIsOpen(true)}
-            >
-              Delete
-            </Button>
-            <Modal
-              title={`Delete ${taxonomy?.name}?`}
-              open={deleteModalIsOpen}
-              onCancel={() => setDeleteModalIsOpen(false)}
-              onOk={handleDelete}
-              okText="Delete"
-              cancelText="Cancel"
-              loading={isDeleting}
-              centered
-            >
-              Are you sure you want to delete this taxonomy? This action cannot
-              be undone.
-            </Modal>
-            <Button
-              type="primary"
-              htmlType="submit"
-              form={FORM_ID}
-              loading={isUpdating}
-            >
-              Save
-            </Button>
-          </Flex>
-        }
-      >
-        <CustomTaxonomyDetails
-          taxonomy={taxonomy}
-          onSubmit={handleUpdate}
-          formId={FORM_ID}
-        />
-      </DetailsDrawer>
-    </>
+    <DetailsDrawer
+      title={`Edit ${taxonomy?.name}`}
+      {...props}
+      itemKey=""
+      open={!!taxonomy}
+      destroyOnHidden
+      footer={
+        <Flex justify="space-between" className="w-full">
+          <Button
+            loading={isDeleting}
+            onClick={() => setDeleteModalIsOpen(true)}
+          >
+            Delete
+          </Button>
+          <Modal
+            title={`Delete ${taxonomy?.name}?`}
+            open={deleteModalIsOpen}
+            onCancel={() => setDeleteModalIsOpen(false)}
+            onOk={handleDelete}
+            okText="Delete"
+            cancelText="Cancel"
+            loading={isDeleting}
+            centered
+          >
+            Are you sure you want to delete this taxonomy? This action cannot be
+            undone.
+          </Modal>
+          <Button
+            type="primary"
+            htmlType="submit"
+            form={FORM_ID}
+            loading={isUpdating}
+          >
+            Save
+          </Button>
+        </Flex>
+      }
+    >
+      <CustomTaxonomyDetails
+        taxonomy={taxonomy}
+        onSubmit={handleUpdate}
+        formId={FORM_ID}
+      />
+    </DetailsDrawer>
   );
 };
 

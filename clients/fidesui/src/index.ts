@@ -117,6 +117,7 @@ export type {
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
+export type { MessageInstance as AntMessageInstance } from "antd/lib/message/interface";
 
 // Export utils
 export * from "./components/data-display/filter.utils";

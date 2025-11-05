@@ -2,10 +2,11 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntInput as Input,
+  AntMenuProps as MenuProps,
+  AntMessage as message,
   AntModal as Modal,
   AntSpace as Space,
   FloatingMenu,
-  useToast,
 } from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
@@ -21,7 +22,6 @@ import {
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
 import CustomTaxonomyEditDrawer from "~/features/taxonomy/components/CustomTaxonomyEditDrawer";
 import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
@@ -108,7 +108,8 @@ const TaxonomyPage: NextPage = () => {
     }
   }, [taxonomyType, isPlusEnabled]);
 
-  const toast = useToast();
+  const [messageApi, messageContext] = message.useMessage();
+
   const createNewLabel = useCallback(
     async (labelName: string) => {
       if (!draftNewItem) {
@@ -124,14 +125,14 @@ const TaxonomyPage: NextPage = () => {
 
       const result = await createTrigger(newItem);
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        messageApi.error(getErrorMessage(result.error));
         return;
       }
       setLastCreatedItemKey(result.data.fides_key);
-      toast(successToastParams("New label successfully created"));
+      messageApi.success("New label successfully created");
       setDraftNewItem(null);
     },
-    [createTrigger, draftNewItem, toast],
+    [createTrigger, draftNewItem, messageApi],
   );
 
   const activeTaxonomyItems = filter(
@@ -163,6 +164,7 @@ const TaxonomyPage: NextPage = () => {
 
   return (
     <Layout title="Taxonomy">
+      {messageContext}
       <Flex vertical className="h-full">
         <div>
           <PageHeader heading="Taxonomy" />
@@ -198,7 +200,9 @@ const TaxonomyPage: NextPage = () => {
                     TaxonomyTypeEnum.SYSTEM_GROUP,
                 };
 
-                const items = enumToOptions(CoreTaxonomiesEnum)
+                const items: MenuProps["items"] = enumToOptions(
+                  CoreTaxonomiesEnum,
+                )
                   .filter(
                     (opt) =>
                       isPlusEnabled ||
@@ -215,8 +219,13 @@ const TaxonomyPage: NextPage = () => {
                     items.push({ label: t.name, key: t.fides_key as any });
                   });
                 }
-
-                items.push({ label: "+ Create new", key: ADD_NEW_ITEM_KEY });
+                if (isPlusEnabled) {
+                  items.push({ type: "divider" });
+                  items.push({
+                    label: "+ Create new",
+                    key: ADD_NEW_ITEM_KEY,
+                  });
+                }
 
                 return items;
               })()}
@@ -231,9 +240,11 @@ const TaxonomyPage: NextPage = () => {
             width={768}
             footer={null}
             centered
+            title="Create new taxonomy"
           >
             <CreateCustomTaxonomyForm
               onClose={() => setIsAddNewItemModalOpen(false)}
+              messageApi={messageApi}
             />
           </Modal>
 

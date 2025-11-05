@@ -3,7 +3,7 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
+  AntMessageInstance as MessageInstance,
   AntTypography as Typography,
 } from "fidesui";
 
@@ -17,13 +17,17 @@ interface CreateCustomTaxonomyFormValues {
 }
 
 const FORM_COPY =
-  "Define structured taxonomies like Data Categories or Data Uses. Each taxonomy can include required fields that users must complete when applying a label.";
+  "Create and organize the core terminology your team uses to describe data and how it's handled. Custom taxonomies let you define domain-specific concepts and then apply them to other privacy objects throughout the platform";
 
-const CreateCustomTaxonomyForm = ({ onClose }: { onClose: () => void }) => {
+const CreateCustomTaxonomyForm = ({
+  onClose,
+  messageApi,
+}: {
+  onClose: () => void;
+  messageApi: MessageInstance;
+}) => {
   const [createCustomTaxonomy, { isLoading: isSubmitting }] =
     useCreateCustomTaxonomyMutation();
-
-  const [messageApi, messageContext] = message.useMessage();
 
   const handleSubmit = async (values: CreateCustomTaxonomyFormValues) => {
     const payload = {
@@ -41,7 +45,6 @@ const CreateCustomTaxonomyForm = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <>
-      {messageContext}
       <Typography.Paragraph>{FORM_COPY}</Typography.Paragraph>
       <Form
         layout="vertical"
@@ -49,7 +52,7 @@ const CreateCustomTaxonomyForm = ({ onClose }: { onClose: () => void }) => {
         validateTrigger={["onBlur", "onChange"]}
       >
         <Form.Item
-          label="Name"
+          label="Taxonomy name"
           name="name"
           rules={[{ required: true, message: "Please enter a name" }]}
         >
