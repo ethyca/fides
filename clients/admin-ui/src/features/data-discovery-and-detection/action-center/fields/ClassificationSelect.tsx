@@ -12,7 +12,10 @@ const ClassificationSelect = ({
   onSelectDataCategory,
   urn,
   ...props
-}: { onSelectDataCategory: (value: string) => void; urn?: string } & TaxonomySelectProps) => {
+}: {
+  onSelectDataCategory: (value: string) => void;
+  urn?: string;
+} & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
   const dataCategories = getDataCategories().filter((c) => c.active);
