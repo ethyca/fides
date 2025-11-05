@@ -11,11 +11,13 @@ import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 interface CustomTaxonomyDetailsProps {
   taxonomy?: TaxonomyResponse;
   onSubmit: (values: TaxonomyUpdate) => void;
+  formId: string;
 }
 
 const CustomTaxonomyDetails = ({
   taxonomy,
   onSubmit,
+  formId,
 }: CustomTaxonomyDetailsProps) => {
   if (!taxonomy) {
     return null;
@@ -28,7 +30,12 @@ const CustomTaxonomyDetails = ({
       <Descriptions>
         <Descriptions.Item label="Fides key">{fides_key}</Descriptions.Item>
       </Descriptions>
-      <Form layout="vertical" initialValues={initialValues} onFinish={onSubmit}>
+      <Form
+        id={formId}
+        layout="vertical"
+        initialValues={initialValues}
+        onFinish={onSubmit}
+      >
         <Form.Item
           label="Name"
           name="name"

@@ -109,6 +109,13 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => [{ type: "Taxonomy" }],
     }),
+    deleteCustomTaxonomy: build.mutation<void, string>({
+      query: (fides_key) => ({
+        url: `taxonomies/${fides_key}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
   }),
 });
 
@@ -120,4 +127,5 @@ export const {
   useDeleteTaxonomyMutation,
   useCreateCustomTaxonomyMutation,
   useUpdateCustomTaxonomyMutation,
+  useDeleteCustomTaxonomyMutation,
 } = taxonomyApi;

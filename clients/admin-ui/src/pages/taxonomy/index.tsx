@@ -10,7 +10,7 @@ import {
 import { filter } from "lodash";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import {
@@ -31,6 +31,7 @@ import {
   TAXONOMY_ROOT_NODE_ID,
   taxonomyKeyToScopeRegistryEnum,
   TaxonomyTypeEnum,
+  taxonomyTypeToLabel,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
@@ -69,7 +70,6 @@ const TaxonomyPage: NextPage = () => {
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);
-
   const [taxonomyTypeToEdit, setTaxonomyTypeToEdit] =
     useState<TaxonomyResponse | null>(null);
 
@@ -79,6 +79,16 @@ const TaxonomyPage: NextPage = () => {
   const [lastCreatedItemKey, setLastCreatedItemKey] = useState<string | null>(
     null,
   );
+
+  const customTaxonomyLabel = useMemo(() => {
+    if (!customTaxonomies) {
+      return null;
+    }
+    const customTaxonomyResponse = customTaxonomies.find(
+      (t) => t.fides_key === taxonomyType,
+    );
+    return customTaxonomyResponse?.name ?? customTaxonomyResponse?.fides_key;
+  }, [customTaxonomies, taxonomyType]);
 
   const [isAddNewItemModalOpen, setIsAddNewItemModalOpen] = useState(false);
 
@@ -252,6 +262,10 @@ const TaxonomyPage: NextPage = () => {
             onCancelDraftItem={() => setDraftNewItem(null)}
             onSubmitDraftItem={createNewLabel}
             isCreating={isCreating}
+            rootNodeLabel={
+              customTaxonomyLabel ??
+              taxonomyTypeToLabel(taxonomyType as TaxonomyTypeEnum)
+            }
           />
         </div>
       </Flex>

@@ -1,9 +1,19 @@
-import { AntButton as Button } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntMessage as message,
+  AntModal as Modal,
+} from "fidesui";
+import { useState } from "react";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import CustomTaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
-import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
+import {
+  useDeleteCustomTaxonomyMutation,
+  useUpdateCustomTaxonomyMutation,
+} from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
@@ -12,41 +22,91 @@ interface CustomTaxonomyEditDrawerProps
   taxonomy?: TaxonomyResponse;
 }
 
+const FORM_ID = "custom-taxonomy-form";
+
 const CustomTaxonomyEditDrawer = ({
   taxonomy,
   ...props
 }: CustomTaxonomyEditDrawerProps) => {
+  const [messageApi, messageContext] = message.useMessage();
+
   const [updateCustomTaxonomy, { isLoading: isUpdating }] =
     useUpdateCustomTaxonomyMutation();
+  const [deleteCustomTaxonomy, { isLoading: isDeleting }] =
+    useDeleteCustomTaxonomyMutation();
+
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
-    // const result = await updateCustomTaxonomy({
-    //   fides_key: taxonomy?.fides_key as string,
-    //   ...values,
-    // });
-    console.log(values);
+    const result = await updateCustomTaxonomy({
+      fides_key: taxonomy?.fides_key as string,
+      ...values,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    messageApi.success("Taxonomy updated successfully");
+  };
+
+  const handleDelete = async () => {
+    const result = await deleteCustomTaxonomy(taxonomy?.fides_key as string);
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    messageApi.success("Taxonomy deleted successfully");
+    setDeleteModalIsOpen(false);
   };
 
   return (
-    <DetailsDrawer
-      title={`Edit ${taxonomy?.name}`}
-      {...props}
-      itemKey=""
-      open={!!taxonomy}
-      destroyOnHidden
-      footer={
-        <Button
-          type="primary"
-          htmlType="submit"
-          loading={isUpdating}
-          onClick={handleUpdate}
-        >
-          Save
-        </Button>
-      }
-    >
-      <CustomTaxonomyDetails taxonomy={taxonomy} onSubmit={handleUpdate} />
-    </DetailsDrawer>
+    <>
+      {messageContext}
+      <DetailsDrawer
+        title={`Edit ${taxonomy?.name}`}
+        {...props}
+        itemKey=""
+        open={!!taxonomy}
+        destroyOnHidden
+        footer={
+          <Flex justify="space-between" className="w-full">
+            <Button
+              loading={isDeleting}
+              onClick={() => setDeleteModalIsOpen(true)}
+            >
+              Delete
+            </Button>
+            <Modal
+              title={`Delete ${taxonomy?.name}?`}
+              open={deleteModalIsOpen}
+              onCancel={() => setDeleteModalIsOpen(false)}
+              onOk={handleDelete}
+              okText="Delete"
+              cancelText="Cancel"
+              loading={isDeleting}
+              centered
+            >
+              Are you sure you want to delete this taxonomy? This action cannot
+              be undone.
+            </Modal>
+            <Button
+              type="primary"
+              htmlType="submit"
+              form={FORM_ID}
+              loading={isUpdating}
+            >
+              Save
+            </Button>
+          </Flex>
+        }
+      >
+        <CustomTaxonomyDetails
+          taxonomy={taxonomy}
+          onSubmit={handleUpdate}
+          formId={FORM_ID}
+        />
+      </DetailsDrawer>
+    </>
   );
 };
 

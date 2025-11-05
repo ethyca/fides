@@ -16,10 +16,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
-import {
-  TAXONOMY_ROOT_NODE_ID,
-  taxonomyTypeToLabel,
-} from "~/features/taxonomy/constants";
+import { TAXONOMY_ROOT_NODE_ID } from "~/features/taxonomy/constants";
 import { TaxonomyTreeHoverProvider } from "~/features/taxonomy/context/TaxonomyTreeHoverContext";
 import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
@@ -43,6 +40,7 @@ interface TaxonomyInteractiveTreeProps {
   onSubmitDraftItem: (label: string) => void;
   userCanAddLabels: boolean;
   isCreating?: boolean;
+  rootNodeLabel?: string;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -58,6 +56,7 @@ const TaxonomyInteractiveTree = ({
   onSubmitDraftItem,
   userCanAddLabels,
   isCreating = false,
+  rootNodeLabel,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
@@ -75,7 +74,7 @@ const TaxonomyInteractiveTree = ({
       position: { x: 0, y: 0 },
       data: {
         // TODO: update this to use the taxonomy name if it exists
-        label: taxonomyTypeToLabel(taxonomyType),
+        label: rootNodeLabel || taxonomyType,
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
         },
@@ -88,6 +87,7 @@ const TaxonomyInteractiveTree = ({
       type: "taxonomyTreeNode",
     }),
     [
+      rootNodeLabel,
       taxonomyType,
       onRootItemClick,
       onAddButtonClick,
