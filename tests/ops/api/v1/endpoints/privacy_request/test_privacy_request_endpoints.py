@@ -95,6 +95,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
+    PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -4809,6 +4810,260 @@ class TestDenyPrivacyRequest:
         assert denial_audit_log.message == denial_reason
 
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
+
+        privacy_request.delete(db)
+
+
+class TestCancelPrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_CANCEL
+
+    def test_cancel_privacy_request_not_authenticated(self, url, api_client):
+        response = api_client.patch(url)
+        assert response.status_code == 401
+
+    def test_cancel_privacy_request_bad_scopes(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_privacy_request_does_not_exist(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": ["does_not_exist"]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "No privacy request found with id 'does_not_exist'"
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_completed_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            "Cannot cancel privacy request in complete status"
+            in response_body["failed"][0]["message"]
+        )
+        assert response_body["failed"][0]["data"]["status"] == "complete"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_already_canceled_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.canceled
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            "Cannot cancel privacy request in canceled status"
+            in response_body["failed"][0]["message"]
+        )
+        assert response_body["failed"][0]["data"]["status"] == "canceled"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_deleted_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        soft_deleted_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [soft_deleted_privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot transition status for a deleted request"
+        )
+        assert (
+            response_body["failed"][0]["data"]["id"] == soft_deleted_privacy_request.id
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_pending_privacy_request_without_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was canceled
+
+        privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_pending_privacy_request_with_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        cancel_reason = "User requested cancellation"
+        body = {"request_ids": [privacy_request.id], "reason": cancel_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+        assert privacy_request.cancel_reason == cancel_reason
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was canceled
+
+        privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_in_processing_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        """Test that we can cancel a privacy request that's currently in_processing"""
+        privacy_request.status = PrivacyRequestStatus.in_processing
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        cancel_reason = "Cancelling in-progress request"
+        body = {"request_ids": [privacy_request.id], "reason": cancel_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+        assert privacy_request.cancel_reason == cancel_reason
+
+        assert not submit_mock.called
 
         privacy_request.delete(db)
 

@@ -91,6 +91,7 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
+    CancelPrivacyRequests,
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
@@ -147,6 +148,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
+    PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
@@ -1361,8 +1363,7 @@ def restart_privacy_request_from_failure(
     # Automatically resubmit the request if the cache has expired
     if (
         not privacy_request.get_cached_identity_data()
-        and privacy_request.status
-        not in [PrivacyRequestStatus.complete, PrivacyRequestStatus.pending]
+        and privacy_request.status != PrivacyRequestStatus.complete
     ):
         logger.info(
             f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
@@ -1475,6 +1476,29 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
 
     return privacy_request_service.deny_privacy_requests(
+        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_CANCEL,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def cancel_privacy_request(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: CancelPrivacyRequests,
+) -> BulkReviewResponse:
+    """Cancel a list of privacy requests and/or report failure"""
+
+    return privacy_request_service.cancel_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
 

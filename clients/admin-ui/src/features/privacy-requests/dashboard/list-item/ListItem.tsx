@@ -58,7 +58,7 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
           </Flex>
 
           {hasExtraDetails && (
-            <Flex wrap gap="middle">
+            <Flex wrap className="gap-x-3 gap-y-2">
               {item.location && (
                 <LabeledText key="location" label="Location">
                   {locationIsoEntry
