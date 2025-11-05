@@ -272,6 +272,7 @@ export { HTTPMethod } from "./models/HTTPMethod";
 export type { HTTPValidationError } from "./models/HTTPValidationError";
 export type { Identity } from "./models/Identity";
 export type { IdentityInputs } from "./models/IdentityInputs";
+export type { IdentityValue } from "./models/IdentityValue";
 export type { IdentityTypes } from "./models/IdentityTypes";
 export type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
 export { IncludeExcludeEnum } from "./models/IncludeExcludeEnum";

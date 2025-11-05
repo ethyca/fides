@@ -24,14 +24,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
 - Added replace mode for decoding context loggers to avoid decode errors with zip files[#6899](https://github.com/ethyca/fides/pull/6899/files)
-<<<<<<< HEAD
 - Added database model for staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867) https://github.com/ethyca/fides/labels/db-migration
 - Added action center support for displaying staged resource errors [#6867](https://github.com/ethyca/fides/pull/6867)
-=======
 - Added keyboard shortcuts for bulk select/deselect in Action Center fields [#6911](https://github.com/ethyca/fides/pull/6911)
 - Added endpoint to bulk cancel requests [#6916](https://github.com/ethyca/fides/pull/6916)
 - Added a memory dump output to the logs when the memory watchdog hits the 90% memory limit [#6916](https://github.com/ethyca/fides/pull/6916)
->>>>>>> 1a36ceb825e566bbcd0547a605741d17a92c3241
+- Added duplicate DSR checking to request runner [#6860](https://github.com/ethyca/fides/pull/6860/)
 
 ### Changed
 - Restricted monitor tree selection to only classifiable resource types [#6900](https://github.com/ethyca/fides/pull/6900)
@@ -40,11 +38,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Limit action center tree expansion to 4 levels (Database/Schema/Table/Field) by treating fields as leaf nodes [#6907](https://github.com/ethyca/fides/pull/6907)
 - Allowing pending (new) requests to be resubmitted [#6916](https://github.com/ethyca/fides/pull/6916)
 - Allowing dynamic Celery environment variables to be loaded if they match the `FIDES__CELERY__` prefix [#6916](https://github.com/ethyca/fides/pull/6916)
+- PrivacyRequest cache now falls back to the db for identity and custom fields [#6896](https://github.com/ethyca/fides/pull/6896)
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
 - Added explicit label property to feature flags configuration for flexible display names [#6889](https://github.com/ethyca/fides/pull/6889)
 - Added Cypress command to override feature flags in tests without UI interaction [#6890](https://github.com/ethyca/fides/pull/6890)
+- Improved types used in request manager page [#6912](https://github.com/ethyca/fides/pull/6912)
+
 
 ### Fixed
 - Fixed race condition causing gdprApplies to flip during TCF initialization [#6895](https://github.com/ethyca/fides/pull/6895)
