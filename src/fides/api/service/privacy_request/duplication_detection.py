@@ -423,4 +423,3 @@ def check_for_duplicates(db: Session, privacy_request: PrivacyRequest) -> None:
         )
         if duplicate_detection_service.is_duplicate_request(privacy_request):
             logger.info("Terminating privacy request: request is a duplicate.")
-            privacy_request.update(db, data={"status": PrivacyRequestStatus.duplicate})
