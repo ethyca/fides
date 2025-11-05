@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.73.2b1.post0.dev14"
+    "version": "2.73.2b1.post0.dev15"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9348,6 +9348,55 @@
         ]
       }
     },
+    "/api/v1/privacy-request/administrate/cancel": {
+      "patch": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Cancel Privacy Request",
+        "description": "Cancel a list of privacy requests and/or report failure",
+        "operationId": "cancel_privacy_request_api_v1_privacy_request_administrate_cancel_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelPrivacyRequests"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkReviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/pre-approve/eligible": {
       "post": {
         "tags": [
@@ -15904,6 +15953,35 @@
         ],
         "title": "BulkUpdateFailed",
         "description": "Schema for use when Bulk Create/Update fails."
+      },
+      "CancelPrivacyRequests": {
+        "properties": {
+          "request_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Request Ids"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_ids"
+        ],
+        "title": "CancelPrivacyRequests",
+        "description": "Pass in a list of privacy request ids and cancellation reason"
       },
       "CheckpointActionRequiredDetails": {
         "properties": {
