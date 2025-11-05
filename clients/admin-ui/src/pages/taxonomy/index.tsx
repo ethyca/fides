@@ -6,6 +6,7 @@ import {
   AntMessage as message,
   AntModal as Modal,
   AntSpace as Space,
+  AntTypography as Typography,
   FloatingMenu,
 } from "fidesui";
 import { filter } from "lodash";
@@ -34,7 +35,10 @@ import {
   taxonomyTypeToLabel,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
-import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
+import {
+  useDeleteCustomTaxonomyMutation,
+  useGetCustomTaxonomiesQuery,
+} from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 
@@ -66,6 +70,8 @@ const TaxonomyPage: NextPage = () => {
   const searchParams = useSearchParams();
   const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
 
+  const [messageApi, messageContext] = message.useMessage();
+
   useEffect(() => {
     getAllTrigger();
   }, [getAllTrigger, taxonomyType]);
@@ -81,6 +87,42 @@ const TaxonomyPage: NextPage = () => {
   const [lastCreatedItemKey, setLastCreatedItemKey] = useState<string | null>(
     null,
   );
+
+  const [modal, modalContext] = Modal.useModal();
+
+  const [deleteCustomTaxonomy] = useDeleteCustomTaxonomyMutation();
+
+  const handleDelete = async () => {
+    if (!taxonomyTypeToEdit?.fides_key) {
+      messageApi.error("Taxonomy not found");
+      return;
+    }
+    const result = await deleteCustomTaxonomy(taxonomyTypeToEdit.fides_key);
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    messageApi.success("Taxonomy deleted successfully");
+    setTaxonomyTypeToEdit(null);
+    setTaxonomyType(DEFAULT_TAXONOMY_TYPE);
+  };
+
+  const confirmDelete = () => {
+    modal.confirm({
+      title: `Delete ${taxonomyTypeToEdit?.name}?`,
+      icon: null,
+      content: (
+        <Typography.Paragraph>
+          Are you sure you want to delete this taxonomy? This action cannot be
+          undone.
+        </Typography.Paragraph>
+      ),
+      okText: "Delete",
+      okType: "primary",
+      onOk: handleDelete,
+      centered: true,
+    });
+  };
 
   const customTaxonomyLabel = useMemo(() => {
     if (!customTaxonomies) {
@@ -107,8 +149,6 @@ const TaxonomyPage: NextPage = () => {
       setTaxonomyType(TaxonomyTypeEnum.DATA_CATEGORY);
     }
   }, [taxonomyType, isPlusEnabled]);
-
-  const [messageApi, messageContext] = message.useMessage();
 
   const createNewLabel = useCallback(
     async (labelName: string) => {
@@ -165,6 +205,7 @@ const TaxonomyPage: NextPage = () => {
   return (
     <Layout title="Taxonomy">
       {messageContext}
+      {modalContext}
       <Flex vertical className="h-full">
         <div>
           <PageHeader heading="Taxonomy" />
@@ -297,10 +338,7 @@ const TaxonomyPage: NextPage = () => {
               : "Edit taxonomy"
           }
           onClose={() => setTaxonomyTypeToEdit(null)}
-          onDelete={() => {
-            setTaxonomyTypeToEdit(null);
-            setTaxonomyType(DEFAULT_TAXONOMY_TYPE);
-          }}
+          onDelete={confirmDelete}
           taxonomy={taxonomyTypeToEdit}
           messageApi={messageApi}
         />
