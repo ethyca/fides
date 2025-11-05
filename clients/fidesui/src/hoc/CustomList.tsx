@@ -1,8 +1,8 @@
 import { Checkbox, List, ListProps } from "antd/lib";
 import type { ListItemProps } from "antd/lib/list";
-import React, { useCallback, useId, useMemo } from "react";
+import React, { useCallback, useEffect, useId, useMemo } from "react";
 
-import { useListKeyboardNavigation } from "../hooks/useListKeyboardNavigation";
+import { useListHotkeys } from "../hooks/useListHotkeys";
 import styles from "./CustomList.module.scss";
 
 export interface RowSelection<T> {
@@ -17,12 +17,18 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
     item: T,
     index: number,
     checkbox?: React.ReactNode,
-    focused?: boolean,
+    isActive?: boolean,
   ) => React.ReactNode;
   /** Whether to enable keyboard shortcuts for navigation and selection.
    * Never enable this on more than one list on the same page or these will conflict.
    * Defaults to false. */
   enableKeyboardShortcuts?: boolean;
+  /** Callback that fires when the focused item index changes.
+   * Receives the active item data and the new active index (or null if no item is active). */
+  onActiveItemChange?: (
+    activeListItem: T | null,
+    activeListItemIndex?: number | null,
+  ) => void;
 }
 
 const getItemKey = <T,>(item: T, index: number): React.Key => {
@@ -37,7 +43,8 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     rowSelection,
     renderItem,
     dataSource,
-    enableKeyboardShortcuts,
+    enableKeyboardShortcuts = false,
+    onActiveItemChange,
     ...props
   }: CustomListProps<T>) => {
     // Generate a unique ID for this list instance
@@ -112,7 +119,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     );
 
     // Keyboard navigation hook - always enabled, works with or without rowSelection
-    const { focusedItemIndex } = useListKeyboardNavigation({
+    const { activeListItemIndex } = useListHotkeys({
       itemCount: dataSource?.length ?? 0,
       selectedKeys: selectedRowKeys,
       onToggleSelection: rowSelection ? handleKeyboardToggle : undefined,
@@ -122,17 +129,26 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       enabled: enableKeyboardShortcuts,
     });
 
+    // Call onFocusChange callback when focused item changes
+    useEffect(() => {
+      if (onActiveItemChange && dataSource) {
+        const activeListItem =
+          activeListItemIndex !== null ? dataSource[activeListItemIndex] : null;
+        onActiveItemChange(activeListItem, activeListItemIndex);
+      }
+    }, [activeListItemIndex, dataSource, onActiveItemChange]);
+
     // Helper function to apply focus styling and data attributes
-    const applyFocusStyling = useCallback(
-      (renderedItem: React.ReactNode, index: number, isFocused: boolean) => {
+    const applyActiveStyling = useCallback(
+      (renderedItem: React.ReactNode, index: number, isActive: boolean) => {
         if (React.isValidElement(renderedItem)) {
           const itemProps = renderedItem.props as ListItemProps;
           return React.cloneElement(renderedItem, {
             ...itemProps,
             "data-listitem": `${listId}-${index}`,
-            "aria-current": isFocused ? "true" : undefined,
-            className: isFocused
-              ? `${itemProps.className ?? ""} ${styles["pseudo-focus"]}`.trim()
+            "aria-current": isActive ? "true" : undefined,
+            className: isActive
+              ? `${itemProps.className ?? ""} ${styles["active-item"]}`.trim()
               : itemProps.className,
           } as ListItemProps);
         }
@@ -150,11 +166,11 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     if (!rowSelection) {
       const basicRenderItem = useCallback(
         (item: T, index: number) => {
-          const isFocused = focusedItemIndex === index;
-          const renderedItem = renderItem(item, index, undefined, isFocused);
-          return applyFocusStyling(renderedItem, index, isFocused);
+          const isActive = activeListItemIndex === index;
+          const renderedItem = renderItem(item, index, undefined, isActive);
+          return applyActiveStyling(renderedItem, index, isActive);
         },
-        [renderItem, focusedItemIndex, applyFocusStyling],
+        [renderItem, activeListItemIndex, applyActiveStyling],
       );
 
       return (
@@ -166,12 +182,12 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       );
     }
 
-    // Enhanced render function that provides checkbox and focus state to user's renderItem
+    // Enhanced render function that provides checkbox and active state to user's renderItem
     const wrappedRenderItem = useCallback(
       (item: T, index: number) => {
         const itemKey = getItemKey(item, index);
         const isSelected = selectedKeysSet.has(itemKey);
-        const isFocused = focusedItemIndex === index;
+        const isActive = activeListItemIndex === index;
         const checkboxProps = getCheckboxProps?.(item) || {};
 
         const checkbox = (
@@ -180,20 +196,20 @@ const withCustomProps = (WrappedComponent: typeof List) => {
             onChange={(e) => handleCheckboxChange(itemKey, e.target.checked)}
             {...checkboxProps}
             aria-label={`Select item ${itemKey}`}
-            className={enableKeyboardShortcuts ? "ml-2" : undefined} // focused rows need a bit of padding to the left or it will be too close to edge
+            className={enableKeyboardShortcuts ? "ml-2" : undefined} // active rows need a bit of padding to the left or it will be too close to edge
           />
         );
 
-        const renderedItem = renderItem(item, index, checkbox, isFocused);
-        return applyFocusStyling(renderedItem, index, isFocused);
+        const renderedItem = renderItem(item, index, checkbox, isActive);
+        return applyActiveStyling(renderedItem, index, isActive);
       },
       [
         renderItem,
         selectedKeysSet,
         getCheckboxProps,
         handleCheckboxChange,
-        focusedItemIndex,
-        applyFocusStyling,
+        activeListItemIndex,
+        applyActiveStyling,
         enableKeyboardShortcuts,
       ],
     );
@@ -215,11 +231,12 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  * Enhanced List component that adds row selection and keyboard navigation to Ant Design's List.
  *
  * Features:
- * - Keyboard navigation: j (down), k (up), space (toggle selection), escape (clear focus)
- * - Automatic scroll-into-view for focused items (uses data-listitem attribute)
- * - Automatic focus styling with `var(--ant-color-primary-bg)` background color
- * - Focus state provided to renderItem for additional custom styling
- * - Optional row selection with checkboxes
+ * - Keyboard navigation: j (down), k (up), space (toggle selection), escape (clear active)
+ * - Automatic scroll-into-view for active items (uses data-listitem attribute)
+ * - Automatic active item styling with `var(--ant-color-primary-bg)` background color
+ * - Active state provided to renderItem for additional custom styling
+ * - Optional item selection with checkboxes
+ * - onActiveItemChange callback to track currently active item
  *
  * Everything is automatic - keyboard shortcuts, scroll, styling, and data attributes
  * are all handled internally. Just provide your data and renderItem!
@@ -236,22 +253,22 @@ const withCustomProps = (WrappedComponent: typeof List) => {
  * />
  *
  * @example
- * // List with custom focus styling (in addition to automatic background)
+ * // List with custom active item styling (in addition to automatic background)
  * <CustomList
  *   dataSource={items}
- *   renderItem={(item, index, checkbox, focused) => (
- *     <List.Item className={focused ? 'custom-focus-class' : ''}>
+ *   renderItem={(item, index, checkbox, isActive) => (
+ *     <List.Item className={isActive ? 'custom-active-class' : ''}>
  *       {item.title}
  *     </List.Item>
  *   )}
  * />
  *
  * @example
- * // List with row selection and keyboard navigation
+ * // List with item selection and keyboard navigation
  * <CustomList
  *   dataSource={items}
- *   rowSelection={{
- *     selectedRowKeys: selected,
+ *   itemSelection={{
+ *     selectedItemKeys: selected,
  *     onChange: handleChange,
  *   }}
  *   renderItem={(item, index, checkbox) => (
