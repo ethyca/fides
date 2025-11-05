@@ -51,6 +51,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed race condition causing gdprApplies to flip during TCF initialization [#6895](https://github.com/ethyca/fides/pull/6895)
 - Fixed handling of really long values in the new request manager [#6917](https://github.com/ethyca/fides/pull/6917)
 - Fixed Filter component bug that caused values to clear when searching through available filters [#6914](https://github.com/ethyca/fides/pull/6914)
+- Fixed a visual issue with the integrations detail page in smaller screens [#6925](https://github.com/ethyca/fides/pull/6925)
 
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
