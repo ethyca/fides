@@ -116,8 +116,8 @@ const ActionCenterFields: NextPage = () => {
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
-    (DatastoreStagedResourceAPIResponse & { itemKey: React.Key }) | null
-  >(null);
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -156,7 +156,7 @@ const ActionCenterFields: NextPage = () => {
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >({ activeListItem, enableKeyboardShortcuts: true });
 
-  const handleNavigate = async (urn: string) => {
+  const handleNavigate = async (urn: string | undefined) => {
     setDetailsUrn(urn);
   };
 
@@ -223,13 +223,6 @@ const ActionCenterFields: NextPage = () => {
     search.searchQuery,
     dataCategory,
   ]);
-
-  // Update drawer content when focused item changes while drawer is open
-  useEffect(() => {
-    if (detailsUrn && activeListItem && activeListItem.urn !== detailsUrn) {
-      setDetailsUrn(activeListItem.urn);
-    }
-  }, [activeListItem, detailsUrn]);
 
   // Set up keyboard shortcuts for field actions
   useFieldActionHotkeys(
@@ -396,11 +389,14 @@ const ActionCenterFields: NextPage = () => {
                       ...item,
                       itemKey: item.urn,
                     });
+                    if (detailsUrn && item.urn !== detailsUrn) {
+                      setDetailsUrn(item.urn);
+                    }
                   } else {
-                    setActiveListItem(null);
+                    setActiveListItem(undefined);
                   }
                 },
-                [],
+                [detailsUrn],
               )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({

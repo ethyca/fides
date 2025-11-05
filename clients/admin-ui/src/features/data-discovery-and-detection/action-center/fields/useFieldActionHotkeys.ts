@@ -39,10 +39,10 @@ type ActiveListItem =
  * @param isDrawerOpen - Whether the details drawer is currently open
  */
 export const useFieldActionHotkeys = (
-  activeListItem: ActiveListItem,
+  activeListItem: ActiveListItem | undefined,
   fieldActions: ReturnType<typeof useFieldActions>,
   updateSelectedListItem: (itemKey: React.Key, selected: boolean) => void,
-  onNavigate: (urn: string) => void,
+  onNavigate: (urn: string | undefined) => void,
   messageApi: ReturnType<typeof Message.useMessage>[0],
   isDrawerOpen: boolean,
 ) => {
@@ -106,9 +106,6 @@ export const useFieldActionHotkeys = (
       );
 
     if (isActionAvailable) {
-      // Mark the item as selected before performing the action, as the action
-      // will be performed on selected items
-      updateSelectedListItem(activeListItem.itemKey, true);
       fieldActions[actionType]([activeListItem.urn]);
     } else {
       messageApi.warning(ACTIONS_DISABLED_MESSAGE[actionType]);
@@ -140,13 +137,15 @@ export const useFieldActionHotkeys = (
   );
 
   useHotkeys(
-    FIELD_ACTION_HOTKEYS.OPEN_DRAWER,
+    FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER,
     () => {
-      if (activeListItem) {
+      if (activeListItem && isDrawerOpen) {
+        onNavigate(undefined);
+      } else if (activeListItem && !isDrawerOpen) {
         onNavigate(activeListItem.urn);
       }
     },
-    [activeListItem, onNavigate],
+    [activeListItem, onNavigate, isDrawerOpen],
   );
 
   useHotkeys(
