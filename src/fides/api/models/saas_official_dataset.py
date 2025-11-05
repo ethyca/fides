@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
+
 from fides.api.db.base_class import Base
 
 
@@ -12,6 +13,7 @@ class SaasOfficialDataset(Base):
     Fides for each SaaS connector type. It's used as a baseline for
     detecting customer modifications to datasets.
     """
+
     @declared_attr
     def __tablename__(self) -> str:
         return "saas_official_dataset"
