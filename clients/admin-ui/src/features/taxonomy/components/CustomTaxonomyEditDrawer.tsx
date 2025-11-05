@@ -48,35 +48,33 @@ const CustomTaxonomyEditDrawer = ({
   };
 
   return (
-    <>
-      <DetailsDrawer
-        title={`Edit ${taxonomy?.name}`}
-        {...props}
-        itemKey=""
-        open={!!taxonomy}
-        onClose={onClose}
-        destroyOnHidden
-        footer={
-          <Flex justify="space-between" className="w-full">
-            <Button onClick={onDelete}>Delete</Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              form={FORM_ID}
-              loading={isUpdating}
-            >
-              Save
-            </Button>
-          </Flex>
-        }
-      >
-        <CustomTaxonomyDetails
-          taxonomy={taxonomy}
-          onSubmit={handleUpdate}
-          formId={FORM_ID}
-        />
-      </DetailsDrawer>
-    </>
+    <DetailsDrawer
+      title={`Edit ${taxonomy?.name}`}
+      {...props}
+      itemKey=""
+      open={!!taxonomy}
+      onClose={onClose}
+      destroyOnHidden
+      footer={
+        <Flex justify="space-between" className="w-full">
+          <Button onClick={onDelete}>Delete</Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            form={FORM_ID}
+            loading={isUpdating}
+          >
+            Save
+          </Button>
+        </Flex>
+      }
+    >
+      <CustomTaxonomyDetails
+        taxonomy={taxonomy}
+        onSubmit={handleUpdate}
+        formId={FORM_ID}
+      />
+    </DetailsDrawer>
   );
 };
 
