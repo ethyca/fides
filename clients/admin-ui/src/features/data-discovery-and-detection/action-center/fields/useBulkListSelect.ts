@@ -2,7 +2,7 @@ import _ from "lodash";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-const BULK_LIST_HOTKEYS = {
+export const BULK_LIST_HOTKEYS = {
   SELECT_ALL: "h",
   DESELECT_ALL: "l",
   TOGGLE_SELECTION: "space",

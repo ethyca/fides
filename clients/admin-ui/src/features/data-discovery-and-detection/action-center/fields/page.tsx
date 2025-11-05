@@ -16,6 +16,7 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Key, useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -39,6 +40,7 @@ import {
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
 } from "./FieldActions.const";
+import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
   useGetMonitorFieldsQuery,
   useLazyGetAllowedActionsQuery,
@@ -72,6 +74,7 @@ const ActionCenterFields: NextPage = () => {
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
+  const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -175,6 +178,13 @@ const ActionCenterFields: NextPage = () => {
       });
     }
   };
+
+  useHotkeys(
+    "?",
+    () => setHotkeysHelperModalOpen(!hotkeysHelperModalOpen),
+    { useKey: true },
+    [hotkeysHelperModalOpen],
+  );
 
   const availableActions = isBulkSelect
     ? allowedActionsResult?.allowed_actions
@@ -282,11 +292,21 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex justify="space-between">
-              <DebouncedSearchInput
-                value={search.searchQuery}
-                onChange={search.updateSearch}
-                placeholder="Search"
-              />
+              <Flex gap="small">
+                <DebouncedSearchInput
+                  value={search.searchQuery}
+                  onChange={search.updateSearch}
+                  placeholder="Search"
+                />
+                <Tooltip title="Show keyboard shortcuts">
+                  <Button
+                    type="text"
+                    aria-label="Show keyboard shortcuts"
+                    icon={<Icons.Help />}
+                    onClick={() => setHotkeysHelperModalOpen(true)}
+                  />
+                </Tooltip>
+              </Flex>
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
@@ -489,6 +509,10 @@ const ActionCenterFields: NextPage = () => {
         onClose={() => setDetailsUrn(undefined)}
         resource={resource}
         fieldActions={fieldActions}
+      />
+      <HotkeysHelperModal
+        open={hotkeysHelperModalOpen}
+        onCancel={() => setHotkeysHelperModalOpen(false)}
       />
       {modalContext}
       {messageContext}
