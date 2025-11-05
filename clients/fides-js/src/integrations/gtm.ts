@@ -94,7 +94,7 @@ export const gtm = (options?: GtmOptions) => {
     },
     FidesInitialized: {
       forwardEvent: true,
-      dispatchSynthetic: false,
+      dispatchSynthetic: true,
     },
     FidesConsentLoaded: {
       forwardEvent: true,
@@ -102,7 +102,7 @@ export const gtm = (options?: GtmOptions) => {
     },
     FidesReady: {
       forwardEvent: true,
-      dispatchSynthetic: false,
+      dispatchSynthetic: true,
     },
     FidesUpdating: {
       forwardEvent: true,
