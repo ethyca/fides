@@ -44,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed race condition causing gdprApplies to flip during TCF initialization [#6895](https://github.com/ethyca/fides/pull/6895)
 - Fixed Filter component bug that caused values to clear when searching through available filters [#6914](https://github.com/ethyca/fides/pull/6914)
+- Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
 
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
