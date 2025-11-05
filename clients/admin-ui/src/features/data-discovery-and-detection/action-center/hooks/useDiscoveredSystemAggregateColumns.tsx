@@ -209,8 +209,8 @@ export const useDiscoveredSystemAggregateColumns = ({
                     label: isoEntry
                       ? formatIsoLocation({ isoEntry })
                       : (PRIVACY_NOTICE_REGION_RECORD[
-                        location as PrivacyNoticeRegion
-                      ] ?? location) /* fallback on internal list for now */,
+                          location as PrivacyNoticeRegion
+                        ] ?? location) /* fallback on internal list for now */,
                     key: location,
                   };
                 }) ?? []
