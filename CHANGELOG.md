@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added keyboard shortcuts for bulk select/deselect in Action Center fields [#6911](https://github.com/ethyca/fides/pull/6911)
 - Added endpoint to bulk cancel requests [#6916](https://github.com/ethyca/fides/pull/6916)
 - Added a memory dump output to the logs when the memory watchdog hits the 90% memory limit [#6916](https://github.com/ethyca/fides/pull/6916)
+- Added UI for configuring custom taxonomies [#6921](https://github.com/ethyca/fides/pull/6921)
 
 ### Changed
 - Restricted monitor tree selection to only classifiable resource types [#6900](https://github.com/ethyca/fides/pull/6900)
