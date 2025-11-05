@@ -20,7 +20,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useRef, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -36,11 +36,10 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
-import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import { DetailsDrawer } from "./DetailsDrawer";
 import {
-  AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
   DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
@@ -55,7 +54,6 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
-  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
@@ -123,6 +121,9 @@ const ActionCenterFields: NextPage = () => {
     },
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
+  const [activeListItem, setActiveListItem] = useState<
+    (DatastoreStagedResourceAPIResponse & { itemKey: React.Key }) | null
+  >(null);
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -159,7 +160,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
-  >();
+  >({ activeListItem, enableKeyboardShortcuts: true });
 
   const handleNavigate = async (urn: string) => {
     setDetailsUrn(urn);
@@ -184,8 +185,8 @@ const ActionCenterFields: NextPage = () => {
   const availableActions = isBulkSelect
     ? allowedActionsResult?.allowed_actions
     : getAvailableActions(
-        selectedListItems.flatMap((field) =>
-          field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
+        selectedListItems.flatMap(({ diff_status }) =>
+          diff_status ? [diff_status] : [],
         ),
       );
   const responseCount = fieldsDataResponse?.total ?? 0;
@@ -262,7 +263,7 @@ const ActionCenterFields: NextPage = () => {
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
-          <Flex vertical gap="middle" className="h-full overflow-hidden">
+          <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2}>Monitor results</Title>
               <Flex align="center">
@@ -375,8 +376,23 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="h-full overflow-scroll"
+              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
               loading={isFetching}
+              enableKeyboardShortcuts
+              onActiveItemChange={useCallback(
+                // useCallback prevents infinite re-renders
+                (item: DatastoreStagedResourceAPIResponse | null) => {
+                  if (item?.urn) {
+                    setActiveListItem({
+                      ...item,
+                      itemKey: item.urn,
+                    });
+                  } else {
+                    setActiveListItem(null);
+                  }
+                },
+                [],
+              )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
@@ -390,11 +406,9 @@ const ActionCenterFields: NextPage = () => {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
-                    ? ![
-                        ...AVAILABLE_ACTIONS[
-                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                        ],
-                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                        (status) => status === props.diff_status,
+                      )
                     : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
@@ -408,11 +422,9 @@ const ActionCenterFields: NextPage = () => {
                             onClick={() => fieldActions[action]([props.urn])}
                             disabled={
                               props?.diff_status
-                                ? ![
-                                    ...AVAILABLE_ACTIONS[
-                                      DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                                    ],
-                                  ].includes(action)
+                                ? !ACTION_ALLOWED_STATUSES[action].some(
+                                    (status) => status === props.diff_status,
+                                  )
                                 : true
                             }
                             style={{
@@ -463,12 +475,10 @@ const ActionCenterFields: NextPage = () => {
           label: FIELD_ACTION_LABEL[action],
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
-            ? ![
-                ...AVAILABLE_ACTIONS[
-                  DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                ],
-              ].includes(action)
-            : false,
+            ? !ACTION_ALLOWED_STATUSES[action].some(
+                (status) => status === resource.diff_status,
+              )
+            : true,
         }))}
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
@@ -520,11 +530,9 @@ const ActionCenterFields: NextPage = () => {
                   autoFocus={false}
                   disabled={
                     resource?.diff_status
-                      ? ![
-                          ...AVAILABLE_ACTIONS[
-                            DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                          ],
-                        ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                      ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                          (status) => status === resource.diff_status,
+                        )
                       : true
                   }
                   onChange={(values) =>
