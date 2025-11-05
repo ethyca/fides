@@ -10,26 +10,29 @@ import {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { Field } from "~/types/api";
+import { DiffStatus, Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
 import {
-  AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
   FIELD_ACTION_CONFIRMATION_MESSAGE,
   FIELD_ACTION_INTERMEDIATE,
   FIELD_ACTION_LABEL,
 } from "./FieldActions.const";
-import { ResourceStatusLabel } from "./MonitorFields.const";
 import {
   getActionErrorMessage,
   getActionModalProps,
   getActionSuccessMessage,
 } from "./utils";
 
-export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
-  const [init, ...availableActions] = statusList.map(
-    (status) => AVAILABLE_ACTIONS[status],
+export const getAvailableActions = (statusList: DiffStatus[]) => {
+  const [init, ...availableActions] = statusList.map((status) =>
+    Object.values(FieldActionType).flatMap((actionType) =>
+      ACTION_ALLOWED_STATUSES[actionType].some((s) => s === status)
+        ? [actionType]
+        : [],
+    ),
   );
 
   return availableActions.reduce<Readonly<Array<FieldActionType>>>(
