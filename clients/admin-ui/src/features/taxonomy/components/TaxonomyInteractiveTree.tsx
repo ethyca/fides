@@ -36,6 +36,7 @@ interface TaxonomyInteractiveTreeProps {
   draftNewItem: Partial<TaxonomyEntity> | null;
   lastCreatedItemKey: string | null;
   resetLastCreatedItemKey: () => void;
+  onRootItemClick: (() => void) | null;
   onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
   onCancelDraftItem: () => void;
@@ -50,6 +51,7 @@ const TaxonomyInteractiveTree = ({
   draftNewItem,
   lastCreatedItemKey,
   resetLastCreatedItemKey,
+  onRootItemClick,
   onTaxonomyItemClick,
   onAddButtonClick,
   onCancelDraftItem,
@@ -72,19 +74,26 @@ const TaxonomyInteractiveTree = ({
       id: TAXONOMY_ROOT_NODE_ID,
       position: { x: 0, y: 0 },
       data: {
+        // TODO: update this to use the taxonomy name if it exists
         label: taxonomyTypeToLabel(taxonomyType),
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
         },
         taxonomyType,
-        onTaxonomyItemClick: null,
+        onTaxonomyItemClick: onRootItemClick,
         onAddButtonClick,
         hasChildren: taxonomyItems.length !== 0,
         userCanAddLabels,
       },
       type: "taxonomyTreeNode",
     }),
-    [taxonomyType, taxonomyItems.length, onAddButtonClick, userCanAddLabels],
+    [
+      taxonomyType,
+      onRootItemClick,
+      onAddButtonClick,
+      taxonomyItems.length,
+      userCanAddLabels,
+    ],
   );
 
   const nodes: Node[] = [rootNode];
