@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added a duplicate group table with deterministic ids [#6881](https://github.com/ethyca/fides/pull/6881) https://github.com/ethyca/fides/labels/db-migration
 - Added replace mode for decoding context loggers to avoid decode errors with zip files[#6899](https://github.com/ethyca/fides/pull/6899/files)
+- Added keyboard shortcuts for bulk select/deselect in Action Center fields [#6911](https://github.com/ethyca/fides/pull/6911)
+- Added endpoint to bulk cancel requests [#6916](https://github.com/ethyca/fides/pull/6916)
+- Added a memory dump output to the logs when the memory watchdog hits the 90% memory limit [#6916](https://github.com/ethyca/fides/pull/6916)
 - Added duplicate DSR checking to request runner [#6860](https://github.com/ethyca/fides/pull/6860/)
 
 ### Changed
@@ -31,6 +34,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated filter modal in new privacy request screen to store filters as query params in url [#6818](https://github.com/ethyca/fides/pull/6818)
 - Improve Privacy Center FidesJS performance and reliability by caching bundles in memory and adding `stale-while-revalidate` and `stale-if-error` cache headers for improved CDN performance and origin failure resilience [#6689](https://github.com/ethyca/fides/pull/6689)
 - Limit action center tree expansion to 4 levels (Database/Schema/Table/Field) by treating fields as leaf nodes [#6907](https://github.com/ethyca/fides/pull/6907)
+- Allowing pending (new) requests to be resubmitted [#6916](https://github.com/ethyca/fides/pull/6916)
+- Allowing dynamic Celery environment variables to be loaded if they match the `FIDES__CELERY__` prefix [#6916](https://github.com/ethyca/fides/pull/6916)
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
@@ -39,6 +44,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed race condition causing gdprApplies to flip during TCF initialization [#6895](https://github.com/ethyca/fides/pull/6895)
+- Fixed handling of really long values in the new request manager [#6917](https://github.com/ethyca/fides/pull/6917)
+- Fixed Filter component bug that caused values to clear when searching through available filters [#6914](https://github.com/ethyca/fides/pull/6914)
 
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
