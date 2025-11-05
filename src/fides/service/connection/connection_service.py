@@ -627,6 +627,59 @@ class ConnectionService:
 
         return connection_config
 
+    def _handle_official_dataset_for_saas_connector(
+        self,
+        connection_config: ConnectionConfig,
+        template: ConnectorTemplate,
+        dataset_from_template: Dict,
+    ) -> Dict:
+        """
+        Handles the creation or update of official dataset records for SaaS connectors.
+        Returns the dataset that should be used for the DatasetConfig creation.
+
+        Args:
+            connection_config: The connection configuration
+            template: The connector template
+            dataset_from_template: The dataset with placeholders replaced
+
+        Returns:
+            The dataset to use for DatasetConfig creation (potentially updated from official dataset)
+        """
+        connector_type = None
+        if (
+            connection_config.connection_type == ConnectionType.saas
+            and connection_config.saas_config
+        ):
+            connector_type = connection_config.saas_config.get("type")
+
+        if not connector_type:
+            return dataset_from_template
+
+        connector_template = ConnectorRegistry.get_connector_template(connector_type)
+        if not (connector_template and not connector_template.is_custom):
+            return dataset_from_template
+
+        official_dataset = SaasOfficialDataset.get_by(
+            db=self.db, field="connection_type", value=connector_type
+        )
+        # Store the original template dataset (with placeholders) instead of the modified version
+        original_dataset_json = load_dataset_from_string(template.dataset)
+
+        if official_dataset:
+            # TODO: implement three part diff and merge customer changes before updating the official dataset record
+            official_dataset.dataset_json = original_dataset_json
+            official_dataset.save(db=self.db)
+        else:
+            # Create new record since its the first time we're seeing this connector type
+            SaasOfficialDataset.create(
+                db=self.db,
+                data={
+                    "connection_type": connector_type,
+                    "dataset_json": original_dataset_json,
+                },
+            )
+        return dataset_from_template
+
     def upsert_dataset_config_from_template(
         self,
         connection_config: ConnectionConfig,
@@ -639,46 +692,20 @@ class ConnectionService:
         If the `DatasetConfig` already exists in the db,
         then the existing record is updated.
         """
-        # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
-        # the user has chosen
         dataset_from_template: Dict = replace_dataset_placeholders(
             template.dataset, "<instance_fides_key>", template_values.instance_key
         )
+
+        # Handle official dataset creation/update and get the dataset to use
+        final_dataset = self._handle_official_dataset_for_saas_connector(
+            connection_config, template, dataset_from_template
+        )
+
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": template_values.instance_key,
-            "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
+            "dataset": final_dataset,  # Use the potentially updated dataset from official dataset
         }
-
-        connector_type = None
-        if (
-            connection_config.connection_type == ConnectionType.saas
-            and connection_config.saas_config
-        ):
-            connector_type = connection_config.saas_config.get("type")
-        if connector_type:
-            connector_template = ConnectorRegistry.get_connector_template(
-                connector_type
-            )
-            if connector_template and not connector_template.is_custom:
-                official_dataset = SaasOfficialDataset.get_by(
-                    db=self.db, field="connection_type", value=connector_type
-                )
-                # Store the original template dataset (with placeholders) instead of the modified version
-                original_dataset_json = load_dataset_from_string(template.dataset)
-                if official_dataset:
-                    # TODO: implement three part diff and merge customer changes before updating the official dataset record
-                    official_dataset.dataset_json = original_dataset_json
-                    official_dataset.save(db=self.db)
-                else:
-                    # Create new record since its the first time we're seeing this connector type
-                    SaasOfficialDataset.create(
-                        db=self.db,
-                        data={
-                            "connection_type": connector_type,
-                            "dataset_json": original_dataset_json,
-                        },
-                    )
 
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
