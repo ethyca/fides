@@ -6,6 +6,7 @@ import {
   AntList as List,
   AntParagraph as Paragraph,
   AntTabs as Tabs,
+  AntTabsProps as TabsProps,
   Icons,
   SparkleIcon,
 } from "fidesui";
@@ -26,22 +27,26 @@ interface ResourceDetailsDrawerProps extends DetailsDrawerProps {
   fieldActions: ReturnType<typeof useFieldActions>;
 }
 
+const renderTabBar: TabsProps["renderTabBar"] = (props, DefaultTabBar) => (
+  <DefaultTabBar {...props} className="!sticky top-0 z-[2] bg-white" />
+);
+
 export const ResourceDetailsDrawer = ({
   resource,
   fieldActions,
   ...drawerProps
 }: ResourceDetailsDrawerProps) => {
   return (
-    <DetailsDrawer {...drawerProps}>
+    <DetailsDrawer
+      {...drawerProps}
+      classNames={{
+        body: "!pt-0 !mt-[var(--ant-padding-lg)] max-h-full",
+      }}
+    >
       {resource ? (
         <Tabs
           defaultActiveKey="details"
-          tabBarStyle={{
-            position: "sticky",
-            top: "calc(0px - var(--ant-padding-lg)",
-            backgroundColor: palette.FIDESUI_FULL_WHITE,
-            zIndex: 2,
-          }}
+          renderTabBar={renderTabBar}
           items={[
             {
               key: "details",
@@ -157,7 +162,13 @@ export const ResourceDetailsDrawer = ({
                           ).toLocaleString(),
                           content: error.message,
                         }))
-                      : []
+                      : [...Array(20)].map(() => ({
+                          title: "test%est test ",
+                          description: "ttsjsjsjsj",
+                          content: [...Array(25)]
+                            .map(() => "error error, ")
+                            .join(),
+                        }))
                   }
                   renderItem={(item, index) => (
                     <List.Item key={index}>
