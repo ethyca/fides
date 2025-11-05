@@ -371,6 +371,12 @@ class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     reason: Optional[SafeStr] = None
 
 
+class CancelPrivacyRequests(ReviewPrivacyRequestIds):
+    """Pass in a list of privacy request ids and cancellation reason"""
+
+    reason: Optional[SafeStr] = None
+
+
 class BulkPostPrivacyRequests(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create of PrivacyRequest responses."""
 
