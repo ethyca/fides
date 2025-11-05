@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Allowing pending (new) requests to be resubmitted [#6916](https://github.com/ethyca/fides/pull/6916)
 - Allowing dynamic Celery environment variables to be loaded if they match the `FIDES__CELERY__` prefix [#6916](https://github.com/ethyca/fides/pull/6916)
 - PrivacyRequest cache now falls back to the db for identity and custom fields [#6896](https://github.com/ethyca/fides/pull/6896)
+- Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
