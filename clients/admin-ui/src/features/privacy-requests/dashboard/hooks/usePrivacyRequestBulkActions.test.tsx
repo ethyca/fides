@@ -1,10 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { AntMenuProps as MenuProps } from "fidesui";
 
-import { PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 import { BulkActionType } from "../../helpers";
-import { PrivacyRequestEntity } from "../../types";
 import { usePrivacyRequestBulkActions } from "./usePrivacyRequestBulkActions";
 
 const mockBulkApproveRequest = jest.fn();
@@ -41,22 +40,22 @@ const mockModalApi = {
 
 describe("usePrivacyRequestBulkActions", () => {
   // Shared test data
-  const pendingRequest1: PrivacyRequestEntity = {
+  const pendingRequest1: PrivacyRequestResponse = {
     id: "1",
     status: PrivacyRequestStatus.PENDING,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const pendingRequest2: PrivacyRequestEntity = {
+  const pendingRequest2: PrivacyRequestResponse = {
     id: "2",
     status: PrivacyRequestStatus.PENDING,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const completeRequest: PrivacyRequestEntity = {
+  const completeRequest: PrivacyRequestResponse = {
     id: "3",
     status: PrivacyRequestStatus.COMPLETE,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const mockRequests: PrivacyRequestEntity[] = [
+  const mockRequests: PrivacyRequestResponse[] = [
     pendingRequest1,
     completeRequest,
   ];
