@@ -49,10 +49,9 @@ def upgrade():
             name="stagedresourceerror_staged_resource_urn_fkey",
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint("id", name="stagedresourceerror_pkey"),
+        sa.PrimaryKeyConstraint("id"),
     )
 
-    # Create index on staged_resource_urn for efficient lookups
     op.create_index(
         "ix_stagedresourceerror_staged_resource_urn",
         "stagedresourceerror",
@@ -60,7 +59,6 @@ def upgrade():
         unique=False,
     )
 
-    # Create index on task_id for efficient filtering by task
     op.create_index(
         "ix_stagedresourceerror_task_id",
         "stagedresourceerror",
