@@ -29,6 +29,9 @@ from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.detection_discovery.staged_resource_error import (
+    StagedResourceError,
+)
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
@@ -573,6 +576,13 @@ class StagedResource(Base):
     # diff-related fields
     diff_status = Column(String, nullable=True, index=True)
 
+    errors: RelationshipProperty[List[StagedResourceError]] = relationship(
+        "StagedResourceError",
+        foreign_keys=[StagedResourceError.staged_resource_urn],
+        primaryjoin="StagedResource.urn == StagedResourceError.staged_resource_urn",
+        cascade="all, delete-orphan",
+    )
+
     ancestor_links: RelationshipProperty[List[StagedResourceAncestor]] = relationship(
         "StagedResourceAncestor",
         back_populates="descendant_staged_resource",
@@ -629,14 +639,6 @@ class StagedResource(Base):
         nullable=False,
         server_default="{}",
         default=dict,
-    )
-
-    # Error tracking for resources
-    errors = Column(
-        ARRAY(JSONB),
-        nullable=False,
-        server_default="{}",
-        default=list,
     )
 
     data_uses = Column(
