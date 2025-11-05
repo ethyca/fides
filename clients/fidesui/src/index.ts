@@ -116,9 +116,9 @@ export type {
 } from "./hoc/CustomList";
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
-export type { MessageInstance as AntMessageInstance } from "antd/lib/message/interface";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
+export type { MessageInstance as AntMessageInstance } from "antd/lib/message/interface";
 
 // Export utils
 export * from "./components/data-display/filter.utils";
