@@ -416,8 +416,7 @@ class DuplicateDetectionService:
         ]
         if len(actioned_in_group) > 0:
             message = f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {[duplicate.id for duplicate in actioned_in_group]}."
-            logger.debug(message)
-            self.add_error_execution_log(request, message)
+            self.mark_as_duplicate(request, message)
             return True
         # Check against verified identity rules.
         return self.verified_identity_cases(request, canonical_requests)
