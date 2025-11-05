@@ -48,15 +48,18 @@ const fidesEvents: Record<
   },
 };
 const fidesEventsArray = Object.entries(fidesEvents);
+const toEventName = ([eventName]: [string, any]) => eventName;
 
-const eventsThatAreForwarded = fidesEventsArray.filter(
-  ([, { forwardEvent }]) => forwardEvent,
-);
-const eventsThatAreNotForwarded = fidesEventsArray.filter(
-  ([, { forwardEvent }]) => !forwardEvent,
-);
+const eventsThatAreForwarded = fidesEventsArray
+  .filter(([, { forwardEvent }]) => forwardEvent)
+  .map(toEventName);
+const eventsThatAreNotForwarded = fidesEventsArray
+  .filter(([, { forwardEvent }]) => !forwardEvent)
+  .map(toEventName);
 const eventsThatAreSyntheticallyDispatchedIfInitializationMissed =
-  fidesEventsArray.filter(([, { dispatchSynthetic }]) => dispatchSynthetic);
+  fidesEventsArray
+    .filter(([, { dispatchSynthetic }]) => dispatchSynthetic)
+    .map(toEventName);
 
 describe("gtm", () => {
   afterEach(() => {
@@ -94,31 +97,30 @@ describe("gtm", () => {
       },
     );
 
-    describe.each(eventsThatAreSyntheticallyDispatchedIfInitializationMissed)(
-      "for synthetic event %s",
-      (eventName) => {
-        beforeEach(() => {
-          window.Fides = {} as FidesGlobal;
-          window.Fides.initialized = true;
-        });
+    describe("synthetic initialization events", () => {
+      beforeEach(() => {
+        window.Fides = {} as FidesGlobal;
+        window.Fides.initialized = true;
+      });
 
-        test("that fides fires the event if it was already initialized when gtm was called", () => {
-          window.Fides.initialized = true;
+      test("that fides fires the event if it was already initialized when gtm was called", () => {
+        window.Fides.initialized = true;
 
-          gtm();
+        gtm();
 
-          expect(
-            (window.dataLayer ?? []).filter(
-              (event) => event.event === eventName,
-            ).length,
-          ).toBe(1);
-        });
+        expect(
+          (window.dataLayer ?? []).filter((event) =>
+            eventsThatAreSyntheticallyDispatchedIfInitializationMissed.includes(
+              event.event,
+            ),
+          ).length,
+        ).toBe(2);
+      });
 
-        afterEach(() => {
-          window.Fides = undefined as unknown as FidesGlobal;
-        });
-      },
-    );
+      afterEach(() => {
+        window.Fides = undefined as unknown as FidesGlobal;
+      });
+    });
   });
 
   test("that fides transforms consent values to strings when asStringValues is true", () => {
