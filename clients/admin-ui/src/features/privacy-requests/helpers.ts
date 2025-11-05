@@ -1,6 +1,4 @@
-import { PrivacyRequestStatus } from "~/types/api";
-
-import { PrivacyRequestEntity } from "./types";
+import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 /**
  * Enum for bulk actions that can be performed on privacy requests
@@ -43,7 +41,7 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
  * based on its current status
  */
 export const getAvailableActionsForRequest = (
-  request: PrivacyRequestEntity,
+  request: PrivacyRequestResponse,
 ): readonly BulkActionType[] => {
   return AVAILABLE_ACTIONS_BY_STATUS[request.status];
 };
@@ -53,7 +51,7 @@ export const getAvailableActionsForRequest = (
  */
 export const isActionSupportedByRequests = (
   action: BulkActionType,
-  requests: PrivacyRequestEntity[],
+  requests: PrivacyRequestResponse[],
 ): boolean => {
   return requests.some((request) =>
     getAvailableActionsForRequest(request).includes(action),
