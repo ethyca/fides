@@ -43,9 +43,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
-from fides.api.service.privacy_request.duplication_detection import (
-    DuplicateDetectionService,
-)
+from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -72,7 +70,6 @@ class PrivacyRequestService:
         self.db = db
         self.config_proxy = config_proxy
         self.messaging_service = messaging_service
-        self.duplicate_detection_service = DuplicateDetectionService(db)
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
         privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
@@ -376,19 +373,8 @@ class PrivacyRequestService:
                 authenticated,
             )
 
-            if self.duplicate_detection_service.is_enabled() and not isinstance(
-                privacy_request_data, PrivacyRequestResubmit
-            ):
-                logger.info(
-                    "Duplicate detection is enabled. Checking if privacy request is a duplicate."
-                )
-                if self.duplicate_detection_service.is_duplicate_request(
-                    privacy_request
-                ):
-                    logger.info("Terminating privacy request: request is a duplicate.")
-                    privacy_request.update(
-                        self.db, data={"status": PrivacyRequestStatus.duplicate}
-                    )
+            if not isinstance(privacy_request_data, PrivacyRequestResubmit):
+                check_for_duplicates(db=self.db, privacy_request=privacy_request)
 
             return privacy_request
 
@@ -979,7 +965,9 @@ def handle_approval(
     db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest
 ) -> None:
     """Evaluate manual approval and handle processing or pre-approval webhooks."""
-
+    check_for_duplicates(db=db, privacy_request=privacy_request)
+    if privacy_request.status == PrivacyRequestStatus.duplicate:
+        return
     if _manual_approval_required(config_proxy, privacy_request):
         _trigger_pre_approval_webhooks(db, privacy_request)
     else:

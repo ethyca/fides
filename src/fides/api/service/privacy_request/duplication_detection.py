@@ -162,7 +162,9 @@ class DuplicateDetectionService:
         translator = SQLConditionTranslator(self.db)
         query = translator.generate_query_from_condition(condition)
 
-        query = query.filter(PrivacyRequest.id != current_request.id)
+        query = query.filter(PrivacyRequest.id != current_request.id).filter(
+            PrivacyRequest.deleted_at.is_(None)
+        )
         return query.all()
 
     def generate_dedup_key(self, request: PrivacyRequest) -> str:
@@ -205,6 +207,14 @@ class DuplicateDetectionService:
         except Exception as e:
             logger.error(f"Failed to update duplicate request group ids: {e}")
             raise e
+
+    def mark_as_duplicate(self, request: PrivacyRequest, message: str) -> None:
+        """
+        Mark a request as a duplicate.
+        """
+        request.update(self.db, data={"status": PrivacyRequestStatus.duplicate})
+        logger.debug(message)
+        self.add_error_execution_log(request, message)
 
     def add_error_execution_log(self, request: PrivacyRequest, message: str) -> None:
         request.add_error_execution_log(
@@ -257,8 +267,7 @@ class DuplicateDetectionService:
         if not request.identity_verified_at:
             if len(verified_in_group) > 0:
                 message = f"Request {request.id} is a duplicate: it is duplicating request(s) {[duplicate.id for duplicate in verified_in_group]}."
-                logger.debug(message)
-                self.add_error_execution_log(request, message)
+                self.mark_as_duplicate(request, message)
                 return True
 
             canonical_request = min(duplicates, key=lambda x: x.created_at)  # type: ignore [arg-type, return-value]
@@ -273,14 +282,16 @@ class DuplicateDetectionService:
                 return False
 
             message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
-            logger.debug(message)
-            self.add_error_execution_log(request, message)
+            self.mark_as_duplicate(request, message)
             return True
 
         # The request identity is verified.
         if not verified_in_group:
             message = f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
             logger.debug(message)
+            for duplicate in duplicates:
+                dup_message = f"Request {duplicate.id} is a duplicate: it is duplicating request(s) ['{request.id}']."
+                self.mark_as_duplicate(duplicate, dup_message)
             self.add_success_execution_log(request, message)
             return False
 
@@ -294,10 +305,12 @@ class DuplicateDetectionService:
             message = f"Request {request.id} is not a duplicate: it is the first request to be verified in the group."
             logger.debug(message)
             self.add_success_execution_log(request, message)
+            for duplicate in duplicates:
+                dup_message = f"Request {duplicate.id} is a duplicate: it is duplicating request(s) ['{request.id}']."
+                self.mark_as_duplicate(duplicate, dup_message)
             return False
         message = f"Request {request.id} is a duplicate: it is duplicating request(s) ['{canonical_request.id}']."
-        logger.debug(message)
-        self.add_error_execution_log(request, message)
+        self.mark_as_duplicate(request, message)
         return True
 
     # pylint: disable=too-many-return-statements
@@ -323,6 +336,11 @@ class DuplicateDetectionService:
         Returns:
             True if the request is a duplicate request, False otherwise
         """
+        if request.policy.get_action_type() == ActionType.consent:
+            message = f"Consent request {request.id} is not a duplicate."
+            logger.info(message)
+            self.add_success_execution_log(request, message)
+            return False
         duplicates = self.find_duplicate_privacy_requests(request)
         rule_version = generate_rule_version(
             DuplicateDetectionSettings(
@@ -335,7 +353,7 @@ class DuplicateDetectionService:
             dedup_key = self.generate_dedup_key(request)
         except ValueError as e:
             message = f"Request {request.id} is not a duplicate: {e}"
-            logger.debug(message)
+            logger.warning(message)
             self.add_success_execution_log(request, message)
             return False
 
@@ -350,6 +368,14 @@ class DuplicateDetectionService:
 
         self.update_duplicate_group_ids(request, duplicates, duplicate_group.id)  # type: ignore [arg-type]
 
+        if request.status in ACTIONED_REQUEST_STATUSES:
+            message = (
+                f"Request {request.id} is not a duplicate: it is an actioned request."
+            )
+            logger.debug(message)
+            self.add_success_execution_log(request, message)
+            return False
+
         # if this is the only request in the group, it is not a duplicate
         if len(duplicates) == 0:
             message = f"Request {request.id} is not a duplicate."
@@ -358,16 +384,14 @@ class DuplicateDetectionService:
             return False
 
         if request.status == PrivacyRequestStatus.duplicate:
-            message = f"Request {request.id} is a duplicate request that was requeued. This should not happen."
-            logger.warning(message)
-            self.add_error_execution_log(request, message)
             return True
 
-        # only compare to non-duplicate requests for the following cases
+        # only compare to non-duplicate/complete requests for the following cases
         canonical_requests = [
             duplicate
             for duplicate in duplicates
-            if duplicate.status != PrivacyRequestStatus.duplicate
+            if duplicate.status
+            not in [PrivacyRequestStatus.duplicate, PrivacyRequestStatus.complete]
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
@@ -384,8 +408,17 @@ class DuplicateDetectionService:
         ]
         if len(actioned_in_group) > 0:
             message = f"Request {request.id} is a duplicate: it is duplicating actioned request(s) {[duplicate.id for duplicate in actioned_in_group]}."
-            logger.debug(message)
-            self.add_error_execution_log(request, message)
+            self.mark_as_duplicate(request, message)
             return True
         # Check against verified identity rules.
         return self.verified_identity_cases(request, canonical_requests)
+
+
+def check_for_duplicates(db: Session, privacy_request: PrivacyRequest) -> None:
+    duplicate_detection_service = DuplicateDetectionService(db)
+    if duplicate_detection_service.is_enabled():
+        logger.info(
+            "Duplicate detection is enabled. Checking if privacy request is a duplicate."
+        )
+        if duplicate_detection_service.is_duplicate_request(privacy_request):
+            logger.info("Terminating privacy request: request is a duplicate.")
