@@ -41,10 +41,12 @@ import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 // include spaces to avoid collision with taxonomy fides_keys
 const ADD_NEW_ITEM_KEY = "add new item";
 
+const DEFAULT_TAXONOMY_TYPE = TaxonomyTypeEnum.DATA_CATEGORY;
+
 const TaxonomyPage: NextPage = () => {
   // taxonomyType now stores the fides_key string (e.g. "data_category")
   const [taxonomyType, setTaxonomyType] = useState<string>(
-    TaxonomyTypeEnum.DATA_CATEGORY,
+    DEFAULT_TAXONOMY_TYPE,
   );
 
   const isCustomTaxonomy = !Object.values(TaxonomyTypeEnum).includes(
@@ -284,6 +286,10 @@ const TaxonomyPage: NextPage = () => {
               : "Edit taxonomy"
           }
           onClose={() => setTaxonomyTypeToEdit(null)}
+          onDelete={() => {
+            setTaxonomyTypeToEdit(null);
+            setTaxonomyType(DEFAULT_TAXONOMY_TYPE);
+          }}
           taxonomy={taxonomyTypeToEdit}
         />
       )}

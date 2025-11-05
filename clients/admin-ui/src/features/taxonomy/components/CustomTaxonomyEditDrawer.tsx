@@ -20,12 +20,15 @@ import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 interface CustomTaxonomyEditDrawerProps
   extends Omit<DetailsDrawerProps, "itemKey"> {
   taxonomy?: TaxonomyResponse;
+  onDelete: () => void;
 }
 
 const FORM_ID = "custom-taxonomy-form";
 
 const CustomTaxonomyEditDrawer = ({
   taxonomy,
+  onClose,
+  onDelete,
   ...props
 }: CustomTaxonomyEditDrawerProps) => {
   const [messageApi, messageContext] = message.useMessage();
@@ -57,6 +60,7 @@ const CustomTaxonomyEditDrawer = ({
     }
     messageApi.success("Taxonomy deleted successfully");
     setDeleteModalIsOpen(false);
+    onDelete();
   };
 
   return (
