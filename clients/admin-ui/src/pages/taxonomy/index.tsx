@@ -278,7 +278,11 @@ const TaxonomyPage: NextPage = () => {
       )}
       {taxonomyTypeToEdit && (
         <CustomTaxonomyEditDrawer
-          title="Custom taxonomy edit"
+          title={
+            customTaxonomyLabel
+              ? `Edit ${customTaxonomyLabel}`
+              : "Edit taxonomy"
+          }
           onClose={() => setTaxonomyTypeToEdit(null)}
           taxonomy={taxonomyTypeToEdit}
         />
