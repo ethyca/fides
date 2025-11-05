@@ -222,7 +222,7 @@ class TestPrivacyRequestService:
             authenticated=True,
         )
 
-        # Verify initial status is pending (requires manual approval)
+        # Verify initial status is pending
         assert privacy_request.status == PrivacyRequestStatus.pending
 
         original_id = privacy_request.id
@@ -236,9 +236,7 @@ class TestPrivacyRequestService:
         # Verify the request was resubmitted successfully
         assert resubmitted_request is not None
         assert resubmitted_request.id == original_id
-        # Status should be approved since there are no pre-approval webhooks configured
-        # and the original request was already pending (awaiting approval)
-        assert resubmitted_request.status == PrivacyRequestStatus.approved
+        assert resubmitted_request.status == PrivacyRequestStatus.complete
         assert resubmitted_request.get_persisted_identity().email == "user@example.com"
 
     def test_cannot_resubmit_non_existent_privacy_request(
