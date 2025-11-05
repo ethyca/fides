@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.saas_official_dataset import SaasOfficialDataset
@@ -587,18 +588,9 @@ class TestConnectionService:
 class TestUpsertDatasetConfigFromTemplate:
     """Tests for upsert_dataset_config_from_template method, specifically the SaasOfficialDataset logic."""
 
-    def test_create_saas_official_dataset_new_record(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-    ):
-        """Test creating a new SaasOfficialDataset record when none exists."""
-        # Get a real mailchimp connector template
-        connector_template = ConnectorRegistry.get_connector_template("mailchimp")
-        assert connector_template is not None
-        assert not connector_template.is_custom
-
-        # Create a SaaS connection config for mailchimp
+    @pytest.fixture
+    def mailchimp_connection_config(self, db: Session):
+        """Fixture creating a mailchimp SaaS connection config for testing."""
         connection_config = ConnectionConfig.create(
             db=db,
             data={
@@ -614,9 +606,12 @@ class TestUpsertDatasetConfigFromTemplate:
                 "saas_config": {"type": "mailchimp"},
             },
         )
+        yield connection_config
 
-        # Create template values
-        template_values = SaasConnectionTemplateValues(
+    @pytest.fixture
+    def mailchimp_template_values(self):
+        """Fixture providing template values for mailchimp connections."""
+        return SaasConnectionTemplateValues(
             instance_key="test_mailchimp_instance",
             secrets={
                 "api_key": "test_key",
@@ -624,6 +619,19 @@ class TestUpsertDatasetConfigFromTemplate:
                 "username": "test_user",
             },
         )
+
+    def test_create_saas_official_dataset_new_record(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        mailchimp_connection_config,
+        mailchimp_template_values,
+    ):
+        """Test creating a new SaasOfficialDataset record when none exists."""
+        # Get a real mailchimp connector template
+        connector_template = ConnectorRegistry.get_connector_template("mailchimp")
+        assert connector_template is not None
+        assert not connector_template.is_custom
 
         # Ensure no existing SaasOfficialDataset record
         existing_dataset = SaasOfficialDataset.get_by(
@@ -633,13 +641,13 @@ class TestUpsertDatasetConfigFromTemplate:
 
         # Execute the method
         result = connection_service.upsert_dataset_config_from_template(
-            connection_config, connector_template, template_values
+            mailchimp_connection_config, connector_template, mailchimp_template_values
         )
 
         # Verify DatasetConfig was created
         assert result is not None
         assert isinstance(result, DatasetConfig)
-        assert result.connection_config_id == connection_config.id
+        assert result.connection_config_id == mailchimp_connection_config.id
         assert result.fides_key == "test_mailchimp_instance"
 
         # Verify SaasOfficialDataset was created
@@ -654,39 +662,14 @@ class TestUpsertDatasetConfigFromTemplate:
         self,
         connection_service: ConnectionService,
         db: Session,
+        mailchimp_connection_config,
+        mailchimp_template_values,
     ):
         """Test updating an existing SaasOfficialDataset record."""
         # Get a real mailchimp connector template
         connector_template = ConnectorRegistry.get_connector_template("mailchimp")
         assert connector_template is not None
         assert not connector_template.is_custom
-
-        # Create a SaaS connection config for mailchimp
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "key": "test_mailchimp_connection_2",
-                "name": "Test Mailchimp Connection 2",
-                "connection_type": ConnectionType.saas,
-                "access": AccessLevel.write,
-                "secrets": {
-                    "api_key": "test_key",
-                    "domain": "test_domain",
-                    "username": "test_user",
-                },
-                "saas_config": {"type": "mailchimp"},
-            },
-        )
-
-        # Create template values
-        template_values = SaasConnectionTemplateValues(
-            instance_key="test_mailchimp_instance_2",
-            secrets={
-                "api_key": "test_key",
-                "domain": "test_domain",
-                "username": "test_user",
-            },
-        )
 
         # Create existing SaasOfficialDataset record
         original_dataset_json = {
@@ -703,7 +686,7 @@ class TestUpsertDatasetConfigFromTemplate:
 
         # Execute the method
         result = connection_service.upsert_dataset_config_from_template(
-            connection_config, connector_template, template_values
+            mailchimp_connection_config, connector_template, mailchimp_template_values
         )
 
         # Verify DatasetConfig was created
@@ -760,9 +743,8 @@ class TestUpsertDatasetConfigFromTemplate:
     ):
         """Test that custom connectors do not create SaasOfficialDataset records."""
         # Create a custom connector template in the database
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
 
-        custom_template = CustomConnectorTemplate.create(
+        CustomConnectorTemplate.create(
             db=db,
             data={
                 "key": "test_custom_connector",
