@@ -3323,3 +3323,15 @@ dataset:
         data_categories: [system.operations]
       - name: created_by
         data_categories: [user.unique_id]
+  - name: saas_official_dataset
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: connection_type
+        data_categories: [system.operations]
+      - name: dataset_json
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
