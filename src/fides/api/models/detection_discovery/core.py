@@ -581,7 +581,6 @@ class StagedResource(Base):
         foreign_keys=[StagedResourceError.staged_resource_urn],
         primaryjoin="StagedResource.urn == StagedResourceError.staged_resource_urn",
         cascade="all, delete-orphan",
-        lazy="joined",
     )
 
     ancestor_links: RelationshipProperty[List[StagedResourceAncestor]] = relationship(
