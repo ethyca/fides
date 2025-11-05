@@ -302,6 +302,7 @@ const TaxonomyPage: NextPage = () => {
             setTaxonomyType(DEFAULT_TAXONOMY_TYPE);
           }}
           taxonomy={taxonomyTypeToEdit}
+          messageApi={messageApi}
         />
       )}
     </Layout>
