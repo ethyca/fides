@@ -298,11 +298,10 @@ const ActionCenterFields: NextPage = () => {
                   onChange={search.updateSearch}
                   placeholder="Search"
                 />
-                <Tooltip title="Show keyboard shortcuts">
+                <Tooltip title="Display keyboard shortcuts">
                   <Button
-                    type="text"
-                    aria-label="Show keyboard shortcuts"
-                    icon={<Icons.Help />}
+                    aria-label="Display keyboard shortcuts"
+                    icon={<Icons.Keyboard />}
                     onClick={() => setHotkeysHelperModalOpen(true)}
                   />
                 </Tooltip>
