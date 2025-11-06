@@ -655,19 +655,18 @@ class ConnectionService:
         if not connector_type:
             return dataset_from_template
 
-        connector_template = ConnectorRegistry.get_connector_template(connector_type)
-        if not (connector_template and not connector_template.is_custom):
+        if template.is_custom:
             return dataset_from_template
 
         official_dataset = SaasOfficialDataset.get_by(
             db=self.db, field="connection_type", value=connector_type
         )
         # Store the original template dataset (with placeholders) instead of the modified version
-        original_dataset_json = load_dataset_from_string(template.dataset)
+        new_official_dataset_json = load_dataset_from_string(template.dataset)
 
         if official_dataset:
             # TODO: implement three part diff and merge customer changes before updating the official dataset record
-            official_dataset.dataset_json = original_dataset_json
+            official_dataset.dataset_json = new_official_dataset_json
             official_dataset.save(db=self.db)
         else:
             # Create new record since its the first time we're seeing this connector type
@@ -675,7 +674,7 @@ class ConnectionService:
                 db=self.db,
                 data={
                     "connection_type": connector_type,
-                    "dataset_json": original_dataset_json,
+                    "dataset_json": new_official_dataset_json,
                 },
             )
         return dataset_from_template

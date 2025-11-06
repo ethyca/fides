@@ -1,5 +1,7 @@
 """Tests for ConnectionService including event auditing functionality."""
 
+from zipfile import ZipFile
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -25,9 +27,11 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 )
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    CustomConnectorTemplateLoader,
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
 class TestConnectionService:
@@ -740,20 +744,25 @@ class TestUpsertDatasetConfigFromTemplate:
         self,
         connection_service: ConnectionService,
         db: Session,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
     ):
         """Test that custom connectors do not create SaasOfficialDataset records."""
         # Create a custom connector template in the database
 
-        CustomConnectorTemplate.create(
-            db=db,
-            data={
-                "key": "test_custom_connector",
-                "name": "Test Custom Connector",
-                "config": '{"fides_key": "<instance_fides_key>", "name": "Test Custom", "type": "custom"}',
-                "dataset": '{"fides_key": "<instance_fides_key>", "name": "Test Dataset"}',
-            },
+        CustomConnectorTemplateLoader.save_template(
+            db,
+            ZipFile(
+                create_zip_file(
+                    {
+                        "config.yml": planet_express_config,
+                        "dataset.yml": planet_express_dataset,
+                        "icon.svg": planet_express_icon,
+                    }
+                )
+            ),
         )
-
         # Create a SaaS connection config that uses the custom connector
         connection_config = ConnectionConfig.create(
             db=db,
@@ -762,25 +771,18 @@ class TestUpsertDatasetConfigFromTemplate:
                 "name": "Test Custom SaaS Connection",
                 "connection_type": ConnectionType.saas,
                 "access": AccessLevel.write,
-                "secrets": {"domain": "test", "username": "test", "api_key": "test"},
-                "saas_config": {"type": "test_custom_connector"},
+                "secrets": {"domain": "test", "api_key": "test"},
+                "saas_config": {"type": "planet_express"},
             },
         )
 
         # Get the custom connector template from registry (it should be loaded)
-        connector_template = ConnectorRegistry.get_connector_template(
-            "test_custom_connector"
-        )
-        # Note: The custom template might not be available in the registry during tests
-        # so we'll use a real connector template for the method call
-        if connector_template is None:
-            connector_template = ConnectorRegistry.get_connector_template("mailchimp")
-            assert connector_template is not None
+        connector_template = ConnectorRegistry.get_connector_template("planet_express")
 
         # Create template values
         template_values = SaasConnectionTemplateValues(
             instance_key="test_custom_instance",
-            secrets={"domain": "test", "username": "test", "api_key": "test"},
+            secrets={"domain": "test", "api_key": "test"},
         )
 
         # Execute the method
@@ -835,47 +837,5 @@ class TestUpsertDatasetConfigFromTemplate:
         assert isinstance(result, DatasetConfig)
 
         # Verify no SaasOfficialDataset was created
-        all_datasets = db.query(SaasOfficialDataset).all()
-        assert len(all_datasets) == 0
-
-    def test_connector_template_not_found_no_official_dataset(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-    ):
-        """Test that when connector template is not found, no SaasOfficialDataset is created."""
-        # Create a SaaS connection config with a non-existent connector type
-        connection_config = ConnectionConfig.create(
-            db=db,
-            data={
-                "key": "test_nonexistent_connection",
-                "name": "Test Nonexistent Connection",
-                "connection_type": ConnectionType.saas,
-                "access": AccessLevel.write,
-                "secrets": {"api_key": "test_key"},
-                "saas_config": {"type": "nonexistent_connector"},
-            },
-        )
-
-        # Get a real connector template for the method call
-        connector_template = ConnectorRegistry.get_connector_template("mailchimp")
-        assert connector_template is not None
-
-        # Create template values
-        template_values = SaasConnectionTemplateValues(
-            instance_key="test_instance",
-            secrets={"api_key": "test_key"},
-        )
-
-        # Execute the method
-        result = connection_service.upsert_dataset_config_from_template(
-            connection_config, connector_template, template_values
-        )
-
-        # Verify DatasetConfig was created
-        assert result is not None
-        assert isinstance(result, DatasetConfig)
-
-        # Verify no SaasOfficialDataset was created (because connector type doesn't exist)
         all_datasets = db.query(SaasOfficialDataset).all()
         assert len(all_datasets) == 0
