@@ -38,8 +38,8 @@ const PrivacyNoticeSandboxRealData = () => {
     ConsentPreferenceResponse[] | null
   >(null);
 
-  // Error message state
-  const [errorMessage, setErrorMessage] = useState("");
+  // Error message state for experience fetching
+  const [experienceErrorMessage, setExperienceErrorMessage] = useState("");
 
   // RTK Query hooks
   const [fetchExperience, { isLoading: isLoadingExperience }] =
@@ -96,9 +96,9 @@ const PrivacyNoticeSandboxRealData = () => {
 
   // Handle fetching privacy experience
   const handleFetchExperience = useCallback(async () => {
-    setErrorMessage("");
+    setExperienceErrorMessage("");
     if (!region) {
-      setErrorMessage("Please enter a region");
+      setExperienceErrorMessage("Please enter a region");
       return;
     }
     try {
@@ -132,7 +132,7 @@ const PrivacyNoticeSandboxRealData = () => {
         }
       }
     } catch (error) {
-      setErrorMessage("Failed to fetch privacy experience");
+      setExperienceErrorMessage("Failed to fetch privacy experience");
     }
   }, [fetchExperience, region]);
 
@@ -179,8 +179,6 @@ const PrivacyNoticeSandboxRealData = () => {
 
   // Handle fetching current preferences
   const handleFetchCurrentPreferences = useCallback(async () => {
-    setErrorMessage("");
-
     try {
       const params: { "identity.email": string; notice_keys?: string[] } = {
         "identity.email": email,
@@ -206,7 +204,7 @@ const PrivacyNoticeSandboxRealData = () => {
       setCheckedKeys(finalKeys);
       setFetchedCheckedKeys(finalKeys);
     } catch (error) {
-      setErrorMessage("Failed to fetch current preferences");
+      // Error handling is done by RTK Query (isError, error props)
     }
   }, [
     email,
@@ -217,13 +215,32 @@ const PrivacyNoticeSandboxRealData = () => {
 
   return (
     <div className="mt-5 space-y-8">
+      {/* Info Banner */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <Typography.Text className="block text-sm text-blue-800">
+          This page makes real API calls to the Consent V3 API. Before using
+          this sandbox, ensure you have:
+        </Typography.Text>
+        <ul className="ml-6 mt-2 list-disc space-y-1 text-sm text-blue-800">
+          <li>An email identity definition configured in your system</li>
+          <li>
+            A privacy experience set up with at least one privacy notice in the
+            selected region
+          </li>
+        </ul>
+        <Typography.Paragraph className="mt-3 block text-sm text-blue-800">
+          If you don&apos;t want to make real API calls or set up a privacy
+          experience, go to the &quot;Simulated data&quot; tab.
+        </Typography.Paragraph>
+      </div>
+
       {/* Configuration Section */}
       <ExperienceConfigSection
         region={region}
         onRegionChange={setRegion}
         onFetchExperience={handleFetchExperience}
         isLoading={isLoadingExperience}
-        errorMessage={errorMessage}
+        errorMessage={experienceErrorMessage}
         privacyNotices={privacyNotices}
       />
 
