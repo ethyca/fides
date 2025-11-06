@@ -40,6 +40,7 @@ export const useMonitorFieldsFilters = () => {
   }, []); // Only run once on mount, or we could get in an infinite loop if all items are filtered out
 
   const resetToInitialState = () => {
+    console.log("resetToInitialState");
     const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
     setResourceStatus(defaultStatuses);
     setConfidenceBucket(null);
@@ -47,6 +48,7 @@ export const useMonitorFieldsFilters = () => {
   };
 
   const reset = () => {
+    console.log("reset");
     // Use empty array instead of null to indicate "no filters selected"
     // null is reserved for "not yet initialized"
     setResourceStatus([]);

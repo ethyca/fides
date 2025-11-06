@@ -97,6 +97,7 @@ export const ANT_POC_ROUTE = "/poc/ant-components";
 export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
+export const ASYNC_TREE_ROUTE = "/poc/async-tree";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 
 // Sandbox routes

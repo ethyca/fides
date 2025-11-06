@@ -355,6 +355,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.ERRORS_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Async Tree POC",
+        path: routes.ASYNC_TREE_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }
