@@ -72,7 +72,9 @@ export const ResourceDetailsDrawer = ({
                         key: "data-type",
                         label: "Data type",
                         children:
-                          resource.resource_type /** data type is not yet returned from the BE for the details query * */,
+                          "source_data_type" in resource
+                            ? resource.source_data_type
+                            : undefined,
                       },
                       {
                         key: "description",
@@ -87,14 +89,11 @@ export const ResourceDetailsDrawer = ({
                         variant="outlined"
                         mode="multiple"
                         maxTagCount="responsive"
-                        value={[
-                          ...(resource.classifications?.map(
-                            ({ label }) => label,
-                          ) ?? []),
-                          ...(resource.user_assigned_data_categories?.map(
-                            (value) => value,
-                          ) ?? []),
-                        ]}
+                        value={
+                          "preferred_data_categories" in resource
+                            ? resource.preferred_data_categories
+                            : []
+                        }
                         autoFocus={false}
                         disabled={
                           resource?.diff_status
