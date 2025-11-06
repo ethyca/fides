@@ -9,9 +9,8 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
       <Typography.Paragraph>
         If you enable duplicate detection, Fides will automatically detect and
         label likely duplicate privacy requests. Any request submitted by the
-        same email address (or your configured identity field) within the
-        configured period of time is automatically labeled with the status of
-        &quot;duplicate&quot;.
+        same email address within the configured period of time is automatically
+        labeled with the status of &quot;duplicate&quot;.
       </Typography.Paragraph>
     </div>
   );
