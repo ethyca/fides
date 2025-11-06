@@ -5,7 +5,7 @@ from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
 from subprocess import PIPE, CalledProcessError, run
-from typing import List
+from typing import List, Optional
 
 from click import echo
 
@@ -176,7 +176,13 @@ def start_application() -> None:
     )
 
 
-def pull_specific_docker_image() -> None:
+def _pull_and_tag(image: str, local_tag: Optional[str]) -> None:
+    run_shell(f"docker pull {image}")
+    if local_tag:
+        run_shell(f"docker tag {image} {local_tag}")
+
+
+def pull_specific_docker_image(custom_image: Optional[str] = None) -> None:
     """
     Pulls a specific docker image version, based on the
     current version of the application.
@@ -186,7 +192,7 @@ def pull_specific_docker_image() -> None:
 
     current_fides_version = fides.__version__
     echo(
-        f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}"
+        f"Preparing Docker images to match local fides version: {current_fides_version}"
     )
 
     # Untagged image names
@@ -206,48 +212,65 @@ def pull_specific_docker_image() -> None:
     dev_privacy_center_image = privacy_center_image_stub.format("dev")
     dev_sample_app_image = sample_app_image_stub.format("dev")
 
-    try:
-        echo("Attempting to pull:")
-        echo(f"- {current_fides_image}")
-        echo(f"- {current_privacy_center_image}")
-        echo(f"- {current_sample_app_image}")
+    custom_image = custom_image or environ.get("FIDES_DEPLOY_IMAGE")
 
-        run_shell(f"docker pull {current_fides_image}")
-        run_shell(f"docker pull {current_privacy_center_image}")
-        run_shell(f"docker pull {current_sample_app_image}")
-        run_shell(
-            f"docker tag {current_fides_image} {fides_image_stub.format('local')}"
+    images_to_log = [
+        custom_image if custom_image else current_fides_image,
+        current_privacy_center_image,
+        current_sample_app_image,
+    ]
+    echo("Attempting to pull:")
+    for image in images_to_log:
+        echo(f"- {image}")
+
+    if custom_image:
+        try:
+            _pull_and_tag(custom_image, fides_image_stub.format("local"))
+        except CalledProcessError as exc:
+            echo_red(f"Failed to pull custom image '{custom_image}'. Aborting...")
+            raise SystemExit(1) from exc
+
+        try:
+            _pull_and_tag(
+                current_privacy_center_image, privacy_center_image_stub.format("local")
+            )
+            _pull_and_tag(
+                current_sample_app_image, sample_app_image_stub.format("local")
+            )
+        except CalledProcessError:
+            print("Unable to fetch matching version, defaulting to 'dev' versions...")
+            try:
+                _pull_and_tag(
+                    dev_privacy_center_image, privacy_center_image_stub.format("local")
+                )
+                _pull_and_tag(
+                    dev_sample_app_image, sample_app_image_stub.format("local")
+                )
+            except CalledProcessError as exc:
+                echo_red(
+                    "Failed to pull 'dev' versions of docker containers! Aborting..."
+                )
+                raise SystemExit(1) from exc
+        return
+
+    try:
+        _pull_and_tag(current_fides_image, fides_image_stub.format("local"))
+        _pull_and_tag(
+            current_privacy_center_image, privacy_center_image_stub.format("local")
         )
-        run_shell(
-            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('local')}"
-        )
-        run_shell(
-            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('local')}"
-        )
+        _pull_and_tag(current_sample_app_image, sample_app_image_stub.format("local"))
     except CalledProcessError:
         print("Unable to fetch matching version, defaulting to 'dev' versions...")
 
         try:
-            echo("Attempting to pull:")
-            echo(f"- {dev_fides_image}")
-            echo(f"- {dev_privacy_center_image}")
-            echo(f"- {dev_sample_app_image}")
-
-            run_shell(f"docker pull {dev_fides_image}")
-            run_shell(f"docker pull {dev_privacy_center_image}")
-            run_shell(f"docker pull {dev_sample_app_image}")
-            run_shell(
-                f"docker tag {dev_fides_image} {fides_image_stub.format('local')}"
+            _pull_and_tag(dev_fides_image, fides_image_stub.format("local"))
+            _pull_and_tag(
+                dev_privacy_center_image, privacy_center_image_stub.format("local")
             )
-            run_shell(
-                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('local')}"
-            )
-            run_shell(
-                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('local')}"
-            )
-        except CalledProcessError:
+            _pull_and_tag(dev_sample_app_image, sample_app_image_stub.format("local"))
+        except CalledProcessError as exc:
             echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
-            raise SystemExit(1)
+            raise SystemExit(1) from exc
 
 
 def print_deploy_success() -> None:
