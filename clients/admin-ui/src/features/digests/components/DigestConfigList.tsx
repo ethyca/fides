@@ -3,12 +3,12 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntList as List,
-  AntMessage as message,
   AntPagination as Pagination,
   AntSpace as Space,
   AntSwitch as Switch,
   AntTag as Tag,
   AntTypography as Typography,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 
@@ -26,7 +26,7 @@ const { Search } = Input;
 
 const DigestConfigList = () => {
   const router = useRouter();
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const {
     data,
     total,
@@ -77,7 +77,6 @@ const DigestConfigList = () => {
 
   return (
     <div>
-      {messageContext}
       {/* Header with search and add button */}
       <Flex justify="space-between" align="center" className="mb-4">
         <div className="w-1/3">

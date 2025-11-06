@@ -1,4 +1,4 @@
-import { AntMessage as Message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
@@ -43,9 +43,9 @@ export const useFieldActionHotkeys = (
   fieldActions: ReturnType<typeof useFieldActions>,
   updateSelectedListItem: (itemKey: React.Key, selected: boolean) => void,
   onNavigate: (urn: string | undefined) => void,
-  messageApi: ReturnType<typeof Message.useMessage>[0],
   isDrawerOpen: boolean,
 ) => {
+  const messageApi = useMessage();
   // Helper to open a category select dropdown programmatically
   const openCategorySelect = (selectElement: Element): boolean => {
     const selectorElement = selectElement.querySelector(

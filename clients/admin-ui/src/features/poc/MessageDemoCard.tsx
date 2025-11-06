@@ -2,11 +2,11 @@ import {
   AntButton as Button,
   AntCard as Card,
   AntSpace as Space,
-  useAntMessage,
+  useMessage,
 } from "fidesui";
 
 const MessageDemoCard = () => {
-  const message = useAntMessage();
+  const message = useMessage();
 
   return (
     <Card title="Toasting" variant="borderless">

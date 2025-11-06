@@ -4,7 +4,6 @@ import {
   AntDropdown as Dropdown,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
@@ -12,6 +11,7 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
+  useMessage,
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -72,7 +72,7 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -514,7 +514,6 @@ const ActionCenterFields: NextPage = () => {
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
       {modalContext}
-      {messageContext}
     </FixedLayout>
   );
 };
