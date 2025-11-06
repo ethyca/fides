@@ -32,7 +32,7 @@ repos:
         minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [ python, pyi ]
-        additional_dependencies: [ black==23.9.1 ]
+        additional_dependencies: [ black==24.3.0 ]
         stages: [commit]
 
       - id: isort-imports

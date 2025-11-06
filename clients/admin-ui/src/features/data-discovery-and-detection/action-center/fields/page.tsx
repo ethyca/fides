@@ -1,11 +1,8 @@
 import {
-  AntAvatar as Avatar,
   AntButton as Button,
   AntCheckbox as Checkbox,
-  AntDescriptions as Descriptions,
   AntDropdown as Dropdown,
   AntFlex as Flex,
-  AntForm as Form,
   AntList as List,
   AntMessage as message,
   AntModal as modal,
@@ -15,16 +12,13 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
-  SparkleIcon,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { Key, useEffect, useRef, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useSearch } from "~/features/common/hooks";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
@@ -36,18 +30,17 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
-import { FieldActionType } from "~/types/api/models/FieldActionType";
 
-import { DetailsDrawer } from "./DetailsDrawer";
 import {
-  AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
+  ACTIONS_DISABLED_MESSAGE,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
-  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
 } from "./FieldActions.const";
+import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
   useGetMonitorFieldsQuery,
   useLazyGetAllowedActionsQuery,
@@ -55,14 +48,15 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
-  DIFF_TO_RESOURCE_STATUS,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
@@ -80,6 +74,7 @@ const ActionCenterFields: NextPage = () => {
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
+  const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -123,6 +118,9 @@ const ActionCenterFields: NextPage = () => {
     },
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
+  const [activeListItem, setActiveListItem] = useState<
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -159,9 +157,9 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
-  >();
+  >({ activeListItem, enableKeyboardShortcuts: true });
 
-  const handleNavigate = async (urn: string) => {
+  const handleNavigate = async (urn: string | undefined) => {
     setDetailsUrn(urn);
   };
 
@@ -181,11 +179,18 @@ const ActionCenterFields: NextPage = () => {
     }
   };
 
+  useHotkeys(
+    "?",
+    () => setHotkeysHelperModalOpen(!hotkeysHelperModalOpen),
+    { useKey: true },
+    [hotkeysHelperModalOpen],
+  );
+
   const availableActions = isBulkSelect
     ? allowedActionsResult?.allowed_actions
     : getAvailableActions(
-        selectedListItems.flatMap((field) =>
-          field.diff_status ? [DIFF_TO_RESOURCE_STATUS[field.diff_status]] : [],
+        selectedListItems.flatMap(({ diff_status }) =>
+          diff_status ? [diff_status] : [],
         ),
       );
   const responseCount = fieldsDataResponse?.total ?? 0;
@@ -229,6 +234,16 @@ const ActionCenterFields: NextPage = () => {
     dataCategory,
   ]);
 
+  // Set up keyboard shortcuts for field actions
+  useFieldActionHotkeys(
+    activeListItem,
+    fieldActions,
+    updateSelectedListItem,
+    handleNavigate,
+    messageApi,
+    !!detailsUrn,
+  );
+
   return (
     <FixedLayout
       title="Action center - Discovered assets by system"
@@ -262,7 +277,7 @@ const ActionCenterFields: NextPage = () => {
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
-          <Flex vertical gap="middle" className="h-full overflow-hidden">
+          <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2}>Monitor results</Title>
               <Flex align="center">
@@ -277,11 +292,20 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex justify="space-between">
-              <DebouncedSearchInput
-                value={search.searchQuery}
-                onChange={search.updateSearch}
-                placeholder="Search"
-              />
+              <Flex gap="small">
+                <DebouncedSearchInput
+                  value={search.searchQuery}
+                  onChange={search.updateSearch}
+                  placeholder="Search"
+                />
+                <Tooltip title="Display keyboard shortcuts">
+                  <Button
+                    aria-label="Display keyboard shortcuts"
+                    icon={<Icons.Keyboard />}
+                    onClick={() => setHotkeysHelperModalOpen(true)}
+                  />
+                </Tooltip>
+              </Flex>
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
@@ -303,9 +327,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType) ? (
                             <Tooltip
-                              title={
-                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
-                              }
+                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
                             >
                               {FIELD_ACTION_LABEL[actionType]}
                             </Tooltip>
@@ -375,8 +397,26 @@ const ActionCenterFields: NextPage = () => {
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="h-full overflow-scroll"
+              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
               loading={isFetching}
+              enableKeyboardShortcuts
+              onActiveItemChange={useCallback(
+                // useCallback prevents infinite re-renders
+                (item: DatastoreStagedResourceAPIResponse | null) => {
+                  if (item?.urn) {
+                    setActiveListItem({
+                      ...item,
+                      itemKey: item.urn,
+                    });
+                    if (detailsUrn && item.urn !== detailsUrn) {
+                      setDetailsUrn(item.urn);
+                    }
+                  } else {
+                    setActiveListItem(undefined);
+                  }
+                },
+                [detailsUrn],
+              )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
@@ -390,11 +430,9 @@ const ActionCenterFields: NextPage = () => {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
-                    ? ![
-                        ...AVAILABLE_ACTIONS[
-                          DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                        ],
-                      ].includes(FieldActionType.ASSIGN_CATEGORIES)
+                    ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                        (status) => status === props.diff_status,
+                      )
                     : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS.map((action) => (
@@ -408,11 +446,9 @@ const ActionCenterFields: NextPage = () => {
                             onClick={() => fieldActions[action]([props.urn])}
                             disabled={
                               props?.diff_status
-                                ? ![
-                                    ...AVAILABLE_ACTIONS[
-                                      DIFF_TO_RESOURCE_STATUS[props.diff_status]
-                                    ],
-                                  ].includes(action)
+                                ? !ACTION_ALLOWED_STATUSES[action].some(
+                                    (status) => status === props.diff_status,
+                                  )
                                 : true
                             }
                             style={{
@@ -443,7 +479,7 @@ const ActionCenterFields: NextPage = () => {
           </Flex>
         </Splitter.Panel>
       </Splitter>
-      <DetailsDrawer
+      <ResourceDetailsDrawer
         itemKey={resource?.urn ?? ""}
         title={resource?.name ?? null}
         titleIcon={<Icons.Column />}
@@ -463,109 +499,20 @@ const ActionCenterFields: NextPage = () => {
           label: FIELD_ACTION_LABEL[action],
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
-            ? ![
-                ...AVAILABLE_ACTIONS[
-                  DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                ],
-              ].includes(action)
-            : false,
+            ? !ACTION_ALLOWED_STATUSES[action].some(
+                (status) => status === resource.diff_status,
+              )
+            : true,
         }))}
         open={!!detailsUrn}
         onClose={() => setDetailsUrn(undefined)}
-      >
-        {resource ? (
-          <Flex gap="middle" vertical>
-            <Descriptions
-              bordered
-              size="small"
-              column={1}
-              items={[
-                {
-                  key: "system",
-                  label: "System",
-                  children: resource.system_key,
-                },
-                {
-                  key: "path",
-                  label: "Path",
-                  children: resource.urn,
-                },
-
-                {
-                  key: "data-type",
-                  label: "Data type",
-                  children:
-                    resource.resource_type /** data type is not yet returned from the BE for the details query * */,
-                },
-                {
-                  key: "description",
-                  label: "Description",
-                  children: resource.description,
-                },
-              ]}
-            />
-            <Form layout="vertical">
-              <Form.Item label="Data categories">
-                <DataCategorySelect
-                  variant="outlined"
-                  mode="multiple"
-                  maxTagCount="responsive"
-                  value={[
-                    ...(resource.classifications?.map(({ label }) => label) ??
-                      []),
-                    ...(resource.user_assigned_data_categories?.map(
-                      (value) => value,
-                    ) ?? []),
-                  ]}
-                  autoFocus={false}
-                  disabled={
-                    resource?.diff_status
-                      ? ![
-                          ...AVAILABLE_ACTIONS[
-                            DIFF_TO_RESOURCE_STATUS[resource.diff_status]
-                          ],
-                        ].includes(FieldActionType.ASSIGN_CATEGORIES)
-                      : true
-                  }
-                  onChange={(values) =>
-                    fieldActions["assign-categories"]([resource.urn], {
-                      user_assigned_data_categories: values,
-                    })
-                  }
-                />
-              </Form.Item>
-            </Form>
-            {resource.classifications &&
-              resource.classifications.length > 0 && (
-                <List
-                  dataSource={resource.classifications}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar
-                            /* Ant only provides style prop for altering the background color */
-                            style={{
-                              backgroundColor: palette?.FIDESUI_BG_DEFAULT,
-                            }}
-                            icon={<SparkleIcon color="black" />}
-                          />
-                        }
-                        title={
-                          <Flex align="center" gap="middle">
-                            <div>{item.label}</div>
-                            <ClassifierProgress percent={item.score * 100} />
-                          </Flex>
-                        }
-                        description={item.rationale}
-                      />
-                    </List.Item>
-                  )}
-                />
-              )}
-          </Flex>
-        ) : null}
-      </DetailsDrawer>
+        resource={resource}
+        fieldActions={fieldActions}
+      />
+      <HotkeysHelperModal
+        open={hotkeysHelperModalOpen}
+        onCancel={() => setHotkeysHelperModalOpen(false)}
+      />
       {modalContext}
       {messageContext}
     </FixedLayout>
