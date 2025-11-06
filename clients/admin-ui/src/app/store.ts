@@ -139,6 +139,7 @@ const persistConfig = {
   blacklist: [
     baseApi.reducerPath,
     healthApi.reducerPath,
+    v3Api.reducerPath,
     dictSuggestionsSlice.name,
   ],
 };
