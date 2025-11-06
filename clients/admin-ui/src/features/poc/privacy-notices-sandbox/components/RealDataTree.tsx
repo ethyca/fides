@@ -25,16 +25,23 @@ interface RealDataTreeProps {
  */
 const buildTreeFromNotices = (
   notices: PrivacyNoticeResponse[],
-  disabled: boolean = false,
+  checkedKeys: Key[],
+  parentKey?: string,
 ): TreeDataNode[] => {
+  const checkedArray = checkedKeys.map((k) => k.toString());
+
   return notices.map((notice) => {
     // Get the history ID from the first translation (if available)
     const historyId =
       notice.translations?.[0]?.privacy_notice_history_id || notice.id;
 
+    // Determine if this node should be disabled
+    // Children are disabled if their parent is not checked
+    const disabled = parentKey ? !checkedArray.includes(parentKey) : false;
+
     const node: TreeDataNode = {
       title: notice.name,
-      key: historyId,
+      key: notice.notice_key, // Use notice_key as the tree key
       noticeHistoryId: historyId,
       noticeKey: notice.notice_key,
       disabled,
@@ -42,7 +49,11 @@ const buildTreeFromNotices = (
 
     // Recursively build children if they exist
     if (notice.children && notice.children.length > 0) {
-      node.children = buildTreeFromNotices(notice.children, disabled);
+      node.children = buildTreeFromNotices(
+        notice.children,
+        checkedKeys,
+        notice.notice_key,
+      );
     }
 
     return node;
@@ -56,9 +67,10 @@ const RealDataTree = ({
   cascadeConsent,
 }: RealDataTreeProps) => {
   // Build tree data from privacy notices
+  // Tree data depends on both notices and checked keys (for disabled state)
   const treeData = useMemo(() => {
-    return buildTreeFromNotices(privacyNotices);
-  }, [privacyNotices]);
+    return buildTreeFromNotices(privacyNotices, checkedKeys);
+  }, [privacyNotices, checkedKeys]);
 
   // Get all keys for default expansion
   const allKeys = useMemo(() => {
@@ -153,13 +165,7 @@ const RealDataTree = ({
         ? checkedKeysValue
         : checkedKeysValue.checked;
 
-      // If cascade is disabled, just update normally
-      if (!cascadeConsent) {
-        onCheckedKeysChange(newCheckedKeys);
-        return;
-      }
-
-      // Find which key was toggled
+      // Find which keys were toggled
       const addedKeys = newCheckedKeys.filter(
         (key) => !checkedKeys.includes(key),
       );
@@ -167,32 +173,38 @@ const RealDataTree = ({
         (key) => !newCheckedKeys.includes(key),
       );
 
+      // Determine if a parent node changed
+      let parentChanged = false;
+      let toggledParentKey: Key | undefined;
+
       if (addedKeys.length > 0) {
-        // A key was checked
-        const toggledKey = addedKeys[0];
-        if (isParentNode(toggledKey)) {
+        [toggledParentKey] = addedKeys;
+        parentChanged = isParentNode(toggledParentKey);
+      } else if (removedKeys.length > 0) {
+        [toggledParentKey] = removedKeys;
+        parentChanged = isParentNode(toggledParentKey);
+      }
+
+      // If cascade is enabled and a parent changed, propagate to children
+      if (cascadeConsent && parentChanged && toggledParentKey !== undefined) {
+        const childrenKeys = getChildrenKeys(toggledParentKey);
+        const parentIsChecked = newCheckedKeys.includes(toggledParentKey);
+
+        if (parentIsChecked) {
           // Parent was checked, check all its children
-          const childrenKeys = getChildrenKeys(toggledKey);
           const finalKeys = [...newCheckedKeys, ...childrenKeys];
           onCheckedKeysChange([...new Set(finalKeys)]);
-          return;
-        }
-      } else if (removedKeys.length > 0) {
-        // A key was unchecked
-        const toggledKey = removedKeys[0];
-        if (isParentNode(toggledKey)) {
+        } else {
           // Parent was unchecked, uncheck all its children
-          const childrenKeys = getChildrenKeys(toggledKey);
           const finalKeys = newCheckedKeys.filter(
             (key) => !childrenKeys.includes(key),
           );
           onCheckedKeysChange(finalKeys);
-          return;
         }
+      } else {
+        // No cascade or parent didn't change, pass through as normal
+        onCheckedKeysChange(newCheckedKeys);
       }
-
-      // Default: no cascade needed
-      onCheckedKeysChange(newCheckedKeys);
     },
     [
       cascadeConsent,

@@ -1,6 +1,11 @@
 import { baseApi } from "~/features/common/api.slice";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
 
+// Get the V3 API base URL from environment variables
+// Falls back to localhost for development if not set
+const V3_API_BASE_URL =
+  process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER || "http://localhost:8080";
+
 export interface PrivacyExperienceQueryParams {
   region: string;
   show_disabled: boolean;
@@ -67,7 +72,7 @@ export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
       { body: ConsentCreate; override_children?: boolean }
     >({
       query: ({ body, override_children }) => ({
-        url: "http://localhost:8080/api/v3/privacy-preferences",
+        url: `${V3_API_BASE_URL}/api/v3/privacy-preferences`,
         method: "POST",
         body,
         params: override_children ? { override_children: true } : undefined,
@@ -78,7 +83,7 @@ export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
       CurrentPreferencesQueryParams
     >({
       query: (params) => ({
-        url: "http://localhost:8080/api/v3/privacy-preferences/current",
+        url: `${V3_API_BASE_URL}/api/v3/privacy-preferences/current`,
         params,
       }),
     }),

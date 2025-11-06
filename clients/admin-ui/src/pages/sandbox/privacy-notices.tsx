@@ -1,8 +1,4 @@
-import {
-  AntLayout as Layout,
-  AntTabs as Tabs,
-  AntTypography as Typography,
-} from "fidesui";
+import { AntLayout as Layout, AntTabs as Tabs } from "fidesui";
 import type { NextPage } from "next";
 
 import PageHeader from "~/features/common/PageHeader";
@@ -18,13 +14,12 @@ const PrivacyNoticesSandbox: NextPage = () => {
       <Content className="overflow-auto px-10 py-6">
         <PageHeader heading="Privacy Notices Sandbox" />
 
-        <Tabs defaultActiveKey="simulated" className="mt-5">
-          <Tabs.TabPane tab="Simulated data" key="simulated">
-            <PrivacyNoticeSandboxSimulated />
-          </Tabs.TabPane>
-
+        <Tabs defaultActiveKey="real" className="mt-5">
           <Tabs.TabPane tab="Real data" key="real">
             <PrivacyNoticeSandboxRealData />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Simulated data" key="simulated">
+            <PrivacyNoticeSandboxSimulated />
           </Tabs.TabPane>
         </Tabs>
       </Content>
