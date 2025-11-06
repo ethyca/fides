@@ -193,6 +193,7 @@ export type { DrpPrivacyRequestCreate } from "./models/DrpPrivacyRequestCreate";
 export { DrpRegime } from "./models/DrpRegime";
 export type { DrpRevokeRequest } from "./models/DrpRevokeRequest";
 export type { DryRunDatasetResponse } from "./models/DryRunDatasetResponse";
+export type { DuplicateDetectionApplicationConfig } from "./models/DuplicateDetectionApplicationConfig";
 export type { DynamicErasureEmailDocsSchema } from "./models/DynamicErasureEmailDocsSchema";
 export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export type { DynamoDBMonitorParams } from "./models/DynamoDBMonitorParams";
