@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { baseApi } from "~/features/common/api.slice";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
 
 export interface PrivacyExperienceQueryParams {
