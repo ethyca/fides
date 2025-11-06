@@ -38,6 +38,7 @@ import { manualTasksSlice } from "~/features/manual-tasks/manual-tasks.slice";
 import { organizationSlice } from "~/features/organization";
 import { languageSlice } from "~/features/privacy-experience/language.slice";
 import { privacyExperienceConfigSlice } from "~/features/privacy-experience/privacy-experience.slice";
+import { v3Api } from "~/features/poc/privacy-notices-sandbox/v3-api";
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
@@ -73,6 +74,7 @@ const reducer = {
   // API reducers
   [baseApi.reducerPath]: baseApi.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
+  [v3Api.reducerPath]: v3Api.reducer,
 
   // Slice reducers
   [datamapSlice.name]: datamapSlice.reducer,
@@ -152,7 +154,12 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
+      }).concat(
+        baseApi.middleware,
+        healthApi.middleware,
+        v3Api.middleware,
+        rtkQueryErrorLogger,
+      ),
     devTools: true,
     preloadedState,
   });

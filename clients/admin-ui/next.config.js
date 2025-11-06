@@ -35,6 +35,11 @@ const nextConfig = {
         source: `/api/v1/:first/:second*`,
         destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:first/:second*`,
       },
+      // V3 API proxying for consent sandbox
+      {
+        source: `/api/v3/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v3/:path*`,
+      },
       // The /health path does not live under /api/v1
       {
         source: `/health`,

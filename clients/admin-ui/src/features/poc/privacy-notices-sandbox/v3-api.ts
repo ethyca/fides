@@ -1,3 +1,7 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+import type { RootState } from "~/app/store";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { baseApi } from "~/features/common/api.slice";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
 
@@ -56,6 +60,21 @@ export interface CurrentPreferencesQueryParams {
   notice_keys?: string[];
 }
 
+// V3 API Slice
+export const v3Api = createApi({
+  reducerPath: "v3Api",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "/api/v3",
+    prepareHeaders: (headers, { getState }) => {
+      const { token } = (getState() as RootState).auth;
+      addCommonHeaders(headers, token);
+      return headers;
+    },
+  }),
+  endpoints: () => ({}),
+});
+
+// V1 Endpoints (injected into the existing baseApi)
 export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getPrivacyExperience: build.query<
@@ -67,12 +86,23 @@ export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
         params,
       }),
     }),
+  }),
+});
+
+export const {
+  useGetPrivacyExperienceQuery,
+  useLazyGetPrivacyExperienceQuery,
+} = privacyNoticesSandboxApi;
+
+// V3 Endpoints (injected into the new v3Api)
+export const privacyNoticesSandboxV3Api = v3Api.injectEndpoints({
+  endpoints: (build) => ({
     savePrivacyPreferences: build.mutation<
       ConsentResponse,
       { body: ConsentCreate; override_children?: boolean }
     >({
       query: ({ body, override_children }) => ({
-        url: `${V3_API_BASE_URL}/api/v3/privacy-preferences`,
+        url: "privacy-preferences",
         method: "POST",
         body,
         params: override_children ? { override_children: true } : undefined,
@@ -83,7 +113,7 @@ export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
       CurrentPreferencesQueryParams
     >({
       query: (params) => ({
-        url: `${V3_API_BASE_URL}/api/v3/privacy-preferences/current`,
+        url: `privacy-preferences/current`,
         params,
       }),
     }),
@@ -91,8 +121,6 @@ export const privacyNoticesSandboxApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetPrivacyExperienceQuery,
-  useLazyGetPrivacyExperienceQuery,
   useSavePrivacyPreferencesMutation,
   useLazyGetCurrentPreferencesQuery,
-} = privacyNoticesSandboxApi;
+} = privacyNoticesSandboxV3Api;
