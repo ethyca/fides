@@ -4,9 +4,9 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
-import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
 import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
 
 export interface PrivacyExperienceQueryParams {
   region: string;
