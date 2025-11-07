@@ -21,8 +21,42 @@ import { Property } from "~/types/api";
 
 const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
 const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
-const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?property_id=${PROPERTY_UNIQUE_ID_TEMPLATE}"></script>`;
-const FIDES_GTM_SCRIPT_TAG = "<script>Fides.gtm()</script>";
+const FIDES_JS_SCRIPT_TEMPLATE = `<script>
+!(function () {
+    // Recommended: Fides override settings
+    window.fides_overrides = {
+      fides_consent_non_applicable_flag_mode: "include",
+      fides_consent_flag_type: "boolean",
+    };
+
+    // Optional: Initialize integrations like Google Tag Manager or BlueConic
+    addEventListener("FidesInitialized", function () {
+      // Fides.gtm();
+      // Fides.blueconic();
+    });
+
+    // Recommended: wrapper script that allows for dynamic switching of geolocation by adding query params to the window URL
+    // query param prefix is "fides_"
+    // eg, "fides_geolocation=US-CA"
+    var fidesPrefix = "fides_";
+    var searchParams = new URLSearchParams(location.search);
+    var fidesSearchParams = new URLSearchParams();
+    searchParams.forEach(function (value, key) {
+      if (key.startsWith(fidesPrefix)) {
+        fidesSearchParams.set(
+          key.replace(fidesPrefix, ""),
+          key === fidesPrefix + "cache_bust" ? Date.now().toString() : value,
+        );
+      }
+    });
+
+    // Required: core Fides JS script
+    var src = "https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?property_id=${PROPERTY_UNIQUE_ID_TEMPLATE}" + fidesSearchParams.toString();
+    var script = document.createElement("script");
+    script.setAttribute("src", src);
+    document.head.appendChild(script);
+  })();
+</script>`;
 
 interface Props {
   property: Property;
@@ -88,31 +122,29 @@ const NewJavaScriptTag = ({ property }: Props) => {
                 {property.name} property.
               </Text>
               <Text>
-                1. Paste this code as high in the <b>&lt;head&gt;</b> of the
+                Paste this code as high in the <b>&lt;head&gt;</b> of the
                 page as possible:
               </Text>
               <Code
                 display="flex"
                 justifyContent="space-between"
-                alignItems="top"
+                alignItems="flex-start"
                 p={0}
+                position="relative"
               >
-                <Text p={4}>{fidesJsScriptTag}</Text>
+                <Text
+                  p={4}
+                  whiteSpace="pre"
+                  fontFamily="mono"
+                  fontSize="sm"
+                  flex={1}
+                  maxH="400px"
+                  overflowX="auto"
+                  overflowY="auto"
+                >
+                  {fidesJsScriptTag}
+                </Text>
                 <ClipboardButton copyText={fidesJsScriptTag} />
-              </Code>
-              <Text>
-                2. Optionally, you can enable Google Tag Manager for managing
-                tags on your website by including the script tag below along
-                with the Fides.js tag. Place it below the Fides.js script tag.
-              </Text>
-              <Code
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                p={0}
-              >
-                <Text p={4}>{FIDES_GTM_SCRIPT_TAG}</Text>
-                <ClipboardButton copyText={FIDES_GTM_SCRIPT_TAG} />
               </Code>
               <Text>
                 For more information about adding a JavaScript tag to your
