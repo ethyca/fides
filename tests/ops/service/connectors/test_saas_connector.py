@@ -10,7 +10,6 @@ from fideslang.models import FidesKey
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
-
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
     ClientUnsuccessfulException,
@@ -18,17 +17,19 @@ from fides.api.common_exceptions import (
     FidesopsException,
     SkippingConsentPropagation,
 )
+
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.consent_automation import ConsentAutomation
-from fides.api.models.policy import Policy
+from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
@@ -1218,6 +1219,91 @@ class TestAsyncConnectors:
                 "state": "TX",
             }
         ]
+
+    def test_retrieve_data_async_guard_access_request_disabled(
+        self, db, privacy_request, saas_async_example_connection_config, async_graph
+    ):
+        """
+        Test that retrieve_data returns empty list when async DSR strategy exists
+        but guard_access_request returns False (policy has no access rules).
+        """
+        # Create a policy with only erasure rules (no access rules)
+        erasure_only_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Erasure Only Policy",
+                "key": "erasure_only_policy_test",
+            },
+        )
+
+        # Add only erasure rule - no access rule
+        Rule.create(
+            db=db,
+            data={
+                "name": "Erasure Rule",
+                "key": "erasure_rule_test",
+                "policy_id": erasure_only_policy.id,
+                "action_type": ActionType.erasure,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            },
+        )
+
+        # Modify the SaaS config to have polling async strategy for read requests
+        # This ensures _get_async_dsr_strategy will return a strategy
+        modified_config = saas_async_example_connection_config.saas_config.copy()
+        modified_config["endpoints"][0]["requests"]["read"]["async_config"] = {
+            "strategy": "polling",
+            "configuration": {
+                "status_request": {
+                    "method": "GET",
+                    "path": "/api/status",
+                    "status_path": "status",
+                    "status_completed_value": "completed"
+                },
+                "result_request": {
+                    "method": "GET",
+                    "path": "/api/result"
+                }
+            }
+        }
+        saas_async_example_connection_config.saas_config = modified_config
+        saas_async_example_connection_config.save(db)
+
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+
+        # Get the access request task
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        # Mock the async strategy to verify it's not called
+        with mock.patch(
+            "fides.api.service.connectors.saas_connector._get_async_dsr_strategy"
+        ) as mock_get_strategy:
+            mock_strategy = mock.Mock()
+            mock_get_strategy.return_value = mock_strategy
+            # Call retrieve_data with erasure-only policy
+            result = connector.retrieve_data(
+                execution_node,
+                erasure_only_policy,  # Policy with no access rules
+                privacy_request,
+                request_task,
+                {},
+            )
+
+            # Verify the async strategy was detected but not called
+            mock_get_strategy.assert_called_once()
+            mock_strategy.async_retrieve_data.assert_not_called()
+
+            # Verify empty list is returned
+            assert result == [{}]
+
+        # Cleanup
+        erasure_only_policy.delete(db)
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_masking_request_expects_async_results(
