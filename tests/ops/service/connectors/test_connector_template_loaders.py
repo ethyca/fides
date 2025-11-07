@@ -7,6 +7,7 @@ import pytest
 
 from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.enums.connection_category import ConnectionCategory
 from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
@@ -443,6 +444,142 @@ class TestCustomConnectorTemplateLoader:
             )
         }
         mock_delete.assert_not_called()
+
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_custom_connector_replacement_deletes_saas_template_dataset(
+        self,
+        mock_all: MagicMock,
+        mock_template_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
+        hubspot_config,
+        hubspot_dataset,
+    ):
+        """
+        Verify that when a replaceable custom connector template is replaced,
+        its corresponding SaasTemplateDataset record is also deleted.
+        """
+        # Create a mock SaasTemplateDataset instance
+        mock_saas_dataset = MagicMock()
+        mock_saas_get_by.return_value = mock_saas_dataset
+
+        # Set up a replaceable template that should be replaced
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=replace_version(hubspot_config, "0.0.0"),
+                dataset=hubspot_dataset,
+                replaceable=True,
+            )
+        ]
+
+        # This should trigger the replacement logic
+        template = ConnectorRegistry.get_connector_template("hubspot")
+        assert template
+
+        # Verify the SaasTemplateDataset.get_by was called with correct parameters
+        mock_saas_get_by.assert_called_once_with(
+            db=mock.ANY, field="connection_type", value="hubspot"
+        )
+
+        # Verify the SaasTemplateDataset.delete was called
+        mock_saas_dataset.delete.assert_called_once()
+
+        # Verify the CustomConnectorTemplate.delete was also called
+        mock_template_delete.assert_called_once()
+
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_custom_connector_replacement_no_saas_template_dataset(
+        self,
+        mock_all: MagicMock,
+        mock_template_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
+        hubspot_config,
+        hubspot_dataset,
+    ):
+        """
+        Verify that when a replaceable template is replaced but no SaasTemplateDataset exists,
+        no error occurs and the template is still deleted.
+        """
+        # SaasTemplateDataset.get_by returns None (no dataset found)
+        mock_saas_get_by.return_value = None
+
+        # Set up a replaceable template that should be replaced
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=replace_version(hubspot_config, "0.0.0"),
+                dataset=hubspot_dataset,
+                replaceable=True,
+            )
+        ]
+
+        # This should trigger the replacement logic
+        template = ConnectorRegistry.get_connector_template("hubspot")
+        assert template
+
+        # Verify the SaasTemplateDataset.get_by was called
+        mock_saas_get_by.assert_called_once_with(
+            db=mock.ANY, field="connection_type", value="hubspot"
+        )
+
+        # Verify no delete was called on SaasTemplateDataset since it was None
+        # (we can't assert on mock_saas_dataset.delete since mock_saas_dataset is None)
+
+        # Verify the CustomConnectorTemplate.delete was still called
+        mock_template_delete.assert_called_once()
+
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_custom_connector_not_replaceable_no_saas_dataset_deletion(
+        self,
+        mock_all: MagicMock,
+        mock_template_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
+        hubspot_config,
+        hubspot_dataset,
+    ):
+        """
+        Verify that when a template is not replaceable, no SaasTemplateDataset deletion occurs.
+        """
+        # Set up a non-replaceable template
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=replace_version(hubspot_config, "0.0.0"),
+                dataset=hubspot_dataset,
+                replaceable=False,  # Not replaceable
+            )
+        ]
+
+        # This should NOT trigger the replacement logic
+        template = ConnectorRegistry.get_connector_template("hubspot")
+        assert template
+
+        # Verify SaasTemplateDataset.get_by was NOT called since template is not replaceable
+        mock_saas_get_by.assert_not_called()
+
+        # Verify CustomConnectorTemplate.delete was NOT called
+        mock_template_delete.assert_not_called()
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
