@@ -6,12 +6,13 @@ from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.util.saas_util import load_config_from_string
+from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 
@@ -34,9 +35,24 @@ def update_saas_configs(db: Session) -> None:
         template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
             connector_type
         )
+
+        template_dataset = SaasTemplateDataset.get_by(
+            db=db, field="connection_type", value=connector_type
+        )
+        # Store the original template dataset (with placeholders) instead of the modified version
+        template_dataset_json = load_dataset_from_string(template.dataset)
+
+        if not template_dataset:
+            SaasTemplateDataset.create(
+                db=db,
+                data={
+                    "connection_type": connector_type,
+                    "dataset_json": template_dataset_json,
+                }
+            )
+
         saas_config = SaaSConfig(**load_config_from_string(template.config))
         template_version: Version = parse_version(saas_config.version)
-
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
             conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
