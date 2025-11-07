@@ -8,6 +8,7 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
+  Icons,
   Portal,
   useDisclosure,
 } from "fidesui";
@@ -16,7 +17,6 @@ import React, { useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2 } from "~/features/common/table/v2";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
@@ -114,9 +114,15 @@ export const PrivacyRequestsDashboard = () => {
             />
           </Button>
           <Button
+            data-testid="advanced-search-btn"
+            // onClick={onOpenAdvancedSearch}
+            icon={<Icons.SearchAdvanced />}
+            aria-label="Advanced search"
+          />
+          <Button
             aria-label="Export report"
             data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
+            icon={<Icons.Download />}
             onClick={handleExport}
           />
         </div>
