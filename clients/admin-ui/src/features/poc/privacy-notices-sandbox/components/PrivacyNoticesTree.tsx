@@ -13,7 +13,7 @@ export interface TreeDataNode {
   noticeKey?: string;
 }
 
-interface RealDataTreeProps {
+interface PrivacyNoticesTreeProps {
   privacyNotices: PrivacyNoticeResponse[];
   checkedKeys: Key[];
   onCheckedKeysChange: (checkedKeys: Key[]) => void;
@@ -60,12 +60,12 @@ const buildTreeFromNotices = (
   });
 };
 
-const RealDataTree = ({
+const PrivacyNoticesTree = ({
   privacyNotices,
   checkedKeys,
   onCheckedKeysChange,
   cascadeConsent,
-}: RealDataTreeProps) => {
+}: PrivacyNoticesTreeProps) => {
   // Build tree data from privacy notices
   // Tree data depends on both notices and checked keys (for disabled state)
   const treeData = useMemo(() => {
@@ -230,4 +230,4 @@ const RealDataTree = ({
   );
 };
 
-export default RealDataTree;
+export default PrivacyNoticesTree;

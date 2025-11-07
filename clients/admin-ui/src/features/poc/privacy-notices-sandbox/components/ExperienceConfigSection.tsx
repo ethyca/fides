@@ -17,6 +17,44 @@ interface ExperienceConfigSectionProps {
   privacyNotices: PrivacyNoticeResponse[];
 }
 
+/**
+ * Renders a list of privacy notices with their children
+ */
+const PrivacyNoticesList = ({
+  privacyNotices,
+}: {
+  privacyNotices: PrivacyNoticeResponse[];
+}) => {
+  if (privacyNotices.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="max-h-60 overflow-y-auto">
+      <ul className="m-0 list-inside list-disc pl-2">
+        {privacyNotices.map((notice) => (
+          <li key={notice.id} className="list-none">
+            <ul className="m-0 list-inside list-disc">
+              <li className="py-1">{notice.name}</li>
+              {notice.children &&
+                notice.children.length > 0 &&
+                notice.children.map((child) => (
+                  <li
+                    key={child.id}
+                    className="py-1"
+                    style={{ paddingLeft: "20px" }}
+                  >
+                    {child.name}
+                  </li>
+                ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
 const ExperienceConfigSection = ({
   region,
   onRegionChange,
@@ -63,36 +101,13 @@ const ExperienceConfigSection = ({
 
         {/* Right Column - Available Notices */}
         <div className="min-w-0 flex-1">
-          <PreviewCard title="Available notices" height="200px">
-            {privacyNotices.length > 0 ? (
-              <div className="max-h-60 overflow-y-auto">
-                <ul className="m-0 list-inside list-disc pl-2">
-                  {privacyNotices.map((notice) => (
-                    <li key={notice.id} className="list-none">
-                      <ul className="m-0 list-inside list-disc">
-                        <li className="py-1">{notice.name}</li>
-                        {notice.children &&
-                          notice.children.length > 0 &&
-                          notice.children.map((child) => (
-                            <li
-                              key={child.id}
-                              className="py-1"
-                              style={{ paddingLeft: "20px" }}
-                            >
-                              {child.name}
-                            </li>
-                          ))}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Typography.Text type="secondary">
-                  Available notices will appear here after fetching experience
-                </Typography.Text>
-              </div>
+          <PreviewCard
+            title="Available notices"
+            height="200px"
+            emptyMessage="Available notices will appear here after fetching experience"
+          >
+            {privacyNotices.length > 0 && (
+              <PrivacyNoticesList privacyNotices={privacyNotices} />
             )}
           </PreviewCard>
         </div>

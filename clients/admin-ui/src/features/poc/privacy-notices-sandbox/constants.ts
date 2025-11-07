@@ -1,5 +1,8 @@
 import type { Key } from "antd/es/table/interface";
 
+import type { PrivacyNoticeResponse } from "~/types/api";
+import { ConsentMechanism, EnforcementLevel } from "~/types/api";
+
 // Constants
 export const PARENT_KEY = "email_marketing" as const;
 
@@ -30,6 +33,35 @@ export const TREE_NODES = [
   {
     title: "auto_financing",
     key: "auto_financing-g7h8i9j0-k1l2-3456-ghij-789012345678",
+  },
+];
+
+const now = new Date().toISOString();
+
+// Convert TREE_NODES to PrivacyNoticeResponse format
+const createPrivacyNotice = (
+  title: string,
+  key: string,
+): PrivacyNoticeResponse => ({
+  id: key,
+  name: title,
+  notice_key: title,
+  consent_mechanism: ConsentMechanism.OPT_OUT,
+  data_uses: [],
+  enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+  disabled: false,
+  has_gpc_flag: false,
+  created_at: now,
+  updated_at: now,
+});
+
+// Privacy notices in PrivacyNoticeResponse format, constructed from TREE_NODES
+export const PRIVACY_NOTICES: PrivacyNoticeResponse[] = [
+  {
+    ...createPrivacyNotice(PARENT_KEY, PARENT_KEY_WITH_UUID),
+    children: TREE_NODES.map((node) =>
+      createPrivacyNotice(node.title, node.key),
+    ),
   },
 ];
 

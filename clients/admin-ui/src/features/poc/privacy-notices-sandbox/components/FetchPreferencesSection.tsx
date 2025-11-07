@@ -81,29 +81,21 @@ const FetchPreferencesSection = ({
 
       {/* Right Column - GET Response Preview */}
       <div className="min-w-0 flex-1">
-        <PreviewCard title="GET response">
-          {getCurrentResponse ? (
-            <>
-              <Typography.Text
-                strong
-                className="mb-2 block text-sm text-green-600"
-              >
-                GET /api/v3/privacy-preferences/current?identity.email={email}
-                {selectedNoticeKeys.length > 0 &&
-                  `&notice_keys=${selectedNoticeKeys.join(",")}`}
-              </Typography.Text>
-              <pre className="m-0 whitespace-pre-wrap">
-                {JSON.stringify(getCurrentResponse, null, 2)}
-              </pre>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <Typography.Text type="secondary">
-                GET response will appear here after fetching preferences
-              </Typography.Text>
-            </div>
-          )}
-        </PreviewCard>
+        <PreviewCard
+          title="GET response"
+          header={
+            getCurrentResponse
+              ? `GET /api/v3/privacy-preferences/current?identity.email=${email}${
+                  selectedNoticeKeys.length > 0
+                    ? `&notice_keys=${selectedNoticeKeys.join(",")}`
+                    : ""
+                }`
+              : null
+          }
+          headerColor="green"
+          body={getCurrentResponse}
+          emptyMessage="GET response will appear here after fetching preferences"
+        />
       </div>
     </div>
   );

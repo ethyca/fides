@@ -1,4 +1,3 @@
-import { AntTypography as Typography } from "fidesui";
 import { useCallback } from "react";
 
 import { PARENT_KEY, PARENT_KEY_WITH_UUID, TREE_NODES } from "../constants";
@@ -69,14 +68,12 @@ const GetApiPreview = ({
   const getResponse = generateGetResponse();
 
   return (
-    <PreviewCard title="Current Preferences (consolidated)">
-      <Typography.Text strong className="mb-2 block text-sm text-green-600">
-        GET /api/v3/privacy-preferences/current?notice_key=email_marketing
-      </Typography.Text>
-      <pre className="m-0 whitespace-pre-wrap">
-        {JSON.stringify(getResponse, null, 2)}
-      </pre>
-    </PreviewCard>
+    <PreviewCard
+      title="Current Preferences (consolidated)"
+      header="GET /api/v3/privacy-preferences/current?notice_key=email_marketing"
+      headerColor="green"
+      body={getResponse}
+    />
   );
 };
 

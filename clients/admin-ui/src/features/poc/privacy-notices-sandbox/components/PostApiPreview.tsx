@@ -1,4 +1,3 @@
-import { AntTypography as Typography } from "fidesui";
 import { useCallback } from "react";
 
 import {
@@ -52,7 +51,7 @@ const PostApiPreview = ({
       const isChecked = currentArray.includes(key);
       const value: "opt_in" | "opt_out" = isChecked ? "opt_in" : "opt_out";
 
-      // Find the title from the tree structure
+      // Find the notice_key from TREE_NODES
       let noticeKey: string;
       if (key === PARENT_KEY_WITH_UUID) {
         noticeKey = PARENT_KEY;
@@ -85,23 +84,13 @@ const PostApiPreview = ({
       : "POST /api/v3/privacy-preferences";
 
   return (
-    <PreviewCard title="API Calls Preview">
-      {mockRequest ? (
-        <>
-          <Typography.Text strong className="mb-2 block text-sm text-blue-600">
-            {endpoint}
-          </Typography.Text>
-          <pre className="m-0 whitespace-pre-wrap">
-            {JSON.stringify(mockRequest, null, 2)}
-          </pre>
-        </>
-      ) : (
-        <Typography.Text type="secondary" italic className="text-sm">
-          No API request made because preferences were not changed from last
-          save.
-        </Typography.Text>
-      )}
-    </PreviewCard>
+    <PreviewCard
+      title="API Calls Preview"
+      header={mockRequest ? endpoint : null}
+      headerColor="blue"
+      body={mockRequest}
+      emptyMessage="No API request made because preferences were not changed from last save."
+    />
   );
 };
 

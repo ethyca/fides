@@ -10,7 +10,7 @@ import { UserConsentPreference } from "~/types/api/models/UserConsentPreference"
 import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
 import CascadeConsentToggle from "./CascadeConsentToggle";
 import PreviewCard from "./PreviewCard";
-import RealDataTree from "./RealDataTree";
+import PrivacyNoticesTree from "./PrivacyNoticesTree";
 
 export interface PreferenceState {
   checkedKeys: Key[];
@@ -182,7 +182,7 @@ const SavePreferencesSection = ({
               />
             </div>
 
-            <RealDataTree
+            <PrivacyNoticesTree
               privacyNotices={privacyNotices}
               checkedKeys={checkedKeys}
               onCheckedKeysChange={onCheckedKeysChange}
@@ -217,28 +217,19 @@ const SavePreferencesSection = ({
 
       {/* Right Column - POST Response Preview */}
       <div className="min-w-0 flex-1">
-        <PreviewCard title="POST response">
-          {postResponse ? (
-            <>
-              <Typography.Text
-                strong
-                className="mb-2 block text-sm text-blue-600"
-              >
-                POST /api/v3/privacy-preferences
-                {cascadeConsent ? "?override_children=true" : ""}
-              </Typography.Text>
-              <pre className="m-0 whitespace-pre-wrap">
-                {JSON.stringify(postResponse, null, 2)}
-              </pre>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <Typography.Text type="secondary">
-                POST response will appear here after saving preferences
-              </Typography.Text>
-            </div>
-          )}
-        </PreviewCard>
+        <PreviewCard
+          title="POST response"
+          header={
+            postResponse
+              ? `POST /api/v3/privacy-preferences${
+                  cascadeConsent ? "?override_children=true" : ""
+                }`
+              : null
+          }
+          headerColor="blue"
+          body={postResponse}
+          emptyMessage="POST response will appear here after saving preferences"
+        />
       </div>
     </div>
   );

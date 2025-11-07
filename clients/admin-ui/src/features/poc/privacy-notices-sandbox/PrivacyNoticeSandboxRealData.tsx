@@ -223,6 +223,10 @@ const PrivacyNoticeSandboxRealData = () => {
           this sandbox, ensure you have:
         </Typography.Text>
         <ul className="ml-6 mt-2 list-disc space-y-1 text-sm text-blue-800">
+          <li>
+            The consent v3 API enabled via the env var{" "}
+            <code>FIDESPLUS__EXPERIMENTAL__CONSENT_V3_ENABLED=true</code>
+          </li>
           <li>An email identity definition configured in your system</li>
           <li>
             A privacy experience set up with at least one privacy notice in the

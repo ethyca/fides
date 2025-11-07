@@ -1,34 +1,70 @@
+import type { Key } from "antd/es/table/interface";
 import { AntButton as Button, AntTypography as Typography } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
+
+import type { PrivacyNoticeResponse } from "~/types/api";
 
 import {
   CascadeConsentToggle,
   ConsentMechanismRadioGroup,
-  DbStatePreview,
-  DisableChildrenTree,
   GetApiPreview,
   PostApiPreview,
+  PreviewCard,
+  PrivacyNoticesTree,
 } from "./components";
 import {
   ALL_KEYS,
   PARENT_KEY,
   PARENT_KEY_WITH_UUID,
+  PRIVACY_NOTICES,
   TREE_NODES,
 } from "./constants";
 import type { CheckedKeysType, ConsentMechanism } from "./types";
+
+/**
+ * Converts PRIVACY_NOTICES to use UUIDs as notice_key for PrivacyNoticesTree compatibility
+ * PrivacyNoticesTree uses notice_key as the tree key, but we need UUIDs to match ALL_KEYS
+ */
+const convertNoticesForTree = (
+  notices: PrivacyNoticeResponse[],
+): PrivacyNoticeResponse[] => {
+  return notices.map((notice) => ({
+    ...notice,
+    notice_key: notice.id, // Use id (UUID) as notice_key for tree key
+    children: notice.children
+      ? convertNoticesForTree(notice.children)
+      : undefined,
+  }));
+};
+
+/**
+ * Normalizes CheckedKeysType to Key[] for PrivacyNoticesTree
+ */
+const normalizeCheckedKeys = (keys: CheckedKeysType): Key[] => {
+  return Array.isArray(keys) ? keys : keys.checked || [];
+};
+
+/**
+ * Converts Key[] to CheckedKeysType for components that need it
+ */
+const toCheckedKeysType = (keys: Key[]): CheckedKeysType => {
+  return keys;
+};
 
 const PrivacyNoticeSandboxSimulated = () => {
   const [consentMechanism, setConsentMechanism] =
     useState<ConsentMechanism>("opt-out");
   const [cascadeConsent, setCascadeConsent] = useState<boolean>(false);
-  const [checkedKeys, setCheckedKeys] = useState<CheckedKeysType>(ALL_KEYS);
-  const [savedCheckedKeys, setSavedCheckedKeys] =
-    useState<CheckedKeysType>(ALL_KEYS);
-  const [previousSavedKeys, setPreviousSavedKeys] =
-    useState<CheckedKeysType>(ALL_KEYS);
+  // Use Key[] internally for PrivacyNoticesTree compatibility
+  const [checkedKeys, setCheckedKeys] = useState<Key[]>(ALL_KEYS);
+  const [savedCheckedKeys, setSavedCheckedKeys] = useState<Key[]>(ALL_KEYS);
+  const [previousSavedKeys, setPreviousSavedKeys] = useState<Key[]>(ALL_KEYS);
   const [dbState, setDbState] = useState<Record<string, "opt_in" | "opt_out">>(
     {},
   );
+
+  // Convert PRIVACY_NOTICES for PrivacyNoticesTree (use UUIDs as notice_key)
+  const treeNotices = useMemo(() => convertNoticesForTree(PRIVACY_NOTICES), []);
 
   // DERIVED STATE: The default checked keys for the current mechanism
   const mechanismDefaults = useMemo(
@@ -67,16 +103,9 @@ const PrivacyNoticeSandboxSimulated = () => {
     setSavedCheckedKeys(checkedKeys); // Update saved state to current
 
     // Update DB state with changes
-    const currentArray = Array.isArray(checkedKeys)
-      ? checkedKeys
-      : checkedKeys.checked || [];
-    const previousArray = Array.isArray(savedCheckedKeys)
-      ? savedCheckedKeys
-      : savedCheckedKeys.checked || [];
-
     const changedKeys = ALL_KEYS.filter((key) => {
-      const isCurrentlyChecked = currentArray.includes(key);
-      const wasPreviouslyChecked = previousArray.includes(key);
+      const isCurrentlyChecked = checkedKeys.includes(key);
+      const wasPreviouslyChecked = savedCheckedKeys.includes(key);
       return isCurrentlyChecked !== wasPreviouslyChecked;
     });
 
@@ -88,7 +117,7 @@ const PrivacyNoticeSandboxSimulated = () => {
             ? PARENT_KEY
             : TREE_NODES.find((node) => node.key === key)?.title ||
               key.toString();
-        const isChecked = currentArray.includes(key);
+        const isChecked = checkedKeys.includes(key);
         newState[noticeKey] = isChecked ? "opt_in" : "opt_out";
 
         // If cascade is enabled and parent was changed, also update all children
@@ -126,7 +155,8 @@ const PrivacyNoticeSandboxSimulated = () => {
           <Typography.Text strong className="mb-4 block text-base">
             User preferences
           </Typography.Text>
-          <DisableChildrenTree
+          <PrivacyNoticesTree
+            privacyNotices={treeNotices}
             checkedKeys={checkedKeys}
             onCheckedKeysChange={setCheckedKeys}
             cascadeConsent={cascadeConsent}
@@ -140,8 +170,8 @@ const PrivacyNoticeSandboxSimulated = () => {
         {/* Right Column - POST API Preview */}
         <div className="min-w-0 flex-1">
           <PostApiPreview
-            currentSavedKeys={savedCheckedKeys}
-            previousSavedKeys={previousSavedKeys}
+            currentSavedKeys={toCheckedKeysType(savedCheckedKeys)}
+            previousSavedKeys={toCheckedKeysType(previousSavedKeys)}
             cascadeConsent={cascadeConsent}
           />
         </div>
@@ -154,7 +184,12 @@ const PrivacyNoticeSandboxSimulated = () => {
 
       {/* DB State Preview Section */}
       <div className="mt-6">
-        <DbStatePreview dbState={dbState} />
+        <PreviewCard
+          title="Current DB State"
+          header="Raw DB State"
+          headerColor="purple"
+          body={dbState}
+        />
       </div>
     </div>
   );
