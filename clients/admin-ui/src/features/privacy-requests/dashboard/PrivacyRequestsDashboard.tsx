@@ -25,6 +25,7 @@ import {
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
+import { AdvancedSearchModal } from "./AdvancedSearchModal";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -49,6 +50,11 @@ export const PrivacyRequestsDashboard = () => {
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isAdvancedSearchOpen,
+    onOpen: onOpenAdvancedSearch,
+    onClose: onCloseAdvancedSearch,
+  } = useDisclosure();
 
   const { data, isLoading, isFetching } = useSearchPrivacyRequestsQuery({
     ...filterQueryParams,
@@ -115,7 +121,7 @@ export const PrivacyRequestsDashboard = () => {
           </Button>
           <Button
             data-testid="advanced-search-btn"
-            // onClick={onOpenAdvancedSearch}
+            onClick={onOpenAdvancedSearch}
             icon={<Icons.SearchAdvanced />}
             aria-label="Advanced search"
           />
@@ -132,6 +138,10 @@ export const PrivacyRequestsDashboard = () => {
             onClose={onClose}
             modalFilters={modalFilters}
             setModalFilters={setModalFilters}
+          />
+          <AdvancedSearchModal
+            open={isAdvancedSearchOpen}
+            onClose={onCloseAdvancedSearch}
           />
         </Portal>
       </Flex>
