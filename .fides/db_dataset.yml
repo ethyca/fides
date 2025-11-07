@@ -3323,7 +3323,7 @@ dataset:
         data_categories: [system.operations]
       - name: created_by
         data_categories: [user.unique_id]
-  - name: saas_official_dataset
+  - name: saas_template_dataset
     fields:
       - name: id
         data_categories: [system.operations]

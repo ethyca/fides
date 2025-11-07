@@ -304,9 +304,8 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 data={
                     "connection_type": connector_type,
                     "dataset_json": template_dataset_json,
-                }
+                },
             )
-
 
 
 class ConnectorRegistry:

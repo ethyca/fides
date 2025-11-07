@@ -48,7 +48,7 @@ def update_saas_configs(db: Session) -> None:
                 data={
                     "connection_type": connector_type,
                     "dataset_json": template_dataset_json,
-                }
+                },
             )
 
         saas_config = SaaSConfig(**load_config_from_string(template.config))

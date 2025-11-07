@@ -58,7 +58,6 @@ from fides.api.util.event_audit_util import (
 )
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import (
-    load_dataset_from_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
