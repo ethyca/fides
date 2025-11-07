@@ -121,6 +121,11 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     f"Replacing {template.key} connector template with newer version."
                 )
                 template.delete(db=db)
+                template_dataset = SaasTemplateDataset.get_by(
+                    db=db, field="connection_type", value=template.key
+                )
+                if template_dataset:
+                    template_dataset.delete(db=db)
                 continue
             try:
                 CustomConnectorTemplateLoader._register_template(template)
