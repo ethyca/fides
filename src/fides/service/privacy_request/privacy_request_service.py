@@ -43,6 +43,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
+from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -231,7 +232,7 @@ class PrivacyRequestService:
 
         return False
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-statements
     def create_privacy_request(
         self,
         privacy_request_data: PrivacyRequestCreate,
@@ -372,6 +373,9 @@ class PrivacyRequestService:
                 authenticated,
             )
 
+            if not isinstance(privacy_request_data, PrivacyRequestResubmit):
+                check_for_duplicates(db=self.db, privacy_request=privacy_request)
+
             return privacy_request
 
         except RedisNotConfigured as exc:
@@ -441,10 +445,7 @@ class PrivacyRequestService:
         if not existing_privacy_request:
             return None
 
-        if existing_privacy_request.status in [
-            PrivacyRequestStatus.complete,
-            PrivacyRequestStatus.pending,
-        ]:
+        if existing_privacy_request.status == PrivacyRequestStatus.complete:
             raise FidesopsException(
                 f"Cannot resubmit a {existing_privacy_request.status} privacy request"
             )
@@ -636,6 +637,63 @@ class PrivacyRequestService:
                 failed.append(
                     BulkUpdateFailed(
                         message="Privacy request could not be updated",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
+
+        return BulkReviewResponse(succeeded=succeeded, failed=failed)
+
+    def cancel_privacy_requests(
+        self,
+        request_ids: List[str],
+        cancel_reason: Optional[str],
+        *,
+        user_id: Optional[str] = None,
+    ) -> BulkReviewResponse:
+        """Cancel a list of privacy requests and/or report failure"""
+        succeeded: List[PrivacyRequest] = []
+        failed: List[BulkUpdateFailed] = []
+
+        # Terminal states that cannot be canceled
+        terminal_states = [
+            PrivacyRequestStatus.complete,
+            PrivacyRequestStatus.denied,
+            PrivacyRequestStatus.canceled,
+            PrivacyRequestStatus.error,
+        ]
+
+        for request_id in request_ids:
+            try:
+                privacy_request = self._validate_privacy_request_for_bulk_operation(
+                    request_id
+                )
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                continue
+
+            if privacy_request.status in terminal_states:
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"Cannot cancel privacy request in {privacy_request.status.value} status",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
+                continue
+
+            try:
+                privacy_request.cancel_processing(
+                    db=self.db, cancel_reason=cancel_reason
+                )
+
+                succeeded.append(privacy_request)
+            except Exception:
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Privacy request could not be canceled",
                         data=PrivacyRequestResponse.model_validate(
                             privacy_request
                         ).model_dump(mode="json"),
@@ -907,6 +965,9 @@ def handle_approval(
     db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest
 ) -> None:
     """Evaluate manual approval and handle processing or pre-approval webhooks."""
+    check_for_duplicates(db=db, privacy_request=privacy_request)
+    if privacy_request.status == PrivacyRequestStatus.duplicate:
+        return
     if _manual_approval_required(config_proxy, privacy_request):
         _trigger_pre_approval_webhooks(db, privacy_request)
     else:

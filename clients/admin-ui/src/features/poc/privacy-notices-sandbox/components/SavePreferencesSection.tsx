@@ -4,9 +4,10 @@ import { useCallback, useMemo, useState } from "react";
 
 import type { PrivacyNoticeResponse } from "~/types/api";
 
-import { CONSENT_VALUES } from "../constants";
-import type { ConsentPreferenceCreate, ConsentResponse } from "../v3-api";
-import { useSavePrivacyPreferencesMutation } from "../v3-api";
+import type { ConsentPreferenceCreate } from "~/types/api/models/ConsentPreferenceCreate";
+import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
+import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
+import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
 import CascadeConsentToggle from "./CascadeConsentToggle";
 import PreviewCard from "./PreviewCard";
 import RealDataTree from "./RealDataTree";
@@ -120,7 +121,9 @@ const SavePreferencesSection = ({
         return {
           notice_key: noticeKey,
           notice_history_id: historyId,
-          value: isChecked ? CONSENT_VALUES.OPT_IN : CONSENT_VALUES.OPT_OUT,
+          value: isChecked
+            ? UserConsentPreference.OPT_IN
+            : UserConsentPreference.OPT_OUT,
           experience_config_history_id: experienceConfigHistoryId,
           meta: {
             fides: {

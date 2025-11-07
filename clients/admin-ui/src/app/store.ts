@@ -24,6 +24,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
+import { v3Api } from "~/features/common/v3-api.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
 import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
@@ -38,7 +39,6 @@ import { manualTasksSlice } from "~/features/manual-tasks/manual-tasks.slice";
 import { organizationSlice } from "~/features/organization";
 import { languageSlice } from "~/features/privacy-experience/language.slice";
 import { privacyExperienceConfigSlice } from "~/features/privacy-experience/privacy-experience.slice";
-import { v3Api } from "~/features/poc/privacy-notices-sandbox/v3-api";
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
 import { propertySlice } from "~/features/properties";
@@ -139,6 +139,7 @@ const persistConfig = {
   blacklist: [
     baseApi.reducerPath,
     healthApi.reducerPath,
+    v3Api.reducerPath,
     dictSuggestionsSlice.name,
   ],
 };

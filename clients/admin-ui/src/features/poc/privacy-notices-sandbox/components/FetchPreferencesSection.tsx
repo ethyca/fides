@@ -5,7 +5,7 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 
-import type { ConsentPreferenceResponse } from "../v3-api";
+import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
 import PreviewCard from "./PreviewCard";
 
 interface FetchPreferencesSectionProps {

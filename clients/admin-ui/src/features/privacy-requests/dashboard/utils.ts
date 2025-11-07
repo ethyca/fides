@@ -1,10 +1,6 @@
-import { PrivacyRequestEntity } from "../types";
+import { isEmpty, isNil } from "lodash";
 
-interface IdentityWithKey {
-  key: string;
-  label: string;
-  value: string | null;
-}
+import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
 
 interface CustomFieldWithKey {
   key: string;
@@ -12,51 +8,85 @@ interface CustomFieldWithKey {
   value: unknown;
 }
 
+interface IdentityValueWithKey extends IdentityValue {
+  key: string;
+}
+
+const getIdentityValues = (
+  key: string,
+  identity: string | IdentityValue | null,
+): IdentityValueWithKey | null => {
+  if (!identity) {
+    return null;
+  }
+  // compatible with old string identity value
+  if (typeof identity === "string" && identity.length > 0) {
+    return { value: identity, label: key, key };
+  }
+
+  // compatible with new object identity value with label and value
+  if (typeof identity === "object" && !isEmpty(identity.value)) {
+    return { value: identity.value, label: identity.label, key };
+  }
+
+  return null;
+};
+
 export const getPrimaryIdentity = (
-  identity: PrivacyRequestEntity["identity"],
-): IdentityWithKey | null => {
+  identity: PrivacyRequestResponse["identity"],
+): IdentityValueWithKey | null => {
+  if (!identity) {
+    return null;
+  }
+
   // email is the primary identity by default
-  if (identity.email && identity.email.value) {
-    return { key: "email", ...identity.email };
+  const emailIdentity = getIdentityValues("email", identity.email);
+  if (emailIdentity) {
+    return emailIdentity;
   }
 
   // then we check for phone number
-  if (identity.phone_number && identity.phone_number.value) {
-    return { key: "phone_number", ...identity.phone_number };
+  const phoneNumberIdentity = getIdentityValues(
+    "phone_number",
+    identity.phone_number,
+  );
+  if (phoneNumberIdentity) {
+    return phoneNumberIdentity;
   }
 
   // finally, we'll use the first identity
   const keys = Object.keys(identity);
   if (keys.length > 0) {
-    return { key: keys[0], ...identity[keys[0]] };
+    return getIdentityValues(keys[0], identity[keys[0]]);
   }
 
   return null;
 };
 
 export const getOtherIdentities = (
-  allIdentities: PrivacyRequestEntity["identity"],
-  primaryIdentity: IdentityWithKey | null,
-): IdentityWithKey[] => {
+  allIdentities: PrivacyRequestResponse["identity"],
+  primaryIdentity: IdentityValueWithKey | null,
+): IdentityValueWithKey[] => {
+  if (!allIdentities) {
+    return [];
+  }
+
   return Object.entries(allIdentities)
-    .filter(([key, identity]) => identity.value && key !== primaryIdentity?.key)
-    .map(([key, identity]) => ({
-      key,
-      ...identity,
-    }));
+    .map(([key, identity]) => getIdentityValues(key, identity))
+    .filter((identity): identity is IdentityValueWithKey => Boolean(identity))
+    .filter((identity) => identity.key !== primaryIdentity?.key);
 };
 
 export const getCustomFields = (
-  customFields: PrivacyRequestEntity["custom_privacy_request_fields"],
+  customFields: PrivacyRequestResponse["custom_privacy_request_fields"],
 ): CustomFieldWithKey[] => {
+  if (!customFields) {
+    return [];
+  }
+
   return customFields
     ? Object.entries(customFields)
-        .filter(
-          ([, field]) =>
-            field.value !== null &&
-            field.value !== undefined &&
-            field.value !== "",
-        )
+        .filter(([, field]) => !isNil(field.value) && field.value !== "")
         .map(([key, field]) => ({
           key,
           label: field.label,

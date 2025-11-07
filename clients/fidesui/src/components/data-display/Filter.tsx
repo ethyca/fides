@@ -1,7 +1,8 @@
 import { ChevronDown } from "@carbon/icons-react";
 import type { PopoverProps, TreeProps } from "antd/lib";
 import { Button, Divider, Flex, Input, Popover, Space, Tree } from "antd/lib";
-import { useState } from "react";
+import _ from "lodash";
+import { useEffect, useState } from "react";
 
 import { filterTreeData, getAllTreeKeys } from "./filter.utils";
 
@@ -61,6 +62,11 @@ export const Filter = ({
 }: FilterProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [internalChecked, setInternalChecked] = useState(
+    Array.isArray(treeProps.checkedKeys)
+      ? treeProps.checkedKeys
+      : treeProps?.checkedKeys?.checked,
+  );
 
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
@@ -90,10 +96,37 @@ export const Filter = ({
   const filteredData = showSearch
     ? filterTreeData(searchValue, treeProps.treeData)
     : treeProps.treeData;
+
+  // Augmenting onCheck event to include checked values hidden by search filter
+  const handleOnCheck: TreeProps["onCheck"] = (checked, info) => {
+    const checkedKeysArray = Array.isArray(checked) ? checked : checked.checked;
+    const hiddenKeys = _.without(
+      getAllTreeKeys(treeProps.treeData),
+      ...getAllTreeKeys(filteredData),
+    );
+
+    const unfilteredChecked = [
+      ..._.intersection(hiddenKeys, internalChecked),
+      ...checkedKeysArray,
+    ];
+
+    setInternalChecked(unfilteredChecked);
+    treeProps.onCheck?.(unfilteredChecked, info);
+  };
+
   const expandedKeys =
     showSearch && searchValue
       ? getAllTreeKeys(filteredData)
       : treeProps.expandedKeys;
+
+  // Syncing externally controlled state
+  useEffect(() => {
+    const checkedKeysArray = Array.isArray(treeProps.checkedKeys)
+      ? treeProps.checkedKeys
+      : treeProps?.checkedKeys?.checked;
+
+    setInternalChecked(checkedKeysArray);
+  }, [treeProps.checkedKeys]);
 
   const content = (
     <Flex vertical gap="small" className="py-2 min-w-72">
@@ -114,6 +147,7 @@ export const Filter = ({
       <Flex className="max-h-72 overflow-y-auto px-2">
         <Tree
           {...treeProps}
+          onCheck={handleOnCheck}
           treeData={filteredData}
           expandedKeys={expandedKeys}
         />

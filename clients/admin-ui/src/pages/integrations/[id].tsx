@@ -7,7 +7,7 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
@@ -96,7 +96,7 @@ const IntegrationDetailView: NextPage = () => {
   });
 
   return (
-    <Layout title="Integrations">
+    <FixedLayout title="Integrations">
       <PageHeader
         heading="Integrations"
         breadcrumbItems={[
@@ -124,7 +124,11 @@ const IntegrationDetailView: NextPage = () => {
             )
           )}
         </Col>
-        <Col flex="0 0 350px">
+        <Col
+          xs={{ flex: "0 0 310px" }}
+          xl={{ flex: "0 0 330px" }}
+          xxl={{ flex: "0 0 350px" }}
+        >
           {isLoading ? (
             <Spinner />
           ) : (
@@ -139,7 +143,7 @@ const IntegrationDetailView: NextPage = () => {
           )}
         </Col>
       </Row>
-    </Layout>
+    </FixedLayout>
   );
 };
 

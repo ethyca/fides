@@ -9,12 +9,13 @@ import {
   FetchPreferencesSection,
   SavePreferencesSection,
 } from "./components";
-import { CONSENT_VALUES, EXPERIENCE_DEFAULTS } from "./constants";
-import type { ConsentPreferenceResponse } from "./v3-api";
+import { EXPERIENCE_DEFAULTS } from "./constants";
+import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 import {
   useLazyGetCurrentPreferencesQuery,
   useLazyGetPrivacyExperienceQuery,
-} from "./v3-api";
+} from "~/features/common/v3-api.slice";
 
 const PrivacyNoticeSandboxRealData = () => {
   // Form state
@@ -151,7 +152,7 @@ const PrivacyNoticeSandboxRealData = () => {
       // Find parents that are opted out
       const optedOutParents = new Set(
         response
-          .filter((pref) => pref.value === CONSENT_VALUES.OPT_OUT)
+          .filter((pref) => pref.value === UserConsentPreference.OPT_OUT)
           .map((pref) => pref.notice_key),
       );
 
@@ -196,7 +197,7 @@ const PrivacyNoticeSandboxRealData = () => {
       // Convert response to checked keys and populate the tree
       // Use notice_key from the response since that's what the tree uses as keys
       const optInKeys = response
-        .filter((pref) => pref.value === CONSENT_VALUES.OPT_IN)
+        .filter((pref) => pref.value === UserConsentPreference.OPT_IN)
         .map((pref) => pref.notice_key);
 
       // Merge with existing preferences (preserves child states when parent is opted out)

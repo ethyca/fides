@@ -1,58 +1,18 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
-import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import { baseApi } from "~/features/common/api.slice";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
-
-// Get the V3 API base URL from environment variables
-// Falls back to localhost for development if not set
-const V3_API_BASE_URL =
-  process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER || "http://localhost:8080";
+import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
+import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
 
 export interface PrivacyExperienceQueryParams {
   region: string;
   show_disabled: boolean;
   component: string;
   systems_applicable: boolean;
-}
-
-// V3 API Types
-export interface ConsentPreferenceCreate {
-  notice_key: string;
-  notice_history_id: string;
-  value: "opt_in" | "opt_out" | "acknowledge";
-  experience_config_history_id?: string | null;
-  meta?: Record<string, any> | null;
-}
-
-export interface ConsentCreate {
-  identity: {
-    email?: { value: string };
-    phone_number?: { value: string };
-    fides_user_device_id?: { value: string };
-    external_id?: { value: string };
-  };
-  preferences: ConsentPreferenceCreate[];
-  scope?: {
-    property_id?: string;
-  } | null;
-  meta?: Record<string, any> | null;
-}
-
-export interface ConsentPreferenceResponse {
-  notice_key: string;
-  notice_history_id: string;
-  value: "opt_in" | "opt_out" | "acknowledge";
-  experience_config_history_id?: string | null;
-  meta?: Record<string, any> | null;
-}
-
-export interface ConsentResponse {
-  identity: Record<string, { value: string }>;
-  preferences: ConsentPreferenceResponse[];
-  scope?: Record<string, any> | null;
-  meta: Record<string, any>;
 }
 
 export interface CurrentPreferencesQueryParams {

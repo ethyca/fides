@@ -17,6 +17,7 @@ from .monitor_task import (
     create_monitor_task_with_execution_log,
     update_monitor_task_with_execution_log,
 )
+from .staged_resource_error import StagedResourceError
 
 __all__ = [
     "ClassificationBenchmark",
@@ -27,6 +28,7 @@ __all__ = [
     "SharedMonitorConfig",
     "StagedResource",
     "StagedResourceAncestor",
+    "StagedResourceError",
     "fetch_staged_resources_by_type_query",
     "MonitorTask",
     "MonitorTaskExecutionLog",

@@ -33,7 +33,7 @@ interface TaxonomyEditDrawerProps {
   onClose: () => void;
 }
 
-const TaxonomyEditDrawer = ({
+const TaxonomyItemEditDrawer = ({
   taxonomyItem,
   taxonomyType,
   onClose: closeDrawer,
@@ -210,4 +210,4 @@ const TaxonomyEditDrawer = ({
     </>
   );
 };
-export default TaxonomyEditDrawer;
+export default TaxonomyItemEditDrawer;

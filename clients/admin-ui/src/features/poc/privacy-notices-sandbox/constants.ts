@@ -46,10 +46,3 @@ export const EXPERIENCE_DEFAULTS = {
   SHOW_DISABLED: false,
   SYSTEMS_APPLICABLE: true,
 } as const;
-
-// Consent values
-export const CONSENT_VALUES = {
-  OPT_IN: "opt_in" as const,
-  OPT_OUT: "opt_out" as const,
-  ACKNOWLEDGE: "acknowledge" as const,
-} as const;
