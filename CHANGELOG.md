@@ -47,6 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Allowing pending (new) requests to be resubmitted [#6916](https://github.com/ethyca/fides/pull/6916)
 - Allowing dynamic Celery environment variables to be loaded if they match the `FIDES__CELERY__` prefix [#6916](https://github.com/ethyca/fides/pull/6916)
 - PrivacyRequest cache now falls back to the db for identity and custom fields [#6896](https://github.com/ethyca/fides/pull/6896)
+- `fides.js` now dispatches a sythetic `FidesReady` event when `Fides.gtm()` is called after Fides has already been initialized. [#6915](https://github.com/ethyca/fides/pull/6915)
 
 ### Developer Experience
 - Added keyboard navigation to CustomList component [#6903](https://github.com/ethyca/fides/pull/6903)
