@@ -1,25 +1,33 @@
 from datetime import timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from freezegun import freeze_time
+from requests import Response
 
-from fides.api.common_exceptions import AwaitingAsyncProcessing, PrivacyRequestError
-from fides.api.models.privacy_request.request_task import (
-    RequestTask,
-    RequestTaskSubRequest,
+from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
+    FidesopsException,
+    PrivacyRequestError,
 )
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResultRequest,
     PollingStatusRequest,
 )
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
     AsyncPollingStrategy,
+)
+from fides.api.service.connectors.saas.authenticated_client import (
+    RequestFailureResponseException,
 )
 from fides.config import CONFIG
 
@@ -324,12 +332,6 @@ class TestAsyncPollingStrategy:
         Test that _handle_polling_initial_request raises RequestFailureResponseException
         when initial request fails with a status code NOT in the ignore_errors list.
         """
-        from unittest.mock import Mock, MagicMock
-        from fides.api.service.connectors.saas.authenticated_client import RequestFailureResponseException
-        from fides.api.schemas.saas.saas_config import ReadSaaSRequest
-        from fides.api.models.policy import Policy
-        from fides.api.models.privacy_request import RequestTask
-        from requests import Response
 
         # Create a mock request task
         request_task = RequestTask.create(
@@ -357,7 +359,7 @@ class TestAsyncPollingStrategy:
             method="GET",
             path="/api/start-request",
             correlation_id_path="request_id",
-            ignore_errors=[404, 409]  # Common errors to ignore, but not 500
+            ignore_errors=[404, 409],  # Common errors to ignore, but not 500
         )
 
         # Mock client that raises RequestFailureResponseException on send for 500 error
@@ -368,7 +370,9 @@ class TestAsyncPollingStrategy:
         mock_response.ok = False
 
         # Since 500 is NOT in ignore_errors list, client.send should raise RequestFailureResponseException
-        mock_client.send.side_effect = RequestFailureResponseException(response=mock_response)
+        mock_client.send.side_effect = RequestFailureResponseException(
+            response=mock_response
+        )
 
         input_data = {"email": "test@example.com"}
         policy = Policy()
@@ -396,13 +400,6 @@ class TestAsyncPollingStrategy:
         when initial request fails with a status code IN the ignore_errors list.
         The client.send returns the failed response, then response.ok check triggers FidesopsException.
         """
-        from unittest.mock import Mock, MagicMock
-        from fides.api.common_exceptions import FidesopsException
-        from fides.api.schemas.saas.saas_config import ReadSaaSRequest
-        from fides.api.models.policy import Policy
-        from fides.api.models.privacy_request import RequestTask
-        from requests import Response
-
         # Create a mock request task
         request_task = RequestTask.create(
             db,
@@ -428,7 +425,7 @@ class TestAsyncPollingStrategy:
             method="GET",
             path="/api/start-request",
             correlation_id_path="request_id",
-            ignore_errors=[404, 409]  # List includes 404 which we'll test with
+            ignore_errors=[404, 409],  # List includes 404 which we'll test with
         )
 
         # Mock client that returns a 404 response (which is in ignore list)
