@@ -91,6 +91,7 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
           time_window_days: 365,
         }}
         className="mt-4"
+        requiredMark={false}
       >
         <Form.Item
           name="enabled"
