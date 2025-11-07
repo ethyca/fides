@@ -7,8 +7,10 @@ Defines the logging format and other helper functions to be used throughout the 
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from contextlib import contextmanager
+from types import FrameType
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional
 
 from loguru import logger
@@ -22,6 +24,37 @@ if TYPE_CHECKING:
     from fides.api.util.cache import FidesopsRedis
 
 MASKED = "MASKED"
+
+
+class InterceptHandler(logging.Handler):
+    """
+    Intercept standard library logging and redirect to Loguru.
+
+    This handler is added to the root logger to capture logs from libraries
+    that use standard library logging (SQLAlchemy, Alembic, Celery, etc.)
+    and route them through Loguru for consistent formatting and serialization.
+    """
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Emit a log record by routing it through Loguru."""
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = str(record.levelno)
+
+        frame: Optional[FrameType] = logging.currentframe()
+        depth = 2
+        # Get the directory path of the logging module to match all files within it
+        logging_module_path = os.path.dirname(logging.__file__) + os.sep
+        while frame is not None and frame.f_code.co_filename.startswith(
+            logging_module_path
+        ):
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
 
 
 class RedisSink:
@@ -134,18 +167,30 @@ def create_handler_dicts(
         "catch": True,
     }
 
+    # Helper function to check if a log record has custom extra context
+    # Loguru always includes an 'extra' dict, so we need to check if it has any keys
+    def has_custom_extra(log_record: Dict) -> bool:
+        """Check if log record has custom extra context beyond Loguru's defaults."""
+        extra = log_record.get("extra", {})
+        return len(extra) > 0
+
+    # Helper to filter logs without custom extra
+    def filter_standard(log_record: Dict) -> bool:
+        """Filter for logs without custom extra context."""
+        return not has_custom_extra(log_record)
+
     # Configure handler
     standard_dict = {
         **base_config,
         "sink": sink,
-        "filter": lambda logRecord: not bool(logRecord["extra"]),
+        "filter": filter_standard,
     }
 
     # Create extra dict with additional formatting for logs with extra context
     extra_dict = {
         **standard_dict,
         "format": log_format + " | <dim>{extra}</dim>",
-        "filter": lambda logRecord: bool(logRecord["extra"]),
+        "filter": has_custom_extra,
     }
 
     return [standard_dict, extra_dict]
@@ -171,13 +216,14 @@ def setup(config: FidesConfig) -> None:
     # Configure main sink from config
     destination = config.logging.destination
     main_sink = sys.stdout if not destination else destination
+    is_json_serialization = config.logging.serialization == "json"
     handlers.extend(
         create_handler_dicts(
             level=config.logging.level,
             include_called_from=config.dev_mode,
             sink=main_sink,
-            serialize=config.logging.serialization == "json",
-            colorize=config.logging.colorize,
+            serialize=is_json_serialization,
+            colorize=config.logging.colorize and not is_json_serialization,
         )
     )
 
@@ -195,6 +241,14 @@ def setup(config: FidesConfig) -> None:
         )
 
     logger.configure(handlers=handlers)
+
+    # Add InterceptHandler to root logger to capture standard library logs
+    # This intercepts logs from SQLAlchemy, Alembic, Celery, etc.
+    logging.root.handlers = [InterceptHandler()]
+    logging.root.setLevel(config.logging.level)
+
+    # Capture Python warnings and redirect them to logging so they get formatted by Loguru
+    logging.captureWarnings(True)
 
 
 def obfuscate_message(message: str) -> str:
