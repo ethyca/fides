@@ -7,6 +7,7 @@ export const DebouncedSearchInput = ({
   value,
   onChange,
   placeholder,
+  variant = "default",
   ...props
 }: SearchInputProps) => {
   const INPUT_CHANGE_DELAY = 500;
@@ -38,8 +39,9 @@ export const DebouncedSearchInput = ({
     <SearchInput
       value={currentInput}
       onChange={handleOnChange}
-      onClear={onClear}
+      onClear={variant === "default" ? onClear : undefined}
       placeholder={placeholder}
+      variant={variant}
       {...props}
     />
   );

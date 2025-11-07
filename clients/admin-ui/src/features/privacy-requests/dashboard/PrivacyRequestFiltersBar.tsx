@@ -3,11 +3,11 @@ import {
   AntButton as Button,
   AntDatePicker as DatePicker,
   AntFlex as Flex,
-  AntInput as Input,
   AntSelect as Select,
   Icons,
 } from "fidesui";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import {
   SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
@@ -88,14 +88,14 @@ export const PrivacyRequestFiltersBar = ({
   };
 
   return (
-    <Flex gap="small" align="center">
-      <Input.Search
+    <Flex gap="small" align="center" justify="flex-start">
+      <DebouncedSearchInput
         placeholder="Request ID or identity value"
         value={fuzzySearchTerm || ""}
-        onChange={(e) => setFuzzySearchTerm(e.target.value || null)}
-        allowClear
+        onChange={(value) => setFuzzySearchTerm(value || null)}
+        variant="compact"
         data-testid="privacy-request-search"
-        className="w-60"
+        wrapperClassName="w-60"
       />
       <DatePicker.RangePicker
         format="YYYY-MM-DD"
@@ -105,7 +105,7 @@ export const PrivacyRequestFiltersBar = ({
         allowClear
         data-testid="date-range-filter"
         aria-label="Date range"
-        className="w-64"
+        className="w-60"
       />
       <Select
         mode="multiple"
