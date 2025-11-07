@@ -242,6 +242,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         read_requests: List[ReadSaaSRequest] = (
             query_config.get_read_requests_by_identity()
         )
+        logger.info(f"Read requests: {read_requests}")
         delete_request: Optional[SaaSRequest] = (
             query_config.get_erasure_request_by_action("delete")
         )
@@ -273,7 +274,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
             ):
-                return []
+                return [] # This would terminate early the request
 
         # Delegate async requests
         with get_db() as db:
@@ -289,9 +290,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         input_data=input_data,
                     )
                 else:
+                    # We return a single empty row to still trigger the mask_data method
                     logger.info("Access request is not enabled or policy is not present")
-                    return []
-
+                    return [{}]
         rows: List[Row] = []
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
@@ -358,16 +359,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Guard clause to ensure we only run async access requests
         if the access request is enabled and we are in an Access Request
         """
-        logger.info(f"Guard access request: {self.configuration.enabled_actions}")
-        logger.info(f"Policy: {policy.get_rules_for_action(ActionType.access)}")
         if (
             self.configuration.enabled_actions is None
             or ActionType.access in self.configuration.enabled_actions
         ):
             if policy.get_rules_for_action(ActionType.access):
-                logger.info("Access request is enabled and policy is present")
                 return True
-        logger.info("Access request is not enabled or policy is not present")
         return False
 
     def _apply_output_template(
