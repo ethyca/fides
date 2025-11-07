@@ -278,16 +278,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # Delegate async requests
         with get_db() as db:
             # Guard clause to ensure we only run async access requests for access requests
-            if self.guard_access_request(policy):
-                if async_dsr_strategy := _get_async_dsr_strategy(
-                    db, request_task, query_config, ActionType.access
-                ):
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.access
+            ):
+                if self.guard_access_request(policy):
                     return async_dsr_strategy.async_retrieve_data(
                         client=self.create_client(),
                         request_task_id=request_task.id,
                         query_config=query_config,
                         input_data=input_data,
                     )
+                else:
+                    logger.info("Access request is not enabled or policy is not present")
+                    return []
 
         rows: List[Row] = []
         for read_request in read_requests:
@@ -355,12 +358,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Guard clause to ensure we only run async access requests
         if the access request is enabled and we are in an Access Request
         """
+        logger.info(f"Guard access request: {self.configuration.enabled_actions}")
+        logger.info(f"Policy: {policy.get_rules_for_action(ActionType.access)}")
         if (
             self.configuration.enabled_actions is None
             or ActionType.access in self.configuration.enabled_actions
         ):
             if policy.get_rules_for_action(ActionType.access):
+                logger.info("Access request is enabled and policy is present")
                 return True
+        logger.info("Access request is not enabled or policy is not present")
         return False
 
     def _apply_output_template(
