@@ -56,6 +56,7 @@ export const DiscoveredSystemAggregateTable = ({
     oktaActiveTab,
     setOktaActiveTab,
     oktaFilterTabs,
+    oktaFilterCounts,
   } = useDiscoveredSystemAggregateTable({ monitorId });
 
   return (
@@ -66,13 +67,13 @@ export const DiscoveredSystemAggregateTable = ({
         items={
           isOktaApp
             ? oktaFilterTabs.map((tab) => ({
-                key: tab.value,
-                label: `${tab.label}`,
-              }))
+              key: tab.value,
+              label: `${tab.label} (${oktaFilterCounts[tab.value] || 0})`,
+            }))
             : filterTabs.map((tab) => ({
-                key: tab.hash,
-                label: tab.label,
-              }))
+              key: tab.hash,
+              label: tab.label,
+            }))
         }
         selectedKeys={[isOktaApp ? oktaActiveTab : activeTab]}
         onClick={async (menuInfo) => {
@@ -111,10 +112,10 @@ export const DiscoveredSystemAggregateTable = ({
                 },
                 !activeParams.diff_status.includes(DiffStatus.MUTED)
                   ? {
-                      key: "ignore",
-                      label: "Ignore",
-                      onClick: handleBulkIgnore,
-                    }
+                    key: "ignore",
+                    label: "Ignore",
+                    onClick: handleBulkIgnore,
+                  }
                   : null,
               ],
             }}

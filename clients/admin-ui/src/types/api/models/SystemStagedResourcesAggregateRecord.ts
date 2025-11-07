@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type { ConsentAlertInfo } from "./ConsentAlertInfo";
-import { OktaAppMetadata } from "~/features/data-discovery-and-detection/types/OktaAppMetadata";
+import type { OktaAppMetadata } from "./OktaAppMetadata";
 
 /**
  * API response model for records of aggregated staged resources by system

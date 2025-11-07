@@ -19,6 +19,7 @@ import {
   AlertLevel,
   ConsentAlertInfo,
   DiffStatus,
+  StagedResourceAPIResponse,
   StagedResourceTypeValue,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
@@ -65,8 +66,7 @@ export const useDiscoveredSystemAggregateTable = ({
     tableState;
 
   // Check if this is an Okta app monitor
-  const isOktaApp = monitorId.includes("okta") || monitorId.includes("Okta");
-  const TEMP_USE_MOCKS = isOktaApp;
+  const isOktaApp = monitorId.toLowerCase().includes("okta");
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery(
     {
@@ -77,7 +77,7 @@ export const useDiscoveredSystemAggregateTable = ({
       ...activeParams,
     },
     {
-      skip: TEMP_USE_MOCKS, // Skip API call when using mocks
+      skip: isOktaApp, // Skip API call when using mocks
     },
   );
 
@@ -97,7 +97,7 @@ export const useDiscoveredSystemAggregateTable = ({
     const counts: Record<string, number> = {};
     OKTA_APP_FILTER_TABS.forEach((tab) => {
       const filteredItems = MOCK_OKTA_APPS.filter((item) => {
-        return tab.filter(item as any);
+        return tab.filter(item as StagedResourceAPIResponse);
       });
       counts[tab.value] = filteredItems.length;
     });
@@ -115,7 +115,7 @@ export const useDiscoveredSystemAggregateTable = ({
       (tab) => tab.value === oktaActiveTab,
     );
     const filteredItems = MOCK_OKTA_APPS.filter((item) => {
-      return activeFilter?.filter(item as any);
+      return activeFilter?.filter(item as StagedResourceAPIResponse);
     });
 
     return {
@@ -136,22 +136,23 @@ export const useDiscoveredSystemAggregateTable = ({
 
   const rowClickUrl = useCallback(
     (record: SystemStagedResourcesAggregateRecord) => {
-      if (monitorId.includes("okta")) {
-        return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
-      }
-      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
+      const monitorType = isOktaApp
+        ? MONITOR_TYPES.INFRASTRUCTURE
+        : MONITOR_TYPES.WEBSITE;
+      return `${ACTION_CENTER_ROUTE}/${monitorType}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
     },
-    [monitorId, activeTab],
+
+    [monitorId, activeTab, isOktaApp],
   );
 
   const antTableConfig = useMemo(
     () => ({
       enableSelection: true,
       getRowKey: getRecordKey,
-      isLoading: TEMP_USE_MOCKS ? false : isLoading,
-      isFetching: TEMP_USE_MOCKS ? false : isFetching,
-      dataSource: TEMP_USE_MOCKS ? mockData?.items || [] : data?.items || [],
-      totalRows: TEMP_USE_MOCKS ? mockData?.total || 0 : data?.total || 0,
+      isLoading: isOktaApp ? false : isLoading,
+      isFetching: isOktaApp ? false : isFetching,
+      dataSource: isOktaApp ? mockData?.items || [] : data?.items || [],
+      totalRows: isOktaApp ? mockData?.total || 0 : data?.total || 0,
       customTableProps: {
         locale: {
           emptyText: (
@@ -169,7 +170,7 @@ export const useDiscoveredSystemAggregateTable = ({
       isFetching,
       data?.items,
       data?.total,
-      TEMP_USE_MOCKS,
+      isOktaApp,
       mockData,
     ],
   );

@@ -14,13 +14,13 @@ import {
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import {
   ConsentAlertInfo,
+  OktaAppMetadata,
   PrivacyNoticeRegion,
   StagedResourceTypeValue,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
 import { VendorMatchBadge } from "../../components/VendorMatchBadge";
-import { OktaAppMetadata } from "../../types/OktaAppMetadata";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
@@ -209,8 +209,8 @@ export const useDiscoveredSystemAggregateColumns = ({
                     label: isoEntry
                       ? formatIsoLocation({ isoEntry })
                       : (PRIVACY_NOTICE_REGION_RECORD[
-                          location as PrivacyNoticeRegion
-                        ] ?? location) /* fallback on internal list for now */,
+                        location as PrivacyNoticeRegion
+                      ] ?? location) /* fallback on internal list for now */,
                     key: location,
                   };
                 }) ?? []
