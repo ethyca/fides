@@ -274,7 +274,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
             ):
-                return [] # This would terminate early the request
+                return []  # This would terminate early the request
 
         # Delegate async requests
         with get_db() as db:
@@ -289,10 +289,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         query_config=query_config,
                         input_data=input_data,
                     )
-                else:
-                    # We return a single empty row to still trigger the mask_data method
-                    logger.info("Access request is not enabled or policy is not present")
-                    return [{}]
+                # We return a single empty row to still trigger the mask_data method
+                logger.info("Access request is not enabled or policy is not present")
+                return [{}]
         rows: List[Row] = []
         for read_request in read_requests:
             self.set_saas_request_state(read_request)

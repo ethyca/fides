@@ -10,6 +10,7 @@ from fideslang.models import FidesKey
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+
 from fides.api.common_exceptions import (
     AwaitingAsyncTask,
     ClientUnsuccessfulException,
@@ -17,7 +18,6 @@ from fides.api.common_exceptions import (
     FidesopsException,
     SkippingConsentPropagation,
 )
-
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
@@ -28,8 +28,8 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.consentable_item import ConsentableItem
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
@@ -1261,13 +1261,10 @@ class TestAsyncConnectors:
                     "method": "GET",
                     "path": "/api/status",
                     "status_path": "status",
-                    "status_completed_value": "completed"
+                    "status_completed_value": "completed",
                 },
-                "result_request": {
-                    "method": "GET",
-                    "path": "/api/result"
-                }
-            }
+                "result_request": {"method": "GET", "path": "/api/result"},
+            },
         }
         saas_async_example_connection_config.saas_config = modified_config
         saas_async_example_connection_config.save(db)
