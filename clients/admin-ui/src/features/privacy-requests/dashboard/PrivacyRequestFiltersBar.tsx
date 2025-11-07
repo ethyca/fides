@@ -78,10 +78,18 @@ export const PrivacyRequestFiltersBar = ({
     });
   };
 
+  const actionTypeLabelRender = () => {
+    const count = modalFilters.action_type?.length || 0;
+    return (
+      <span style={{ fontWeight: "bold" }}>
+        Request type{count > 0 ? ` (${count})` : ""}
+      </span>
+    );
+  };
+
   return (
     <Flex gap="small" align="center">
-      <Icons.Filter className="text-gray-500" />
-      <Input
+      <Input.Search
         placeholder="Request ID or identity value"
         value={fuzzySearchTerm || ""}
         onChange={(e) => setFuzzySearchTerm(e.target.value || null)}
@@ -106,7 +114,7 @@ export const PrivacyRequestFiltersBar = ({
         value={modalFilters.status || []}
         onChange={handleStatusChange}
         allowClear
-        maxTagCount="responsive"
+        maxTagCount={1}
         data-testid="request-status-filter"
         aria-label="Status"
         className="w-44"
@@ -118,10 +126,11 @@ export const PrivacyRequestFiltersBar = ({
         value={modalFilters.action_type || []}
         onChange={handleActionTypeChange}
         allowClear
-        maxTagCount="responsive"
+        maxTagCount={1}
         data-testid="request-action-type-filter"
         aria-label="Request type"
         className="w-44"
+        labelRender={actionTypeLabelRender}
       />
       <Button
         data-testid="advanced-search-btn"

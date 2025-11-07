@@ -132,7 +132,7 @@ export const PrivacyRequestsDashboard = () => {
   return (
     <div>
       {/* First row: Search and Filters */}
-      <Flex gap="small" align="center" className="mb-2">
+      <Flex gap="small" align="center" className="mb-4">
         <PrivacyRequestFiltersBar
           modalFilters={modalFilters}
           setModalFilters={setModalFilters}
@@ -143,7 +143,7 @@ export const PrivacyRequestsDashboard = () => {
       </Flex>
 
       {/* Second row: Select all and actions */}
-      <Flex gap="small" align="center" justify="space-between" className="mb-4">
+      <Flex gap="small" align="center" justify="space-between">
         <Flex gap="small" align="center">
           <Checkbox
             id="select-all-privacy-requests"
