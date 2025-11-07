@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.74.0..main)
 
 ### Changed
+- Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 
 ### Developer Experience
@@ -64,6 +65,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed handling of really long values in the new request manager [#6917](https://github.com/ethyca/fides/pull/6917)
 - Fixed Filter component bug that caused values to clear when searching through available filters [#6914](https://github.com/ethyca/fides/pull/6914)
 - Fixed a visual issue with the integrations detail page in smaller screens [#6925](https://github.com/ethyca/fides/pull/6925)
+- Fixed data type display and simplified data categories in Action Center field details [#6931](https://github.com/ethyca/fides/pull/6931)
 
 ## [2.73.1](https://github.com/ethyca/fides/compare/2.73.0..2.73.1)
 
