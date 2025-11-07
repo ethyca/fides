@@ -1,6 +1,6 @@
 import {
-  AntBadge as Badge,
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntMessage as message,
@@ -8,16 +8,15 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
+  AntTypography as Typography,
   Icons,
   Portal,
   useDisclosure,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
-import { GlobalFilterV2 } from "~/features/common/table/v2";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
   useSearchPrivacyRequestsQuery,
@@ -29,7 +28,7 @@ import { AdvancedSearchModal } from "./AdvancedSearchModal";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
-import { PrivacyRequestFiltersModal } from "./PrivacyRequestFiltersModal";
+import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
@@ -38,7 +37,6 @@ export const PrivacyRequestsDashboard = () => {
     fuzzySearchTerm,
     setFuzzySearchTerm,
     modalFilters,
-    modalFiltersCount,
     setModalFilters,
   } = usePrivacyRequestsFilters({
     pagination,
@@ -49,18 +47,18 @@ export const PrivacyRequestsDashboard = () => {
 
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isAdvancedSearchOpen,
     onOpen: onOpenAdvancedSearch,
     onClose: onCloseAdvancedSearch,
   } = useDisclosure();
 
-  const { data, isLoading, isFetching } = useSearchPrivacyRequestsQuery({
-    ...filterQueryParams,
-    page: pagination.pageIndex,
-    size: pagination.pageSize,
-  });
+  const { data, isLoading, isFetching, refetch } =
+    useSearchPrivacyRequestsQuery({
+      ...filterQueryParams,
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+    });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -98,32 +96,85 @@ export const PrivacyRequestsDashboard = () => {
     modalApi,
   });
 
+  // Select all logic
+  const currentPageIds = useMemo(
+    () => requests.map((item) => item.id),
+    [requests],
+  );
+
+  const allCurrentPageSelected = useMemo(
+    () =>
+      currentPageIds.length > 0 &&
+      currentPageIds.every((id) => selectedIds.includes(id)),
+    [currentPageIds, selectedIds],
+  );
+
+  const someCurrentPageSelected = useMemo(
+    () =>
+      currentPageIds.some((id) => selectedIds.includes(id)) &&
+      !allCurrentPageSelected,
+    [currentPageIds, selectedIds, allCurrentPageSelected],
+  );
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      // Select all items on current page
+      const newSelected = Array.from(
+        new Set([...selectedIds, ...currentPageIds]),
+      );
+      setSelectedIds(newSelected);
+    } else {
+      // Deselect all items
+      setSelectedIds([]);
+    }
+  };
+
   return (
     <div>
-      <Flex justify="space-between" align="center" className="my-2">
-        <GlobalFilterV2
-          globalFilter={fuzzySearchTerm}
-          setGlobalFilter={setFuzzySearchTerm}
-          placeholder="Search by request ID or identity value"
+      {/* First row: Search and Filters */}
+      <Flex gap="small" align="center" className="mb-2">
+        <PrivacyRequestFiltersBar
+          modalFilters={modalFilters}
+          setModalFilters={setModalFilters}
+          onOpenAdvancedSearch={onOpenAdvancedSearch}
+          fuzzySearchTerm={fuzzySearchTerm}
+          setFuzzySearchTerm={setFuzzySearchTerm}
         />
-        <div className="flex items-center gap-2">
+      </Flex>
+
+      {/* Second row: Select all and actions */}
+      <Flex gap="small" align="center" justify="space-between" className="mb-4">
+        <Flex gap="small" align="center">
+          <Checkbox
+            id="select-all-privacy-requests"
+            checked={allCurrentPageSelected}
+            indeterminate={someCurrentPageSelected}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+            data-testid="select-all-checkbox"
+          />
+          <label htmlFor="select-all-privacy-requests">Select all</label>
+        </Flex>
+
+        <Flex gap="small" align="center">
+          {selectedIds.length > 0 && (
+            <>
+              <Typography.Text strong>
+                {selectedIds.length} selected
+              </Typography.Text>
+              <Typography.Text> / </Typography.Text>
+            </>
+          )}
+          <Typography.Text>{totalRows ?? 0} results</Typography.Text>
           <BulkActionsDropdown
             selectedIds={selectedIds}
             menuItems={bulkActionMenuItems}
+            showSelectedCount={false}
           />
-          <Button data-testid="filter-btn" onClick={onOpen}>
-            Filter
-            <Badge
-              size="small"
-              color={palette.FIDESUI_MINOS}
-              count={modalFiltersCount}
-            />
-          </Button>
           <Button
-            data-testid="advanced-search-btn"
-            onClick={onOpenAdvancedSearch}
-            icon={<Icons.SearchAdvanced />}
-            aria-label="Advanced search"
+            aria-label="Reload"
+            data-testid="reload-btn"
+            icon={<Icons.Renew />}
+            onClick={() => refetch()}
           />
           <Button
             aria-label="Export report"
@@ -131,20 +182,15 @@ export const PrivacyRequestsDashboard = () => {
             icon={<Icons.Download />}
             onClick={handleExport}
           />
-        </div>
-        <Portal>
-          <PrivacyRequestFiltersModal
-            open={isOpen}
-            onClose={onClose}
-            modalFilters={modalFilters}
-            setModalFilters={setModalFilters}
-          />
-          <AdvancedSearchModal
-            open={isAdvancedSearchOpen}
-            onClose={onCloseAdvancedSearch}
-          />
-        </Portal>
+        </Flex>
       </Flex>
+
+      <Portal>
+        <AdvancedSearchModal
+          open={isAdvancedSearchOpen}
+          onClose={onCloseAdvancedSearch}
+        />
+      </Portal>
       {isLoading ? (
         <div className=" p-2">
           <List

@@ -13,17 +13,19 @@ const { Text } = Typography;
 interface BulkActionsDropdownProps {
   selectedIds: React.Key[];
   menuItems: MenuProps["items"];
+  showSelectedCount?: boolean;
 }
 
 export const BulkActionsDropdown = ({
   selectedIds,
   menuItems,
+  showSelectedCount = true,
 }: BulkActionsDropdownProps) => {
   const hasSelections = selectedIds.length > 0;
 
   return (
     <Flex gap={8} align="center">
-      {hasSelections && (
+      {hasSelections && showSelectedCount && (
         <Text type="secondary" data-testid="selected-count">
           {selectedIds.length} selected
         </Text>
