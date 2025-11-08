@@ -139,20 +139,18 @@ export interface AEPIntegration {
 
 /**
  * Default mapping of Fides consent keys to Adobe purposes
+ *
+ * Adobe purposes:
+ * - collect, measure → Analytics (aa)
+ * - personalize → Target (target)
+ * - share → Audience Manager (aam)
+ *
+ * Customize this by passing purposeMapping to Fides.aep()
  */
 const DEFAULT_PURPOSE_MAPPING = {
   analytics: ["collect", "measure"],
   functional: ["personalize"],
   advertising: ["share", "personalize"],
-};
-
-/**
- * Map Fides consent to Adobe ECID categories
- */
-const ECID_CATEGORY_MAPPING: Record<string, string> = {
-  analytics: "aa",
-  functional: "target",
-  advertising: "aam",
 };
 
 /**
@@ -184,7 +182,7 @@ const pushConsentToAdobe = (
 
   // Build Adobe Web SDK consent object (Consent v2)
   if (hasAlloy) {
-    const adobePurposes = buildAdobePurposes(consent, purposeMapping);
+    const adobePurposes = buildAdobePurposes(consent, purposeMapping, debug);
 
     try {
       window.alloy("setConsent", {
@@ -210,21 +208,56 @@ const pushConsentToAdobe = (
   // Handle legacy ECID Opt-In Service
   if (hasOptIn) {
     try {
-      Object.entries(ECID_CATEGORY_MAPPING).forEach(([fidesKey, ecidCat]) => {
-        const hasConsent = consent[fidesKey];
+      // Build ECID mapping from purposeMapping
+      // Map Fides keys → Adobe purposes → ECID categories
+      const ecidApprovals: { aa: boolean; target: boolean; aam: boolean } = {
+        aa: false,
+        target: false,
+        aam: false,
+      };
 
-        if (hasConsent) {
-          window.adobe!.optIn.approve([ecidCat], true);
-        } else {
-          window.adobe!.optIn.deny([ecidCat], true);
-        }
+      // Check each Fides consent key in the mapping
+      Object.entries(purposeMapping).forEach(([fidesKey, adobePurposes]) => {
+        const hasConsent = !!consent[fidesKey];
+
+        adobePurposes.forEach((purpose) => {
+          // Map Adobe purposes to ECID categories
+          if (purpose === "collect" || purpose === "measure") {
+            ecidApprovals.aa = ecidApprovals.aa || hasConsent;
+          }
+          if (purpose === "personalize") {
+            ecidApprovals.target = ecidApprovals.target || hasConsent;
+          }
+          if (purpose === "share") {
+            ecidApprovals.aam = ecidApprovals.aam || hasConsent;
+          }
+        });
       });
+
+      // Apply approvals/denials
+      if (ecidApprovals.aa) {
+        window.adobe!.optIn.approve(["aa"], true);
+      } else {
+        window.adobe!.optIn.deny(["aa"], true);
+      }
+
+      if (ecidApprovals.target) {
+        window.adobe!.optIn.approve(["target"], true);
+      } else {
+        window.adobe!.optIn.deny(["target"], true);
+      }
+
+      if (ecidApprovals.aam) {
+        window.adobe!.optIn.approve(["aam"], true);
+      } else {
+        window.adobe!.optIn.deny(["aam"], true);
+      }
 
       // Complete the opt-in process
       window.adobe!.optIn.complete();
 
       if (debug) {
-        console.log("[Fides Adobe] Updated ECID Opt-In Service");
+        console.log("[Fides Adobe] Updated ECID Opt-In Service:", ecidApprovals);
       }
     } catch (error) {
       console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
@@ -238,18 +271,50 @@ const pushConsentToAdobe = (
 function buildAdobePurposes(
   consent: NoticeConsent,
   purposeMapping: Record<string, string[]>,
+  debug: boolean = false,
 ): Record<string, "in" | "out"> {
   const purposes: Record<string, "in" | "out"> = {};
+  const matchedKeys: string[] = [];
+  const unmatchedKeys: string[] = [];
 
   // Map each Fides consent key to Adobe purposes
   Object.entries(purposeMapping).forEach(([fidesKey, adobePurposes]) => {
     const hasConsent = !!consent[fidesKey];
     const value = hasConsent ? "in" : "out";
 
+    if (consent[fidesKey] !== undefined) {
+      matchedKeys.push(fidesKey);
+    }
+
     adobePurposes.forEach((purpose) => {
       purposes[purpose] = value;
     });
   });
+
+  // Check for Fides consent keys that aren't in the mapping
+  Object.keys(consent).forEach((key) => {
+    if (!purposeMapping[key]) {
+      unmatchedKeys.push(key);
+    }
+  });
+
+  if (debug) {
+    console.log("[Fides Adobe] Purpose mapping:", {
+      fidesConsentKeys: Object.keys(consent),
+      mappingKeys: Object.keys(purposeMapping),
+      matchedKeys,
+      unmatchedKeys: unmatchedKeys.length > 0 ? unmatchedKeys : "none",
+      resultingPurposes: purposes,
+    });
+
+    if (unmatchedKeys.length > 0) {
+      console.warn(
+        `[Fides Adobe] Found ${unmatchedKeys.length} consent key(s) not in purposeMapping:`,
+        unmatchedKeys,
+        "\nTo map these keys, pass a custom purposeMapping option to Fides.aep()",
+      );
+    }
+  }
 
   return purposes;
 }

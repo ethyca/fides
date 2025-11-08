@@ -241,20 +241,27 @@ export interface Fides {
    * ```
    *
    * @example
-   * With custom purpose mapping:
+   * With custom purpose mapping (REQUIRED if your Fides consent keys don't match defaults):
    * ```html
    * <head>
    *   <script src="path/to/fides.js"></script>
    *   <script>
+   *     // Map YOUR Fides consent keys to Adobe purposes
    *     Fides.aep({
    *       purposeMapping: {
-   *         analytics: ['collect', 'measure'],
-   *         marketing: ['personalize', 'share']
-   *       }
+   *         ai_analytics: ['collect', 'measure'],        // Maps to Analytics (aa)
+   *         marketing: ['personalize', 'share'],         // Maps to Target + AAM
+   *         data_sales_and_sharing: ['share']            // Maps to AAM
+   *       },
+   *       debug: true  // Enable console logs to verify mapping
    *     });
    *   </script>
    * </head>
    * ```
+   *
+   * Default mapping expects these keys: `analytics`, `functional`, `advertising`
+   * If your consent keys are different (e.g., `ai_analytics`, `marketing`),
+   * you MUST provide a custom `purposeMapping`.
    *
    * @example
    * Getting diagnostic information:
