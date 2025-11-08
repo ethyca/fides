@@ -273,6 +273,12 @@ export interface Fides {
    * console.log('ECID:', diagnostics.visitor.marketingCloudVisitorID);
    * console.log('Adobe configured:', diagnostics.alloy.configured);
    *
+   * // Check if OneTrust is present and see their Adobe mappings
+   * if (diagnostics.oneTrust?.detected) {
+   *   console.log('OneTrust categories:', diagnostics.oneTrust.activeGroups);
+   *   console.log('OneTrust → Adobe mapping:', diagnostics.oneTrust.adobeIntegration?.mapping);
+   * }
+   *
    * // Get current consent state
    * const consentState = aep.consent();
    * console.log('Analytics approved:', consentState.summary.analytics);
@@ -291,6 +297,15 @@ export interface Fides {
       cookies?: { ecid?: string };
       launch?: { configured: boolean };
       analytics?: { configured: boolean };
+      oneTrust?: {
+        detected: boolean;
+        activeGroups?: string[];
+        categoriesConsent?: Record<string, boolean>;
+        adobeIntegration?: {
+          detected: boolean;
+          mapping?: Record<string, string[]>;
+        };
+      };
     };
     consent: () => {
       timestamp: string;
@@ -375,6 +390,15 @@ export interface Fides {
       cookies?: { ecid?: string };
       launch?: { configured: boolean };
       analytics?: { configured: boolean };
+      oneTrust?: {
+        detected: boolean;
+        activeGroups?: string[];
+        categoriesConsent?: Record<string, boolean>;
+        adobeIntegration?: {
+          detected: boolean;
+          mapping?: Record<string, string[]>;
+        };
+      };
     };
     consent: () => {
       timestamp: string;

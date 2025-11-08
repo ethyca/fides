@@ -103,6 +103,15 @@ export interface AEPDiagnostics {
     trackingServer?: string;
     visitorNamespace?: string;
   };
+  oneTrust?: {
+    detected: boolean;
+    activeGroups?: string[];
+    categoriesConsent?: Record<string, boolean>;
+    adobeIntegration?: {
+      detected: boolean;
+      mapping?: Record<string, string[]>;
+    };
+  };
 }
 
 /**
@@ -653,6 +662,75 @@ function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
 }
 
 /**
+ * Get OneTrust diagnostics including Adobe integration
+ */
+function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
+  const diagnostics: AEPDiagnostics["oneTrust"] = {
+    detected: false,
+  };
+
+  // Check for OptanonConsent cookie
+  const cookies = document.cookie.split("; ");
+  const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
+
+  if (!otCookie) {
+    return diagnostics;
+  }
+
+  diagnostics.detected = true;
+
+  try {
+    // Parse OptanonConsent cookie
+    const cookieValue = decodeURIComponent(otCookie.split("=")[1]);
+    const params = new URLSearchParams(cookieValue);
+
+    // Get active groups (e.g., "C0001,C0002,C0003")
+    const groups = params.get("groups");
+    if (groups) {
+      const activeGroups: string[] = [];
+      const categoriesConsent: Record<string, boolean> = {};
+
+      // Parse groups format: "C0001:1,C0002:0,C0003:1,C0004:1"
+      groups.split(",").forEach((group) => {
+        const [category, status] = group.split(":");
+        const isActive = status === "1";
+        if (isActive) {
+          activeGroups.push(category);
+        }
+        categoriesConsent[category] = isActive;
+      });
+
+      diagnostics.activeGroups = activeGroups;
+      diagnostics.categoriesConsent = categoriesConsent;
+    }
+  } catch (e) {
+    // Silently handle parsing errors
+  }
+
+  // Check for OneTrust's Adobe integration
+  // OneTrust typically stores Adobe mappings in window.OneTrust or similar
+  diagnostics.adobeIntegration = {
+    detected: false,
+  };
+
+  // Standard OneTrust → Adobe category mappings
+  // Based on OneTrust's Adobe Experience Cloud integration
+  const standardOTtoAdobeMapping: Record<string, string[]> = {
+    C0001: [], // Strictly Necessary - not mapped (always on)
+    C0002: ["collect", "measure"], // Performance/Analytics → Adobe Analytics
+    C0003: ["personalize"], // Functional → Adobe Target
+    C0004: ["personalize", "share"], // Targeting/Advertising → Target + AAM
+  };
+
+  if (diagnostics.activeGroups && diagnostics.activeGroups.length > 0) {
+    diagnostics.adobeIntegration.detected = true;
+    diagnostics.adobeIntegration.mapping = standardOTtoAdobeMapping;
+  }
+
+  return diagnostics;
+}
+
+/**
  * Get current Adobe consent state
  * Checks both Adobe Web SDK and ECID Opt-In Service
  */
@@ -763,6 +841,7 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
         cookies: getAdobeCookies(),
         launch: getLaunchDiagnostics(),
         analytics: getAnalyticsDiagnostics(),
+        oneTrust: getOneTrustDiagnostics(),
       };
     },
     consent: (): AEPConsentState => {
