@@ -337,6 +337,7 @@ export interface Fides {
         detected: boolean;
         activeGroups?: string[];
         categoriesConsent?: Record<string, boolean>;
+        rawCookieString?: string;
         rawCookieValue?: string;
         parseError?: string;
         adobeIntegration?: {

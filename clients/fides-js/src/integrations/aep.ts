@@ -107,6 +107,7 @@ export interface AEPDiagnostics {
     detected: boolean;
     activeGroups?: string[];
     categoriesConsent?: Record<string, boolean>;
+    rawCookieString?: string;
     rawCookieValue?: string;
     parseError?: string;
     adobeIntegration?: {
@@ -706,11 +707,14 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
   }
 
   diagnostics.detected = true;
+  diagnostics.rawCookieString = otCookie.substring(0, 300); // Full cookie string for debugging
 
   try {
     // Parse OptanonConsent cookie
-    const cookieValue = decodeURIComponent(otCookie.split("=")[1]);
-    diagnostics.rawCookieValue = cookieValue.substring(0, 200); // First 200 chars for debugging
+    // Format: "OptanonConsent=value" where value may contain '=' characters
+    const firstEquals = otCookie.indexOf("=");
+    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
+    diagnostics.rawCookieValue = cookieValue.substring(0, 200); // Decoded value
 
     // Parse cookie as key-value pairs (format: key1=value1&key2=value2)
     const params: Record<string, string> = {};
