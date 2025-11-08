@@ -284,6 +284,42 @@ export interface Fides {
    * console.log('Analytics approved:', consentState.summary.analytics);
    * console.log('Advertising approved:', consentState.summary.advertising);
    * ```
+   *
+   * @example
+   * Get suggestions for Fides notices based on OneTrust (REQUIRES OneTrust on page):
+   * ```javascript
+   * const aep = Fides.aep();
+   * const suggestion = aep.suggest();
+   *
+   * // Check if successful (OneTrust detected)
+   * if (!suggestion.success) {
+   *   console.error(suggestion.error);
+   *   // "❌ OneTrust not detected. suggest() requires OptanonConsent cookie..."
+   *   return;
+   * }
+   *
+   * // Shows ACTUAL OneTrust categories found (not assumptions)
+   * console.log('OneTrust categories:', suggestion.oneTrustCategories);
+   * // ['C0001', 'C0002', 'C0003', 'C0004'] or whatever they actually have
+   *
+   * console.log('Suggested Fides notices:', suggestion.suggestedFidesNotices);
+   * // [
+   * //   { name: 'essential', oneTrustCategory: 'C0001', adobePurposes: [] },
+   * //   { name: 'performance', oneTrustCategory: 'C0002', adobePurposes: ['collect', 'measure'] },
+   * //   ...
+   * // ]
+   *
+   * // Check if Fides already has matching keys
+   * console.log('Missing notices to create:', suggestion.missingKeys);
+   *
+   * // Follow recommended action
+   * console.log(suggestion.recommendedAction);
+   * // "✅ Fides has all matching keys! Use: Fides.aep({ purposeMapping: {...} })"
+   * // OR "⚠️ Create 2 Fides notice(s): [performance, advertising]. Then use: ..."
+   *
+   * // Apply the suggested mapping
+   * Fides.aep({ purposeMapping: suggestion.purposeMapping });
+   * ```
    */
   aep: (options?: {
     purposeMapping?: Record<string, string[]>;
@@ -313,98 +349,21 @@ export interface Fides {
       ecidOptIn?: { configured: boolean; aa?: boolean; target?: boolean; aam?: boolean };
       summary: { analytics: boolean; personalization: boolean; advertising: boolean };
     };
-  };
-
-  /**
-   * Demo/test helper for Adobe Experience Platform integration that auto-detects
-   * your Fides consent keys and suggests Adobe purpose mappings.
-   *
-   * This is useful for development and testing. First call `dump()` to see your
-   * consent keys and suggested mappings, then use this function to automatically
-   * apply them with optional overrides.
-   *
-   * @param options - Optional configuration
-   * @param options.debug - Enable debug logging to see detected keys and mappings
-   * @param options.overrides - Custom mappings to override auto-detected suggestions
-   * @returns Integration API with diagnostic methods
-   *
-   * @example
-   * Quick start - auto-detect and apply mappings:
-   * ```javascript
-   * // Initialize with auto-detection
-   * const aep = Fides.aepDemo({ debug: true });
-   *
-   * // Check what was detected
-   * const diagnostics = aep.dump();
-   * console.log('Detected keys:', diagnostics.fides.consentKeys);
-   * console.log('Suggested mapping:', diagnostics.fides.suggestedMapping);
-   * // Example output:
-   * // consentKeys: ['ai_analytics', 'marketing', 'data_sales_and_sharing', 'essential']
-   * // suggestedMapping: {
-   * //   ai_analytics: ['collect', 'measure'],
-   * //   marketing: ['personalize', 'share'],
-   * //   data_sales_and_sharing: ['share']
-   * // }
-   * ```
-   *
-   * @example
-   * With custom overrides:
-   * ```javascript
-   * const aep = Fides.aepDemo({
-   *   debug: true,
-   *   overrides: {
-   *     essential: [],  // Don't map essential cookies to Adobe
-   *     ai_analytics: ['collect']  // Only 'collect', not 'measure'
-   *   }
-   * });
-   * ```
-   *
-   * @example
-   * Check if consent is working after changes:
-   * ```javascript
-   * const aep = Fides.aepDemo({ debug: true });
-   *
-   * // Make consent changes in Fides modal...
-   *
-   * // Verify Adobe received it
-   * const state = aep.consent();
-   * console.log('Adobe consent:', state.summary);
-   * // { analytics: true, personalization: true, advertising: true }
-   * ```
-   */
-  aepDemo: (options?: {
-    debug?: boolean;
-    overrides?: Record<string, string[]>;
-  }) => {
-    dump: () => {
-      timestamp: string;
-      fides?: {
-        configured: boolean;
-        consentKeys?: string[];
-        currentConsent?: Record<string, boolean>;
-        suggestedMapping?: Record<string, string[]>;
-      };
-      alloy?: { configured: boolean };
-      visitor?: { configured: boolean; marketingCloudVisitorID?: string };
-      optIn?: { configured: boolean };
-      cookies?: { ecid?: string };
-      launch?: { configured: boolean };
-      analytics?: { configured: boolean };
-      oneTrust?: {
-        detected: boolean;
-        activeGroups?: string[];
-        categoriesConsent?: Record<string, boolean>;
-        adobeIntegration?: {
-          detected: boolean;
-          mapping?: Record<string, string[]>;
-        };
-      };
-    };
-    consent: () => {
-      timestamp: string;
-      alloy?: { configured: boolean; purposes?: Record<string, "in" | "out"> };
-      ecidOptIn?: { configured: boolean; aa?: boolean; target?: boolean; aam?: boolean };
-      summary: { analytics: boolean; personalization: boolean; advertising: boolean };
+    suggest: () => {
+      success: boolean;
+      error?: string;
+      oneTrustCategories: string[];
+      suggestedFidesNotices: {
+        name: string;
+        description: string;
+        adobePurposes: string[];
+        oneTrustCategory: string;
+      }[];
+      purposeMapping: Record<string, string[]>;
+      fidesHasMatchingKeys: boolean;
+      matchedKeys: string[];
+      missingKeys: string[];
+      recommendedAction: string;
     };
   };
 

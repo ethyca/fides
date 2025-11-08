@@ -137,6 +137,26 @@ export interface AEPConsentState {
 }
 
 /**
+ * Suggestion result from analyzing OneTrust environment
+ */
+export interface AEPSuggestion {
+  success: boolean;
+  error?: string;
+  oneTrustCategories: string[];
+  suggestedFidesNotices: {
+    name: string;
+    description: string;
+    adobePurposes: string[];
+    oneTrustCategory: string;
+  }[];
+  purposeMapping: Record<string, string[]>;
+  fidesHasMatchingKeys: boolean;
+  matchedKeys: string[];
+  missingKeys: string[];
+  recommendedAction: string;
+}
+
+/**
  * Adobe Experience Platform integration API
  */
 export interface AEPIntegration {
@@ -150,6 +170,12 @@ export interface AEPIntegration {
    * Shows what Adobe has approved/denied
    */
   consent: () => AEPConsentState;
+
+  /**
+   * Suggest Fides notice configuration based on OneTrust categories or environment
+   * Returns recommended notice names and Adobe purpose mappings
+   */
+  suggest: () => AEPSuggestion;
 }
 
 /**
@@ -731,6 +757,120 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
 }
 
 /**
+ * Generate suggestion for Fides notice configuration based on OneTrust
+ * ONLY works if OneTrust is actually present. No fallbacks.
+ */
+function generateAEPSuggestion(): AEPSuggestion {
+  const otDiagnostics = getOneTrustDiagnostics();
+  const fidesDiagnostics = getFidesDiagnostics();
+
+  // Must have OneTrust detected
+  if (!otDiagnostics || !otDiagnostics.detected || !otDiagnostics.categoriesConsent) {
+    return {
+      success: false,
+      error:
+        "❌ OneTrust not detected. suggest() requires OptanonConsent cookie to analyze categories. Either load OneTrust on this page or use Fides.aep() with a manual purposeMapping.",
+      oneTrustCategories: [],
+      suggestedFidesNotices: [],
+      purposeMapping: {},
+      fidesHasMatchingKeys: false,
+      matchedKeys: [],
+      missingKeys: [],
+      recommendedAction:
+        "Load OneTrust on this page or manually configure Fides.aep({ purposeMapping: {...} })",
+    };
+  }
+
+  // Standard OneTrust → Adobe mappings (but we'll use whatever categories they actually have)
+  const standardOTtoAdobeMapping: Record<string, string[]> = {
+    C0001: [], // Strictly Necessary - not mapped
+    C0002: ["collect", "measure"], // Performance/Analytics
+    C0003: ["personalize"], // Functional
+    C0004: ["personalize", "share"], // Advertising
+  };
+
+  // Standard category descriptions
+  const categoryDescriptions: Record<string, string> = {
+    C0001: "Strictly Necessary / Required Cookies",
+    C0002: "Performance Cookies / Analytics",
+    C0003: "Functional Cookies / Personalization",
+    C0004: "Targeting Cookies / Advertising",
+  };
+
+  // Get ACTUAL categories from OneTrust (not assumptions)
+  const actualCategories = Object.keys(otDiagnostics.categoriesConsent);
+
+  if (actualCategories.length === 0) {
+    return {
+      success: false,
+      error:
+        "❌ OneTrust cookie found but no categories parsed. Check OptanonConsent cookie format.",
+      oneTrustCategories: [],
+      suggestedFidesNotices: [],
+      purposeMapping: {},
+      fidesHasMatchingKeys: false,
+      matchedKeys: [],
+      missingKeys: [],
+      recommendedAction:
+        "Verify OptanonConsent cookie contains category data (groups parameter)",
+    };
+  }
+
+  // Map each actual category to Fides notice
+  const suggestedNotices = actualCategories.map((category) => {
+    // Convert category to suggested Fides notice name
+    // C0001 → essential, C0002 → performance, etc.
+    const categoryNum = category.match(/C(\d+)/)?.[1];
+    const noticeNames: Record<string, string> = {
+      "0001": "essential",
+      "0002": "performance",
+      "0003": "functional",
+      "0004": "advertising",
+    };
+    const suggestedName =
+      noticeNames[categoryNum || ""] || category.toLowerCase();
+
+    return {
+      name: suggestedName,
+      description:
+        categoryDescriptions[category] ||
+        `OneTrust Category ${category}`,
+      adobePurposes: standardOTtoAdobeMapping[category] || [],
+      oneTrustCategory: category,
+    };
+  });
+
+  // Build purpose mapping (exclude essential/empty mappings)
+  const purposeMapping: Record<string, string[]> = {};
+  suggestedNotices.forEach((notice) => {
+    if (notice.adobePurposes.length > 0) {
+      purposeMapping[notice.name] = notice.adobePurposes;
+    }
+  });
+
+  // Check if Fides already has matching keys
+  const fidesKeys = (fidesDiagnostics && fidesDiagnostics.consentKeys) || [];
+  const suggestedKeys = suggestedNotices.map((n) => n.name);
+  const matchedKeys = suggestedKeys.filter((key) => fidesKeys.includes(key));
+  const missingKeys = suggestedKeys.filter((key) => !fidesKeys.includes(key));
+
+  const allMatched = matchedKeys.length === suggestedKeys.length;
+
+  return {
+    success: true,
+    oneTrustCategories: actualCategories,
+    suggestedFidesNotices: suggestedNotices,
+    purposeMapping,
+    fidesHasMatchingKeys: matchedKeys.length > 0,
+    matchedKeys,
+    missingKeys,
+    recommendedAction: allMatched
+      ? `✅ Fides has all matching keys! Use: Fides.aep({ purposeMapping: ${JSON.stringify(purposeMapping)} })`
+      : `⚠️  Create ${missingKeys.length} Fides notice(s): [${missingKeys.join(", ")}]. Then use: Fides.aep({ purposeMapping: ${JSON.stringify(purposeMapping)} })`,
+  };
+}
+
+/**
  * Get current Adobe consent state
  * Checks both Adobe Web SDK and ECID Opt-In Service
  */
@@ -847,73 +987,8 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
     consent: (): AEPConsentState => {
       return getAdobeConsentState();
     },
+    suggest: (): AEPSuggestion => {
+      return generateAEPSuggestion();
+    },
   };
-};
-
-/**
- * Demo/helper function that auto-detects Fides consent keys and suggests
- * Adobe purpose mappings. Useful for testing and development.
- *
- * First call dump() to see your consent keys and suggested mappings,
- * then use this function to automatically apply them.
- *
- * @param overrides - Optional custom purpose mappings to override suggestions
- * @returns Integration API with diagnostic utilities
- *
- * @example
- * ```javascript
- * // 1. Check what Fides keys you have
- * const demo = Fides.aepDemo({ debug: true });
- * const diagnostics = demo.dump();
- * console.log('Your consent keys:', diagnostics.fides.consentKeys);
- * console.log('Suggested mapping:', diagnostics.fides.suggestedMapping);
- *
- * // 2. Apply the suggested mapping (or customize it)
- * const aep = Fides.aepDemo({
- *   debug: true,
- *   overrides: {
- *     // Optional: override specific keys
- *     essential: []  // Don't map essential cookies
- *   }
- * });
- *
- * // 3. Verify consent is working
- * const state = aep.consent();
- * console.log('Adobe consent:', state.summary);
- * ```
- */
-export const aepDemo = (
-  options?: AEPOptions & { overrides?: Record<string, string[]> },
-): AEPIntegration => {
-  // Get current Fides consent keys
-  const consentKeys = window.Fides?.consent
-    ? Object.keys(window.Fides.consent)
-    : [];
-
-  // Generate suggested mapping
-  let purposeMapping = suggestPurposeMapping(consentKeys);
-
-  // Apply any overrides
-  if (options?.overrides) {
-    purposeMapping = { ...purposeMapping, ...options.overrides };
-  }
-
-  const debug = options?.debug || false;
-
-  if (debug) {
-    console.log("[Fides Adobe Demo] Auto-detected consent keys:", consentKeys);
-    console.log(
-      "[Fides Adobe Demo] Using purpose mapping:",
-      purposeMapping,
-    );
-    console.log(
-      "[Fides Adobe Demo] To customize, pass overrides: Fides.aepDemo({ overrides: {...} })",
-    );
-  }
-
-  // Initialize AEP with suggested mapping
-  return aep({
-    ...options,
-    purposeMapping,
-  });
 };
