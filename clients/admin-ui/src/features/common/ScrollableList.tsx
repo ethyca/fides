@@ -266,8 +266,10 @@ const ScrollableList = <T extends unknown>({
     borderColor: "gray.200",
     borderRadius: "md",
     w: "full",
-    maxH: "8.5rem",
-    overflowY: "auto",
+    ...(maxHeight && {
+      maxH: `${maxHeight}rem`,
+      overflowY: "auto",
+    }),
   } as ChakraProps;
 
   const innerList = draggable ? (

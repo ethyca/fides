@@ -17,6 +17,7 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.property import Property
@@ -271,6 +272,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         secondary="experiencenotices",
         backref="experience_configs",
         lazy="selectin",
+        order_by="ExperienceNotices.display_order.asc().nullslast()",
     )
 
     translations: RelationshipProperty[List[ExperienceTranslation]] = relationship(
@@ -748,15 +750,19 @@ def link_notices_to_experience_config(
 ) -> List[PrivacyNotice]:
     """
     Link supplied Notices to ExperienceConfig and unlink any notices not supplied.
+
+    Preserves the order of notices by setting display_order on the junction table records.
     """
     new_notices: Query = db.query(PrivacyNotice).filter(
         PrivacyNotice.id.in_(notice_ids)
     )
 
+    # Add new notices and update display_order for all
     for notice in new_notices:
         if notice not in experience_config.privacy_notices:
             experience_config.privacy_notices.append(notice)
 
+    # Remove notices that are no longer in the list
     to_remove: Set[PrivacyNotice] = set(
         notice for notice in experience_config.privacy_notices
     ) - set(notice for notice in new_notices)
@@ -765,6 +771,19 @@ def link_notices_to_experience_config(
         experience_config.privacy_notices.remove(privacy_notice)
 
     experience_config.save(db)
+
+    # Update display_order on the junction table records based on the order in notice_ids
+    for index, notice_id in enumerate(notice_ids):
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.notice_id == notice_id,
+            ExperienceNotices.experience_config_id == experience_config.id,
+        ).update({"display_order": index})
+
+    db.commit()
+
+    # Expire the relationship to force reload with correct ordering
+    db.expire(experience_config, ["privacy_notices"])
+
     return experience_config.privacy_notices
 
 
