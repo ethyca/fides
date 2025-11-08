@@ -216,90 +216,67 @@ export interface Fides {
   showModal: () => void;
 
   /**
-   * Adobe Experience Platform (AEP) integration with diagnostic utilities.
+   * Enable the Adobe Experience Platform (AEP) integration. This should be
+   * called immediately after FidesJS is included. Once enabled, FidesJS will
+   * automatically sync consent preferences to Adobe products:
+   * - Adobe Web SDK (Experience Platform) using Consent Standard v2
+   * - Adobe ECID Opt-In Service (legacy AppMeasurement)
    *
-   * Returns an object with methods to inspect and diagnose Adobe implementations.
+   * The integration returns an API object with utility methods like `dump()`
+   * for diagnostic purposes.
    *
-   * @returns AEP integration API
-   * @returns dump - Function that returns comprehensive Adobe diagnostics including:
-   *   - alloy (Web SDK) configuration and state
-   *   - Visitor API (ECID) configuration and IDs
-   *   - OptIn Service consent states
-   *   - Adobe cookies (ECID, demdex, etc.)
-   *   - Launch/Tags configuration
-   *   - Analytics configuration
+   * @param options - Optional configuration for the Adobe integration
+   * @param options.purposeMapping - Custom mapping of Fides consent keys to Adobe purposes. Default: `{ analytics: ['collect', 'measure'], functional: ['personalize'], advertising: ['share', 'personalize'] }`
+   * @param options.debug - Enable debug logging. Default: `false`
+   * @returns Integration API with diagnostic methods
    *
    * @example
-   * Get diagnostic information:
+   * Basic usage in your site's `<head>`:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>Fides.aep()</script>
+   *   <script src="https://assets.adobedtm.com/.../launch.min.js"></script>
+   * </head>
+   * ```
+   *
+   * @example
+   * With custom purpose mapping:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.aep({
+   *       purposeMapping: {
+   *         analytics: ['collect', 'measure'],
+   *         marketing: ['personalize', 'share']
+   *       }
+   *     });
+   *   </script>
+   * </head>
+   * ```
+   *
+   * @example
+   * Getting diagnostic information:
    * ```javascript
    * const aep = Fides.aep();
    * const diagnostics = aep.dump();
-   * console.log(diagnostics);
-   * ```
-   *
-   * @example
-   * Check if Adobe is configured:
-   * ```javascript
-   * const { alloy, visitor, optIn } = Fides.aep().dump();
-   * if (alloy.configured) {
-   *   console.log('Adobe Web SDK is configured');
-   * }
-   * if (visitor.configured) {
-   *   console.log('ECID:', visitor.marketingCloudVisitorID);
-   * }
+   * console.log('ECID:', diagnostics.visitor.marketingCloudVisitorID);
+   * console.log('Adobe configured:', diagnostics.alloy.configured);
    * ```
    */
-  aep: () => {
+  aep: (options?: {
+    purposeMapping?: Record<string, string[]>;
+    debug?: boolean;
+  }) => {
     dump: () => {
       timestamp: string;
-      alloy?: {
-        configured: boolean;
-        consent?: any;
-        identity?: any;
-        config?: any;
-      };
-      visitor?: {
-        configured: boolean;
-        marketingCloudVisitorID?: string;
-        analyticsVisitorID?: string;
-        audienceManagerLocationHint?: string;
-        audienceManagerBlob?: string;
-        optIn?: any;
-      };
-      optIn?: {
-        configured: boolean;
-        categories?: {
-          aa?: string;
-          target?: string;
-          aam?: string;
-          ecid?: string;
-        };
-        isApproved?: {
-          aa?: boolean;
-          target?: boolean;
-          aam?: boolean;
-          ecid?: boolean;
-        };
-      };
-      cookies?: {
-        ecid?: string;
-        amcv?: string;
-        demdex?: string;
-        dextp?: string;
-        other?: Record<string, string>;
-      };
-      launch?: {
-        configured: boolean;
-        property?: string;
-        environment?: string;
-        buildDate?: string;
-      };
-      analytics?: {
-        configured: boolean;
-        reportSuite?: string;
-        trackingServer?: string;
-        visitorNamespace?: string;
-      };
+      alloy?: { configured: boolean };
+      visitor?: { configured: boolean; marketingCloudVisitorID?: string };
+      optIn?: { configured: boolean };
+      cookies?: { ecid?: string };
+      launch?: { configured: boolean };
+      analytics?: { configured: boolean };
     };
   };
 
