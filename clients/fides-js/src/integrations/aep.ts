@@ -712,12 +712,20 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
     const cookieValue = decodeURIComponent(otCookie.split("=")[1]);
     diagnostics.rawCookieValue = cookieValue.substring(0, 200); // First 200 chars for debugging
 
-    const params = new URLSearchParams(cookieValue);
+    // Parse cookie as key-value pairs (format: key1=value1&key2=value2)
+    const params: Record<string, string> = {};
+    cookieValue.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key && value !== undefined) {
+        params[key] = value;
+      }
+    });
 
     // Get active groups (e.g., "C0001,C0002,C0003")
-    const groups = params.get("groups");
+    const groups = params.groups;
     if (!groups) {
-      diagnostics.parseError = "No 'groups' parameter found in OptanonConsent cookie";
+      const availableKeys = Object.keys(params).join(", ");
+      diagnostics.parseError = `No 'groups' parameter found. Available keys: [${availableKeys}]`;
     } else {
       const activeGroups: string[] = [];
       const categoriesConsent: Record<string, boolean> = {};
@@ -736,8 +744,10 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
         categoriesConsent[category] = isActive;
       });
 
-      diagnostics.activeGroups = activeGroups;
-      diagnostics.categoriesConsent = categoriesConsent;
+      if (Object.keys(categoriesConsent).length > 0) {
+        diagnostics.activeGroups = activeGroups;
+        diagnostics.categoriesConsent = categoriesConsent;
+      }
     }
   } catch (e) {
     diagnostics.parseError = `Failed to parse OptanonConsent: ${e instanceof Error ? e.message : String(e)}`;
