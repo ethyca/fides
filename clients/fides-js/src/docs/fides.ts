@@ -301,6 +301,90 @@ export interface Fides {
   };
 
   /**
+   * Demo/test helper for Adobe Experience Platform integration that auto-detects
+   * your Fides consent keys and suggests Adobe purpose mappings.
+   *
+   * This is useful for development and testing. First call `dump()` to see your
+   * consent keys and suggested mappings, then use this function to automatically
+   * apply them with optional overrides.
+   *
+   * @param options - Optional configuration
+   * @param options.debug - Enable debug logging to see detected keys and mappings
+   * @param options.overrides - Custom mappings to override auto-detected suggestions
+   * @returns Integration API with diagnostic methods
+   *
+   * @example
+   * Quick start - auto-detect and apply mappings:
+   * ```javascript
+   * // Initialize with auto-detection
+   * const aep = Fides.aepDemo({ debug: true });
+   *
+   * // Check what was detected
+   * const diagnostics = aep.dump();
+   * console.log('Detected keys:', diagnostics.fides.consentKeys);
+   * console.log('Suggested mapping:', diagnostics.fides.suggestedMapping);
+   * // Example output:
+   * // consentKeys: ['ai_analytics', 'marketing', 'data_sales_and_sharing', 'essential']
+   * // suggestedMapping: {
+   * //   ai_analytics: ['collect', 'measure'],
+   * //   marketing: ['personalize', 'share'],
+   * //   data_sales_and_sharing: ['share']
+   * // }
+   * ```
+   *
+   * @example
+   * With custom overrides:
+   * ```javascript
+   * const aep = Fides.aepDemo({
+   *   debug: true,
+   *   overrides: {
+   *     essential: [],  // Don't map essential cookies to Adobe
+   *     ai_analytics: ['collect']  // Only 'collect', not 'measure'
+   *   }
+   * });
+   * ```
+   *
+   * @example
+   * Check if consent is working after changes:
+   * ```javascript
+   * const aep = Fides.aepDemo({ debug: true });
+   *
+   * // Make consent changes in Fides modal...
+   *
+   * // Verify Adobe received it
+   * const state = aep.consent();
+   * console.log('Adobe consent:', state.summary);
+   * // { analytics: true, personalization: true, advertising: true }
+   * ```
+   */
+  aepDemo: (options?: {
+    debug?: boolean;
+    overrides?: Record<string, string[]>;
+  }) => {
+    dump: () => {
+      timestamp: string;
+      fides?: {
+        configured: boolean;
+        consentKeys?: string[];
+        currentConsent?: Record<string, boolean>;
+        suggestedMapping?: Record<string, string[]>;
+      };
+      alloy?: { configured: boolean };
+      visitor?: { configured: boolean; marketingCloudVisitorID?: string };
+      optIn?: { configured: boolean };
+      cookies?: { ecid?: string };
+      launch?: { configured: boolean };
+      analytics?: { configured: boolean };
+    };
+    consent: () => {
+      timestamp: string;
+      alloy?: { configured: boolean; purposes?: Record<string, "in" | "out"> };
+      ecidOptIn?: { configured: boolean; aa?: boolean; target?: boolean; aam?: boolean };
+      summary: { analytics: boolean; personalization: boolean; advertising: boolean };
+    };
+  };
+
+  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as
