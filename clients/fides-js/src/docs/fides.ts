@@ -216,6 +216,71 @@ export interface Fides {
   showModal: () => void;
 
   /**
+   * Enable the Adobe Experience Platform (AEP) integration. This should be
+   * called immediately after FidesJS is included. Once enabled, FidesJS will
+   * automatically sync consent preferences to Adobe products:
+   * - Adobe Web SDK (Experience Platform) using Consent Standard v2
+   * - Adobe ECID Opt-In Service (legacy AppMeasurement)
+   *
+   * The integration returns an API object with utility methods like `dump()`
+   * for diagnostic purposes.
+   *
+   * @param options - Optional configuration for the Adobe integration
+   * @param options.purposeMapping - Custom mapping of Fides consent keys to Adobe purposes. Default: `{ analytics: ['collect', 'measure'], functional: ['personalize'], advertising: ['share', 'personalize'] }`
+   * @param options.debug - Enable debug logging. Default: `false`
+   * @returns Integration API with diagnostic methods
+   *
+   * @example
+   * Basic usage in your site's `<head>`:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>Fides.aep()</script>
+   *   <script src="https://assets.adobedtm.com/.../launch.min.js"></script>
+   * </head>
+   * ```
+   *
+   * @example
+   * With custom purpose mapping:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.aep({
+   *       purposeMapping: {
+   *         analytics: ['collect', 'measure'],
+   *         marketing: ['personalize', 'share']
+   *       }
+   *     });
+   *   </script>
+   * </head>
+   * ```
+   *
+   * @example
+   * Getting diagnostic information:
+   * ```javascript
+   * const aep = Fides.aep();
+   * const diagnostics = aep.dump();
+   * console.log('ECID:', diagnostics.visitor.marketingCloudVisitorID);
+   * console.log('Adobe configured:', diagnostics.alloy.configured);
+   * ```
+   */
+  aep: (options?: {
+    purposeMapping?: Record<string, string[]>;
+    debug?: boolean;
+  }) => {
+    dump: () => {
+      timestamp: string;
+      alloy?: { configured: boolean };
+      visitor?: { configured: boolean; marketingCloudVisitorID?: string };
+      optIn?: { configured: boolean };
+      cookies?: { ecid?: string };
+      launch?: { configured: boolean };
+      analytics?: { configured: boolean };
+    };
+  };
+
+  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as
