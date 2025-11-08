@@ -260,9 +260,16 @@ export interface Fides {
    * Getting diagnostic information:
    * ```javascript
    * const aep = Fides.aep();
+   *
+   * // Get comprehensive diagnostics
    * const diagnostics = aep.dump();
    * console.log('ECID:', diagnostics.visitor.marketingCloudVisitorID);
    * console.log('Adobe configured:', diagnostics.alloy.configured);
+   *
+   * // Get current consent state
+   * const consentState = aep.consent();
+   * console.log('Analytics approved:', consentState.summary.analytics);
+   * console.log('Advertising approved:', consentState.summary.advertising);
    * ```
    */
   aep: (options?: {
@@ -277,6 +284,12 @@ export interface Fides {
       cookies?: { ecid?: string };
       launch?: { configured: boolean };
       analytics?: { configured: boolean };
+    };
+    consent: () => {
+      timestamp: string;
+      alloy?: { configured: boolean; purposes?: Record<string, "in" | "out"> };
+      ecidOptIn?: { configured: boolean; aa?: boolean; target?: boolean; aam?: boolean };
+      summary: { analytics: boolean; personalization: boolean; advertising: boolean };
     };
   };
 

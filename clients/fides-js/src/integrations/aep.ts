@@ -100,6 +100,28 @@ export interface AEPDiagnostics {
 }
 
 /**
+ * Adobe consent state for the current user
+ */
+export interface AEPConsentState {
+  timestamp: string;
+  alloy?: {
+    purposes?: Record<string, "in" | "out">;
+    configured: boolean;
+  };
+  ecidOptIn?: {
+    aa?: boolean;
+    target?: boolean;
+    aam?: boolean;
+    configured: boolean;
+  };
+  summary: {
+    analytics: boolean;
+    personalization: boolean;
+    advertising: boolean;
+  };
+}
+
+/**
  * Adobe Experience Platform integration API
  */
 export interface AEPIntegration {
@@ -107,6 +129,12 @@ export interface AEPIntegration {
    * Get diagnostic information about Adobe configuration
    */
   dump: () => AEPDiagnostics;
+
+  /**
+   * Get current Adobe consent state for the user
+   * Shows what Adobe has approved/denied
+   */
+  consent: () => AEPConsentState;
 }
 
 /**
@@ -467,6 +495,69 @@ function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
   return diagnostics;
 }
 
+/**
+ * Get current Adobe consent state
+ * Checks both Adobe Web SDK and ECID Opt-In Service
+ */
+function getAdobeConsentState(): AEPConsentState {
+  const state: AEPConsentState = {
+    timestamp: new Date().toISOString(),
+    summary: {
+      analytics: false,
+      personalization: false,
+      advertising: false,
+    },
+  };
+
+  // Check Adobe Web SDK (Alloy) - Note: alloy doesn't expose consent state directly
+  // We'd need to track what we sent to it
+  if (typeof window.alloy === "function") {
+    state.alloy = {
+      configured: true,
+      // Adobe Web SDK doesn't expose consent state for reading
+      // We only know what we set via setConsent()
+      purposes: undefined,
+    };
+  } else {
+    state.alloy = {
+      configured: false,
+    };
+  }
+
+  // Check ECID Opt-In Service
+  if (window.adobe?.optIn) {
+    const { optIn } = window.adobe;
+
+    try {
+      const aaApproved = optIn.isApproved?.(optIn.Categories?.AA);
+      const targetApproved = optIn.isApproved?.(optIn.Categories?.TARGET);
+      const aamApproved = optIn.isApproved?.(optIn.Categories?.AAM);
+
+      state.ecidOptIn = {
+        configured: true,
+        aa: aaApproved,
+        target: targetApproved,
+        aam: aamApproved,
+      };
+
+      // Build summary from ECID state
+      state.summary.analytics = !!aaApproved;
+      state.summary.personalization = !!targetApproved;
+      state.summary.advertising = !!aamApproved;
+    } catch (e) {
+      state.ecidOptIn = {
+        configured: true,
+      };
+    }
+  } else {
+    state.ecidOptIn = {
+      configured: false,
+    };
+  }
+
+  return state;
+}
+
 // ============================================================================
 // Public API
 // ============================================================================
@@ -515,6 +606,9 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
         launch: getLaunchDiagnostics(),
         analytics: getAnalyticsDiagnostics(),
       };
+    },
+    consent: (): AEPConsentState => {
+      return getAdobeConsentState();
     },
   };
 };
