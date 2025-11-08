@@ -216,6 +216,94 @@ export interface Fides {
   showModal: () => void;
 
   /**
+   * Adobe Experience Platform (AEP) integration with diagnostic utilities.
+   *
+   * Returns an object with methods to inspect and diagnose Adobe implementations.
+   *
+   * @returns AEP integration API
+   * @returns dump - Function that returns comprehensive Adobe diagnostics including:
+   *   - alloy (Web SDK) configuration and state
+   *   - Visitor API (ECID) configuration and IDs
+   *   - OptIn Service consent states
+   *   - Adobe cookies (ECID, demdex, etc.)
+   *   - Launch/Tags configuration
+   *   - Analytics configuration
+   *
+   * @example
+   * Get diagnostic information:
+   * ```javascript
+   * const aep = Fides.aep();
+   * const diagnostics = aep.dump();
+   * console.log(diagnostics);
+   * ```
+   *
+   * @example
+   * Check if Adobe is configured:
+   * ```javascript
+   * const { alloy, visitor, optIn } = Fides.aep().dump();
+   * if (alloy.configured) {
+   *   console.log('Adobe Web SDK is configured');
+   * }
+   * if (visitor.configured) {
+   *   console.log('ECID:', visitor.marketingCloudVisitorID);
+   * }
+   * ```
+   */
+  aep: () => {
+    dump: () => {
+      timestamp: string;
+      alloy?: {
+        configured: boolean;
+        consent?: any;
+        identity?: any;
+        config?: any;
+      };
+      visitor?: {
+        configured: boolean;
+        marketingCloudVisitorID?: string;
+        analyticsVisitorID?: string;
+        audienceManagerLocationHint?: string;
+        audienceManagerBlob?: string;
+        optIn?: any;
+      };
+      optIn?: {
+        configured: boolean;
+        categories?: {
+          aa?: string;
+          target?: string;
+          aam?: string;
+          ecid?: string;
+        };
+        isApproved?: {
+          aa?: boolean;
+          target?: boolean;
+          aam?: boolean;
+          ecid?: boolean;
+        };
+      };
+      cookies?: {
+        ecid?: string;
+        amcv?: string;
+        demdex?: string;
+        dextp?: string;
+        other?: Record<string, string>;
+      };
+      launch?: {
+        configured: boolean;
+        property?: string;
+        environment?: string;
+        buildDate?: string;
+      };
+      analytics?: {
+        configured: boolean;
+        reportSuite?: string;
+        trackingServer?: string;
+        visitorNamespace?: string;
+      };
+    };
+  };
+
+  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as

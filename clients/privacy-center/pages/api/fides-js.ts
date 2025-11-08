@@ -414,6 +414,7 @@ export default async function handler(
   const forcedHeadless = req.query.headless === "true";
 
   log.debug("Bundling js & Privacy Center configuration together...");
+  log.debug({ adobeOrgId: environment.settings.ADOBE_ORG_ID }, "Adobe Org ID from settings");
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS ||
     forcedHeadless;
@@ -466,6 +467,12 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
+  ${
+    environment.settings.ADOBE_ORG_ID
+      ? `// Set Adobe Marketing Cloud Org ID before init (required by Adobe Visitor API)
+  window.adobe_mc_orgid = ${JSON.stringify(environment.settings.ADOBE_ORG_ID)};`
+      : ""
+  }
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization

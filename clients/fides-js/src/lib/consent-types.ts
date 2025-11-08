@@ -4,6 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
@@ -228,6 +229,7 @@ export interface FidesGlobal
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   version: string;
+  aep: typeof aep;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
