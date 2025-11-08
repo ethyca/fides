@@ -107,6 +107,8 @@ export interface AEPDiagnostics {
     detected: boolean;
     activeGroups?: string[];
     categoriesConsent?: Record<string, boolean>;
+    rawCookieValue?: string;
+    parseError?: string;
     adobeIntegration?: {
       detected: boolean;
       mapping?: Record<string, string[]>;
@@ -708,17 +710,25 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
   try {
     // Parse OptanonConsent cookie
     const cookieValue = decodeURIComponent(otCookie.split("=")[1]);
+    diagnostics.rawCookieValue = cookieValue.substring(0, 200); // First 200 chars for debugging
+
     const params = new URLSearchParams(cookieValue);
 
     // Get active groups (e.g., "C0001,C0002,C0003")
     const groups = params.get("groups");
-    if (groups) {
+    if (!groups) {
+      diagnostics.parseError = "No 'groups' parameter found in OptanonConsent cookie";
+    } else {
       const activeGroups: string[] = [];
       const categoriesConsent: Record<string, boolean> = {};
 
       // Parse groups format: "C0001:1,C0002:0,C0003:1,C0004:1"
       groups.split(",").forEach((group) => {
         const [category, status] = group.split(":");
+        if (!category || !status) {
+          diagnostics.parseError = `Invalid group format: "${group}"`;
+          return;
+        }
         const isActive = status === "1";
         if (isActive) {
           activeGroups.push(category);
@@ -730,7 +740,7 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
       diagnostics.categoriesConsent = categoriesConsent;
     }
   } catch (e) {
-    // Silently handle parsing errors
+    diagnostics.parseError = `Failed to parse OptanonConsent: ${e instanceof Error ? e.message : String(e)}`;
   }
 
   // Check for OneTrust's Adobe integration
@@ -765,7 +775,7 @@ function generateAEPSuggestion(): AEPSuggestion {
   const fidesDiagnostics = getFidesDiagnostics();
 
   // Must have OneTrust detected
-  if (!otDiagnostics || !otDiagnostics.detected || !otDiagnostics.categoriesConsent) {
+  if (!otDiagnostics || !otDiagnostics.detected) {
     return {
       success: false,
       error:
@@ -778,6 +788,26 @@ function generateAEPSuggestion(): AEPSuggestion {
       missingKeys: [],
       recommendedAction:
         "Load OneTrust on this page or manually configure Fides.aep({ purposeMapping: {...} })",
+    };
+  }
+
+  // OneTrust detected but failed to parse categories
+  if (!otDiagnostics.categoriesConsent) {
+    const parseError = otDiagnostics.parseError || "Unknown parse error";
+    const rawCookie = otDiagnostics.rawCookieValue
+      ? `\nCookie value (first 200 chars): ${otDiagnostics.rawCookieValue}`
+      : "";
+
+    return {
+      success: false,
+      error: `❌ OneTrust detected but failed to parse categories.\nError: ${parseError}${rawCookie}\n\nRun aep.dump().oneTrust to see full diagnostic data.`,
+      oneTrustCategories: [],
+      suggestedFidesNotices: [],
+      purposeMapping: {},
+      fidesHasMatchingKeys: false,
+      matchedKeys: [],
+      missingKeys: [],
+      recommendedAction: `Fix OptanonConsent cookie format or use Fides.aep({ purposeMapping: {...} }) manually`,
     };
   }
 
