@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 import {
-  AntButton as Button,
   AntDatePicker as DatePicker,
   AntFlex as Flex,
   AntSelect as Select,
-  Icons,
 } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -27,7 +25,6 @@ interface PrivacyRequestFiltersBarProps {
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
   }) => void;
-  onOpenAdvancedSearch: () => void;
   fuzzySearchTerm: string | null;
   setFuzzySearchTerm: (value: string | null) => void;
 }
@@ -35,7 +32,6 @@ interface PrivacyRequestFiltersBarProps {
 export const PrivacyRequestFiltersBar = ({
   modalFilters,
   setModalFilters,
-  onOpenAdvancedSearch,
   fuzzySearchTerm,
   setFuzzySearchTerm,
 }: PrivacyRequestFiltersBarProps) => {
@@ -78,6 +74,10 @@ export const PrivacyRequestFiltersBar = ({
     });
   };
 
+  const maxTagPlaceholder = (omittedValues: any[]) => (
+    <span>+ {omittedValues.length}</span>
+  );
+
   return (
     <Flex gap="small" align="center" justify="flex-start">
       <DebouncedSearchInput
@@ -109,9 +109,7 @@ export const PrivacyRequestFiltersBar = ({
         data-testid="request-status-filter"
         aria-label="Status"
         className="w-44"
-        maxTagPlaceholder={(omittedValues) => (
-          <span>+ {omittedValues.length}</span>
-        )}
+        maxTagPlaceholder={maxTagPlaceholder}
       />
       <Select
         mode="multiple"
@@ -124,15 +122,7 @@ export const PrivacyRequestFiltersBar = ({
         data-testid="request-action-type-filter"
         aria-label="Request type"
         className="w-44"
-        maxTagPlaceholder={(omittedValues) => (
-          <span>+ {omittedValues.length}</span>
-        )}
-      />
-      <Button
-        data-testid="advanced-search-btn"
-        onClick={onOpenAdvancedSearch}
-        icon={<Icons.SearchAdvanced />}
-        aria-label="Advanced search"
+        maxTagPlaceholder={maxTagPlaceholder}
       />
     </Flex>
   );

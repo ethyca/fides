@@ -9,8 +9,6 @@ import {
   AntSpin as Spin,
   AntTypography as Typography,
   Icons,
-  Portal,
-  useDisclosure,
 } from "fidesui";
 import React, { useMemo } from "react";
 
@@ -23,7 +21,6 @@ import {
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
-import { AdvancedSearchModal } from "./AdvancedSearchModal";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -45,12 +42,6 @@ export const PrivacyRequestsDashboard = () => {
   const [modalApi, modalContext] = modal.useModal();
 
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
-  const {
-    isOpen: isAdvancedSearchOpen,
-    onOpen: onOpenAdvancedSearch,
-    onClose: onCloseAdvancedSearch,
-  } = useDisclosure();
 
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
@@ -102,7 +93,6 @@ export const PrivacyRequestsDashboard = () => {
         <PrivacyRequestFiltersBar
           modalFilters={modalFilters}
           setModalFilters={setModalFilters}
-          onOpenAdvancedSearch={onOpenAdvancedSearch}
           fuzzySearchTerm={fuzzySearchTerm}
           setFuzzySearchTerm={setFuzzySearchTerm}
         />
@@ -138,12 +128,6 @@ export const PrivacyRequestsDashboard = () => {
         />
       </Flex>
 
-      <Portal>
-        <AdvancedSearchModal
-          open={isAdvancedSearchOpen}
-          onClose={onCloseAdvancedSearch}
-        />
-      </Portal>
       {isLoading ? (
         <div className=" p-2">
           <List
