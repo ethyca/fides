@@ -27,13 +27,7 @@ import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const {
-    filterQueryParams,
-    fuzzySearchTerm,
-    setFuzzySearchTerm,
-    modalFilters,
-    setModalFilters,
-  } = usePrivacyRequestsFilters({
+  const { filterQueryParams, filters, setFilters } = usePrivacyRequestsFilters({
     pagination,
   });
 
@@ -89,12 +83,7 @@ export const PrivacyRequestsDashboard = () => {
     <div>
       {/* First row: Search and Filters */}
       <Flex gap="small" align="center" className="mb-4">
-        <PrivacyRequestFiltersBar
-          modalFilters={modalFilters}
-          setModalFilters={setModalFilters}
-          fuzzySearchTerm={fuzzySearchTerm}
-          setFuzzySearchTerm={setFuzzySearchTerm}
-        />
+        <PrivacyRequestFiltersBar filters={filters} setFilters={setFilters} />
       </Flex>
 
       {/* Second row: Actions */}

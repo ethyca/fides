@@ -13,38 +13,36 @@ import {
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestFiltersBarProps {
-  modalFilters: {
+  filters: {
+    search: string | null;
     from: string | null;
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
   };
-  setModalFilters: (filters: {
-    from: string | null;
-    to: string | null;
-    status: PrivacyRequestStatus[] | null;
-    action_type: ActionType[] | null;
+  setFilters: (filters: {
+    search?: string | null;
+    from?: string | null;
+    to?: string | null;
+    status?: PrivacyRequestStatus[] | null;
+    action_type?: ActionType[] | null;
   }) => void;
-  fuzzySearchTerm: string | null;
-  setFuzzySearchTerm: (value: string | null) => void;
 }
 
 export const PrivacyRequestFiltersBar = ({
-  modalFilters,
-  setModalFilters,
-  fuzzySearchTerm,
-  setFuzzySearchTerm,
+  filters,
+  setFilters,
 }: PrivacyRequestFiltersBarProps) => {
-  // Convert modalFilters to date range value
+  // Convert filters to date range value
   const getDateRange = (): [dayjs.Dayjs, dayjs.Dayjs] | null => {
-    if (modalFilters.from && modalFilters.to) {
-      return [dayjs(modalFilters.from), dayjs(modalFilters.to)];
+    if (filters.from && filters.to) {
+      return [dayjs(filters.from), dayjs(filters.to)];
     }
-    if (modalFilters.from) {
-      return [dayjs(modalFilters.from), dayjs()];
+    if (filters.from) {
+      return [dayjs(filters.from), dayjs()];
     }
-    if (modalFilters.to) {
-      return [dayjs(), dayjs(modalFilters.to)];
+    if (filters.to) {
+      return [dayjs(), dayjs(filters.to)];
     }
     return null;
   };
@@ -53,23 +51,20 @@ export const PrivacyRequestFiltersBar = ({
     dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null,
   ) => {
     const [from, to] = dates || [null, null];
-    setModalFilters({
-      ...modalFilters,
+    setFilters({
       from: from ? from.format("YYYY-MM-DD") : null,
       to: to ? to.format("YYYY-MM-DD") : null,
     });
   };
 
   const handleStatusChange = (value: PrivacyRequestStatus[]) => {
-    setModalFilters({
-      ...modalFilters,
+    setFilters({
       status: value.length > 0 ? value : null,
     });
   };
 
   const handleActionTypeChange = (value: ActionType[]) => {
-    setModalFilters({
-      ...modalFilters,
+    setFilters({
       action_type: value.length > 0 ? value : null,
     });
   };
@@ -82,8 +77,8 @@ export const PrivacyRequestFiltersBar = ({
     <Flex gap="small" align="center" justify="flex-start">
       <DebouncedSearchInput
         placeholder="Request ID or identity value"
-        value={fuzzySearchTerm || ""}
-        onChange={(value) => setFuzzySearchTerm(value || null)}
+        value={filters.search || ""}
+        onChange={(value) => setFilters({ search: value || null })}
         variant="compact"
         data-testid="privacy-request-search"
         wrapperClassName="w-60"
@@ -102,7 +97,7 @@ export const PrivacyRequestFiltersBar = ({
         mode="multiple"
         placeholder="Status"
         options={SubjectRequestStatusOptions}
-        value={modalFilters.status || []}
+        value={filters.status || []}
         onChange={handleStatusChange}
         allowClear
         maxTagCount={1}
@@ -115,7 +110,7 @@ export const PrivacyRequestFiltersBar = ({
         mode="multiple"
         placeholder="Request type"
         options={SubjectRequestActionTypeOptions}
-        value={modalFilters.action_type || []}
+        value={filters.action_type || []}
         onChange={handleActionTypeChange}
         allowClear
         maxTagCount={1}
