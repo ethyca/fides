@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
+- Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 
 ## [2.74.0](https://github.com/ethyca/fides/compare/2.73.1..2.74.0)
 
