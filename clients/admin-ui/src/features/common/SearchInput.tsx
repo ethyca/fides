@@ -5,11 +5,15 @@ import {
   AntSpace as Space,
   SearchLineIcon,
 } from "fidesui";
+import { HTMLAttributes } from "react";
 
-export interface SearchInputProps extends Omit<InputProps, "onChange"> {
+export interface SearchInputProps
+  extends Omit<InputProps, "onChange" | "variant"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   onClear?: () => void;
+  variant?: "default" | "compact";
+  wrapperClassName?: HTMLAttributes<HTMLDivElement>["className"];
 }
 
 const SearchInput = ({
@@ -17,21 +21,26 @@ const SearchInput = ({
   withIcon,
   onClear,
   placeholder,
+  variant = "default",
+  wrapperClassName,
   ...props
 }: SearchInputProps) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     onChange(event.target.value);
 
+  const isCompact = variant === "compact";
+
   return (
-    <Space.Compact className="w-96" data-testid="search-bar">
+    <Space.Compact className={wrapperClassName} data-testid="search-bar">
       <Input
         autoComplete="off"
         onChange={handleSearchChange}
         placeholder={placeholder || "Search..."}
         prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
+        allowClear={isCompact}
         {...props}
       />
-      {onClear ? <Button onClick={onClear}>Clear</Button> : null}
+      {onClear && !isCompact ? <Button onClick={onClear}>Clear</Button> : null}
     </Space.Compact>
   );
 };
