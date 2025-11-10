@@ -1368,7 +1368,7 @@ export const nvidiaDemo = async (): Promise<{
   }
 
   log("✅ Read OneTrust consent: " + formatConsent(otConsent));
-  
+
   // Note: In a production migration scenario, Fides would automatically
   // initialize from OneTrust. For this demo, we'll just verify the states match
   log("\n📊 Post-sync consent state:");
@@ -1400,7 +1400,7 @@ export const nvidiaDemo = async (): Promise<{
   }));
 
   await wait(1000); // Wait for cookie write and sync
-  
+
   log(`   Changed 'performance' from ${currentPerformance} → ${!currentPerformance}`);
   log("\n📊 Consent state after toggle:");
   log("-".repeat(60));
@@ -1426,7 +1426,7 @@ export const nvidiaDemo = async (): Promise<{
   }));
 
   await wait(1000); // Wait for cookie write and sync
-  
+
   log("\n📊 Consent state after OPT-IN ALL:");
   log("-".repeat(60));
   const afterOptIn = getConsentSummary();
@@ -1451,7 +1451,7 @@ export const nvidiaDemo = async (): Promise<{
   }));
 
   await wait(1000); // Wait for cookie write and sync
-  
+
   log("\n📊 Consent state after OPT-OUT ALL:");
   log("-".repeat(60));
   const afterOptOut = getConsentSummary();
