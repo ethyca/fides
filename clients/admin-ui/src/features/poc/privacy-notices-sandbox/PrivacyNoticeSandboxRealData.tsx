@@ -104,8 +104,6 @@ const PrivacyNoticeSandboxRealData = () => {
       const result = await fetchExperience({
         region,
         show_disabled: EXPERIENCE_DEFAULTS.SHOW_DISABLED,
-        component: EXPERIENCE_DEFAULTS.COMPONENT,
-        systems_applicable: EXPERIENCE_DEFAULTS.SYSTEMS_APPLICABLE,
       }).unwrap();
 
       // Get the first experience from the paginated response
