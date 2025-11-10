@@ -69,74 +69,74 @@ const buildIdpColumns = ({
   ColumnBuilderParams,
   "rowClickUrl"
 >): ColumnsType<SystemStagedResourcesAggregateRecord> => [
-    {
-      title: "App Name",
-      dataIndex: "name",
-      key: "app_name",
-      fixed: "left",
-      render: (_, record) => (
-        <DiscoveredSystemStatusCell system={record} rowClickUrl={rowClickUrl} />
-      ),
-    },
-    {
-      title: "Type",
-      dataIndex: "metadata",
-      key: "app_type",
-      render: (metadata: OktaAppMetadata) => (
-        <span>{metadata?.app_type || "-"}</span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "metadata",
-      key: "status",
-      render: (metadata: OktaAppMetadata) => (
-        <span>{metadata?.status || "-"}</span>
-      ),
-    },
-    {
-      title: "Vendor",
-      dataIndex: "vendor_id",
-      key: "vendor",
-      render: (
-        vendorId: string,
-        record: SystemStagedResourcesAggregateRecord,
-      ) => (
-        <VendorMatchBadge
-          vendorName={vendorId}
-          vendorLogoUrl={record.metadata?.vendor_logo_url}
-          confidence={record.metadata?.vendor_match_confidence}
-        />
-      ),
-    },
-    {
-      title: "Sign-on URL",
-      dataIndex: "metadata",
-      key: "sign_on_url",
-      render: (metadata: OktaAppMetadata) =>
-        metadata?.sign_on_url ? (
-          <a
-            href={metadata.sign_on_url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View
-          </a>
-        ) : null,
-    },
-    {
-      title: "Created",
-      dataIndex: "metadata",
-      key: "created",
-      render: (metadata: OktaAppMetadata) => (
-        <span>
-          {metadata?.created
-            ? new Date(metadata.created).toLocaleDateString()
-            : "-"}
-        </span>
-      ),
-    },
-  ];
+  {
+    title: "App Name",
+    dataIndex: "name",
+    key: "app_name",
+    fixed: "left",
+    render: (_, record) => (
+      <DiscoveredSystemStatusCell system={record} rowClickUrl={rowClickUrl} />
+    ),
+  },
+  {
+    title: "Type",
+    dataIndex: "metadata",
+    key: "app_type",
+    render: (metadata: OktaAppMetadata) => (
+      <span>{metadata?.app_type || "-"}</span>
+    ),
+  },
+  {
+    title: "Status",
+    dataIndex: "metadata",
+    key: "status",
+    render: (metadata: OktaAppMetadata) => (
+      <span>{metadata?.status || "-"}</span>
+    ),
+  },
+  {
+    title: "Vendor",
+    dataIndex: "vendor_id",
+    key: "vendor",
+    render: (
+      vendorId: string,
+      record: SystemStagedResourcesAggregateRecord,
+    ) => (
+      <VendorMatchBadge
+        vendorName={vendorId}
+        vendorLogoUrl={record.metadata?.vendor_logo_url}
+        confidence={record.metadata?.vendor_match_confidence}
+      />
+    ),
+  },
+  {
+    title: "Sign-on URL",
+    dataIndex: "metadata",
+    key: "sign_on_url",
+    render: (metadata: OktaAppMetadata) =>
+      metadata?.sign_on_url ? (
+        <a
+          href={metadata.sign_on_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View
+        </a>
+      ) : null,
+  },
+  {
+    title: "Created",
+    dataIndex: "metadata",
+    key: "created",
+    render: (metadata: OktaAppMetadata) => (
+      <span>
+        {metadata?.created
+          ? new Date(metadata.created).toLocaleDateString()
+          : "-"}
+      </span>
+    ),
+  },
+];
 
 const buildBaseColumns = ({
   consentStatus,
@@ -157,121 +157,121 @@ const buildBaseColumns = ({
   ColumnBuilderParams,
   "monitorId" | "readonly" | "allowIgnore" | "onTabChange"
 >): ColumnsType<SystemStagedResourcesAggregateRecord> => [
-    {
-      title: () => (
-        <Space>
-          <div>System</div>
-          <DiscoveryStatusIcon consentStatus={consentStatus} />
-        </Space>
-      ),
-      dataIndex: "name",
-      key: DiscoveredSystemAggregateColumnKeys.SYSTEM_NAME,
-      fixed: "left",
-      render: (_, record) => (
-        <DiscoveredSystemStatusCell system={record} rowClickUrl={rowClickUrl} />
-      ),
-    },
-    {
-      title: "Assets",
-      dataIndex: "total_updates",
-      key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
-    },
-    {
-      title: "Categories of consent",
-      key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
-      menu: {
-        items: expandCollapseAllMenuItems,
-        onClick: (e) => {
-          e.domEvent.stopPropagation();
-          if (e.key === "expand-all") {
-            setIsDataUsesExpanded(true);
-            setDataUsesVersion((prev) => prev + 1);
-          } else if (e.key === "collapse-all") {
-            setIsDataUsesExpanded(false);
-            setDataUsesVersion((prev) => prev + 1);
-          }
-        },
+  {
+    title: () => (
+      <Space>
+        <div>System</div>
+        <DiscoveryStatusIcon consentStatus={consentStatus} />
+      </Space>
+    ),
+    dataIndex: "name",
+    key: DiscoveredSystemAggregateColumnKeys.SYSTEM_NAME,
+    fixed: "left",
+    render: (_, record) => (
+      <DiscoveredSystemStatusCell system={record} rowClickUrl={rowClickUrl} />
+    ),
+  },
+  {
+    title: "Assets",
+    dataIndex: "total_updates",
+    key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
+  },
+  {
+    title: "Categories of consent",
+    key: DiscoveredSystemAggregateColumnKeys.DATA_USE,
+    menu: {
+      items: expandCollapseAllMenuItems,
+      onClick: (e) => {
+        e.domEvent.stopPropagation();
+        if (e.key === "expand-all") {
+          setIsDataUsesExpanded(true);
+          setDataUsesVersion((prev) => prev + 1);
+        } else if (e.key === "collapse-all") {
+          setIsDataUsesExpanded(false);
+          setDataUsesVersion((prev) => prev + 1);
+        }
       },
-      render: (_, record) => (
-        <DiscoveredSystemDataUseCell
-          system={record}
-          columnState={{
-            isExpanded: isDataUsesExpanded,
-            version: dataUsesVersion,
-          }}
-        />
-      ),
     },
-    {
-      title: "Locations",
-      menu: {
-        items: expandCollapseAllMenuItems,
-        onClick: (e) => {
-          e.domEvent.stopPropagation();
-          if (e.key === "expand-all") {
-            setIsLocationsExpanded(true);
-            setLocationsVersion((prev) => prev + 1);
-          } else if (e.key === "collapse-all") {
-            setIsLocationsExpanded(false);
-            setLocationsVersion((prev) => prev + 1);
-          }
-        },
+    render: (_, record) => (
+      <DiscoveredSystemDataUseCell
+        system={record}
+        columnState={{
+          isExpanded: isDataUsesExpanded,
+          version: dataUsesVersion,
+        }}
+      />
+    ),
+  },
+  {
+    title: "Locations",
+    menu: {
+      items: expandCollapseAllMenuItems,
+      onClick: (e) => {
+        e.domEvent.stopPropagation();
+        if (e.key === "expand-all") {
+          setIsLocationsExpanded(true);
+          setLocationsVersion((prev) => prev + 1);
+        } else if (e.key === "collapse-all") {
+          setIsLocationsExpanded(false);
+          setLocationsVersion((prev) => prev + 1);
+        }
       },
-      dataIndex: "locations",
-      key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
-      render: (locations: string[]) => (
-        <TagExpandableCell
-          values={
-            locations?.map((location) => {
-              const isoEntry = isoStringToEntry(location);
+    },
+    dataIndex: "locations",
+    key: DiscoveredSystemAggregateColumnKeys.LOCATIONS,
+    render: (locations: string[]) => (
+      <TagExpandableCell
+        values={
+          locations?.map((location) => {
+            const isoEntry = isoStringToEntry(location);
 
-              return {
-                label: isoEntry
-                  ? formatIsoLocation({ isoEntry })
-                  : (PRIVACY_NOTICE_REGION_RECORD[
+            return {
+              label: isoEntry
+                ? formatIsoLocation({ isoEntry })
+                : (PRIVACY_NOTICE_REGION_RECORD[
                     location as PrivacyNoticeRegion
                   ] ?? location) /* fallback on internal list for now */,
-                key: location,
-              };
-            }) ?? []
-          }
-          columnState={{
-            isExpanded: isLocationsExpanded,
-            isWrapped: true,
-            version: locationsVersion,
-          }}
-        />
-      ),
-    },
-    {
-      title: "Domains",
-      menu: {
-        items: expandCollapseAllMenuItems,
-        onClick: (e) => {
-          e.domEvent.stopPropagation();
-          if (e.key === "expand-all") {
-            setIsDomainsExpanded(true);
-            setDomainsVersion((prev) => prev + 1);
-          } else if (e.key === "collapse-all") {
-            setIsDomainsExpanded(false);
-            setDomainsVersion((prev) => prev + 1);
-          }
-        },
+              key: location,
+            };
+          }) ?? []
+        }
+        columnState={{
+          isExpanded: isLocationsExpanded,
+          isWrapped: true,
+          version: locationsVersion,
+        }}
+      />
+    ),
+  },
+  {
+    title: "Domains",
+    menu: {
+      items: expandCollapseAllMenuItems,
+      onClick: (e) => {
+        e.domEvent.stopPropagation();
+        if (e.key === "expand-all") {
+          setIsDomainsExpanded(true);
+          setDomainsVersion((prev) => prev + 1);
+        } else if (e.key === "collapse-all") {
+          setIsDomainsExpanded(false);
+          setDomainsVersion((prev) => prev + 1);
+        }
       },
-      dataIndex: "domains",
-      key: DiscoveredSystemAggregateColumnKeys.DOMAINS,
-      render: (domains: string[]) => (
-        <ListExpandableCell
-          values={domains}
-          valueSuffix="domains"
-          columnState={{
-            isExpanded: isDomainsExpanded,
-            version: domainsVersion,
-          }}
-        />
-      ),
     },
-  ];
+    dataIndex: "domains",
+    key: DiscoveredSystemAggregateColumnKeys.DOMAINS,
+    render: (domains: string[]) => (
+      <ListExpandableCell
+        values={domains}
+        valueSuffix="domains"
+        columnState={{
+          isExpanded: isDomainsExpanded,
+          version: domainsVersion,
+        }}
+      />
+    ),
+  },
+];
 
 const buildReadOnlyColumns = (
   params: ColumnBuilderParams,
