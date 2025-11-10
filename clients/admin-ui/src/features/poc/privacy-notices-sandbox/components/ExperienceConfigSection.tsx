@@ -39,11 +39,7 @@ const PrivacyNoticesList = ({
               {notice.children &&
                 notice.children.length > 0 &&
                 notice.children.map((child) => (
-                  <li
-                    key={child.id}
-                    className="py-1"
-                    style={{ paddingLeft: "20px" }}
-                  >
+                  <li key={child.id} className="py-1 pl-5">
                     {child.name}
                   </li>
                 ))}
