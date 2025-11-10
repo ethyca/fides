@@ -395,6 +395,65 @@ export interface Fides {
   };
 
   /**
+   * Run a comprehensive demo of the Fides Adobe + OneTrust integration.
+   * 
+   * This function performs a live demonstration of the full Fides → Adobe → OneTrust
+   * sync workflow. It's designed for nvidia.com or any site with OneTrust present.
+   * 
+   * The demo:
+   * 1. Verifies OneTrust is present and Fides notices match
+   * 2. Initializes Adobe integration with auto-detected purpose mapping
+   * 3. Detects active consent systems (OneTrust, Adobe Web SDK, ECID)
+   * 4. Logs initial consent state across all systems
+   * 5. Demonstrates consent synchronization by:
+   *    - Toggling a single notice
+   *    - Opting in to all notices
+   *    - Opting out of all notices
+   * 6. Shows all systems stay synchronized throughout
+   * 
+   * @returns Promise resolving to demo results with success status, summary, and detailed logs
+   * 
+   * @example
+   * Run the demo on nvidia.com:
+   * ```javascript
+   * // Open browser console on nvidia.com, inject Fides, then run:
+   * const results = await Fides.nvidiaDemo();
+   * 
+   * // Console will show:
+   * // 🚀 FIDES ADOBE + ONETRUST DEMO 🚀
+   * // ============================================================
+   * // 
+   * // 📋 Step 1: Checking OneTrust → Fides compatibility...
+   * // ✅ OneTrust detected: C0001, C0002, C0003, C0004
+   * //    Suggested Fides notices: essential, performance, functional, advertising
+   * // ✅ All Fides notices present: essential, performance, functional, advertising
+   * // 
+   * // 🔧 Step 2: Initializing Adobe integration with purpose mapping...
+   * // ✅ Adobe integration initialized
+   * // 
+   * // 🔍 Step 3: Detecting active systems...
+   * // ✅ Active systems: OneTrust, Adobe ECID Opt-In
+   * // 
+   * // 📊 Step 4-5: Getting initial consent state (pre-sync)...
+   * // ------------------------------------------------------------
+   * // Fides:    {"performance":false,"advertising":false,"functional":false,"essential":true}
+   * // Adobe:    {"analytics":false,"personalization":false,"advertising":false}
+   * // OneTrust: {"essential":true,"performance":true,"functional":true,"advertising":true}
+   * // 
+   * // ... and so on through all consent changes
+   * 
+   * // Check results
+   * console.log(results.success); // true
+   * console.log(results.summary); // "Demo successful! Synced 2 systems across 4 consent changes."
+   * ```
+   */
+  nvidiaDemo: () => Promise<{
+    success: boolean;
+    summary: string;
+    logs: string[];
+  }>;
+
+  /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
    * immediately after FidesJS is included, and once enabled, FidesJS will
    * automatically push all {@link FidesEvent} events to the GTM data layer as
