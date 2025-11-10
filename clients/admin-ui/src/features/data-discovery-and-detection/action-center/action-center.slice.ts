@@ -86,7 +86,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           monitorType: getMonitorType(monitor.connection_type),
           isTestMonitor:
             monitor.connection_type === ConnectionType.TEST_WEBSITE ||
-            monitor.connection_type === ConnectionType.FIDES,
+            monitor.connection_type === ConnectionType.TEST_DATASTORE,
         })),
       }),
       providesTags: ["Discovery Monitor Results"],
