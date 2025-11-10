@@ -4,7 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
-import type { aep, nvidiaDemo } from "../integrations/aep";
+import type { aep, nvidiaAEP, nvidiaDemo } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
@@ -230,6 +230,7 @@ export interface FidesGlobal
   tcf_consent: TcfOtherConsent;
   version: string;
   aep: typeof aep;
+  nvidiaAEP: typeof nvidiaAEP;
   nvidiaDemo: typeof nvidiaDemo;
   blueconic: typeof blueconic;
   gtm: typeof gtm;

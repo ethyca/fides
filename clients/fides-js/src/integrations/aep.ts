@@ -224,6 +224,7 @@ const DEFAULT_PURPOSE_MAPPING = {
 const pushConsentToAdobe = (
   consent: NoticeConsent,
   options?: AEPOptions,
+  instanceState?: { isFirstSync: boolean },
 ): void => {
   const purposeMapping = options?.purposeMapping || DEFAULT_PURPOSE_MAPPING;
   const debug = options?.debug || false;
@@ -330,9 +331,21 @@ const pushConsentToAdobe = (
   }
 
   // Sync consent to OneTrust cookie (for dual-CMP scenarios)
-  writeOneTrustConsent(consent);
-  if (debug) {
-    console.log("[Fides Adobe] Synced consent to OneTrust cookie");
+  // Skip first sync to avoid overwriting OneTrust during migration
+  // (OneTrust might be the SOURCE of Fides consent on initial load)
+  if (instanceState && instanceState.isFirstSync) {
+    if (debug) {
+      console.log(
+        "[Fides Adobe] Skipping OneTrust write on first sync (migration protection)",
+      );
+    }
+    instanceState.isFirstSync = false;
+  } else {
+    // On subsequent updates, sync Fides -> OneTrust
+    writeOneTrustConsent(consent);
+    if (debug) {
+      console.log("[Fides Adobe] Synced consent to OneTrust cookie");
+    }
   }
 };
 
@@ -1108,6 +1121,9 @@ function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
 export const aep = (options?: AEPOptions): AEPIntegration => {
   const debug = options?.debug || false;
 
+  // Create instance state to track first sync
+  const instanceState = { isFirstSync: true };
+
   // Read OneTrust consent once on initialization for migration
   const oneTrustConsent = readOneTrustConsent();
   if (oneTrustConsent && debug) {
@@ -1117,12 +1133,8 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
     );
   }
 
-  // TODO: Optionally initialize Fides consent from OneTrust if Fides has no consent yet
-  // This would require access to window.Fides and updating consent
-  // For now, we just log it for debugging
-
   // Subscribe to Fides consent events using shared helper
-  subscribeToConsent((consent) => pushConsentToAdobe(consent, options));
+  subscribeToConsent((consent) => pushConsentToAdobe(consent, options, instanceState));
 
   // Return integration API
   return {
@@ -1173,6 +1185,74 @@ const formatConsent = (consent: Record<string, any> | null): string => {
 };
 
 /**
+ * Initialize Adobe integration with auto-detected OneTrust mappings.
+ *
+ * Quick helper for testing on nvidia.com or other OneTrust sites.
+ * Detects OneTrust categories, initializes Fides from OneTrust, and returns
+ * a fully configured aep instance.
+ *
+ * @returns Configured AEP integration instance, or throws error if OneTrust not found
+ *
+ * @example
+ * ```javascript
+ * // On nvidia.com (or any OneTrust site):
+ * const aep = Fides.nvidiaAEP();
+ *
+ * // Integration is live! Check current state:
+ * aep.consent();
+ * aep.oneTrust.read();
+ *
+ * // Any Fides updates will sync to Adobe & OneTrust
+ * window.Fides.consent.performance = true;
+ * window.dispatchEvent(new CustomEvent('FidesUpdated', {
+ *   detail: { consent: window.Fides.consent }
+ * }));
+ * ```
+ */
+export const nvidiaAEP = (): AEPIntegration => {
+  // Detect OneTrust and get suggestions
+  const tempAep = aep();
+  const suggestion = tempAep.suggest();
+
+  if (!suggestion.success) {
+    throw new Error(
+      `❌ Cannot initialize nvidiaAEP: ${suggestion.error}\n\n` +
+      `This function requires OneTrust to be present on the page.\n` +
+      `Use Fides.aep({ purposeMapping: {...} }) with manual config instead.`
+    );
+  }
+
+  console.log(`[nvidiaAEP] OneTrust detected: ${suggestion.oneTrustCategories.join(", ")}`);
+  console.log(`[nvidiaAEP] Fides notices: ${suggestion.matchedKeys.join(", ")}`);
+
+  // Initialize Fides consent from OneTrust
+  const otConsent = tempAep.oneTrust.read();
+  if (otConsent) {
+    (window as any).Fides.consent = otConsent;
+    console.log(`[nvidiaAEP] Initialized Fides from OneTrust`);
+
+    // Dispatch update event
+    window.dispatchEvent(new CustomEvent('FidesUpdated', {
+      detail: {
+        consent: otConsent,
+        extraDetails: { trigger: { origin: 'nvidiaAEP_init' } }
+      }
+    }));
+  }
+
+  // Create configured instance
+  const aepInstance = aep({
+    purposeMapping: suggestion.purposeMapping,
+    debug: false,
+  });
+
+  console.log(`[nvidiaAEP] ✅ Adobe integration initialized with auto-detected mapping`);
+  console.log(`[nvidiaAEP] Use aep.consent() to check current Adobe consent`);
+
+  return aepInstance;
+};
+
+/**
  * NVIDIA Demo: Comprehensive Adobe + OneTrust integration demo
  *
  * This function demonstrates the full Fides → Adobe → OneTrust sync workflow
@@ -1192,6 +1272,7 @@ export const nvidiaDemo = async (): Promise<{
   success: boolean;
   summary: string;
   logs: string[];
+  aep?: AEPIntegration;
 }> => {
   const logs: string[] = [];
   const log = (msg: string) => {
@@ -1238,6 +1319,25 @@ export const nvidiaDemo = async (): Promise<{
 
   log(`✅ All Fides notices present: ${suggestion.matchedKeys.join(", ")}`);
 
+  // Step 1.5: Initialize Fides consent from OneTrust if not already done
+  log("\n🔄 Step 1.5: Reading OneTrust consent to initialize Fides...");
+  const otConsentInitial = tempAep.oneTrust.read();
+  if (otConsentInitial) {
+    // Update Fides consent to match OneTrust (for demo/migration scenario)
+    (window as any).Fides.consent = otConsentInitial;
+    log(`✅ Initialized Fides from OneTrust: ${formatConsent(otConsentInitial)}`);
+
+    // Dispatch FidesUpdated event to trigger any existing subscriptions
+    window.dispatchEvent(new CustomEvent('FidesUpdated', {
+      detail: {
+        consent: otConsentInitial,
+        extraDetails: { trigger: { origin: 'onetrust_migration' } }
+      }
+    }));
+  } else {
+    log("⚠️  Could not read OneTrust consent");
+  }
+
   // Step 2: Create AEP instance with correct purpose mapping
   log("\n🔧 Step 2: Initializing Adobe integration with purpose mapping...");
   const aepInstance = aep({
@@ -1276,9 +1376,6 @@ export const nvidiaDemo = async (): Promise<{
   log("\n📊 Step 4-5: Getting initial consent state (pre-sync)...");
   log("-".repeat(60));
 
-  // Track what we write to OneTrust (for comparison since OneTrust SDK may overwrite reads)
-  let lastWrittenToOneTrust: Record<string, boolean> | null = null;
-
   const getConsentSummary = () => {
     const fidesConsent = (window as any).Fides?.consent || {};
     const adobeConsent = aepInstance.consent();
@@ -1288,8 +1385,7 @@ export const nvidiaDemo = async (): Promise<{
     return {
       fides: fidesConsent,
       adobe: adobeConsent.summary,
-      oneTrustRead: otConsent,
-      oneTrustLastWritten: lastWrittenToOneTrust,
+      oneTrust: otConsent,
     };
   };
 
@@ -1412,12 +1508,17 @@ export const nvidiaDemo = async (): Promise<{
   log(`  • OneTrust categories: ${suggestion.oneTrustCategories.join(", ")}`);
   log(`  • Fides notices: ${suggestion.matchedKeys.join(", ")}`);
   log(`  • Demonstrated: Toggle, Opt-in all, Opt-out all`);
-  log(`  • All systems stayed in sync! ✨`);
+  log("\n💡 The 'aep' instance is still active!");
+  log("   Continue testing with:");
+  log("   - aep.consent()       // Check current Adobe consent");
+  log("   - aep.oneTrust.read() // Check OneTrust cookie");
+  log("   - aep.dump()          // Full diagnostics");
   log("\n");
 
   return {
     success: true,
     summary: `Demo successful! Synced ${activeSystems.length} systems across 4 consent changes.`,
     logs,
+    aep: aepInstance, // Return live integration for continued testing
   };
 };

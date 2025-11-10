@@ -395,6 +395,71 @@ export interface Fides {
   };
 
   /**
+   * Initialize Adobe integration with auto-detected OneTrust mappings (nvidia.com optimized).
+   *
+   * Quick helper for testing on nvidia.com or other OneTrust sites.
+   * Detects OneTrust categories, initializes Fides from OneTrust, and returns
+   * a fully configured aep instance with live event subscription.
+   *
+   * @returns Configured AEP integration instance, or throws error if OneTrust not found
+   *
+   * @example
+   * Quick setup on nvidia.com:
+   * ```javascript
+   * // On nvidia.com (or any OneTrust site):
+   * const aep = Fides.nvidiaAEP();
+   * // [nvidiaAEP] OneTrust detected: C0001, C0002, C0003, C0004
+   * // [nvidiaAEP] Fides notices: essential, performance, functional, advertising
+   * // [nvidiaAEP] Initialized Fides from OneTrust
+   * // [nvidiaAEP] ✅ Adobe integration initialized with auto-detected mapping
+   *
+   * // Integration is live! Check current state:
+   * aep.consent();
+   * // { alloy: {...}, ecidOptIn: {...}, summary: {...} }
+   *
+   * aep.oneTrust.read();
+   * // { essential: true, performance: false, ... }
+   *
+   * // Any Fides updates will automatically sync to Adobe & OneTrust:
+   * window.Fides.consent.performance = true;
+   * window.dispatchEvent(new CustomEvent('FidesUpdated', {
+   *   detail: { consent: window.Fides.consent }
+   * }));
+   *
+   * // Wait 500ms, then check Adobe consent updated:
+   * setTimeout(() => console.log(aep.consent()), 500);
+   * ```
+   *
+   * @example
+   * Error handling:
+   * ```javascript
+   * try {
+   *   const aep = Fides.nvidiaAEP();
+   * } catch (error) {
+   *   console.error(error);
+   *   // "❌ Cannot initialize nvidiaAEP: OneTrust not detected..."
+   *   // Falls back to manual config:
+   *   const aep = Fides.aep({
+   *     purposeMapping: {
+   *       analytics: ['collect', 'measure'],
+   *       functional: ['personalize'],
+   *       advertising: ['personalize', 'share']
+   *     }
+   *   });
+   * }
+   * ```
+   */
+  nvidiaAEP: () => {
+    dump: () => object;
+    consent: () => object;
+    suggest: () => object;
+    oneTrust: {
+      read: () => Record<string, boolean | string> | null;
+      write: (consent: Record<string, boolean | string>) => void;
+    };
+  };
+
+  /**
    * Run a comprehensive demo of the Fides Adobe + OneTrust integration.
    *
    * This function performs a live demonstration of the full Fides → Adobe → OneTrust
@@ -411,13 +476,13 @@ export interface Fides {
    *    - Opting out of all notices
    * 6. Shows all systems stay synchronized throughout
    *
-   * @returns Promise resolving to demo results with success status, summary, and detailed logs
+   * @returns Promise resolving to demo results with success status, summary, detailed logs, and live aep instance
    *
    * @example
    * Run the demo on nvidia.com:
    * ```javascript
    * // Open browser console on nvidia.com, inject Fides, then run:
-   * const results = await Fides.nvidiaDemo();
+   * const { success, summary, aep } = await Fides.nvidiaDemo();
    *
    * // Console will show:
    * // 🚀 FIDES ADOBE + ONETRUST DEMO 🚀
@@ -443,14 +508,35 @@ export interface Fides {
    * // ... and so on through all consent changes
    *
    * // Check results
-   * console.log(results.success); // true
-   * console.log(results.summary); // "Demo successful! Synced 2 systems across 4 consent changes."
+   * console.log(success); // true
+   * console.log(summary); // "Demo successful! Synced 2 systems across 4 consent changes."
+   *
+   * // Continue testing with the live aep instance
+   * aep.consent();        // Check current Adobe consent
+   * aep.oneTrust.read();  // Check OneTrust cookie
+   * aep.dump();           // Full diagnostics
+   *
+   * // The aep integration is still LIVE - any Fides updates will sync to Adobe & OneTrust
+   * window.Fides.consent.performance = true;
+   * window.dispatchEvent(new CustomEvent('FidesUpdated', {
+   *   detail: { consent: window.Fides.consent }
+   * }));
+   * // Wait 500ms, then check: aep.consent() will show updated Adobe consent!
    * ```
    */
   nvidiaDemo: () => Promise<{
     success: boolean;
     summary: string;
     logs: string[];
+    aep?: {
+      dump: () => object;
+      consent: () => object;
+      suggest: () => object;
+      oneTrust: {
+        read: () => Record<string, boolean | string> | null;
+        write: (consent: Record<string, boolean | string>) => void;
+      };
+    };
   }>;
 
   /**

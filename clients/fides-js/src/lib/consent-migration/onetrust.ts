@@ -45,12 +45,6 @@ export class OneTrustProvider implements ConsentMigrationProvider {
       const strippedString = decodedString.replace(/^'|'$/g, "");
       const mappingParsed: OtToFidesConsentMapping = JSON.parse(strippedString);
       const fidesConsent = this.parseCookieValue(cookieValue, mappingParsed);
-
-      if (fidesConsent) {
-        fidesDebugger(
-          `Fides consent built based on OneTrust consent: ${JSON.stringify(fidesConsent)}`,
-        );
-      }
       return fidesConsent;
     } catch (e) {
       fidesDebugger(
@@ -105,7 +99,7 @@ export class OneTrustProvider implements ConsentMigrationProvider {
   /**
    * Write Fides consent back to OneTrust using their official SDK
    * Calls OneTrust.UpdateConsent() if SDK is available, falls back to cookie write
-   * 
+   *
    * @param fidesConsent - Fides consent object to write
    * @param mapping - Optional custom mapping (defaults to standard mapping)
    * @returns true if write succeeded, false otherwise
@@ -117,7 +111,7 @@ export class OneTrustProvider implements ConsentMigrationProvider {
     try {
       // Use provided mapping or default
       const categoryMapping = mapping || DEFAULT_ONETRUST_TO_FIDES_MAPPING;
-      
+
       // Invert the mapping: fidesKey -> otCategory
       const invertedMapping: Record<string, string> = {};
       Object.entries(categoryMapping).forEach(([otCat, fidesKey]) => {
@@ -146,22 +140,27 @@ export class OneTrustProvider implements ConsentMigrationProvider {
         typeof (window as any).OneTrust.UpdateConsent === "function";
 
       if (hasOneTrustSDK) {
+        // TODO: OneTrust SDK API causes page reload - disabled for now
         // Use official OneTrust SDK API
-        try {
-          // UpdateConsent signature: UpdateConsent(consentType, groupsString)
-          // consentType appears to be "GROUPS" for category consent
-          (window as any).OneTrust.UpdateConsent("GROUPS", groupsString);
-          
-          fidesDebugger(
-            `[OneTrust] Updated consent via SDK: ${groupsString}`,
-          );
-          return true;
-        } catch (sdkError) {
-          fidesDebugger(
-            `[OneTrust] SDK UpdateConsent failed: ${sdkError}, falling back to cookie write`,
-          );
-          // Fall through to cookie write below
-        }
+        // try {
+        //   // UpdateConsent signature: UpdateConsent(consentType, groupsString)
+        //   // consentType appears to be "GROUPS" for category consent
+        //   (window as any).OneTrust.UpdateConsent("GROUPS", groupsString);
+        //
+        //   fidesDebugger(
+        //     `[OneTrust] Updated consent via SDK: ${groupsString}`,
+        //   );
+        //   return true;
+        // } catch (sdkError) {
+        //   fidesDebugger(
+        //     `[OneTrust] SDK UpdateConsent failed: ${sdkError}, falling back to cookie write`,
+        //   );
+        //   // Fall through to cookie write below
+        // }
+
+        fidesDebugger(
+          `[OneTrust] SDK detected but using cookie write (SDK causes page reload): ${groupsString}`,
+        );
       }
 
       // Fallback: Write directly to cookie (for when OneTrust SDK is not available)
