@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.73.1"
+    "version": "2.74.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9348,6 +9348,55 @@
         ]
       }
     },
+    "/api/v1/privacy-request/administrate/cancel": {
+      "patch": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Cancel Privacy Request",
+        "description": "Cancel a list of privacy requests and/or report failure",
+        "operationId": "cancel_privacy_request_api_v1_privacy_request_administrate_cancel_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelPrivacyRequests"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkReviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/pre-approve/eligible": {
       "post": {
         "tags": [
@@ -15905,6 +15954,35 @@
         "title": "BulkUpdateFailed",
         "description": "Schema for use when Bulk Create/Update fails."
       },
+      "CancelPrivacyRequests": {
+        "properties": {
+          "request_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Request Ids"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_ids"
+        ],
+        "title": "CancelPrivacyRequests",
+        "description": "Pass in a list of privacy request ids and cancellation reason"
+      },
       "CheckpointActionRequiredDetails": {
         "properties": {
           "step": {
@@ -20366,6 +20444,30 @@
         ],
         "title": "IdentityTypes"
       },
+      "IdentityValue": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "IdentityValue"
+      },
       "IdentityVerificationConfigResponse": {
         "properties": {
           "identity_verification_required": {
@@ -24481,9 +24583,16 @@
                 "$ref": "#/components/schemas/ActionType"
               },
               {
+                "items": {
+                  "$ref": "#/components/schemas/ActionType"
+                },
+                "type": "array"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Action Type"
           },
           "verbose": {
             "anyOf": [
@@ -24764,7 +24873,7 @@
                       "type": "string"
                     },
                     {
-                      "type": "object"
+                      "$ref": "#/components/schemas/IdentityValue"
                     },
                     {
                       "type": "null"
@@ -24918,7 +25027,8 @@
           "duplicate_request_group_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
               },
               {
                 "type": "null"
@@ -25204,7 +25314,7 @@
                       "type": "string"
                     },
                     {
-                      "type": "object"
+                      "$ref": "#/components/schemas/IdentityValue"
                     },
                     {
                       "type": "null"
@@ -25358,7 +25468,8 @@
           "duplicate_request_group_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
               },
               {
                 "type": "null"
@@ -27093,9 +27204,6 @@
           "system_manager:read",
           "system_manager:delete",
           "system_manager:update",
-          "taxonomy:create",
-          "taxonomy:delete",
-          "taxonomy:update",
           "user:create",
           "user:update",
           "user:delete",
