@@ -188,13 +188,13 @@ export interface AEPIntegration {
      * Read current consent state from OneTrust cookie
      * Returns Fides-compatible consent object
      */
-    read: () => NoticeConsent | null;
+    read: () => Record<string, boolean | string> | null;
 
     /**
      * Write Fides consent state to OneTrust cookie
      * Updates OptanonConsent cookie with current Fides consent
      */
-    write: (consent: NoticeConsent) => void;
+    write: (consent: Record<string, boolean | string>) => void;
   };
 }
 
@@ -1018,7 +1018,7 @@ const ONETRUST_TO_FIDES_MAPPING: Record<string, string> = {
  * Read consent state from OneTrust cookie and convert to Fides format
  * @returns Fides-compatible consent object or null if OneTrust not found
  */
-function readOneTrustConsent(): NoticeConsent | null {
+function readOneTrustConsent(): Record<string, boolean | string> | null {
   try {
     // Get OptanonConsent cookie
     const cookies = document.cookie.split("; ");
@@ -1068,7 +1068,7 @@ function readOneTrustConsent(): NoticeConsent | null {
  * Write Fides consent state to OneTrust cookie
  * Updates the OptanonConsent cookie's groups parameter
  */
-function writeOneTrustConsent(consent: NoticeConsent): void {
+function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
   try {
     // Get existing OptanonConsent cookie
     const cookies = document.cookie.split("; ");
@@ -1098,7 +1098,9 @@ function writeOneTrustConsent(consent: NoticeConsent): void {
     Object.entries(ONETRUST_TO_FIDES_MAPPING).forEach(
       ([otCategory, fidesKey]) => {
         const consentValue = consent[fidesKey];
-        const status = consentValue ? "1" : "0";
+        // Convert to boolean: true/"opt_in"/"acknowledge" → "1", false/"opt_out"/"not_applicable" → "0"
+        const hasConsent = consentValue === true || consentValue === "opt_in" || consentValue === "acknowledge";
+        const status = hasConsent ? "1" : "0";
         groupsArray.push(`${otCategory}:${status}`);
       },
     );
@@ -1204,10 +1206,10 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
       return generateAEPSuggestion();
     },
     oneTrust: {
-      read: (): NoticeConsent | null => {
+      read: (): Record<string, boolean | string> | null => {
         return readOneTrustConsent();
       },
-      write: (consent: NoticeConsent): void => {
+      write: (consent: Record<string, boolean | string>): void => {
         writeOneTrustConsent(consent);
       },
     },
@@ -1216,13 +1218,13 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
 
 /**
  * NVIDIA Demo: Comprehensive Adobe + OneTrust integration demo
- * 
+ *
  * This function demonstrates the full Fides → Adobe → OneTrust sync workflow
  * on nvidia.com. It checks for OneTrust presence, initializes the Adobe
  * integration, and demonstrates consent synchronization.
- * 
+ *
  * @returns Demo results with detailed logs
- * 
+ *
  * @example
  * ```javascript
  * // Run the demo on nvidia.com
@@ -1246,7 +1248,7 @@ export const nvidiaDemo = async (): Promise<{
 
   // Step 1: Check if we have matching categories using suggest()
   log("\n📋 Step 1: Checking OneTrust → Fides compatibility...");
-  
+
   const tempAep = aep();
   const suggestion = tempAep.suggest();
 
@@ -1349,7 +1351,7 @@ export const nvidiaDemo = async (): Promise<{
   }
 
   log("✅ Read OneTrust consent: " + JSON.stringify(otConsent));
-  
+
   // Note: In a production migration scenario, Fides would automatically
   // initialize from OneTrust. For this demo, we'll just verify the states match
   log("\n📊 Post-sync consent state:");
@@ -1361,17 +1363,17 @@ export const nvidiaDemo = async (): Promise<{
 
   // Step 8-9: Change one notice
   log("\n✏️  Step 8-9: Toggling 'performance' notice...");
-  
+
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-  
+
   // Get current Fides consent
   const currentConsent = { ...(window as any).Fides.consent };
   const currentPerformance = currentConsent.performance;
-  
+
   // Toggle performance
   currentConsent.performance = !currentPerformance;
   (window as any).Fides.consent = currentConsent;
-  
+
   // Dispatch update event to trigger sync
   window.dispatchEvent(new CustomEvent('FidesUpdated', {
     detail: {
@@ -1379,9 +1381,9 @@ export const nvidiaDemo = async (): Promise<{
       extraDetails: { trigger: { origin: 'demo' } }
     }
   }));
-  
+
   await wait(500);
-  
+
   log(`   Changed 'performance' from ${currentPerformance} → ${!currentPerformance}`);
   log("\n📊 Consent state after toggle:");
   log("-".repeat(60));
@@ -1392,12 +1394,12 @@ export const nvidiaDemo = async (): Promise<{
 
   // Step 10: Opt-in to all
   log("\n✅ Step 10: Opting IN to all notices...");
-  
+
   const optInAll: NoticeConsent = {};
   Object.keys(currentConsent).forEach(key => {
     optInAll[key] = true;
   });
-  
+
   (window as any).Fides.consent = optInAll;
   window.dispatchEvent(new CustomEvent('FidesUpdated', {
     detail: {
@@ -1405,9 +1407,9 @@ export const nvidiaDemo = async (): Promise<{
       extraDetails: { trigger: { origin: 'demo' } }
     }
   }));
-  
+
   await wait(500);
-  
+
   log("\n📊 Consent state after OPT-IN ALL:");
   log("-".repeat(60));
   const afterOptIn = getConsentSummary();
@@ -1417,12 +1419,12 @@ export const nvidiaDemo = async (): Promise<{
 
   // Step 11: Opt-out of all (except essential)
   log("\n❌ Step 11: Opting OUT of all notices (except essential)...");
-  
+
   const optOutAll: NoticeConsent = {};
   Object.keys(currentConsent).forEach(key => {
     optOutAll[key] = key === 'essential'; // Keep essential true
   });
-  
+
   (window as any).Fides.consent = optOutAll;
   window.dispatchEvent(new CustomEvent('FidesUpdated', {
     detail: {
@@ -1430,9 +1432,9 @@ export const nvidiaDemo = async (): Promise<{
       extraDetails: { trigger: { origin: 'demo' } }
     }
   }));
-  
+
   await wait(500);
-  
+
   log("\n📊 Consent state after OPT-OUT ALL:");
   log("-".repeat(60));
   const afterOptOut = getConsentSummary();
