@@ -1,4 +1,11 @@
-import { AntButton as Button, Box, DeleteIcon, Flex, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntTypography as Typography,
+  Box,
+  DeleteIcon,
+  Flex,
+  Text,
+} from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";
 
@@ -81,6 +88,9 @@ const PrivacyRequestRedactionPatternsPage = () => {
   return (
     <Box data-testid="privacy-request-redaction-patterns">
       <Box maxW="600px">
+        <Typography.Title level={2} className="!mb-2">
+          Redaction patterns
+        </Typography.Title>
         <Text fontSize="sm" pb={6}>
           List of regex patterns used to mask dataset, collection, and field
           names in DSR package reports. Names matching these patterns will be
