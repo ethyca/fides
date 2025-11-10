@@ -35,8 +35,6 @@ export const PrivacyRequestsDashboard = () => {
   const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
-  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
       ...filterQueryParams,
@@ -53,6 +51,16 @@ export const PrivacyRequestsDashboard = () => {
 
     return { ...results, items: itemsWithKeys };
   }, [data]);
+
+  const {
+    selectedIds,
+    setSelectedIds,
+    clearSelectedIds,
+    checkboxSelectState,
+    handleSelectAll,
+  } = useSelection({
+    currentPageKeys: requests.map((request) => request.id),
+  });
 
   const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
@@ -72,15 +80,13 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  const { bulkActionMenuItems, checkboxSelectState, handleSelectAll } =
-    usePrivacyRequestBulkActions({
-      requests,
-      selectedIds,
-      setSelectedIds,
-      clearSelectedIds,
-      messageApi,
-      modalApi,
-    });
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
+    requests,
+    selectedIds,
+    clearSelectedIds,
+    messageApi,
+    modalApi,
+  });
 
   return (
     <div>

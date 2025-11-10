@@ -24,12 +24,9 @@ import {
 type MessageInstance = ReturnType<typeof message.useMessage>[0];
 type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
-export type CheckboxSelectState = "checked" | "unchecked" | "indeterminate";
-
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
-  setSelectedIds: (ids: React.Key[]) => void;
   clearSelectedIds: () => void;
   messageApi: MessageInstance;
   modalApi: ModalInstance;
@@ -93,7 +90,6 @@ const formatResultMessage = (
 export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
-  setSelectedIds,
   clearSelectedIds,
   messageApi,
   modalApi,
@@ -101,48 +97,6 @@ export const usePrivacyRequestBulkActions = ({
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
-  );
-
-  const currentPageKeys = useMemo(
-    () => requests.map((request) => request.id),
-    [requests],
-  );
-
-  const checkboxSelectState: CheckboxSelectState = useMemo(() => {
-    if (currentPageKeys.length === 0) {
-      return "unchecked";
-    }
-
-    const allSelected = currentPageKeys.every((key) =>
-      selectedIds.includes(key),
-    );
-    if (allSelected) {
-      return "checked";
-    }
-
-    const someSelected =
-      selectedIds.length > 0 &&
-      currentPageKeys.some((key) => selectedIds.includes(key));
-    if (someSelected) {
-      return "indeterminate";
-    }
-
-    return "unchecked";
-  }, [currentPageKeys, selectedIds]);
-
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        // Select all on current page
-        const newSelected = [...new Set([...selectedIds, ...currentPageKeys])];
-        setSelectedIds(newSelected);
-      } else {
-        // Deselect all on current page
-        const currentPageKeysSet = new Set<React.Key>(currentPageKeys);
-        setSelectedIds(selectedIds.filter((id) => !currentPageKeysSet.has(id)));
-      }
-    },
-    [selectedIds, currentPageKeys, setSelectedIds],
   );
 
   // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
@@ -322,7 +276,5 @@ export const usePrivacyRequestBulkActions = ({
 
   return {
     bulkActionMenuItems,
-    checkboxSelectState,
-    handleSelectAll,
   };
 };
