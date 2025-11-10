@@ -36,20 +36,14 @@ def update_saas_configs(db: Session) -> None:
             connector_type
         )
 
-        template_dataset = SaasTemplateDataset.get_by(
-            db=db, field="connection_type", value=connector_type
-        )
         # Store the original template dataset (with placeholders) instead of the modified version
         template_dataset_json = load_dataset_from_string(template.dataset)
 
-        if not template_dataset:
-            SaasTemplateDataset.create(
-                db=db,
-                data={
-                    "connection_type": connector_type,
-                    "dataset_json": template_dataset_json,
-                },
-            )
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type=connector_type,
+            dataset_json=template_dataset_json,
+        )
 
         saas_config = SaaSConfig(**load_config_from_string(template.config))
         template_version: Version = parse_version(saas_config.version)
