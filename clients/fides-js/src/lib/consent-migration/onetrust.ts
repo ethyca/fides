@@ -103,9 +103,9 @@ export class OneTrustProvider implements ConsentMigrationProvider {
   }
 
   /**
-   * Write Fides consent back to OneTrust cookie
-   * Updates the OptanonConsent cookie's groups parameter
-   *
+   * Write Fides consent back to OneTrust using their official SDK
+   * Calls OneTrust.UpdateConsent() if SDK is available, falls back to cookie write
+   * 
    * @param fidesConsent - Fides consent object to write
    * @param mapping - Optional custom mapping (defaults to standard mapping)
    * @returns true if write succeeded, false otherwise
@@ -115,24 +115,16 @@ export class OneTrustProvider implements ConsentMigrationProvider {
     mapping?: Record<string, string>,
   ): boolean {
     try {
-      const cookieValue = this.getConsentCookie();
-      if (!cookieValue) {
-        fidesDebugger(
-          "[OneTrust] Cannot write consent - OptanonConsent cookie not found",
-        );
-        return false;
-      }
-
       // Use provided mapping or default
       const categoryMapping = mapping || DEFAULT_ONETRUST_TO_FIDES_MAPPING;
-
+      
       // Invert the mapping: fidesKey -> otCategory
       const invertedMapping: Record<string, string> = {};
       Object.entries(categoryMapping).forEach(([otCat, fidesKey]) => {
         invertedMapping[fidesKey] = otCat;
       });
 
-      // Build new groups string from Fides consent
+      // Build groups string for OneTrust: "C0001:1,C0002:0,C0003:1,C0004:1"
       const groupsArray: string[] = [];
       Object.entries(invertedMapping).forEach(([fidesKey, otCategory]) => {
         const consentValue = fidesConsent[fidesKey];
@@ -145,19 +137,59 @@ export class OneTrustProvider implements ConsentMigrationProvider {
         groupsArray.push(`${otCategory}:${status}`);
       });
 
-      const newGroups = groupsArray.join(",");
+      const groupsString = groupsArray.join(",");
 
-      // Replace groups parameter using regex (preserves other params exactly)
-      const updatedCookie = cookieValue.replace(
-        /groups=([^&]*)/,
-        `groups=${newGroups}`,
-      );
+      // Check if OneTrust SDK is available
+      const hasOneTrustSDK =
+        typeof window !== "undefined" &&
+        typeof (window as any).OneTrust !== "undefined" &&
+        typeof (window as any).OneTrust.UpdateConsent === "function";
 
-      // Write cookie (preserve existing expiry/domain/path)
+      if (hasOneTrustSDK) {
+        // Use official OneTrust SDK API
+        try {
+          // UpdateConsent signature: UpdateConsent(consentType, groupsString)
+          // consentType appears to be "GROUPS" for category consent
+          (window as any).OneTrust.UpdateConsent("GROUPS", groupsString);
+          
+          fidesDebugger(
+            `[OneTrust] Updated consent via SDK: ${groupsString}`,
+          );
+          return true;
+        } catch (sdkError) {
+          fidesDebugger(
+            `[OneTrust] SDK UpdateConsent failed: ${sdkError}, falling back to cookie write`,
+          );
+          // Fall through to cookie write below
+        }
+      }
+
+      // Fallback: Write directly to cookie (for when OneTrust SDK is not available)
+      const cookieValue = this.getConsentCookie();
+      if (!cookieValue) {
+        fidesDebugger(
+          "[OneTrust] Cannot write consent - OptanonConsent cookie not found and SDK unavailable",
+        );
+        return false;
+      }
+
+      // Replace or add groups parameter
+      let updatedCookie;
+      if (cookieValue.includes("groups=")) {
+        updatedCookie = cookieValue.replace(
+          /groups=([^&]*)/,
+          `groups=${groupsString}`,
+        );
+      } else {
+        const separator = cookieValue.endsWith("&") || cookieValue === "" ? "" : "&";
+        updatedCookie = `${cookieValue}${separator}groups=${groupsString}`;
+      }
+
+      // Write cookie
       document.cookie = `OptanonConsent=${encodeURIComponent(updatedCookie)}; path=/`;
 
       fidesDebugger(
-        `[OneTrust] Updated consent in cookie: ${newGroups}`,
+        `[OneTrust] Updated consent via cookie: ${groupsString}`,
       );
       return true;
     } catch (error) {

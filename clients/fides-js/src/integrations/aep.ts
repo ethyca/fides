@@ -1056,7 +1056,7 @@ function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
       consent as NoticeConsent,
       DEFAULT_ONETRUST_TO_FIDES_MAPPING,
     );
-    
+
     if (!success) {
       console.warn("[Fides Adobe] Failed to write OneTrust consent");
     }
@@ -1276,6 +1276,9 @@ export const nvidiaDemo = async (): Promise<{
   log("\n📊 Step 4-5: Getting initial consent state (pre-sync)...");
   log("-".repeat(60));
 
+  // Track what we write to OneTrust (for comparison since OneTrust SDK may overwrite reads)
+  let lastWrittenToOneTrust: Record<string, boolean> | null = null;
+
   const getConsentSummary = () => {
     const fidesConsent = (window as any).Fides?.consent || {};
     const adobeConsent = aepInstance.consent();
@@ -1285,7 +1288,8 @@ export const nvidiaDemo = async (): Promise<{
     return {
       fides: fidesConsent,
       adobe: adobeConsent.summary,
-      oneTrust: otConsent,
+      oneTrustRead: otConsent,
+      oneTrustLastWritten: lastWrittenToOneTrust,
     };
   };
 
