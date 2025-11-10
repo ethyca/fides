@@ -19,7 +19,6 @@ export const VendorMatchBadge = ({
   vendorLogoUrl,
   confidence,
 }: VendorMatchBadgeProps) => {
-  // Unknown vendor case
   if (!vendorName) {
     return (
       <Badge colorScheme="gray" variant="outline" fontSize="xs">
@@ -31,7 +30,6 @@ export const VendorMatchBadge = ({
     );
   }
 
-  // Known vendor - color code by confidence
   const confidenceColors = {
     high: "green",
     medium: "yellow",
