@@ -1,6 +1,5 @@
 import {
   AntButton as Button,
-  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntMessage as message,
@@ -96,39 +95,6 @@ export const PrivacyRequestsDashboard = () => {
     modalApi,
   });
 
-  // Select all logic
-  const currentPageIds = useMemo(
-    () => requests.map((item) => item.id),
-    [requests],
-  );
-
-  const allCurrentPageSelected = useMemo(
-    () =>
-      currentPageIds.length > 0 &&
-      currentPageIds.every((id) => selectedIds.includes(id)),
-    [currentPageIds, selectedIds],
-  );
-
-  const someCurrentPageSelected = useMemo(
-    () =>
-      currentPageIds.some((id) => selectedIds.includes(id)) &&
-      !allCurrentPageSelected,
-    [currentPageIds, selectedIds, allCurrentPageSelected],
-  );
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      // Select all items on current page
-      const newSelected = Array.from(
-        new Set([...selectedIds, ...currentPageIds]),
-      );
-      setSelectedIds(newSelected);
-    } else {
-      // Deselect all items
-      setSelectedIds([]);
-    }
-  };
-
   return (
     <div>
       {/* First row: Search and Filters */}
@@ -142,47 +108,34 @@ export const PrivacyRequestsDashboard = () => {
         />
       </Flex>
 
-      {/* Second row: Select all and actions */}
-      <Flex gap="small" align="center" justify="space-between">
-        <Flex gap="small" align="center">
-          <Checkbox
-            id="select-all-privacy-requests"
-            checked={allCurrentPageSelected}
-            indeterminate={someCurrentPageSelected}
-            onChange={(e) => handleSelectAll(e.target.checked)}
-            data-testid="select-all-checkbox"
-          />
-          <label htmlFor="select-all-privacy-requests">Select all</label>
-        </Flex>
-
-        <Flex gap="small" align="center">
-          {selectedIds.length > 0 && (
-            <>
-              <Typography.Text strong>
-                {selectedIds.length} selected
-              </Typography.Text>
-              <Typography.Text> / </Typography.Text>
-            </>
-          )}
-          <Typography.Text>{totalRows ?? 0} results</Typography.Text>
-          <BulkActionsDropdown
-            selectedIds={selectedIds}
-            menuItems={bulkActionMenuItems}
-            showSelectedCount={false}
-          />
-          <Button
-            aria-label="Reload"
-            data-testid="reload-btn"
-            icon={<Icons.Renew />}
-            onClick={() => refetch()}
-          />
-          <Button
-            aria-label="Export report"
-            data-testid="export-btn"
-            icon={<Icons.Download />}
-            onClick={handleExport}
-          />
-        </Flex>
+      {/* Second row: Actions */}
+      <Flex gap="small" align="center" justify="flex-end" className="mb-2">
+        {selectedIds.length > 0 && (
+          <>
+            <Typography.Text strong>
+              {selectedIds.length} selected
+            </Typography.Text>
+            <Typography.Text> / </Typography.Text>
+          </>
+        )}
+        <Typography.Text>{totalRows ?? 0} results</Typography.Text>
+        <BulkActionsDropdown
+          selectedIds={selectedIds}
+          menuItems={bulkActionMenuItems}
+          showSelectedCount={false}
+        />
+        <Button
+          aria-label="Reload"
+          data-testid="reload-btn"
+          icon={<Icons.Renew />}
+          onClick={() => refetch()}
+        />
+        <Button
+          aria-label="Export report"
+          data-testid="export-btn"
+          icon={<Icons.Download />}
+          onClick={handleExport}
+        />
       </Flex>
 
       <Portal>
