@@ -39,12 +39,6 @@ export const PrivacyRequestFiltersBar = ({
     if (filters.from && filters.to) {
       return [dayjs(filters.from), dayjs(filters.to)];
     }
-    if (filters.from) {
-      return [dayjs(filters.from), null];
-    }
-    if (filters.to) {
-      return [null, dayjs(filters.to)];
-    }
     return null;
   };
 
