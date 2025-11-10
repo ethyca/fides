@@ -88,7 +88,7 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
       </Typography.Paragraph>
 
       {isLoadingConfig ? (
-        <Skeleton active paragraph={{ rows: 3 }} className="mt-4" />
+        <Skeleton.Input active className="mt-4" />
       ) : (
         <Form
           form={form}
