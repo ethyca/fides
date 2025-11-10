@@ -34,6 +34,16 @@ autodiscover_task_locations: List[str] = [
     "fides.api.service.privacy_request.request_runner_service",
 ]
 
+ENGINE = get_db_engine(
+    config=CONFIG,
+    pool_size=CONFIG.database.task_engine_pool_size,
+    max_overflow=CONFIG.database.task_engine_max_overflow,
+    keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
+    keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
+    keepalives_count=CONFIG.database.task_engine_keepalives_count,
+    pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
+)
+
 
 def log_retry_attempt(retry_state: RetryCallState) -> None:
     """Log database connection retry attempts."""
@@ -46,7 +56,7 @@ def log_retry_attempt(retry_state: RetryCallState) -> None:
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
-    _task_engine = None
+    _task_engine = ENGINE
     _sessionmaker = None
 
     # This retry will attempt to connect 5 times with an exponential backoff (2, 4, 8, 16 seconds between each attempt).
@@ -68,15 +78,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # only one engine will be instantiated in a given task scope, i.e
         # once per celery process.
         if self._task_engine is None:
-            self._task_engine = get_db_engine(
-                config=CONFIG,
-                pool_size=CONFIG.database.task_engine_pool_size,
-                max_overflow=CONFIG.database.task_engine_max_overflow,
-                keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
-                keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
-                keepalives_count=CONFIG.database.task_engine_keepalives_count,
-                pool_pre_ping=CONFIG.database.task_engine_pool_pre_ping,
-            )
+            self._task_engine = ENGINE
 
         # same for the sessionmaker
         if self._sessionmaker is None:
