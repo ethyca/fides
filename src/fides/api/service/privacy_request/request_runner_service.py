@@ -525,8 +525,6 @@ def run_privacy_request(
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
                 # Add success log for dataset configuration (only on first pass)
-                # This is moved to immediately after successful validation to ensure it's logged
-                # even if subsequent operations fail (like database connection errors)
                 if can_run_checkpoint(
                     request_checkpoint=CurrentStep.dataset_validation,
                     from_checkpoint=resume_step,
