@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntMessage as message,
@@ -71,13 +72,15 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
-  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
-    requests,
-    selectedIds,
-    clearSelectedIds,
-    messageApi,
-    modalApi,
-  });
+  const { bulkActionMenuItems, checkboxSelectState, handleSelectAll } =
+    usePrivacyRequestBulkActions({
+      requests,
+      selectedIds,
+      setSelectedIds,
+      clearSelectedIds,
+      messageApi,
+      modalApi,
+    });
 
   return (
     <div>
@@ -88,6 +91,17 @@ export const PrivacyRequestsDashboard = () => {
 
       {/* Second row: Actions */}
       <Flex gap="small" align="center" justify="flex-end" className="mb-2">
+        <div className="mr-auto flex items-center gap-2">
+          <Checkbox
+            id="select-all"
+            checked={checkboxSelectState === "checked"}
+            indeterminate={checkboxSelectState === "indeterminate"}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+          />
+          <label htmlFor="select-all" className="cursor-pointer">
+            Select all
+          </label>
+        </div>
         <BulkActionsDropdown
           selectedIds={selectedIds}
           menuItems={bulkActionMenuItems}
