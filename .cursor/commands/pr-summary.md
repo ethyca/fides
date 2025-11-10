@@ -8,7 +8,7 @@ Use the template found in `.github/pull_request_template.md` to provide a summar
 
 Provide a link to a GitHub URL with the body of the PR template and title as query parameters. The body should be in Markdown code format, patterned after the template.
 
-- The format is: `https://github.com/ehtyca/fides/compare/main...{branch}?quick_pull=1&title={title}&body={body}`. Make this link clickable, not copyable. Take care to ensure the URL encoding doesn't get mangled in the link. Be sure to include backticks encoded as %60 instead of stripping them from the description.
+- The format is: `https://github.com/ethyca/fides/compare/main...{branch}?quick_pull=1&title={title}&body={body}`. Make this link clickable, not copyable. Take care to ensure the URL encoding doesn't get mangled in the link. Be sure to include backticks encoded as %60 instead of stripping them from the description.
   - Key parameters:
     - quick_pull=1 - Opens the PR creation form
     - title= - URL-encoded PR title

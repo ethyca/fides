@@ -14,16 +14,16 @@ Follow the steps below, step by step. Do not change anything else, other than ad
 
 6. To support testing, we need to add the default value to `mockOptions` in [automated-consent.test.ts](mdc:clients/fides-js/__tests__/lib/automated-consent.test.ts)
 
-6. Before proceeding to the steps below, run a build of fides.js by running `npm run build` in the `clients/fides-js` directory in the terminal.
+7. Before proceeding to the steps below, run a build of fides.js by running `npm run build` in the `clients/fides-js` directory in the terminal.
 
-7. Enabling environment variable support happens in the Privacy Center. Start by adding the new option to the `PrivacyCenterSettings` interface. This interface is found in [PrivacyCenterSettings.ts](mdc:clients/privacy-center/app/server-utils/PrivacyCenterSettings.ts). Environment variables are always added using screaming snake-case (underscore separated in all caps) so we'll do that here, along with a small blurb to the right of it. This blurb is for the benefit of the Privacy Center developer and is not published.
+8. Enabling environment variable support happens in the Privacy Center. Start by adding the new option to the `PrivacyCenterSettings` interface. This interface is found in [PrivacyCenterSettings.ts](mdc:clients/privacy-center/app/server-utils/PrivacyCenterSettings.ts). Environment variables are always added using screaming snake-case (underscore separated in all caps) so we'll do that here, along with a small blurb to the right of it. This blurb is for the benefit of the Privacy Center developer and is not published.
 
-8. We can now add the new option to the list of Environment Variables that gets loaded in to Privacy Center's settings. Add the new option to the `settings` constant of the `loadEnvironmentVariables` method found in [loadEnvironmentVariables.ts](mdc:clients/privacy-center/app/server-utils/loadEnvironmentVariables.ts). Ask me to double check how this gets loaded and how the default gets set. For example, keep in mind that environment variables are always strings and must be coerced into a boolean, etc.
+9. We can now add the new option to the list of Environment Variables that gets loaded in to Privacy Center's settings. Add the new option to the `settings` constant of the `loadEnvironmentVariables` method found in [loadEnvironmentVariables.ts](mdc:clients/privacy-center/app/server-utils/loadEnvironmentVariables.ts). Ask me to double check how this gets loaded and how the default gets set. For example, keep in mind that environment variables are always strings and must be coerced into a boolean, etc.
 
-9. Exposing the environment variable to the client requires updating the list of `Pick`ed properties of the `PrivacyCenterClientSettings` interface found in [server-environment.ts](mdc:clients/privacy-center/app/server-environment.ts)
+10. Exposing the environment variable to the client requires updating the list of `Pick`ed properties of the `PrivacyCenterClientSettings` interface found in [server-environment.ts](mdc:clients/privacy-center/app/server-environment.ts)
 
-10. Once that interface is updated, we can now update the `clientSettings` constant variable to include the new option. This is found in the same [server-environment.ts](mdc:clients/privacy-center/app/server-environment.ts) file.
+11. Once that interface is updated, we can now update the `clientSettings` constant variable to include the new option. This is found in the same [server-environment.ts](mdc:clients/privacy-center/app/server-environment.ts) file.
 
-11. Lastly, we need to expose the settings variable to the client. Update the `fidesConfig` constant in [fides-js.ts](mdc:clients/privacy-center/pages/api/fides-js.ts) to include the new option.
+12. Lastly, we need to expose the settings variable to the client. Update the `fidesConfig` constant in [fides-js.ts](mdc:clients/privacy-center/pages/api/fides-js.ts) to include the new option.
 
-12. Now is a good time to build the Privacy Center to ensure there are no unexpected errors. Run `npm run build` from the `clients/privacy-center` directory in the terminal.
+13. Now is a good time to build the Privacy Center to ensure there are no unexpected errors. Run `npm run build` from the `clients/privacy-center` directory in the terminal.
