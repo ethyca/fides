@@ -7,7 +7,6 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  AntTypography as Typography,
   Icons,
 } from "fidesui";
 import React, { useMemo } from "react";
@@ -100,19 +99,10 @@ export const PrivacyRequestsDashboard = () => {
 
       {/* Second row: Actions */}
       <Flex gap="small" align="center" justify="flex-end" className="mb-2">
-        {selectedIds.length > 0 && (
-          <>
-            <Typography.Text strong>
-              {selectedIds.length} selected
-            </Typography.Text>
-            <Typography.Text> / </Typography.Text>
-          </>
-        )}
-        <Typography.Text>{totalRows ?? 0} results</Typography.Text>
         <BulkActionsDropdown
           selectedIds={selectedIds}
           menuItems={bulkActionMenuItems}
-          showSelectedCount={false}
+          totalResults={totalRows ?? 0}
         />
         <Button
           aria-label="Reload"
