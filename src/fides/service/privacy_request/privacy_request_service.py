@@ -43,6 +43,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
+from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -231,7 +232,7 @@ class PrivacyRequestService:
 
         return False
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-statements
     def create_privacy_request(
         self,
         privacy_request_data: PrivacyRequestCreate,
@@ -371,6 +372,9 @@ class PrivacyRequestService:
                 policy,
                 authenticated,
             )
+
+            if not isinstance(privacy_request_data, PrivacyRequestResubmit):
+                check_for_duplicates(db=self.db, privacy_request=privacy_request)
 
             return privacy_request
 
@@ -961,6 +965,9 @@ def handle_approval(
     db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest
 ) -> None:
     """Evaluate manual approval and handle processing or pre-approval webhooks."""
+    check_for_duplicates(db=db, privacy_request=privacy_request)
+    if privacy_request.status == PrivacyRequestStatus.duplicate:
+        return
     if _manual_approval_required(config_proxy, privacy_request):
         _trigger_pre_approval_webhooks(db, privacy_request)
     else:

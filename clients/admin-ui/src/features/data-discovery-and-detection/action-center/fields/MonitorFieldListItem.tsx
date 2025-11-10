@@ -182,6 +182,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           <ClassificationSelect
             mode="multiple"
             value={preferred_data_categories ?? []}
+            urn={urn}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
                 (item) => item.label === props.value,

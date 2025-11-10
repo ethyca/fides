@@ -488,7 +488,7 @@ def _filter_privacy_request_queryset(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     include_consent_webhook_requests: Optional[bool] = False,
     include_deleted_requests: Optional[bool] = False,
 ) -> Query:
@@ -678,9 +678,11 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
     if action_type:
+        if isinstance(action_type, ActionType):
+            action_type = [action_type]
         policy_ids_for_action_type = (
             db.query(Rule)
-            .filter(Rule.action_type == action_type)
+            .filter(Rule.action_type.in_(action_type))
             .with_entities(Rule.policy_id)
             .distinct()
         )
@@ -794,7 +796,7 @@ def _shared_privacy_request_search(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
@@ -1359,8 +1361,9 @@ def restart_privacy_request_from_failure(
     )
 
     # Automatically resubmit the request if the cache has expired
+
     if (
-        not privacy_request.get_cached_identity_data()
+        not privacy_request.verify_cache_for_identity_data()
         and privacy_request.status != PrivacyRequestStatus.complete
     ):
         logger.info(

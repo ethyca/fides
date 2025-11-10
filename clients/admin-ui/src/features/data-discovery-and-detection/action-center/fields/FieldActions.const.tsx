@@ -54,7 +54,7 @@ export const DROPDOWN_ACTIONS = [
 
 export const LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
 
-export const DROPDOWN_ACTIONS_DISABLED_TOOLTIP: Record<
+export const ACTIONS_DISABLED_MESSAGE: Record<
   (typeof DROPDOWN_ACTIONS)[number],
   string
 > = {
@@ -74,6 +74,7 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.ADDITION,
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
+    DiffStatus.CLASSIFICATION_ERROR,
   ],
   approve: [
     DiffStatus.CLASSIFICATION_ADDITION,
@@ -85,14 +86,18 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
+    DiffStatus.PROMOTION_ERROR,
   ],
-  "promote-removals": [DiffStatus.REMOVAL],
+  "promote-removals": [DiffStatus.REMOVAL, DiffStatus.REMOVAL_PROMOTION_ERROR],
   mute: [
     DiffStatus.ADDITION,
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
     DiffStatus.REMOVAL,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
+    DiffStatus.REMOVAL_PROMOTION_ERROR,
   ],
   "un-mute": [DiffStatus.MUTED],
   "assign-categories": [
@@ -100,6 +105,8 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
     DiffStatus.APPROVED,
+    DiffStatus.CLASSIFICATION_ERROR,
+    DiffStatus.PROMOTION_ERROR,
   ],
 } as const satisfies Readonly<
   Record<FieldActionType, Readonly<Array<DiffStatus>>>
@@ -115,6 +122,15 @@ export const FIELD_ACTION_ICON = {
   mute: <Icons.ViewOff />,
   promote: <Icons.Checkmark />,
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
+
+export const FIELD_ACTION_HOTKEYS = {
+  APPROVE: "a",
+  PROMOTE: "c",
+  MUTE: "i",
+  UN_MUTE: "r",
+  TOGGLE_DRAWER: "o",
+  OPEN_CLASSIFICATION_SELECT: "e",
+} as const;
 
 export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

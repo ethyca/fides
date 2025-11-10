@@ -3323,3 +3323,23 @@ dataset:
         data_categories: [system.operations]
       - name: created_by
         data_categories: [user.unique_id]
+  - name: stagedresourceerror
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: message
+        data_categories: [system.operations]
+      - name: staged_resource_urn
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: timestamp
+        data_categories: [system.operations]
+      - name: error_type
+        data_categories: [system.operations]
+      - name: diff_status
+        data_categories: [system.operations]
+      - name: task_id
+        data_categories: [system.operations]
