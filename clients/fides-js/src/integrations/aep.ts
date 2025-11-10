@@ -1217,6 +1217,22 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
 };
 
 /**
+ * Format consent object with consistent key ordering for easy comparison
+ */
+const formatConsent = (consent: Record<string, any> | null): string => {
+  if (!consent) return "null";
+
+  // Sort keys alphabetically for consistent display
+  const sortedKeys = Object.keys(consent).sort();
+  const sortedObj: Record<string, any> = {};
+  sortedKeys.forEach(key => {
+    sortedObj[key] = consent[key];
+  });
+
+  return JSON.stringify(sortedObj);
+};
+
+/**
  * NVIDIA Demo: Comprehensive Adobe + OneTrust integration demo
  *
  * This function demonstrates the full Fides → Adobe → OneTrust sync workflow
@@ -1323,7 +1339,8 @@ export const nvidiaDemo = async (): Promise<{
   const getConsentSummary = () => {
     const fidesConsent = (window as any).Fides?.consent || {};
     const adobeConsent = aepInstance.consent();
-    const otConsent = aepInstance.oneTrust.read();
+    // Force a fresh read of the OneTrust cookie (not cached)
+    const otConsent = readOneTrustConsent();
 
     return {
       fides: fidesConsent,
@@ -1333,9 +1350,9 @@ export const nvidiaDemo = async (): Promise<{
   };
 
   const preSync = getConsentSummary();
-  log("Fides:    " + JSON.stringify(preSync.fides));
-  log("Adobe:    " + JSON.stringify(preSync.adobe));
-  log("OneTrust: " + JSON.stringify(preSync.oneTrust));
+  log("Fides:    " + formatConsent(preSync.fides));
+  log("Adobe:    " + formatConsent(preSync.adobe));
+  log("OneTrust: " + formatConsent(preSync.oneTrust));
 
   // Step 6-7: Read OneTrust and sync to Fides
   log("\n🔄 Step 6-7: Reading OneTrust consent and syncing...");
@@ -1350,16 +1367,16 @@ export const nvidiaDemo = async (): Promise<{
     };
   }
 
-  log("✅ Read OneTrust consent: " + JSON.stringify(otConsent));
-
+  log("✅ Read OneTrust consent: " + formatConsent(otConsent));
+  
   // Note: In a production migration scenario, Fides would automatically
   // initialize from OneTrust. For this demo, we'll just verify the states match
   log("\n📊 Post-sync consent state:");
   log("-".repeat(60));
   const postSync = getConsentSummary();
-  log("Fides:    " + JSON.stringify(postSync.fides));
-  log("Adobe:    " + JSON.stringify(postSync.adobe));
-  log("OneTrust: " + JSON.stringify(postSync.oneTrust));
+  log("Fides:    " + formatConsent(postSync.fides));
+  log("Adobe:    " + formatConsent(postSync.adobe));
+  log("OneTrust: " + formatConsent(postSync.oneTrust));
 
   // Step 8-9: Change one notice
   log("\n✏️  Step 8-9: Toggling 'performance' notice...");
@@ -1382,15 +1399,15 @@ export const nvidiaDemo = async (): Promise<{
     }
   }));
 
-  await wait(500);
-
+  await wait(1000); // Wait for cookie write and sync
+  
   log(`   Changed 'performance' from ${currentPerformance} → ${!currentPerformance}`);
   log("\n📊 Consent state after toggle:");
   log("-".repeat(60));
   const afterToggle = getConsentSummary();
-  log("Fides:    " + JSON.stringify(afterToggle.fides));
-  log("Adobe:    " + JSON.stringify(afterToggle.adobe));
-  log("OneTrust: " + JSON.stringify(afterToggle.oneTrust));
+  log("Fides:    " + formatConsent(afterToggle.fides));
+  log("Adobe:    " + formatConsent(afterToggle.adobe));
+  log("OneTrust: " + formatConsent(afterToggle.oneTrust));
 
   // Step 10: Opt-in to all
   log("\n✅ Step 10: Opting IN to all notices...");
@@ -1408,14 +1425,14 @@ export const nvidiaDemo = async (): Promise<{
     }
   }));
 
-  await wait(500);
-
+  await wait(1000); // Wait for cookie write and sync
+  
   log("\n📊 Consent state after OPT-IN ALL:");
   log("-".repeat(60));
   const afterOptIn = getConsentSummary();
-  log("Fides:    " + JSON.stringify(afterOptIn.fides));
-  log("Adobe:    " + JSON.stringify(afterOptIn.adobe));
-  log("OneTrust: " + JSON.stringify(afterOptIn.oneTrust));
+  log("Fides:    " + formatConsent(afterOptIn.fides));
+  log("Adobe:    " + formatConsent(afterOptIn.adobe));
+  log("OneTrust: " + formatConsent(afterOptIn.oneTrust));
 
   // Step 11: Opt-out of all (except essential)
   log("\n❌ Step 11: Opting OUT of all notices (except essential)...");
@@ -1433,14 +1450,14 @@ export const nvidiaDemo = async (): Promise<{
     }
   }));
 
-  await wait(500);
-
+  await wait(1000); // Wait for cookie write and sync
+  
   log("\n📊 Consent state after OPT-OUT ALL:");
   log("-".repeat(60));
   const afterOptOut = getConsentSummary();
-  log("Fides:    " + JSON.stringify(afterOptOut.fides));
-  log("Adobe:    " + JSON.stringify(afterOptOut.adobe));
-  log("OneTrust: " + JSON.stringify(afterOptOut.oneTrust));
+  log("Fides:    " + formatConsent(afterOptOut.fides));
+  log("Adobe:    " + formatConsent(afterOptOut.adobe));
+  log("OneTrust: " + formatConsent(afterOptOut.oneTrust));
 
   // Summary
   log("\n" + "=".repeat(60));
