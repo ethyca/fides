@@ -2,10 +2,10 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInputNumber as InputNumber,
+  AntSkeleton as Skeleton,
   AntSwitch as Switch,
   AntTypography as Typography,
 } from "fidesui";
-import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -23,12 +23,19 @@ interface FormValues {
   time_window_days: number;
 }
 
+const DEFAULT_VALUES = {
+  enabled: false,
+  time_window_days: 365,
+};
+
 const PrivacyRequestDuplicateDetectionSettings = () => {
   const [form] = Form.useForm<FormValues>();
   const { errorAlert, successAlert } = useAlert();
 
   // Fetch current configuration
-  const { isLoading } = useGetConfigurationSettingsQuery({ api_set: true });
+  const { isLoading: isLoadingConfig } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
   const duplicateDetectionSettings = useAppSelector(
     selectDuplicateDetectionSettings,
   );
@@ -39,15 +46,13 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
   // Watch the enabled field to conditionally show/hide time_window_days
   const enabled = Form.useWatch("enabled", form);
 
-  // Update form when settings are loaded
-  useEffect(() => {
-    if (duplicateDetectionSettings) {
-      form.setFieldsValue({
-        enabled: duplicateDetectionSettings.enabled ?? false,
-        time_window_days: duplicateDetectionSettings.time_window_days ?? 365,
-      });
-    }
-  }, [duplicateDetectionSettings, form]);
+  // Get initial values from config or use defaults
+  const initialValues = {
+    enabled: duplicateDetectionSettings?.enabled ?? DEFAULT_VALUES.enabled,
+    time_window_days:
+      duplicateDetectionSettings?.time_window_days ??
+      DEFAULT_VALUES.time_window_days,
+  };
 
   const handleSubmit = async (values: FormValues) => {
     const payload: {
@@ -82,59 +87,55 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
         labeled with the status of &quot;duplicate&quot;.
       </Typography.Paragraph>
 
-      <Form
-        form={form}
-        layout="horizontal"
-        onFinish={handleSubmit}
-        initialValues={{
-          enabled: false,
-          time_window_days: 365,
-        }}
-        className="mt-4"
-        requiredMark={false}
-      >
-        <Form.Item
-          name="enabled"
-          label="Enable duplicate detection"
-          valuePropName="checked"
+      {isLoadingConfig ? (
+        <Skeleton active paragraph={{ rows: 3 }} className="mt-4" />
+      ) : (
+        <Form
+          form={form}
+          layout="horizontal"
+          onFinish={handleSubmit}
+          initialValues={initialValues}
+          className="mt-4"
+          requiredMark={false}
         >
-          <Switch data-testid="input-enabled" />
-        </Form.Item>
-
-        {enabled && (
           <Form.Item
-            name="time_window_days"
-            label="Duplicate detection window (days)"
-            rules={[
-              { required: true, message: "Required" },
-              {
-                type: "number",
-                min: 1,
-                max: 3650,
-                message: "Must be between 1 and 3650 days",
-              },
-            ]}
+            name="enabled"
+            label="Enable duplicate detection"
+            valuePropName="checked"
           >
-            <InputNumber
-              min={1}
-              max={3650}
-              className="w-[200px]"
-              data-testid="input-time_window_days"
-            />
+            <Switch data-testid="input-enabled" />
           </Form.Item>
-        )}
 
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={isPatching}
-            disabled={isLoading}
-          >
-            Save
-          </Button>
-        </Form.Item>
-      </Form>
+          {enabled && (
+            <Form.Item
+              name="time_window_days"
+              label="Duplicate detection window (days)"
+              rules={[
+                { required: true, message: "Required" },
+                {
+                  type: "number",
+                  min: 1,
+                  max: 3650,
+                  message: "Must be between 1 and 3650 days",
+                },
+              ]}
+            >
+              <InputNumber
+                min={1}
+                max={3650}
+                className="w-[200px]"
+                data-testid="input-time_window_days"
+              />
+            </Form.Item>
+          )}
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={isPatching}>
+              Save
+            </Button>
+          </Form.Item>
+        </Form>
+      )}
     </div>
   );
 };
