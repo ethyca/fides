@@ -38,13 +38,6 @@ const convertNoticesForTree = (
 };
 
 /**
- * Normalizes CheckedKeysType to Key[] for PrivacyNoticesTree
- */
-const normalizeCheckedKeys = (keys: CheckedKeysType): Key[] => {
-  return Array.isArray(keys) ? keys : keys.checked || [];
-};
-
-/**
  * Converts Key[] to CheckedKeysType for components that need it
  */
 const toCheckedKeysType = (keys: Key[]): CheckedKeysType => {

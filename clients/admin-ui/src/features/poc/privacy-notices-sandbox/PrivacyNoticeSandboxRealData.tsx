@@ -2,7 +2,13 @@ import type { Key } from "antd/es/table/interface";
 import { AntDivider as Divider, AntTypography as Typography } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
+import {
+  useLazyGetCurrentPreferencesQuery,
+  useLazyGetPrivacyExperienceQuery,
+} from "~/features/common/v3-api.slice";
 import type { PrivacyNoticeResponse } from "~/types/api";
+import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 
 import {
   ExperienceConfigSection,
@@ -10,15 +16,8 @@ import {
   SavePreferencesSection,
 } from "./components";
 import { EXPERIENCE_DEFAULTS } from "./constants";
-import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
-import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
-import {
-  useLazyGetCurrentPreferencesQuery,
-  useLazyGetPrivacyExperienceQuery,
-} from "~/features/common/v3-api.slice";
 
 const PrivacyNoticeSandboxRealData = () => {
-  // Form state
   const [region, setRegion] = useState<string>(EXPERIENCE_DEFAULTS.REGION);
   const [email, setEmail] = useState("");
   const [cascadeConsent, setCascadeConsent] = useState(false);
@@ -42,7 +41,6 @@ const PrivacyNoticeSandboxRealData = () => {
   // Error message state for experience fetching
   const [experienceErrorMessage, setExperienceErrorMessage] = useState("");
 
-  // RTK Query hooks
   const [fetchExperience, { isLoading: isLoadingExperience }] =
     useLazyGetPrivacyExperienceQuery();
 

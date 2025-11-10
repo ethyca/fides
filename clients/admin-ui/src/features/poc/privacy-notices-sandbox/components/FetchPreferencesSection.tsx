@@ -6,6 +6,7 @@ import {
 } from "fidesui";
 
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+
 import PreviewCard from "./PreviewCard";
 
 interface FetchPreferencesSectionProps {

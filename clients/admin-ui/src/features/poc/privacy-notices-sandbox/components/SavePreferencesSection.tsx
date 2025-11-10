@@ -2,12 +2,12 @@ import type { Key } from "antd/es/table/interface";
 import { AntButton as Button, AntTypography as Typography } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
+import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
 import type { PrivacyNoticeResponse } from "~/types/api";
-
 import type { ConsentPreferenceCreate } from "~/types/api/models/ConsentPreferenceCreate";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
 import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
-import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
+
 import CascadeConsentToggle from "./CascadeConsentToggle";
 import PreviewCard from "./PreviewCard";
 import PrivacyNoticesTree from "./PrivacyNoticesTree";

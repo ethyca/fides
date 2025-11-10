@@ -7,10 +7,10 @@ import type { PrivacyNoticeResponse } from "~/types/api";
 export interface TreeDataNode {
   title: string;
   key: string;
+  noticeKey: string;
   disabled?: boolean;
   children?: TreeDataNode[];
   noticeHistoryId?: string;
-  noticeKey?: string;
 }
 
 interface PrivacyNoticesTreeProps {
@@ -20,17 +20,28 @@ interface PrivacyNoticesTreeProps {
   cascadeConsent?: boolean;
 }
 
+interface TreeBuildResult {
+  treeData: TreeDataNode[];
+  allKeys: Key[]; // All keys in the tree (for expansion)
+  descendantsMap: Map<Key, Key[]>; // Fast lookup: parent key -> all descendant keys
+}
+
 /**
- * Builds a tree structure from privacy notices with parent-child relationships
+ * Builds tree structure and lookup maps in a single pass through the notices
  */
-const buildTreeFromNotices = (
+const buildTreeWithMaps = (
   notices: PrivacyNoticeResponse[],
   checkedKeys: Key[],
   parentKey?: string,
-): TreeDataNode[] => {
+): TreeBuildResult => {
   const checkedArray = checkedKeys.map((k) => k.toString());
 
-  return notices.map((notice) => {
+  // Initialize maps for fast lookups
+  const allKeys: Key[] = []; // Collect all keys for tree expansion
+  const descendantsMap = new Map<Key, Key[]>(); // Map parent key -> all descendant keys for cascade
+  const treeData: TreeDataNode[] = [];
+
+  notices.forEach((notice) => {
     // Get the history ID from the first translation (if available)
     const historyId =
       notice.translations?.[0]?.privacy_notice_history_id || notice.id;
@@ -47,17 +58,38 @@ const buildTreeFromNotices = (
       disabled,
     };
 
+    // Register this node in the lookup maps
+    allKeys.push(node.key);
+
     // Recursively build children if they exist
     if (notice.children && notice.children.length > 0) {
-      node.children = buildTreeFromNotices(
-        notice.children,
-        checkedKeys,
-        notice.notice_key,
+      const {
+        treeData: childTreeData,
+        allKeys: childKeys,
+        descendantsMap: childDescendantsMap,
+      } = buildTreeWithMaps(notice.children, checkedKeys, notice.notice_key);
+
+      // Merge child results into parent maps (bubble up from recursion)
+      childKeys.forEach((key) => allKeys.push(key));
+      childDescendantsMap.forEach((value, key) =>
+        descendantsMap.set(key, value),
       );
+
+      // Store all descendant keys for this parent (for cascade behavior)
+      descendantsMap.set(node.key, childKeys);
+
+      // Assign child nodes
+      node.children = childTreeData;
     }
 
-    return node;
+    treeData.push(node);
   });
+
+  return {
+    treeData,
+    allKeys,
+    descendantsMap,
+  };
 };
 
 const PrivacyNoticesTree = ({
@@ -66,26 +98,11 @@ const PrivacyNoticesTree = ({
   onCheckedKeysChange,
   cascadeConsent,
 }: PrivacyNoticesTreeProps) => {
-  // Build tree data from privacy notices
-  // Tree data depends on both notices and checked keys (for disabled state)
-  const treeData = useMemo(() => {
-    return buildTreeFromNotices(privacyNotices, checkedKeys);
-  }, [privacyNotices, checkedKeys]);
-
-  // Get all keys for default expansion
-  const allKeys = useMemo(() => {
-    const keys: Key[] = [];
-    const traverse = (nodes: TreeDataNode[]) => {
-      nodes.forEach((node) => {
-        keys.push(node.key);
-        if (node.children) {
-          traverse(node.children);
-        }
-      });
-    };
-    traverse(treeData);
-    return keys;
-  }, [treeData]);
+  // Build tree data and lookup maps in a single pass through the notices
+  const { treeData, allKeys, descendantsMap } = useMemo(
+    () => buildTreeWithMaps(privacyNotices, checkedKeys),
+    [privacyNotices, checkedKeys],
+  );
 
   const [expandedKeys, setExpandedKeys] = useState<Key[]>(allKeys);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -95,63 +112,13 @@ const PrivacyNoticesTree = ({
     setExpandedKeys(allKeys);
   }, [allKeys]);
 
-  // Get children keys for a given parent key
-  const getChildrenKeys = useCallback(
-    (parentKey: Key): Key[] => {
-      const children: Key[] = [];
-      const findChildren = (nodes: TreeDataNode[]): boolean => {
-        return nodes.some((node) => {
-          if (node.key === parentKey) {
-            if (node.children) {
-              const traverse = (nodeList: TreeDataNode[]) => {
-                nodeList.forEach((child) => {
-                  children.push(child.key);
-                  if (child.children) {
-                    traverse(child.children);
-                  }
-                });
-              };
-              traverse(node.children);
-            }
-            return true;
-          }
-          if (node.children && findChildren(node.children)) {
-            return true;
-          }
-          return false;
-        });
-      };
-      findChildren(treeData);
-      return children;
-    },
-    [treeData],
-  );
-
-  // Check if a key is a parent node (has children)
+  // Check if a key is a parent node (has children) - O(1) lookup
   const isParentNode = useCallback(
     (key: Key): boolean => {
-      const findNode = (nodes: TreeDataNode[]): TreeDataNode | null => {
-        let found: TreeDataNode | null = null;
-        nodes.some((node) => {
-          if (node.key === key) {
-            found = node;
-            return true;
-          }
-          if (node.children) {
-            const childFound = findNode(node.children);
-            if (childFound) {
-              found = childFound;
-              return true;
-            }
-          }
-          return false;
-        });
-        return found;
-      };
-      const node = findNode(treeData);
-      return node?.children !== undefined && node.children.length > 0;
+      const descendants = descendantsMap.get(key) || [];
+      return descendants.length > 0;
     },
-    [treeData],
+    [descendantsMap],
   );
 
   const handleExpand = useCallback((expandedKeysValue: Key[]) => {
@@ -185,22 +152,22 @@ const PrivacyNoticesTree = ({
         parentChanged = isParentNode(toggledParentKey);
       }
 
-      // If cascade is enabled and a parent changed, propagate to children
+      // If cascade is enabled and a parent changed, propagate to descendants
       if (cascadeConsent && parentChanged && toggledParentKey !== undefined) {
-        const childrenKeys = getChildrenKeys(toggledParentKey);
+        const descendantKeys = descendantsMap.get(toggledParentKey) || [];
         const parentIsChecked = newCheckedKeys.includes(toggledParentKey);
 
+        let finalKeys: Key[] = [];
         if (parentIsChecked) {
-          // Parent was checked, check all its children
-          const finalKeys = [...newCheckedKeys, ...childrenKeys];
-          onCheckedKeysChange([...new Set(finalKeys)]);
+          // Parent was checked, check all its descendants
+          finalKeys = [...new Set([...newCheckedKeys, ...descendantKeys])];
         } else {
-          // Parent was unchecked, uncheck all its children
-          const finalKeys = newCheckedKeys.filter(
-            (key) => !childrenKeys.includes(key),
+          // Parent was unchecked, uncheck all its descendants
+          finalKeys = newCheckedKeys.filter(
+            (key) => !descendantKeys.includes(key),
           );
-          onCheckedKeysChange(finalKeys);
         }
+        onCheckedKeysChange(finalKeys);
       } else {
         // No cascade or parent didn't change, pass through as normal
         onCheckedKeysChange(newCheckedKeys);
@@ -211,7 +178,7 @@ const PrivacyNoticesTree = ({
       checkedKeys,
       onCheckedKeysChange,
       isParentNode,
-      getChildrenKeys,
+      descendantsMap,
     ],
   );
 
