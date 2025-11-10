@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import {
   AntDatePicker as DatePicker,
+  AntDisplayValueType as DisplayValueType,
   AntFlex as Flex,
   AntSelect as Select,
 } from "fidesui";
@@ -69,7 +70,7 @@ export const PrivacyRequestFiltersBar = ({
     });
   };
 
-  const maxTagPlaceholder = (omittedValues: any[]) => (
+  const maxTagPlaceholder = (omittedValues: DisplayValueType[]) => (
     <span>+ {omittedValues.length}</span>
   );
 
