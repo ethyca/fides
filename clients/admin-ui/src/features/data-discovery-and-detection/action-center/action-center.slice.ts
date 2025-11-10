@@ -4,6 +4,7 @@ import {
   getQueryParamsFromArray,
 } from "~/features/common/utils";
 import {
+  ConnectionType,
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
@@ -18,19 +19,24 @@ import {
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
+  PaginatedResponse,
   PaginationQueryParams,
   SearchQueryParams,
   SortQueryParams,
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
-import { MonitorSummaryPaginatedResponse } from "./types";
+import { MonitorResource } from "./fields/types";
+import {
+  MonitorAggregatedResults,
+  MonitorSummaryPaginatedResponse,
+} from "./types";
+import { getMonitorType, MONITOR_TYPES } from "./utils/getMonitorType";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -48,11 +54,40 @@ const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAggregateMonitorResults: build.query<
       MonitorSummaryPaginatedResponse,
-      SearchQueryParams & PaginationQueryParams
+      SearchQueryParams &
+        PaginationQueryParams & {
+          monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+        }
     >({
-      query: ({ page = 1, size = 20, search }) => ({
-        url: `/plus/discovery-monitor/aggregate-results`,
-        params: { page, size, search, diff_status: "addition" },
+      query: ({ page = 1, size = 20, search, monitor_type }) => {
+        const params: SearchQueryParams &
+          PaginationQueryParams & { diff_status: string } = {
+          page,
+          size,
+          search,
+          diff_status: "addition",
+        };
+
+        const urlParams = buildArrayQueryParams({
+          monitor_type,
+        });
+
+        return {
+          url: `/plus/discovery-monitor/aggregate-results?${urlParams.toString()}`,
+          params,
+        };
+      },
+      transformResponse: (
+        response: PaginatedResponse<MonitorAggregatedResults>,
+      ) => ({
+        ...response,
+        items: response.items.map((monitor) => ({
+          ...monitor,
+          monitorType: getMonitorType(monitor.connection_type),
+          isTestMonitor:
+            monitor.connection_type === ConnectionType.TEST_WEBSITE ||
+            monitor.connection_type === ConnectionType.TEST_DATASTORE,
+        })),
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
@@ -70,10 +105,11 @@ const actionCenterApi = baseApi.injectEndpoints({
       DatastoreMonitorResourcesDynamicFilters,
       {
         monitor_config_id: string;
+        staged_resource_urn?: string[];
       }
     >({
-      query: ({ monitor_config_id }) => ({
-        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}`,
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
     }),
 
@@ -82,6 +118,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       Partial<PaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
+        include_descendant_details?: boolean;
       }
     >({
       query: ({
@@ -89,44 +126,26 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         monitor_config_id,
         staged_resource_urn,
+        include_descendant_details,
       }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree${staged_resource_urn ? `?staged_resource_urn=${staged_resource_urn}` : ""}`,
-        params: { page, size },
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
+        params: { staged_resource_urn, include_descendant_details, page, size },
       }),
     }),
-    getMonitorFields: build.query<
-      Page_DatastoreStagedResourceAPIResponse_,
-      Partial<PaginationQueryParams> & {
-        staged_resource_urn?: Array<string>;
+
+    getMonitorTreeAncestorsStatuses: build.query<
+      Array<DatastoreStagedResourceTreeAPIResponse>,
+      {
         monitor_config_id: string;
-        search?: string;
-        diff_status?: Array<DiffStatus>;
-        confidence_score?: Array<ConfidenceScoreRange>;
-        data_category?: Array<string>;
+        staged_resource_urn?: string;
       }
     >({
-      query: ({
-        page = 1,
-        size = 20,
-        monitor_config_id,
-        search,
-        diff_status,
-        confidence_score,
-        ...arrayQueryParams
-      }) => {
-        const queryParams = buildArrayQueryParams({
-          ...arrayQueryParams,
-          ...(search ? { search: [search] } : {}),
-          ...(diff_status ? { diff_status } : {}),
-          ...(confidence_score ? { confidence_score } : {}),
-        });
-        return {
-          url: `/plus/discovery-monitor/${monitor_config_id}/fields?${queryParams?.toString()}`,
-          params: { page, size },
-        };
-      },
-      providesTags: ["Monitor Field Results"],
+      query: ({ monitor_config_id, staged_resource_urn }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_id}/tree/ancestors-statuses`,
+        params: { staged_resource_urn },
+      }),
     }),
+
     getDiscoveredSystemAggregate: build.query<
       Page_SystemStagedResourcesAggregateRecord_,
       {
@@ -271,7 +290,11 @@ const actionCenterApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     restoreMonitorResultAssets: build.mutation<string, { urnList?: string[] }>({
       query: (params) => {
@@ -361,6 +384,17 @@ const actionCenterApi = baseApi.injectEndpoints({
           params,
         };
       },
+    }),
+    getStagedResourceDetails: build.query<
+      MonitorResource,
+      { stagedResourceUrn: string }
+    >({
+      query: ({ stagedResourceUrn }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+          stagedResourceUrn,
+        )}`,
+      }),
+      providesTags: ["Monitor Field Details"],
     }),
     getWebsiteMonitorResourceFilters: build.query<
       WebsiteMonitorResourcesFilters,
@@ -508,7 +542,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Monitor Field Results"],
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
   }),
 });
@@ -533,8 +567,10 @@ export const {
   useUndismissMonitorTaskMutation,
   useGetMonitorTreeQuery,
   useLazyGetMonitorTreeQuery,
-  useGetMonitorFieldsQuery,
+  useLazyGetMonitorTreeAncestorsStatusesQuery,
   useGetMonitorConfigQuery,
   useGetDatastoreFiltersQuery,
   useClassifyStagedResourcesMutation,
+  useGetStagedResourceDetailsQuery,
+  useLazyGetStagedResourceDetailsQuery,
 } = actionCenterApi;

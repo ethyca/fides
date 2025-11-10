@@ -30,7 +30,7 @@ export const BulkActionsDropdown = ({
       )}
       <Dropdown menu={{ items: menuItems }} disabled={!hasSelections}>
         <Button data-testid="bulk-actions-btn" disabled={!hasSelections}>
-          Bulk actions
+          Actions
           <Icons.ChevronDown />
         </Button>
       </Dropdown>

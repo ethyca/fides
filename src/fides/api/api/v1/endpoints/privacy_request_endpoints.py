@@ -91,6 +91,7 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
+    CancelPrivacyRequests,
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
@@ -144,8 +145,10 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
+    PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
@@ -485,7 +488,7 @@ def _filter_privacy_request_queryset(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     include_consent_webhook_requests: Optional[bool] = False,
     include_deleted_requests: Optional[bool] = False,
 ) -> Query:
@@ -675,9 +678,11 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
     if action_type:
+        if isinstance(action_type, ActionType):
+            action_type = [action_type]
         policy_ids_for_action_type = (
             db.query(Rule)
-            .filter(Rule.action_type == action_type)
+            .filter(Rule.action_type.in_(action_type))
             .with_entities(Rule.policy_id)
             .distinct()
         )
@@ -791,7 +796,7 @@ def _shared_privacy_request_search(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
@@ -1356,10 +1361,10 @@ def restart_privacy_request_from_failure(
     )
 
     # Automatically resubmit the request if the cache has expired
+
     if (
-        not privacy_request.get_cached_identity_data()
-        and privacy_request.status
-        not in [PrivacyRequestStatus.complete, PrivacyRequestStatus.pending]
+        not privacy_request.verify_cache_for_identity_data()
+        and privacy_request.status != PrivacyRequestStatus.complete
     ):
         logger.info(
             f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
@@ -1472,6 +1477,29 @@ def deny_privacy_request(
     """Deny a list of privacy requests and/or report failure"""
 
     return privacy_request_service.deny_privacy_requests(
+        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
+    )
+
+
+@router.patch(
+    PRIVACY_REQUEST_CANCEL,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def cancel_privacy_request(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: CancelPrivacyRequests,
+) -> BulkReviewResponse:
+    """Cancel a list of privacy requests and/or report failure"""
+
+    return privacy_request_service.cancel_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
 
@@ -1969,6 +1997,32 @@ def resume_privacy_request_from_requires_input(
     )
 
     return privacy_request  # type: ignore[return-value]
+
+
+@router.post(
+    PRIVACY_REQUEST_BULK_FINALIZE,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def bulk_finalize_privacy_requests(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkReviewResponse:
+    """
+    Bulk finalize privacy requests that are in requires_manual_finalization status.
+    Each request will be moved from the 'requires_finalization' state to 'complete'.
+    Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
+    """
+    return privacy_request_service.finalize_privacy_requests(
+        privacy_requests.request_ids, user_id=client.user_id
+    )
 
 
 @router.post(

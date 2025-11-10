@@ -3,6 +3,7 @@
 import { Button, Link, Text, useToast, VStack } from "fidesui";
 
 import { successToastParams } from "~/features/common/toast";
+import { pluralize } from "~/features/common/utils";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
 import { useSyncDatahubConnectionMutation } from "~/features/plus/plus.slice";
@@ -47,7 +48,7 @@ const DatahubDataSyncTab = ({
       });
 
       const successCount = response.data?.succeeded.length ?? 0;
-      const message = `Fides has begun syncing with DataHub. There ${successCount === 1 ? "is" : "are"} ${successCount} dataset${successCount === 1 ? "" : "s"} queued for syncing.`;
+      const message = `Fides has begun syncing with DataHub. ${successCount} ${pluralize(successCount, "dataset", "datasets")} queued for syncing.`;
 
       toast(successToastParams(message));
     } catch (error) {

@@ -1,4 +1,4 @@
-import { AntTag as Tag } from "fidesui";
+import { AntTag as Tag, CUSTOM_TAG_COLOR } from "fidesui";
 import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
@@ -20,19 +20,19 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
     return <span>-</span>;
   }
 
-  let color = "";
+  let color: CUSTOM_TAG_COLOR | undefined;
 
   switch (true) {
     case daysLeft >= 10:
-      color = "success";
+      color = CUSTOM_TAG_COLOR.SUCCESS;
       break;
 
     case daysLeft < 10 && daysLeft > 4:
-      color = "warning";
+      color = CUSTOM_TAG_COLOR.WARNING;
       break;
 
     case daysLeft < 5:
-      color = "error";
+      color = CUSTOM_TAG_COLOR.ERROR;
       break;
 
     default:

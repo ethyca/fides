@@ -78,21 +78,6 @@ def second_privacy_request_awaiting_erasure_email_send(
     privacy_request.delete(db)
 
 
-@pytest.fixture(scope="function")
-def third_privacy_request_awaiting_erasure_email_send(
-    db: Session, erasure_policy: Policy
-) -> PrivacyRequest:
-    """Add a third erasure privacy request w/ no identity in this state for these tests"""
-    privacy_request = _create_privacy_request_for_policy(
-        db,
-        erasure_policy,
-    )
-    privacy_request.status = PrivacyRequestStatus.awaiting_email_send
-    privacy_request.save(db)
-    yield privacy_request
-    privacy_request.delete(db)
-
-
 class TestConsentEmailBatchSend:
     @mock.patch(
         "fides.api.service.connectors.consent_email_connector.send_single_consent_email",
@@ -982,9 +967,9 @@ class TestErasureEmailBatchSend:
         requeue_privacy_requests,
         send_single_erasure_email,
         db,
+        erasure_policy: Policy,
         privacy_request_awaiting_erasure_email_send,
         second_privacy_request_awaiting_consent_email_send,
-        third_privacy_request_awaiting_erasure_email_send,
         attentive_email_connection_config,
     ) -> None:
         """
@@ -992,12 +977,13 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
+        third_privacy_request_awaiting_erasure_email_send = PrivacyRequest.create(
+            db=db,
+            data={
+                "policy_id": erasure_policy.id,
+                "status": PrivacyRequestStatus.awaiting_email_send,
+            },
         )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete
@@ -1073,9 +1059,9 @@ class TestErasureEmailBatchSend:
         requeue_privacy_requests,
         send_single_erasure_email,
         db,
+        erasure_policy: Policy,
         privacy_request_awaiting_erasure_email_send,
         second_privacy_request_awaiting_consent_email_send,
-        third_privacy_request_awaiting_erasure_email_send,
         generic_erasure_email_connection_config,
     ) -> None:
         """
@@ -1083,12 +1069,13 @@ class TestErasureEmailBatchSend:
         queued for a consent email doesn't trigger an erasure email.
         """
         # third_privacy_request_awaiting_erasure_email_send has no identities
-        cache = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(
-            privacy_request_id=third_privacy_request_awaiting_erasure_email_send.id
+        third_privacy_request_awaiting_erasure_email_send = PrivacyRequest.create(
+            db=db,
+            data={
+                "policy_id": erasure_policy.id,
+                "status": PrivacyRequestStatus.awaiting_email_send,
+            },
         )
-        for key in all_keys:
-            cache.delete(key)
 
         exit_state = send_email_batch.delay().get()
         assert exit_state == EmailExitState.complete

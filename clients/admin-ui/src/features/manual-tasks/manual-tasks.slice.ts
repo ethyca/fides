@@ -16,55 +16,60 @@ import { PaginationQueryParams } from "~/types/query-params";
 import { PAGE_SIZES } from "../common/table/v2";
 
 // Interface for task query parameters
-interface TaskQueryParams extends PaginationQueryParams {
+interface TaskQueryParams {
   status?: ManualFieldStatus;
-  requestType?: ManualFieldRequestType;
-  systemName?: string;
-  assignedUserId?: string;
-  privacyRequestId?: string;
-  includeFullSubmissionDetails?: boolean;
+  request_type?: ManualFieldRequestType;
+  system_name?: string;
+  assigned_user_id?: string;
+  privacy_request_id?: string;
 }
 
 // API endpoints
 export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getTasks: build.query<ManualFieldSearchResponse, TaskQueryParams | void>({
+    getTasks: build.query<
+      ManualFieldSearchResponse,
+      | TaskQueryParams
+      | PaginationQueryParams
+      | { include_full_submission_details?: boolean }
+    >({
       query: (params) => {
         const queryParams = params || { page: 1, size: 25 };
-        const searchParams = new URLSearchParams();
 
-        // Convert page to be 1-indexed for API
-        const page = queryParams.page || 1;
-        searchParams.append("page", String(page));
-        searchParams.append("size", String(queryParams.size || 25));
-
-        if (queryParams.status) {
-          searchParams.append("status", queryParams.status);
-        }
-        if (queryParams.requestType) {
-          searchParams.append("request_type", queryParams.requestType);
-        }
-        if (queryParams.systemName) {
-          searchParams.append("system_name", queryParams.systemName);
-        }
-        if (queryParams.assignedUserId) {
-          searchParams.append("assigned_user_id", queryParams.assignedUserId);
-        }
-        if (queryParams.privacyRequestId) {
-          searchParams.append(
-            "privacy_request_id",
-            queryParams.privacyRequestId,
-          );
-        }
-        if (queryParams.includeFullSubmissionDetails) {
-          searchParams.append("include_full_submission_details", "true");
-        }
         return {
           url: "plus/manual-fields",
-          params: searchParams,
+          params: queryParams,
         };
       },
       providesTags: () => [{ type: "Manual Tasks" }],
+    }),
+    exportTasks: build.query<Blob, TaskQueryParams>({
+      query: (params) => {
+        const queryParams = params || { page: 1, size: 25 };
+
+        return {
+          url: "plus/manual-fields/export",
+          method: "POST",
+          params: queryParams,
+          body: {
+            format: "csv",
+            fields: [
+              "name",
+              "status",
+              "system_name",
+              "request_type",
+              "assigned_users",
+              "created_at",
+              "privacy_request.id",
+              "privacy_request.days_left",
+              "privacy_request.subject_identities.email",
+              "privacy_request.subject_identities.external_id",
+              "privacy_request.subject_identities.phone_number",
+            ],
+          },
+          responseHandler: "content-type",
+        };
+      },
     }),
 
     completeTask: build.mutation<
@@ -176,6 +181,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
 export const {
   useGetTasksQuery,
   useCompleteTaskMutation,
+  useLazyExportTasksQuery,
   useSkipTaskMutation,
   useGetTaskByIdQuery,
   useLazyGetTaskByIdQuery,

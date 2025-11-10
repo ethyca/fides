@@ -24,6 +24,7 @@ import {
 } from "../action-center.slice";
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { SuccessToastContent } from "../SuccessToastContent";
+import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -79,7 +80,7 @@ export const useDiscoveredSystemAggregateTable = ({
 
   const rowClickUrl = useCallback(
     (record: SystemStagedResourcesAggregateRecord) => {
-      const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
+      const newUrl = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
       return newUrl;
     },
     [monitorId, activeTab],

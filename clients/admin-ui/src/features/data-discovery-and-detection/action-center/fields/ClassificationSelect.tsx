@@ -8,10 +8,17 @@ import {
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
+const ClassificationSelect = ({
+  onSelectDataCategory,
+  urn,
+  ...props
+}: {
+  onSelectDataCategory: (value: string) => void;
+  urn?: string;
+} & TaxonomySelectProps) => {
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
-  const dataCategories = getDataCategories();
+  const dataCategories = getDataCategories().filter((c) => c.active);
   const [open, setOpen] = useState(false);
 
   const options: TaxonomySelectOption[] = dataCategories.map((dataCategory) => {
@@ -32,7 +39,6 @@ const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
       description: dataCategory.description || "",
     };
   });
-
   return (
     <TaxonomySelect
       options={options}
@@ -42,24 +48,29 @@ const ClassificationSelect = ({ ...props }: TaxonomySelectProps) => {
           type="text"
           size="small"
           icon={<Icons.Add />}
+          disabled={props.disabled}
         />
       }
       placeholder=""
       suffixIcon={null}
       classNames={{
-        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer",
+        root: "w-full max-w-full overflow-hidden p-0 cursor-pointer -ml-5",
       }}
+      style={
+        {
+          "--ant-select-multiple-selector-bg-disabled": "transparent",
+        } as React.CSSProperties
+      }
       variant="borderless"
       autoFocus={false}
       maxTagCount="responsive"
       open={open}
       onOpenChange={(visible) => setOpen(visible)}
-      onSelect={(value, option) => {
-        if (props.onSelect) {
-          props.onSelect(value, option);
-        }
+      onSelect={(value) => {
+        onSelectDataCategory(value);
         setOpen(false);
       }}
+      data-classification-select={urn}
       {...props}
     />
   );

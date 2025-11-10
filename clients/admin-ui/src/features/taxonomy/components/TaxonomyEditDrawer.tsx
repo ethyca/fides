@@ -33,7 +33,7 @@ interface TaxonomyEditDrawerProps {
   onClose: () => void;
 }
 
-const TaxonomyEditDrawer = ({
+const TaxonomyItemEditDrawer = ({
   taxonomyItem,
   taxonomyType,
   onClose: closeDrawer,
@@ -57,9 +57,10 @@ const TaxonomyEditDrawer = ({
 
   const { updateTrigger } = useTaxonomySlices({ taxonomyType });
 
+  const resourceType = taxonomyTypeToResourceType(taxonomyType);
   const customFields = useCustomFields({
     resourceFidesKey: taxonomyItem?.fides_key,
-    resourceType: taxonomyTypeToResourceType(taxonomyType)!,
+    resourceType,
   });
 
   const canUserEditTaxonomy = useHasPermission([
@@ -76,7 +77,7 @@ const TaxonomyEditDrawer = ({
       return;
     }
 
-    if (customFields.isEnabled) {
+    if (customFields.isEnabled && resourceType) {
       const customFieldValues = customFieldsForm.getFieldsValue();
       await customFields.upsertCustomFields({
         fides_key: taxonomyItem?.fides_key!,
@@ -180,7 +181,7 @@ const TaxonomyEditDrawer = ({
             isDisabled={!canUserEditTaxonomy}
           />
         )}
-        {customFields.isEnabled && !customFields.isLoading && (
+        {customFields.isEnabled && !customFields.isLoading && resourceType && (
           <TaxonomyCustomFieldsForm
             form={customFieldsForm}
             formId={CUSTOM_FIELDS_FORM_ID}
@@ -209,4 +210,4 @@ const TaxonomyEditDrawer = ({
     </>
   );
 };
-export default TaxonomyEditDrawer;
+export default TaxonomyItemEditDrawer;

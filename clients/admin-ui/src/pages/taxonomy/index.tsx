@@ -2,14 +2,17 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntInput as Input,
+  AntMenuProps as MenuProps,
+  AntMessage as message,
+  AntModal as Modal,
   AntSpace as Space,
+  AntTypography as Typography,
   FloatingMenu,
-  useToast,
 } from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import {
@@ -20,23 +23,38 @@ import {
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
+import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
+import CustomTaxonomyEditDrawer from "~/features/taxonomy/components/CustomTaxonomyEditDrawer";
+import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
   taxonomyKeyToScopeRegistryEnum,
   TaxonomyTypeEnum,
+  taxonomyTypeToLabel,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
-import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
+import {
+  useDeleteCustomTaxonomyMutation,
+  useGetCustomTaxonomiesQuery,
+} from "~/features/taxonomy/taxonomy.slice";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
+import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+
+// include spaces to avoid collision with taxonomy fides_keys
+const ADD_NEW_ITEM_KEY = "add new item";
+
+const DEFAULT_TAXONOMY_TYPE = TaxonomyTypeEnum.DATA_CATEGORY;
 
 const TaxonomyPage: NextPage = () => {
   // taxonomyType now stores the fides_key string (e.g. "data_category")
   const [taxonomyType, setTaxonomyType] = useState<string>(
-    TaxonomyTypeEnum.DATA_CATEGORY,
+    DEFAULT_TAXONOMY_TYPE,
+  );
+
+  const isCustomTaxonomy = !Object.values(TaxonomyTypeEnum).includes(
+    taxonomyType as TaxonomyTypeEnum,
   );
   const features = useFeatures();
   const isPlusEnabled = features.plus;
@@ -52,12 +70,16 @@ const TaxonomyPage: NextPage = () => {
   const searchParams = useSearchParams();
   const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
 
+  const [messageApi, messageContext] = message.useMessage();
+
   useEffect(() => {
     getAllTrigger();
   }, [getAllTrigger, taxonomyType]);
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);
+  const [taxonomyTypeToEdit, setTaxonomyTypeToEdit] =
+    useState<TaxonomyResponse | null>(null);
 
   const [draftNewItem, setDraftNewItem] =
     useState<Partial<TaxonomyEntity> | null>(null);
@@ -65,6 +87,54 @@ const TaxonomyPage: NextPage = () => {
   const [lastCreatedItemKey, setLastCreatedItemKey] = useState<string | null>(
     null,
   );
+
+  const [modal, modalContext] = Modal.useModal();
+
+  const [deleteCustomTaxonomy] = useDeleteCustomTaxonomyMutation();
+
+  const handleDelete = async () => {
+    if (!taxonomyTypeToEdit?.fides_key) {
+      messageApi.error("Taxonomy not found");
+      return;
+    }
+    const result = await deleteCustomTaxonomy(taxonomyTypeToEdit.fides_key);
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
+    }
+    messageApi.success("Taxonomy deleted successfully");
+    setTaxonomyTypeToEdit(null);
+    setTaxonomyType(DEFAULT_TAXONOMY_TYPE);
+  };
+
+  const confirmDelete = () => {
+    modal.confirm({
+      title: `Delete ${taxonomyTypeToEdit?.name}?`,
+      icon: null,
+      content: (
+        <Typography.Paragraph>
+          Are you sure you want to delete this taxonomy? This action cannot be
+          undone.
+        </Typography.Paragraph>
+      ),
+      okText: "Delete",
+      okType: "primary",
+      onOk: handleDelete,
+      centered: true,
+    });
+  };
+
+  const customTaxonomyLabel = useMemo(() => {
+    if (!customTaxonomies) {
+      return null;
+    }
+    const customTaxonomyResponse = customTaxonomies.find(
+      (t) => t.fides_key === taxonomyType,
+    );
+    return customTaxonomyResponse?.name ?? customTaxonomyResponse?.fides_key;
+  }, [customTaxonomies, taxonomyType]);
+
+  const [isAddNewItemModalOpen, setIsAddNewItemModalOpen] = useState(false);
 
   // reset state when changing taxonomy type
   useEffect(() => {
@@ -80,7 +150,6 @@ const TaxonomyPage: NextPage = () => {
     }
   }, [taxonomyType, isPlusEnabled]);
 
-  const toast = useToast();
   const createNewLabel = useCallback(
     async (labelName: string) => {
       if (!draftNewItem) {
@@ -96,14 +165,14 @@ const TaxonomyPage: NextPage = () => {
 
       const result = await createTrigger(newItem);
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        messageApi.error(getErrorMessage(result.error));
         return;
       }
       setLastCreatedItemKey(result.data.fides_key);
-      toast(successToastParams("New label successfully created"));
+      messageApi.success("New label successfully created");
       setDraftNewItem(null);
     },
-    [createTrigger, draftNewItem, toast],
+    [createTrigger, draftNewItem, messageApi],
   );
 
   const activeTaxonomyItems = filter(
@@ -115,8 +184,28 @@ const TaxonomyPage: NextPage = () => {
     taxonomyKeyToScopeRegistryEnum(taxonomyType).CREATE,
   ]);
 
+  const handleMenuItemSelected = ({ key }: { key: string }) => {
+    if (key === ADD_NEW_ITEM_KEY) {
+      setIsAddNewItemModalOpen(true);
+      return;
+    }
+    setTaxonomyType(key as string);
+  };
+
+  const handleTaxonomyRootItemClick = () => {
+    const typeFromKey = customTaxonomies?.find(
+      (t) => t.fides_key === taxonomyType,
+    );
+    if (!typeFromKey) {
+      return;
+    }
+    setTaxonomyTypeToEdit(typeFromKey);
+  };
+
   return (
     <Layout title="Taxonomy">
+      {messageContext}
+      {modalContext}
       <Flex vertical className="h-full">
         <div>
           <PageHeader heading="Taxonomy" />
@@ -139,7 +228,7 @@ const TaxonomyPage: NextPage = () => {
           <div className="absolute left-2 top-2 z-[1]">
             <FloatingMenu
               selectedKeys={[taxonomyType]}
-              onSelect={({ key }) => setTaxonomyType(key as string)}
+              onSelect={handleMenuItemSelected}
               items={(() => {
                 // Core taxonomies, excluding system groups if plus is not enabled
                 const coreMapping: Record<CoreTaxonomiesEnum, string> = {
@@ -152,7 +241,9 @@ const TaxonomyPage: NextPage = () => {
                     TaxonomyTypeEnum.SYSTEM_GROUP,
                 };
 
-                const items = enumToOptions(CoreTaxonomiesEnum)
+                const items: MenuProps["items"] = enumToOptions(
+                  CoreTaxonomiesEnum,
+                )
                   .filter(
                     (opt) =>
                       isPlusEnabled ||
@@ -169,6 +260,13 @@ const TaxonomyPage: NextPage = () => {
                     items.push({ label: t.name, key: t.fides_key as any });
                   });
                 }
+                if (isPlusEnabled) {
+                  items.push({ type: "divider" });
+                  items.push({
+                    label: "+ Create new",
+                    key: ADD_NEW_ITEM_KEY,
+                  });
+                }
 
                 return items;
               })()}
@@ -176,40 +274,73 @@ const TaxonomyPage: NextPage = () => {
             />
           </div>
 
-          {!!taxonomyItems.length && (
-            <TaxonomyInteractiveTree
-              userCanAddLabels={userCanAddLabels}
-              taxonomyItems={
-                showDisabledItems ? taxonomyItems : activeTaxonomyItems
-              }
-              draftNewItem={draftNewItem}
-              lastCreatedItemKey={lastCreatedItemKey}
-              resetLastCreatedItemKey={() => setLastCreatedItemKey(null)}
-              onTaxonomyItemClick={(taxonomyItem) => {
-                setTaxonomyItemToEdit(taxonomyItem);
-              }}
-              onAddButtonClick={(taxonomyItem) => {
-                const newItem = {
-                  parent_key: taxonomyItem?.fides_key ?? null,
-                  is_default: false,
-                  description: "",
-                };
-
-                setDraftNewItem(newItem);
-              }}
-              taxonomyType={taxonomyType as any}
-              onCancelDraftItem={() => setDraftNewItem(null)}
-              onSubmitDraftItem={createNewLabel}
-              isCreating={isCreating}
+          <Modal
+            open={isAddNewItemModalOpen}
+            destroyOnHidden
+            onCancel={() => setIsAddNewItemModalOpen(false)}
+            width={768}
+            footer={null}
+            centered
+            title="Create new taxonomy"
+          >
+            <CreateCustomTaxonomyForm
+              onClose={() => setIsAddNewItemModalOpen(false)}
+              messageApi={messageApi}
             />
-          )}
+          </Modal>
+
+          <TaxonomyInteractiveTree
+            userCanAddLabels={userCanAddLabels}
+            taxonomyItems={
+              showDisabledItems ? taxonomyItems : activeTaxonomyItems
+            }
+            draftNewItem={draftNewItem}
+            lastCreatedItemKey={lastCreatedItemKey}
+            resetLastCreatedItemKey={() => setLastCreatedItemKey(null)}
+            onTaxonomyItemClick={(taxonomyItem) => {
+              setTaxonomyItemToEdit(taxonomyItem);
+            }}
+            onRootItemClick={
+              isCustomTaxonomy ? handleTaxonomyRootItemClick : null
+            }
+            onAddButtonClick={(taxonomyItem) => {
+              const newItem = {
+                parent_key: taxonomyItem?.fides_key ?? null,
+                is_default: false,
+                description: "",
+              };
+
+              setDraftNewItem(newItem);
+            }}
+            taxonomyType={taxonomyType as any}
+            onCancelDraftItem={() => setDraftNewItem(null)}
+            onSubmitDraftItem={createNewLabel}
+            isCreating={isCreating}
+            rootNodeLabel={
+              customTaxonomyLabel ??
+              taxonomyTypeToLabel(taxonomyType as TaxonomyTypeEnum)
+            }
+          />
         </div>
       </Flex>
       {taxonomyItemToEdit && (
-        <TaxonomyEditDrawer
+        <TaxonomyItemEditDrawer
           taxonomyItem={taxonomyItemToEdit}
           taxonomyType={taxonomyType}
           onClose={() => setTaxonomyItemToEdit(null)}
+        />
+      )}
+      {isPlusEnabled && (
+        <CustomTaxonomyEditDrawer
+          title={
+            customTaxonomyLabel
+              ? `Edit ${customTaxonomyLabel}`
+              : "Edit taxonomy"
+          }
+          onClose={() => setTaxonomyTypeToEdit(null)}
+          onDelete={confirmDelete}
+          taxonomy={taxonomyTypeToEdit}
+          messageApi={messageApi}
         />
       )}
     </Layout>

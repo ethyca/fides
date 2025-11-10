@@ -21,6 +21,7 @@ import {
 } from "~/types/api";
 
 import { PRIVACY_REQUESTS_ROUTE } from "../common/nav/routes";
+import { pluralize } from "../common/utils";
 import { PRIVACY_REQUEST_TABS } from "./hooks/usePrivacyRequestTabs";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import { PrivacyRequestEntity } from "./types";
@@ -56,7 +57,7 @@ const PrivacyRequestDetailsManualTaskTab = ({
   const { data: tasksData } = useGetTasksQuery({
     page: 1,
     size: 100,
-    privacyRequestId: subjectRequest.id,
+    privacy_request_id: subjectRequest.id,
   });
 
   const tasks = tasksData?.items || [];
@@ -105,12 +106,13 @@ const PrivacyRequestDetailsManualTaskTab = ({
           </Typography.Title>
           <Stack spacing={2}>
             <Typography.Text>
-              <strong>{totalTasks}</strong> task{totalTasks !== 1 ? "s" : ""}{" "}
-              linked to this privacy request
+              <strong>{totalTasks}</strong>{" "}
+              {pluralize(totalTasks, "task", "tasks")} linked to this privacy{" "}
+              request
             </Typography.Text>
             <Typography.Text>
-              <strong>{pendingTasks}</strong> pending task
-              {pendingTasks !== 1 ? "s" : ""}
+              <strong>{pendingTasks}</strong> pending{" "}
+              {pluralize(pendingTasks, "task", "tasks")}
             </Typography.Text>
             {totalTasks > 0 && (
               <div className="mt-2">

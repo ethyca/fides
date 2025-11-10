@@ -21,6 +21,10 @@ export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
+export const ACTION_CENTER_WEBSITE_MONITOR_ROUTE =
+  "/data-discovery/action-center/website/[monitorId]";
+export const ACTION_CENTER_DATASTORE_MONITOR_ROUTE =
+  "/data-discovery/action-center/datastore/[monitorId]";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
@@ -94,3 +98,6 @@ export const ANT_POC_ROUTE = "/poc/ant-components";
 export const FORMS_POC_ROUTE = "/poc/forms";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
+
+// Sandbox routes
+export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";

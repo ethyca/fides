@@ -4,14 +4,18 @@ import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomDateTimeInput,
+  CustomSwitch,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
+  ClassifyLlmPromptTemplateOptions,
   ConnectionSystemTypeMap,
   ConnectionType,
   EditableMonitorConfig,
@@ -24,7 +28,50 @@ interface MonitorConfigFormValues {
   execution_frequency?: MonitorFrequency;
   execution_start_date: string;
   shared_config_id?: string;
+  use_llm_classifier: boolean;
+  llm_model_override?: string;
+  prompt_template?: ClassifyLlmPromptTemplateOptions;
+  content_classification_enabled?: boolean;
 }
+
+const DEFAULT_CLASSIFIER_PARAMS = {
+  num_samples: 25,
+  num_threads: 1,
+};
+
+const getClassifyParams = (
+  isEditing: boolean,
+  monitor: MonitorConfig | undefined,
+  values: MonitorConfigFormValues,
+) => {
+  const baseParams = isEditing
+    ? {
+        ...monitor?.classify_params,
+      }
+    : DEFAULT_CLASSIFIER_PARAMS;
+
+  if (values.use_llm_classifier) {
+    return {
+      ...baseParams,
+      context_classifier: "llm",
+      ...(values.llm_model_override && {
+        llm_model_override: values.llm_model_override,
+      }),
+      ...(values.prompt_template && {
+        prompt_template: values.prompt_template,
+      }),
+      content_classification_enabled: false, // for now, content classification is always disabled for LLM classification
+    };
+  }
+
+  return {
+    ...baseParams,
+    context_classifier: undefined,
+    llm_model_override: undefined,
+    prompt_template: undefined,
+    content_classification_enabled: undefined,
+  };
+};
 
 const ConfigureMonitorForm = ({
   monitor,
@@ -44,6 +91,28 @@ const ConfigureMonitorForm = ({
   onSubmit: (monitor: MonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
+  const { flags } = useFeatures();
+
+  /**
+   * Feature flag for LLM classifier functionality within action center.
+   * Note: Action center can exist for web monitoring without this feature.
+   * This flag specifically gates the LLM-based classification capabilities.
+   */
+  const llmClassifierFeatureEnabled = !!flags.heliosV2;
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery(
+    {
+      api_set: false,
+    },
+    { skip: !llmClassifierFeatureEnabled },
+  );
+
+  /**
+   * Server-side LLM classifier capability.
+   * This determines if the backend supports LLM-based classification for monitors.
+   */
+  const serverSupportsLlmClassifier =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
@@ -70,22 +139,22 @@ const ConfigureMonitorForm = ({
             execution_start_date: undefined,
           };
 
+    const classifyParams = getClassifyParams(isEditing, monitor, values);
+
     const payload: EditableMonitorConfig = isEditing
       ? {
           ...monitor,
           ...executionInfo,
           name: values.name,
           shared_config_id: values.shared_config_id,
+          classify_params: classifyParams,
         }
       : {
           ...executionInfo,
           name: values.name,
           shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
-          classify_params: {
-            num_samples: 25,
-            num_threads: 1,
-          },
+          classify_params: classifyParams,
         };
 
     if (integrationOption.identifier === ConnectionType.DYNAMODB) {
@@ -104,12 +173,29 @@ const ConfigureMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
+  /**
+   * Check if this monitor is currently configured to use LLM classification.
+   * This is independent of whether the server supports it or the feature is enabled.
+   */
+  const monitorUsesLlmClassifier =
+    monitor?.classify_params?.context_classifier === "llm";
+
   const initialValues = {
     name: monitor?.name ?? "",
     shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
+    use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
+    llm_model_override: monitorUsesLlmClassifier
+      ? (monitor?.classify_params?.llm_model_override ?? undefined)
+      : undefined,
+    prompt_template: monitorUsesLlmClassifier
+      ? (monitor?.classify_params?.prompt_template ?? undefined)
+      : undefined,
+    content_classification_enabled: !monitorUsesLlmClassifier
+      ? (monitor?.classify_params?.content_classification_enabled ?? undefined)
+      : undefined, // for now, content classification is always disabled for LLM classification
   };
 
   const frequencyOptions = enumToOptions(MonitorFrequency);
@@ -148,6 +234,31 @@ const ConfigureMonitorForm = ({
               }
               id="execution_start_date"
             />
+            {llmClassifierFeatureEnabled && (
+              <>
+                <CustomSwitch
+                  name="use_llm_classifier"
+                  id="use_llm_classifier"
+                  label="Use LLM classifier"
+                  variant="stacked"
+                  isDisabled={!serverSupportsLlmClassifier}
+                  tooltip={
+                    !serverSupportsLlmClassifier
+                      ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
+                      : undefined
+                  }
+                />
+                {values.use_llm_classifier && (
+                  <CustomTextInput
+                    name="llm_model_override"
+                    id="llm_model_override"
+                    label="Model override"
+                    variant="stacked"
+                    tooltip="Optionally specify a custom model to use for LLM classification"
+                  />
+                )}
+              </>
+            )}
             <div className="flex w-full justify-between">
               <Button
                 onClick={() => {

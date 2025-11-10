@@ -2,6 +2,7 @@ import { CellContext } from "@tanstack/react-table";
 import {
   AntTag as Tag,
   AntTooltip as Tooltip,
+  CUSTOM_TAG_COLOR,
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui";
@@ -66,19 +67,19 @@ type TagNames = "available" | "enabled" | "inactive";
 
 const systemsApplicableTags: Record<
   TagNames,
-  { color: string; tooltip: string }
+  { color: CUSTOM_TAG_COLOR; tooltip: string }
 > = {
   available: {
-    color: "warning",
+    color: CUSTOM_TAG_COLOR.WARNING,
     tooltip:
       "This notice is associated with a system + data use and can be enabled",
   },
   enabled: {
-    color: "success",
+    color: CUSTOM_TAG_COLOR.SUCCESS,
     tooltip: "This notice is active and available for consumers",
   },
   inactive: {
-    color: "default",
+    color: CUSTOM_TAG_COLOR.DEFAULT,
     tooltip:
       "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
   },
@@ -104,7 +105,7 @@ export const PrivacyNoticeStatusCell = (
   }
   const { tooltip = undefined, ...tagProps } = tagValue
     ? systemsApplicableTags[tagValue]
-    : { color: "default" };
+    : { color: CUSTOM_TAG_COLOR.DEFAULT };
 
   return (
     <Tooltip title={tooltip}>

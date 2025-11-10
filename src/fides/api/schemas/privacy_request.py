@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
+from uuid import UUID
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
@@ -306,6 +307,12 @@ class PrivacyRequestStatus(str, EnumType):
     requires_manual_finalization = "requires_manual_finalization"
     canceled = "canceled"
     error = "error"
+    duplicate = "duplicate"  # Request identified as duplicate of another request
+
+
+class IdentityValue(BaseModel):
+    label: str
+    value: Optional[str] = None
 
 
 class PrivacyRequestResponse(FidesSchema):
@@ -328,7 +335,7 @@ class PrivacyRequestResponse(FidesSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]] = None
+    identity: Optional[Dict[str, Union[Optional[str], IdentityValue]]] = None
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
@@ -342,6 +349,7 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
+    duplicate_request_group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
@@ -364,6 +372,12 @@ class ReviewPrivacyRequestIds(FidesSchema):
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
+
+    reason: Optional[SafeStr] = None
+
+
+class CancelPrivacyRequests(ReviewPrivacyRequestIds):
+    """Pass in a list of privacy request ids and cancellation reason"""
 
     reason: Optional[SafeStr] = None
 
@@ -456,7 +470,7 @@ class PrivacyRequestFilter(FidesSchema):
     errored_gt: Optional[datetime] = None
     external_id: Optional[str] = None
     location: Optional[str] = None
-    action_type: Optional[ActionType] = None
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False

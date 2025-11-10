@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
@@ -69,6 +69,7 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.privacy_request.duplicate_group import DuplicateGroup
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
@@ -223,6 +224,18 @@ class PrivacyRequest(
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
     location = Column(String, nullable=True)
+
+    # Duplicate detection - group ID to link duplicates together
+    duplicate_request_group_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("duplicate_group.id"),
+        nullable=True,
+    )
+    duplicate_group = relationship(
+        DuplicateGroup,
+        back_populates="privacy_requests",
+        uselist=False,
+    )
 
     # A PrivacyRequest can be soft deleted, so we store when it was deleted
     deleted_at = Column(DateTime(timezone=True), nullable=True)
@@ -601,7 +614,10 @@ class PrivacyRequest(
         """Verify the identification code supplied by the user
         If verified, change the status of the request to "pending", and set the datetime the identity was verified.
         """
-        if not self.status == PrivacyRequestStatus.identity_unverified:
+        if not self.status in [
+            PrivacyRequestStatus.identity_unverified,
+            PrivacyRequestStatus.duplicate,
+        ]:
             raise IdentityVerificationException(
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
@@ -679,12 +695,29 @@ class PrivacyRequest(
                 },
             )
 
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
+    def identity_prefix_cache_and_keys(self) -> Tuple[str, FidesopsRedis, List[str]]:
+        """Returns the prefix and cache keys for the identity data for this request"""
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+        return prefix, cache, keys
+
+    def verify_cache_for_identity_data(self) -> bool:
+        """Verifies if the identity data is cached for this request"""
+        _, _, keys = self.identity_prefix_cache_and_keys()
+        return len(keys) > 0
+
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
+        prefix, cache, keys = self.identity_prefix_cache_and_keys()
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            identity = self.get_persisted_identity()
+            self.cache_identity(identity)
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:
@@ -702,10 +735,25 @@ class PrivacyRequest(
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
+
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            custom_privacy_request_fields = (
+                self.get_persisted_custom_privacy_request_fields()
+            )
+            self.cache_custom_privacy_request_fields(
+                {
+                    key: CustomPrivacyRequestFieldSchema(**value)
+                    for key, value in custom_privacy_request_fields.items()
+                }
+            )
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:

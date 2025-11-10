@@ -166,6 +166,21 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    unmuteResources: build.mutation<any, BulkResourceActionQueryParams>({
+      query: (params) => ({
+        params,
+        method: "POST",
+        url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
+          { staged_resource_urns: params.staged_resource_urns },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
+    }),
     muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: ({ staged_resource_urn }) => ({
         method: "POST",
@@ -186,7 +201,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     muteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -196,7 +215,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           staged_resource_urns,
         },
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -206,7 +229,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     updateResourceCategory: build.mutation<
       Array<{
@@ -227,7 +254,30 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         ],
       }),
 
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
+    }),
+    approveStagedResources: build.mutation<
+      any,
+      BulkResourceActionQueryParams & {
+        monitor_config_key: string;
+      }
+    >({
+      query: ({ staged_resource_urns, monitor_config_key }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${monitor_config_key}/approve`,
+        body: {
+          staged_resource_urns,
+        },
+      }),
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
   }),
 });
@@ -247,7 +297,9 @@ export const {
   useMuteResourcesMutation,
   useConfirmResourceMutation,
   useUnmuteResourceMutation,
+  useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
+  useApproveStagedResourcesMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({
