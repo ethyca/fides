@@ -95,7 +95,7 @@ export const PrivacyRequestFiltersBar = ({
         value={filters.status || []}
         onChange={handleStatusChange}
         allowClear
-        maxTagCount={1}
+        maxTagCount="responsive"
         data-testid="request-status-filter"
         aria-label="Status"
         className="w-44"
@@ -108,7 +108,7 @@ export const PrivacyRequestFiltersBar = ({
         value={filters.action_type || []}
         onChange={handleActionTypeChange}
         allowClear
-        maxTagCount={1}
+        maxTagCount="responsive"
         data-testid="request-action-type-filter"
         aria-label="Request type"
         className="w-44"
