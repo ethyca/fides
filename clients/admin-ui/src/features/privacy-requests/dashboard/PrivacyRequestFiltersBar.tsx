@@ -78,15 +78,6 @@ export const PrivacyRequestFiltersBar = ({
     });
   };
 
-  const actionTypeLabelRender = () => {
-    const count = modalFilters.action_type?.length || 0;
-    return (
-      <span style={{ fontWeight: "bold" }}>
-        Request type{count > 0 ? ` (${count})` : ""}
-      </span>
-    );
-  };
-
   return (
     <Flex gap="small" align="center" justify="flex-start">
       <DebouncedSearchInput
@@ -118,6 +109,9 @@ export const PrivacyRequestFiltersBar = ({
         data-testid="request-status-filter"
         aria-label="Status"
         className="w-44"
+        maxTagPlaceholder={(omittedValues) => (
+          <span>+ {omittedValues.length}</span>
+        )}
       />
       <Select
         mode="multiple"
@@ -130,7 +124,9 @@ export const PrivacyRequestFiltersBar = ({
         data-testid="request-action-type-filter"
         aria-label="Request type"
         className="w-44"
-        labelRender={actionTypeLabelRender}
+        maxTagPlaceholder={(omittedValues) => (
+          <span>+ {omittedValues.length}</span>
+        )}
       />
       <Button
         data-testid="advanced-search-btn"
