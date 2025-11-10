@@ -30,6 +30,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
     RequestFailureResponseException,
 )
 from fides.config import CONFIG
+from tests.ops.graph.graph_test_util import erasure_policy
 
 
 @pytest.mark.async_dsr
@@ -325,24 +326,32 @@ class TestAsyncPollingStrategy:
         # Should return empty list since there are no sub-requests to process
         assert result == []
 
+
+    @pytest.mark.parametrize(
+        "action_type,policy_factory",
+        [
+            ("access", lambda db: Policy()),           # Basic access policy object
+            ("erasure", lambda db: erasure_policy(db)),  # Proper erasure policy with masking strategy
+        ]
+    )
     def test_handle_polling_initial_request_failure_not_in_ignore_list(
-        self, db, async_polling_strategy
+        self, db, async_polling_strategy, action_type, policy_factory
     ):
         """
         Test that _handle_polling_initial_request raises RequestFailureResponseException
-        when initial request fails with a status code NOT in the ignore_errors list.
+        when initial request fails with a status code NOT in the ignore_errors list,
+        with both access and erasure policy flows.
         """
-
         # Create a mock request task
         request_task = RequestTask.create(
             db,
             data={
-                "id": "test_task_123",
+                "id": f"test_task_{action_type}_not_ignored",
                 "collection_address": "test_dataset:test_collection",
                 "dataset_name": "test_dataset",
                 "collection_name": "test_collection",
                 "status": "polling",
-                "action_type": "access",
+                "action_type": action_type,
                 "async_type": "polling",
             },
         )
@@ -375,7 +384,7 @@ class TestAsyncPollingStrategy:
         )
 
         input_data = {"email": "test@example.com"}
-        policy = Policy()
+        policy = policy_factory(db)
 
         # The RequestFailureResponseException should bubble up since 500 is not ignored
         with pytest.raises(RequestFailureResponseException) as exc_info:
@@ -392,24 +401,32 @@ class TestAsyncPollingStrategy:
         assert exc_info.value.response.status_code == 500
         assert exc_info.value.response.text == "Internal Server Error"
 
+    @pytest.mark.parametrize(
+        "action_type,policy_factory",
+        [
+            ("access", lambda db: Policy()),
+            ("erasure", lambda db: erasure_policy(db)),
+        ]
+    )
     def test_handle_polling_initial_request_failure_in_ignore_list(
-        self, db, async_polling_strategy
+        self, db, async_polling_strategy, action_type, policy_factory
     ):
         """
         Test that _handle_polling_initial_request raises FidesopsException
-        when initial request fails with a status code IN the ignore_errors list.
+        when initial request fails with a status code IN the ignore_errors list,
+        with both access and erasure policy flows.
         The client.send returns the failed response, then response.ok check triggers FidesopsException.
         """
         # Create a mock request task
         request_task = RequestTask.create(
             db,
             data={
-                "id": "test_task_456",
+                "id": f"test_task_{action_type}_ignored",
                 "collection_address": "test_dataset:test_collection",
                 "dataset_name": "test_dataset",
                 "collection_name": "test_collection",
                 "status": "polling",
-                "action_type": "access",
+                "action_type": action_type,
                 "async_type": "polling",
             },
         )
@@ -439,7 +456,7 @@ class TestAsyncPollingStrategy:
         mock_client.send.return_value = mock_response
 
         input_data = {"email": "test@example.com"}
-        policy = Policy()
+        policy = policy_factory(db)
 
         # Test that FidesopsException is raised due to response.ok check
         with pytest.raises(FidesopsException) as exc_info:
