@@ -490,7 +490,7 @@ def run_privacy_request(
 
             try:
                 # Only build dataset graph with manual tasks on first run to avoid expensive
-                # re-validation on DSR 3.0 re-entry
+                # re-validation
                 if can_run_checkpoint(
                     request_checkpoint=CurrentStep.dataset_validation,
                     from_checkpoint=resume_step,
