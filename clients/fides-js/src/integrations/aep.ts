@@ -7,6 +7,7 @@
  */
 
 import { NoticeConsent } from "../lib/consent-types";
+import { getCookieByName } from "../lib/cookie";
 import { subscribeToConsent } from "./integration-utils";
 
 declare global {
@@ -1016,40 +1017,30 @@ const ONETRUST_TO_FIDES_MAPPING: Record<string, string> = {
 
 /**
  * Read consent state from OneTrust cookie and convert to Fides format
+ * Uses existing battle-tested cookie utilities from consent-migration
  * @returns Fides-compatible consent object or null if OneTrust not found
  */
 function readOneTrustConsent(): Record<string, boolean | string> | null {
   try {
-    // Get OptanonConsent cookie
-    const cookies = document.cookie.split("; ");
-    const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
-
-    if (!otCookie) {
+    // Use existing cookie utility
+    const cookieValue = getCookieByName("OptanonConsent");
+    if (!cookieValue) {
       return null;
     }
 
-    // Parse cookie
-    const firstEquals = otCookie.indexOf("=");
-    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
-
-    const params: Record<string, string> = {};
-    cookieValue.split("&").forEach((pair) => {
-      const [key, value] = pair.split("=");
-      if (key && value !== undefined) {
-        params[key] = value;
-      }
-    });
-
-    const groups = params.groups;
-    if (!groups) {
+    // Use regex to extract groups (same as OneTrustProvider)
+    const groupsMatch = cookieValue.match(/groups=([^&]*)/);
+    if (!groupsMatch || !groupsMatch[1]) {
       return null;
     }
 
     // Parse OneTrust groups into Fides consent
-    const fidesConsent: NoticeConsent = {};
+    const fidesConsent: Record<string, boolean | string> = {};
+    const groupsStr = groupsMatch[1];
+    const groupPairs = groupsStr.split(",");
 
-    groups.split(",").forEach((group) => {
-      const [category, status] = group.split(":");
+    groupPairs.forEach((pair) => {
+      const [category, status] = pair.split(":");
       const fidesKey = ONETRUST_TO_FIDES_MAPPING[category];
 
       if (fidesKey) {
@@ -1067,31 +1058,18 @@ function readOneTrustConsent(): Record<string, boolean | string> | null {
 /**
  * Write Fides consent state to OneTrust cookie
  * Updates the OptanonConsent cookie's groups parameter
+ * Uses existing cookie utility for reading
  */
 function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
   try {
-    // Get existing OptanonConsent cookie
-    const cookies = document.cookie.split("; ");
-    const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
-
-    if (!otCookie) {
+    // Use existing cookie utility
+    const cookieValue = getCookieByName("OptanonConsent");
+    if (!cookieValue) {
       console.warn(
         "[Fides Adobe] OptanonConsent cookie not found, cannot write consent",
       );
       return;
     }
-
-    // Parse existing cookie
-    const firstEquals = otCookie.indexOf("=");
-    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
-
-    const params: Record<string, string> = {};
-    cookieValue.split("&").forEach((pair) => {
-      const [key, value] = pair.split("=");
-      if (key && value !== undefined) {
-        params[key] = value;
-      }
-    });
 
     // Build new groups string from Fides consent
     const groupsArray: string[] = [];
@@ -1105,20 +1083,20 @@ function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
       },
     );
 
-    // Update groups parameter
-    params.groups = groupsArray.join(",");
+    const newGroups = groupsArray.join(",");
 
-    // Rebuild cookie string
-    const newCookieValue = Object.entries(params)
-      .map(([key, value]) => `${key}=${value}`)
-      .join("&");
+    // Replace groups parameter using regex (preserves other params exactly)
+    const updatedCookie = cookieValue.replace(
+      /groups=([^&]*)/,
+      `groups=${newGroups}`,
+    );
 
     // Write cookie (preserve existing expiry/domain/path)
-    document.cookie = `OptanonConsent=${encodeURIComponent(newCookieValue)}; path=/`;
+    document.cookie = `OptanonConsent=${encodeURIComponent(updatedCookie)}; path=/`;
 
     console.log(
       "[Fides Adobe] Updated OneTrust consent:",
-      params.groups,
+      newGroups,
     );
   } catch (error) {
     console.error("[Fides Adobe] Error writing OneTrust consent:", error);
