@@ -326,13 +326,15 @@ class TestAsyncPollingStrategy:
         # Should return empty list since there are no sub-requests to process
         assert result == []
 
-
     @pytest.mark.parametrize(
         "action_type,policy_factory",
         [
-            ("access", lambda db: Policy()),           # Basic access policy object
-            ("erasure", lambda db: erasure_policy(db)),  # Proper erasure policy with masking strategy
-        ]
+            ("access", lambda db: Policy()),  # Basic access policy object
+            (
+                "erasure",
+                lambda db: erasure_policy(db),
+            ),  # Proper erasure policy with masking strategy
+        ],
     )
     def test_handle_polling_initial_request_failure_not_in_ignore_list(
         self, db, async_polling_strategy, action_type, policy_factory
@@ -406,7 +408,7 @@ class TestAsyncPollingStrategy:
         [
             ("access", lambda db: Policy()),
             ("erasure", lambda db: erasure_policy(db)),
-        ]
+        ],
     )
     def test_handle_polling_initial_request_failure_in_ignore_list(
         self, db, async_polling_strategy, action_type, policy_factory
