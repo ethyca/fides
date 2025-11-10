@@ -115,6 +115,10 @@ const bannerButtonOptions: SelectProps["options"] = [
     label: "Acknowledge",
     value: Layer1ButtonOption.ACKNOWLEDGE,
   },
+  {
+    label: "GPC conditional",
+    value: Layer1ButtonOption.GPC_CONDITIONAL,
+  },
 ];
 
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
