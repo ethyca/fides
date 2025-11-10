@@ -51,4 +51,5 @@ export type Field = {
   top_level_field_urn?: string | null;
   source_data_type?: string | null;
   sub_fields?: Array<Field> | null;
+  preferred_data_categories: Array<string>;
 };
