@@ -88,7 +88,7 @@ export const PrivacyRequestFiltersBar = ({
         format="YYYY-MM-DD"
         value={getDateRange()}
         onChange={handleDateRangeChange}
-        placeholder={["From date", "To date"]}
+        placeholder={["From", "To"]}
         allowClear
         data-testid="date-range-filter"
         aria-label="Date range"
