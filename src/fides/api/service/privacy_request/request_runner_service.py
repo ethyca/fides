@@ -515,7 +515,6 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                # Only do this expensive operation on first pass through dataset validation
                 if can_run_checkpoint(
                     request_checkpoint=CurrentStep.dataset_validation,
                     from_checkpoint=resume_step,
