@@ -242,7 +242,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         read_requests: List[ReadSaaSRequest] = (
             query_config.get_read_requests_by_identity()
         )
-        logger.info(f"Read requests: {read_requests}")
         delete_request: Optional[SaaSRequest] = (
             query_config.get_erasure_request_by_action("delete")
         )
