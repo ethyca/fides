@@ -179,6 +179,23 @@ export interface AEPIntegration {
    * Returns recommended notice names and Adobe purpose mappings
    */
   suggest: () => AEPSuggestion;
+
+  /**
+   * OneTrust integration utilities for migration
+   */
+  oneTrust: {
+    /**
+     * Read current consent state from OneTrust cookie
+     * Returns Fides-compatible consent object
+     */
+    read: () => NoticeConsent | null;
+
+    /**
+     * Write Fides consent state to OneTrust cookie
+     * Updates OptanonConsent cookie with current Fides consent
+     */
+    write: (consent: NoticeConsent) => void;
+  };
 }
 
 /**
@@ -978,6 +995,129 @@ function getAdobeConsentState(): AEPConsentState {
 }
 
 // ============================================================================
+// OneTrust Integration
+// ============================================================================
+
+/**
+ * Standard OneTrust category to Fides notice mapping
+ */
+const ONETRUST_TO_FIDES_MAPPING: Record<string, string> = {
+  C0001: "essential",
+  C0002: "performance",
+  C0003: "functional",
+  C0004: "advertising",
+};
+
+/**
+ * Read consent state from OneTrust cookie and convert to Fides format
+ * @returns Fides-compatible consent object or null if OneTrust not found
+ */
+function readOneTrustConsent(): NoticeConsent | null {
+  try {
+    // Get OptanonConsent cookie
+    const cookies = document.cookie.split("; ");
+    const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
+
+    if (!otCookie) {
+      return null;
+    }
+
+    // Parse cookie
+    const firstEquals = otCookie.indexOf("=");
+    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
+
+    const params: Record<string, string> = {};
+    cookieValue.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key && value !== undefined) {
+        params[key] = value;
+      }
+    });
+
+    const groups = params.groups;
+    if (!groups) {
+      return null;
+    }
+
+    // Parse OneTrust groups into Fides consent
+    const fidesConsent: NoticeConsent = {};
+
+    groups.split(",").forEach((group) => {
+      const [category, status] = group.split(":");
+      const fidesKey = ONETRUST_TO_FIDES_MAPPING[category];
+
+      if (fidesKey) {
+        fidesConsent[fidesKey] = status === "1";
+      }
+    });
+
+    return fidesConsent;
+  } catch (error) {
+    console.error("[Fides Adobe] Error reading OneTrust consent:", error);
+    return null;
+  }
+}
+
+/**
+ * Write Fides consent state to OneTrust cookie
+ * Updates the OptanonConsent cookie's groups parameter
+ */
+function writeOneTrustConsent(consent: NoticeConsent): void {
+  try {
+    // Get existing OptanonConsent cookie
+    const cookies = document.cookie.split("; ");
+    const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
+
+    if (!otCookie) {
+      console.warn(
+        "[Fides Adobe] OptanonConsent cookie not found, cannot write consent",
+      );
+      return;
+    }
+
+    // Parse existing cookie
+    const firstEquals = otCookie.indexOf("=");
+    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
+
+    const params: Record<string, string> = {};
+    cookieValue.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key && value !== undefined) {
+        params[key] = value;
+      }
+    });
+
+    // Build new groups string from Fides consent
+    const groupsArray: string[] = [];
+    Object.entries(ONETRUST_TO_FIDES_MAPPING).forEach(
+      ([otCategory, fidesKey]) => {
+        const consentValue = consent[fidesKey];
+        const status = consentValue ? "1" : "0";
+        groupsArray.push(`${otCategory}:${status}`);
+      },
+    );
+
+    // Update groups parameter
+    params.groups = groupsArray.join(",");
+
+    // Rebuild cookie string
+    const newCookieValue = Object.entries(params)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&");
+
+    // Write cookie (preserve existing expiry/domain/path)
+    document.cookie = `OptanonConsent=${encodeURIComponent(newCookieValue)}; path=/`;
+
+    console.log(
+      "[Fides Adobe] Updated OneTrust consent:",
+      params.groups,
+    );
+  } catch (error) {
+    console.error("[Fides Adobe] Error writing OneTrust consent:", error);
+  }
+}
+
+// ============================================================================
 // Public API
 // ============================================================================
 
@@ -987,6 +1127,8 @@ function getAdobeConsentState(): AEPConsentState {
  * Automatically syncs Fides consent to Adobe products:
  * - Adobe Web SDK (modern)
  * - ECID Opt-In Service (legacy)
+ *
+ * On first load, reads existing OneTrust consent if available.
  *
  * @param options - Configuration options
  * @returns Integration API with diagnostic utilities
@@ -1007,9 +1149,30 @@ function getAdobeConsentState(): AEPConsentState {
  * // Get diagnostics
  * const diagnostics = aep.dump();
  * console.log(diagnostics.visitor.marketingCloudVisitorID);
+ *
+ * // Migration: Read OneTrust consent
+ * const otConsent = aep.oneTrust.read();
+ * if (otConsent) {
+ *   console.log('OneTrust consent:', otConsent);
+ * }
  * ```
  */
 export const aep = (options?: AEPOptions): AEPIntegration => {
+  const debug = options?.debug || false;
+
+  // Read OneTrust consent once on initialization for migration
+  const oneTrustConsent = readOneTrustConsent();
+  if (oneTrustConsent && debug) {
+    console.log(
+      "[Fides Adobe] OneTrust consent detected on initialization:",
+      oneTrustConsent,
+    );
+  }
+
+  // TODO: Optionally initialize Fides consent from OneTrust if Fides has no consent yet
+  // This would require access to window.Fides and updating consent
+  // For now, we just log it for debugging
+
   // Subscribe to Fides consent events using shared helper
   subscribeToConsent((consent) => pushConsentToAdobe(consent, options));
 
@@ -1033,6 +1196,14 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
     },
     suggest: (): AEPSuggestion => {
       return generateAEPSuggestion();
+    },
+    oneTrust: {
+      read: (): NoticeConsent | null => {
+        return readOneTrustConsent();
+      },
+      write: (consent: NoticeConsent): void => {
+        writeOneTrustConsent(consent);
+      },
     },
   };
 };

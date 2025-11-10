@@ -320,6 +320,26 @@ export interface Fides {
    * // Apply the suggested mapping
    * Fides.aep({ purposeMapping: suggestion.purposeMapping });
    * ```
+   *
+   * @example
+   * OneTrust migration - read and sync consent:
+   * ```javascript
+   * const aep = Fides.aep({ debug: true });
+   *
+   * // Read existing OneTrust consent on page load
+   * const otConsent = aep.oneTrust.read();
+   * if (otConsent) {
+   *   console.log('OneTrust consent:', otConsent);
+   *   // { essential: true, performance: true, functional: false, advertising: true }
+   *
+   *   // Optionally update Fides to match OneTrust
+   *   // (In production, this would be done automatically by Fides migration logic)
+   * }
+   *
+   * // Write Fides consent back to OneTrust cookie (for dual-CMP scenarios)
+   * aep.oneTrust.write(window.Fides.consent);
+   * console.log('Updated OneTrust cookie with Fides consent');
+   * ```
    */
   aep: (options?: {
     purposeMapping?: Record<string, string[]>;
@@ -367,6 +387,10 @@ export interface Fides {
       matchedKeys: string[];
       missingKeys: string[];
       recommendedAction: string;
+    };
+    oneTrust: {
+      read: () => Record<string, boolean> | null;
+      write: (consent: Record<string, boolean>) => void;
     };
   };
 
