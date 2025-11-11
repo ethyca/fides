@@ -1,6 +1,6 @@
-# PR Review
+# Frontend PR Review
 
-Perform a code review
+Perform a code review:
 * Focus on being DRY, consistency, and best practices from a front-end perspective
 * Look that it generally follows the Code Implementation Guidelines in the [frontend.mdc](mdc:clients/.cursor/rules/frontend.mdc) rules
 * Look for spelling errors in strings.
