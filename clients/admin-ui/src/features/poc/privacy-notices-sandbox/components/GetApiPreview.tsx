@@ -1,3 +1,4 @@
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback } from "react";
 
 import { PARENT_KEY, PARENT_KEY_WITH_UUID, TREE_NODES } from "../constants";
@@ -71,7 +72,7 @@ const GetApiPreview = ({
     <PreviewCard
       title="Current Preferences (consolidated)"
       header="GET /api/v3/privacy-preferences/current?notice_key=email_marketing"
-      headerColor="green"
+      headerColor={palette.FIDESUI_SUCCESS}
       body={getResponse}
     />
   );

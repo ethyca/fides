@@ -1,5 +1,11 @@
 import type { Key } from "antd/es/table/interface";
-import { AntButton as Button, AntTypography as Typography } from "fidesui";
+import {
+  AntButton as Button,
+  AntEmpty as Empty,
+  AntFlex as Flex,
+  AntTypography as Typography,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
 import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
@@ -163,24 +169,19 @@ const SavePreferencesSection = ({
     checkedKeys,
   ]);
   return (
-    <div className="flex gap-6">
+    <Flex gap={24}>
       {/* Left Column - Tree and Save */}
-      <div className="min-w-0 flex-1">
-        <Typography.Text strong className="mb-2 block text-sm">
+      <Flex vertical flex={1}>
+        <Typography.Title level={4} style={{ fontSize: 14, marginBottom: 8 }}>
           Current preferences
-        </Typography.Text>
+        </Typography.Title>
 
         {hasCurrentResponse ? (
           <>
-            <Typography.Text strong className="mb-2 block text-sm">
-              Consent behavior
-            </Typography.Text>
-            <div className="mb-4">
-              <CascadeConsentToggle
-                isEnabled={cascadeConsent}
-                onToggle={onCascadeConsentChange}
-              />
-            </div>
+            <CascadeConsentToggle
+              isEnabled={cascadeConsent}
+              onToggle={onCascadeConsentChange}
+            />
 
             <PrivacyNoticesTree
               privacyNotices={privacyNotices}
@@ -194,7 +195,7 @@ const SavePreferencesSection = ({
               onClick={handleSavePreferences}
               loading={isSaving}
               disabled={!hasChanges}
-              className="mt-4"
+              className="mt-4 self-start"
             >
               Save preferences
             </Button>
@@ -207,16 +208,14 @@ const SavePreferencesSection = ({
             )}
           </>
         ) : (
-          <div className="rounded border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
-            <Typography.Text type="secondary">
-              Fetch current preferences to manage user consent
-            </Typography.Text>
-          </div>
+          <Flex vertical align="center" justify="center" style={{ flex: 1 }}>
+            <Empty description="Fetch current preferences to manage user consent" />
+          </Flex>
         )}
-      </div>
+      </Flex>
 
       {/* Right Column - POST Response Preview */}
-      <div className="min-w-0 flex-1">
+      <Flex vertical flex={1} style={{ minWidth: 0 }}>
         <PreviewCard
           title="POST response"
           header={
@@ -226,12 +225,12 @@ const SavePreferencesSection = ({
                 }`
               : null
           }
-          headerColor="blue"
+          headerColor={palette.FIDESUI_ALERT}
           body={postResponse}
           emptyMessage="POST response will appear here after saving preferences"
         />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   );
 };
 

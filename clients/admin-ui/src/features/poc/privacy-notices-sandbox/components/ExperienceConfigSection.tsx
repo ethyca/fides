@@ -1,8 +1,10 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
   AntInput as Input,
   AntTypography as Typography,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { PrivacyNoticeResponse } from "~/types/api";
 
@@ -60,18 +62,16 @@ const ExperienceConfigSection = ({
   privacyNotices,
 }: ExperienceConfigSectionProps) => {
   return (
-    <div>
-      <Typography.Text strong className="mb-4 block text-base">
-        Configuration
-      </Typography.Text>
+    <Flex vertical gap="small">
+      <Typography.Title level={3}>Configuration</Typography.Title>
 
-      <div className="flex gap-6">
+      <Flex gap={24}>
         {/* Left Column - Configuration */}
-        <div className="min-w-0 flex-1">
-          <Typography.Text strong className="mb-2 block text-sm">
+        <Flex vertical flex={1} style={{ minWidth: 0 }}>
+          <Typography.Text strong className="mb-2 block">
             Experience region
           </Typography.Text>
-          <div className="mb-4 flex gap-2">
+          <Flex gap={8} className="mb-4">
             <Input
               placeholder="Enter region (e.g., us_ca)"
               value={region}
@@ -86,29 +86,30 @@ const ExperienceConfigSection = ({
             >
               Fetch experience
             </Button>
-          </div>
+          </Flex>
 
           {errorMessage && (
             <Typography.Text type="danger" className="mb-4 block">
               {errorMessage}
             </Typography.Text>
           )}
-        </div>
+        </Flex>
 
         {/* Right Column - Available Notices */}
-        <div className="min-w-0 flex-1">
+        <Flex vertical flex={1}>
           <PreviewCard
             title="Available notices"
             height="200px"
+            headerColor={palette.FIDESUI_MINOS}
             emptyMessage="Available notices will appear here after fetching experience"
           >
             {privacyNotices.length > 0 && (
               <PrivacyNoticesList privacyNotices={privacyNotices} />
             )}
           </PreviewCard>
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };
 

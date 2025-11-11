@@ -1,3 +1,4 @@
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback } from "react";
 
 import {
@@ -87,7 +88,7 @@ const PostApiPreview = ({
     <PreviewCard
       title="API Calls Preview"
       header={mockRequest ? endpoint : null}
-      headerColor="blue"
+      headerColor={palette.FIDESUI_ALERT}
       body={mockRequest}
       emptyMessage="No API request made because preferences were not changed from last save."
     />

@@ -183,17 +183,19 @@ const PrivacyNoticesTree = ({
   );
 
   return (
-    <Tree
-      checkable
-      checkStrictly
-      onExpand={handleExpand}
-      expandedKeys={expandedKeys}
-      autoExpandParent={autoExpandParent}
-      onCheck={handleCheck}
-      checkedKeys={checkedKeys}
-      selectable={false}
-      treeData={treeData}
-    />
+    <div className="max-w-lg">
+      <Tree
+        checkable
+        checkStrictly
+        onExpand={handleExpand}
+        expandedKeys={expandedKeys}
+        autoExpandParent={autoExpandParent}
+        onCheck={handleCheck}
+        checkedKeys={checkedKeys}
+        selectable={false}
+        treeData={treeData}
+      />
+    </div>
   );
 };
 

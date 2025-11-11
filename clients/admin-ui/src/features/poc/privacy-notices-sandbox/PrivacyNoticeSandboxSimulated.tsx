@@ -1,5 +1,10 @@
 import type { Key } from "antd/es/table/interface";
-import { AntButton as Button, AntTypography as Typography } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntTypography as Typography,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
 import type { PrivacyNoticeResponse } from "~/types/api";
@@ -127,17 +132,17 @@ const PrivacyNoticeSandboxSimulated = () => {
 
   return (
     <div className="mt-5">
-      <div className="flex gap-6">
+      <Flex gap={24}>
         {/* Left Column - Consent Management */}
-        <div className="min-w-0 flex-1">
-          <Typography.Text strong className="mb-4 block text-base">
+        <Flex vertical flex={1}>
+          <Typography.Text strong className="mb-4 block">
             Notice configuration
           </Typography.Text>
           <ConsentMechanismRadioGroup
             mechanism={consentMechanism}
             onMechanismChange={handleMechanismChange}
           />
-          <Typography.Text strong className="mb-4 block text-base">
+          <Typography.Text strong className="mb-4 block">
             Consent behavior
           </Typography.Text>
           <CascadeConsentToggle
@@ -145,7 +150,7 @@ const PrivacyNoticeSandboxSimulated = () => {
             onToggle={handleCascadeToggle}
           />
 
-          <Typography.Text strong className="mb-4 block text-base">
+          <Typography.Text strong className="mb-4 block">
             User preferences
           </Typography.Text>
           <PrivacyNoticesTree
@@ -158,17 +163,17 @@ const PrivacyNoticeSandboxSimulated = () => {
           <Button type="primary" onClick={handleSave} className="mt-4">
             Save preferences
           </Button>
-        </div>
+        </Flex>
 
         {/* Right Column - POST API Preview */}
-        <div className="min-w-0 flex-1">
+        <Flex vertical flex={1} style={{ minWidth: 0 }}>
           <PostApiPreview
             currentSavedKeys={toCheckedKeysType(savedCheckedKeys)}
             previousSavedKeys={toCheckedKeysType(previousSavedKeys)}
             cascadeConsent={cascadeConsent}
           />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
 
       {/* GET API Preview Section */}
       <div className="mt-6">
@@ -180,7 +185,7 @@ const PrivacyNoticeSandboxSimulated = () => {
         <PreviewCard
           title="Current DB State"
           header="Raw DB State"
-          headerColor="purple"
+          headerColor={palette.FIDESUI_TERRACOTTA}
           body={dbState}
         />
       </div>

@@ -1,5 +1,11 @@
 import type { Key } from "antd/es/table/interface";
-import { AntDivider as Divider, AntTypography as Typography } from "fidesui";
+import {
+  AntAlert as Alert,
+  AntDivider as Divider,
+  AntEmpty as Empty,
+  AntFlex as Flex,
+  AntTypography as Typography,
+} from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
 import {
@@ -213,27 +219,35 @@ const PrivacyNoticeSandboxRealData = () => {
   return (
     <div className="mt-5 space-y-8">
       {/* Info Banner */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <Typography.Text className="block text-sm text-blue-800">
-          This page makes real API calls to the Consent V3 API. Before using
-          this sandbox, ensure you have:
-        </Typography.Text>
-        <ul className="ml-6 mt-2 list-disc space-y-1 text-sm text-blue-800">
-          <li>
-            The consent v3 API enabled via the env var{" "}
-            <code>FIDESPLUS__EXPERIMENTAL__CONSENT_V3_ENABLED=true</code>
-          </li>
-          <li>An email identity definition configured in your system</li>
-          <li>
-            A privacy experience set up with at least one privacy notice in the
-            selected region
-          </li>
-        </ul>
-        <Typography.Paragraph className="mt-3 block text-sm text-blue-800">
-          If you don&apos;t want to make real API calls or set up a privacy
-          experience, go to the &quot;Simulated data&quot; tab.
-        </Typography.Paragraph>
-      </div>
+      <Alert
+        type="info"
+        message="This page makes real API calls to the Consent V3 API."
+        description={
+          <>
+            <Typography.Paragraph className="mb-0 mt-3">
+              Before using this sandbox, ensure you have:
+            </Typography.Paragraph>
+            <ul className="mb-0 ml-6 mt-2 space-y-1">
+              <li>
+                The consent v3 API enabled via the env var{" "}
+                <Typography.Text code>
+                  FIDESPLUS__EXPERIMENTAL__CONSENT_V3_ENABLED=true
+                </Typography.Text>
+              </li>
+              <li>An email identity definition configured in your system</li>
+              <li>
+                A privacy experience set up with at least one privacy notice in
+                the selected region
+              </li>
+            </ul>
+            <Typography.Paragraph className="mb-0 mt-3">
+              If you don&apos;t want to make real API calls or set up a privacy
+              experience, go to the &quot;Simulated data&quot; tab.
+            </Typography.Paragraph>
+          </>
+        }
+        showIcon
+      />
 
       {/* Configuration Section */}
       <ExperienceConfigSection
@@ -248,17 +262,11 @@ const PrivacyNoticeSandboxRealData = () => {
       <Divider />
 
       {/* User Preferences Section */}
-      <div>
-        <Typography.Text strong className="mb-4 block text-base">
-          User preferences
-        </Typography.Text>
+      <Flex vertical gap="small">
+        <Typography.Title level={3}>User preferences</Typography.Title>
 
         {privacyNotices.length === 0 && (
-          <div className="rounded border border-gray-200 bg-gray-50 p-4 text-center">
-            <Typography.Text type="secondary">
-              Load an experience in order to manage user preferences
-            </Typography.Text>
-          </div>
+          <Empty description="Load an experience in order to manage user preferences" />
         )}
 
         {privacyNotices.length > 0 && (
@@ -298,7 +306,7 @@ const PrivacyNoticeSandboxRealData = () => {
             />
           </div>
         )}
-      </div>
+      </Flex>
     </div>
   );
 };
