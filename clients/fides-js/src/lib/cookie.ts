@@ -115,7 +115,6 @@ export const getCookieByName = (cookieName: string): string | undefined =>
 export const getFidesConsentCookie = (
   suffix: string | undefined | null,
 ): FidesCookie | undefined => {
-  console.log("this was called", getConsentCookieName(suffix));
   const cookieString = getCookieByName(getConsentCookieName(suffix));
   if (!cookieString) {
     return undefined;
