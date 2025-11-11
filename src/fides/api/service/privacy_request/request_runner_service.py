@@ -518,7 +518,6 @@ def run_privacy_request(
                     datasets = DatasetConfig.all(db=session)
 
                 # Build dataset graphs (required for DSR execution)
-                # Build dataset graphs (required for DSR execution)
                 # Filter by checking connection_config after loading to avoid N+1
                 dataset_graphs = []
                 for dataset_config in datasets:
