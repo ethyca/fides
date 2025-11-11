@@ -134,16 +134,20 @@ class MessagingService:
             verification_code = _generate_id_verification_code()
             request.cache_identity_verification_code(verification_code)
 
-            dispatch_message(
-                self.db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=to_identity,
-                service_type=self.config_proxy.notifications.notification_service_type,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code=verification_code,
-                    verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
-                ),
-                property_id=property_id,
+            dispatch_message_task.apply_async(
+                queue=MESSAGING_QUEUE_NAME,
+                kwargs={
+                    "message_meta": FidesopsMessage(
+                        action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                        body_params=SubjectIdentityVerificationBodyParams(
+                            verification_code=verification_code,
+                            verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
+                        ),
+                    ).model_dump(),
+                    "service_type": self.config_proxy.notifications.notification_service_type,
+                    "to_identity": to_identity.model_dump() if to_identity else None,
+                    "property_id": property_id,
+                },
             )
 
         return verification_code
@@ -254,22 +258,26 @@ def send_verification_code_to_user(
     to_identity: Optional[Identity],
     property_id: Optional[str],
 ) -> str:
-    """Generate and cache a verification code, and then message the user"""
+    """Generate and cache a verification code, and then message the user asynchronously"""
     config = get_config()
     config_proxy = ConfigProxy(db)
     verification_code = _generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)
     messaging_action_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
-    dispatch_message(
-        db,
-        action_type=messaging_action_type,
-        to_identity=to_identity,
-        service_type=config_proxy.notifications.notification_service_type,
-        message_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
-        property_id=property_id,
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
+        kwargs={
+            "message_meta": FidesopsMessage(
+                action_type=messaging_action_type,
+                body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code=verification_code,
+                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+                ),
+            ).model_dump(),
+            "service_type": config_proxy.notifications.notification_service_type,
+            "to_identity": to_identity.model_dump() if to_identity else None,
+            "property_id": property_id,
+        },
     )
 
     return verification_code

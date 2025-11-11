@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import requests
 import sendgrid
 from loguru import logger
+from requests.exceptions import RequestException, Timeout
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
@@ -53,7 +54,14 @@ EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
+@celery_app.task(
+    base=DatabaseTask,
+    bind=True,
+    autoretry_for=(MessageDispatchException, Timeout, RequestException, TwilioRestException),
+    retry_kwargs={"max_retries": 3},
+    retry_backoff=2,
+    retry_jitter=True,
+)
 def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
@@ -62,7 +70,11 @@ def dispatch_message_task(
     property_id: Optional[str],
 ) -> None:
     """
-    A wrapper function to dispatch a message task into the Celery queues
+    A wrapper function to dispatch a message task into the Celery queues.
+
+    This task will automatically retry up to 3 times on transient failures
+    (timeouts, network errors, messaging service errors) with exponential
+    backoff (2s, 4s, 8s) and jitter to prevent thundering herd issues.
     """
     schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
@@ -600,6 +612,7 @@ def _mailchimp_transactional_dispatcher(
         "https://mandrillapp.com/api/1.0/messages/send",
         headers={"Content-Type": "application/json"},
         data=data,
+        timeout=10,
     )
     if not response.ok:
         logger.error("Email failed to send with status code: %s", response.status_code)
@@ -647,6 +660,7 @@ def _mailgun_dispatcher(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
             ),
+            timeout=10,
         )
 
         data = {
@@ -671,6 +685,7 @@ def _mailgun_dispatcher(
                     ],
                 ),
                 data=data,
+                timeout=10,
             )
 
             if not response.ok:
@@ -691,6 +706,7 @@ def _mailgun_dispatcher(
                     ],
                 ),
                 data=data,
+                timeout=10,
             )
             if not response.ok:
                 logger.error(
