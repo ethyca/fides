@@ -1,6 +1,6 @@
 # Adding a new Override Option to FidesJS
 
-Follow the steps below, step by step. Do not change anything else, other than adding the provided new override. Changes should be very concise and targetted for the task at hand. Note: If an enum needs to be imported to support these steps, always import as a type to save on build sizes. If you are unable to locate the correct enum or interface to import, pause and let me add it for you.
+Follow the steps below, step by step. Do not change anything else, other than adding the provided new override. Changes should be very concise and targeted for the task at hand. Note: If an enum needs to be imported to support these steps, always import as a type to save on build sizes. If you are unable to locate the correct enum or interface to import, pause and let me add it for you.
 
 1. Define and document the new option as part of the `FidesInitOptions` interface in FidesJS. This interface is found in [consent-types.ts](mdc:clients/fides-js/src/lib/consent-types.ts). Add your new option in camel-case and a small blurb above it describing briefly what it's for. This blurb is for the benefit of the FidesJS developer and is not published.
 
