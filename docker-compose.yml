@@ -92,6 +92,7 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "fides"
       POSTGRES_DB: "fides"
+    command: postgres -c shared_preload_libraries=pg_stat_statements
     deploy:
       placement:
         constraints:
