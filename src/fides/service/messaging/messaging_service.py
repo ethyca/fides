@@ -9,6 +9,7 @@ from fides.api.common_exceptions import (
     MessageDispatchException,
     PolicyNotFoundException,
 )
+from fides.api.models.messaging import MessagingConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -31,6 +32,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     dispatch_message_task,
+    get_email_messaging_config_service_type,
     message_send_enabled,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
@@ -131,12 +133,18 @@ class MessagingService:
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             self.config_proxy.execution.subject_identity_verification_required,
         ):
-            # Validate service type exists before queuing task (maintain synchronous error behavior)
+            # Get service type, falling back to email messaging config if not configured
             service_type = self.config_proxy.notifications.notification_service_type
             if not service_type:
-                raise MessageDispatchException(
-                    "No notification service type configured."
-                )
+                # Fall back to email messaging config if available
+                service_type = get_email_messaging_config_service_type(db=self.db)
+                if not service_type:
+                    raise MessageDispatchException(
+                        "No notification service type configured."
+                    )
+
+            # get_configuration validates the config exists and has secrets
+            MessagingConfig.get_configuration(db=self.db, service_type=service_type)
 
             verification_code = _generate_id_verification_code()
             request.cache_identity_verification_code(verification_code)
@@ -269,10 +277,17 @@ def send_verification_code_to_user(
     config = get_config()
     config_proxy = ConfigProxy(db)
 
-    # Validate service type exists before queuing task (maintain synchronous error behavior)
+    # Get service type, falling back to email messaging config if not configured
     service_type = config_proxy.notifications.notification_service_type
     if not service_type:
-        raise MessageDispatchException("No notification service type configured.")
+        # Fall back to email messaging config if available
+        service_type = get_email_messaging_config_service_type(db=db)
+        if not service_type:
+            raise MessageDispatchException("No notification service type configured.")
+
+    # Validate messaging config exists before queuing task (maintain synchronous error behavior)
+    # get_configuration validates the config exists and has secrets
+    MessagingConfig.get_configuration(db=db, service_type=service_type)
 
     verification_code = _generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)

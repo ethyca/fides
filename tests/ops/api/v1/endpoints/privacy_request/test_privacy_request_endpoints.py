@@ -6121,8 +6121,9 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
 
         assert mock_dispatch_message.called
-        kwargs = mock_dispatch_message.call_args.kwargs
-        message_meta = kwargs["message_meta"]
+        call_args = mock_dispatch_message.call_args[1]
+        task_kwargs = call_args["kwargs"]
+        message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"]
             == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
@@ -6135,8 +6136,8 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
             message_meta["body_params"]["verification_code_ttl_seconds"]
             == CONFIG.redis.identity_verification_code_ttl_seconds
         )
-        assert kwargs["to_identity"]["email"] == "test@example.com"
-        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
+        assert task_kwargs["to_identity"]["email"] == "test@example.com"
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         pr.delete(db=db)
 
