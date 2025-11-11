@@ -2758,10 +2758,25 @@ class TestDatasetLoadingOptimization:
         db.refresh(privacy_request)
         assert privacy_request.started_processing_at is not None
 
+        # Verify that manual task graphs are still created on resume
+        # (required for DSR execution even when skipping validation)
+        assert mock_manual_tasks.call_count == 1
+
         # Verify that dataset graph was still built (required for erasure)
         assert run_erasure.call_count == 1
         graph_arg = run_erasure.call_args[1]["graph"]
         assert isinstance(graph_arg, DatasetGraph)
+
+        # Verify validation log was NOT created on resume (optimization)
+        validation_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.dataset_name == "Dataset reference validation",
+            )
+            .first()
+        )
+        assert validation_log is None, "Validation log should not be created on resume"
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
