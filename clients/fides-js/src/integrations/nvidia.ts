@@ -33,11 +33,12 @@ const readOneTrustConsent = (): NoticeConsent | null => {
     return null;
   }
   
+  // OneTrust category → array of Fides keys
   const otFidesMapping = JSON.stringify({
-    C0001: "essential",
-    C0002: "performance",
-    C0003: "functional",
-    C0004: "advertising",
+    C0001: ["essential"],
+    C0002: ["performance"],
+    C0003: ["functional"],
+    C0004: ["advertising"],
   });
   
   return provider.convertToFidesConsent(cookieValue, { otFidesMapping }) || null;
