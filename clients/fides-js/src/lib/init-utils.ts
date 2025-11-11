@@ -1,5 +1,6 @@
 import { aep } from "../integrations/aep";
-import { nvidiaAEP, nvidiaDemo, status, suggest } from "../integrations/nvidia";
+import { nvidiaAEP, nvidiaDemo, status } from "../integrations/nvidia";
+import { status as oneTrustStatus } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
@@ -128,9 +129,11 @@ export const getCoreFides = ({
     initialized: false,
     onFidesEvent,
     aep,
+    onetrust: {
+      status: oneTrustStatus,
+    },
     nvidia: {
       status,
-      suggest,
       aep: nvidiaAEP,
       demo: nvidiaDemo,
     },

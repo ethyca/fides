@@ -10,7 +10,6 @@ import {
   aep,
   AEPIntegration,
   AEPDiagnostics,
-  AEPSuggestion,
   getFidesDiagnostics,
   getAlloyDiagnostics,
   getVisitorDiagnostics,
@@ -19,7 +18,6 @@ import {
   getLaunchDiagnostics,
   getAnalyticsDiagnostics,
   getOneTrustDiagnostics,
-  generateAEPSuggestion,
 } from "./aep";
 
 /**
@@ -82,46 +80,21 @@ export const status = (): AEPDiagnostics => {
 };
 
 /**
- * Suggest Fides notice configuration based on OneTrust categories.
+ * NVIDIA-specific Adobe purpose mapping.
  *
- * Analyzes the OneTrust OptanonConsent cookie and recommends:
- * - Fides notice names to create (essential, performance, functional, advertising)
- * - Adobe purpose mappings for each notice
- * - Whether Fides already has matching consent keys
- *
- * @returns Suggestion object with recommendations and validation
- *
- * @example
- * ```javascript
- * const suggestion = Fides.nvidia.suggest();
- *
- * if (!suggestion.success) {
- *   console.error(suggestion.error);
- *   // "❌ OneTrust not detected..."
- *   return;
- * }
- *
- * console.log('OneTrust categories:', suggestion.oneTrustCategories);
- * // ['C0001', 'C0002', 'C0003', 'C0004']
- *
- * console.log('Suggested Fides notices:', suggestion.suggestedFidesNotices);
- * // [{ name: 'essential', oneTrustCategory: 'C0001', ... }, ...]
- *
- * if (suggestion.fidesHasMatchingKeys) {
- *   // Use the suggested purpose mapping
- *   Fides.aep({ purposeMapping: suggestion.purposeMapping });
- * } else {
- *   console.log('Missing notices:', suggestion.missingKeys);
- *   // Create these in Fides Admin UI first
- * }
- * ```
+ * Maps NVIDIA's Fides consent keys to Adobe purposes:
+ * - performance → Analytics (collect, measure)
+ * - functional → Target (personalize)
+ * - advertising → AAM (personalize, share)
  */
-export const suggest = (): AEPSuggestion => {
-  return generateAEPSuggestion();
+const NVIDIA_PURPOSE_MAPPING = {
+  performance: ['collect', 'measure'],
+  functional: ['personalize'],
+  advertising: ['personalize', 'share'],
 };
 
 /**
- * Initialize Adobe integration with auto-detected OneTrust mappings.
+ * Initialize Adobe integration with NVIDIA's configuration.
  *
  * Quick helper for testing on nvidia.com or other OneTrust sites.
  * Detects OneTrust categories, initializes Fides from OneTrust, and returns
@@ -146,20 +119,6 @@ export const suggest = (): AEPSuggestion => {
  * ```
  */
 export const nvidiaAEP = (): AEPIntegration => {
-  // Detect OneTrust and get suggestions
-  const suggestion = suggest();
-
-  if (!suggestion.success) {
-    throw new Error(
-      `❌ Cannot initialize nvidia.aep: ${suggestion.error}\n\n` +
-      `This function requires OneTrust to be present on the page.\n` +
-      `Use Fides.aep({ purposeMapping: {...} }) with manual config instead.`
-    );
-  }
-
-  console.log(`[nvidia.aep] OneTrust detected: ${suggestion.oneTrustCategories.join(", ")}`);
-  console.log(`[nvidia.aep] Fides notices: ${suggestion.matchedKeys.join(", ")}`);
-
   // Initialize Fides consent from OneTrust
   const otConsent = readOneTrustConsent();
   if (otConsent) {
@@ -173,16 +132,18 @@ export const nvidiaAEP = (): AEPIntegration => {
         extraDetails: { trigger: { origin: 'nvidia_aep_init' } }
       }
     }));
+  } else {
+    console.log(`[nvidia.aep] ⚠️ OneTrust not found - using existing Fides consent`);
   }
 
-  // Create configured instance
+  // Create configured instance with NVIDIA mapping
   const aepInstance = aep({
-    purposeMapping: suggestion.purposeMapping,
+    purposeMapping: NVIDIA_PURPOSE_MAPPING,
     debug: false,
   });
 
-  console.log(`[nvidia.aep] ✅ Adobe integration initialized with auto-detected mapping`);
-  console.log(`[nvidia.aep] Use aep.consent() to check current Adobe consent`);
+  console.log(`[nvidia.aep] ✅ Adobe integration initialized`);
+  console.log(`[nvidia.aep] Mapping: performance→Analytics, functional→Target, advertising→AAM`);
 
   return aepInstance;
 };
@@ -229,43 +190,12 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log("\nFIDES ADOBE + ONETRUST DEMO\n");
   log("=" .repeat(60));
 
-  // Step 1: Check if we have matching categories using suggest()
-  log("\nStep 1: Checking OneTrust compatibility...");
-
-  const suggestion = suggest();
-
-  if (!suggestion.success) {
-    log(`❌ ${suggestion.error}`);
-    log("\n⚠️ Demo requires OneTrust to be present on the page.");
-    log("   Please run this on nvidia.com or another OneTrust site.");
-    throw new Error("OneTrust not detected - demo requires OneTrust on the page");
-  }
-
-  log(`✅ OneTrust detected: ${suggestion.oneTrustCategories.join(", ")}`);
-  log(`   Suggested Fides notices: ${suggestion.suggestedFidesNotices.map(n => n.name).join(", ")}`);
-
-  // Show what Fides actually has
-  const actualFidesKeys = Object.keys((window as any).Fides?.consent || {});
-  log(`   Current Fides consent keys: ${actualFidesKeys.length > 0 ? actualFidesKeys.join(", ") : "(none)"}`);
-
-  if (!suggestion.fidesHasMatchingKeys) {
-    log(`\n⚠️ Missing Fides notices: ${suggestion.missingKeys.join(", ")}`);
-    log("   Please create these notices in Fides Admin UI:");
-    suggestion.missingKeys.forEach((key) => {
-      log(`   - ${key}`);
-    });
-    log(`\n   ${suggestion.recommendedAction}`);
-    throw new Error(`Missing Fides notices: ${suggestion.missingKeys.join(", ")}`);
-  }
-
-  log(`✅ All Fides notices present: ${suggestion.matchedKeys.join(", ")}`);
-
-  // Step 1.5: Read OneTrust once at the beginning (it won't change during demo)
-  log("\nStep 1.5: Reading OneTrust consent to initialize Fides...");
+  // Step 1: Read OneTrust once at the beginning (it won't change during demo)
+  log("\nStep 1: Reading OneTrust consent to initialize Fides...");
   const initialOneTrustConsent = readOneTrustConsent();
   if (initialOneTrustConsent) {
     log(`✅ OneTrust initial state: ${formatConsent(initialOneTrustConsent)}`);
-    
+
     // Initialize Fides from OneTrust (for demo/migration scenario)
     (window as any).Fides.consent = initialOneTrustConsent;
     log(`   Initialized Fides from OneTrust`);
@@ -282,13 +212,14 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
     throw new Error("Failed to read OneTrust consent - required for demo");
   }
 
-  // Step 2: Create AEP instance with correct purpose mapping
+  // Step 2: Create AEP instance with NVIDIA's purpose mapping
   log("\nStep 2: Initializing Adobe integration...");
   const aepInstance = aep({
-    purposeMapping: suggestion.purposeMapping,
-    debug: false, // We'll log ourselves
+    purposeMapping: NVIDIA_PURPOSE_MAPPING,
+    debug: false,
   });
   log("✅ Adobe integration initialized");
+  log("   Mapping: performance→Analytics, functional→Target, advertising→AAM");
 
   // Step 3: Detect active systems
   log("\nStep 3: Detecting active systems...");
@@ -415,8 +346,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log("=".repeat(60));
   log("\nSummary:");
   log(`  Active systems: ${activeSystems.join(", ")}`);
-  log(`  OneTrust categories: ${suggestion.oneTrustCategories.join(", ")} (read once at init)`);
-  log(`  Fides notices: ${suggestion.matchedKeys.join(", ")}`);
+  log(`  Purpose mapping: performance→Analytics, functional→Target, advertising→AAM`);
   log(`  Demonstrated: Init from OneTrust, Toggle, Opt-in all, Opt-out all`);
   log("\nThe 'aep' instance is now active - any Fides updates sync to Adobe automatically.");
   log("Continue testing with:");

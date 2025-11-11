@@ -284,13 +284,34 @@ export interface Fides {
   };
 
   /**
+   * OneTrust integration utilities.
+   *
+   * Check for OneTrust presence and read consent state.
+   */
+  onetrust: {
+    /**
+     * Get OneTrust status and diagnostics.
+     *
+     * @example
+     * ```javascript
+     * const status = Fides.onetrust.status();
+     * if (status.detected) {
+     *   console.log('OneTrust categories:', status.activeGroups);
+     *   console.log('Consent:', status.categoriesConsent);
+     * }
+     * ```
+     */
+    status: () => object;
+  };
+
+  /**
    * NVIDIA-specific utilities for Adobe + OneTrust integration.
    *
-   * Comprehensive diagnostics and configuration helpers optimized for nvidia.com.
+   * Demo helpers optimized for nvidia.com (OneTrust + Adobe environment).
    */
   nvidia: {
     /**
-     * Get comprehensive diagnostics for the environment.
+     * Get comprehensive environment diagnostics.
      *
      * Shows status of Fides, Adobe (Web SDK, ECID, Launch, Analytics), and OneTrust.
      *
@@ -304,22 +325,12 @@ export interface Fides {
     status: () => object;
 
     /**
-     * Suggest Fides notice configuration based on OneTrust categories.
+     * Initialize Adobe integration with NVIDIA's configuration.
      *
-     * Analyzes OneTrust cookie and recommends Fides notices and Adobe mappings.
-     *
-     * @example
-     * ```javascript
-     * const suggestion = Fides.nvidia.suggest();
-     * if (suggestion.success) {
-     *   Fides.aep({ purposeMapping: suggestion.purposeMapping });
-     * }
-     * ```
-     */
-    suggest: () => object;
-
-    /**
-     * Initialize Adobe integration with auto-detected OneTrust mappings.
+     * Uses hardcoded purpose mapping for nvidia.com:
+     * - performance → Analytics (collect, measure)
+     * - functional → Target (personalize)
+     * - advertising → AAM (personalize, share)
      *
      * @example
      * ```javascript
@@ -332,7 +343,7 @@ export interface Fides {
     };
 
     /**
-     * Run comprehensive demo of Fides → Adobe → OneTrust integration.
+     * Run comprehensive demo of Fides → Adobe integration.
      *
      * @example
      * ```javascript
