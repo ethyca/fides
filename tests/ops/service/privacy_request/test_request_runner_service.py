@@ -4,6 +4,7 @@ from io import BytesIO
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
+
 import pydash
 import pytest
 import sqlalchemy.exc
@@ -1990,7 +1991,8 @@ class TestAsyncCallbacks:
             # Task was put in a paused state
             assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
             assert (
-                request_tasks[1].collection_address == "saas_async_callback_config:user_access"
+                request_tasks[1].collection_address
+                == "saas_async_callback_config:user_access"
             )
 
             # Terminator task is downstream so it is still in a pending state
