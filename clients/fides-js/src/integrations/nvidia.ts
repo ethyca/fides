@@ -461,5 +461,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log("-".repeat(60));
   showConsentTable();
 
+  log("\n✅ Demo complete");
+
   return aepInstance;
 };
