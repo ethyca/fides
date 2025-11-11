@@ -5,7 +5,22 @@
  */
 
 import { NoticeConsent } from "../lib/consent-types";
+import { OneTrustProvider } from "../lib/consent-migration/onetrust";
 import { aep, AEPIntegration } from "./aep";
+
+/**
+ * Read OneTrust consent directly using standard mapping
+ */
+const readOneTrustConsent = (): NoticeConsent | null => {
+  const provider = new OneTrustProvider();
+  const otFidesMapping = JSON.stringify({
+    C0001: "essential",
+    C0002: "performance",
+    C0003: "functional",
+    C0004: "advertising",
+  });
+  return provider.readConsent({ otFidesMapping });
+};
 
 /**
  * Initialize Adobe integration with auto-detected OneTrust mappings.
@@ -49,7 +64,7 @@ export const nvidiaAEP = (): AEPIntegration => {
   console.log(`[nvidia.aep] Fides notices: ${suggestion.matchedKeys.join(", ")}`);
 
   // Initialize Fides consent from OneTrust
-  const otConsent = tempAep.oneTrust.read();
+  const otConsent = readOneTrustConsent();
   if (otConsent) {
     (window as any).Fides.consent = otConsent;
     console.log(`[nvidia.aep] Initialized Fides from OneTrust`);
@@ -151,7 +166,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   // Step 1.5: Initialize Fides consent from OneTrust if not already done
   log("\nStep 1.5: Reading OneTrust consent to initialize Fides...");
-  const otConsentInitial = tempAep.oneTrust.read();
+  const otConsentInitial = readOneTrustConsent();
   if (otConsentInitial) {
     // Update Fides consent to match OneTrust (for demo/migration scenario)
     (window as any).Fides.consent = otConsentInitial;
@@ -205,7 +220,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   const getConsentSummary = () => {
     const fidesConsent = (window as any).Fides?.consent || {};
     const adobeConsent = aepInstance.consent();
-    const otConsent = aepInstance.oneTrust.read();
+    const otConsent = readOneTrustConsent();
 
     return {
       fides: fidesConsent,
@@ -221,7 +236,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   // Step 6-7: Read OneTrust and sync to Fides
   log("\nStep 6-7: Reading OneTrust consent...");
-  const otConsent = aepInstance.oneTrust.read();
+  const otConsent = readOneTrustConsent();
 
   if (!otConsent) {
     log("❌ Could not read OneTrust consent");

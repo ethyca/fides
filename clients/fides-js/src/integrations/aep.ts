@@ -191,17 +191,6 @@ export interface AEPIntegration {
    * Returns recommended notice names and Adobe purpose mappings
    */
   suggest: () => AEPSuggestion;
-
-  /**
-   * OneTrust integration utilities for migration
-   */
-  oneTrust: {
-    /**
-     * Read current consent state from OneTrust cookie
-     * Returns Fides-compatible consent object
-     */
-    read: () => Record<string, boolean | string> | null;
-  };
 }
 
 /**
@@ -1117,11 +1106,6 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
     },
     suggest: (): AEPSuggestion => {
       return generateAEPSuggestion();
-    },
-    oneTrust: {
-      read: (): Record<string, boolean | string> | null => {
-        return readOneTrustConsent();
-      },
     },
   };
 };

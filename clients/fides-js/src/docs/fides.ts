@@ -408,9 +408,6 @@ export interface Fides {
       dump: () => object;
       consent: () => object;
       suggest: () => object;
-      oneTrust: {
-        read: () => Record<string, boolean | string> | null;
-      };
     };
 
     /**
@@ -426,9 +423,6 @@ export interface Fides {
       dump: () => object;
       consent: () => object;
       suggest: () => object;
-      oneTrust: {
-        read: () => Record<string, boolean | string> | null;
-      };
     }>;
   };
 
