@@ -248,27 +248,43 @@ const pushConsentToAdobe = (
         });
       });
 
+      // Debug: Show what we computed
+      console.log("[Fides Adobe] ECID approvals computed:", ecidApprovals);
+
       // Apply approvals/denials
       if (ecidApprovals.aa) {
+        console.log("[Fides Adobe] Calling approve('aa')");
         window.adobe!.optIn.approve(["aa"], true);
       } else {
+        console.log("[Fides Adobe] Calling deny('aa')");
         window.adobe!.optIn.deny(["aa"], true);
       }
 
       if (ecidApprovals.target) {
+        console.log("[Fides Adobe] Calling approve('target')");
         window.adobe!.optIn.approve(["target"], true);
       } else {
+        console.log("[Fides Adobe] Calling deny('target')");
         window.adobe!.optIn.deny(["target"], true);
       }
 
       if (ecidApprovals.aam) {
+        console.log("[Fides Adobe] Calling approve('aam')");
         window.adobe!.optIn.approve(["aam"], true);
       } else {
+        console.log("[Fides Adobe] Calling deny('aam')");
         window.adobe!.optIn.deny(["aam"], true);
       }
 
       // Complete the opt-in process
       window.adobe!.optIn.complete();
+
+      // Debug: Verify what Adobe thinks after we set it
+      console.log("[Fides Adobe] After setting, Adobe says:", {
+        aa: window.adobe!.optIn.isApproved(window.adobe!.optIn.Categories?.AA),
+        target: window.adobe!.optIn.isApproved(window.adobe!.optIn.Categories?.TARGET),
+        aam: window.adobe!.optIn.isApproved(window.adobe!.optIn.Categories?.AAM),
+      });
 
       if (debug) {
         console.log("[Fides Adobe] Updated ECID Opt-In Service:", ecidApprovals);
