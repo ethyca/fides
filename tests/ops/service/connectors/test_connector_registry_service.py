@@ -6,6 +6,7 @@ import pytest
 from fideslang.models import DatasetCollection
 
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
@@ -234,6 +235,16 @@ def update_config(
 
     # run update "script"
     update_saas_configs(db)
+
+    # confirm SaasTemplateDataset records were created during update
+    assert (
+        SaasTemplateDataset.get_by(db=db, field="connection_type", value="mailchimp")
+        is not None
+    )
+    assert (
+        SaasTemplateDataset.get_by(db=db, field="connection_type", value="hubspot")
+        is not None
+    )
 
     # confirm updates applied successfully
     secondary_mailchimp_dataset: DatasetConfig = DatasetConfig.filter(
