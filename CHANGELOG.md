@@ -21,12 +21,22 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.74.0..main)
 
+### Added
+- Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
+- Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
+- Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
+
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 
 ### Developer Experience
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
+- Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
+- Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
+
+### Fixed
+- Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
 
 ## [2.74.0](https://github.com/ethyca/fides/compare/2.73.1..2.74.0)
 

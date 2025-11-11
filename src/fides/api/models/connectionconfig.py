@@ -71,7 +71,8 @@ class ConnectionType(enum.Enum):
     timescale = "timescale"
     website = "website"
     # Test connection types, used for testing purposes only
-    test_website = "test_website"  # used for ConfigurableTesteWebsiteMonitor
+    test_datastore = "test_datastore"  # used for ConfigurableTestMonitor
+    test_website = "test_website"  # used for ConfigurableTestWebsiteMonitor
 
     @property
     def human_readable(self) -> str:
@@ -109,6 +110,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.website.value: "Website",
+            ConnectionType.test_datastore.value: "Test Datastore Connector -- not for production use",
             ConnectionType.test_website.value: "Test Website Connector -- not for production use",
         }
         try:
@@ -155,6 +157,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: SystemType.email,
             ConnectionType.timescale.value: SystemType.database,
             ConnectionType.website.value: SystemType.website,
+            ConnectionType.test_datastore.value: SystemType.database,
             ConnectionType.test_website.value: SystemType.website,
         }
 
