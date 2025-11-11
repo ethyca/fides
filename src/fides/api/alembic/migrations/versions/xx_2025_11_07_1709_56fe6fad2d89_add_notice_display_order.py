@@ -1,16 +1,17 @@
 """add_notice_display_order
 
 Revision ID: 56fe6fad2d89
-Revises: f1a2b3c4d5e6
+Revises: a1b2c3d4e5f6
 Create Date: 2025-11-07 17:09:24.917188
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '56fe6fad2d89'
-down_revision = 'f1a2b3c4d5e6'
+revision = "56fe6fad2d89"
+down_revision = "a1b2c3d4e5f6"
 branch_labels = None
 depends_on = None
 
