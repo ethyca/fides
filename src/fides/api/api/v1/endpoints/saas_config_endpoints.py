@@ -417,21 +417,21 @@ def register_custom_connector_template(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
 )
 def get_connector_template_config(
-    key: str,
+    saas_connector_type: str,
 ) -> Response:
     """
-    Retrieves the SaaS config YAML for a connector template by its key.
+    Retrieves the SaaS config YAML for a connector template by its type.
 
     Returns the raw YAML configuration that can be used to understand
     or customize the connector template.
     """
-    logger.info("Finding connector template with key '{}'", key)
-    template = ConnectorRegistry.get_connector_template(key)
+    logger.info("Finding connector template with type '{}'", saas_connector_type)
+    template = ConnectorRegistry.get_connector_template(saas_connector_type)
 
     if not template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with key '{key}'",
+            detail=f"No connector template found with type '{saas_connector_type}'",
         )
 
     return Response(
@@ -445,21 +445,23 @@ def get_connector_template_config(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
 )
 def get_connector_template_dataset(
-    key: str,
+    saas_connector_type: str,
 ) -> Response:
     """
-    Retrieves the dataset YAML for a connector template by its key.
+    Retrieves the dataset YAML for a connector template by its type.
 
     Returns the raw dataset YAML configuration that defines the data structure
     for the connector template.
     """
-    logger.info("Finding connector template dataset with key '{}'", key)
-    template = ConnectorRegistry.get_connector_template(key)
+    logger.info(
+        "Finding connector template dataset with type '{}'", saas_connector_type
+    )
+    template = ConnectorRegistry.get_connector_template(saas_connector_type)
 
     if not template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with key '{key}'",
+            detail=f"No connector template found with type '{saas_connector_type}'",
         )
 
     return Response(
