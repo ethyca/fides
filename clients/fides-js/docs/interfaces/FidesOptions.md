@@ -377,3 +377,15 @@ the behavior.
 See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
 
 Defaults to `"disabled"`.
+
+***
+
+### fides\_cookie\_suffix?
+
+> `optional` **fides\_cookie\_suffix**: `string`
+
+Sets a suffix for the `fides_consent` cookie that Fides uses to store consent preferences.
+
+If provided the cookie name will be `fides_consent_given_suffix_value`.
+
+Defaults to null.

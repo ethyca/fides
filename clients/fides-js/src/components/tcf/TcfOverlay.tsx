@@ -300,6 +300,7 @@ export const TcfOverlay = () => {
       if (experienceMinimal?.privacy_notices) {
         defaultIds.customPurposesConsent = getEnabledIdsNotice(
           experienceMinimal.privacy_notices,
+          options.fidesCookieSuffix,
         );
       }
       setDraftIds(defaultIds);
@@ -320,7 +321,10 @@ export const TcfOverlay = () => {
       // Vendors and systems are the same to the FE, so we combine them here
       setDraftIds({
         purposesConsent: getEnabledIds(consentPurposes),
-        customPurposesConsent: getEnabledIdsNotice(customPurposes),
+        customPurposesConsent: getEnabledIdsNotice(
+          customPurposes,
+          options.fidesCookieSuffix,
+        ),
         purposesLegint: getEnabledIds(legintPurposes),
         specialPurposes: getEnabledIds(specialPurposes),
         features: getEnabledIds(features),

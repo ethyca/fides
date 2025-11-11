@@ -280,11 +280,12 @@ export const getEnabledIds = (modelList: TcfModels) => {
  */
 export const getEnabledIdsNotice = (
   noticeList: PrivacyNoticeWithPreference[],
+  suffix: string | null | undefined,
 ) => {
   if (!noticeList) {
     return [];
   }
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie(suffix);
 
   return noticeList
     .map((notice) => {
