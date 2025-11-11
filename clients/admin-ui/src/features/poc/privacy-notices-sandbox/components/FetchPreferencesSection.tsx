@@ -37,7 +37,7 @@ const FetchPreferencesSection = ({
   getCurrentResponse,
 }: FetchPreferencesSectionProps) => {
   return (
-    <Flex gap={24}>
+    <Flex gap="large">
       {/* Left Column - Fetch Inputs */}
       <Flex vertical flex={1}>
         <Flex vertical className="pr-24">
@@ -85,7 +85,7 @@ const FetchPreferencesSection = ({
       </Flex>
 
       {/* Right Column - GET Response Preview */}
-      <Flex vertical flex={1} style={{ minWidth: 0 }}>
+      <Flex vertical flex={1} className="min-w-0">
         <PreviewCard
           title="GET response"
           header={

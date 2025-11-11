@@ -46,7 +46,7 @@ const PreviewCard = ({
           vertical
           align="center"
           justify="center"
-          style={{ height: "100%" }}
+          className="h-full"
         >
           <Typography.Text type="secondary">{emptyMessage}</Typography.Text>
         </Flex>

@@ -169,7 +169,7 @@ const SavePreferencesSection = ({
     checkedKeys,
   ]);
   return (
-    <Flex gap={24}>
+    <Flex gap="large">
       {/* Left Column - Tree and Save */}
       <Flex vertical flex={1}>
         <Typography.Title level={4} style={{ fontSize: 14, marginBottom: 8 }}>
@@ -208,14 +208,14 @@ const SavePreferencesSection = ({
             )}
           </>
         ) : (
-          <Flex vertical align="center" justify="center" style={{ flex: 1 }}>
+          <Flex vertical align="center" justify="center" flex={1}>
             <Empty description="Fetch current preferences to manage user consent" />
           </Flex>
         )}
       </Flex>
 
       {/* Right Column - POST Response Preview */}
-      <Flex vertical flex={1} style={{ minWidth: 0 }}>
+      <Flex vertical flex={1} className="min-w-0">
         <PreviewCard
           title="POST response"
           header={

@@ -65,13 +65,13 @@ const ExperienceConfigSection = ({
     <Flex vertical gap="small">
       <Typography.Title level={3}>Configuration</Typography.Title>
 
-      <Flex gap={24}>
+      <Flex gap="large">
         {/* Left Column - Configuration */}
         <Flex vertical flex={1} style={{ minWidth: 0 }}>
           <Typography.Text strong className="mb-2 block">
             Experience region
           </Typography.Text>
-          <Flex gap={8} className="mb-4">
+          <Flex gap="small" className="mb-4">
             <Input
               placeholder="Enter region (e.g., us_ca)"
               value={region}

@@ -132,7 +132,7 @@ const PrivacyNoticeSandboxSimulated = () => {
 
   return (
     <div className="mt-5">
-      <Flex gap={24}>
+      <Flex gap="large">
         {/* Left Column - Consent Management */}
         <Flex vertical flex={1}>
           <Typography.Text strong className="mb-4 block">
@@ -168,8 +168,8 @@ const PrivacyNoticeSandboxSimulated = () => {
         {/* Right Column - POST API Preview */}
         <Flex vertical flex={1} style={{ minWidth: 0 }}>
           <PostApiPreview
-            currentSavedKeys={toCheckedKeysType(savedCheckedKeys)}
-            previousSavedKeys={toCheckedKeysType(previousSavedKeys)}
+            currentSavedKeys={savedCheckedKeys as CheckedKeysType}
+            previousSavedKeys={previousSavedKeys as CheckedKeysType}
             cascadeConsent={cascadeConsent}
           />
         </Flex>
