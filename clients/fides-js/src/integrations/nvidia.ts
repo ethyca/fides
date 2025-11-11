@@ -182,7 +182,7 @@ export const consent = (): ConsentState => {
       adobePurposes: ["collect", "measure"],
       adobeECIDCategory: "aa", // Analytics
       ecidApproved: ecidConfigured
-        ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.AA) ?? null)
+        ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.ANALYTICS) ?? null)
         : null,
     },
     {
@@ -309,12 +309,15 @@ const formatConsent = (consent: Record<string, any> | null): string => {
  * aep.consent();
  * ```
  */
+const DEMO_VERSION = "1.0.3";
+
 export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   const log = (msg: string) => {
     console.log(msg);
   };
 
   log("\nFIDES ADOBE + ONETRUST DEMO\n");
+  log(`Version: ${DEMO_VERSION}`);
   log("=" .repeat(60));
 
   // Step 1: Read OneTrust once at the beginning (it won't change during demo)
