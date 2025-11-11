@@ -87,17 +87,31 @@ export const status = (): AEPDiagnostics => {
 };
 
 /**
- * NVIDIA-specific Adobe purpose mapping.
+ * NVIDIA-specific Adobe Web SDK purpose mapping.
  *
- * Maps NVIDIA's Fides consent keys to Adobe purposes:
- * - performance → Analytics (collect, measure)
- * - functional → Target (personalize)
- * - advertising → AAM (personalize, share)
+ * Maps NVIDIA's Fides consent keys to Adobe Web SDK purposes:
+ * - performance → Analytics purposes (collect, measure)
+ * - functional → Target purposes (personalize)
+ * - advertising → AAM purposes (personalize, share)
  */
 const NVIDIA_PURPOSE_MAPPING = {
   performance: ['collect', 'measure'],
   functional: ['personalize'],
   advertising: ['personalize', 'share'],
+};
+
+/**
+ * NVIDIA-specific Adobe ECID Opt-In category mapping.
+ *
+ * Maps NVIDIA's Fides consent keys to Adobe ECID categories:
+ * - performance → aa (Analytics)
+ * - functional → target (Target)
+ * - advertising → aam (Audience Manager)
+ */
+const NVIDIA_ECID_MAPPING = {
+  performance: ['aa' as const],
+  functional: ['target' as const],
+  advertising: ['aam' as const],
 };
 
 /**
@@ -241,60 +255,6 @@ export const consent = (): ConsentState => {
   };
 };
 
-/**
- * Initialize Adobe integration with NVIDIA's configuration.
- *
- * Quick helper for testing on nvidia.com or other OneTrust sites.
- * Detects OneTrust categories, initializes Fides from OneTrust, and returns
- * a fully configured aep instance.
- *
- * @returns Configured AEP integration instance, or throws error if OneTrust not found
- *
- * @example
- * ```javascript
- * // On nvidia.com (or any OneTrust site):
- * const aep = Fides.nvidia.aep();
- *
- * // Integration is live! Check current state:
- * aep.consent();
- * aep.oneTrust.read();
- *
- * // Any Fides updates will sync to Adobe & OneTrust
- * window.Fides.consent.performance = true;
- * window.dispatchEvent(new CustomEvent('FidesUpdated', {
- *   detail: { consent: window.Fides.consent }
- * }));
- * ```
- */
-export const nvidiaAEP = (): AEPIntegration => {
-  // Initialize Fides consent from OneTrust
-  const otConsent = readOneTrustConsent();
-  if (otConsent) {
-    (window as any).Fides.consent = otConsent;
-    console.log(`[nvidia.aep] Initialized Fides from OneTrust`);
-
-    // Dispatch update event
-    window.dispatchEvent(new CustomEvent('FidesUpdated', {
-      detail: {
-        consent: otConsent,
-        extraDetails: { trigger: { origin: 'nvidia_aep_init' } }
-      }
-    }));
-  } else {
-    console.log(`[nvidia.aep] ⚠️ OneTrust not found - using existing Fides consent`);
-  }
-
-  // Create configured instance with NVIDIA mapping
-  const aepInstance = aep({
-    purposeMapping: NVIDIA_PURPOSE_MAPPING,
-    debug: false,
-  });
-
-  console.log(`[nvidia.aep] ✅ Adobe integration initialized`);
-  console.log(`[nvidia.aep] Mapping: performance→Analytics, functional→Target, advertising→AAM`);
-
-  return aepInstance;
-};
 
 /**
  * Format consent object with consistent key ordering for easy comparison
@@ -363,14 +323,16 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
     throw new Error("Failed to read OneTrust consent - required for demo");
   }
 
-  // Step 2: Create AEP instance with NVIDIA's purpose mapping
+  // Step 2: Create AEP instance with NVIDIA's mappings
   log("\nStep 2: Initializing Adobe integration...");
   const aepInstance = aep({
     purposeMapping: NVIDIA_PURPOSE_MAPPING,
+    ecidMapping: NVIDIA_ECID_MAPPING,
     debug: false,
   });
   log("✅ Adobe integration initialized");
-  log("   Mapping: performance→Analytics, functional→Target, advertising→AAM");
+  log("   Web SDK: performance→(collect,measure), functional→(personalize), advertising→(personalize,share)");
+  log("   ECID: performance→aa, functional→target, advertising→aam");
 
   // Step 2.5: Initialize Google Consent Mode v2
   log("\nStep 2.5: Initializing Google Consent Mode v2...");

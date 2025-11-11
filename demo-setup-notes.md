@@ -29,9 +29,9 @@ const aep = await Fides.nvidia.demo();
 
 // Demo automatically:
 // ✅ Detects OneTrust categories (C0001-C0004)
-// ✅ Suggests Fides notice mappings
 // ✅ Initializes Fides from OneTrust
-// ✅ Creates Adobe integration with correct purpose mapping
+// ✅ Creates Adobe integration with explicit Web SDK + ECID mappings
+// ✅ Initializes Google Consent Mode v2 integration
 // ✅ Demonstrates consent sync across all systems
 // ✅ Tests: Toggle notice, Opt-in all, Opt-out all
 // ✅ Returns the live aep integration instance
@@ -94,25 +94,25 @@ If you want to test without the demo or on a different site:
 ### Step 1: Initialize Adobe Integration
 
 ```javascript
-// Auto-detect from OneTrust (requires OneTrust present)
-const aep = Fides.aep();
-const suggestion = aep.suggest();
-if (suggestion.success) {
-  // Re-initialize with suggested mapping
-  const aep = Fides.aep({
-    purposeMapping: suggestion.purposeMapping
-  });
-}
-
-// OR: Manual purpose mapping
+// Manual configuration with explicit mappings
 const aep = Fides.aep({
+  // Adobe Web SDK purposes (for modern Alloy SDK)
   purposeMapping: {
-    analytics: ['collect', 'measure'],      // Adobe Analytics (aa)
-    functional: ['personalize'],            // Adobe Target (target)
-    advertising: ['personalize', 'share']   // Adobe AAM (aam)
+    analytics: ['collect', 'measure'],
+    functional: ['personalize'],
+    advertising: ['personalize', 'share']
+  },
+  // Adobe ECID Opt-In categories (for legacy AppMeasurement)
+  ecidMapping: {
+    analytics: ['aa'],        // Analytics
+    functional: ['target'],   // Target
+    advertising: ['aam']      // Audience Manager
   },
   debug: true
 });
+
+// Note: If ecidMapping is omitted, it will be derived from purposeMapping
+// for backward compatibility, but explicit mappings are recommended
 ```
 
 ### Step 2: Check Diagnostics

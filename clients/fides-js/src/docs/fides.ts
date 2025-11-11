@@ -258,9 +258,9 @@ export interface Fides {
    *
    * Default mapping expects these keys: `analytics`, `functional`, `advertising`
    * If your consent keys are different (e.g., `ai_analytics`, `marketing`),
-   * you MUST provide a custom `purposeMapping`.
+   * you MUST provide custom `purposeMapping` and `ecidMapping`.
    *
-   * For diagnostics and configuration help, use `Fides.nvidia.status()` and `Fides.nvidia.suggest()`.
+   * For diagnostics and configuration help, use `Fides.nvidia.status()` and `Fides.nvidia.consent()`.
    *
    * @example
    * Check Adobe consent state:
@@ -365,25 +365,19 @@ export interface Fides {
     consent: () => object;
 
     /**
-     * Initialize Adobe integration with NVIDIA's configuration.
+     * Run comprehensive demo of Fides → Adobe → OneTrust integration.
      *
-     * Uses hardcoded purpose mapping for nvidia.com:
-     * - performance → Analytics (collect, measure)
-     * - functional → Target (personalize)
-     * - advertising → AAM (personalize, share)
+     * Demonstrates the full consent synchronization workflow:
+     * - Initializes Fides from OneTrust consent
+     * - Sets up Adobe Web SDK with explicit purpose mapping
+     * - Sets up Adobe ECID Opt-In with explicit category mapping
+     * - Sets up Google Consent Mode v2
+     * - Tests toggle, opt-in all, opt-out all scenarios
      *
-     * @example
-     * ```javascript
-     * const aep = Fides.nvidia.aep();
-     * aep.consent(); // Check Adobe consent state
-     * ```
-     */
-    aep: () => {
-      consent: () => object;
-    };
-
-    /**
-     * Run comprehensive demo of Fides → Adobe integration.
+     * NVIDIA mappings:
+     * - Web SDK: performance→(collect,measure), functional→(personalize), advertising→(personalize,share)
+     * - ECID: performance→aa, functional→target, advertising→aam
+     * - Google: performance→analytics_storage, functional→functionality/personalization, advertising→ad_storage/ad_personalization/ad_user_data
      *
      * @example
      * ```javascript
