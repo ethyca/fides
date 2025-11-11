@@ -1,4 +1,5 @@
-import { aep, nvidiaAEP, nvidiaDemo } from "../integrations/aep";
+import { aep } from "../integrations/aep";
+import { nvidiaAEP, nvidiaDemo } from "../integrations/nvidia";
 import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
@@ -127,8 +128,10 @@ export const getCoreFides = ({
     initialized: false,
     onFidesEvent,
     aep,
-    nvidiaAEP,
-    nvidiaDemo,
+    nvidia: {
+      aep: nvidiaAEP,
+      demo: nvidiaDemo,
+    },
     blueconic,
     gtm,
     meta,

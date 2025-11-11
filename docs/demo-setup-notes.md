@@ -25,7 +25,7 @@ console.log(window.Fides); // Should show Fides object
 ### 2. Run the Demo
 
 ```javascript
-const aep = await Fides.nvidiaDemo();
+const aep = await Fides.nvidia.demo();
 
 // Demo automatically:
 // ✅ Detects OneTrust categories (C0001-C0004)
@@ -68,7 +68,7 @@ aep.dump();
 
 ### 4. How It Works
 
-After `nvidiaDemo()` runs:
+After `nvidia.demo()` runs:
 
 1. **Adobe integration is LIVE** - `aep` instance is subscribed to `FidesUpdated` events
 2. **Any changes to `window.Fides.consent`** will automatically:

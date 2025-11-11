@@ -390,141 +390,47 @@ export interface Fides {
   };
 
   /**
-   * Initialize Adobe integration with auto-detected OneTrust mappings (nvidia.com optimized).
+   * NVIDIA-specific demo utilities for Adobe + OneTrust integration.
    *
-   * Quick helper for testing on nvidia.com or other OneTrust sites.
-   * Detects OneTrust categories, initializes Fides from OneTrust, and returns
-   * a fully configured aep instance with live event subscription.
-   *
-   * @returns Configured AEP integration instance, or throws error if OneTrust not found
-   *
-   * @example
-   * Quick setup on nvidia.com:
-   * ```javascript
-   * // On nvidia.com (or any OneTrust site):
-   * const aep = Fides.nvidiaAEP();
-   * // [nvidiaAEP] OneTrust detected: C0001, C0002, C0003, C0004
-   * // [nvidiaAEP] Fides notices: essential, performance, functional, advertising
-   * // [nvidiaAEP] Initialized Fides from OneTrust
-   * // [nvidiaAEP] ✅ Adobe integration initialized with auto-detected mapping
-   *
-   * // Integration is live! Check current state:
-   * aep.consent();
-   * // { alloy: {...}, ecidOptIn: {...}, summary: {...} }
-   *
-   * aep.oneTrust.read();
-   * // { essential: true, performance: false, ... }
-   *
-   * // Any Fides updates will automatically sync to Adobe & OneTrust:
-   * window.Fides.consent.performance = true;
-   * window.dispatchEvent(new CustomEvent('FidesUpdated', {
-   *   detail: { consent: window.Fides.consent }
-   * }));
-   *
-   * // Wait 500ms, then check Adobe consent updated:
-   * setTimeout(() => console.log(aep.consent()), 500);
-   * ```
-   *
-   * @example
-   * Error handling:
-   * ```javascript
-   * try {
-   *   const aep = Fides.nvidiaAEP();
-   * } catch (error) {
-   *   console.error(error);
-   *   // "❌ Cannot initialize nvidiaAEP: OneTrust not detected..."
-   *   // Falls back to manual config:
-   *   const aep = Fides.aep({
-   *     purposeMapping: {
-   *       analytics: ['collect', 'measure'],
-   *       functional: ['personalize'],
-   *       advertising: ['personalize', 'share']
-   *     }
-   *   });
-   * }
-   * ```
+   * These are test/demo helpers optimized for nvidia.com which has OneTrust + Adobe.
    */
-  nvidiaAEP: () => {
-    dump: () => object;
-    consent: () => object;
-    suggest: () => object;
-    oneTrust: {
-      read: () => Record<string, boolean | string> | null;
+  nvidia: {
+    /**
+     * Initialize Adobe integration with auto-detected OneTrust mappings.
+     *
+     * @example
+     * ```javascript
+     * const aep = Fides.nvidia.aep();
+     * aep.consent();
+     * ```
+     */
+    aep: () => {
+      dump: () => object;
+      consent: () => object;
+      suggest: () => object;
+      oneTrust: {
+        read: () => Record<string, boolean | string> | null;
+      };
     };
-  };
 
-  /**
-   * Run a comprehensive demo of the Fides Adobe + OneTrust integration.
-   *
-   * This function performs a live demonstration of the full Fides → Adobe → OneTrust
-   * sync workflow. It's designed for nvidia.com or any site with OneTrust present.
-   *
-   * The demo:
-   * 1. Verifies OneTrust is present and Fides notices match
-   * 2. Initializes Adobe integration with auto-detected purpose mapping
-   * 3. Detects active consent systems (OneTrust, Adobe Web SDK, ECID)
-   * 4. Logs initial consent state across all systems
-   * 5. Demonstrates consent synchronization by:
-   *    - Toggling a single notice
-   *    - Opting in to all notices
-   *    - Opting out of all notices
-   * 6. Shows all systems stay synchronized throughout
-   *
-   * @returns Promise resolving to live aep integration instance (throws error if demo fails)
-   *
-   * @example
-   * Run the demo on nvidia.com:
-   * ```javascript
-   * // Open browser console on nvidia.com, inject Fides, then run:
-   * const aep = await Fides.nvidiaDemo();
-   *
-   * // Console will show:
-   * // 🚀 FIDES ADOBE + ONETRUST DEMO 🚀
-   * // ============================================================
-   * //
-   * // 📋 Step 1: Checking OneTrust → Fides compatibility...
-   * // ✅ OneTrust detected: C0001, C0002, C0003, C0004
-   * //    Suggested Fides notices: essential, performance, functional, advertising
-   * // ✅ All Fides notices present: essential, performance, functional, advertising
-   * //
-   * // 🔧 Step 2: Initializing Adobe integration with purpose mapping...
-   * // ✅ Adobe integration initialized
-   * //
-   * // 🔍 Step 3: Detecting active systems...
-   * // ✅ Active systems: OneTrust, Adobe ECID Opt-In
-   * //
-   * // 📊 Step 4-5: Getting initial consent state (pre-sync)...
-   * // ------------------------------------------------------------
-   * // Fides:    {"performance":false,"advertising":false,"functional":false,"essential":true}
-   * // Adobe:    {"analytics":false,"personalization":false,"advertising":false}
-   * // OneTrust: {"essential":true,"performance":true,"functional":true,"advertising":true}
-   * //
-   * // ... and so on through all consent changes
-   * //
-   * // ✅ DEMO COMPLETE!
-   * // Summary: All systems stayed in sync! ✨
-   *
-   * // Continue testing with the returned aep instance
-   * aep.consent();        // Check current Adobe consent
-   * aep.oneTrust.read();  // Check OneTrust cookie
-   * aep.dump();           // Full diagnostics
-   *
-   * // The aep integration is LIVE - any Fides updates will sync to Adobe & OneTrust
-   * window.Fides.consent.performance = true;
-   * window.dispatchEvent(new CustomEvent('FidesUpdated', {
-   *   detail: { consent: window.Fides.consent }
-   * }));
-   * // Wait 500ms, then check: aep.consent() will show updated Adobe consent!
-   * ```
-   */
-  nvidiaDemo: () => Promise<{
-    dump: () => object;
-    consent: () => object;
-    suggest: () => object;
-    oneTrust: {
-      read: () => Record<string, boolean | string> | null;
-    };
-  }>;
+    /**
+     * Run comprehensive demo of Fides → Adobe → OneTrust integration.
+     *
+     * @example
+     * ```javascript
+     * const aep = await Fides.nvidia.demo();
+     * aep.consent();
+     * ```
+     */
+    demo: () => Promise<{
+      dump: () => object;
+      consent: () => object;
+      suggest: () => object;
+      oneTrust: {
+        read: () => Record<string, boolean | string> | null;
+      };
+    }>;
+  };
 
   /**
    * Enable the Google Tag Manager (GTM) integration. This should be called
