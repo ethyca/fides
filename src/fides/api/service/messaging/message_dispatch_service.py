@@ -58,7 +58,6 @@ EMAIL_TEMPLATE_NAME = "fides"
     base=DatabaseTask,
     bind=True,
     autoretry_for=(
-        MessageDispatchException,
         Timeout,
         RequestException,
         TwilioRestException,
@@ -77,9 +76,12 @@ def dispatch_message_task(
     """
     A wrapper function to dispatch a message task into the Celery queues.
 
-    This task will automatically retry up to 3 times on transient failures
-    (timeouts, network errors, messaging service errors) with exponential
+    This task will automatically retry up to 3 times on transient network failures
+    (timeouts, connection errors, temporary service unavailability) with exponential
     backoff (2s, 4s, 8s) and jitter to prevent thundering herd issues.
+
+    Permanent errors (missing config, invalid identities, etc.) will fail immediately
+    without retry to provide fast feedback and avoid wasting worker resources.
     """
     schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
