@@ -77,6 +77,7 @@ export {
   Radio as AntRadio,
   Result as AntResult,
   Row as AntRow,
+  Segmented as AntSegmented,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
