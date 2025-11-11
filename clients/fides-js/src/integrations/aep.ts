@@ -7,11 +7,19 @@
  */
 
 import { NoticeConsent } from "../lib/consent-types";
-import {
-  OneTrustProvider,
-  DEFAULT_ONETRUST_TO_FIDES_MAPPING,
-} from "../lib/consent-migration/onetrust";
+import { OneTrustProvider } from "../lib/consent-migration/onetrust";
 import { subscribeToConsent } from "./integration-utils";
+
+/**
+ * Standard OneTrust category to Fides notice mapping
+ * Used for reading OneTrust consent during migration
+ */
+const DEFAULT_ONETRUST_TO_FIDES_MAPPING: Record<string, string> = {
+  C0001: "essential",
+  C0002: "performance",
+  C0003: "functional",
+  C0004: "advertising",
+};
 
 declare global {
   interface Window {
