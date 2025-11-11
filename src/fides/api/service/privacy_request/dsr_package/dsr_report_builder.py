@@ -45,7 +45,7 @@ class DSRReportBuilder:
     pages to a zip file in a way that the pages can be navigated between.
 
     The zip file is structured as follows:
-    - welcome.html: the main index page
+    - clickme.html: the main index page
     - data/dataset_name/index.html: the index page for the dataset
     - data/dataset_name/collection_name/index.html: the index page for the collection
     - data/dataset_name/collection_name/item_index.html: the detail page for the item
@@ -565,9 +565,9 @@ class DSRReportBuilder:
 
             # create the main index once all the datasets have been added
             self._add_file(
-                "welcome.html",
+                "clickme.html",
                 self._populate_template(
-                    "templates/welcome.html", "DSR Report", None, self.main_links
+                    "templates/clickme.html", "DSR Report", None, self.main_links
                 ),
             )
         finally:
