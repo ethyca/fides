@@ -193,12 +193,6 @@ export interface AEPIntegration {
      * Returns Fides-compatible consent object
      */
     read: () => Record<string, boolean | string> | null;
-
-    /**
-     * Write Fides consent state to OneTrust cookie
-     * Updates OptanonConsent cookie with current Fides consent
-     */
-    write: (consent: Record<string, boolean | string>) => void;
   };
 }
 
@@ -224,7 +218,6 @@ const DEFAULT_PURPOSE_MAPPING = {
 const pushConsentToAdobe = (
   consent: NoticeConsent,
   options?: AEPOptions,
-  instanceState?: { isFirstSync: boolean },
 ): void => {
   const purposeMapping = options?.purposeMapping || DEFAULT_PURPOSE_MAPPING;
   const debug = options?.debug || false;
@@ -330,23 +323,6 @@ const pushConsentToAdobe = (
     }
   }
 
-  // Sync consent to OneTrust cookie (for dual-CMP scenarios)
-  // Skip first sync to avoid overwriting OneTrust during migration
-  // (OneTrust might be the SOURCE of Fides consent on initial load)
-  if (instanceState && instanceState.isFirstSync) {
-    if (debug) {
-      console.log(
-        "[Fides Adobe] Skipping OneTrust write on first sync (migration protection)",
-      );
-    }
-    instanceState.isFirstSync = false;
-  } else {
-    // On subsequent updates, sync Fides -> OneTrust
-    writeOneTrustConsent(consent);
-    if (debug) {
-      console.log("[Fides Adobe] Synced consent to OneTrust cookie");
-    }
-  }
 };
 
 /**
@@ -1058,26 +1034,6 @@ function readOneTrustConsent(): Record<string, boolean | string> | null {
   }
 }
 
-/**
- * Write Fides consent state to OneTrust cookie
- * Uses the OneTrustProvider class for proper write
- */
-function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
-  try {
-    // Cast to NoticeConsent for OneTrustProvider (it accepts the same type internally)
-    const success = oneTrustProvider.writeConsentToOneTrust(
-      consent as NoticeConsent,
-      DEFAULT_ONETRUST_TO_FIDES_MAPPING,
-    );
-
-    if (!success) {
-      console.warn("[Fides Adobe] Failed to write OneTrust consent");
-    }
-  } catch (error) {
-    console.error("[Fides Adobe] Error writing OneTrust consent:", error);
-  }
-}
-
 // ============================================================================
 // Public API
 // ============================================================================
@@ -1121,9 +1077,6 @@ function writeOneTrustConsent(consent: Record<string, boolean | string>): void {
 export const aep = (options?: AEPOptions): AEPIntegration => {
   const debug = options?.debug || false;
 
-  // Create instance state to track first sync
-  const instanceState = { isFirstSync: true };
-
   // Read OneTrust consent once on initialization for migration
   const oneTrustConsent = readOneTrustConsent();
   if (oneTrustConsent && debug) {
@@ -1134,7 +1087,7 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
   }
 
   // Subscribe to Fides consent events using shared helper
-  subscribeToConsent((consent) => pushConsentToAdobe(consent, options, instanceState));
+  subscribeToConsent((consent) => pushConsentToAdobe(consent, options));
 
   // Return integration API
   return {
@@ -1160,9 +1113,6 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
     oneTrust: {
       read: (): Record<string, boolean | string> | null => {
         return readOneTrustConsent();
-      },
-      write: (consent: Record<string, boolean | string>): void => {
-        writeOneTrustConsent(consent);
       },
     },
   };
@@ -1294,8 +1244,12 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log(`✅ OneTrust detected: ${suggestion.oneTrustCategories.join(", ")}`);
   log(`   Suggested Fides notices: ${suggestion.suggestedFidesNotices.map(n => n.name).join(", ")}`);
 
+  // Show what Fides actually has
+  const actualFidesKeys = Object.keys((window as any).Fides?.consent || {});
+  log(`   Current Fides consent keys: ${actualFidesKeys.length > 0 ? actualFidesKeys.join(", ") : "(none)"}`);
+
   if (!suggestion.fidesHasMatchingKeys) {
-    log(`\n⚠️  Missing Fides notices: ${suggestion.missingKeys.join(", ")}`);
+    log(`\n⚠️ Missing Fides notices: ${suggestion.missingKeys.join(", ")}`);
     log("   Please create these notices in Fides Admin UI:");
     suggestion.missingKeys.forEach((key) => {
       log(`   - ${key}`);

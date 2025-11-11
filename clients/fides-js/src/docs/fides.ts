@@ -322,23 +322,19 @@ export interface Fides {
    * ```
    *
    * @example
-   * OneTrust migration - read and sync consent:
+   * OneTrust migration - read consent:
    * ```javascript
    * const aep = Fides.aep({ debug: true });
    *
-   * // Read existing OneTrust consent on page load
+   * // Read existing OneTrust consent on page load (for migration)
    * const otConsent = aep.oneTrust.read();
    * if (otConsent) {
    *   console.log('OneTrust consent:', otConsent);
    *   // { essential: true, performance: true, functional: false, advertising: true }
    *
-   *   // Optionally update Fides to match OneTrust
+   *   // Use this to initialize Fides consent during migration
    *   // (In production, this would be done automatically by Fides migration logic)
    * }
-   *
-   * // Write Fides consent back to OneTrust cookie (for dual-CMP scenarios)
-   * aep.oneTrust.write(window.Fides.consent);
-   * console.log('Updated OneTrust cookie with Fides consent');
    * ```
    */
   aep: (options?: {
@@ -390,7 +386,6 @@ export interface Fides {
     };
     oneTrust: {
       read: () => Record<string, boolean | string> | null;
-      write: (consent: Record<string, boolean | string>) => void;
     };
   };
 
@@ -455,7 +450,6 @@ export interface Fides {
     suggest: () => object;
     oneTrust: {
       read: () => Record<string, boolean | string> | null;
-      write: (consent: Record<string, boolean | string>) => void;
     };
   };
 
@@ -529,7 +523,6 @@ export interface Fides {
     suggest: () => object;
     oneTrust: {
       read: () => Record<string, boolean | string> | null;
-      write: (consent: Record<string, boolean | string>) => void;
     };
   }>;
 
