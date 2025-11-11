@@ -6,7 +6,21 @@
 
 import { NoticeConsent } from "../lib/consent-types";
 import { OneTrustProvider } from "../lib/consent-migration/onetrust";
-import { aep, AEPIntegration } from "./aep";
+import {
+  aep,
+  AEPIntegration,
+  AEPDiagnostics,
+  AEPSuggestion,
+  getFidesDiagnostics,
+  getAlloyDiagnostics,
+  getVisitorDiagnostics,
+  getOptInDiagnostics,
+  getAdobeCookies,
+  getLaunchDiagnostics,
+  getAnalyticsDiagnostics,
+  getOneTrustDiagnostics,
+  generateAEPSuggestion,
+} from "./aep";
 
 /**
  * Read OneTrust consent directly using standard mapping
@@ -20,6 +34,82 @@ const readOneTrustConsent = (): NoticeConsent | null => {
     C0004: "advertising",
   });
   return provider.readConsent({ otFidesMapping });
+};
+
+/**
+ * Get comprehensive diagnostics for the NVIDIA environment.
+ *
+ * Shows status of:
+ * - Fides consent configuration
+ * - Adobe Web SDK (Alloy)
+ * - Adobe Visitor API (ECID)
+ * - Adobe ECID Opt-In Service
+ * - Adobe Launch
+ * - Adobe Analytics
+ * - OneTrust consent
+ * - Adobe cookies
+ *
+ * @returns Comprehensive diagnostic information
+ *
+ * @example
+ * ```javascript
+ * const status = Fides.nvidia.status();
+ * console.log('ECID:', status.visitor.marketingCloudVisitorID);
+ * console.log('OneTrust detected:', status.oneTrust?.detected);
+ * console.log('Fides consent keys:', status.fides.consentKeys);
+ * ```
+ */
+export const status = (): AEPDiagnostics => {
+  return {
+    timestamp: new Date().toISOString(),
+    fides: getFidesDiagnostics(),
+    alloy: getAlloyDiagnostics(),
+    visitor: getVisitorDiagnostics(),
+    optIn: getOptInDiagnostics(),
+    cookies: getAdobeCookies(),
+    launch: getLaunchDiagnostics(),
+    analytics: getAnalyticsDiagnostics(),
+    oneTrust: getOneTrustDiagnostics(),
+  };
+};
+
+/**
+ * Suggest Fides notice configuration based on OneTrust categories.
+ *
+ * Analyzes the OneTrust OptanonConsent cookie and recommends:
+ * - Fides notice names to create (essential, performance, functional, advertising)
+ * - Adobe purpose mappings for each notice
+ * - Whether Fides already has matching consent keys
+ *
+ * @returns Suggestion object with recommendations and validation
+ *
+ * @example
+ * ```javascript
+ * const suggestion = Fides.nvidia.suggest();
+ *
+ * if (!suggestion.success) {
+ *   console.error(suggestion.error);
+ *   // "❌ OneTrust not detected..."
+ *   return;
+ * }
+ *
+ * console.log('OneTrust categories:', suggestion.oneTrustCategories);
+ * // ['C0001', 'C0002', 'C0003', 'C0004']
+ *
+ * console.log('Suggested Fides notices:', suggestion.suggestedFidesNotices);
+ * // [{ name: 'essential', oneTrustCategory: 'C0001', ... }, ...]
+ *
+ * if (suggestion.fidesHasMatchingKeys) {
+ *   // Use the suggested purpose mapping
+ *   Fides.aep({ purposeMapping: suggestion.purposeMapping });
+ * } else {
+ *   console.log('Missing notices:', suggestion.missingKeys);
+ *   // Create these in Fides Admin UI first
+ * }
+ * ```
+ */
+export const suggest = (): AEPSuggestion => {
+  return generateAEPSuggestion();
 };
 
 /**
@@ -49,8 +139,7 @@ const readOneTrustConsent = (): NoticeConsent | null => {
  */
 export const nvidiaAEP = (): AEPIntegration => {
   // Detect OneTrust and get suggestions
-  const tempAep = aep();
-  const suggestion = tempAep.suggest();
+  const suggestion = suggest();
 
   if (!suggestion.success) {
     throw new Error(
@@ -135,8 +224,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   // Step 1: Check if we have matching categories using suggest()
   log("\nStep 1: Checking OneTrust compatibility...");
 
-  const tempAep = aep();
-  const suggestion = tempAep.suggest();
+  const suggestion = suggest();
 
   if (!suggestion.success) {
     log(`❌ ${suggestion.error}`);

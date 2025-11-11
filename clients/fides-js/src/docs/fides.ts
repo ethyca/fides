@@ -222,13 +222,10 @@ export interface Fides {
    * - Adobe Web SDK (Experience Platform) using Consent Standard v2
    * - Adobe ECID Opt-In Service (legacy AppMeasurement)
    *
-   * The integration returns an API object with utility methods like `dump()`
-   * for diagnostic purposes.
-   *
    * @param options - Optional configuration for the Adobe integration
    * @param options.purposeMapping - Custom mapping of Fides consent keys to Adobe purposes. Default: `{ analytics: ['collect', 'measure'], functional: ['personalize'], advertising: ['share', 'personalize'] }`
    * @param options.debug - Enable debug logging. Default: `false`
-   * @returns Integration API with diagnostic methods
+   * @returns Integration API with consent() method
    *
    * @example
    * Basic usage in your site's `<head>`:
@@ -263,151 +260,75 @@ export interface Fides {
    * If your consent keys are different (e.g., `ai_analytics`, `marketing`),
    * you MUST provide a custom `purposeMapping`.
    *
+   * For diagnostics and configuration help, use `Fides.nvidia.status()` and `Fides.nvidia.suggest()`.
+   *
    * @example
-   * Getting diagnostic information:
+   * Check Adobe consent state:
    * ```javascript
    * const aep = Fides.aep();
-   *
-   * // Get comprehensive diagnostics
-   * const diagnostics = aep.dump();
-   * console.log('ECID:', diagnostics.visitor.marketingCloudVisitorID);
-   * console.log('Adobe configured:', diagnostics.alloy.configured);
-   *
-   * // Check if OneTrust is present and see their Adobe mappings
-   * if (diagnostics.oneTrust?.detected) {
-   *   console.log('OneTrust categories:', diagnostics.oneTrust.activeGroups);
-   *   console.log('OneTrust → Adobe mapping:', diagnostics.oneTrust.adobeIntegration?.mapping);
-   * }
-   *
-   * // Get current consent state
    * const consentState = aep.consent();
    * console.log('Analytics approved:', consentState.summary.analytics);
    * console.log('Advertising approved:', consentState.summary.advertising);
-   * ```
-   *
-   * @example
-   * Get suggestions for Fides notices based on OneTrust (REQUIRES OneTrust on page):
-   * ```javascript
-   * const aep = Fides.aep();
-   * const suggestion = aep.suggest();
-   *
-   * // Check if successful (OneTrust detected)
-   * if (!suggestion.success) {
-   *   console.error(suggestion.error);
-   *   // "❌ OneTrust not detected. suggest() requires OptanonConsent cookie..."
-   *   return;
-   * }
-   *
-   * // Shows ACTUAL OneTrust categories found (not assumptions)
-   * console.log('OneTrust categories:', suggestion.oneTrustCategories);
-   * // ['C0001', 'C0002', 'C0003', 'C0004'] or whatever they actually have
-   *
-   * console.log('Suggested Fides notices:', suggestion.suggestedFidesNotices);
-   * // [
-   * //   { name: 'essential', oneTrustCategory: 'C0001', adobePurposes: [] },
-   * //   { name: 'performance', oneTrustCategory: 'C0002', adobePurposes: ['collect', 'measure'] },
-   * //   ...
-   * // ]
-   *
-   * // Check if Fides already has matching keys
-   * console.log('Missing notices to create:', suggestion.missingKeys);
-   *
-   * // Follow recommended action
-   * console.log(suggestion.recommendedAction);
-   * // "✅ Fides has all matching keys! Use: Fides.aep({ purposeMapping: {...} })"
-   * // OR "⚠️ Create 2 Fides notice(s): [performance, advertising]. Then use: ..."
-   *
-   * // Apply the suggested mapping
-   * Fides.aep({ purposeMapping: suggestion.purposeMapping });
-   * ```
-   *
-   * @example
-   * OneTrust migration - read consent:
-   * ```javascript
-   * const aep = Fides.aep({ debug: true });
-   *
-   * // Read existing OneTrust consent on page load (for migration)
-   * const otConsent = aep.oneTrust.read();
-   * if (otConsent) {
-   *   console.log('OneTrust consent:', otConsent);
-   *   // { essential: true, performance: true, functional: false, advertising: true }
-   *
-   *   // Use this to initialize Fides consent during migration
-   *   // (In production, this would be done automatically by Fides migration logic)
-   * }
    * ```
    */
   aep: (options?: {
     purposeMapping?: Record<string, string[]>;
     debug?: boolean;
   }) => {
-    dump: () => {
-      timestamp: string;
-      alloy?: { configured: boolean };
-      visitor?: { configured: boolean; marketingCloudVisitorID?: string };
-      optIn?: { configured: boolean };
-      cookies?: { ecid?: string };
-      launch?: { configured: boolean };
-      analytics?: { configured: boolean };
-      oneTrust?: {
-        detected: boolean;
-        activeGroups?: string[];
-        categoriesConsent?: Record<string, boolean>;
-        rawCookieString?: string;
-        rawCookieValue?: string;
-        parseError?: string;
-        adobeIntegration?: {
-          detected: boolean;
-          mapping?: Record<string, string[]>;
-        };
-      };
-    };
     consent: () => {
       timestamp: string;
       alloy?: { configured: boolean; purposes?: Record<string, "in" | "out"> };
       ecidOptIn?: { configured: boolean; aa?: boolean; target?: boolean; aam?: boolean };
       summary: { analytics: boolean; personalization: boolean; advertising: boolean };
     };
-    suggest: () => {
-      success: boolean;
-      error?: string;
-      oneTrustCategories: string[];
-      suggestedFidesNotices: {
-        name: string;
-        description: string;
-        adobePurposes: string[];
-        oneTrustCategory: string;
-      }[];
-      purposeMapping: Record<string, string[]>;
-      fidesHasMatchingKeys: boolean;
-      matchedKeys: string[];
-      missingKeys: string[];
-      recommendedAction: string;
-    };
-    oneTrust: {
-      read: () => Record<string, boolean | string> | null;
-    };
   };
 
   /**
-   * NVIDIA-specific demo utilities for Adobe + OneTrust integration.
+   * NVIDIA-specific utilities for Adobe + OneTrust integration.
    *
-   * These are test/demo helpers optimized for nvidia.com which has OneTrust + Adobe.
+   * Comprehensive diagnostics and configuration helpers optimized for nvidia.com.
    */
   nvidia: {
+    /**
+     * Get comprehensive diagnostics for the environment.
+     *
+     * Shows status of Fides, Adobe (Web SDK, ECID, Launch, Analytics), and OneTrust.
+     *
+     * @example
+     * ```javascript
+     * const info = Fides.nvidia.status();
+     * console.log('ECID:', info.visitor.marketingCloudVisitorID);
+     * console.log('OneTrust detected:', info.oneTrust?.detected);
+     * ```
+     */
+    status: () => object;
+
+    /**
+     * Suggest Fides notice configuration based on OneTrust categories.
+     *
+     * Analyzes OneTrust cookie and recommends Fides notices and Adobe mappings.
+     *
+     * @example
+     * ```javascript
+     * const suggestion = Fides.nvidia.suggest();
+     * if (suggestion.success) {
+     *   Fides.aep({ purposeMapping: suggestion.purposeMapping });
+     * }
+     * ```
+     */
+    suggest: () => object;
+
     /**
      * Initialize Adobe integration with auto-detected OneTrust mappings.
      *
      * @example
      * ```javascript
      * const aep = Fides.nvidia.aep();
-     * aep.consent();
+     * aep.consent(); // Check Adobe consent state
      * ```
      */
     aep: () => {
-      dump: () => object;
       consent: () => object;
-      suggest: () => object;
     };
 
     /**
@@ -416,13 +337,11 @@ export interface Fides {
      * @example
      * ```javascript
      * const aep = await Fides.nvidia.demo();
-     * aep.consent();
+     * aep.consent(); // Check Adobe consent after demo
      * ```
      */
     demo: () => Promise<{
-      dump: () => object;
       consent: () => object;
-      suggest: () => object;
     }>;
   };
 

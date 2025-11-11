@@ -5,7 +5,7 @@ import type {
   FidesOptions,
 } from "../docs";
 import type { aep } from "../integrations/aep";
-import type { nvidiaAEP, nvidiaDemo } from "../integrations/nvidia";
+import type { nvidiaAEP, nvidiaDemo, status, suggest } from "../integrations/nvidia";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
@@ -232,6 +232,8 @@ export interface FidesGlobal
   version: string;
   aep: typeof aep;
   nvidia: {
+    status: typeof status;
+    suggest: typeof suggest;
     aep: typeof nvidiaAEP;
     demo: typeof nvidiaDemo;
   };

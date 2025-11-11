@@ -176,21 +176,10 @@ export interface AEPSuggestion {
  */
 export interface AEPIntegration {
   /**
-   * Get diagnostic information about Adobe configuration
-   */
-  dump: () => AEPDiagnostics;
-
-  /**
    * Get current Adobe consent state for the user
    * Shows what Adobe has approved/denied
    */
   consent: () => AEPConsentState;
-
-  /**
-   * Suggest Fides notice configuration based on OneTrust categories or environment
-   * Returns recommended notice names and Adobe purpose mappings
-   */
-  suggest: () => AEPSuggestion;
 }
 
 /**
@@ -443,7 +432,7 @@ function suggestPurposeMapping(
 /**
  * Get Fides consent diagnostics
  */
-function getFidesDiagnostics(): AEPDiagnostics["fides"] {
+export function getFidesDiagnostics(): AEPDiagnostics["fides"] {
   const diagnostics: AEPDiagnostics["fides"] = {
     configured: false,
   };
@@ -483,7 +472,7 @@ function getECIDFromCookies(): string | undefined {
 /**
  * Get all Adobe-related cookies
  */
-function getAdobeCookies(): AEPDiagnostics["cookies"] {
+export function getAdobeCookies(): AEPDiagnostics["cookies"] {
   const cookies = document.cookie.split("; ");
   const adobeCookies: Record<string, string> = {};
 
@@ -515,7 +504,7 @@ function getAdobeCookies(): AEPDiagnostics["cookies"] {
 /**
  * Get Adobe Web SDK (Alloy) diagnostics
  */
-function getAlloyDiagnostics(): AEPDiagnostics["alloy"] {
+export function getAlloyDiagnostics(): AEPDiagnostics["alloy"] {
   if (typeof window.alloy !== "function") {
     return { configured: false };
   }
@@ -538,7 +527,7 @@ function getAlloyDiagnostics(): AEPDiagnostics["alloy"] {
 /**
  * Get Visitor API (ECID) diagnostics
  */
-function getVisitorDiagnostics(): AEPDiagnostics["visitor"] {
+export function getVisitorDiagnostics(): AEPDiagnostics["visitor"] {
   if (!window.Visitor) {
     return { configured: false };
   }
@@ -609,7 +598,7 @@ function getVisitorDiagnostics(): AEPDiagnostics["visitor"] {
 /**
  * Get OptIn Service diagnostics
  */
-function getOptInDiagnostics(): AEPDiagnostics["optIn"] {
+export function getOptInDiagnostics(): AEPDiagnostics["optIn"] {
   if (!window.adobe?.optIn) {
     return { configured: false };
   }
@@ -648,7 +637,7 @@ function getOptInDiagnostics(): AEPDiagnostics["optIn"] {
 /**
  * Get Adobe Launch diagnostics
  */
-function getLaunchDiagnostics(): AEPDiagnostics["launch"] {
+export function getLaunchDiagnostics(): AEPDiagnostics["launch"] {
   if (!window._satellite) {
     return { configured: false };
   }
@@ -677,7 +666,7 @@ function getLaunchDiagnostics(): AEPDiagnostics["launch"] {
 /**
  * Get Adobe Analytics diagnostics
  */
-function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
+export function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
   if (!window.s) {
     return { configured: false };
   }
@@ -706,7 +695,7 @@ function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
 /**
  * Get OneTrust diagnostics including Adobe integration
  */
-function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
+export function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
   const diagnostics: AEPDiagnostics["oneTrust"] = {
     detected: false,
   };
@@ -797,7 +786,7 @@ function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
  * Generate suggestion for Fides notice configuration based on OneTrust
  * ONLY works if OneTrust is actually present. No fallbacks.
  */
-function generateAEPSuggestion(): AEPSuggestion {
+export function generateAEPSuggestion(): AEPSuggestion {
   const otDiagnostics = getOneTrustDiagnostics();
   const fidesDiagnostics = getFidesDiagnostics();
 
@@ -1088,24 +1077,8 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
 
   // Return integration API
   return {
-    dump: (): AEPDiagnostics => {
-      return {
-        timestamp: new Date().toISOString(),
-        fides: getFidesDiagnostics(),
-        alloy: getAlloyDiagnostics(),
-        visitor: getVisitorDiagnostics(),
-        optIn: getOptInDiagnostics(),
-        cookies: getAdobeCookies(),
-        launch: getLaunchDiagnostics(),
-        analytics: getAnalyticsDiagnostics(),
-        oneTrust: getOneTrustDiagnostics(),
-      };
-    },
     consent: (): AEPConsentState => {
       return getAdobeConsentState();
-    },
-    suggest: (): AEPSuggestion => {
-      return generateAEPSuggestion();
     },
   };
 };
