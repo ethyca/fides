@@ -7,19 +7,8 @@
  */
 
 import { NoticeConsent } from "../lib/consent-types";
-import { OneTrustProvider } from "../lib/consent-migration/onetrust";
 import { subscribeToConsent } from "./integration-utils";
-
-/**
- * Standard OneTrust category to Fides notice mapping
- * Used for reading OneTrust consent during migration
- */
-const DEFAULT_ONETRUST_TO_FIDES_MAPPING: Record<string, string> = {
-  C0001: "essential",
-  C0002: "performance",
-  C0003: "functional",
-  C0004: "advertising",
-};
+import { readConsent as readOneTrustConsent } from "./onetrust";
 
 declare global {
   interface Window {
@@ -673,96 +662,6 @@ export function getAnalyticsDiagnostics(): AEPDiagnostics["analytics"] {
 }
 
 /**
- * Get OneTrust diagnostics including Adobe integration
- */
-export function getOneTrustDiagnostics(): AEPDiagnostics["oneTrust"] {
-  const diagnostics: AEPDiagnostics["oneTrust"] = {
-    detected: false,
-  };
-
-  // Check for OptanonConsent cookie
-  const cookies = document.cookie.split("; ");
-  const otCookie = cookies.find((c) => c.startsWith("OptanonConsent="));
-
-  if (!otCookie) {
-    return diagnostics;
-  }
-
-  diagnostics.detected = true;
-  diagnostics.rawCookieString = otCookie.substring(0, 300); // Full cookie string for debugging
-
-  try {
-    // Parse OptanonConsent cookie
-    // Format: "OptanonConsent=value" where value may contain '=' characters
-    const firstEquals = otCookie.indexOf("=");
-    const cookieValue = decodeURIComponent(otCookie.substring(firstEquals + 1));
-    diagnostics.rawCookieValue = cookieValue.substring(0, 200); // Decoded value
-
-    // Parse cookie as key-value pairs (format: key1=value1&key2=value2)
-    const params: Record<string, string> = {};
-    cookieValue.split("&").forEach((pair) => {
-      const [key, value] = pair.split("=");
-      if (key && value !== undefined) {
-        params[key] = value;
-      }
-    });
-
-    // Get active groups (e.g., "C0001,C0002,C0003")
-    const groups = params.groups;
-    if (!groups) {
-      const availableKeys = Object.keys(params).join(", ");
-      diagnostics.parseError = `No 'groups' parameter found. Available keys: [${availableKeys}]`;
-    } else {
-      const activeGroups: string[] = [];
-      const categoriesConsent: Record<string, boolean> = {};
-
-      // Parse groups format: "C0001:1,C0002:0,C0003:1,C0004:1"
-      groups.split(",").forEach((group) => {
-        const [category, status] = group.split(":");
-        if (!category || !status) {
-          diagnostics.parseError = `Invalid group format: "${group}"`;
-          return;
-        }
-        const isActive = status === "1";
-        if (isActive) {
-          activeGroups.push(category);
-        }
-        categoriesConsent[category] = isActive;
-      });
-
-      if (Object.keys(categoriesConsent).length > 0) {
-        diagnostics.activeGroups = activeGroups;
-        diagnostics.categoriesConsent = categoriesConsent;
-      }
-    }
-  } catch (e) {
-    diagnostics.parseError = `Failed to parse OptanonConsent: ${e instanceof Error ? e.message : String(e)}`;
-  }
-
-  // Check for OneTrust's Adobe integration
-  // OneTrust typically stores Adobe mappings in window.OneTrust or similar
-  diagnostics.adobeIntegration = {
-    detected: false,
-  };
-
-  // Standard OneTrust → Adobe category mappings
-  // Based on OneTrust's Adobe Experience Cloud integration
-  const standardOTtoAdobeMapping: Record<string, string[]> = {
-    C0001: [], // Strictly Necessary - not mapped (always on)
-    C0002: ["collect", "measure"], // Performance/Analytics → Adobe Analytics
-    C0003: ["personalize"], // Functional → Adobe Target
-    C0004: ["personalize", "share"], // Targeting/Advertising → Target + AAM
-  };
-
-  if (diagnostics.activeGroups && diagnostics.activeGroups.length > 0) {
-    diagnostics.adobeIntegration.detected = true;
-    diagnostics.adobeIntegration.mapping = standardOTtoAdobeMapping;
-  }
-
-  return diagnostics;
-}
-
-/**
  * Get current Adobe consent state
  * Checks both Adobe Web SDK and ECID Opt-In Service
  */
@@ -823,47 +722,6 @@ function getAdobeConsentState(): AEPConsentState {
   }
 
   return state;
-}
-
-// ============================================================================
-// OneTrust Integration
-// ============================================================================
-
-/**
- * Singleton OneTrust provider instance for reading/writing consent
- */
-const oneTrustProvider = new OneTrustProvider();
-
-/**
- * Read consent state from OneTrust cookie and convert to Fides format
- * Uses the battle-tested OneTrustProvider class
- * @returns Fides-compatible consent object or null if OneTrust not found
- */
-function readOneTrustConsent(): Record<string, boolean | string> | null {
-  try {
-    const cookieValue = oneTrustProvider.getConsentCookie();
-    if (!cookieValue) {
-      return null;
-    }
-
-    // Use OneTrustProvider's parsing logic with default mapping
-    const fidesConsent = oneTrustProvider.convertToFidesConsent(cookieValue, {
-      otFidesMapping: JSON.stringify(
-        Object.entries(DEFAULT_ONETRUST_TO_FIDES_MAPPING).reduce(
-          (acc, [otCat, fidesKey]) => {
-            acc[otCat] = [fidesKey]; // OneTrustProvider expects array of keys
-            return acc;
-          },
-          {} as Record<string, string[]>,
-        ),
-      ),
-    });
-
-    return fidesConsent || null;
-  } catch (error) {
-    console.error("[Fides Adobe] Error reading OneTrust consent:", error);
-    return null;
-  }
 }
 
 // ============================================================================

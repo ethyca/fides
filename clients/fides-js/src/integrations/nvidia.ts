@@ -5,7 +5,6 @@
  */
 
 import { NoticeConsent } from "../lib/consent-types";
-import { OneTrustProvider } from "../lib/consent-migration/onetrust";
 import {
   aep,
   AEPIntegration,
@@ -17,30 +16,8 @@ import {
   getAdobeCookies,
   getLaunchDiagnostics,
   getAnalyticsDiagnostics,
-  getOneTrustDiagnostics,
 } from "./aep";
-
-/**
- * Read OneTrust consent directly using standard mapping
- */
-const readOneTrustConsent = (): NoticeConsent | null => {
-  const provider = new OneTrustProvider();
-  const cookieValue = provider.getConsentCookie();
-
-  if (!cookieValue) {
-    return null;
-  }
-
-  // OneTrust category → array of Fides keys
-  const otFidesMapping = JSON.stringify({
-    C0001: ["essential"],
-    C0002: ["performance"],
-    C0003: ["functional"],
-    C0004: ["advertising"],
-  });
-
-  return provider.convertToFidesConsent(cookieValue, { otFidesMapping }) || null;
-};
+import { status as getOneTrustStatus, readConsent as readOneTrustConsent } from "./onetrust";
 
 /**
  * Get comprehensive diagnostics for the NVIDIA environment.
@@ -66,6 +43,35 @@ const readOneTrustConsent = (): NoticeConsent | null => {
  * ```
  */
 export const status = (): AEPDiagnostics => {
+  // Get base OneTrust status
+  const otStatus = getOneTrustStatus();
+  
+  // Add NVIDIA-specific Adobe mapping info
+  const oneTrustDiagnostics: AEPDiagnostics["oneTrust"] = {
+    detected: otStatus.detected,
+    activeGroups: otStatus.activeGroups,
+    categoriesConsent: otStatus.categoriesConsent,
+    rawCookieValue: otStatus.rawCookieValue,
+    parseError: otStatus.parseError,
+  };
+
+  // Add Adobe integration mapping (NVIDIA-specific)
+  if (otStatus.detected && otStatus.activeGroups && otStatus.activeGroups.length > 0) {
+    oneTrustDiagnostics.adobeIntegration = {
+      detected: true,
+      mapping: {
+        C0001: [], // Strictly Necessary - not mapped
+        C0002: ["collect", "measure"], // Performance → Analytics
+        C0003: ["personalize"], // Functional → Target
+        C0004: ["personalize", "share"], // Advertising → Target + AAM
+      },
+    };
+  } else {
+    oneTrustDiagnostics.adobeIntegration = {
+      detected: false,
+    };
+  }
+
   return {
     timestamp: new Date().toISOString(),
     fides: getFidesDiagnostics(),
@@ -75,7 +81,7 @@ export const status = (): AEPDiagnostics => {
     cookies: getAdobeCookies(),
     launch: getLaunchDiagnostics(),
     analytics: getAnalyticsDiagnostics(),
-    oneTrust: getOneTrustDiagnostics(),
+    oneTrust: oneTrustDiagnostics,
   };
 };
 

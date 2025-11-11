@@ -302,6 +302,21 @@ export interface Fides {
      * ```
      */
     status: () => object;
+
+    /**
+     * Read OneTrust consent and convert to Fides format.
+     *
+     * Uses standard C0001-C0004 → essential/performance/functional/advertising mapping.
+     *
+     * @example
+     * ```javascript
+     * const consent = Fides.onetrust.readConsent();
+     * if (consent) {
+     *   window.Fides.consent = consent; // Initialize Fides from OneTrust
+     * }
+     * ```
+     */
+    readConsent: () => object | null;
   };
 
   /**
