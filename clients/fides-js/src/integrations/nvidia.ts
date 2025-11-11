@@ -461,20 +461,5 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log("-".repeat(60));
   showConsentTable();
 
-  // Summary
-  log("\n" + "=".repeat(60));
-  log("✅ DEMO COMPLETE");
-  log("=".repeat(60));
-  log("\nSummary:");
-  log(`  Active systems: ${activeSystems.join(", ")}`);
-  log(`  Purpose mapping: performance→Analytics, functional→Target, advertising→AAM`);
-  log(`  Demonstrated: Init from OneTrust, Toggle, Opt-in all, Opt-out all`);
-  log("\nThe 'aep' instance is now active - any Fides updates sync to Adobe automatically.");
-  log("Continue testing with:");
-  log("  aep.consent()            // Adobe ECID consent state");
-  log("  Fides.nvidia.consent()   // Complete consent mapping table");
-  log("  Fides.nvidia.status()    // Full system diagnostics");
-  log("\n");
-
   return aepInstance;
 };
