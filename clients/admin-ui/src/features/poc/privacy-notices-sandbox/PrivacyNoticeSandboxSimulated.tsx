@@ -24,7 +24,7 @@ import {
   PRIVACY_NOTICES,
   TREE_NODES,
 } from "./constants";
-import type { CheckedKeysType, ConsentMechanism } from "./types";
+import type { ConsentMechanism } from "./types";
 
 /**
  * Converts PRIVACY_NOTICES to use UUIDs as notice_key for PrivacyNoticesTree compatibility
@@ -40,13 +40,6 @@ const convertNoticesForTree = (
       ? convertNoticesForTree(notice.children)
       : undefined,
   }));
-};
-
-/**
- * Converts Key[] to CheckedKeysType for components that need it
- */
-const toCheckedKeysType = (keys: Key[]): CheckedKeysType => {
-  return keys;
 };
 
 const PrivacyNoticeSandboxSimulated = () => {
@@ -168,8 +161,8 @@ const PrivacyNoticeSandboxSimulated = () => {
         {/* Right Column - POST API Preview */}
         <Flex vertical flex={1} style={{ minWidth: 0 }}>
           <PostApiPreview
-            currentSavedKeys={savedCheckedKeys as CheckedKeysType}
-            previousSavedKeys={previousSavedKeys as CheckedKeysType}
+            currentSavedKeys={savedCheckedKeys}
+            previousSavedKeys={previousSavedKeys}
             cascadeConsent={cascadeConsent}
           />
         </Flex>

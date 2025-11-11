@@ -8,6 +8,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   useLazyGetCurrentPreferencesQuery,
   useLazyGetPrivacyExperienceQuery,
@@ -281,7 +282,7 @@ const PrivacyNoticeSandboxRealData = () => {
               onFetchCurrentPreferences={handleFetchCurrentPreferences}
               isLoading={isLoadingCurrent}
               isError={isErrorCurrent}
-              error={errorCurrent}
+              error={errorCurrent ? getErrorMessage(errorCurrent) : null}
               getCurrentResponse={getCurrentResponse}
             />
 

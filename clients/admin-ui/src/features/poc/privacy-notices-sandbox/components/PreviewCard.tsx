@@ -42,12 +42,7 @@ const PreviewCard = ({
     // Otherwise, show empty message if provided
     if (emptyMessage) {
       return (
-        <Flex
-          vertical
-          align="center"
-          justify="center"
-          className="h-full"
-        >
+        <Flex vertical align="center" justify="center" className="h-full">
           <Typography.Text type="secondary">{emptyMessage}</Typography.Text>
         </Flex>
       );

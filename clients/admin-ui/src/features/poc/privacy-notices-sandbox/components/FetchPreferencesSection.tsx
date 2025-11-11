@@ -20,7 +20,7 @@ interface FetchPreferencesSectionProps {
   onFetchCurrentPreferences: () => void;
   isLoading: boolean;
   isError: boolean;
-  error: any;
+  error: string | null;
   getCurrentResponse: ConsentPreferenceResponse[] | null;
 }
 
@@ -77,8 +77,7 @@ const FetchPreferencesSection = ({
 
           {isError && (
             <Typography.Text type="danger" className="mb-4 block">
-              Error fetching current preferences:{" "}
-              {error && "message" in error ? error.message : "Unknown error"}
+              Error fetching current preferences: {error || "Unknown error"}
             </Typography.Text>
           )}
         </Flex>
