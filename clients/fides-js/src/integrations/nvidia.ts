@@ -17,6 +17,7 @@ import {
   getLaunchDiagnostics,
   getAnalyticsDiagnostics,
 } from "./aep";
+import { gtagConsent, GtagConsentIntegration } from "./gtag-consent";
 import { status as getOneTrustStatus, readConsent as readOneTrustConsent } from "./onetrust";
 
 /**
@@ -100,16 +101,31 @@ const NVIDIA_PURPOSE_MAPPING = {
 };
 
 /**
+ * NVIDIA-specific Google Consent Mode v2 mapping.
+ *
+ * Maps NVIDIA's Fides consent keys to Google consent types:
+ * - performance → analytics_storage
+ * - functional → functionality_storage, personalization_storage
+ * - advertising → ad_storage, ad_personalization, ad_user_data
+ * - essential → (no mapping, always granted)
+ */
+const NVIDIA_GTAG_MAPPING = {
+  performance: ['analytics_storage' as const],
+  functional: ['functionality_storage' as const, 'personalization_storage' as const],
+  advertising: ['ad_storage' as const, 'ad_personalization' as const, 'ad_user_data' as const],
+};
+
+/**
  * Consent state row showing the mapping chain and actual values
  */
 interface ConsentRow {
-  oneTrustCategory: string;
-  oneTrustActive: boolean | null; // Actual value from OptanonConsent cookie
   fidesKey: string;
   fidesValue: boolean | string | null; // Actual value from window.Fides.consent
   adobePurposes: string[];
   adobeECIDCategory: string | null;
   ecidApproved: boolean | null; // Actual value from adobe.optIn.isApproved()
+  googleConsentTypes: string[]; // Google Consent Mode v2 types
+  googleGranted: boolean | null; // Actual value (inferred from Fides consent)
 }
 
 /**
@@ -121,17 +137,17 @@ interface ConsentState {
   timestamp: string;
   rows: ConsentRow[];
   summary: {
-    oneTrustDetected: boolean;
     fidesInitialized: boolean;
     adobeECIDConfigured: boolean;
+    googleGtagDetected: boolean;
   };
 }
 
 /**
- * Get comprehensive consent state showing actual values across OneTrust, Fides, and Adobe.
+ * Get comprehensive consent state showing actual values across Fides, Adobe, and Google.
  *
  * This pivots the data to show the mapping chain clearly:
- * OneTrust Category → Fides Key → Adobe Purposes → ECID Category
+ * Fides Key → Adobe Purposes → ECID Category → Google Consent Types
  *
  * Shows ACTUAL consent values at each step, not just configuration.
  *
@@ -141,19 +157,14 @@ interface ConsentState {
  *
  * // See the complete mapping chain with actual values:
  * state.rows.forEach(row => {
- *   console.log(`${row.oneTrustCategory} (${row.oneTrustActive})
- *     → ${row.fidesKey} (${row.fidesValue})
- *     → ${row.adobePurposes}
- *     → ${row.adobeECIDCategory} (${row.ecidApproved})`);
+ *   console.log(`${row.fidesKey} (${row.fidesValue})
+ *     → Adobe: ${row.adobeECIDCategory} (${row.ecidApproved})
+ *     → Google: ${row.googleConsentTypes} (${row.googleGranted})`);
  * });
  * ```
  */
 export const consent = (): ConsentState => {
   const timestamp = new Date().toISOString();
-
-  // Get actual OneTrust state
-  const otStatus = getOneTrustStatus();
-  const otConsent = otStatus.categoriesConsent || {};
 
   // Get actual Fides state
   const fidesConsent = (window as any).Fides?.consent || {};
@@ -163,20 +174,22 @@ export const consent = (): ConsentState => {
   const adobeOptIn = (window as any).adobe?.optIn;
   const ecidConfigured = !!adobeOptIn;
 
+  // Check if Google gtag is available
+  const gtagDetected = typeof (window as any).gtag === 'function';
+
   // Build the mapping rows with ACTUAL values
+  // Note: Google values show what Fides is pushing (or would push if gtag exists)
   const rows: ConsentRow[] = [
     {
-      oneTrustCategory: "C0001",
-      oneTrustActive: otConsent.C0001 ?? null,
       fidesKey: "essential",
       fidesValue: fidesConsent.essential ?? null,
       adobePurposes: [], // Essential doesn't map to Adobe
       adobeECIDCategory: null,
       ecidApproved: null,
+      googleConsentTypes: [], // Essential doesn't map to Google
+      googleGranted: null,
     },
     {
-      oneTrustCategory: "C0002",
-      oneTrustActive: otConsent.C0002 ?? null,
       fidesKey: "performance",
       fidesValue: fidesConsent.performance ?? null,
       adobePurposes: ["collect", "measure"],
@@ -184,10 +197,12 @@ export const consent = (): ConsentState => {
       ecidApproved: ecidConfigured
         ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.ANALYTICS) ?? null)
         : null,
+      googleConsentTypes: NVIDIA_GTAG_MAPPING.performance,
+      googleGranted: fidesConsent.performance !== null && fidesConsent.performance !== undefined
+        ? !!fidesConsent.performance
+        : null,
     },
     {
-      oneTrustCategory: "C0003",
-      oneTrustActive: otConsent.C0003 ?? null,
       fidesKey: "functional",
       fidesValue: fidesConsent.functional ?? null,
       adobePurposes: ["personalize"],
@@ -195,16 +210,22 @@ export const consent = (): ConsentState => {
       ecidApproved: ecidConfigured
         ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.TARGET) ?? null)
         : null,
+      googleConsentTypes: NVIDIA_GTAG_MAPPING.functional,
+      googleGranted: fidesConsent.functional !== null && fidesConsent.functional !== undefined
+        ? !!fidesConsent.functional
+        : null,
     },
     {
-      oneTrustCategory: "C0004",
-      oneTrustActive: otConsent.C0004 ?? null,
       fidesKey: "advertising",
       fidesValue: fidesConsent.advertising ?? null,
       adobePurposes: ["personalize", "share"],
       adobeECIDCategory: "aam", // Audience Manager
       ecidApproved: ecidConfigured
         ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.AAM) ?? null)
+        : null,
+      googleConsentTypes: NVIDIA_GTAG_MAPPING.advertising,
+      googleGranted: fidesConsent.advertising !== null && fidesConsent.advertising !== undefined
+        ? !!fidesConsent.advertising
         : null,
     },
   ];
@@ -213,9 +234,9 @@ export const consent = (): ConsentState => {
     timestamp,
     rows,
     summary: {
-      oneTrustDetected: otStatus.detected,
       fidesInitialized,
       adobeECIDConfigured: ecidConfigured,
+      googleGtagDetected: gtagDetected,
     },
   };
 };
@@ -309,7 +330,7 @@ const formatConsent = (consent: Record<string, any> | null): string => {
  * aep.consent();
  * ```
  */
-const DEMO_VERSION = "1.0.3";
+const DEMO_VERSION = "1.2.0";
 
 export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   const log = (msg: string) => {
@@ -351,6 +372,15 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log("✅ Adobe integration initialized");
   log("   Mapping: performance→Analytics, functional→Target, advertising→AAM");
 
+  // Step 2.5: Initialize Google Consent Mode v2
+  log("\nStep 2.5: Initializing Google Consent Mode v2...");
+  const gtagInstance = gtagConsent({
+    purposeMapping: NVIDIA_GTAG_MAPPING,
+    debug: false,
+  });
+  log("✅ Google Consent Mode initialized");
+  log("   Mapping: performance→analytics_storage, functional→functionality/personalization, advertising→ad_storage/ad_personalization/ad_user_data");
+
   // Step 3: Detect active systems
   log("\nStep 3: Detecting active systems...");
   const diagnostics = status();
@@ -380,13 +410,16 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   const showConsentTable = () => {
     const state = consent();
     state.rows.forEach(row => {
-      const otVal = row.oneTrustActive === null ? 'N/A' : row.oneTrustActive;
       const fidesVal = row.fidesValue === null ? 'N/A' : row.fidesValue;
       const adobeVal = row.ecidApproved === null ? 'N/A' : row.ecidApproved;
+      const googleVal = row.googleGranted === null ? 'N/A' : row.googleGranted;
       const ecidCat = row.adobeECIDCategory || 'none';
+      const googleTypes = row.googleConsentTypes.length > 0
+        ? row.googleConsentTypes.join(', ')
+        : 'none';
 
-      log(`  ${row.oneTrustCategory} → ${row.fidesKey} → ${ecidCat}`);
-      log(`    OneTrust: ${otVal}, Fides: ${fidesVal}, Adobe: ${adobeVal}`);
+      log(`  ${row.fidesKey} → Adobe: ${ecidCat}, Google: ${googleTypes}`);
+      log(`    Fides: ${fidesVal}, Adobe: ${adobeVal}, Google: ${googleVal}`);
     });
   };
 

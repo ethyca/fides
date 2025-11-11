@@ -3,6 +3,7 @@ import { nvidiaAEP, nvidiaDemo, status, consent as nvidiaConsent } from "../inte
 import { status as oneTrustStatus, readConsent as oneTrustReadConsent } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
+import { gtagConsent } from "../integrations/gtag-consent";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
 import {
@@ -141,6 +142,7 @@ export const getCoreFides = ({
     },
     blueconic,
     gtm,
+    gtagConsent,
     meta,
     shopify,
     showModal: defaultShowModal,

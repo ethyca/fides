@@ -9,6 +9,7 @@ import type { nvidiaAEP, nvidiaDemo, status, consent as nvidiaConsent } from "..
 import type { status as oneTrustStatus, readConsent as oneTrustReadConsent } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
+import type { gtagConsent } from "../integrations/gtag-consent";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -244,6 +245,7 @@ export interface FidesGlobal
   };
   blueconic: typeof blueconic;
   gtm: typeof gtm;
+  gtagConsent: typeof gtagConsent;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   onFidesEvent: (
