@@ -2,6 +2,7 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
+from celery.signals import worker_process_init
 from loguru import logger
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -135,6 +136,23 @@ def configure_celery_logging(**kwargs: Any) -> None:
     from overriding our Loguru logging configuration. Our logging setup in _create_celery
     has already configured logging with InterceptHandler to capture all stdlib logs.
     """
+
+
+@worker_process_init.connect
+def reset_db_connection(**kwargs: Any) -> None:
+    """
+    Reset database connections after worker process fork.
+
+    When using prefork pool (default), the parent process creates the ENGINE
+    at module import time, then forks child worker processes. Database connections
+    are not fork-safe - child processes must not inherit the parent's connections
+    as this can cause connection corruption, deadlocks, and SSL errors.
+
+    By disposing the engine after fork, we ensure each child worker creates
+    fresh connections from the pool.
+    """
+    logger.info("Disposing database engine after worker process fork")
+    ENGINE.dispose()
 
 
 def get_worker_ids() -> List[Optional[str]]:
