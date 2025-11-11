@@ -12,7 +12,7 @@ import {
 } from "fidesui";
 import NextLink from "next/link";
 
-import { formatDate, nFormatter } from "~/features/common/utils";
+import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -26,9 +26,9 @@ import { MONITOR_TYPES } from "./utils/getMonitorType";
 const { Text } = Typography;
 
 const MONITOR_RESULT_COUNT_TYPES = {
-  [MONITOR_TYPES.WEBSITE]: "asset",
-  [MONITOR_TYPES.DATASTORE]: "field",
-  [MONITOR_TYPES.INFRASTRUCTURE]: "system",
+  [MONITOR_TYPES.WEBSITE]: ["asset", "assets"],
+  [MONITOR_TYPES.DATASTORE]: ["field", "fields"],
+  [MONITOR_TYPES.INFRASTRUCTURE]: ["system", "systems"],
 } as const;
 
 interface MonitorResultProps extends ListItemProps {
@@ -67,7 +67,11 @@ export const MonitorResult = ({
       })
     : undefined;
 
-  const monitorResultCountType = MONITOR_RESULT_COUNT_TYPES[monitorType];
+  const monitorResultCountType = pluralize(
+    totalUpdates ?? 0,
+    MONITOR_RESULT_COUNT_TYPES[monitorType][0],
+    MONITOR_RESULT_COUNT_TYPES[monitorType][1],
+  );
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
@@ -97,8 +101,7 @@ export const MonitorResult = ({
                     {name}
                   </NextLink>
                   <Text type="secondary">
-                    {nFormatter(totalUpdates)} {monitorResultCountType}
-                    {totalUpdates === 1 ? "" : "s"}
+                    {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
                   </Text>
                   {consentStatus && (
                     <DiscoveryStatusIcon consentStatus={consentStatus} />

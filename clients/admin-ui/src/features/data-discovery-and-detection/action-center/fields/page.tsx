@@ -16,6 +16,7 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Key, useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -32,13 +33,14 @@ import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/Datastore
 
 import {
   ACTION_ALLOWED_STATUSES,
+  ACTIONS_DISABLED_MESSAGE,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
-  DROPDOWN_ACTIONS_DISABLED_TOOLTIP,
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
 } from "./FieldActions.const";
+import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
   useGetMonitorFieldsQuery,
   useLazyGetAllowedActionsQuery,
@@ -54,6 +56,7 @@ import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
@@ -71,6 +74,7 @@ const ActionCenterFields: NextPage = () => {
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
+  const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -115,8 +119,8 @@ const ActionCenterFields: NextPage = () => {
   });
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
-    (DatastoreStagedResourceAPIResponse & { itemKey: React.Key }) | null
-  >(null);
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -155,7 +159,7 @@ const ActionCenterFields: NextPage = () => {
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >({ activeListItem, enableKeyboardShortcuts: true });
 
-  const handleNavigate = async (urn: string) => {
+  const handleNavigate = async (urn: string | undefined) => {
     setDetailsUrn(urn);
   };
 
@@ -174,6 +178,13 @@ const ActionCenterFields: NextPage = () => {
       });
     }
   };
+
+  useHotkeys(
+    "?",
+    () => setHotkeysHelperModalOpen(!hotkeysHelperModalOpen),
+    { useKey: true },
+    [hotkeysHelperModalOpen],
+  );
 
   const availableActions = isBulkSelect
     ? allowedActionsResult?.allowed_actions
@@ -223,6 +234,16 @@ const ActionCenterFields: NextPage = () => {
     dataCategory,
   ]);
 
+  // Set up keyboard shortcuts for field actions
+  useFieldActionHotkeys(
+    activeListItem,
+    fieldActions,
+    updateSelectedListItem,
+    handleNavigate,
+    messageApi,
+    !!detailsUrn,
+  );
+
   return (
     <FixedLayout
       title="Action center - Discovered assets by system"
@@ -271,11 +292,20 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex justify="space-between">
-              <DebouncedSearchInput
-                value={search.searchQuery}
-                onChange={search.updateSearch}
-                placeholder="Search"
-              />
+              <Flex gap="small">
+                <DebouncedSearchInput
+                  value={search.searchQuery}
+                  onChange={search.updateSearch}
+                  placeholder="Search"
+                />
+                <Tooltip title="Display keyboard shortcuts">
+                  <Button
+                    aria-label="Display keyboard shortcuts"
+                    icon={<Icons.Keyboard />}
+                    onClick={() => setHotkeysHelperModalOpen(true)}
+                  />
+                </Tooltip>
+              </Flex>
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
@@ -297,9 +327,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType) ? (
                             <Tooltip
-                              title={
-                                DROPDOWN_ACTIONS_DISABLED_TOOLTIP[actionType]
-                              }
+                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
                             >
                               {FIELD_ACTION_LABEL[actionType]}
                             </Tooltip>
@@ -380,11 +408,14 @@ const ActionCenterFields: NextPage = () => {
                       ...item,
                       itemKey: item.urn,
                     });
+                    if (detailsUrn && item.urn !== detailsUrn) {
+                      setDetailsUrn(item.urn);
+                    }
                   } else {
-                    setActiveListItem(null);
+                    setActiveListItem(undefined);
                   }
                 },
-                [],
+                [detailsUrn],
               )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
@@ -477,6 +508,10 @@ const ActionCenterFields: NextPage = () => {
         onClose={() => setDetailsUrn(undefined)}
         resource={resource}
         fieldActions={fieldActions}
+      />
+      <HotkeysHelperModal
+        open={hotkeysHelperModalOpen}
+        onCancel={() => setHotkeysHelperModalOpen(false)}
       />
       {modalContext}
       {messageContext}

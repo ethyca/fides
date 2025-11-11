@@ -4,7 +4,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 /**
  * Keyboard shortcuts for list navigation and selection
  */
-const LIST_HOTKEYS = {
+export const LIST_HOTKEYS = {
   NAVIGATE_UP: "k",
   NAVIGATE_DOWN: "j",
   TOGGLE_SELECTION: "space",
