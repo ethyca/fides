@@ -333,4 +333,13 @@ export interface FidesOptions {
   fides_unsupported_repeated_script_loading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  /**
+   * Sets a suffix for the `fides_consent` cookie that Fides uses to store consent preferences.
+   *
+   * If provided the cookie name will be `fides_consent_given_suffix_value`.
+   *
+   * Defaults to null.
+   */
+  fides_cookie_suffix?: string;
 }

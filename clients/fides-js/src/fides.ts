@@ -99,10 +99,16 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Register any configured consent migration providers
   registerDefaultProviders(optionsOverrides);
 
+  config = {
+    ...config,
+    options: { ...config.options, ...overrides.optionsOverrides },
+  };
+  this.config = config;
+
   // Check for migrated consent from any registered providers
   let migratedConsent: NoticeConsent | undefined;
 
-  if (!getFidesConsentCookie()) {
+  if (!getFidesConsentCookie(config.options.fidesCookieSuffix)) {
     const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
     if (consent && method) {
       migratedConsent = consent;
@@ -110,18 +116,13 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   }
   /* END THIRD PARTY CONSENT MIGRATION */
 
-  config = {
-    ...config,
-    options: { ...config.options, ...overrides.optionsOverrides },
-  };
-  this.config = config;
   this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,
   };
 
-  // Keep a copy of saved consent from the cookie, since we update the "cookie"
+  // Keep a copy of saved consent from the cookie, since e update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
     ...(this.cookie.consent as NoticeValues),
