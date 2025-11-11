@@ -518,11 +518,13 @@ def run_privacy_request(
                     datasets = DatasetConfig.all(db=session)
 
                 # Build dataset graphs (required for DSR execution)
-                dataset_graphs = [
-                    dataset_config.get_graph()
-                    for dataset_config in datasets
-                    if not dataset_config.connection_config.disabled
-                ]
+                # Build dataset graphs (required for DSR execution)
+                # Filter by checking connection_config after loading to avoid N+1
+                dataset_graphs = []
+                for dataset_config in datasets:
+                    # Access connection_config (may trigger query on resume path)
+                    if not dataset_config.connection_config.disabled:
+                        dataset_graphs.append(dataset_config.get_graph())
 
                 # Add manual task artificial graphs to dataset graphs
                 # (required on every run for DSR execution, not just validation)
