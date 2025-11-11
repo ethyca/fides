@@ -27,13 +27,20 @@ import {
  */
 const readOneTrustConsent = (): NoticeConsent | null => {
   const provider = new OneTrustProvider();
+  const cookieValue = provider.getConsentCookie();
+  
+  if (!cookieValue) {
+    return null;
+  }
+  
   const otFidesMapping = JSON.stringify({
     C0001: "essential",
     C0002: "performance",
     C0003: "functional",
     C0004: "advertising",
   });
-  return provider.readConsent({ otFidesMapping });
+  
+  return provider.convertToFidesConsent(cookieValue, { otFidesMapping }) || null;
 };
 
 /**
@@ -281,7 +288,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   // Step 3: Detect active systems
   log("\nStep 3: Detecting active systems...");
-  const diagnostics = aepInstance.dump();
+  const diagnostics = status();
   const activeSystems: string[] = [];
 
   if (diagnostics.oneTrust?.detected) {
