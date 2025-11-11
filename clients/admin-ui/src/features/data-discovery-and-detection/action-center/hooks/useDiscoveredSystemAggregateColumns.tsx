@@ -35,7 +35,6 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   consentStatus?: ConsentAlertInfo;
   rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
-  isOktaApp?: boolean;
   resourceType?: StagedResourceTypeValue;
 }
 

@@ -45,13 +45,15 @@ export const VendorMatchBadge = ({
     <Tooltip label={tooltipLabel} placement="top">
       <Badge colorScheme={colorScheme} fontSize="xs" px={2} py={1}>
         <HStack spacing={2}>
-          <Image
-            src={vendorLogoUrl ?? ""}
-            alt={vendorName ?? ""}
-            boxSize={4}
-            objectFit="contain"
-            fallback={<Box boxSize={4} />}
-          />
+          {vendorLogoUrl && (
+            <Image
+              src={vendorLogoUrl}
+              alt={vendorName}
+              boxSize={4}
+              objectFit="contain"
+              fallback={<Box boxSize={4} />}
+            />
+          )}
           <Text>{vendorName}</Text>
         </HStack>
       </Badge>
