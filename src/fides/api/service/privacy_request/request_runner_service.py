@@ -544,9 +544,6 @@ def run_privacy_request(
                         message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
                         action_type=privacy_request.policy.get_action_type(),  # type: ignore
                     )
-                    # Commit the validation log immediately to ensure it's persisted
-                    # even if later operations fail
-                    session.commit()
 
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value
