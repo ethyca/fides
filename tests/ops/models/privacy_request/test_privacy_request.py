@@ -43,7 +43,12 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key
+from fides.api.util.cache import (
+    FidesopsRedis,
+    get_cache,
+    get_custom_privacy_request_field_cache_key,
+    get_identity_cache_key,
+)
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
@@ -252,6 +257,99 @@ def test_delete_privacy_request_removes_cached_data(
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
     assert cache.get(key) is None
+
+
+def test_cache_identity_fallback_to_db(
+    db: Session,
+    privacy_request_with_email_identity: PrivacyRequest,
+    cache: FidesopsRedis,
+    loguru_caplog,
+) -> None:
+    identity = privacy_request_with_email_identity.get_persisted_identity()
+    privacy_request_with_email_identity.cache_identity(identity)
+    key = get_identity_cache_key(
+        privacy_request_id=privacy_request_with_email_identity.id,
+        identity_attribute="email",
+    )
+    cached_identity_data = (
+        privacy_request_with_email_identity.get_cached_identity_data()
+    )
+    assert cached_identity_data != {}
+    cache.delete(key)
+    assert cache.get(key) is None
+    assert (
+        privacy_request_with_email_identity.get_cached_identity_data()
+        == cached_identity_data
+    )
+    assert (
+        f"Cache miss for request {privacy_request_with_email_identity.id}, falling back to DB"
+        in loguru_caplog.messages[-1]
+    )
+
+
+def test_cache_identity_fallback_to_db_no_persisted_identity(
+    db: Session,
+    cache: FidesopsRedis,
+    loguru_caplog,
+    policy: Policy,
+) -> None:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    key = get_identity_cache_key(
+        privacy_request_id=privacy_request.id,
+        identity_attribute="email",
+    )
+    cached_identity_data = privacy_request.get_cached_identity_data()
+    assert cached_identity_data == {}
+    cache.delete(key)
+    assert cache.get(key) is None
+    assert privacy_request.get_cached_identity_data() == {}
+    assert (
+        f"Cache miss for request {privacy_request.id}, falling back to DB"
+        in loguru_caplog.messages[-1]
+    )
+
+
+def test_custom_privacy_request_fields_fallback_to_db(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    cache: FidesopsRedis,
+    loguru_caplog,
+) -> None:
+    custom_privacy_request_field = CustomPrivacyRequestField(
+        label="Test",
+        value="test",
+    )
+    privacy_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields=[custom_privacy_request_field],
+    )
+    privacy_request.cache_custom_privacy_request_fields(
+        custom_privacy_request_fields=[custom_privacy_request_field],
+    )
+    key = get_custom_privacy_request_field_cache_key(
+        privacy_request_id=privacy_request.id,
+        custom_privacy_request_field=custom_privacy_request_field.label,
+    )
+    cached_custom_privacy_request_fields = (
+        privacy_request.get_cached_custom_privacy_request_fields()
+    )
+    assert cached_custom_privacy_request_fields is not None
+    cache.delete(key)
+    assert cache.get(key) is None
+    assert (
+        privacy_request.get_cached_custom_privacy_request_fields()
+        == cached_custom_privacy_request_fields
+    )
+    assert (
+        f"Cache miss for request {privacy_request.id}, falling back to DB"
+        in loguru_caplog.messages[-1]
+    )
 
 
 @pytest.mark.parametrize(

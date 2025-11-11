@@ -8,6 +8,7 @@ import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import { pluralize } from "~/features/common/utils";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
@@ -97,7 +98,7 @@ export const useMonitorConfigTable = ({
         if (databases.length === 0) {
           return "All projects";
         }
-        return `${databases.length} ${databases.length === 1 ? "Project" : "Projects"}`;
+        return `${databases.length} ${pluralize(databases.length, "project", "projects")}`;
       },
     };
 

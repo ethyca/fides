@@ -414,6 +414,7 @@ const AntPOC: NextPage = () => {
                 </Text>
                 <List
                   dataSource={MOCK_LIST_DATA}
+                  enableKeyboardShortcuts
                   rowSelection={{
                     selectedRowKeys: selectedListKeys,
                     onChange: (keys, rows) => {

@@ -28,6 +28,7 @@ export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
   | "SERVER_SIDE_FIDES_API_URL"
   | "FIDES_JS_MAX_AGE_SECONDS"
+  | "FIDES_JS_SERVE_STALE_SECONDS"
   | "MISSING_EXPERIENCE_BEHAVIOR"
   | "LOG_LEVEL"
 >;
@@ -288,6 +289,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
     SERVER_SIDE_FIDES_API_URL:
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
+    FIDES_JS_SERVE_STALE_SECONDS: settings.FIDES_JS_SERVE_STALE_SECONDS,
     MISSING_EXPERIENCE_BEHAVIOR: settings.MISSING_EXPERIENCE_BEHAVIOR,
     LOG_LEVEL: settings.LOG_LEVEL,
   };

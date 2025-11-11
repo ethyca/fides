@@ -19,7 +19,7 @@ from pydantic_settings import (
 from fides.common.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
-from .celery_settings import CelerySettings
+from .celery_settings import CelerySettings, merge_celery_environment
 from .cli_settings import CLISettings
 from .consent_settings import ConsentSettings
 from .credentials_settings import merge_credentials_environment
@@ -157,6 +157,12 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     config_dict = handle_deprecated_fields(config_dict)
     config_dict = handle_deprecated_env_variables(config_dict)
 
+    # Logic for merging additional Celery environment variables before validation.
+    # This allows arbitrary Celery configuration via FIDES__CELERY__* env vars,
+    # not just the explicitly defined fields in CelerySettings.
+    # Environment variables override TOML file values.
+    config_dict["celery"] = merge_celery_environment(config_dict.get("celery", {}))
+
     settings_map: Dict[str, Any] = {
         "admin_ui": AdminUISettings,
         "celery": CelerySettings,
@@ -208,7 +214,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         settings = toml.load(config_path)
         config = build_config(config_dict=settings)
         if verbose:
-            print(f"> Loaded config from: {config_path}")
+            log.info(f"Loaded config from: {config_path}")
         return config
     except FileNotFoundError:
         pass

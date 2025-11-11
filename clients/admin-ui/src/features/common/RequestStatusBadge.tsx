@@ -60,6 +60,10 @@ export const statusPropMap: {
     color: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Finalization",
   },
+  duplicate: {
+    color: CUSTOM_TAG_COLOR.DEFAULT,
+    label: "Duplicate",
+  },
 };
 
 interface RequestBadgeProps {

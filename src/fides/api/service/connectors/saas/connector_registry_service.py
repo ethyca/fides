@@ -13,6 +13,7 @@ from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
@@ -118,6 +119,11 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                     f"Replacing {template.key} connector template with newer version."
                 )
                 template.delete(db=db)
+                template_dataset = SaasTemplateDataset.get_by(
+                    db=db, field="connection_type", value=template.key
+                )
+                if template_dataset:
+                    template_dataset.delete(db=db)
                 continue
             try:
                 CustomConnectorTemplateLoader._register_template(template)
@@ -282,6 +288,15 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "functions": function_contents,
                 "replaceable": replaceable,
             },
+        )
+
+        # Store the original template dataset (with placeholders) instead of the modified version
+        template_dataset_json = load_dataset_from_string(template.dataset)
+
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type=connector_type,
+            dataset_json=template_dataset_json,
         )
 
 

@@ -220,9 +220,11 @@ const usePrivacyRequestForm = ({
             ...SuccessToastOptions,
           });
         } else if (
-          isVerificationRequired &&
-          data.succeeded.length &&
-          data.succeeded[0].status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
+          (isVerificationRequired &&
+            data.succeeded.length &&
+            data.succeeded[0].status ===
+              PrivacyRequestStatus.IDENTITY_UNVERIFIED) ||
+          data.succeeded[0].status === PrivacyRequestStatus.DUPLICATE
         ) {
           setPrivacyRequestId(data.succeeded[0].id);
           setCurrentView(ModalViews.IdentityVerification);

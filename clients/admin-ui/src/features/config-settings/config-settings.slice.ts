@@ -9,6 +9,7 @@ import {
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
 } from "~/types/api";
+import { DuplicateDetectionApplicationConfig } from "~/types/api/models/DuplicateDetectionApplicationConfig";
 import { PlusConsentSettingsApplicationConfig } from "~/types/api/models/PlusConsentSettingsApplicationConfig";
 
 import type { RootState } from "../../app/store";
@@ -224,6 +225,33 @@ export const selectPlusSecuritySettings: (
     return selectSetting(
       "plus_security_settings",
       defaultPlusSecuritySettings,
+      apiSetConfig,
+      config,
+    );
+  },
+);
+
+const defaultDuplicateDetectionSettings: DuplicateDetectionApplicationConfig = {
+  enabled: false,
+  time_window_days: 365,
+};
+
+export const selectDuplicateDetectionSettings: (
+  state: RootState,
+) => DuplicateDetectionApplicationConfig = createSelector(
+  [
+    (state) => state,
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    return selectSetting(
+      "privacy_request_duplicate_detection",
+      defaultDuplicateDetectionSettings,
       apiSetConfig,
       config,
     );

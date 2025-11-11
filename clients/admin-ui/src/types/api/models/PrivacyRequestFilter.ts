@@ -21,12 +21,13 @@ export type PrivacyRequestFilter = {
   errored_lt?: string | null;
   errored_gt?: string | null;
   external_id?: string | null;
-  action_type?: ActionType | null;
+  location?: string | null;
+  action_type?: ActionType[] | null;
   verbose?: boolean | null;
   include_identities?: boolean | null;
   include_custom_privacy_request_fields?: boolean | null;
   include_deleted_requests?: boolean | null;
   download_csv?: boolean | null;
-  sort_field?: string;
-  sort_direction?: ColumnSort;
+  sort_field?: string | null;
+  sort_direction?: ColumnSort | null;
 };

@@ -84,20 +84,51 @@ const pushFidesVariableToGTM = (
 export const gtm = (options?: GtmOptions) => {
   // List every FidesEventType as a record so that new additional events are
   // considered by future developers as to whether they should be pushed to GTM.
-  const fidesEvents: Record<FidesEventType, boolean> = {
-    FidesInitializing: false,
-    FidesInitialized: true, // deprecated
-    FidesConsentLoaded: true,
-    FidesReady: true,
-    FidesUpdating: true,
-    FidesUpdated: true,
-    FidesUIChanged: true,
-    FidesUIShown: true,
-    FidesModalClosed: true,
+  const fidesEvents: Record<
+    FidesEventType,
+    { forwardEvent: boolean; dispatchSynthetic: boolean }
+  > = {
+    FidesInitializing: {
+      forwardEvent: false,
+      dispatchSynthetic: false,
+    },
+    FidesInitialized: {
+      forwardEvent: true,
+      dispatchSynthetic: true,
+    },
+    FidesConsentLoaded: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
+    FidesReady: {
+      forwardEvent: true,
+      dispatchSynthetic: true,
+    },
+    FidesUpdating: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
+    FidesUpdated: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
+    FidesUIChanged: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
+    FidesUIShown: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
+    FidesModalClosed: {
+      forwardEvent: true,
+      dispatchSynthetic: false,
+    },
   };
+  const fidesEventConfiguration = Object.entries(fidesEvents);
 
-  const events = Object.entries(fidesEvents)
-    .filter(([, dispatchToGtm]) => dispatchToGtm)
+  const events = fidesEventConfiguration
+    .filter(([, { forwardEvent }]) => forwardEvent)
     .map(([key]) => key) as FidesEventType[];
 
   // Listen for Fides events and cross-publish them to GTM
@@ -113,22 +144,29 @@ export const gtm = (options?: GtmOptions) => {
     const { consent, fides_meta, identity, tcf_consent } = window.Fides;
     // Lookup the timestamp of the original FidesInitialized performance mark
     const timestamp =
-      performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
-    pushFidesVariableToGTM(
-      {
-        type: "FidesInitialized",
-        detail: {
-          consent,
-          fides_meta,
-          identity,
-          tcf_consent,
-          timestamp,
-          extraDetails: {
-            consentMethod: fides_meta?.consentMethod,
+      performance?.getEntriesByName?.("FidesInitialized")[0]?.startTime;
+
+    const syntheticInitializationEvents = fidesEventConfiguration
+      .filter(([, { dispatchSynthetic }]) => dispatchSynthetic)
+      .map(([eventName]) => eventName);
+
+    syntheticInitializationEvents.forEach((event) => {
+      pushFidesVariableToGTM(
+        {
+          type: event,
+          detail: {
+            consent,
+            fides_meta,
+            identity,
+            tcf_consent,
+            timestamp,
+            extraDetails: {
+              consentMethod: fides_meta?.consentMethod,
+            },
           },
         },
-      },
-      options,
-    );
+        options,
+      );
+    });
   }
 };

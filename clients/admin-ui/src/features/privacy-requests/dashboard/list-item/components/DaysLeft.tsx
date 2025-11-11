@@ -22,11 +22,15 @@ export const DaysLeft = ({
   timeframe = 45,
 }: {
   status: PrivacyRequestStatus;
-  daysLeft: number | undefined;
-  timeframe: number | undefined;
+  daysLeft: number | undefined | null;
+  timeframe: number | undefined | null;
 }) => {
   const showBadge =
-    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
+    daysLeft !== undefined &&
+    daysLeft !== null &&
+    timeframe !== undefined &&
+    timeframe !== null &&
+    !DAY_IRRELEVANT_STATUSES.includes(status);
 
   if (showBadge) {
     const percentage = (100 * daysLeft) / timeframe;

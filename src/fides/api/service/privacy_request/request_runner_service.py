@@ -71,6 +71,7 @@ from fides.api.service.privacy_request.attachment_handling import (
     get_attachments_content,
     process_attachments_for_upload,
 )
+from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -444,6 +445,10 @@ def run_privacy_request(
 
             if privacy_request.deleted_at is not None:
                 logger.info("Terminating privacy request: request deleted.")
+                return
+
+            check_for_duplicates(db=session, privacy_request=privacy_request)
+            if privacy_request.status == PrivacyRequestStatus.duplicate:
                 return
 
             logger.info("Dispatching privacy request")

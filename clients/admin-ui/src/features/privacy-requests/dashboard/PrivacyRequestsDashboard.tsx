@@ -18,11 +18,13 @@ import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { GlobalFilterV2 } from "~/features/common/table/v2";
-import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import {
+  useLazyDownloadPrivacyRequestCsvV2Query,
+  useSearchPrivacyRequestsQuery,
+} from "~/features/privacy-requests/privacy-requests.slice";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
-import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -48,7 +50,7 @@ export const PrivacyRequestsDashboard = () => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
+  const { data, isLoading, isFetching } = useSearchPrivacyRequestsQuery({
     ...filterQueryParams,
     page: pagination.pageIndex,
     size: pagination.pageSize,
@@ -64,7 +66,7 @@ export const PrivacyRequestsDashboard = () => {
     return { ...results, items: itemsWithKeys };
   }, [data]);
 
-  const { downloadReport } = useDownloadPrivacyRequestReport();
+  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
   const handleExport = async () => {
     let messageStr;
@@ -141,7 +143,7 @@ export const PrivacyRequestsDashboard = () => {
       ) : (
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
-            <List<PrivacyRequestEntity>
+            <List<PrivacyRequestResponse>
               dataSource={requests}
               rowSelection={{
                 selectedRowKeys: selectedIds,

@@ -10,14 +10,26 @@ from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.util.cache import get_cache
 from fides.api.util.logger import (
     MASKED,
+    InterceptHandler,
     Pii,
     RedisSink,
     _log_exception,
     _log_warning,
-    suppress_logging,
 )
+from fides.api.util.logger import setup as setup_logger
+from fides.api.util.logger import suppress_logging
 from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 from fides.config import CONFIG
+
+
+@pytest.fixture(scope="function", autouse=True)
+def setup_test_logging():
+    """
+    Setup logger configuration before each test.
+    This fixture runs automatically before each test function.
+    """
+    setup_logger(CONFIG)
+    yield
 
 
 @pytest.mark.unit
@@ -221,3 +233,74 @@ class TestSQLAlchemyLogger:
             "[dialect redshift+psycopg2 does not support caching 0.00016s] {'email': ('atestingemail@email.com',)"
             not in log_messages
         )
+
+
+@pytest.mark.unit
+class TestInterceptHandler:
+    def test_stdlib_logging_captured_by_loguru(self, loguru_caplog):
+        """Test that standard library logs are intercepted and routed through Loguru."""
+        test_message = "Test message from standard library logger"
+        test_logger = logging.getLogger("test_stdlib_logger")
+
+        # Add the InterceptHandler to the test logger
+        handler = InterceptHandler()
+        test_logger.addHandler(handler)
+        test_logger.setLevel(logging.INFO)
+
+        # Emit a log message using standard library logging
+        test_logger.info(test_message)
+
+        # Verify the message was captured by Loguru
+        assert test_message in loguru_caplog.text
+
+        # Clean up
+        test_logger.removeHandler(handler)
+
+    def test_stdlib_logging_levels_mapped_correctly(self, loguru_caplog):
+        """Test that different log levels from stdlib are correctly mapped to Loguru."""
+        test_logger = logging.getLogger("test_stdlib_logger_levels")
+
+        # Add the InterceptHandler to the test logger
+        handler = InterceptHandler()
+        test_logger.addHandler(handler)
+        test_logger.setLevel(logging.DEBUG)
+
+        # Test different log levels
+        test_logger.debug("Debug message")
+        test_logger.info("Info message")
+        test_logger.warning("Warning message")
+        test_logger.error("Error message")
+
+        # Verify all messages were captured
+        log_text = loguru_caplog.text
+        assert "Debug message" in log_text
+        assert "Info message" in log_text
+        assert "Warning message" in log_text
+        assert "Error message" in log_text
+
+        # Clean up
+        test_logger.removeHandler(handler)
+
+    def test_stdlib_exception_captured_by_loguru(self, loguru_caplog):
+        """Test that exceptions from standard library logging are properly captured."""
+        test_logger = logging.getLogger("test_stdlib_logger_exception")
+
+        # Add the InterceptHandler to the test logger
+        handler = InterceptHandler()
+        test_logger.addHandler(handler)
+        test_logger.setLevel(logging.ERROR)
+
+        # Log an exception using standard library logging
+        try:
+            raise ValueError("Test exception for logging")
+        except ValueError:
+            test_logger.exception("An error occurred")
+
+        # Verify the exception was captured by Loguru
+        log_text = loguru_caplog.text
+        assert "An error occurred" in log_text
+        assert "ValueError" in log_text
+        assert "Test exception for logging" in log_text
+
+        # Clean up
+        test_logger.removeHandler(handler)

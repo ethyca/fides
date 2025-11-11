@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { nFormatter } from "~/features/common/utils";
+import { nFormatter, pluralize } from "~/features/common/utils";
 
 import {
   MONITOR_UPDATE_NAMES,
@@ -11,6 +11,15 @@ import { MonitorUpdates } from "./types";
 
 type MonitorUpdateKey = keyof MonitorUpdates;
 
+const getMonitorUpdateName = (key: string, count: number) => {
+  const names = MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey);
+  if (!names) {
+    return key;
+  }
+  // names is [singular, plural]
+  return pluralize(count, names[0], names[1]);
+};
+
 export const MonitorResultDescription = ({
   updates,
   isAssetList,
@@ -18,13 +27,11 @@ export const MonitorResultDescription = ({
   updates: MonitorUpdates;
   isAssetList?: boolean;
 }) => {
-  const getMonitorUpdateName = (key: string) => {
-    return MONITOR_UPDATE_NAMES.get(key as MonitorUpdateKey) ?? key;
-  };
   const updateStrings = useMemo(() => {
     if (!updates) {
       return [];
     }
+
     return Object.entries(updates)
       .filter(
         ([key, count]) =>
@@ -48,9 +55,9 @@ export const MonitorResultDescription = ({
         return indexA - indexB;
       })
       .map(([key, count]) => {
-        return `${nFormatter(count!)} ${getMonitorUpdateName(key)}${isAssetList && count !== 1 ? "s" : ""}`;
+        return `${nFormatter(count ?? 0)} ${getMonitorUpdateName(key, count ?? 0)}`;
       });
-  }, [updates, isAssetList]);
+  }, [updates]);
 
   if (!updates) {
     return null;

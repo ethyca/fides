@@ -193,6 +193,49 @@ jobs:
       - name: Run Celery worker startup check
         run: nox -s check_worker_startup
 
+  Migration-Checks:
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    strategy:
+      matrix:
+        test_selection:
+          - "check_migrations"
+          - "check_migration_downgrade"
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: false
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v4
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
+      - name: Run migration test
+        run: nox -s "${{ matrix.test_selection }}"
+
   Misc-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
@@ -203,7 +246,6 @@ jobs:
           - "fides_db_scan"
           - "docs_check"
           - "minimal_config_startup"
-          - "check_migrations"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -523,6 +565,7 @@ jobs:
       - Build
       - Performance-Checks
       - Check-Container-Startup
+      - Migration-Checks
       - Misc-Tests
       - Safe-Tests
       # Unsafe tests are optional, so we don't include them in the summary
@@ -533,6 +576,7 @@ jobs:
           echo "Build: ${{ needs.Build.result }}"
           echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
           echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
+          echo "Migration-Checks: ${{ needs.Migration-Checks.result }}"
           echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
           echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
 
@@ -540,6 +584,7 @@ jobs:
           if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Build.result }}" == "failure" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
+             [ "${{ needs.Migration-Checks.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
@@ -550,6 +595,7 @@ jobs:
           if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
              [ "${{ needs.Build.result }}" == "cancelled" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
+             [ "${{ needs.Migration-Checks.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
              [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"

@@ -1,4 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
+import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
+import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
 import { TaxonomyEntity } from "./types";
 
@@ -6,9 +9,6 @@ type TaxonomySummary = { fides_key: string; name: string };
 
 const taxonomyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getCustomTaxonomies: build.query<TaxonomySummary[], void>({
-      query: () => ({ url: `taxonomies` }),
-    }),
     getTaxonomy: build.query<TaxonomyEntity[], string>({
       query: (taxonomyType) => ({ url: `taxonomies/${taxonomyType}/elements` }),
       providesTags: (result, error, taxonomyType) => [
@@ -46,6 +46,10 @@ const taxonomyApi = baseApi.injectEndpoints({
 
         return result;
       },
+    }),
+    getCustomTaxonomies: build.query<TaxonomySummary[], void>({
+      query: () => ({ url: `taxonomies` }),
+      providesTags: () => [{ type: "Taxonomy" }],
     }),
     createTaxonomy: build.mutation<
       TaxonomyEntity,
@@ -86,6 +90,32 @@ const taxonomyApi = baseApi.injectEndpoints({
         { type: "Taxonomy", id: taxonomyType },
       ],
     }),
+    createCustomTaxonomy: build.mutation<TaxonomyResponse, TaxonomyCreate>({
+      query: (body) => ({
+        url: `taxonomies`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
+    updateCustomTaxonomy: build.mutation<
+      TaxonomyResponse,
+      TaxonomyUpdate & { fides_key: string }
+    >({
+      query: ({ fides_key, ...body }) => ({
+        url: `taxonomies/${fides_key}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
+    deleteCustomTaxonomy: build.mutation<void, string>({
+      query: (fides_key) => ({
+        url: `taxonomies/${fides_key}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
   }),
 });
 
@@ -95,4 +125,7 @@ export const {
   useCreateTaxonomyMutation,
   useUpdateTaxonomyMutation,
   useDeleteTaxonomyMutation,
+  useCreateCustomTaxonomyMutation,
+  useUpdateCustomTaxonomyMutation,
+  useDeleteCustomTaxonomyMutation,
 } = taxonomyApi;

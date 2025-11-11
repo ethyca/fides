@@ -1,27 +1,36 @@
 from datetime import timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from freezegun import freeze_time
+from requests import Response
 
-from fides.api.common_exceptions import AwaitingAsyncProcessing, PrivacyRequestError
-from fides.api.models.privacy_request.request_task import (
-    RequestTask,
-    RequestTaskSubRequest,
+from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
+    FidesopsException,
+    PrivacyRequestError,
 )
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResultRequest,
     PollingStatusRequest,
 )
+from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
     AsyncPollingStrategy,
 )
+from fides.api.service.connectors.saas.authenticated_client import (
+    RequestFailureResponseException,
+)
 from fides.config import CONFIG
+from tests.ops.graph.graph_test_util import erasure_policy
 
 
 @pytest.mark.async_dsr
@@ -316,3 +325,153 @@ class TestAsyncPollingStrategy:
 
         # Should return empty list since there are no sub-requests to process
         assert result == []
+
+    @pytest.mark.parametrize(
+        "action_type,policy_factory",
+        [
+            ("access", lambda db: Policy()),  # Basic access policy object
+            (
+                "erasure",
+                lambda db: erasure_policy(db),
+            ),  # Proper erasure policy with masking strategy
+        ],
+    )
+    def test_handle_polling_initial_request_failure_not_in_ignore_list(
+        self, db, async_polling_strategy, action_type, policy_factory
+    ):
+        """
+        Test that _handle_polling_initial_request raises RequestFailureResponseException
+        when initial request fails with a status code NOT in the ignore_errors list,
+        with both access and erasure policy flows.
+        """
+        # Create a mock request task
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": f"test_task_{action_type}_not_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "polling",
+                "action_type": action_type,
+                "async_type": "polling",
+            },
+        )
+
+        # Create mock objects
+        mock_query_config = MagicMock()
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"param": "value"})  # (request_params, param_value_map)
+        ]
+
+        # Create a read request with ignore_errors as list of common errors (404, 409)
+        # but NOT including 500
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[404, 409],  # Common errors to ignore, but not 500
+        )
+
+        # Mock client that raises RequestFailureResponseException on send for 500 error
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 500  # Server error NOT in ignore list
+        mock_response.text = "Internal Server Error"
+        mock_response.ok = False
+
+        # Since 500 is NOT in ignore_errors list, client.send should raise RequestFailureResponseException
+        mock_client.send.side_effect = RequestFailureResponseException(
+            response=mock_response
+        )
+
+        input_data = {"email": "test@example.com"}
+        policy = policy_factory(db)
+
+        # The RequestFailureResponseException should bubble up since 500 is not ignored
+        with pytest.raises(RequestFailureResponseException) as exc_info:
+            async_polling_strategy._handle_polling_initial_request(
+                request_task=request_task,
+                query_config=mock_query_config,
+                read_request=read_request,
+                input_data=input_data,
+                policy=policy,
+                client=mock_client,
+            )
+
+        # Verify the response details are preserved in the exception
+        assert exc_info.value.response.status_code == 500
+        assert exc_info.value.response.text == "Internal Server Error"
+
+    @pytest.mark.parametrize(
+        "action_type,policy_factory",
+        [
+            ("access", lambda db: Policy()),
+            ("erasure", lambda db: erasure_policy(db)),
+        ],
+    )
+    def test_handle_polling_initial_request_failure_in_ignore_list(
+        self, db, async_polling_strategy, action_type, policy_factory
+    ):
+        """
+        Test that _handle_polling_initial_request raises FidesopsException
+        when initial request fails with a status code IN the ignore_errors list,
+        with both access and erasure policy flows.
+        The client.send returns the failed response, then response.ok check triggers FidesopsException.
+        """
+        # Create a mock request task
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": f"test_task_{action_type}_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "polling",
+                "action_type": action_type,
+                "async_type": "polling",
+            },
+        )
+
+        # Create mock objects
+        mock_query_config = MagicMock()
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"param": "value"})  # (request_params, param_value_map)
+        ]
+
+        # Create a read request with ignore_errors list that includes 404
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[404, 409],  # List includes 404 which we'll test with
+        )
+
+        # Mock client that returns a 404 response (which is in ignore list)
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 404  # This is IN the ignore_errors list
+        mock_response.text = "Not Found"
+        mock_response.ok = False  # This will trigger the response.ok check in the code
+
+        # Since 404 is in ignore_errors list, client.send returns the response without raising
+        mock_client.send.return_value = mock_response
+
+        input_data = {"email": "test@example.com"}
+        policy = policy_factory(db)
+
+        # Test that FidesopsException is raised due to response.ok check
+        with pytest.raises(FidesopsException) as exc_info:
+            async_polling_strategy._handle_polling_initial_request(
+                request_task=request_task,
+                query_config=mock_query_config,
+                read_request=read_request,
+                input_data=input_data,
+                policy=policy,
+                client=mock_client,
+            )
+
+        # Verify the exception message indicates initial request failure
+        assert "Initial async request failed" in str(exc_info.value)
+        assert "404" in str(exc_info.value)
+        assert "Not Found" in str(exc_info.value)

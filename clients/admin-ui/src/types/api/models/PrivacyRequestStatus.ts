@@ -18,4 +18,5 @@ export enum PrivacyRequestStatus {
   REQUIRES_MANUAL_FINALIZATION = "requires_manual_finalization",
   CANCELED = "canceled",
   ERROR = "error",
+  DUPLICATE = "duplicate",
 }

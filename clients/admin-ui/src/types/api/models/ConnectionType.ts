@@ -36,5 +36,6 @@ export enum ConnectionType {
   SOVRN = "sovrn",
   TIMESCALE = "timescale",
   WEBSITE = "website",
+  TEST_DATASTORE = "test_datastore",
   TEST_WEBSITE = "test_website",
 }

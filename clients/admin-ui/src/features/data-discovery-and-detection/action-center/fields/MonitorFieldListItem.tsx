@@ -134,10 +134,12 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     >
       <List.Item.Meta
         avatar={
-          <Checkbox
-            checked={selected}
-            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
-          />
+          <div className="ml-2">
+            <Checkbox
+              checked={selected}
+              onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
+            />
+          </div>
         }
         title={
           <Flex
@@ -180,6 +182,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
           <ClassificationSelect
             mode="multiple"
             value={preferred_data_categories ?? []}
+            urn={urn}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
                 (item) => item.label === props.value,

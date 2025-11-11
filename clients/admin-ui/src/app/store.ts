@@ -24,6 +24,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
+import { v3Api } from "~/features/common/v3-api.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
 import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
@@ -73,6 +74,7 @@ const reducer = {
   // API reducers
   [baseApi.reducerPath]: baseApi.reducer,
   [healthApi.reducerPath]: healthApi.reducer,
+  [v3Api.reducerPath]: v3Api.reducer,
 
   // Slice reducers
   [datamapSlice.name]: datamapSlice.reducer,
@@ -137,6 +139,7 @@ const persistConfig = {
   blacklist: [
     baseApi.reducerPath,
     healthApi.reducerPath,
+    v3Api.reducerPath,
     dictSuggestionsSlice.name,
   ],
 };
@@ -152,7 +155,12 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
+      }).concat(
+        baseApi.middleware,
+        healthApi.middleware,
+        v3Api.middleware,
+        rtkQueryErrorLogger,
+      ),
     devTools: true,
     preloadedState,
   });

@@ -202,8 +202,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 6
+        # 6 constant non-saas connection types match the search string (includes test_datastore)
+        assert len(data) == len(expected_saas_templates) + 7
 
         # Verify PostgreSQL is included with new fields
         assert {
@@ -272,8 +272,8 @@ class TestGetConnections:
 
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 3
+        # 4 constant non-saas connection types match the search string (includes test_datastore)
+        assert len(data) == len(expected_saas_types) + 4
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -308,8 +308,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 6
+        # 6 constant non-saas connection types match the search string (includes test_datastore)
+        assert len(data) == len(expected_saas_types) + 7
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -369,7 +369,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 20
+        assert len(data) == 21  # Includes test_datastore
 
     def test_search_system_type_and_connection_type(
         self,
@@ -397,7 +397,9 @@ class TestGetConnections:
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 4
+        assert (
+            len(data) == 5
+        )  # postgres, redshift, google_cloud_sql_postgres, rds_postgres, test_datastore
 
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
