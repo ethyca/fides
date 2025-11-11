@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
+    MessageDispatchException,
     PolicyNotFoundException,
 )
 from fides.api.models.policy import Policy
@@ -130,6 +131,13 @@ class MessagingService:
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             self.config_proxy.execution.subject_identity_verification_required,
         ):
+            # Validate service type exists before queuing task (maintain synchronous error behavior)
+            service_type = self.config_proxy.notifications.notification_service_type
+            if not service_type:
+                raise MessageDispatchException(
+                    "No notification service type configured."
+                )
+
             verification_code = _generate_id_verification_code()
             request.cache_identity_verification_code(verification_code)
 
@@ -143,7 +151,7 @@ class MessagingService:
                             verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
                         ),
                     ).model_dump(),
-                    "service_type": self.config_proxy.notifications.notification_service_type,
+                    "service_type": service_type,
                     "to_identity": to_identity.model_dump() if to_identity else None,
                     "property_id": property_id,
                 },
@@ -260,6 +268,12 @@ def send_verification_code_to_user(
     """Generate and cache a verification code, and then message the user asynchronously"""
     config = get_config()
     config_proxy = ConfigProxy(db)
+
+    # Validate service type exists before queuing task (maintain synchronous error behavior)
+    service_type = config_proxy.notifications.notification_service_type
+    if not service_type:
+        raise MessageDispatchException("No notification service type configured.")
+
     verification_code = _generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)
     messaging_action_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
@@ -273,7 +287,7 @@ def send_verification_code_to_user(
                     verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
                 ),
             ).model_dump(),
-            "service_type": config_proxy.notifications.notification_service_type,
+            "service_type": service_type,
             "to_identity": to_identity.model_dump() if to_identity else None,
             "property_id": property_id,
         },
