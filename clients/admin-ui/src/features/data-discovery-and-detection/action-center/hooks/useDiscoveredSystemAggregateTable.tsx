@@ -202,7 +202,6 @@ export const useDiscoveredSystemAggregateTable = ({
     allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
     consentStatus: firstPageConsentStatus,
     rowClickUrl,
-    isOktaApp,
     resourceType: isOktaApp ? StagedResourceTypeValue.OKTA_APP : undefined,
   });
 
