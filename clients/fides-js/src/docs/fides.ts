@@ -340,6 +340,31 @@ export interface Fides {
     status: () => object;
 
     /**
+     * Get consent state showing ACTUAL values across all systems.
+     *
+     * Shows the complete mapping chain with real runtime values:
+     * OneTrust Category → Fides Key → Adobe Purposes → ECID Category
+     *
+     * This makes it clear what's configuration vs. actual consent values.
+     *
+     * @example
+     * ```javascript
+     * const state = Fides.nvidia.consent();
+     *
+     * // See actual values at each step:
+     * state.rows.forEach(row => {
+     *   console.log(`${row.oneTrustCategory}: OT=${row.oneTrustActive}, Fides=${row.fidesValue}, Adobe=${row.ecidApproved}`);
+     * });
+     *
+     * // Example output:
+     * // C0002: OT=false, Fides=false, Adobe=false (performance → aa Analytics)
+     * // C0003: OT=true, Fides=true, Adobe=true (functional → target)
+     * // C0004: OT=true, Fides=true, Adobe=true (advertising → aam)
+     * ```
+     */
+    consent: () => object;
+
+    /**
      * Initialize Adobe integration with NVIDIA's configuration.
      *
      * Uses hardcoded purpose mapping for nvidia.com:

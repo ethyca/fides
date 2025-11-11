@@ -5,7 +5,7 @@ import type {
   FidesOptions,
 } from "../docs";
 import type { aep } from "../integrations/aep";
-import type { nvidiaAEP, nvidiaDemo, status } from "../integrations/nvidia";
+import type { nvidiaAEP, nvidiaDemo, status, consent as nvidiaConsent } from "../integrations/nvidia";
 import type { status as oneTrustStatus, readConsent as oneTrustReadConsent } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
@@ -238,6 +238,7 @@ export interface FidesGlobal
   };
   nvidia: {
     status: typeof status;
+    consent: typeof nvidiaConsent;
     aep: typeof nvidiaAEP;
     demo: typeof nvidiaDemo;
   };

@@ -100,6 +100,127 @@ const NVIDIA_PURPOSE_MAPPING = {
 };
 
 /**
+ * Consent state row showing the mapping chain and actual values
+ */
+interface ConsentRow {
+  oneTrustCategory: string;
+  oneTrustActive: boolean | null; // Actual value from OptanonConsent cookie
+  fidesKey: string;
+  fidesValue: boolean | string | null; // Actual value from window.Fides.consent
+  adobePurposes: string[];
+  adobeECIDCategory: string | null;
+  ecidApproved: boolean | null; // Actual value from adobe.optIn.isApproved()
+}
+
+/**
+ * Complete consent state showing mappings and actual values across all systems.
+ *
+ * This makes it clear what's configuration vs. actual runtime values.
+ */
+interface ConsentState {
+  timestamp: string;
+  rows: ConsentRow[];
+  summary: {
+    oneTrustDetected: boolean;
+    fidesInitialized: boolean;
+    adobeECIDConfigured: boolean;
+  };
+}
+
+/**
+ * Get comprehensive consent state showing actual values across OneTrust, Fides, and Adobe.
+ *
+ * This pivots the data to show the mapping chain clearly:
+ * OneTrust Category → Fides Key → Adobe Purposes → ECID Category
+ *
+ * Shows ACTUAL consent values at each step, not just configuration.
+ *
+ * @example
+ * ```javascript
+ * const state = Fides.nvidia.consent();
+ *
+ * // See the complete mapping chain with actual values:
+ * state.rows.forEach(row => {
+ *   console.log(`${row.oneTrustCategory} (${row.oneTrustActive})
+ *     → ${row.fidesKey} (${row.fidesValue})
+ *     → ${row.adobePurposes}
+ *     → ${row.adobeECIDCategory} (${row.ecidApproved})`);
+ * });
+ * ```
+ */
+export const consent = (): ConsentState => {
+  const timestamp = new Date().toISOString();
+
+  // Get actual OneTrust state
+  const otStatus = getOneTrustStatus();
+  const otConsent = otStatus.categoriesConsent || {};
+
+  // Get actual Fides state
+  const fidesConsent = (window as any).Fides?.consent || {};
+  const fidesInitialized = !!(window as any).Fides?.initialized;
+
+  // Get actual Adobe ECID state
+  const adobeOptIn = (window as any).adobe?.optIn;
+  const ecidConfigured = !!adobeOptIn;
+
+  // Build the mapping rows with ACTUAL values
+  const rows: ConsentRow[] = [
+    {
+      oneTrustCategory: "C0001",
+      oneTrustActive: otConsent.C0001 ?? null,
+      fidesKey: "essential",
+      fidesValue: fidesConsent.essential ?? null,
+      adobePurposes: [], // Essential doesn't map to Adobe
+      adobeECIDCategory: null,
+      ecidApproved: null,
+    },
+    {
+      oneTrustCategory: "C0002",
+      oneTrustActive: otConsent.C0002 ?? null,
+      fidesKey: "performance",
+      fidesValue: fidesConsent.performance ?? null,
+      adobePurposes: ["collect", "measure"],
+      adobeECIDCategory: "aa", // Analytics
+      ecidApproved: ecidConfigured
+        ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.AA) ?? null)
+        : null,
+    },
+    {
+      oneTrustCategory: "C0003",
+      oneTrustActive: otConsent.C0003 ?? null,
+      fidesKey: "functional",
+      fidesValue: fidesConsent.functional ?? null,
+      adobePurposes: ["personalize"],
+      adobeECIDCategory: "target", // Target
+      ecidApproved: ecidConfigured
+        ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.TARGET) ?? null)
+        : null,
+    },
+    {
+      oneTrustCategory: "C0004",
+      oneTrustActive: otConsent.C0004 ?? null,
+      fidesKey: "advertising",
+      fidesValue: fidesConsent.advertising ?? null,
+      adobePurposes: ["personalize", "share"],
+      adobeECIDCategory: "aam", // Audience Manager
+      ecidApproved: ecidConfigured
+        ? (adobeOptIn.isApproved?.(adobeOptIn.Categories?.AAM) ?? null)
+        : null,
+    },
+  ];
+
+  return {
+    timestamp,
+    rows,
+    summary: {
+      oneTrustDetected: otStatus.detected,
+      fidesInitialized,
+      adobeECIDConfigured: ecidConfigured,
+    },
+  };
+};
+
+/**
  * Initialize Adobe integration with NVIDIA's configuration.
  *
  * Quick helper for testing on nvidia.com or other OneTrust sites.
