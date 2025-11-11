@@ -370,24 +370,24 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   log(`✅ Active systems: ${activeSystems.join(", ")}`);
 
-  // Step 4: Get initial state after Fides initialization from OneTrust
+  // Step 4: Show initial consent state with mapping chain
   log("\nStep 4: Initial consent state after migration...");
   log("-".repeat(60));
 
-  // Helper to get current Fides + Adobe state (OneTrust doesn't change, so we don't re-read it)
-  const getConsentSummary = () => {
-    const fidesConsent = (window as any).Fides?.consent || {};
-    const adobeConsent = aepInstance.consent();
+  const showConsentTable = () => {
+    const state = consent();
+    state.rows.forEach(row => {
+      const otVal = row.oneTrustActive === null ? 'N/A' : row.oneTrustActive;
+      const fidesVal = row.fidesValue === null ? 'N/A' : row.fidesValue;
+      const adobeVal = row.ecidApproved === null ? 'N/A' : row.ecidApproved;
+      const ecidCat = row.adobeECIDCategory || 'none';
 
-    return {
-      fides: fidesConsent,
-      adobe: adobeConsent.summary,
-    };
+      log(`  ${row.oneTrustCategory} → ${row.fidesKey} → ${ecidCat}`);
+      log(`    OneTrust: ${otVal}, Fides: ${fidesVal}, Adobe: ${adobeVal}`);
+    });
   };
 
-  const initial = getConsentSummary();
-  log("Fides: " + formatConsent(initial.fides));
-  log("Adobe: " + formatConsent(initial.adobe));
+  showConsentTable();
 
   // Step 5: Change one notice
   log("\nStep 5: Toggling 'performance' notice...");
@@ -415,9 +415,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log(`   Changed 'performance' from ${currentPerformance} → ${!currentPerformance}`);
   log("\nConsent state after toggle:");
   log("-".repeat(60));
-  const afterToggle = getConsentSummary();
-  log("Fides: " + formatConsent(afterToggle.fides));
-  log("Adobe: " + formatConsent(afterToggle.adobe));
+  showConsentTable();
 
   // Step 6: Opt-in to all
   log("\nStep 6: Opting IN to all notices...");
@@ -439,9 +437,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   log("\nConsent state after OPT-IN ALL:");
   log("-".repeat(60));
-  const afterOptIn = getConsentSummary();
-  log("Fides: " + formatConsent(afterOptIn.fides));
-  log("Adobe: " + formatConsent(afterOptIn.adobe));
+  showConsentTable();
 
   // Step 7: Opt-out of all (except essential)
   log("\nStep 7: Opting OUT of all notices (except essential)...");
@@ -463,9 +459,7 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
 
   log("\nConsent state after OPT-OUT ALL:");
   log("-".repeat(60));
-  const afterOptOut = getConsentSummary();
-  log("Fides: " + formatConsent(afterOptOut.fides));
-  log("Adobe: " + formatConsent(afterOptOut.adobe));
+  showConsentTable();
 
   // Summary
   log("\n" + "=".repeat(60));
@@ -477,8 +471,9 @@ export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   log(`  Demonstrated: Init from OneTrust, Toggle, Opt-in all, Opt-out all`);
   log("\nThe 'aep' instance is now active - any Fides updates sync to Adobe automatically.");
   log("Continue testing with:");
-  log("  aep.consent()          // Check current Adobe consent");
-  log("  Fides.nvidia.status()  // Full diagnostics");
+  log("  aep.consent()            // Adobe ECID consent state");
+  log("  Fides.nvidia.consent()   // Complete consent mapping table");
+  log("  Fides.nvidia.status()    // Full system diagnostics");
   log("\n");
 
   return aepInstance;

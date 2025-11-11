@@ -768,12 +768,18 @@ export const aep = (options?: AEPOptions): AEPIntegration => {
   const debug = options?.debug || false;
 
   // Read OneTrust consent once on initialization for migration
-  const oneTrustConsent = readOneTrustConsent();
-  if (oneTrustConsent && debug) {
-    console.log(
-      "[Fides Adobe] OneTrust consent detected on initialization:",
-      oneTrustConsent,
-    );
+  // BUT: Skip if Fides is already initialized (e.g., from a demo or explicit initialization)
+  const fidesAlreadyInitialized = !!(window as any).Fides?.initialized &&
+                                   Object.keys((window as any).Fides?.consent || {}).length > 0;
+
+  if (!fidesAlreadyInitialized) {
+    const oneTrustConsent = readOneTrustConsent();
+    if (oneTrustConsent && debug) {
+      console.log(
+        "[Fides Adobe] OneTrust consent detected on initialization:",
+        oneTrustConsent,
+      );
+    }
   }
 
   // Subscribe to Fides consent events using shared helper
