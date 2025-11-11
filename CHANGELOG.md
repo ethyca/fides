@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.74.0..main)
 
 ### Added
+- Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
 - Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
 
 ### Changed
@@ -29,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
+- Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 
 ## [2.74.0](https://github.com/ethyca/fides/compare/2.73.1..2.74.0)
 
