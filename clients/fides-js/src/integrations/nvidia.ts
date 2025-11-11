@@ -45,7 +45,7 @@ import { status as getOneTrustStatus, readConsent as readOneTrustConsent } from 
 export const status = (): AEPDiagnostics => {
   // Get base OneTrust status
   const otStatus = getOneTrustStatus();
-  
+
   // Add NVIDIA-specific Adobe mapping info
   const oneTrustDiagnostics: AEPDiagnostics["oneTrust"] = {
     detected: otStatus.detected,
