@@ -57,7 +57,12 @@ EMAIL_TEMPLATE_NAME = "fides"
 @celery_app.task(
     base=DatabaseTask,
     bind=True,
-    autoretry_for=(MessageDispatchException, Timeout, RequestException, TwilioRestException),
+    autoretry_for=(
+        MessageDispatchException,
+        Timeout,
+        RequestException,
+        TwilioRestException,
+    ),
     retry_kwargs={"max_retries": 3},
     retry_backoff=2,
     retry_jitter=True,

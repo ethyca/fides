@@ -29,7 +29,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
-    dispatch_message,
     dispatch_message_task,
     message_send_enabled,
 )

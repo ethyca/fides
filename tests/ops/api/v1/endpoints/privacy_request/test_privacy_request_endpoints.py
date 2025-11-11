@@ -6082,7 +6082,9 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
-    @mock.patch("fides.service.messaging.messaging_service.dispatch_message_task.apply_async")
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_message,
@@ -6121,9 +6123,18 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert mock_dispatch_message.called
         kwargs = mock_dispatch_message.call_args.kwargs
         message_meta = kwargs["message_meta"]
-        assert message_meta["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
-        assert message_meta["body_params"]["verification_code"] == pr.get_cached_verification_code()
-        assert message_meta["body_params"]["verification_code_ttl_seconds"] == CONFIG.redis.identity_verification_code_ttl_seconds
+        assert (
+            message_meta["action_type"]
+            == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
+        )
+        assert (
+            message_meta["body_params"]["verification_code"]
+            == pr.get_cached_verification_code()
+        )
+        assert (
+            message_meta["body_params"]["verification_code_ttl_seconds"]
+            == CONFIG.redis.identity_verification_code_ttl_seconds
+        )
         assert kwargs["to_identity"]["email"] == "test@example.com"
         assert kwargs["service_type"] == MessagingServiceType.mailgun.value
 
