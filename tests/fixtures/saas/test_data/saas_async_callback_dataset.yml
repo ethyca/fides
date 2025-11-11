@@ -3,7 +3,17 @@ dataset:
     name: async_callback_example
     description: A sample dataset
     collections:
-      - name: user
+      - name: user_access
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+          - name: system_id
+            data_categories: [system]
+          - name: state
+            data_categories: [user.contact.address.state]
+      - name: user_delete
         fields:
           - name: id
             data_categories: [user.unique_id]

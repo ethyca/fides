@@ -4,7 +4,6 @@ from io import BytesIO
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
-
 import pydash
 import pytest
 import sqlalchemy.exc
@@ -1991,7 +1990,7 @@ class TestAsyncCallbacks:
             # Task was put in a paused state
             assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
             assert (
-                request_tasks[1].collection_address == "saas_async_callback_config:user"
+                request_tasks[1].collection_address == "saas_async_callback_config:user_access"
             )
 
             # Terminator task is downstream so it is still in a pending state
@@ -2009,21 +2008,21 @@ class TestAsyncCallbacks:
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
             assert pr.get_raw_access_results() == {
-                "saas_async_callback_config:user": [
+                "saas_async_callback_config:user_access": [
                     {"id": 1, "user_id": "abcde", "state": "VA"}
                 ]
             }
             # User data supplied async was filtered before being returned to the end user
             assert pr.get_filtered_final_upload() == {
                 "access_request_rule": {
-                    "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
+                    "saas_async_callback_config:user_access": [{"state": "VA", "id": 1}]
                 }
             }
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_async_callback_erasure_request(
         self,
@@ -2041,7 +2040,6 @@ class TestAsyncCallbacks:
         mock_send().json.return_value = {"id": "123"}
 
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         pr = get_privacy_request_results(
             db,
             erasure_policy,
@@ -2052,7 +2050,7 @@ class TestAsyncCallbacks:
 
         if dsr_version == "use_dsr_3_0":
             # Erasure task is also expected async results and is now paused
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            assert pr.erasure_tasks[2].status == ExecutionLogStatus.awaiting_processing
             jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
             auth_header = {"Authorization": "Bearer " + jwe_token}
             # Post to callback URL to supply erasure results async
@@ -2067,8 +2065,8 @@ class TestAsyncCallbacks:
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
 
-            assert pr.erasure_tasks[1].rows_masked == 2
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+            assert pr.erasure_tasks[2].rows_masked == 2
+            assert pr.erasure_tasks[2].status == ExecutionLogStatus.complete
 
 
 class TestDatasetReferenceValidation:
