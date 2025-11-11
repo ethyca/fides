@@ -162,7 +162,7 @@ def common_file_assertions():
     """Common file existence assertions fixture"""
     return {
         "required": [
-            "welcome.html",
+            "clickme.html",
             "data/main.css",
             "data/back.svg",
         ],
@@ -184,7 +184,7 @@ def common_assertions(common_file_assertions):
             "webhook_dir2": "data/test_system2/test_webhook2",
             "attachments_dir": "attachments",
             "manual_webhook_dir": "data/manual/test_webhook",
-            "welcome_path": "welcome.html",
+            "welcome_path": "clickme.html",
             "attachments_index": "attachments/index.html",
             "back_svg_path": "data/back.svg",
             "collection_dir": "data/dataset/collection",
