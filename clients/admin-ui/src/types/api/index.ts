@@ -193,6 +193,7 @@ export type { DrpPrivacyRequestCreate } from "./models/DrpPrivacyRequestCreate";
 export { DrpRegime } from "./models/DrpRegime";
 export type { DrpRevokeRequest } from "./models/DrpRevokeRequest";
 export type { DryRunDatasetResponse } from "./models/DryRunDatasetResponse";
+export type { DuplicateDetectionApplicationConfig } from "./models/DuplicateDetectionApplicationConfig";
 export type { DynamicErasureEmailDocsSchema } from "./models/DynamicErasureEmailDocsSchema";
 export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export type { DynamoDBMonitorParams } from "./models/DynamoDBMonitorParams";
@@ -238,6 +239,7 @@ export type { fides__api__schemas__policy__Policy } from "./models/fides__api__s
 export type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./models/fides__api__schemas__privacy_center_config__ConsentConfig";
 export type { fides__api__schemas__privacy_center_config__CustomPrivacyRequestField } from "./models/fides__api__schemas__privacy_center_config__CustomPrivacyRequestField";
 export type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./models/fides__api__schemas__redis_cache__CustomPrivacyRequestField";
+export type { fides__api__schemas__application_config__PrivacyCenterConfig } from "./models/fides__api__schemas__application_config__PrivacyCenterConfig";
 export type { fides__connectors__models__KeyfileCreds } from "./models/fides__connectors__models__KeyfileCreds";
 export type { FidesCloudStatus } from "./models/FidesCloudStatus";
 export type { FidesDatasetReference } from "./models/FidesDatasetReference";
