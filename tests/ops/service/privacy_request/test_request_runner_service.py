@@ -2706,3 +2706,116 @@ class TestSaveAccessResults:
                 "error:" in log_text,
             ]
         ), f"Expected error message in logs, got: {loguru_caplog.text}"
+
+
+class TestDatasetLoadingOptimization:
+    """Test that dataset loading is optimized for resumption"""
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.erasure_runner"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.create_manual_task_artificial_graphs"
+    )
+    def test_dataset_loading_uses_simple_query_on_resume(
+        self,
+        mock_manual_tasks,
+        run_erasure,
+        run_access,
+        run_webhooks,
+        mock_email_dispatch,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        erasure_policy,
+        privacy_request_complete_email_notification_enabled,
+    ) -> None:
+        """
+        Verify that when resuming a DSR from a later checkpoint, dataset loading
+        uses the lightweight DatasetConfig.all() instead of eager loading with joins.
+        """
+        mock_manual_tasks.return_value = []  # Return empty list for simplicity
+
+        privacy_request.started_processing_at = None
+        privacy_request.policy = erasure_policy
+        privacy_request.save(db)
+
+        # Run from erasure step (skipping dataset_validation checkpoint)
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request.id,
+            from_step=CurrentStep.erasure.value,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+        db.refresh(privacy_request)
+        assert privacy_request.started_processing_at is not None
+
+        # Verify that dataset graph was still built (required for erasure)
+        assert run_erasure.call_count == 1
+        graph_arg = run_erasure.call_args[1]["graph"]
+        assert isinstance(graph_arg, DatasetGraph)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.create_manual_task_artificial_graphs"
+    )
+    def test_manual_tasks_included_on_first_pass(
+        self,
+        mock_manual_tasks,
+        run_access,
+        run_webhooks,
+        mock_email_dispatch,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        policy,
+        privacy_request_complete_email_notification_enabled,
+    ) -> None:
+        """
+        Verify that manual task graphs are included on the first pass
+        and the validation log is recorded.
+        """
+        mock_manual_tasks.return_value = []
+
+        privacy_request.started_processing_at = None
+        privacy_request.policy = policy
+        privacy_request.save(db)
+
+        # Run from the beginning (includes dataset_validation checkpoint)
+        run_privacy_request_task.delay(
+            privacy_request_id=privacy_request.id,
+        ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+        db.refresh(privacy_request)
+
+        # Verify manual task graph creation was called
+        assert mock_manual_tasks.call_count == 1
+
+        # Verify validation log was created
+        validation_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.dataset_name == "Dataset reference validation",
+            )
+            .first()
+        )
+        assert validation_log is not None
+        assert validation_log.status == ExecutionLogStatus.complete
+        assert "Dataset reference validation successful" in validation_log.message

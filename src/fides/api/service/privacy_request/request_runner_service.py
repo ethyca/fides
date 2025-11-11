@@ -494,8 +494,7 @@ def run_privacy_request(
                 )
 
             try:
-                # Only build dataset graph with manual tasks on first run to avoid expensive
-                # re-validation
+                # Dataset validation CHECKPOINT - only run validation and logging on first pass
                 if can_run_checkpoint(
                     request_checkpoint=CurrentStep.dataset_validation,
                     from_checkpoint=resume_step,
@@ -504,15 +503,21 @@ def run_privacy_request(
                         CurrentStep.dataset_validation
                     )
 
-                # Eager load relationships to avoid N+1 queries
-                datasets = (
-                    session.query(DatasetConfig)
-                    .options(
-                        joinedload(DatasetConfig.connection_config),
-                        joinedload(DatasetConfig.ctl_dataset),
+                    # Eager load relationships to avoid N+1 queries during initial validation
+                    datasets = (
+                        session.query(DatasetConfig)
+                        .options(
+                            joinedload(DatasetConfig.connection_config),
+                            joinedload(DatasetConfig.ctl_dataset),
+                        )
+                        .all()
                     )
-                    .all()
-                )
+                else:
+                    # On resume, do lightweight dataset loading without eager loading
+                    # Accept potential N+1 queries as trade-off for faster resume
+                    datasets = DatasetConfig.all(db=session)
+
+                # Build dataset graphs (required for DSR execution)
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
@@ -520,12 +525,9 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                if can_run_checkpoint(
-                    request_checkpoint=CurrentStep.dataset_validation,
-                    from_checkpoint=resume_step,
-                ):
-                    manual_task_graphs = create_manual_task_artificial_graphs(session)
-                    dataset_graphs.extend(manual_task_graphs)
+                # (required on every run for DSR execution, not just validation)
+                manual_task_graphs = create_manual_task_artificial_graphs(session)
+                dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
