@@ -25,7 +25,7 @@ console.log(window.Fides); // Should show Fides object
 ### 2. Run the Demo
 
 ```javascript
-const { aep, summary, logs } = await Fides.nvidiaDemo();
+const aep = await Fides.nvidiaDemo();
 
 // Demo automatically:
 // ✅ Detects OneTrust categories (C0001-C0004)
@@ -34,9 +34,7 @@ const { aep, summary, logs } = await Fides.nvidiaDemo();
 // ✅ Creates Adobe integration with correct purpose mapping
 // ✅ Demonstrates consent sync across all systems
 // ✅ Tests: Toggle notice, Opt-in all, Opt-out all
-
-console.log(summary);
-// "Demo successful! Synced 2 systems across 4 consent changes."
+// ✅ Returns the live aep integration instance
 ```
 
 ### 3. Continue Testing

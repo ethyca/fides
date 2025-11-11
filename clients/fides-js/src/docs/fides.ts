@@ -476,13 +476,13 @@ export interface Fides {
    *    - Opting out of all notices
    * 6. Shows all systems stay synchronized throughout
    *
-   * @returns Promise resolving to demo results with success status, summary, detailed logs, and live aep instance
+   * @returns Promise resolving to live aep integration instance (throws error if demo fails)
    *
    * @example
    * Run the demo on nvidia.com:
    * ```javascript
    * // Open browser console on nvidia.com, inject Fides, then run:
-   * const { success, summary, aep } = await Fides.nvidiaDemo();
+   * const aep = await Fides.nvidiaDemo();
    *
    * // Console will show:
    * // 🚀 FIDES ADOBE + ONETRUST DEMO 🚀
@@ -506,17 +506,16 @@ export interface Fides {
    * // OneTrust: {"essential":true,"performance":true,"functional":true,"advertising":true}
    * //
    * // ... and so on through all consent changes
+   * //
+   * // ✅ DEMO COMPLETE!
+   * // Summary: All systems stayed in sync! ✨
    *
-   * // Check results
-   * console.log(success); // true
-   * console.log(summary); // "Demo successful! Synced 2 systems across 4 consent changes."
-   *
-   * // Continue testing with the live aep instance
+   * // Continue testing with the returned aep instance
    * aep.consent();        // Check current Adobe consent
    * aep.oneTrust.read();  // Check OneTrust cookie
    * aep.dump();           // Full diagnostics
    *
-   * // The aep integration is still LIVE - any Fides updates will sync to Adobe & OneTrust
+   * // The aep integration is LIVE - any Fides updates will sync to Adobe & OneTrust
    * window.Fides.consent.performance = true;
    * window.dispatchEvent(new CustomEvent('FidesUpdated', {
    *   detail: { consent: window.Fides.consent }
@@ -525,17 +524,12 @@ export interface Fides {
    * ```
    */
   nvidiaDemo: () => Promise<{
-    success: boolean;
-    summary: string;
-    logs: string[];
-    aep?: {
-      dump: () => object;
-      consent: () => object;
-      suggest: () => object;
-      oneTrust: {
-        read: () => Record<string, boolean | string> | null;
-        write: (consent: Record<string, boolean | string>) => void;
-      };
+    dump: () => object;
+    consent: () => object;
+    suggest: () => object;
+    oneTrust: {
+      read: () => Record<string, boolean | string> | null;
+      write: (consent: Record<string, boolean | string>) => void;
     };
   }>;
 

@@ -1259,32 +1259,27 @@ export const nvidiaAEP = (): AEPIntegration => {
  * on nvidia.com. It checks for OneTrust presence, initializes the Adobe
  * integration, and demonstrates consent synchronization.
  *
- * @returns Demo results with detailed logs
+ * @returns Live AEP integration instance (throws error if demo fails)
  *
  * @example
  * ```javascript
  * // Run the demo on nvidia.com
- * const results = await Fides.nvidiaDemo();
- * console.log(results.summary);
+ * const aep = await Fides.nvidiaDemo();
+ *
+ * // Continue testing with the returned instance
+ * aep.consent();
  * ```
  */
-export const nvidiaDemo = async (): Promise<{
-  success: boolean;
-  summary: string;
-  logs: string[];
-  aep?: AEPIntegration;
-}> => {
-  const logs: string[] = [];
+export const nvidiaDemo = async (): Promise<AEPIntegration> => {
   const log = (msg: string) => {
     console.log(msg);
-    logs.push(msg);
   };
 
-  log("\n🚀 FIDES ADOBE + ONETRUST DEMO 🚀\n");
+  log("\nFIDES ADOBE + ONETRUST DEMO\n");
   log("=" .repeat(60));
 
   // Step 1: Check if we have matching categories using suggest()
-  log("\n📋 Step 1: Checking OneTrust → Fides compatibility...");
+  log("\nStep 1: Checking OneTrust compatibility...");
 
   const tempAep = aep();
   const suggestion = tempAep.suggest();
@@ -1293,11 +1288,7 @@ export const nvidiaDemo = async (): Promise<{
     log(`❌ ${suggestion.error}`);
     log("\n⚠️  Demo requires OneTrust to be present on the page.");
     log("   Please run this on nvidia.com or another OneTrust site.");
-    return {
-      success: false,
-      summary: "OneTrust not detected",
-      logs,
-    };
+    throw new Error("OneTrust not detected - demo requires OneTrust on the page");
   }
 
   log(`✅ OneTrust detected: ${suggestion.oneTrustCategories.join(", ")}`);
@@ -1310,17 +1301,13 @@ export const nvidiaDemo = async (): Promise<{
       log(`   - ${key}`);
     });
     log(`\n   ${suggestion.recommendedAction}`);
-    return {
-      success: false,
-      summary: "Missing Fides notices for OneTrust categories",
-      logs,
-    };
+    throw new Error(`Missing Fides notices: ${suggestion.missingKeys.join(", ")}`);
   }
 
   log(`✅ All Fides notices present: ${suggestion.matchedKeys.join(", ")}`);
 
   // Step 1.5: Initialize Fides consent from OneTrust if not already done
-  log("\n🔄 Step 1.5: Reading OneTrust consent to initialize Fides...");
+  log("\nStep 1.5: Reading OneTrust consent to initialize Fides...");
   const otConsentInitial = tempAep.oneTrust.read();
   if (otConsentInitial) {
     // Update Fides consent to match OneTrust (for demo/migration scenario)
@@ -1335,11 +1322,11 @@ export const nvidiaDemo = async (): Promise<{
       }
     }));
   } else {
-    log("⚠️  Could not read OneTrust consent");
+    log("⚠️ Could not read OneTrust consent");
   }
 
   // Step 2: Create AEP instance with correct purpose mapping
-  log("\n🔧 Step 2: Initializing Adobe integration with purpose mapping...");
+  log("\nStep 2: Initializing Adobe integration...");
   const aepInstance = aep({
     purposeMapping: suggestion.purposeMapping,
     debug: false, // We'll log ourselves
@@ -1347,7 +1334,7 @@ export const nvidiaDemo = async (): Promise<{
   log("✅ Adobe integration initialized");
 
   // Step 3: Detect active systems
-  log("\n🔍 Step 3: Detecting active systems...");
+  log("\nStep 3: Detecting active systems...");
   const diagnostics = aepInstance.dump();
   const activeSystems: string[] = [];
 
@@ -1363,17 +1350,13 @@ export const nvidiaDemo = async (): Promise<{
 
   if (activeSystems.length === 0) {
     log("❌ No consent systems detected!");
-    return {
-      success: false,
-      summary: "No consent systems active",
-      logs,
-    };
+    throw new Error("No consent systems active - expected Adobe or OneTrust");
   }
 
   log(`✅ Active systems: ${activeSystems.join(", ")}`);
 
   // Step 4 & 5: Get initial state and log pre-sync
-  log("\n📊 Step 4-5: Getting initial consent state (pre-sync)...");
+  log("\nStep 4-5: Getting initial consent state...");
   log("-".repeat(60));
 
   const getConsentSummary = () => {
@@ -1395,23 +1378,19 @@ export const nvidiaDemo = async (): Promise<{
   log("OneTrust: " + formatConsent(preSync.oneTrust));
 
   // Step 6-7: Read OneTrust and sync to Fides
-  log("\n🔄 Step 6-7: Reading OneTrust consent and syncing...");
+  log("\nStep 6-7: Reading OneTrust consent...");
   const otConsent = aepInstance.oneTrust.read();
 
   if (!otConsent) {
     log("❌ Could not read OneTrust consent");
-    return {
-      success: false,
-      summary: "Failed to read OneTrust",
-      logs,
-    };
+    throw new Error("Failed to read OneTrust consent");
   }
 
   log("✅ Read OneTrust consent: " + formatConsent(otConsent));
 
   // Note: In a production migration scenario, Fides would automatically
   // initialize from OneTrust. For this demo, we'll just verify the states match
-  log("\n📊 Post-sync consent state:");
+  log("\nPost-sync consent state:");
   log("-".repeat(60));
   const postSync = getConsentSummary();
   log("Fides:    " + formatConsent(postSync.fides));
@@ -1419,7 +1398,7 @@ export const nvidiaDemo = async (): Promise<{
   log("OneTrust: " + formatConsent(postSync.oneTrust));
 
   // Step 8-9: Change one notice
-  log("\n✏️  Step 8-9: Toggling 'performance' notice...");
+  log("\nStep 8-9: Toggling 'performance' notice...");
 
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -1442,7 +1421,7 @@ export const nvidiaDemo = async (): Promise<{
   await wait(1000); // Wait for cookie write and sync
 
   log(`   Changed 'performance' from ${currentPerformance} → ${!currentPerformance}`);
-  log("\n📊 Consent state after toggle:");
+  log("\nConsent state after toggle:");
   log("-".repeat(60));
   const afterToggle = getConsentSummary();
   log("Fides:    " + formatConsent(afterToggle.fides));
@@ -1450,7 +1429,7 @@ export const nvidiaDemo = async (): Promise<{
   log("OneTrust: " + formatConsent(afterToggle.oneTrust));
 
   // Step 10: Opt-in to all
-  log("\n✅ Step 10: Opting IN to all notices...");
+  log("\nStep 10: Opting IN to all notices...");
 
   const optInAll: NoticeConsent = {};
   Object.keys(currentConsent).forEach(key => {
@@ -1467,7 +1446,7 @@ export const nvidiaDemo = async (): Promise<{
 
   await wait(1000); // Wait for cookie write and sync
 
-  log("\n📊 Consent state after OPT-IN ALL:");
+  log("\nConsent state after OPT-IN ALL:");
   log("-".repeat(60));
   const afterOptIn = getConsentSummary();
   log("Fides:    " + formatConsent(afterOptIn.fides));
@@ -1475,7 +1454,7 @@ export const nvidiaDemo = async (): Promise<{
   log("OneTrust: " + formatConsent(afterOptIn.oneTrust));
 
   // Step 11: Opt-out of all (except essential)
-  log("\n❌ Step 11: Opting OUT of all notices (except essential)...");
+  log("\nStep 11: Opting OUT of all notices (except essential)...");
 
   const optOutAll: NoticeConsent = {};
   Object.keys(currentConsent).forEach(key => {
@@ -1492,7 +1471,7 @@ export const nvidiaDemo = async (): Promise<{
 
   await wait(1000); // Wait for cookie write and sync
 
-  log("\n📊 Consent state after OPT-OUT ALL:");
+  log("\nConsent state after OPT-OUT ALL:");
   log("-".repeat(60));
   const afterOptOut = getConsentSummary();
   log("Fides:    " + formatConsent(afterOptOut.fides));
@@ -1501,24 +1480,19 @@ export const nvidiaDemo = async (): Promise<{
 
   // Summary
   log("\n" + "=".repeat(60));
-  log("✅ DEMO COMPLETE!");
+  log("✅ DEMO COMPLETE");
   log("=".repeat(60));
   log("\nSummary:");
-  log(`  • Active systems: ${activeSystems.join(", ")}`);
-  log(`  • OneTrust categories: ${suggestion.oneTrustCategories.join(", ")}`);
-  log(`  • Fides notices: ${suggestion.matchedKeys.join(", ")}`);
-  log(`  • Demonstrated: Toggle, Opt-in all, Opt-out all`);
-  log("\n💡 The 'aep' instance is still active!");
-  log("   Continue testing with:");
-  log("   - aep.consent()       // Check current Adobe consent");
-  log("   - aep.oneTrust.read() // Check OneTrust cookie");
-  log("   - aep.dump()          // Full diagnostics");
+  log(`  Active systems: ${activeSystems.join(", ")}`);
+  log(`  OneTrust categories: ${suggestion.oneTrustCategories.join(", ")}`);
+  log(`  Fides notices: ${suggestion.matchedKeys.join(", ")}`);
+  log(`  Demonstrated: Toggle, Opt-in all, Opt-out all`);
+  log("\nThe 'aep' instance is now active.");
+  log("Continue testing with:");
+  log("  aep.consent()       // Check current Adobe consent");
+  log("  aep.oneTrust.read() // Check OneTrust cookie");
+  log("  aep.dump()          // Full diagnostics");
   log("\n");
 
-  return {
-    success: true,
-    summary: `Demo successful! Synced ${activeSystems.length} systems across 4 consent changes.`,
-    logs,
-    aep: aepInstance, // Return live integration for continued testing
-  };
+  return aepInstance;
 };
