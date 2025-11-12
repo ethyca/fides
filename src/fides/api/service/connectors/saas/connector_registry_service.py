@@ -14,7 +14,10 @@ from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
-from fides.api.schemas.saas.connector_template import ConnectorTemplate
+from fides.api.schemas.saas.connector_template import (
+    ConnectorTemplate,
+    ConnectorTemplateListResponse,
+)
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
@@ -324,3 +327,29 @@ class ConnectorRegistry:
         Returns an object containing the various SaaS connector artifacts
         """
         return cls._get_combined_templates().get(connector_type)
+
+    @classmethod
+    def get_all_connector_templates_summary(cls) -> List[ConnectorTemplateListResponse]:
+        """
+        Returns summary information for all connector templates.
+        Includes connector_type, name, supported_actions, category, and whether it's custom.
+        """
+        custom_templates = CustomConnectorTemplateLoader.get_connector_templates()  # type: ignore
+        combined_templates = cls._get_combined_templates()
+
+        summaries: List[ConnectorTemplateListResponse] = []
+        for connector_type, template in combined_templates.items():
+            # Determine if the template is custom by checking if it exists in CustomConnectorTemplateLoader
+            is_custom = connector_type in custom_templates
+
+            summaries.append(
+                ConnectorTemplateListResponse(
+                    connector_type=connector_type,
+                    name=template.human_readable,
+                    supported_actions=template.supported_actions,
+                    category=template.category,
+                    custom=is_custom,
+                )
+            )
+
+        return summaries
