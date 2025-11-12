@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -15,13 +15,14 @@ class OktaSchema(ConnectionConfigSecretsSchema):
         title="Organization URL",
         description="The URL of your Okta organization (e.g. https://your-org.okta.com)",
     )
-    api_token: str = Field(
-        title="API Token",
-        description="The API token used to authenticate with Okta",
-        json_schema_extra={"sensitive": True},
+    api_token: Optional[str] = Field(
+        default=None,
+        title="API Token (Deprecated)",
+        description="Legacy API token (ignored). Configure OAuth2 Client Credentials instead.",
+        json_schema_extra={"sensitive": True, "deprecated": True},
     )
 
-    _required_components: ClassVar[List[str]] = ["org_url", "api_token"]
+    _required_components: ClassVar[List[str]] = ["org_url"]
 
 
 class OktaDocsSchema(OktaSchema, NoValidationSchema):

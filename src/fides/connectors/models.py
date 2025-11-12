@@ -1,7 +1,7 @@
 """Module that adds models for connectors"""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, Any, Dict
 
 from pydantic import BaseModel
 
@@ -50,7 +50,14 @@ class OktaConfig(BaseModel):
 
     # camel case matches okta client config model
     orgUrl: str
-    token: str
+    token: Optional[str] = None
+    access_token: Optional[str] = None
+
+    def model_dump(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        data = super().model_dump(*args, **kwargs)
+        if not data.get("token") and self.access_token:
+            data["token"] = self.access_token
+        return data
 
 
 class DatabaseConfig(BaseModel):
