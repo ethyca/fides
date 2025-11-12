@@ -63,7 +63,8 @@ export const PrivacyRequestsDashboard = () => {
   });
 
   // Clear selections when requests change
-  // Once we have full support for select all, we can reset this only on filter changes
+  // Once we have full support for select all, we can reset this only on filter changes and add a
+  // manual clear selection after a bulk action is performed
   useEffect(() => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
