@@ -172,14 +172,6 @@ export const MonitorFieldFilters = ({
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
 
-  // Reset filters to default state when stagedResourceUrn changes
-  // Use JSON.stringify to compare array contents, not reference
-  const stagedResourceUrnKey = stagedResourceUrn.join(",");
-  useEffect(() => {
-    resetToInitialState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagedResourceUrnKey]);
-
   const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
     useGetDatastoreFiltersQuery(
       {
