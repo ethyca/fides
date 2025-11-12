@@ -11,8 +11,6 @@ import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
 export interface PrivacyExperienceQueryParams {
   region: string;
   show_disabled: boolean;
-  component: string;
-  systems_applicable: boolean;
 }
 
 export interface CurrentPreferencesQueryParams {
