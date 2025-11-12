@@ -185,7 +185,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
-        subject_identity_verification_not_required,
     ):
         data = [
             {
@@ -6087,7 +6086,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     @pytest.mark.usefixtures(
-        "require_manual_request_approval",
         "subject_identity_verification_required",
         "messaging_config",
     )
