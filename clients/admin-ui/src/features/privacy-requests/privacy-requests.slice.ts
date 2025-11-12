@@ -119,7 +119,7 @@ interface SearchFilterParams
   extends Partial<PrivacyRequestFilter>,
     Partial<DateRangeParams> {}
 
-const processFilterParams = (filters: SearchFilterParams) => ({
+const processFilterParams = ({ from, to, ...filters }: SearchFilterParams) => ({
   // Include identities and custom privacy request fields by default
   include_identities: true,
   include_custom_privacy_request_fields: true,
@@ -133,12 +133,8 @@ const processFilterParams = (filters: SearchFilterParams) => ({
   }),
 
   // Convert from and to to ISO strings on local time for the date range
-  created_gt: filters.from
-    ? dayjs(filters.from).startOf("day").utc().toISOString()
-    : undefined,
-  created_lt: filters.to
-    ? dayjs(filters.to).endOf("day").utc().toISOString()
-    : undefined,
+  created_gt: from ? dayjs(from).startOf("day").utc().toISOString() : undefined,
+  created_lt: to ? dayjs(to).endOf("day").utc().toISOString() : undefined,
 });
 
 export const selectPrivacyRequestFilters = (
@@ -379,7 +375,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       SearchFilterParams & { page: number; size: number }
     >({
       query: (params) => {
-        const { page, size, from, to, ...filters } = params;
+        const { page, size, ...filters } = params;
 
         return {
           url: `privacy-request/search`,

@@ -250,6 +250,17 @@ class TestErasureEmailConnectorMethods:
             is False
         )
 
+    def test_needs_email_with_multiple_type_policy(
+        self, test_attentive_erasure_email_connector, privacy_request_with_two_types
+    ):
+        assert (
+            test_attentive_erasure_email_connector.needs_email(
+                {"email": "test@example.com"},
+                privacy_request_with_two_types,
+            )
+            is False
+        )
+
     def test_needs_email_unsupported_identity(
         self,
         test_attentive_erasure_email_connector,

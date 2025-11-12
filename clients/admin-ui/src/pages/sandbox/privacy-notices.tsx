@@ -1,179 +1,27 @@
-import {
-  AntButton as Button,
-  AntLayout as Layout,
-  AntTypography as Typography,
-} from "fidesui";
+import { AntLayout as Layout, AntTabs as Tabs } from "fidesui";
 import type { NextPage } from "next";
-import { useCallback, useMemo, useState } from "react";
 
 import PageHeader from "~/features/common/PageHeader";
 
-import {
-  CascadeConsentToggle,
-  ConsentMechanismRadioGroup,
-  DbStatePreview,
-  DisableChildrenTree,
-  GetApiPreview,
-  PostApiPreview,
-} from "../../features/poc/privacy-notices-sandbox/components";
-import {
-  ALL_KEYS,
-  PARENT_KEY,
-  PARENT_KEY_WITH_UUID,
-  TREE_NODES,
-} from "../../features/poc/privacy-notices-sandbox/constants";
-import type {
-  CheckedKeysType,
-  ConsentMechanism,
-} from "../../features/poc/privacy-notices-sandbox/types";
+import PrivacyNoticeSandboxRealData from "../../features/poc/privacy-notices-sandbox/PrivacyNoticeSandboxRealData";
+import PrivacyNoticeSandboxSimulated from "../../features/poc/privacy-notices-sandbox/PrivacyNoticeSandboxSimulated";
 
 const { Content } = Layout;
 
 const PrivacyNoticesSandbox: NextPage = () => {
-  const [consentMechanism, setConsentMechanism] =
-    useState<ConsentMechanism>("opt-out");
-  const [cascadeConsent, setCascadeConsent] = useState<boolean>(false);
-  const [checkedKeys, setCheckedKeys] = useState<CheckedKeysType>(ALL_KEYS);
-  const [savedCheckedKeys, setSavedCheckedKeys] =
-    useState<CheckedKeysType>(ALL_KEYS);
-  const [previousSavedKeys, setPreviousSavedKeys] =
-    useState<CheckedKeysType>(ALL_KEYS);
-  const [dbState, setDbState] = useState<Record<string, "opt_in" | "opt_out">>(
-    {},
-  );
-
-  // DERIVED STATE: The default checked keys for the current mechanism
-  const mechanismDefaults = useMemo(
-    () => (consentMechanism === "opt-out" ? ALL_KEYS : []),
-    [consentMechanism],
-  );
-
-  const handleMechanismChange = useCallback((mechanism: ConsentMechanism) => {
-    setConsentMechanism(mechanism);
-
-    // Calculate new defaults for the mechanism
-    const newDefaults = mechanism === "opt-out" ? ALL_KEYS : [];
-
-    // Reset all states to match new mechanism
-    setCheckedKeys(newDefaults);
-    setSavedCheckedKeys(newDefaults);
-    setPreviousSavedKeys(newDefaults);
-    setDbState({});
-  }, []);
-
-  const handleCascadeToggle = useCallback(
-    (enabled: boolean) => {
-      setCascadeConsent(enabled);
-
-      // Reset all states to match current mechanism defaults
-      setCheckedKeys(mechanismDefaults);
-      setSavedCheckedKeys(mechanismDefaults);
-      setPreviousSavedKeys(mechanismDefaults);
-      setDbState({});
-    },
-    [mechanismDefaults],
-  );
-
-  const handleSave = useCallback(() => {
-    setPreviousSavedKeys(savedCheckedKeys); // Store the previous saved state
-    setSavedCheckedKeys(checkedKeys); // Update saved state to current
-
-    // Update DB state with changes
-    const currentArray = Array.isArray(checkedKeys)
-      ? checkedKeys
-      : checkedKeys.checked || [];
-    const previousArray = Array.isArray(savedCheckedKeys)
-      ? savedCheckedKeys
-      : savedCheckedKeys.checked || [];
-
-    const changedKeys = ALL_KEYS.filter((key) => {
-      const isCurrentlyChecked = currentArray.includes(key);
-      const wasPreviouslyChecked = previousArray.includes(key);
-      return isCurrentlyChecked !== wasPreviouslyChecked;
-    });
-
-    setDbState((prev) => {
-      const newState = { ...prev };
-      changedKeys.forEach((key) => {
-        const noticeKey =
-          key === PARENT_KEY_WITH_UUID
-            ? PARENT_KEY
-            : TREE_NODES.find((node) => node.key === key)?.title ||
-              key.toString();
-        const isChecked = currentArray.includes(key);
-        newState[noticeKey] = isChecked ? "opt_in" : "opt_out";
-
-        // If cascade is enabled and parent was changed, also update all children
-        if (cascadeConsent && key === PARENT_KEY_WITH_UUID) {
-          const value = isChecked ? "opt_in" : "opt_out";
-          TREE_NODES.forEach((node) => {
-            newState[node.title] = value;
-          });
-        }
-      });
-      return newState;
-    });
-  }, [checkedKeys, savedCheckedKeys, cascadeConsent]);
-
   return (
     <Layout>
       <Content className="overflow-auto px-10 py-6">
         <PageHeader heading="Privacy Notices Sandbox" />
 
-        <div className="mt-5 flex gap-6">
-          {/* Left Column - Consent Management */}
-          <div className="min-w-0 flex-1">
-            <Typography.Text strong className="mb-4 block text-base">
-              Notice configuration
-            </Typography.Text>
-            <ConsentMechanismRadioGroup
-              mechanism={consentMechanism}
-              onMechanismChange={handleMechanismChange}
-            />
-            <Typography.Text strong className="mb-4 block text-base">
-              Consent behavior
-            </Typography.Text>
-            <CascadeConsentToggle
-              isEnabled={cascadeConsent}
-              onToggle={handleCascadeToggle}
-            />
-
-            <Typography.Text strong className="mb-4 block text-base">
-              User preferences
-            </Typography.Text>
-            <DisableChildrenTree
-              checkedKeys={checkedKeys}
-              onCheckedKeysChange={setCheckedKeys}
-              cascadeConsent={cascadeConsent}
-            />
-
-            <Button type="primary" onClick={handleSave} className="mt-4">
-              Save preferences
-            </Button>
-          </div>
-
-          {/* Right Column - POST API Preview */}
-          <div className="min-w-0 flex-1">
-            <PostApiPreview
-              currentSavedKeys={savedCheckedKeys}
-              previousSavedKeys={previousSavedKeys}
-              cascadeConsent={cascadeConsent}
-            />
-          </div>
-        </div>
-
-        {/* GET API Preview Section */}
-        <div className="mt-6">
-          <GetApiPreview
-            dbState={dbState}
-            consentMechanism={consentMechanism}
-          />
-        </div>
-
-        {/* DB State Preview Section */}
-        <div className="mt-6">
-          <DbStatePreview dbState={dbState} />
-        </div>
+        <Tabs defaultActiveKey="real" className="mt-5">
+          <Tabs.TabPane tab="Real data" key="real">
+            <PrivacyNoticeSandboxRealData />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Simulated data" key="simulated">
+            <PrivacyNoticeSandboxSimulated />
+          </Tabs.TabPane>
+        </Tabs>
       </Content>
     </Layout>
   );

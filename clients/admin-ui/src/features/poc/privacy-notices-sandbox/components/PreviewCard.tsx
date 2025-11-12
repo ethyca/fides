@@ -1,26 +1,79 @@
-import { AntTypography as Typography } from "fidesui";
+import {
+  AntCard as Card,
+  AntFlex as Flex,
+  AntTypography as Typography,
+} from "fidesui";
 import type { ReactNode } from "react";
+
+interface PreviewCardProps {
+  title: string;
+  height?: string | number;
+  header?: string | null;
+  headerColor: string;
+  body?: unknown;
+  emptyMessage?: string;
+  children?: ReactNode;
+}
 
 const PreviewCard = ({
   title,
   height = "400px",
+  header,
+  headerColor,
+  body,
+  emptyMessage,
   children,
-}: {
-  title: string;
-  height?: string | number;
-  children: ReactNode;
-}) => {
+}: PreviewCardProps) => {
+  const renderContent = () => {
+    // If children are provided, use them
+    if (children) {
+      return children;
+    }
+
+    // If body is provided, render as JSON
+    if (body !== undefined && body !== null) {
+      return (
+        <pre className="m-0 whitespace-pre-wrap">
+          {JSON.stringify(body, null, 2)}
+        </pre>
+      );
+    }
+
+    // Otherwise, show empty message if provided
+    if (emptyMessage) {
+      return (
+        <Flex vertical align="center" justify="center" className="h-full">
+          <Typography.Text type="secondary">{emptyMessage}</Typography.Text>
+        </Flex>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div>
-      <Typography.Text strong className="mb-4 block text-base">
+      <Typography.Text strong className="mb-4 block">
         {title}
       </Typography.Text>
-      <div
-        className="overflow-auto rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-xs"
-        style={{ height }}
+      <Card
+        className="bg-gray-50 font-mono text-xs"
+        styles={{ body: { padding: "18px" } }}
       >
-        {children}
-      </div>
+        <div className="overflow-auto" style={{ height }}>
+          {header && (
+            <Typography.Text
+              strong
+              size="sm"
+              className="mb-2 block"
+              style={{ color: headerColor }}
+            >
+              {header}
+            </Typography.Text>
+          )}
+          {renderContent()}
+        </div>
+      </Card>
     </div>
   );
 };

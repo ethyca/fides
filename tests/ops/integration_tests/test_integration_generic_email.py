@@ -222,6 +222,63 @@ async def test_erasure_email_no_messaging_config(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_erasure_email_no_email_for_access_and_erasure_policy(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    db,
+    dsr_version,
+    request,
+    default_data_categories,
+    access_and_erasure_policy,
+    generic_erasure_email_connection_config,
+    run_privacy_request_task,
+    test_fides_org,
+    messaging_config,
+) -> None:
+    """
+    Run a privacy request with both access and erasure policy types.
+    Verify that no erasure emails are sent when a privacy request has both
+    access and erasure action types.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        access_and_erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": access_and_erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request should complete without going into "awaiting email send" state
+    # because it has both access and erasure action types
+    assert pr.status == PrivacyRequestStatus.complete
+    assert pr.awaiting_email_send_at is None
+
+    # execute send email batch job to verify no emails are sent
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.no_applicable_privacy_requests
+
+    # verify no emails were sent
+    mock_mailgun_dispatcher.assert_not_called()
+    mock_requeue_privacy_requests.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],

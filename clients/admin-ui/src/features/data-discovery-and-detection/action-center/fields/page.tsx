@@ -337,9 +337,9 @@ const ActionCenterFields: NextPage = () => {
                         disabled:
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
-                        onClick: () => {
+                        onClick: async () => {
                           if (isBulkSelect) {
-                            bulkActions[actionType](
+                            await bulkActions[actionType](
                               baseMonitorFilters,
                               excludedListItems.map((k) =>
                                 k.itemKey.toString(),
@@ -347,12 +347,14 @@ const ActionCenterFields: NextPage = () => {
                               selectedListItemCount,
                             );
                           } else {
-                            fieldActions[actionType](
+                            await fieldActions[actionType](
                               selectedListItems.map(({ itemKey }) =>
                                 itemKey.toString(),
                               ),
                             );
                           }
+
+                          resetListSelect();
                         },
                       })),
                     ],

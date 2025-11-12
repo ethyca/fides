@@ -2,7 +2,6 @@ import {
   parseAsArrayOf,
   parseAsString,
   parseAsStringEnum,
-  useQueryState,
   useQueryStates,
 } from "nuqs";
 import { useEffect, useMemo } from "react";
@@ -26,20 +25,16 @@ interface UsePrivacyRequestsFiltersProps {
 
 /**
  * Hook for managing privacy request filters with URL query parameter synchronization.
- * Provides separate state groups for fuzzy search (throttled), modal filters
- * (id, from, to, status, action_type), and sort state (sort_field, sort_direction).
+ * Provides state groups for filters (search, from, to, status, action_type with throttled search)
+ * and sort state (sort_field, sort_direction).
  * Automatically resets pagination when filters change.
  */
 const usePrivacyRequestsFilters = ({
   pagination,
 }: UsePrivacyRequestsFiltersProps) => {
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
-    "search",
-    parseAsString.withOptions({ throttleMs: 300 }),
-  );
-
-  const [modalFilters, setModalFilters] = useQueryStates(
+  const [filters, setFilters] = useQueryStates(
     {
+      search: parseAsString.withOptions({ throttleMs: 300 }),
       from: parseAsString,
       to: parseAsString,
       status: parseAsArrayOf(
@@ -52,14 +47,18 @@ const usePrivacyRequestsFilters = ({
     },
   );
 
-  // A user friendly count of the number of filters applied in the modal
-  // It counts only filters applied in the modal, and counts the range date filter as one
-  const modalFiltersCount = useMemo(() => {
-    const filtersWithoutTo = { ...modalFilters, to: undefined };
-    return Object.values(filtersWithoutTo).filter(
+  // A user friendly count of the number of filters applied
+  // It counts only non-search filters, and counts the range date filter as one
+  const filtersCount = useMemo(() => {
+    const filtersWithoutSearchAndTo = {
+      ...filters,
+      search: undefined,
+      to: undefined,
+    };
+    return Object.values(filtersWithoutSearchAndTo).filter(
       (value) => value && value.length > 0,
     ).length;
-  }, [modalFilters]);
+  }, [filters]);
 
   const [sortState, setSortState] = useQueryStates(
     {
@@ -73,20 +72,20 @@ const usePrivacyRequestsFilters = ({
 
   const filterQueryParams: FilterQueryParams = useMemo(
     () => ({
-      fuzzy_search_str: fuzzySearchTerm,
-      from: modalFilters.from,
-      to: modalFilters.to,
-      status: modalFilters.status,
-      action_type: modalFilters.action_type,
+      fuzzy_search_str: filters.search,
+      from: filters.from,
+      to: filters.to,
+      status: filters.status,
+      action_type: filters.action_type,
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
     }),
     [
-      fuzzySearchTerm,
-      modalFilters.from,
-      modalFilters.to,
-      modalFilters.status,
-      modalFilters.action_type,
+      filters.search,
+      filters.from,
+      filters.to,
+      filters.status,
+      filters.action_type,
       sortState.sort_field,
       sortState.sort_direction,
     ],
@@ -99,11 +98,9 @@ const usePrivacyRequestsFilters = ({
   }, [filterQueryParams, resetPagination]);
 
   return {
-    fuzzySearchTerm,
-    setFuzzySearchTerm,
-    modalFilters,
-    modalFiltersCount,
-    setModalFilters,
+    filters,
+    setFilters,
+    filtersCount,
     sortState,
     setSortState,
     filterQueryParams,
