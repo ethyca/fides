@@ -30,24 +30,66 @@ Navigate to: **https://nvidia.com**
 
 ---
 
+## State Check Commands Reference
+
+Use these console one-liners throughout the demo to verify state. Copy-paste as needed:
+
+### 1. Check Fides Consent
+
+```javascript
+window.Fides.consent
+```
+
+### 2. Check OneTrust Cookie Groups
+
+```javascript
+document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1] || 'Not set'
+```
+
+### 3. Check Adobe ECID Opt-In (All Categories)
+
+```javascript
+(() => { const o = window.adobe?.optIn; if (!o) return 'Not loaded'; const cats = o.Categories; return Object.keys(cats).reduce((acc, key) => { acc[cats[key]] = o.isApproved(cats[key]); return acc; }, {}); })()
+```
+
+### 4. Check Adobe ECID Opt-In (Key Categories Only: AA, Target, AAM)
+
+```javascript
+(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
+```
+
+### 5. Check Google gtag Consent
+
+```javascript
+window.dataLayer?.filter(i => i[0] === 'consent').pop() || 'No gtag'
+```
+
+### Additional Utility Commands
+
+Get ECID value:
+
+```javascript
+window.Visitor?.getInstance(window.adobe_mc_orgid)?.getMarketingCloudVisitorID()
+```
+
+Open Fides modal:
+
+```javascript
+Fides.showModal()
+```
+
+---
+
 ## Step 2: Pre-Migration State (Before Fides)
 
 This simulates the current production state with OneTrust + Adobe.
 
 ### 2.1 Initial Pre-Check (Before User Interaction)
 
-Run these one-liners in the console to check the current state:
-
-```javascript
-// Check OneTrust
-document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1] || 'Not set'
-
-// Check Adobe ECID Opt-In
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Check Google gtag consent (last consent command)
-window.dataLayer?.filter(i => i[0] === 'consent').pop() || 'No gtag'
-```
+Run the [State Check Commands](#state-check-commands-reference) to check the current state:
+- **Check #2** (OneTrust)
+- **Check #3** (Adobe ECID - All Categories)
+- **Check #5** (gtag)
 
 **Expected Results:**
 - **OneTrust:** Shows active groups (e.g., `C0001%2CC0002`) or 'Not set'
@@ -75,22 +117,14 @@ window.dataLayer?.filter(i => i[0] === 'consent').pop() || 'No gtag'
 
 ### 2.3 Post-Interaction Pre-Check
 
-After the page reloads, run the same one-liners to see what changed:
-
-```javascript
-// Check OneTrust - should show accepted groups
-document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1] || 'Not set'
-
-// Check Adobe ECID Opt-In - should show approvals
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Check Google gtag consent
-window.dataLayer?.filter(i => i[0] === 'consent').pop() || 'No gtag'
-```
+After the page reloads, run the [State Check Commands](#state-check-commands-reference) to see what changed:
+- **Check #2** (OneTrust - should show accepted groups)
+- **Check #3** (Adobe ECID - should show approvals)
+- **Check #5** (gtag)
 
 **Expected Results:**
 - **OneTrust:** Shows `C0001%2CC0002%2CC0003` (Essential + Performance + Functional)
-- **Adobe ECID:** `{ aa: true, target: true, aam: false }`
+- **Adobe ECID:** Shows all categories with approval status (e.g., `{ ANALYTICS: true, TARGET: true, AAM: false, ECID: true }`)
 - **Google gtag:** Should show granted for analytics_storage, functionality_storage, personalization_storage
 
 **Adobe Debugger Check:**
@@ -163,20 +197,12 @@ The modal will open automatically. Watch the console for `[Fides Adobe]` and `[F
 
 ### 3.2 Verify Migration Success
 
-Run the one-liners to confirm state was preserved:
+Run the [State Check Commands](#state-check-commands-reference) to confirm state was preserved:
+- **Check #1** (Fides consent)
+- **Check #3** (Adobe ECID - All Categories)
+- **Check #5** (gtag)
 
-```javascript
-// Fides consent
-window.Fides.consent
-
-// Adobe ECID
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Google gtag
-window.dataLayer?.filter(i => i[0] === 'consent').pop()
-```
-
-Should match Step 2.3 state. Check Adobe Debugger ECID tab - approvals should be identical.
+**Expected:** Should match Step 2.3 state. Check Adobe Debugger ECID tab - approvals should be identical.
 
 ---
 
@@ -188,29 +214,24 @@ The Fides modal is open. Interact with it and verify sync.
 
 In the modal: Toggle **Advertising** ON → Click **Save**
 
-Check state:
+Run the [State Check Commands](#state-check-commands-reference):
+- **Check #1** (Fides consent)
+- **Check #3** or **#4** (Adobe ECID)
+- **Check #5** (gtag - or use `.slice(-2)` to see last two commands)
 
-```javascript
-window.Fides.consent
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-window.dataLayer?.filter(i => i[0] === 'consent').slice(-2)
-```
-
-Adobe ECID AAM should now be approved. Check Adobe Debugger ECID tab.
+**Expected:** Adobe ECID AAM should now be approved. Check Adobe Debugger ECID tab.
 
 ---
 
 ### 4.2 Toggle Performance OFF
 
-Re-open modal:
-
-```javascript
-Fides.showModal();
-```
+Re-open modal (see [State Check Commands - Utility](#additional-utility-commands))
 
 In modal: Toggle **Performance** OFF → Click **Save**
 
-Check state (same one-liners). Adobe ECID AA should now be denied.
+Run [State Check Commands](#state-check-commands-reference) **#1** and **#3** or **#4**.
+
+**Expected:** Adobe ECID AA should now be denied.
 
 ---
 
@@ -218,26 +239,30 @@ Check state (same one-liners). Adobe ECID AA should now be denied.
 
 Re-open modal, toggle all OFF (except Essential), Save.
 
-Check state (same one-liners). All Adobe ECID categories should be denied.
+Run [State Check Commands](#state-check-commands-reference) **#1** and **#3** or **#4**.
+
+**Expected:** All Adobe ECID categories should be denied.
 
 ---
 
 ## Step 5: Advanced Verification
 
-Get full diagnostics:
+### 5.1 Full Diagnostics
 
 ```javascript
 Fides.nvidia.status()
 console.table(Fides.nvidia.consent().rows)
 ```
 
-Verify ECID didn't change:
+### 5.2 Verify ECID Preserved
+
+Get the ECID value:
 
 ```javascript
 window.Visitor?.getInstance(window.adobe_mc_orgid)?.getMarketingCloudVisitorID()
 ```
 
-Should be same as Step 2.
+**Expected:** Should be same as Step 2 (ECID never changed during migration).
 
 ---
 
@@ -248,38 +273,6 @@ Should be same as Step 2.
 - Real-time sync (Fides → Adobe ECID, Fides → Google gtag)
 - ECID preserved (same visitor ID before/after)
 - Independent mappings (Web SDK vs ECID configured separately)
-
----
-
-## Quick Reference: One-Liner Checks
-
-Save these for easy copy-paste during demos:
-
-```javascript
-// Fides consent
-window.Fides.consent
-
-// Adobe ECID Opt-In status
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Google gtag last consent command
-window.dataLayer?.filter(i => i[0] === 'consent').pop()
-
-// OneTrust active groups
-document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1] || 'Not set'
-
-// ECID value
-window.Visitor?.getInstance(window.adobe_mc_orgid)?.getMarketingCloudVisitorID()
-
-// Open Fides modal
-Fides.showModal()
-
-// Full diagnostics
-Fides.nvidia.status()
-
-// Consent mapping table
-console.table(Fides.nvidia.consent().rows)
-```
 
 ---
 
