@@ -47,8 +47,8 @@ export const PrivacyRequestFiltersBar = ({
   ) => {
     const [from, to] = dates || [null, null];
     setFilters({
-      from: from ? from.format("YYYY-MM-DD") : null,
-      to: to ? to.format("YYYY-MM-DD") : null,
+      from: from?.format("YYYY-MM-DD"),
+      to: to?.format("YYYY-MM-DD"),
     });
   };
 
