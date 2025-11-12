@@ -144,7 +144,7 @@ def get_connector_template_dataset(
     """
     Retrieves the dataset YAML for a connector template by its type.
 
-    The saas_connector_type parameter comes from the connector_type field
+    The `saas_connector_type` parameter comes from the `connector_type` field
     returned by the `GET /connector-templates` endpoint.
 
     Returns the raw dataset YAML configuration that defines the data structure
