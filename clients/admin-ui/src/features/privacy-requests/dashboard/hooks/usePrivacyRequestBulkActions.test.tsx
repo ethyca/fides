@@ -59,7 +59,6 @@ describe("usePrivacyRequestBulkActions", () => {
     pendingRequest1,
     completeRequest,
   ];
-  const mockClearSelectedIds = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -70,7 +69,6 @@ describe("usePrivacyRequestBulkActions", () => {
       usePrivacyRequestBulkActions({
         requests: mockRequests,
         selectedIds: ["1", "3"],
-        clearSelectedIds: mockClearSelectedIds,
         messageApi: mockMessageApi,
         modalApi: mockModalApi,
       }),
@@ -110,7 +108,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),
@@ -159,7 +156,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),
@@ -210,7 +206,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),
@@ -250,7 +245,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),
@@ -287,7 +281,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),
@@ -313,7 +306,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          clearSelectedIds: mockClearSelectedIds,
           messageApi: mockMessageApi,
           modalApi: mockModalApi,
         }),

@@ -374,6 +374,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
       SearchFilterParams & { page: number; size: number }
     >({
+      providesTags: () => ["Request"],
       query: (params) => {
         const { page, size, ...filters } = params;
 
