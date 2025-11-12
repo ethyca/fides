@@ -93,7 +93,6 @@ export const ACTION_ALLOWED_STATUSES = {
     DiffStatus.ADDITION,
     DiffStatus.CLASSIFICATION_ADDITION,
     DiffStatus.CLASSIFICATION_UPDATE,
-    DiffStatus.APPROVED,
     DiffStatus.REMOVAL,
     DiffStatus.CLASSIFICATION_ERROR,
     DiffStatus.PROMOTION_ERROR,
