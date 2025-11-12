@@ -345,7 +345,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
                         onClick: async () => {
-                          if (isBulkSelect) {
+                          if (listSelectMode === "exclusive") {
                             await bulkActions[actionType](
                               baseMonitorFilters,
                               excludedListItems.map((k) =>
