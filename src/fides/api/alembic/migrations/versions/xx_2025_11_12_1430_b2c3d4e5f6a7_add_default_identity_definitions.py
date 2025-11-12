@@ -6,6 +6,7 @@ Create Date: 2024-11-11 18:27:00.000000
 
 """
 
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -22,6 +23,12 @@ PARTITIONS = ["current", "historic"]
 
 
 def upgrade():
+    # Add is_default column to identity_definition table
+    op.add_column(
+        "identity_definition",
+        sa.Column("is_default", sa.Boolean(), nullable=False, server_default="false"),
+    )
+
     # Delete any existing entries for these identity keys
     # This handles cases where the API was already released and users may have created these
     op.execute(
@@ -34,12 +41,12 @@ def upgrade():
     # Insert default identity definitions
     op.execute(
         """
-        INSERT INTO identity_definition (id, created_at, updated_at, identity_key, name, description, type, created_by)
+        INSERT INTO identity_definition (id, created_at, updated_at, identity_key, name, description, type, created_by, is_default)
         VALUES
-          ('ide_' || gen_random_uuid(), now(), now(), 'email', 'Email', 'Email address', 'email', NULL),
-          ('ide_' || gen_random_uuid(), now(), now(), 'phone_number', 'Phone number', 'Phone number', 'phone_number', NULL),
-          ('ide_' || gen_random_uuid(), now(), now(), 'fides_user_device_id', 'Fides user device ID', 'Unique device identifier for Fides', 'uuid', NULL),
-          ('ide_' || gen_random_uuid(), now(), now(), 'external_id', 'External ID', 'External identifier from another system', 'string', NULL)
+          ('ide_' || gen_random_uuid(), now(), now(), 'email', 'Email', 'Email address', 'email', NULL, true),
+          ('ide_' || gen_random_uuid(), now(), now(), 'phone_number', 'Phone number', 'Phone number', 'phone_number', NULL, true),
+          ('ide_' || gen_random_uuid(), now(), now(), 'fides_user_device_id', 'Fides user device ID', 'Unique device identifier for Fides', 'uuid', NULL, true),
+          ('ide_' || gen_random_uuid(), now(), now(), 'external_id', 'External ID', 'External identifier from another system', 'string', NULL, true)
         """
     )
 
@@ -69,3 +76,6 @@ def downgrade():
         WHERE identity_key IN ('email', 'phone_number', 'fides_user_device_id', 'external_id')
         """
     )
+
+    # Drop is_default column from identity_definition table
+    op.drop_column("identity_definition", "is_default")
