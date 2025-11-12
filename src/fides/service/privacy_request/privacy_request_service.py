@@ -26,6 +26,7 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
+from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
 from fides.api.schemas.privacy_center_config import (
@@ -41,6 +42,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestSource,
     PrivacyRequestStatus,
 )
+from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
@@ -823,13 +825,25 @@ def _handle_notifications_and_processing(
     messaging_service: MessagingService,
 ) -> None:
     """Handle notifications and request processing after creation"""
-    if not authenticated:
+    if not authenticated and message_send_enabled(
+        db,
+        privacy_request.property_id,
+        MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+        config_proxy.execution.subject_identity_verification_required,
+    ):
         messaging_service.send_verification_code(
             privacy_request,
             privacy_request_data.identity,
             privacy_request.property_id,
         )
+        return
 
+    if not authenticated and message_send_enabled(
+        db,
+        privacy_request.property_id,
+        MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+        config_proxy.notifications.send_request_receipt_notification,
+    ):
         send_privacy_request_receipt_message_to_user(
             policy,
             privacy_request_data.identity,
@@ -941,9 +955,6 @@ def _manual_approval_required(
     privacy_request: PrivacyRequest,
 ) -> bool:
     """Determines if a privacy request requires manual approval."""
-    logger.info(
-        f"Manual approval required: {config_proxy.execution.require_manual_request_approval}"
-    )
     return (
         config_proxy.execution.require_manual_request_approval
         and privacy_request.policy.get_action_type() != ActionType.consent.value
@@ -957,7 +968,6 @@ def handle_approval(
     check_for_duplicates(db=db, privacy_request=privacy_request)
     if privacy_request.status == PrivacyRequestStatus.duplicate:
         return
-
     if _manual_approval_required(config_proxy, privacy_request):
         _trigger_pre_approval_webhooks(db, privacy_request)
     else:
