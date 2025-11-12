@@ -198,45 +198,18 @@ class MemoryWatchdog:
         self._original_handler: Union[
             Callable[[int, Optional[FrameType]], Any], int, signal.Handlers, None
         ] = None
-        self._use_signals = False  # Track whether we can use signal handlers
-        self._exception_holder: Optional[MemoryLimitExceeded] = (
-            None  # Store exception for non-signal mode
-        )
 
     # ---------------------------------------------------------------------
     # Public helpers
     # ---------------------------------------------------------------------
     def start(self) -> None:
-        """Start the background monitoring thread and register the signal handler if in main thread."""
+        """Start the background monitoring thread and register the signal handler."""
         logger.debug(
             "Starting memory watchdog - threshold={}%, check_interval={}s",
             self.threshold,
             self.check_interval,
         )
-
-        # Signal handlers can only be registered in the main thread
-        # Check if we're in the main thread before attempting to use signals
-        is_main_thread = threading.current_thread() == threading.main_thread()
-
-        if is_main_thread:
-            try:
-                self._original_handler = signal.signal(
-                    signal.SIGUSR1, self._signal_handler
-                )
-                self._use_signals = True
-                logger.debug(
-                    "Memory watchdog using signal-based monitoring (main thread)"
-                )
-            except ValueError:
-                # Fallback if signal registration fails for any reason
-                self._use_signals = False
-                logger.debug(
-                    "Memory watchdog using direct monitoring (signal registration failed)"
-                )
-        else:
-            self._use_signals = False
-            logger.debug("Memory watchdog using direct monitoring (not in main thread)")
-
+        self._original_handler = signal.signal(signal.SIGUSR1, self._signal_handler)
         self._monitoring.set()
         self._thread = threading.Thread(
             target=self._run, name="memory-watchdog", daemon=True
@@ -249,7 +222,7 @@ class MemoryWatchdog:
         self._monitoring.clear()
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=2)
-        if self._use_signals and self._original_handler is not None:
+        if self._original_handler is not None:
             signal.signal(signal.SIGUSR1, self._original_handler)
             self._original_handler = None
 
@@ -296,27 +269,13 @@ class MemoryWatchdog:
 
                 if mem_percent > self.threshold:
                     # Trigger graceful termination before the system OOM killer can intervene
-                    if self._use_signals:
-                        logger.error(
-                            "Memory usage {}% above threshold {}% - sending SIGUSR1 to terminate task gracefully (prevents OOM kill)",
-                            mem_percent,
-                            self.threshold,
-                        )
-                        os.kill(os.getpid(), signal.SIGUSR1)
-                    else:
-                        # In non-main thread mode, store the exception and stop monitoring
-                        logger.error(
-                            "Memory usage {}% above threshold {}% - storing exception for direct handling (prevents OOM kill)",
-                            mem_percent,
-                            self.threshold,
-                        )
-                        # Capture heap dump before storing exception
-                        _capture_heap_dump()
-                        self._exception_holder = MemoryLimitExceeded(
-                            "Memory usage exceeded threshold",
-                            memory_percent=mem_percent,
-                        )
-                    return  # stop monitoring after triggering
+                    logger.error(
+                        "Memory usage {}% above threshold {}% - sending SIGUSR1 to terminate task gracefully (prevents OOM kill)",
+                        mem_percent,
+                        self.threshold,
+                    )
+                    os.kill(os.getpid(), signal.SIGUSR1)
+                    return  # stop monitoring after signal
 
                 time.sleep(self.check_interval)
             except Exception as exc:  # pragma: no cover – best-effort logging
@@ -369,11 +328,7 @@ def memory_limiter(
             )
             watchdog.start()
             try:
-                result = func(*args, **kwargs)
-                # Check if exception was stored in non-signal mode
-                if isinstance(watchdog._exception_holder, MemoryLimitExceeded):
-                    raise watchdog._exception_holder
-                return result
+                return func(*args, **kwargs)
             except MemoryLimitExceeded as exc:
                 logger.error(
                     "Task terminated gracefully due to memory pressure: {}%",
@@ -382,9 +337,6 @@ def memory_limiter(
                 raise
             finally:
                 watchdog.stop()
-                # Check one more time in case exception was stored during cleanup
-                if isinstance(watchdog._exception_holder, MemoryLimitExceeded):
-                    raise watchdog._exception_holder
 
         return wrapper  # type: ignore[return-value]
 

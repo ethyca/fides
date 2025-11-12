@@ -234,6 +234,7 @@ const PrivacyNoticeForm = ({
                     idField="id"
                     getItemLabel={getPrivacyNoticeName}
                     draggable
+                    maxHeight={100}
                     baseTestId="children"
                   />
                 )}

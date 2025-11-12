@@ -451,7 +451,7 @@ export const PrivacyExperienceForm = ({
             setFieldValue("privacy_notice_ids", newValues)
           }
           getItemLabel={getPrivacyNoticeName}
-          draggable
+          draggable={false}
           baseTestId="privacy-notice"
         />
       )}
