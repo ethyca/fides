@@ -4,7 +4,6 @@ import {
   ConsentMechanism,
   FidesCookie,
   FidesInitOptions,
-  FidesOptions,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
