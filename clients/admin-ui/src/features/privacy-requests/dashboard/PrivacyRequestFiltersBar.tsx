@@ -76,7 +76,6 @@ export const PrivacyRequestFiltersBar = ({
         onChange={(value) => setFilters({ search: value || null })}
         variant="compact"
         data-testid="privacy-request-search"
-        wrapperClassName="w-60"
       />
       <DatePicker.RangePicker
         format="YYYY-MM-DD"
