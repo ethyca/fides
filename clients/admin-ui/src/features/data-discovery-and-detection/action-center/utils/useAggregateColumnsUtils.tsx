@@ -48,10 +48,10 @@ export interface ColumnBuilderParams {
   setDomainsVersion: (fn: (prev: number) => number) => void;
 }
 
-export const isIDP = (resourceType?: StagedResourceTypeValue): boolean =>
+export const IsIdentityProvider  = (resourceType?: StagedResourceTypeValue): boolean =>
   resourceType === StagedResourceTypeValue.OKTA_APP;
 
-export const buildIdpColumns = ({
+export const IsIdentityProviderColumns = ({
   rowClickUrl,
 }: Pick<
   ColumnBuilderParams,

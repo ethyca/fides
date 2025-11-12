@@ -9,10 +9,10 @@ import {
 
 import {
   buildEditableColumns,
-  buildIdpColumns,
   buildReadOnlyColumns,
   ColumnBuilderParams,
-  isIDP,
+  IsIdentityProvider,
+  IsIdentityProviderColumns,
 } from "../utils/useAggregateColumnsUtils";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
@@ -44,8 +44,8 @@ export const useDiscoveredSystemAggregateColumns = ({
 
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
-      if (isIDP(resourceType)) {
-        return buildIdpColumns({ rowClickUrl });
+      if (IsIdentityProvider(resourceType)) {
+        return IsIdentityProviderColumns({ rowClickUrl });
       }
 
       const columnBuilderParams: ColumnBuilderParams = {
