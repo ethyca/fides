@@ -10,7 +10,7 @@ import {
   AntSpin as Spin,
   Icons,
 } from "fidesui";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
@@ -62,6 +62,11 @@ export const PrivacyRequestsDashboard = () => {
     currentPageKeys: requests.map((request) => request.id),
   });
 
+  // Clear selections when filters change (but not pagination)
+  useEffect(() => {
+    clearSelectedIds();
+  }, [filters, clearSelectedIds]);
+
   const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
   const handleExport = async () => {
@@ -83,7 +88,6 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    clearSelectedIds,
     messageApi,
     modalApi,
   });
