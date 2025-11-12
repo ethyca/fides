@@ -42,6 +42,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
 
+## [2.74.1](https://github.com/ethyca/fides/compare/2.74.0..2.74.1)
+
+### Fixed
+- Fixed an issue where FidesJS TCF CMP temporarily returns legacy TCF policy version 4 until a TC string is set [#6953](https://github.com/ethyca/fides/pull/6953)
+
 ## [2.74.0](https://github.com/ethyca/fides/compare/2.73.1..2.74.0)
 
 ### Added
