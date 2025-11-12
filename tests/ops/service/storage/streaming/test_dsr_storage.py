@@ -194,7 +194,7 @@ class TestStreamDsrBufferToStorage:
         # Create a simple ZIP file in memory
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            zip_file.writestr("welcome.html", "<html>Welcome</html>")
+            zip_file.writestr("clickme.html", "<html>Welcome</html>")
             zip_file.writestr("data/main.css", "body { color: black; }")
             zip_file.writestr("attachments/index.html", "<html>Attachments</html>")
 
@@ -219,6 +219,6 @@ class TestStreamDsrBufferToStorage:
 
         # Check file names
         file_names = [file[0] for file in files]
-        assert "welcome.html" in file_names
+        assert "clickme.html" in file_names
         assert "data/main.css" in file_names
         assert "attachments/index.html" in file_names
