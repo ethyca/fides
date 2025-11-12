@@ -62,10 +62,11 @@ export const PrivacyRequestsDashboard = () => {
     currentPageKeys: requests.map((request) => request.id),
   });
 
-  // Clear selections when filters change (but not pagination)
+  // Clear selections when requests change
+  // Once we have full support for select all, we can reset this only on filter changes
   useEffect(() => {
     clearSelectedIds();
-  }, [filters, clearSelectedIds]);
+  }, [requests, clearSelectedIds]);
 
   const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
