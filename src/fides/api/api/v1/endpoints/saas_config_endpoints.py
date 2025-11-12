@@ -1,11 +1,8 @@
-from io import BytesIO
 from typing import Optional
-from zipfile import BadZipFile, ZipFile
 
-from fastapi import Body, Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
-from fastapi.responses import JSONResponse, Response
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError
@@ -48,17 +45,11 @@ from fides.api.service.authentication.authentication_strategy import (
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    CustomConnectorTemplateLoader,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
-    CONNECTOR_TEMPLATE_READ,
-    CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
@@ -66,9 +57,6 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
-    CONNECTOR_TEMPLATE_CONFIG,
-    CONNECTOR_TEMPLATE_DATASET,
-    REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
@@ -376,95 +364,4 @@ def instantiate_connection(
         )
     return SaasConnectionTemplateResponse(
         connection=connection_config, dataset=dataset_config.ctl_dataset
-    )
-
-
-@router.post(
-    REGISTER_CONNECTOR_TEMPLATE,
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
-)
-def register_custom_connector_template(
-    file: bytes = Body(..., media_type="application/zip"),
-    db: Session = Depends(deps.get_db),
-) -> JSONResponse:
-    """
-    Registers a custom connector template from a zip file uploaded by the user.
-    The endpoint performs the following steps:
-
-    1. Validates the uploaded file is a proper zip file.
-    2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.
-
-    If the uploaded file is not a valid zip file or there are any validation errors
-    when creating the ConnectorTemplates an HTTP 400 status code with error details is returned.
-    """
-
-    try:
-        with ZipFile(BytesIO(file), "r") as zip_file:
-            CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
-    except BadZipFile:
-        raise HTTPException(status_code=400, detail="Invalid zip file")
-    except Exception as exc:
-        logger.exception("Error loading connector template from zip file.")
-        raise HTTPException(status_code=400, detail=str(exc))
-
-    return JSONResponse(
-        content={"message": "Connector template successfully registered."}
-    )
-
-
-@router.get(
-    CONNECTOR_TEMPLATE_CONFIG,
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
-)
-def get_connector_template_config(
-    saas_connector_type: str,
-) -> Response:
-    """
-    Retrieves the SaaS config YAML for a connector template by its type.
-
-    Returns the raw YAML configuration that can be used to understand
-    or customize the connector template.
-    """
-    logger.info("Finding connector template with type '{}'", saas_connector_type)
-    template = ConnectorRegistry.get_connector_template(saas_connector_type)
-
-    if not template:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with type '{saas_connector_type}'",
-        )
-
-    return Response(
-        content=template.config,
-        media_type="text/yaml",
-    )
-
-
-@router.get(
-    CONNECTOR_TEMPLATE_DATASET,
-    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
-)
-def get_connector_template_dataset(
-    saas_connector_type: str,
-) -> Response:
-    """
-    Retrieves the dataset YAML for a connector template by its type.
-
-    Returns the raw dataset YAML configuration that defines the data structure
-    for the connector template.
-    """
-    logger.info(
-        "Finding connector template dataset with type '{}'", saas_connector_type
-    )
-    template = ConnectorRegistry.get_connector_template(saas_connector_type)
-
-    if not template:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with type '{saas_connector_type}'",
-        )
-
-    return Response(
-        content=template.dataset,
-        media_type="text/yaml",
     )

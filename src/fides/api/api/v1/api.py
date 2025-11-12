@@ -2,6 +2,7 @@ from fides.api.api.v1.endpoints import (
     config_endpoints,
     connection_endpoints,
     connection_type_endpoints,
+    connector_template_endpoints,
     consent_request_endpoints,
     dataset_config_endpoints,
     drp_endpoints,
@@ -31,6 +32,7 @@ api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
 api_router.include_router(connection_type_endpoints.router)
 api_router.include_router(connection_endpoints.router)
+api_router.include_router(connector_template_endpoints.router)
 api_router.include_router(consent_request_endpoints.router)
 api_router.include_router(dataset_config_endpoints.router)
 api_router.include_router(drp_endpoints.router)
