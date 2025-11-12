@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import NotSupportedForCollection
@@ -13,6 +14,14 @@ from fides.api.util.collection_util import Row
 from fides.config import CONFIG
 
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
+
+
+class TableAccessError(BaseModel):
+    error_type: str = "unknown"
+    exception_type: str
+    exception_message: str
+    error_code: Optional[int] = None
+    exception_attrs: Dict[str, Any] = {}
 
 
 class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):

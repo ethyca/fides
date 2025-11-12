@@ -5,7 +5,11 @@ from loguru import logger
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
-from fides.api.common_exceptions import ConnectionException
+from fides.api.common_exceptions import (
+    ConnectionException,
+    TableAccessDeniedException,
+    TableNotFound,
+)
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
@@ -13,7 +17,7 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
-from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.connectors.base_connector import BaseConnector, TableAccessError
 from fides.api.service.connectors.query_configs.mongodb_query_config import (
     MongoQueryConfig,
 )
@@ -155,6 +159,44 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
         return ConnectionTestStatus.succeeded
 
+    def _handle_collection_access_error(
+        self, node: ExecutionNode, exc: Exception, operation_context: str
+    ) -> None:
+        """
+        Helper method to check collection existence and handle permission errors.
+
+        Args:
+            node: The ExecutionNode being processed
+            exc: The original exception that occurred
+            operation_context: Context like "data retrieval" or "data erasure"
+
+        Raises:
+            TableNotFound: If collection doesn't exist (to allow skipping)
+            ConnectionException: If permission denied (configuration issue, don't skip)
+        """
+        qualified_collection_name = f"{node.address.dataset}.{node.address.collection}"
+        try:
+            collection_exists = self.table_exists(qualified_collection_name)
+            if not collection_exists:
+                # Collection doesn't exist - raise TableNotFound to skip
+                raise TableNotFound(
+                    f"Collection '{qualified_collection_name}' did not exist during {operation_context}."
+                ) from exc
+        except TableAccessDeniedException as perm_exc:
+            # Permission error - this is a configuration bug, don't skip
+            logger.error(
+                "Permission denied accessing collection '{}' during {}: {}",
+                qualified_collection_name,
+                operation_context,
+                perm_exc,
+            )
+            # Re-raise as ConnectionException to fail the request
+            raise ConnectionException(
+                f"Permission denied accessing collection '{qualified_collection_name}' during {operation_context}. "
+                f"This indicates a configuration issue with the database credentials. "
+                f"Original error: {exc}"
+            ) from perm_exc
+
     def retrieve_data(
         self,
         node: ExecutionNode,
@@ -179,10 +221,16 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         collection = db[collection_name]
         rows = []
         logger.info("Starting data retrieval for {}", node.address)
-        for row in collection.find(query_data, fields):
-            rows.append(row)
-        logger.info("Found {} rows on {}", len(rows), node.address)
-        return rows
+        try:
+            for row in collection.find(query_data, fields):
+                rows.append(row)
+            logger.info("Found {} rows on {}", len(rows), node.address)
+            return rows
+        except Exception as exc:
+            # Check if collection exists and handle permission errors
+            self._handle_collection_access_error(node, exc, "data retrieval")
+            # Collection exists or can't check - re-raise original exception
+            raise
 
     def mask_data(
         self,
@@ -206,16 +254,104 @@ class MongoDBConnector(BaseConnector[MongoClient]):
                 query, update = update_stmt
                 db = client[node.address.dataset]
                 collection = db[collection_name]
-                update_result = collection.update_one(query, update, upsert=False)
-                update_ct += update_result.modified_count
-                logger.info(
-                    "db.{}.update_one({}, {}, upsert=False)",
-                    collection_name,
-                    Pii(query),
-                    Pii(update),
-                )
+                try:
+                    update_result = collection.update_one(query, update, upsert=False)
+                    update_ct += update_result.modified_count
+                    logger.info(
+                        "db.{}.update_one({}, {}, upsert=False)",
+                        collection_name,
+                        Pii(query),
+                        Pii(update),
+                    )
+                except Exception as exc:
+                    # Check if collection exists and handle permission errors
+                    self._handle_collection_access_error(node, exc, "data erasure")
+                    # Collection exists or can't check - re-raise original exception
+                    raise
 
         return update_ct
+
+    def table_exists(self, qualified_table_name: str) -> bool:
+        """
+        Check if a MongoDB collection exists.
+
+        Args:
+            qualified_table_name: Format "database.collection"
+
+        Returns:
+            True if collection exists, False if it doesn't exist
+
+        Raises:
+            TableAccessDeniedException: If the collection exists but access is denied
+                due to insufficient permissions. This indicates a configuration issue.
+        """
+        try:
+            parts = qualified_table_name.split(".", 1)
+            if len(parts) != 2:
+                logger.warning(
+                    f"Invalid qualified table name format for MongoDB: '{qualified_table_name}'. "
+                    "Expected format: 'database.collection'",
+                )
+                return False
+
+            db_name, collection_name = parts
+            # This will fail with permission error if we don't have access
+            if collection_name in self.client()[db_name].list_collection_names():
+                return True
+
+            logger.error(
+                f"Collection '{collection_name}' does not exist in database '{db_name}'"
+            )
+            return False
+
+        except OperationFailure as exc:
+            classification = TableAccessError(
+                exception_type=type(exc).__name__,
+                exception_message=str(exc).lower(),
+                error_code=getattr(exc, "code", None),
+            )
+
+            # Log detailed exception information
+            logger.error(
+                f"Collection existence check for '{qualified_table_name}' (MongoDB): error_code={classification.error_code}, "
+                f"exception_type={classification.exception_type}, message={classification.exception_message}"
+            )
+
+            permission_keywords = [
+                "unauthorized",
+                "access denied",
+                "not authorized",
+                "insufficient privileges",
+            ]
+            # MongoDB error codes:
+            # 13 = Unauthorized (permission denied)
+            # 18 = Authentication failed (but this is usually connection-level)
+            # 50 = MaxTimeMSExpired (but can also indicate permission issues)
+            if classification.error_code == 13 or any(
+                keyword in classification.exception_message
+                for keyword in permission_keywords
+            ):
+                raise TableAccessDeniedException(
+                    f"Permission denied accessing collection '{qualified_table_name}' in MongoDB. "
+                    f"This indicates a configuration issue with the database credentials. "
+                    f"Original error: {exc}"
+                ) from exc
+
+            # Other operation failures - assume collection doesn't exist
+            logger.warning(
+                f"Operation failure checking collection '{qualified_table_name}' in MongoDB: "
+                f"error_type={classification.error_type}, exception_type={classification.exception_type}, "
+                f"error_code={classification.error_code}, message={classification.exception_message}"
+            )
+            return False
+
+        except Exception as exc:
+            # Other exceptions - log and assume collection doesn't exist
+            logger.error(
+                f"Error checking collection existence for '{qualified_table_name}' (MongoDB): exception_type={type(exc).__name__}, "
+                f"message={str(exc)}"
+            )
+            return False
 
     def close(self) -> None:
         """Close any held resources"""

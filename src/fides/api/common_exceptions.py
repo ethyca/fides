@@ -155,6 +155,10 @@ class TableNotFound(BaseException):
     """Table or collection does not exist in the database/system"""
 
 
+class TableAccessDeniedException(ConnectionException):
+    """Table exists but the account/credentials lack permission to access it"""
+
+
 class PrivacyRequestExit(BaseException):
     """Privacy request exiting processing waiting on subtasks to complete"""
 

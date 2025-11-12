@@ -22,6 +22,7 @@ from sqlalchemy.sql.elements import TextClause
 from fides.api.common_exceptions import (
     ConnectionException,
     SSHTunnelConfigNotFoundException,
+    TableAccessDeniedException,
     TableNotFound,
 )
 from fides.api.graph.execution import ExecutionNode
@@ -30,7 +31,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.application_config import SqlDryRunMode
 from fides.api.schemas.connection_configuration import ConnectionConfigSecretsSchema
-from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.connectors.base_connector import BaseConnector, TableAccessError
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import get_config
@@ -44,6 +45,54 @@ CONFIG = get_config()
 
 sshtunnel.SSH_TIMEOUT = CONFIG.security.bastion_server_ssh_timeout
 sshtunnel.TUNNEL_TIMEOUT = CONFIG.security.bastion_server_ssh_tunnel_timeout
+
+PERMISSION_DENIED_ERROR_CODES = [
+    "42501",  # postgres: insufficient_privilege
+    "42P01",  # postgres: undefined_table
+    "1142",  # mysql: table/column access denied
+    "1143",  # mysql: table/column access denied
+    "1146",  # mysql: table doesn't exist
+    "229",  # sql server: permission denied
+    "208",  # sql server: invalid object name (doesn't exist)
+]
+
+NOT_FOUND_ERROR_CODES = [
+    "42P01",  # postgres: undefined_table
+    "1146",  # mysql: table doesn't exist
+    "208",  # sql server: invalid object name (doesn't exist)
+]
+
+
+PERMISSION_KEYWORDS = [
+    "permission denied",
+    "access denied",
+    "insufficient privilege",
+    "insufficient privileges",
+    "forbidden",
+    "not authorized",
+    "unauthorized",
+    # BigQuery specific
+    "access denied: table",
+    "user does not have permission",
+    # Snowflake specific
+    "insufficient privileges to operate on",
+    "object does not exist or not authorized",
+]
+
+NOT_FOUND_KEYWORDS = [
+    "does not exist",
+    "doesn't exist",
+    "not found",
+    "undefined table",
+    "invalid object name",
+    "no such table",
+    # BigQuery specific
+    "not found: dataset",
+    "not found: table",
+    # Snowflake specific
+    "does not exist or not authorized",  # Note: this could be either, but "not authorized" is checked first
+    "object does not exist",
+]
 
 
 class SQLConnector(BaseConnector[Engine]):
@@ -202,14 +251,29 @@ class SQLConnector(BaseConnector[Engine]):
             except Exception as exc:
                 # Check if table exists using qualified table name
                 qualified_table_name = self.get_qualified_table_name(node)
-                if not self.table_exists(qualified_table_name):
-                    # Central decision point - will raise TableNotFound or ConnectionException
-                    self.handle_table_not_found(
-                        node=node,
-                        table_name=qualified_table_name,
-                        operation_context="data retrieval",
-                        original_exception=exc,
+                try:
+                    table_exists = self.table_exists(qualified_table_name)
+                    if not table_exists:
+                        # Central decision point - will raise TableNotFound or ConnectionException
+                        self.handle_table_not_found(
+                            node=node,
+                            table_name=qualified_table_name,
+                            operation_context="data retrieval",
+                            original_exception=exc,
+                        )
+                except TableAccessDeniedException as perm_exc:
+                    # Permission error - this is a configuration bug, don't skip
+                    logger.error(
+                        "Permission denied accessing table '{}' during data retrieval: {}",
+                        qualified_table_name,
+                        perm_exc,
                     )
+                    # Re-raise as ConnectionException to fail the request
+                    raise ConnectionException(
+                        f"Permission denied accessing table '{qualified_table_name}' during data retrieval. "
+                        f"This indicates a configuration issue with the database credentials. "
+                        f"Original error: {exc}"
+                    ) from perm_exc
                 # Table exists or can't check - re-raise original exception
                 raise
 
@@ -245,14 +309,29 @@ class SQLConnector(BaseConnector[Engine]):
                         except Exception as exc:
                             # Check if table exists using qualified table name
                             qualified_table_name = self.get_qualified_table_name(node)
-                            if not self.table_exists(qualified_table_name):
-                                # Central decision point - will raise TableNotFound or ConnectionException
-                                self.handle_table_not_found(
-                                    node=node,
-                                    table_name=qualified_table_name,
-                                    operation_context="data erasure",
-                                    original_exception=exc,
+                            try:
+                                table_exists = self.table_exists(qualified_table_name)
+                                if not table_exists:
+                                    # Central decision point - will raise TableNotFound or ConnectionException
+                                    self.handle_table_not_found(
+                                        node=node,
+                                        table_name=qualified_table_name,
+                                        operation_context="data erasure",
+                                        original_exception=exc,
+                                    )
+                            except TableAccessDeniedException as perm_exc:
+                                # Permission error - this is a configuration bug, don't skip
+                                logger.error(
+                                    "Permission denied accessing table '{}' during data erasure: {}",
+                                    qualified_table_name,
+                                    perm_exc,
                                 )
+                                # Re-raise as ConnectionException to fail the request
+                                raise ConnectionException(
+                                    f"Permission denied accessing table '{qualified_table_name}' during data erasure. "
+                                    f"This indicates a configuration issue with the database credentials. "
+                                    f"Original error: {exc}"
+                                ) from perm_exc
                             # Table exists or can't check - re-raise original exception
                             raise
         return update_ct
@@ -331,53 +410,137 @@ class SQLConnector(BaseConnector[Engine]):
         """
         return node.collection.name
 
+    def _classify_table_access_error(self, exc: Exception) -> TableAccessError:
+        """
+        Extract and classify exception details to distinguish between:
+        - Table doesn't exist (should skip)
+        - Permission denied (should raise TableAccessDeniedException)
+        - Other errors (assume table exists for backward compatibility)
+
+        Args:
+            exc: The exception that occurred
+
+        Returns:
+            TableAccessError: The classified table access error
+        """
+        table_access_error = TableAccessError(
+            exception_type=type(exc).__name__, exception_message=str(exc)
+        )
+
+        # Try to extract database-specific error codes
+        try:
+            # PostgreSQL: exc.orig.pgcode
+            if hasattr(exc, "orig") and hasattr(exc.orig, "pgcode"):
+                table_access_error.error_code = exc.orig.pgcode
+                table_access_error.exception_attrs["pgcode"] = (
+                    table_access_error.error_code
+                )
+            # MySQL/SQL Server: exc.orig.args[0] often contains error number
+            elif hasattr(exc, "orig") and hasattr(exc.orig, "args") and exc.orig.args:
+                if isinstance(exc.orig.args[0], int):
+                    table_access_error.error_code = exc.orig.args[0]
+                    table_access_error.exception_attrs["error_number"] = (
+                        table_access_error.error_code
+                    )
+        except Exception:
+            pass
+
+        # Collect all available exception attributes
+        try:
+            attrs = {
+                attr: getattr(exc, attr)
+                for attr in dir(exc)
+                if not attr.startswith("_") and attr not in ["args", "with_traceback"]
+            }
+            table_access_error.exception_attrs.update(
+                {
+                    attr: str(value)
+                    for attr, value in attrs.items()
+                    if not callable(value)
+                }
+            )
+        except Exception:
+            pass
+
+        # Classification logic based on error codes
+        # PostgreSQL error codes
+        if (
+            table_access_error.error_code in PERMISSION_DENIED_ERROR_CODES
+        ):  # insufficient_privilege
+            table_access_error.error_type = "permission_denied"
+        elif table_access_error.error_code in NOT_FOUND_ERROR_CODES:  # undefined_table
+            table_access_error.error_type = "not_found"
+
+        # If error code didn't classify it, check message keywords
+        if table_access_error.error_type == "unknown":
+            message_lower = table_access_error.exception_message.lower()
+
+            # Permission-related keywords (generic and database-specific)
+            if any(keyword in message_lower for keyword in PERMISSION_KEYWORDS):
+                table_access_error.error_type = "permission_denied"
+
+            # Not found keywords (generic and database-specific)
+            if any(keyword in message_lower for keyword in NOT_FOUND_KEYWORDS):
+                table_access_error.error_type = "not_found"
+
+        return table_access_error
+
     def table_exists(self, qualified_table_name: str) -> bool:
         """
         Check if table exists using SQLAlchemy introspection.
 
         This is a generic implementation that should work for most SQL databases.
         Override: Connectors can implement database-specific table existence checking
+
+        Raises:
+            TableAccessDeniedException: If the table exists but access is denied due to
+                insufficient permissions. This indicates a configuration issue.
         """
         try:
             client = self.create_client()
             with client.connect() as connection:
                 inspector = inspect(connection)
 
-                # For simple table names
+                # For simple table names len parts == 1
                 if "." not in qualified_table_name:
-                    return self._check_table_exists(inspector, qualified_table_name)
+                    schema_name = None
+                    table_name = qualified_table_name
 
-                # For qualified names like schema.table or database.schema.table
-                parts = qualified_table_name.split(".")
-
-                if len(parts) == 2:
-                    # schema.table format
-                    schema_name, table_name = parts
-                    return self._check_table_exists(inspector, table_name, schema_name)
-
-                if len(parts) >= 3:
-                    # database.schema.table format (use schema.table)
+                else:
+                    parts = qualified_table_name.split(".")
                     schema_name, table_name = parts[-2], parts[-1]
-                    return self._check_table_exists(inspector, table_name, schema_name)
 
-                # Fallback for unexpected format
-                return self._check_table_exists(inspector, qualified_table_name)
+                table_exists = inspector.has_table(table_name, schema=schema_name)
+                if not table_exists:
+                    logger.error(f"Table '{qualified_table_name}' does not exist")
+                return table_exists
 
         except Exception as exc:
-            # Graceful fallback - if we can't check, assume table exists
-            # to preserve existing behavior for connectors that don't implement this
-            logger.error("Unable to check if table exists, assuming it does: {}", exc)
-            return True
+            # Classify the error to determine if it's a permission issue
+            classification = self._classify_table_access_error(exc=exc)
 
-    def _check_table_exists(
-        self, inspector: Any, table_name: str, schema: Optional[str] = None
-    ) -> bool:
-        """Helper method to check table existence and log if not found."""
-        table_exists = inspector.has_table(table_name, schema=schema)
-        if not table_exists:
-            qualified_name = f"{schema}.{table_name}" if schema else table_name
-            logger.error("Table '{}' does not exist", qualified_name)
-        return table_exists
+            # Log detailed exception information
+            logger.error(
+                f"Table existence check for '{qualified_table_name}': "
+                f"error_type={classification.error_type}, exception_type={classification.exception_type}, "
+                f"error_code={classification.error_code}, message={classification.exception_message}",
+            )
+
+            if classification.error_type == "not_found":
+                return False
+
+            if classification.error_type == "permission_denied":
+                raise TableAccessDeniedException(
+                    f"Permission denied accessing table '{qualified_table_name}'. "
+                    f"This indicates a configuration issue with the database credentials. "
+                    f"Original error: {classification.exception_message}"
+                ) from exc
+            # Unknown error - assume table exists for backward compatibility
+            logger.warning(
+                f"Unable to classify error for table '{qualified_table_name}', assuming table exists "
+                f"for backward compatibility. Exception: {exc}",
+            )
+            return True
 
     def handle_table_not_found(
         self,

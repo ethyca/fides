@@ -2,10 +2,12 @@ from typing import Any, Dict, Union
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import TableAccessDeniedException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import SnowflakeSchema
 from fides.api.service.connectors.query_configs.snowflake_query_config import (
@@ -88,6 +90,10 @@ class SnowflakeConnector(SQLConnector):
 
         Snowflake supports database.schema.table naming, and the generic SQLConnector
         table_exists method doesn't handle quoted identifiers properly.
+
+        Raises:
+            TableAccessDeniedException: If the table exists but access is denied due to
+                insufficient permissions. This indicates a configuration issue.
         """
         try:
             client = self.create_client()
@@ -96,16 +102,17 @@ class SnowflakeConnector(SQLConnector):
                 clean_name = qualified_table_name.replace('"', "")
                 parts = clean_name.split(".")
 
+                sql_command = None
                 if len(parts) == 1:
                     # Simple table name - use current schema
                     table_name = parts[0]
-                    result = connection.execute(text(f'DESC TABLE "{table_name}"'))
+                    sql_command = f'DESC TABLE "{table_name}"'
+                    result = connection.execute(text(sql_command))
                 elif len(parts) == 2:
                     # schema.table format
                     schema_name, table_name = parts
-                    result = connection.execute(
-                        text(f'DESC TABLE "{schema_name}"."{table_name}"')
-                    )
+                    sql_command = f'DESC TABLE "{schema_name}"."{table_name}"'
+                    result = connection.execute(text(sql_command))
                 elif len(parts) >= 3:
                     # database.schema.table format
                     database_name, schema_name, table_name = (
@@ -114,18 +121,42 @@ class SnowflakeConnector(SQLConnector):
                         parts[-1],
                     )
                     # Use the database.schema.table format
-                    result = connection.execute(
-                        text(
-                            f'DESC TABLE "{database_name}"."{schema_name}"."{table_name}"'
-                        )
+                    sql_command = (
+                        f'DESC TABLE "{database_name}"."{schema_name}"."{table_name}"'
                     )
+                    result = connection.execute(text(sql_command))
                 else:
+                    sql_command = "N/A"
                     return False
 
                 # If we get here without an exception, the table exists
                 result.close()
                 return True
 
-        except Exception:
-            # Table doesn't exist or other error
-            return False
+        except Exception as exc:
+            classification = self._classify_table_access_error(exc=exc)
+
+            # Log detailed exception information
+            logger.error(
+                f"Table existence check for '{qualified_table_name}': "
+                f"error_type={classification.error_type}, exception_type={classification.exception_type}, "
+                f"error_code={classification.error_code}, message={classification.exception_message}",
+            )
+
+            if classification.error_type == "not_found":
+                return False
+
+            if classification.error_type == "permission_denied":
+                # Permission error - raise exception to indicate configuration issue
+                raise TableAccessDeniedException(
+                    f"Permission denied accessing table '{qualified_table_name}' in Snowflake. "
+                    f"This indicates a configuration issue with the database credentials. "
+                    f"Original error: {classification.exception_message}"
+                ) from exc
+
+            # Unknown error - assume table exists for backward compatibility
+            logger.warning(
+                f"Unable to classify error for Snowflake table '{qualified_table_name}', assuming table exists "
+                f"for backward compatibility. Exception: {exc}",
+            )
+            return True

@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
-from fides.api.common_exceptions import ConnectionException, TableNotFound
+from fides.api.common_exceptions import (
+    ConnectionException,
+    TableAccessDeniedException,
+    TableNotFound,
+)
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
@@ -221,13 +225,24 @@ class BigQueryConnector(SQLConnector):
         except Exception as exc:
             # Check if table exists using qualified table name
             qualified_table_name = self.get_qualified_table_name(node)
-            if not self.table_exists(qualified_table_name):
-                # For data erasure, we can always skip the collection since other collections
-                # don't depend on erasure results
-                skip_msg = (
-                    f"Table '{qualified_table_name}' did not exist during data erasure."
+            try:
+                table_exists = self.table_exists(qualified_table_name)
+                if not table_exists:
+                    # For data erasure, we can always skip the collection since other collections
+                    # don't depend on erasure results
+                    skip_msg = f"Table '{qualified_table_name}' did not exist during data erasure."
+                    raise TableNotFound(skip_msg) from exc
+            except TableAccessDeniedException as perm_exc:
+                # Permission error - this is a configuration bug, don't skip
+                logger.error(
+                    f"Permission denied accessing table '{qualified_table_name}' during data erasure: {perm_exc}"
                 )
-                raise TableNotFound(skip_msg) from exc
+                # Re-raise as ConnectionException to fail the request
+                raise ConnectionException(
+                    f"Permission denied accessing table '{qualified_table_name}' during data erasure. "
+                    f"This indicates a configuration issue with the database credentials. "
+                    f"Original error: {exc}"
+                ) from perm_exc
             # Table exists or can't check - re-raise original exception
             raise
 
