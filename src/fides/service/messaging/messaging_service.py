@@ -32,6 +32,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     dispatch_message_task,
+    get_email_messaging_config_service_type,
     message_send_enabled,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
@@ -132,13 +133,15 @@ class MessagingService:
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             self.config_proxy.execution.subject_identity_verification_required,
         ):
+            # Get service type, falling back to email messaging config if not configured
             service_type = self.config_proxy.notifications.notification_service_type
             if not service_type:
-                raise MessageDispatchException(
-                    "No notification service type configured."
-                )
-
-            MessagingConfig.get_configuration(db=self.db, service_type=service_type)
+                # Fall back to email messaging config if available
+                service_type = get_email_messaging_config_service_type(db=self.db)
+                if not service_type:
+                    raise MessageDispatchException(
+                        "No notification service type configured."
+                    )
 
             verification_code = _generate_id_verification_code()
             request.cache_identity_verification_code(verification_code)
