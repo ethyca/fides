@@ -317,6 +317,26 @@ export interface Fides {
      * ```
      */
     readConsent: () => object | null;
+
+    /**
+     * Migrate from OneTrust to Fides in one call.
+     *
+     * Reads OneTrust consent, sets window.Fides.consent, and dispatches FidesUpdated event.
+     *
+     * @returns True if migration succeeded, false if OneTrust not found
+     *
+     * @example
+     * ```javascript
+     * // Simple one-call migration
+     * if (Fides.onetrust.migrate()) {
+     *   console.log('✅ Migrated from OneTrust');
+     *   console.log('Fides consent:', window.Fides.consent);
+     * } else {
+     *   console.log('⚠️ OneTrust not found');
+     * }
+     * ```
+     */
+    migrate: () => boolean;
   };
 
   /**

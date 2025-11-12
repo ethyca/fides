@@ -114,10 +114,7 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
 
 ```javascript
 (async () => {
-  console.log('🚀 Starting Fides migration...\n');
-
-  // Step 1: Inject Fides.js
-  console.log('Step 1: Injecting Fides.js...');
+  // Inject Fides
   await fetch('https://braverobot.net/fides.js?geolocation=us-ca&property_id=FDS-228IX4')
     .then(r => r.text())
     .then(t => {
@@ -126,40 +123,12 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
       document.head.appendChild(s);
     });
 
-  // Wait for Fides to initialize
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  if (!window.Fides) {
-    console.error('❌ Fides failed to load');
-    return;
-  }
-  console.log('✅ Fides loaded');
+  // Migrate from OneTrust
+  Fides.onetrust.migrate();
 
-  // Step 2: Read OneTrust consent and initialize Fides
-  console.log('\nStep 2: Reading OneTrust consent...');
-  const otCookie = document.cookie.match(/OptanonConsent=([^;]+)/)?.[1];
-  if (!otCookie) {
-    console.error('❌ OneTrust cookie not found');
-    return;
-  }
-
-  // Parse OneTrust groups
-  const groups = otCookie.match(/groups=([^&]+)/)?.[1]?.split('%2C') || [];
-  const otConsent = {
-    essential: groups.includes('C0001'),
-    performance: groups.includes('C0002'),
-    functional: groups.includes('C0003'),
-    advertising: groups.includes('C0004')
-  };
-
-  console.log('✅ OneTrust consent:', otConsent);
-
-  // Initialize Fides from OneTrust
-  window.Fides.consent = otConsent;
-  console.log('✅ Fides consent initialized');
-
-  // Step 3: Setup Adobe integration
-  console.log('\nStep 3: Setting up Adobe integration...');
+  // Setup Adobe integration
   window.fidesAEP = Fides.aep({
     purposeMapping: {
       performance: ['collect', 'measure'],
@@ -173,10 +142,8 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
     },
     debug: true
   });
-  console.log('✅ Adobe integration active');
 
-  // Step 4: Setup Google Consent Mode integration
-  console.log('\nStep 4: Setting up Google Consent Mode...');
+  // Setup Google Consent Mode
   window.fidesGtag = Fides.gtagConsent({
     purposeMapping: {
       performance: ['analytics_storage'],
@@ -185,246 +152,102 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
     },
     debug: true
   });
-  console.log('✅ Google Consent Mode active');
 
-  // Dispatch initial update to sync everything
-  window.dispatchEvent(new CustomEvent('FidesUpdated', {
-    detail: {
-      consent: window.Fides.consent,
-      extraDetails: { trigger: { origin: 'migration_init' } }
-    }
-  }));
-
-  console.log('\n✅ Migration complete! Fides is now controlling consent.\n');
-
-  // Step 5: Show Fides modal
-  console.log('Step 5: Opening Fides consent modal...');
+  // Show modal
   await new Promise(resolve => setTimeout(resolve, 500));
   Fides.showModal();
-
-  console.log('\n📊 Integration status saved to: window.fidesAEP and window.fidesGtag');
-  console.log('🔍 Check consent anytime with: window.Fides.consent');
 })();
 ```
 
-**Wait for the script to complete.** You should see:
-- ✅ Messages confirming each step
-- The Fides consent modal appears
-- Console logs from Adobe integration showing sync activity
+The modal will open automatically. Watch the console for `[Fides Adobe]` and `[Fides gtag]` debug logs.
 
 ### 3.2 Verify Migration Success
 
-Run the one-liners again to confirm state was preserved:
+Run the one-liners to confirm state was preserved:
 
 ```javascript
-// Check Fides consent
+// Fides consent
 window.Fides.consent
 
-// Check Adobe ECID Opt-In - should match pre-migration state
+// Adobe ECID
 (() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
 
-// Check Google gtag consent - should match pre-migration state
+// Google gtag
 window.dataLayer?.filter(i => i[0] === 'consent').pop()
 ```
 
-**Expected Results:**
-- **Fides consent:** Matches what OneTrust had (from Step 2.3)
-- **Adobe ECID:** Same as Step 2.3 - `{ aa: true, target: true, aam: false }`
-- **Google gtag:** Same as Step 2.3 - analytics_storage/functionality_storage granted
-
-**Adobe Debugger Check:**
-- **ECID** tab: Approvals should be **identical** to Step 2.3
-- No change in consent state (seamless migration)
-
-**Key Observation:** Fides read OneTrust state and synced it to Adobe without any user-facing changes.
+Should match Step 2.3 state. Check Adobe Debugger ECID tab - approvals should be identical.
 
 ---
 
 ## Step 4: Post-Migration - User Interactions with Fides
 
-Now the user interacts with the Fides modal (which should be open from Step 3).
+The Fides modal is open. Interact with it and verify sync.
 
-### 4.1 User Toggles Advertising ON
+### 4.1 Toggle Advertising ON
 
-**In the Fides modal:**
-1. Find the **Advertising** toggle
-2. Toggle it **ON**
-3. Click **Save**
+In the modal: Toggle **Advertising** ON → Click **Save**
 
-The modal should close.
-
-### 4.2 Check Consent State (Immediately After)
-
-Run the check one-liners to see what changed:
+Check state:
 
 ```javascript
-// Check Fides consent - advertising should now be true
 window.Fides.consent
-
-// Check Adobe ECID Opt-In - AAM should now be approved
 (() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Check Google gtag - ad_storage should be granted
 window.dataLayer?.filter(i => i[0] === 'consent').slice(-2)
 ```
 
-**Expected Results:**
-- **Fides consent:** `{ essential: true, performance: true, functional: true, advertising: true }`
-- **Adobe ECID:** `{ aa: true, target: true, aam: true }` ← AAM now approved!
-- **Google gtag:** Last consent command shows `ad_storage: 'granted'`, `ad_personalization: 'granted'`
-
-**Adobe Debugger Check:**
-- Refresh the **ECID** tab
-- **AAM:** Should now show ✅ Approved
-
-**Console Logs:**
-Look for:
-```
-[Fides Adobe] Pushing consent to Adobe: {advertising: true, ...}
-[Fides Adobe] ECID approvals computed from ecidMapping: {aa: true, target: true, aam: true}
-[Fides Adobe] Updated ECID Opt-In Service: {aa: true, target: true, aam: true}
-[Fides gtag] Consent update: {ad_storage: 'granted', ad_personalization: 'granted', ad_user_data: 'granted'}
-```
+Adobe ECID AAM should now be approved. Check Adobe Debugger ECID tab.
 
 ---
 
-### 4.3 User Opts Out of Performance
+### 4.2 Toggle Performance OFF
 
-**Re-open the Fides modal:**
+Re-open modal:
+
 ```javascript
 Fides.showModal();
 ```
 
-**In the modal:**
-1. Toggle **Performance** OFF
-2. Click **Save**
+In modal: Toggle **Performance** OFF → Click **Save**
 
-### 4.4 Check Consent State
-
-```javascript
-// Check Fides consent - performance should now be false
-window.Fides.consent
-
-// Check Adobe ECID Opt-In - AA should now be denied
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Check Google gtag
-window.dataLayer?.filter(i => i[0] === 'consent').slice(-2)
-```
-
-**Expected Results:**
-- **Fides consent:** `{ essential: true, performance: false, functional: true, advertising: true }`
-- **Adobe ECID:** `{ aa: false, target: true, aam: true }` ← Analytics now denied!
-- **Google gtag:** `analytics_storage: 'denied'`
-
-**Adobe Debugger Check:**
-- Refresh **ECID** tab
-- **Analytics (AA):** Should now show ❌ Denied
+Check state (same one-liners). Adobe ECID AA should now be denied.
 
 ---
 
-### 4.5 User Opts Out of Everything (Except Essential)
+### 4.3 Opt Out of Everything
 
-**Re-open modal and toggle everything OFF (except Essential cannot be toggled):**
+Re-open modal, toggle all OFF (except Essential), Save.
 
-```javascript
-Fides.showModal();
-// Toggle all OFF, then Save
-```
-
-### 4.6 Final Check
-
-```javascript
-// Check Fides consent - only essential should be true
-window.Fides.consent
-
-// Check Adobe ECID Opt-In - all should be denied
-(() => { const o = window.adobe?.optIn; return o ? { aa: o.isApproved(o.Categories.ANALYTICS), target: o.isApproved(o.Categories.TARGET), aam: o.isApproved(o.Categories.AAM) } : 'Not loaded'; })()
-
-// Check Google gtag
-window.dataLayer?.filter(i => i[0] === 'consent').slice(-2)
-```
-
-**Expected Results:**
-- **Fides consent:** `{ essential: true, performance: false, functional: false, advertising: false }`
-- **Adobe ECID:** `{ aa: false, target: false, aam: false }` ← All denied!
-- **Google gtag:** All types `'denied'`
-
-**Adobe Debugger Check:**
-- **ECID** tab: All categories ❌ Denied
+Check state (same one-liners). All Adobe ECID categories should be denied.
 
 ---
 
 ## Step 5: Advanced Verification
 
-### 5.1 Comprehensive Diagnostic Dump
-
-Get full diagnostics across all systems:
+Get full diagnostics:
 
 ```javascript
-// NVIDIA-specific status (shows everything)
-const diagnostics = Fides.nvidia.status();
-console.log(diagnostics);
-
-// Consent state with mapping chain
-const consentState = Fides.nvidia.consent();
-console.table(consentState.rows);
+Fides.nvidia.status()
+console.table(Fides.nvidia.consent().rows)
 ```
 
-### 5.2 Check OneTrust Cookie Sync
-
-Verify Fides is writing back to OneTrust cookie:
+Verify ECID didn't change:
 
 ```javascript
-// Parse OneTrust cookie to see if Fides updated it
-const otCookie = document.cookie.match(/OptanonConsent=([^;]+)/)?.[1];
-const groups = otCookie?.match(/groups=([^&]+)/)?.[1]?.split('%2C') || [];
-console.log('OneTrust groups:', groups);
-console.log('Expected based on Fides:', {
-  C0001: window.Fides.consent.essential,
-  C0002: window.Fides.consent.performance,
-  C0003: window.Fides.consent.functional,
-  C0004: window.Fides.consent.advertising
-});
+window.Visitor?.getInstance(window.adobe_mc_orgid)?.getMarketingCloudVisitorID()
 ```
 
-**Expected:** OneTrust cookie groups should match Fides consent state
-
-### 5.3 Verify ECID Persistence
-
-Check that ECID didn't change during migration:
-
-```javascript
-// Get current ECID
-const visitor = window.Visitor?.getInstance(window.adobe_mc_orgid);
-const currentECID = visitor?.getMarketingCloudVisitorID();
-console.log('Current ECID:', currentECID);
-
-// Should be the same ECID from Step 2
-// Verify by checking Adobe Debugger > ECID tab
-```
-
-**Key Observation:** ECID should remain the same - user identity preserved across migration
+Should be same as Step 2.
 
 ---
 
 ## Success Criteria
 
-✅ **Pre-migration state captured** - OneTrust + Adobe working before Fides
-
-✅ **Seamless migration** - Fides initialized from OneTrust without breaking consent
-
-✅ **Real-time sync** - Fides → Adobe ECID updates immediately
-
-✅ **Real-time sync** - Fides → Google gtag updates immediately
-
-✅ **Bidirectional sync** - OneTrust cookie reflects Fides changes
-
-✅ **User identity preserved** - ECID remains constant
-
-✅ **Independent mappings work** - Web SDK and ECID can be configured separately
-
-✅ **Debug mode provides visibility** - All integration activity visible in console
+- Pre-migration state captured (OneTrust + Adobe)
+- Seamless migration (Fides reads OneTrust without breaking consent)
+- Real-time sync (Fides → Adobe ECID, Fides → Google gtag)
+- ECID preserved (same visitor ID before/after)
+- Independent mappings (Web SDK vs ECID configured separately)
 
 ---
 
@@ -462,81 +285,12 @@ console.table(Fides.nvidia.consent().rows)
 
 ## Troubleshooting
 
-### Issue: Migration script fails to load Fides
+**Fides didn't load:** Check network tab for errors, verify URL is accessible
 
-**Check:**
-```javascript
-// Verify fetch succeeded
-typeof window.Fides === 'object'  // Should be true
+**Adobe ECID not updating:** Re-run migration script, check `window.adobe?.optIn` exists
 
-// If failed, check URL
-// Try loading directly in browser: https://braverobot.net/fides.js?geolocation=us-ca&property_id=FDS-228IX4
-```
+**Modal doesn't appear:** `Fides.showModal()` - check console for errors
 
-**Fix:** Check network tab in DevTools for any errors loading the script.
+**Adobe Debugger stale:** Click refresh button in each tab
 
-### Issue: Adobe ECID not updating after Fides changes
-
-**Check:**
-```javascript
-// Verify Adobe optIn exists
-window.adobe?.optIn
-
-// Check if event listener is registered
-window.addEventListener('FidesUpdated', (e) => console.log('Event fired:', e.detail));
-
-// Then trigger an update
-window.Fides.consent.performance = true;
-window.dispatchEvent(new CustomEvent('FidesUpdated', { detail: { consent: window.Fides.consent } }));
-```
-
-**Fix:** Re-run the migration script (Step 3) to reinitialize integrations.
-
-### Issue: OneTrust cookie doesn't reflect Fides changes
-
-**Check:**
-```javascript
-// Check before
-document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1]
-
-// Make a change
-window.Fides.consent.advertising = true;
-window.dispatchEvent(new CustomEvent('FidesUpdated', { detail: { consent: window.Fides.consent } }));
-
-// Wait 1 second, then check again
-setTimeout(() => {
-  console.log(document.cookie.match(/OptanonConsent=([^;]+)/)?.[1]?.match(/groups=([^&]+)/)?.[1]);
-}, 1000);
-```
-
-**Note:** Cookie writes are asynchronous. Allow ~500ms for the write to complete.
-
-### Issue: Fides modal doesn't appear
-
-**Check:**
-```javascript
-// Verify Fides is loaded
-typeof window.Fides.showModal === 'function'
-
-// Try showing it manually
-Fides.showModal();
-```
-
-**Fix:** Check console for errors. Modal may require certain DOM elements to exist.
-
-### Issue: Adobe Debugger shows stale data
-
-**Fix:** Click the refresh button in each tab of the Adobe Debugger extension. Some tabs don't auto-update.
-
-### Issue: Google gtag consent not updating
-
-**Check:**
-```javascript
-// Verify gtag exists
-typeof window.gtag === 'function'
-
-// Check dataLayer
-window.dataLayer
-```
-
-**Note:** If `window.gtag` doesn't exist, the Google integration will silently skip (not an error). NVIDIA.com may or may not have gtag depending on the page.
+**gtag not found:** NVIDIA may not have gtag on all pages (not an error)

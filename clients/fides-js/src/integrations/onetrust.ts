@@ -145,3 +145,49 @@ export const readConsent = (): NoticeConsent | null => {
     return null;
   }
 };
+
+/**
+ * Migrate from OneTrust to Fides by reading OneTrust consent and initializing Fides.
+ *
+ * This is a convenience function that:
+ * 1. Reads OneTrust consent using readConsent()
+ * 2. Sets window.Fides.consent if OneTrust consent is found
+ * 3. Dispatches FidesUpdated event to trigger integrations
+ *
+ * @returns True if migration succeeded, false if OneTrust not found
+ *
+ * @example
+ * ```javascript
+ * // Simple one-call migration
+ * if (Fides.onetrust.migrate()) {
+ *   console.log('✅ Migrated from OneTrust');
+ *   console.log('Fides consent:', window.Fides.consent);
+ * } else {
+ *   console.log('⚠️ OneTrust not found');
+ * }
+ * ```
+ */
+export const migrate = (): boolean => {
+  const consent = readConsent();
+
+  if (!consent) {
+    return false;
+  }
+
+  // Set Fides consent
+  if (typeof window !== "undefined" && (window as any).Fides) {
+    (window as any).Fides.consent = consent;
+
+    // Dispatch FidesUpdated event to trigger any active integrations
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent,
+          extraDetails: { trigger: { origin: "onetrust_migration" } },
+        },
+      }),
+    );
+  }
+
+  return true;
+};
