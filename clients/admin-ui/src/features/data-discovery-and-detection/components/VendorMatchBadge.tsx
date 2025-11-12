@@ -1,12 +1,23 @@
 import {
-  Badge,
-  Box,
-  HStack,
-  Image,
-  QuestionIcon,
-  Text,
-  Tooltip,
+  AntAvatar as Avatar,
+  AntFlex as Flex,
+  AntTag as Tag,
+  AntTagProps as TagProps,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
+  Icons,
 } from "fidesui";
+
+const { Text } = Typography;
+
+const CONFIDENCE_COLORS: Record<
+  NonNullable<VendorMatchBadgeProps["confidence"]>,
+  TagProps["color"]
+> = {
+  high: "success",
+  medium: "warning",
+  low: "alert",
+};
 
 interface VendorMatchBadgeProps {
   vendorName?: string | null;
@@ -21,42 +32,30 @@ export const VendorMatchBadge = ({
 }: VendorMatchBadgeProps) => {
   if (!vendorName) {
     return (
-      <Badge colorScheme="gray" variant="outline" fontSize="xs">
-        <HStack spacing={1}>
-          <QuestionIcon boxSize={3} />
-          <Text>Unknown Vendor</Text>
-        </HStack>
-      </Badge>
+      <Tag>
+        <Flex align="center" gap="small">
+          <Icons.Help size={12} />
+          <Text>Unknown vendor</Text>
+        </Flex>
+      </Tag>
     );
   }
 
-  const confidenceColors = {
-    high: "green",
-    medium: "yellow",
-    low: "orange",
-  };
-  const colorScheme = confidence ? confidenceColors[confidence] : "gray";
-
-  const tooltipLabel = confidence
+  const color = confidence ? CONFIDENCE_COLORS[confidence] : undefined;
+  const tooltipTitle = confidence
     ? `Matched with ${confidence} confidence`
     : "Vendor matched";
 
   return (
-    <Tooltip label={tooltipLabel} placement="top">
-      <Badge colorScheme={colorScheme} fontSize="xs" px={2} py={1}>
-        <HStack spacing={2}>
-          {vendorLogoUrl && (
-            <Image
-              src={vendorLogoUrl}
-              alt={vendorName}
-              boxSize={4}
-              objectFit="contain"
-              fallback={<Box boxSize={4} />}
-            />
-          )}
+    <Tooltip title={tooltipTitle}>
+      <Tag color={color}>
+        <Flex align="center" gap="small">
+          <Avatar size={18} src={vendorLogoUrl ?? undefined} alt={vendorName}>
+            {vendorName.charAt(0)?.toUpperCase()}
+          </Avatar>
           <Text>{vendorName}</Text>
-        </HStack>
-      </Badge>
+        </Flex>
+      </Tag>
     </Tooltip>
   );
 };
