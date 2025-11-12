@@ -148,10 +148,9 @@ export const getOrMakeFidesCookie = (
   {
     fidesClearCookie = false,
     fidesCookieSuffix,
-  }: {
-    fidesClearCookie?: boolean;
-    fidesCookieSuffix?: FidesInitOptions["fidesCookieSuffix"];
-  } = {},
+  }: Partial<
+    Pick<FidesInitOptions, "fidesClearCookie" | "fidesCookieSuffix">
+  > = {},
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
