@@ -182,13 +182,7 @@ export const updateConsentPreferences = async ({
 
   // 4. Save preferences to the cookie in the browser
   fidesDebugger("Saving preferences to cookie");
-  saveFidesCookie(
-    { ...cookie, consent: normalizedConsent },
-    {
-      base64Cookie: options.base64Cookie,
-      fidesCookieSuffix: options.fidesCookieSuffix,
-    },
-  );
+  saveFidesCookie({ ...cookie, consent: normalizedConsent }, options);
   window.Fides.saved_consent = cookie.consent as NoticeValues;
 
   // 5. Save preferences to API (if not disabled)

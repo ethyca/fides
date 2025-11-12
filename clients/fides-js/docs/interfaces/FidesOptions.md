@@ -64,9 +64,10 @@ Configure `window.fides_overrides` after loading Fides.js tag
 
 > **fides\_clear\_cookie**: `boolean`
 
-When `true`, deletes the `fides_consent` cookie when FidesJS is
+When `true`, deletes the `fides_consent` or `fides_consent_suffix` cookie when FidesJS is
 initialized, to clear any previously saved consent preferences from the
-user's device.
+user's device. This option will only clear the cookie for the matching cookie name suffix or `fides_consent`
+if no suffix is provided.
 
 Defaults to `false`.
 
@@ -388,4 +389,4 @@ Sets a suffix for the `fides_consent` cookie that Fides uses to store consent pr
 
 If provided the cookie name will be `fides_consent_given_suffix_value`.
 
-Defaults to null.
+Defaults to undefined.

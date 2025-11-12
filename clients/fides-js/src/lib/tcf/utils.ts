@@ -3,6 +3,8 @@ import { TCString } from "@iabtechlabtcf/core";
 import {
   ConsentMechanism,
   FidesCookie,
+  FidesInitOptions,
+  FidesOptions,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -280,7 +282,7 @@ export const getEnabledIds = (modelList: TcfModels) => {
  */
 export const getEnabledIdsNotice = (
   noticeList: PrivacyNoticeWithPreference[],
-  suffix: string | null | undefined,
+  suffix: FidesInitOptions["fidesCookieSuffix"],
 ) => {
   if (!noticeList) {
     return [];

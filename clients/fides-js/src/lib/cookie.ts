@@ -6,6 +6,7 @@ import { ConsentContext } from "./consent-context";
 import {
   Cookies as CookiesType,
   FidesCookie,
+  FidesInitOptions,
   LegacyConsentConfig,
   NoticeConsent,
   PrivacyExperience,
@@ -28,7 +29,9 @@ import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
-const getConsentCookieName = (suffix: string | null | undefined) => {
+const getConsentCookieName = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+) => {
   const safeSuffix = (suffix ?? "").trim();
 
   if (safeSuffix.length > 0) {
@@ -113,7 +116,7 @@ export const getCookieByName = (cookieName: string): string | undefined =>
  * Retrieve and decode fides consent cookie
  */
 export const getFidesConsentCookie = (
-  suffix: string | undefined | null,
+  suffix: FidesInitOptions["fidesCookieSuffix"],
 ): FidesCookie | undefined => {
   const cookieString = getCookieByName(getConsentCookieName(suffix));
   if (!cookieString) {
@@ -145,7 +148,10 @@ export const getOrMakeFidesCookie = (
   {
     fidesClearCookie = false,
     fidesCookieSuffix,
-  }: { fidesClearCookie?: boolean; fidesCookieSuffix?: string | null } = {},
+  }: {
+    fidesClearCookie?: boolean;
+    fidesCookieSuffix?: FidesInitOptions["fidesCookieSuffix"];
+  } = {},
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -225,7 +231,7 @@ export const saveFidesCookie = (
   {
     base64Cookie = false,
     fidesCookieSuffix,
-  }: { base64Cookie?: boolean; fidesCookieSuffix?: string | null } = {},
+  }: Partial<Pick<FidesInitOptions, "base64Cookie" | "fidesCookieSuffix">> = {},
 ) => {
   if (typeof document === "undefined") {
     return;

@@ -122,7 +122,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...migratedConsent,
   };
 
-  // Keep a copy of saved consent from the cookie, since e update the "cookie"
+  // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
     ...(this.cookie.consent as NoticeValues),

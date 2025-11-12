@@ -134,10 +134,7 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, {
-    fidesClearCookie: options.fidesClearCookie,
-    fidesCookieSuffix: options.fidesCookieSuffix,
-  });
+  return getOrMakeFidesCookie(consentDefaults, options);
 };
 
 /**

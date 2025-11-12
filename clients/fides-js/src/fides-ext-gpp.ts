@@ -301,10 +301,7 @@ const initializeGppCmpApi = () => {
       if (window.Fides.cookie) {
         window.Fides.fides_string = fidesString;
         window.Fides.cookie.fides_string = fidesString;
-        saveFidesCookie(window.Fides.cookie, {
-          base64Cookie: window.Fides.options.base64Cookie,
-          fidesCookieSuffix: window.Fides.options.fidesCookieSuffix,
-        });
+        saveFidesCookie(window.Fides.cookie, window.Fides.options);
         fidesDebugger("GPP: updated fides_string", fidesString);
       }
     }

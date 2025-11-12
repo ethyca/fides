@@ -58,9 +58,10 @@
  */
 export interface FidesOptions {
   /**
-   * When `true`, deletes the `fides_consent` cookie when FidesJS is
+   * When `true`, deletes the `fides_consent` or `fides_consent_suffix` cookie when FidesJS is
    * initialized, to clear any previously saved consent preferences from the
-   * user's device.
+   * user's device. This option will only clear the cookie for the matching cookie name suffix or `fides_consent`
+   * if no suffix is provided.
    *
    * Defaults to `false`.
    */
@@ -339,7 +340,7 @@ export interface FidesOptions {
    *
    * If provided the cookie name will be `fides_consent_given_suffix_value`.
    *
-   * Defaults to null.
+   * Defaults to undefined.
    */
   fides_cookie_suffix?: string;
 }
