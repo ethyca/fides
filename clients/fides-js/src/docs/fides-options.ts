@@ -336,11 +336,13 @@ export interface FidesOptions {
     | "disabled";
 
   /**
-   * Sets a suffix for the `fides_consent` cookie that Fides uses to store consent preferences.
+   * Adds a suffix to the name of the cookie that Fides uses to store consent preferences.
    *
-   * If provided the cookie name will be `fides_consent_given_suffix_value`.
+   * If provided, the cookie name will be `fides_consent_{suffix}`. For example, if set to
+   * `"mycompany"`, the cookie will be named `fides_consent_mycompany`. This allows multiple
+   * Fides instances on the same domain to maintain separate consent cookies.
    *
-   * Defaults to undefined.
+   * Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
    */
   fides_cookie_suffix?: string;
 }
