@@ -450,10 +450,15 @@ const NoticeOverlay = () => {
         onClose,
         onManagePreferencesClick,
       }) => {
+        const layer1ButtonOption =
+          experience.experience_config?.layer1_button_options;
+        const consentContext = getConsentContext();
+        const isGpcConditional =
+          layer1ButtonOption === Layer1ButtonOption.GPC_CONDITIONAL;
         const isAcknowledge =
           isAllNoticeOnly ||
-          experience.experience_config?.layer1_button_options ===
-            Layer1ButtonOption.ACKNOWLEDGE;
+          layer1ButtonOption === Layer1ButtonOption.ACKNOWLEDGE ||
+          (isGpcConditional && consentContext.globalPrivacyControl === true);
         return (
           <ConsentBanner
             attributes={attributes}

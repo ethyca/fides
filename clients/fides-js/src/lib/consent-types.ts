@@ -903,6 +903,7 @@ export enum Layer1ButtonOption {
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
   OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+  GPC_CONDITIONAL = "gpc_conditional", // show acknowledge when GPC is on, opt in/opt out when GPC is off
 }
 
 export enum RejectAllMechanism {

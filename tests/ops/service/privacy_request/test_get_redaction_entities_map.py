@@ -672,7 +672,7 @@ class TestDSRReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # customer_database should be redacted to dataset_1
             assert "dataset_1" in welcome_content
@@ -1042,7 +1042,7 @@ class TestDSRReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase)
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Dataset is redacted due to dataset-level config
             assert "dataset_1" in welcome_content

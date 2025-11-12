@@ -120,7 +120,7 @@ class TestDSRReportBuilderDataStructure:
         # Verify the package structure
         with zipfile.ZipFile(output_file, "r") as zip_file:
             # Check welcome page content
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Dataset-level redaction:
             # "analytics_system" should NOT be redacted (doesn't match "customer.*")
@@ -348,7 +348,7 @@ class TestDSRReportBuilder(TestDSRReportBuilderBase):
 
         with zipfile.ZipFile(report) as zip_file:
             # Check welcome page content
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
             self.assert_html_contains(
                 welcome_content, "Your requested data", "dataset1"
             )
@@ -392,7 +392,7 @@ class TestDSRReportBuilder(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(report) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
             self.assert_html_contains(
                 welcome_content,
                 str(privacy_request.id),
@@ -530,7 +530,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with missing data
         content = builder._populate_template(
-            "templates/welcome.html",
+            "templates/clickme.html",
             heading=None,
             description=None,
             data={},  # Pass empty dict instead of None
@@ -539,7 +539,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with malformed data
         content = builder._populate_template(
-            "templates/welcome.html",
+            "templates/clickme.html",
             heading=123,  # Non-string heading
             description=["invalid"],  # Non-string description
             data={"invalid": object()},  # Non-serializable data
@@ -548,7 +548,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with empty strings
         content = builder._populate_template(
-            "templates/welcome.html", heading="", description="", data={}
+            "templates/clickme.html", heading="", description="", data={}
         )
         assert "Your requested data" in content
 
@@ -601,7 +601,7 @@ class TestDSRReportBuilderOrganization(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Find the order of links in the welcome page
             link_order = []

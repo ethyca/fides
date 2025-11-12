@@ -14,7 +14,7 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
 from .conftest import TestDSRReportBuilderBase
 
 EXPECTED_FILES = [
-    "welcome.html",
+    "clickme.html",
     "data/manualtask/index.html",
     "data/manualtask/manual_data/index.html",
     "data/manualtask2/index.html",

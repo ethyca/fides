@@ -1,6 +1,7 @@
 import {
   AntFlex as Flex,
-  AntRadio as Radio,
+  AntSegmented as Segmented,
+  Icons,
   Spacer,
   Text,
   theme,
@@ -13,8 +14,6 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
-import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
-import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
@@ -253,17 +252,20 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <Radio.Group
-                onChange={(e) => setIsMobilePreview(e.target.value)}
-                defaultValue={false}
-              >
-                <Radio.Button value title="View mobile preview">
-                  <MobileIcon />
-                </Radio.Button>
-                <Radio.Button value={false} title="View desktop preview">
-                  <DesktopIcon />
-                </Radio.Button>
-              </Radio.Group>
+              <Segmented
+                options={[
+                  {
+                    value: "mobile",
+                    icon: <Icons.Mobile title="Mobile" />,
+                  },
+                  {
+                    value: "desktop",
+                    icon: <Icons.Screen title="Desktop" />,
+                  },
+                ]}
+                defaultValue="desktop"
+                onChange={(value) => setIsMobilePreview(value === "mobile")}
+              />
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}
