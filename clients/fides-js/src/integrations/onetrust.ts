@@ -147,19 +147,18 @@ export const readConsent = (): NoticeConsent | null => {
 };
 
 /**
- * Migrate from OneTrust to Fides by reading OneTrust consent and initializing Fides.
+ * Migrate from OneTrust to Fides by reading OneTrust consent and updating Fides.
  *
  * This is a convenience function that:
  * 1. Reads OneTrust consent using readConsent()
- * 2. Sets window.Fides.consent if OneTrust consent is found
- * 3. Dispatches FidesUpdated event to trigger integrations
+ * 2. Uses Fides.updateConsent() to properly save consent (cookie, state, modal, etc.)
  *
- * @returns True if migration succeeded, false if OneTrust not found
+ * @returns Promise that resolves to true if migration succeeded, false if OneTrust not found
  *
  * @example
  * ```javascript
  * // Simple one-call migration
- * if (Fides.onetrust.migrate()) {
+ * if (await Fides.onetrust.migrate()) {
  *   console.log('✅ Migrated from OneTrust');
  *   console.log('Fides consent:', window.Fides.consent);
  * } else {
@@ -167,26 +166,16 @@ export const readConsent = (): NoticeConsent | null => {
  * }
  * ```
  */
-export const migrate = (): boolean => {
+export const migrate = async (): Promise<boolean> => {
   const consent = readConsent();
 
   if (!consent) {
     return false;
   }
 
-  // Set Fides consent
-  if (typeof window !== "undefined" && (window as any).Fides) {
-    (window as any).Fides.consent = consent;
-
-    // Dispatch FidesUpdated event to trigger any active integrations
-    window.dispatchEvent(
-      new CustomEvent("FidesUpdated", {
-        detail: {
-          consent,
-          extraDetails: { trigger: { origin: "onetrust_migration" } },
-        },
-      }),
-    );
+  // Use Fides.updateConsent() to properly save consent (handles cookie, state, modal, events)
+  if (typeof window !== "undefined" && (window as any).Fides?.updateConsent) {
+    await (window as any).Fides.updateConsent({ consent });
   }
 
   return true;

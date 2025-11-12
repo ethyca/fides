@@ -126,7 +126,7 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
   await new Promise(resolve => setTimeout(resolve, 500));
 
   // Migrate from OneTrust
-  Fides.onetrust.migrate();
+  await Fides.onetrust.migrate();
 
   // Setup Adobe integration
   window.fidesAEP = Fides.aep({

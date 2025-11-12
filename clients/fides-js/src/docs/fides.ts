@@ -321,14 +321,15 @@ export interface Fides {
     /**
      * Migrate from OneTrust to Fides in one call.
      *
-     * Reads OneTrust consent, sets window.Fides.consent, and dispatches FidesUpdated event.
+     * Reads OneTrust consent and uses Fides.updateConsent() to properly save it
+     * (handles cookie, state, modal, events).
      *
-     * @returns True if migration succeeded, false if OneTrust not found
+     * @returns Promise that resolves to true if migration succeeded, false if OneTrust not found
      *
      * @example
      * ```javascript
      * // Simple one-call migration
-     * if (Fides.onetrust.migrate()) {
+     * if (await Fides.onetrust.migrate()) {
      *   console.log('✅ Migrated from OneTrust');
      *   console.log('Fides consent:', window.Fides.consent);
      * } else {
@@ -336,7 +337,7 @@ export interface Fides {
      * }
      * ```
      */
-    migrate: () => boolean;
+    migrate: () => Promise<boolean>;
   };
 
   /**
