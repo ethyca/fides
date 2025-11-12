@@ -185,6 +185,7 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
+        subject_identity_verification_not_required,
     ):
         data = [
             {
@@ -201,7 +202,17 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
-        assert not mock_dispatch_message.called
+        # Check that no verification messages were sent (receipt messages may still be sent)
+        if mock_dispatch_message.called:
+            call_args = mock_dispatch_message.call_args_list
+            for call in call_args:
+                task_kwargs = call.kwargs.get("kwargs", {})
+                message_meta = task_kwargs.get("message_meta", {})
+                action_type = message_meta.get("action_type")
+                assert (
+                    action_type
+                    != MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+                )
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
@@ -6085,6 +6096,11 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
+    @pytest.mark.usefixtures(
+        "require_manual_request_approval",
+        "subject_identity_verification_required",
+        "messaging_config",
+    )
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_message,
@@ -6093,8 +6109,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         db,
         api_client: TestClient,
         policy,
-        messaging_config,
-        subject_identity_verification_required,
     ):
         data = [
             {
@@ -6119,14 +6133,16 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert not mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
+        from fides.config.config_proxy import ConfigProxy
 
-        assert mock_dispatch_message.called
-        call_args = mock_dispatch_message.call_args[1]
+        config_proxy = ConfigProxy(db=db)
+        assert mock_dispatch_message.call_count == 2
+        call_args = mock_dispatch_message.call_args_list[0][1]
         task_kwargs = call_args["kwargs"]
         message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"]
-            == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
+            == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
         assert (
             message_meta["body_params"]["verification_code"]
