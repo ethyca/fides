@@ -1,5 +1,8 @@
 import type { Key } from "antd/es/table/interface";
 
+import type { PrivacyNoticeResponse } from "~/types/api";
+import { ConsentMechanism, EnforcementLevel } from "~/types/api";
+
 // Constants
 export const PARENT_KEY = "email_marketing" as const;
 
@@ -33,8 +36,45 @@ export const TREE_NODES = [
   },
 ];
 
+const now = new Date().toISOString();
+
+// Convert TREE_NODES to PrivacyNoticeResponse format
+const createPrivacyNotice = (
+  title: string,
+  key: string,
+): PrivacyNoticeResponse => ({
+  id: key,
+  name: title,
+  notice_key: title,
+  consent_mechanism: ConsentMechanism.OPT_OUT,
+  data_uses: [],
+  enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+  disabled: false,
+  has_gpc_flag: false,
+  created_at: now,
+  updated_at: now,
+});
+
+// Privacy notices in PrivacyNoticeResponse format, constructed from TREE_NODES
+export const PRIVACY_NOTICES: PrivacyNoticeResponse[] = [
+  {
+    ...createPrivacyNotice(PARENT_KEY, PARENT_KEY_WITH_UUID),
+    children: TREE_NODES.map((node) =>
+      createPrivacyNotice(node.title, node.key),
+    ),
+  },
+];
+
 export const ALL_KEYS: Key[] = [
   PARENT_KEY_WITH_UUID,
   ...TREE_NODES.map((node) => node.key),
 ];
 export const INITIAL_EXPANDED_KEYS: Key[] = [PARENT_KEY_WITH_UUID];
+
+// Experience configuration defaults
+export const EXPERIENCE_DEFAULTS = {
+  REGION: "us_ca",
+  COMPONENT: "overlay",
+  SHOW_DISABLED: false,
+  SYSTEMS_APPLICABLE: true,
+} as const;
