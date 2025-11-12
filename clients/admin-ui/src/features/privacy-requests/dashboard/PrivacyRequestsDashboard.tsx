@@ -100,8 +100,8 @@ export const PrivacyRequestsDashboard = () => {
       </Flex>
 
       {/* Second row: Actions */}
-      <Flex gap="small" align="center" justify="flex-end" className="mb-2">
-        <div className="mr-auto flex items-center gap-2">
+      <Flex gap="small" align="center" justify="space-between" className="mb-2">
+        <Flex align="center" gap="small">
           <Checkbox
             id="select-all"
             checked={checkboxSelectState === "checked"}
@@ -111,28 +111,30 @@ export const PrivacyRequestsDashboard = () => {
           <label htmlFor="select-all" className="cursor-pointer">
             Select all
           </label>
-        </div>
-        <BulkActionsDropdown
-          selectedIds={selectedIds}
-          menuItems={bulkActionMenuItems}
-          totalResults={totalRows ?? 0}
-        />
-        <Button
-          aria-label="Reload"
-          data-testid="reload-btn"
-          icon={<Icons.Renew />}
-          onClick={() => refetch()}
-        />
-        <Button
-          aria-label="Export report"
-          data-testid="export-btn"
-          icon={<Icons.Download />}
-          onClick={handleExport}
-        />
+        </Flex>
+        <Flex align="center" gap="small">
+          <BulkActionsDropdown
+            selectedIds={selectedIds}
+            menuItems={bulkActionMenuItems}
+            totalResults={totalRows ?? 0}
+          />
+          <Button
+            aria-label="Reload"
+            data-testid="reload-btn"
+            icon={<Icons.Renew />}
+            onClick={() => refetch()}
+          />
+          <Button
+            aria-label="Export report"
+            data-testid="export-btn"
+            icon={<Icons.Download />}
+            onClick={handleExport}
+          />
+        </Flex>
       </Flex>
 
       {isLoading ? (
-        <div className=" p-2">
+        <div className="p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
