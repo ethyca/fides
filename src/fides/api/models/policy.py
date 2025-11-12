@@ -143,7 +143,7 @@ class Policy(Base):
             return None
 
     def get_all_action_types(self) -> Set[ActionType]:
-        return set(rule.action_type for rule in self.rules) # type: ignore[attr-defined]
+        return set(rule.action_type for rule in self.rules)  # type: ignore[attr-defined]
 
     def generate_masking_secrets(self) -> Optional[List[MaskingSecretCache]]:
         """
