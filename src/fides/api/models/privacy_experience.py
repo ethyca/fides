@@ -758,7 +758,7 @@ def link_notices_to_experience_config(
         PrivacyNotice.id.in_(notice_ids)
     )
 
-    # Add new notices and update display_order for all
+    # Add new notices
     for notice in new_notices:
         if notice not in experience_config.privacy_notices:
             experience_config.privacy_notices.append(notice)
