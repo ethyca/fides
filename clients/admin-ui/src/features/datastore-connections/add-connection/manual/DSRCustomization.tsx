@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
@@ -53,7 +53,7 @@ const DSRCustomization = () => {
       successAlert(
         `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
-      router.push(DATASTORE_CONNECTION_ROUTE);
+      router.push(SYSTEM_ROUTE);
     } catch (error) {
       handleError(error);
     } finally {

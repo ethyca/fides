@@ -101,10 +101,7 @@ const EditConnection = () => {
     <>
       <PageHeader
         heading="Connection manager"
-        breadcrumbItems={[
-          { title: "All connections", href: DATASTORE_CONNECTION_ROUTE },
-          { title: connection.name },
-        ]}
+        breadcrumbItems={[{ title: connection.name }]}
       />
       <Heading
         fontSize="md"

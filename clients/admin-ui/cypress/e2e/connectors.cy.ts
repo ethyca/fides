@@ -37,26 +37,13 @@ describe("Connectors", () => {
       }).as("getDatasets");
     });
 
-    it("Should show data store connections and view configuration", () => {
-      cy.visit("/datastore-connection");
-      cy.getByTestId("connection-grid-item-mongodb_connector");
-      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
-        cy.getByTestId("connection-menu-btn").click();
-      });
-      cy.getByTestId("connection-menu-postgres_connector").within(() => {
-        cy.getByTestId("configure-btn").click();
-      });
+    it("Should view connection configuration", () => {
+      cy.visit("/datastore-connection/postgres_connector");
       cy.getByTestId("input-name").should("have.value", "postgres_connector");
     });
 
     it("Should allow saving a dataset configuration via dropdown", () => {
-      cy.visit("/datastore-connection");
-      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
-        cy.getByTestId("connection-menu-btn").click();
-      });
-      cy.getByTestId("connection-menu-postgres_connector").within(() => {
-        cy.getByTestId("configure-btn").click();
-      });
+      cy.visit("/datastore-connection/postgres_connector");
       cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
@@ -85,13 +72,7 @@ describe("Connectors", () => {
     });
 
     it("Should allow saving a dataset configuration via yaml", () => {
-      cy.visit("/datastore-connection");
-      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
-        cy.getByTestId("connection-menu-btn").click();
-      });
-      cy.getByTestId("connection-menu-postgres_connector").within(() => {
-        cy.getByTestId("configure-btn").click();
-      });
+      cy.visit("/datastore-connection/postgres_connector");
       cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
@@ -137,13 +118,7 @@ describe("Connectors", () => {
         },
       ).as("getEmptyPostgresConnectorDatasetconfig");
 
-      cy.visit("/datastore-connection");
-      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
-        cy.getByTestId("connection-menu-btn").click();
-      });
-      cy.getByTestId("connection-menu-postgres_connector").within(() => {
-        cy.getByTestId("configure-btn").click();
-      });
+      cy.visit("/datastore-connection/postgres_connector");
       cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
@@ -155,13 +130,7 @@ describe("Connectors", () => {
         fixture: "connectors/minimal_datasets.json",
       }).as("getMinimalDatasets");
 
-      cy.visit("/datastore-connection");
-      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
-        cy.getByTestId("connection-menu-btn").click();
-      });
-      cy.getByTestId("connection-menu-postgres_connector").within(() => {
-        cy.getByTestId("configure-btn").click();
-      });
+      cy.visit("/datastore-connection/postgres_connector");
       cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 

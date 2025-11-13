@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import {
   useGetAllFilteredDatasetsQuery,
   useUpsertDatasetsMutation,
@@ -78,7 +78,7 @@ const DatasetConfiguration = () => {
     } else {
       successAlert("Dataset successfully updated!");
     }
-    router.push(DATASTORE_CONNECTION_ROUTE);
+    router.push(SYSTEM_ROUTE);
   };
 
   const handleLinkDataset = async () => {
