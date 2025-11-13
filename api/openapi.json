@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.1"
+    "version": "2.74.2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20453,7 +20453,23 @@
           "value": {
             "anyOf": [
               {
+                "type": "integer"
+              },
+              {
                 "type": "string"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "array"
               },
               {
                 "type": "null"
@@ -20466,7 +20482,8 @@
         "required": [
           "label"
         ],
-        "title": "IdentityValue"
+        "title": "IdentityValue",
+        "description": "Represents an identity value with a label in API responses.\n\nThe value field accepts MultiValue types which match what LabeledIdentity supports:\n- int\n- str\n- List[Union[int, str]]\n\nThis allows the schema to accept list values that were previously causing\nvalidation errors."
       },
       "IdentityVerificationConfigResponse": {
         "properties": {
