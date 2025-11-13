@@ -40,11 +40,12 @@ export interface AEPOptions {
   /**
    * Custom mapping of Fides consent keys to Adobe ECID Opt-In categories
    * Used for legacy Adobe ECID Opt-In Service (AppMeasurement)
-   * Categories: 'aa' (Analytics), 'target' (Target), 'aam' (Audience Manager)
+   * Categories: 'aa' (Analytics), 'target' (Target), 'aam' (Audience Manager),
+   * 'adcloud' (AdCloud), 'campaign' (Campaign), 'ecid' (ECID), 'livefyre' (Livefyre), 'mediaaa' (Media Analytics)
    * @default Derived from purposeMapping if not provided (for backward compatibility)
    */
   ecidMapping?: {
-    [fidesKey: string]: Array<'aa' | 'target' | 'aam'>;
+    [fidesKey: string]: string[];
   };
 
   /**
@@ -64,10 +65,8 @@ export interface AEPConsentState {
     configured: boolean;
   };
   ecidOptIn?: {
-    aa?: boolean;
-    target?: boolean;
-    aam?: boolean;
     configured: boolean;
+    categories?: Record<string, boolean>; // Dynamic: all Adobe categories (aa, target, aam, adcloud, campaign, etc.)
   };
 }
 
@@ -153,11 +152,8 @@ const pushConsentToAdobe = (
   // Handle legacy ECID Opt-In Service
   if (hasOptIn) {
     try {
-      const ecidApprovals: { aa: boolean; target: boolean; aam: boolean } = {
-        aa: false,
-        target: false,
-        aam: false,
-      };
+      // Dynamic approvals: support all Adobe categories, not just hardcoded ones
+      const ecidApprovals: Record<string, boolean> = {};
 
       // Use explicit ecidMapping if provided, otherwise derive from purposeMapping (backward compatibility)
       if (options?.ecidMapping) {
@@ -167,15 +163,7 @@ const pushConsentToAdobe = (
 
           ecidCategories.forEach((category) => {
             // Use OR logic: if ANY Fides key grants consent to a category, approve it
-            if (category === "aa") {
-              ecidApprovals.aa = ecidApprovals.aa || hasConsent;
-            }
-            if (category === "target") {
-              ecidApprovals.target = ecidApprovals.target || hasConsent;
-            }
-            if (category === "aam") {
-              ecidApprovals.aam = ecidApprovals.aam || hasConsent;
-            }
+            ecidApprovals[category] = ecidApprovals[category] || hasConsent;
           });
         });
 
@@ -184,20 +172,21 @@ const pushConsentToAdobe = (
         }
       } else {
         // Backward compatibility: derive ECID categories from purposeMapping
-        // Map Fides keys → Adobe purposes → ECID categories
+        // Map Adobe purposes to ECID categories using default mapping
+        const purposeToEcidMapping: Record<string, string> = {
+          collect: "aa",
+          measure: "aa",
+          personalize: "target",
+          share: "aam",
+        };
+
         Object.entries(purposeMapping).forEach(([fidesKey, adobePurposes]) => {
           const hasConsent = !!consent[fidesKey];
 
           adobePurposes.forEach((purpose) => {
-            // Map Adobe purposes to ECID categories
-            if (purpose === "collect" || purpose === "measure") {
-              ecidApprovals.aa = ecidApprovals.aa || hasConsent;
-            }
-            if (purpose === "personalize") {
-              ecidApprovals.target = ecidApprovals.target || hasConsent;
-            }
-            if (purpose === "share") {
-              ecidApprovals.aam = ecidApprovals.aam || hasConsent;
+            const ecidCategory = purposeToEcidMapping[purpose];
+            if (ecidCategory) {
+              ecidApprovals[ecidCategory] = ecidApprovals[ecidCategory] || hasConsent;
             }
           });
         });
@@ -207,26 +196,21 @@ const pushConsentToAdobe = (
         }
       }
 
-      // Apply approvals/denials using Adobe's Categories enum
+      // Dynamically apply approvals/denials for all categories
       const categories = window.adobe!.optIn.Categories;
 
-      if (ecidApprovals.aa) {
-        window.adobe!.optIn.approve(categories.ANALYTICS);
-      } else {
-        window.adobe!.optIn.deny(categories.ANALYTICS);
-      }
-
-      if (ecidApprovals.target) {
-        window.adobe!.optIn.approve(categories.TARGET);
-      } else {
-        window.adobe!.optIn.deny(categories.TARGET);
-      }
-
-      if (ecidApprovals.aam) {
-        window.adobe!.optIn.approve(categories.AAM);
-      } else {
-        window.adobe!.optIn.deny(categories.AAM);
-      }
+      // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
+      Object.entries(categories).forEach(([categoryName, categoryId]) => {
+        if (typeof categoryId === "string") {
+          // Check if we have an approval decision for this category
+          if (ecidApprovals[categoryId] === true) {
+            window.adobe!.optIn.approve(categoryId);
+          } else if (ecidApprovals[categoryId] === false) {
+            window.adobe!.optIn.deny(categoryId);
+          }
+          // If undefined, we don't touch it (no mapping provided)
+        }
+      });
 
       if (debug) {
         console.log("[Fides Adobe] Updated ECID Opt-In Service:", ecidApprovals);
@@ -321,15 +305,21 @@ function getAdobeConsentState(): AEPConsentState {
     const { optIn } = window.adobe;
 
     try {
-      const aaApproved = optIn.isApproved?.(optIn.Categories?.AA);
-      const targetApproved = optIn.isApproved?.(optIn.Categories?.TARGET);
-      const aamApproved = optIn.isApproved?.(optIn.Categories?.AAM);
+      // Dynamically check all Adobe categories
+      const categories: Record<string, boolean> = {};
+
+      if (optIn.Categories) {
+        // Iterate through all available categories (ANALYTICS, TARGET, AAM, ADCLOUD, etc.)
+        Object.entries(optIn.Categories).forEach(([categoryName, categoryId]) => {
+          if (typeof categoryId === "string" && typeof optIn.isApproved === "function") {
+            categories[categoryId] = optIn.isApproved(categoryId);
+          }
+        });
+      }
 
       state.ecidOptIn = {
         configured: true,
-        aa: aaApproved,
-        target: targetApproved,
-        aam: aamApproved,
+        categories,
       };
     } catch (e) {
       state.ecidOptIn = {
