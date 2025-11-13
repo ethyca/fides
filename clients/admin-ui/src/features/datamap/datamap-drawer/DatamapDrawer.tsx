@@ -36,12 +36,11 @@ const DatamapDrawer = ({
       onClose={resetSelectedSystemId}
       placement="right"
       width={480}
-      data-testid="datamap-drawer"
       title={system?.name ?? "System Information"}
       loading={isLoading}
     >
       {system ? (
-        <>
+        <div data-testid="datamap-drawer">
           <SystemInfo system={system} />
           <Text
             size="md"
@@ -70,7 +69,7 @@ const DatamapDrawer = ({
             Data flow
           </Text>
           <DataFlowAccordion system={system} />
-        </>
+        </div>
       ) : null}
     </Drawer>
   );
