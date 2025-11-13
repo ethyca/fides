@@ -454,6 +454,8 @@ export default async function handler(
   let safeAdobeOrgId: string | null = null;
   if (environment.settings.ADOBE_ORG_ID) {
     const adobeOrgIdPattern = /^[A-Za-z0-9_-]+@AdobeOrg$/;
+    if (adobeOrgIdPattern.test(environment.settings.ADOBE_ORG_ID)) {
+      safeAdobeOrgId = environment.settings.ADOBE_ORG_ID;
     } else {
       log.warn(
         { adobeOrgId: environment.settings.ADOBE_ORG_ID },
