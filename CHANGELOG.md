@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
 
 ### Added
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
@@ -37,7 +37,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
-- Fixed the IdentityValue schema so it uses Multivalue instead of string [#6964](https://github.com/ethyca/fides/pull/6964)
 
 ### Developer Experience
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
@@ -49,6 +48,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
+
+## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
+
+### Fixed
+- Fixed the IdentityValue schema so it uses Multivalue instead of string [#6964](https://github.com/ethyca/fides/pull/6964)
 
 ## [2.74.1](https://github.com/ethyca/fides/compare/2.74.0..2.74.1)
 
