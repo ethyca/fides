@@ -4,13 +4,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
 
 from fideslang.validation import FidesKey
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_serializer,
-    field_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
