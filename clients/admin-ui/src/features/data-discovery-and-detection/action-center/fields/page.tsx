@@ -11,7 +11,6 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
-  useMessage,
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -72,7 +71,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -132,7 +130,6 @@ const ActionCenterFields: NextPage = () => {
   const bulkActions = useBulkActions(
     monitorId,
     modalApi,
-    messageApi,
     async (urns: string[]) => {
       await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
     },
@@ -140,7 +137,6 @@ const ActionCenterFields: NextPage = () => {
   const fieldActions = useFieldActions(
     monitorId,
     modalApi,
-    messageApi,
     async (urns: string[]) => {
       await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
     },
@@ -240,7 +236,6 @@ const ActionCenterFields: NextPage = () => {
     fieldActions,
     updateSelectedListItem,
     handleNavigate,
-    messageApi,
     !!detailsUrn,
   );
 
