@@ -5,6 +5,7 @@ import {
   isoStringToEntry,
 } from "fidesui";
 
+import { NO_VALUE } from "~/constants";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   ListExpandableCell,
@@ -48,8 +49,9 @@ export interface ColumnBuilderParams {
   setDomainsVersion: (fn: (prev: number) => number) => void;
 }
 
-export const IsIdentityProvider  = (resourceType?: StagedResourceTypeValue): boolean =>
-  resourceType === StagedResourceTypeValue.OKTA_APP;
+export const IsIdentityProvider = (
+  resourceType?: StagedResourceTypeValue,
+): boolean => resourceType === StagedResourceTypeValue.OKTA_APP;
 
 export const IsIdentityProviderColumns = ({
   rowClickUrl,
@@ -120,7 +122,7 @@ export const IsIdentityProviderColumns = ({
       <span>
         {metadata?.created
           ? new Date(metadata.created).toLocaleDateString()
-          : "N/A"}
+          : NO_VALUE}
       </span>
     ),
   },
