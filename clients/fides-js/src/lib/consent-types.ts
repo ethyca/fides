@@ -4,8 +4,11 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import type { aep } from "../integrations/aep";
+import type { status as oneTrustStatus, readConsent as oneTrustReadConsent, migrate as oneTrustMigrate } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
+import type { gtagConsent } from "../integrations/gtag-consent";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -228,8 +231,15 @@ export interface FidesGlobal
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   version: string;
+  aep: typeof aep;
+  onetrust: {
+    status: typeof oneTrustStatus;
+    readConsent: typeof oneTrustReadConsent;
+    migrate: typeof oneTrustMigrate;
+  };
   blueconic: typeof blueconic;
   gtm: typeof gtm;
+  gtagConsent: typeof gtagConsent;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
   onFidesEvent: (
