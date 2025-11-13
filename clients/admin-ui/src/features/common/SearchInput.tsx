@@ -1,11 +1,6 @@
 import classNames from "classnames";
-import {
-  AntButton as Button,
-  AntInput as Input,
-  AntInputProps as InputProps,
-  AntSpace as Space,
-  SearchLineIcon,
-} from "fidesui";
+import { AntInput as Input, AntInputProps as InputProps, Icons } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import styles from "./SearchInput.module.scss";
 
@@ -13,14 +8,12 @@ export interface SearchInputProps
   extends Omit<InputProps, "onChange" | "variant"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
-  onClear?: () => void;
   variant?: "default" | "compact";
 }
 
 const SearchInput = ({
   onChange,
-  withIcon,
-  onClear,
+  withIcon = true,
   placeholder,
   variant = "default",
   ...props
@@ -31,24 +24,25 @@ const SearchInput = ({
   const isCompact = variant === "compact";
 
   return (
-    <Space.Compact
+    <Input
+      autoComplete="off"
+      onChange={handleSearchChange}
+      placeholder={placeholder || "Search"}
+      aria-label="Search"
+      prefix={
+        withIcon ? (
+          <Icons.Search color={palette.FIDESUI_NEUTRAL_200} />
+        ) : undefined
+      }
+      allowClear
       className={classNames({
         [styles.searchInput]: true,
         [styles.searchInputCompact]: isCompact,
+        [styles.searchInputIcon]: withIcon,
       })}
       data-testid="search-bar"
-    >
-      <Input
-        autoComplete="off"
-        onChange={handleSearchChange}
-        placeholder={placeholder || "Search..."}
-        prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
-        allowClear={isCompact}
-        className="w-full"
-        {...props}
-      />
-      {onClear && !isCompact ? <Button onClick={onClear}>Clear</Button> : null}
-    </Space.Compact>
+      {...props}
+    />
   );
 };
 
