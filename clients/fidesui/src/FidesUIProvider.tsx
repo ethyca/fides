@@ -50,6 +50,7 @@ export const FidesUIProvider = ({
 export const useMessage = () => {
   const context = useContext(AntComponentAPIsContext);
   if (!context) {
+    // eslint-disable-next-line no-throw-literal
     throw new Error("useMessage must be used within a FidesUIProvider");
   }
   return context.messageApi;
