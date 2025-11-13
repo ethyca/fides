@@ -3,7 +3,6 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   Box,
-  Collapse,
   Heading,
   Stack,
   Text,
@@ -427,10 +426,7 @@ const SystemInformationForm = ({
                       tooltip="Is this system exempt from privacy regulations?"
                       disabled={!values.processes_personal_data || lockedForGVL}
                     />
-                    <Collapse
-                      in={values.exempt_from_privacy_regulations}
-                      animateOpacity
-                    >
+                    {values.exempt_from_privacy_regulations && (
                       <Box mt={4}>
                         <CustomTextInput
                           name="reason_for_exemption"
@@ -441,114 +437,87 @@ const SystemInformationForm = ({
                           disabled={lockedForGVL}
                         />
                       </Box>
-                    </Collapse>
+                    )}
                   </Stack>
                 </Box>
-                <Collapse
-                  in={
-                    values.processes_personal_data &&
-                    !values.exempt_from_privacy_regulations
-                  }
-                  style={{
-                    overflow: "visible",
-                  }}
-                  animateOpacity
-                >
-                  <Stack spacing={4} mt={4}>
-                    <Stack spacing={0}>
-                      <DictSuggestionSwitch
-                        name="uses_profiling"
-                        label="This system performs profiling"
-                        tooltip="Does this system perform profiling that could have a legal effect?"
-                        disabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.uses_profiling}
-                        animateOpacity
-                        style={{
-                          overflow: "visible",
-                        }}
-                      >
-                        <Box mt={4}>
-                          <ControlledSelect
-                            mode="multiple"
-                            layout="stacked"
-                            name="legal_basis_for_profiling"
-                            label="Legal basis for profiling"
-                            options={legalBasisForProfilingOptions}
-                            tooltip="What is the legal basis under which profiling is performed?"
-                            disabled={lockedForGVL}
-                            isRequired={values.uses_profiling}
-                          />
-                        </Box>
-                      </Collapse>
+                {values.processes_personal_data &&
+                  !values.exempt_from_privacy_regulations && (
+                    <Stack spacing={4} mt={4}>
+                      <Stack spacing={0}>
+                        <DictSuggestionSwitch
+                          name="uses_profiling"
+                          label="This system performs profiling"
+                          tooltip="Does this system perform profiling that could have a legal effect?"
+                          disabled={lockedForGVL}
+                        />
+                        {values.uses_profiling && (
+                          <Box mt={4}>
+                            <ControlledSelect
+                              mode="multiple"
+                              layout="stacked"
+                              name="legal_basis_for_profiling"
+                              label="Legal basis for profiling"
+                              options={legalBasisForProfilingOptions}
+                              tooltip="What is the legal basis under which profiling is performed?"
+                              disabled={lockedForGVL}
+                              isRequired={values.uses_profiling}
+                            />
+                          </Box>
+                        )}
+                      </Stack>
+                      <Stack spacing={0}>
+                        <DictSuggestionSwitch
+                          name="does_international_transfers"
+                          label="This system transfers data"
+                          tooltip="Does this system transfer data to other countries or international organizations?"
+                          disabled={lockedForGVL}
+                        />
+                        {values.does_international_transfers && (
+                          <Box mt={4}>
+                            <ControlledSelect
+                              mode="multiple"
+                              layout="stacked"
+                              name="legal_basis_for_transfers"
+                              label="Legal basis for transfer"
+                              options={legalBasisForTransferOptions}
+                              tooltip="What is the legal basis under which the data is transferred?"
+                              isRequired={values.does_international_transfers}
+                              disabled={lockedForGVL}
+                            />
+                          </Box>
+                        )}
+                      </Stack>
+                      <Stack spacing={0}>
+                        <CustomSwitch
+                          name="requires_data_protection_assessments"
+                          label="This system requires Data Privacy Assessments"
+                          tooltip="Does this system require (DPA/DPIA) assessments?"
+                          variant="stacked"
+                          isDisabled={lockedForGVL}
+                        />
+                        {values.requires_data_protection_assessments && (
+                          <Box mt={4}>
+                            <CustomTextInput
+                              label="DPIA/DPA location"
+                              name="dpa_location"
+                              tooltip="Where is the DPA/DPIA stored?"
+                              variant="stacked"
+                              disabled={lockedForGVL}
+                              isRequired={
+                                values.requires_data_protection_assessments
+                              }
+                            />
+                          </Box>
+                        )}
+                      </Stack>
                     </Stack>
-                    <Stack spacing={0}>
-                      <DictSuggestionSwitch
-                        name="does_international_transfers"
-                        label="This system transfers data"
-                        tooltip="Does this system transfer data to other countries or international organizations?"
-                        disabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.does_international_transfers}
-                        animateOpacity
-                        style={{
-                          overflow: "visible",
-                        }}
-                      >
-                        <Box mt={4}>
-                          <ControlledSelect
-                            mode="multiple"
-                            layout="stacked"
-                            name="legal_basis_for_transfers"
-                            label="Legal basis for transfer"
-                            options={legalBasisForTransferOptions}
-                            tooltip="What is the legal basis under which the data is transferred?"
-                            isRequired={values.does_international_transfers}
-                            disabled={lockedForGVL}
-                          />
-                        </Box>
-                      </Collapse>
-                    </Stack>
-                    <Stack spacing={0}>
-                      <CustomSwitch
-                        name="requires_data_protection_assessments"
-                        label="This system requires Data Privacy Assessments"
-                        tooltip="Does this system require (DPA/DPIA) assessments?"
-                        variant="stacked"
-                        isDisabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.requires_data_protection_assessments}
-                        animateOpacity
-                      >
-                        <Box mt={4}>
-                          <CustomTextInput
-                            label="DPIA/DPA location"
-                            name="dpa_location"
-                            tooltip="Where is the DPA/DPIA stored?"
-                            variant="stacked"
-                            disabled={lockedForGVL}
-                            isRequired={
-                              values.requires_data_protection_assessments
-                            }
-                          />
-                        </Box>
-                      </Collapse>
-                    </Stack>
-                  </Stack>
-                </Collapse>
+                  )}
               </Stack>
             </SystemFormInputGroup>
-            <Collapse
-              in={
-                values.processes_personal_data &&
-                !values.exempt_from_privacy_regulations
-              }
-              animateOpacity
-            >
-              <SystemFormInputGroup heading="Cookie properties">
+            {values.processes_personal_data &&
+              !values.exempt_from_privacy_regulations && (
+                <>
+                  <SystemFormInputGroup heading="Cookie properties">
                 <DictSuggestionSwitch
                   name="uses_cookies"
                   label="This system uses cookies"
@@ -668,7 +637,8 @@ const SystemInformationForm = ({
                   resourceFidesKey={values.fides_key}
                 />
               ) : null}
-            </Collapse>
+                </>
+              )}
           </Stack>
           <Box mt={6}>
             <Button
