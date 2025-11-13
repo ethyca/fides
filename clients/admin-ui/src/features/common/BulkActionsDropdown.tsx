@@ -13,19 +13,29 @@ const { Text } = Typography;
 interface BulkActionsDropdownProps {
   selectedIds: React.Key[];
   menuItems: MenuProps["items"];
+  totalResults?: number;
 }
 
 export const BulkActionsDropdown = ({
   selectedIds,
   menuItems,
+  totalResults,
 }: BulkActionsDropdownProps) => {
   const hasSelections = selectedIds.length > 0;
 
   return (
     <Flex gap={8} align="center">
       {hasSelections && (
-        <Text type="secondary" data-testid="selected-count">
-          {selectedIds.length} selected
+        <>
+          <Text strong data-testid="selected-count">
+            {selectedIds.length} selected
+          </Text>
+          {totalResults !== undefined && <Text type="secondary"> / </Text>}
+        </>
+      )}
+      {totalResults !== undefined && (
+        <Text type="secondary" data-testid="total-results">
+          {totalResults} results
         </Text>
       )}
       <Dropdown menu={{ items: menuItems }} disabled={!hasSelections}>
