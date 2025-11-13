@@ -16,7 +16,7 @@ interface ComponentAPIExports {
   messageApi: ReturnType<typeof message.useMessage>[0];
 }
 
-const MessageContext = createContext<ComponentAPIExports | undefined>(
+const AntComponentAPIsContext = createContext<ComponentAPIExports | undefined>(
   undefined,
 );
 
@@ -38,17 +38,17 @@ export const FidesUIProvider = ({
   return (
     <BaseAntDesignProvider theme={antTheme} wave={wave}>
       <BaseChakraProvider theme={theme}>
-        <MessageContext.Provider value={value}>
+        <AntComponentAPIsContext.Provider value={value}>
           {messageContextHolder}
           {children}
-        </MessageContext.Provider>
+        </AntComponentAPIsContext.Provider>
       </BaseChakraProvider>
     </BaseAntDesignProvider>
   );
 };
 
 export const useMessage = () => {
-  const context = useContext(MessageContext);
+  const context = useContext(AntComponentAPIsContext);
   if (!context) {
     throw new Error("useMessage must be used within a FidesUIProvider");
   }
