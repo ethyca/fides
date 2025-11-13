@@ -404,7 +404,6 @@ export default async function handler(
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
       fidesUnsupportedRepeatedScriptLoading:
         environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
-      fidesCookieSuffix: environment.settings.FIDES_COOKIE_SUFFIX,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -415,6 +414,7 @@ export default async function handler(
   const forcedHeadless = req.query.headless === "true";
 
   log.debug("Bundling js & Privacy Center configuration together...");
+  log.debug({ adobeOrgId: environment.settings.ADOBE_ORG_ID }, "Adobe Org ID from settings");
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS ||
     forcedHeadless;
@@ -451,6 +451,19 @@ export default async function handler(
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
+  let safeAdobeOrgId: string | null = null;
+  if (environment.settings.ADOBE_ORG_ID) {
+    const adobeOrgIdPattern = /^[A-Za-z0-9_-]+@AdobeOrg$/;
+    if (adobeOrgIdPattern.test(environment.settings.ADOBE_ORG_ID)) {
+      safeAdobeOrgId = environment.settings.ADOBE_ORG_ID;
+    } else {
+      log.warn(
+        { adobeOrgId: environment.settings.ADOBE_ORG_ID },
+        "ADOBE_ORG_ID contains invalid characters or format. Expected format: alphanumeric@AdobeOrg. Skipping adobe_mc_orgid injection for security."
+      );
+    }
+  }
+
   // Check if the client wants to skip initialization of fides.js to allow for manual initialization
   const { initialize: initializeQuery } = req.query;
   const skipInitialization = initializeQuery === "false";
@@ -467,6 +480,12 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
+  ${
+    safeAdobeOrgId
+      ? `// Set Adobe Marketing Cloud Org ID before init (required by Adobe Visitor API)
+  window.adobe_mc_orgid = ${JSON.stringify(safeAdobeOrgId)};`
+      : ""
+  }
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization

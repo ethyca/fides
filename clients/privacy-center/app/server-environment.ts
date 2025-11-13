@@ -71,7 +71,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_CONSENT_FLAG_TYPE"
   | "FIDES_INITIALIZED_EVENT_MODE"
   | "FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING"
-  | "FIDES_COOKIE_SUFFIX"
+  | "ADOBE_ORG_ID"
 >;
 
 export type Styles = string;
@@ -345,7 +345,7 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_INITIALIZED_EVENT_MODE: settings.FIDES_INITIALIZED_EVENT_MODE,
     FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING:
       settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
-    FIDES_COOKIE_SUFFIX: settings.FIDES_COOKIE_SUFFIX,
+    ADOBE_ORG_ID: settings.ADOBE_ORG_ID,
   };
 
   return clientSettings;
