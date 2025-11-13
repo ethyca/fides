@@ -1289,9 +1289,44 @@ class TestGetPrivacyRequests:
                     "empty_list": {"label": "Empty List", "value": []},
                 },
             ),
+            # Test case 7: String value (not a list)
+            (
+                {
+                    "customer_name": LabeledIdentity(
+                        label="Customer Name", value="John Doe"
+                    ),
+                },
+                {
+                    "customer_name": {"label": "Customer Name", "value": "John Doe"},
+                },
+            ),
+            # Test case 8: Integer value (not a list)
+            (
+                {
+                    "account_number": LabeledIdentity(
+                        label="Account Number", value=98765
+                    ),
+                },
+                {
+                    "account_number": {"label": "Account Number", "value": 98765},
+                },
+            ),
+            # Test case 9: Mixed types - string, int, and list
+            (
+                {
+                    "name": LabeledIdentity(label="Name", value="Jane Smith"),
+                    "id": LabeledIdentity(label="ID", value=456789),
+                    "tags": LabeledIdentity(label="Tags", value=["tag1", "tag2"]),
+                },
+                {
+                    "name": {"label": "Name", "value": "Jane Smith"},
+                    "id": {"label": "ID", "value": 456789},
+                    "tags": {"label": "Tags", "value": ["tag1", "tag2"]},
+                },
+            ),
         ],
     )
-    def test_get_privacy_requests_with_custom_identities_list_values(
+    def test_get_privacy_requests_with_custom_identities(
         self,
         api_client: TestClient,
         url,
@@ -1301,17 +1336,22 @@ class TestGetPrivacyRequests:
         custom_identities,
         expected_identity_values,
     ):
-        """Test that privacy requests with custom identities containing list values
+        """Test that privacy requests with custom identities containing various value types
         can be retrieved and validated correctly.
 
         This test would have caught the validation error where IdentityValue.value
         was too restrictive and couldn't accept list values like [12345678] or
         ['one', 'two', 'three'].
 
-        The test is parametrized to cover all the failing cases from the error logs:
-        - regi_id with value [12345678]
-        - agent_id with value ['one', 'two', 'three']
-        - user_id with value [12345678, 'one', 'two', 'three']
+        The test is parametrized to cover:
+        - List values (the original failing cases from error logs)
+        - String values
+        - Integer values
+        - Mixed types (string, int, list)
+
+        Note: LabeledIdentity only accepts MultiValue types (int, str, or list of int/str),
+        so dict values are not tested here. However, IdentityValue.value accepts Any type,
+        so dicts would work if they came through the API response.
         """
         # Create a privacy request
         privacy_request = PrivacyRequest.create(
@@ -1323,7 +1363,7 @@ class TestGetPrivacyRequests:
             },
         )
 
-        # Persist identity with custom fields that have list values
+        # Persist identity with custom fields that have various value types
         identity_dict = {"email": "user@example.com", **custom_identities}
         privacy_request.persist_identity(db=db, identity=Identity(**identity_dict))
 
@@ -1348,7 +1388,7 @@ class TestGetPrivacyRequests:
             "value": "user@example.com",
         }
 
-        # Verify custom identity fields with list values
+        # Verify custom identity fields with various value types
         for field_name, expected_value in expected_identity_values.items():
             assert identity[field_name] == expected_value
 
