@@ -82,7 +82,7 @@ const ConfigDrivenConsent = ({
     });
     const cookie: FidesCookie = getOrMakeFidesCookie();
     cookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
-    saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
+    saveFidesCookie({ ...cookie, consent: newConsent }, { base64Cookie });
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,
