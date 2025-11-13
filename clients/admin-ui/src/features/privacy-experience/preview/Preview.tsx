@@ -70,11 +70,13 @@ const Preview = ({
   initialValues,
   translation,
   isMobilePreview,
+  mockGpcEnabled,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
+  mockGpcEnabled: boolean | "disabled";
 }) => {
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
@@ -253,6 +255,7 @@ const Preview = ({
     values.dismissable,
     initialValues,
     noticesOnConfig,
+    mockGpcEnabled,
   ]);
 
   const modal = document.getElementById("fides-modal");

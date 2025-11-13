@@ -308,6 +308,7 @@ const ConfigurePrivacyExperience = ({
               initialValues={initialValues}
               translation={translationToEdit}
               isMobilePreview={isMobilePreview}
+              mockGpcEnabled={mockGpcEnabled}
             />
           </Flex>
         </Flex>
