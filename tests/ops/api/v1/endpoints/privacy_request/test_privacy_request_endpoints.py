@@ -1217,7 +1217,7 @@ class TestGetPrivacyRequests:
     @pytest.mark.parametrize(
         "custom_identities,expected_identity_values",
         [
-            # Test case 1: List of integers (regi_id from error logs)
+            # Test case 1: List of integers
             (
                 {
                     "regi_id": LabeledIdentity(label="Regi ID", value=[12345678]),
@@ -1226,7 +1226,7 @@ class TestGetPrivacyRequests:
                     "regi_id": {"label": "Regi ID", "value": [12345678]},
                 },
             ),
-            # Test case 2: List of strings (agent_id from error logs)
+            # Test case 2: List of strings
             (
                 {
                     "agent_id": LabeledIdentity(
@@ -1237,7 +1237,7 @@ class TestGetPrivacyRequests:
                     "agent_id": {"label": "Agent ID", "value": ["one", "two", "three"]},
                 },
             ),
-            # Test case 3: Mixed list (user_id from error logs)
+            # Test case 3: Mixed list
             (
                 {
                     "user_id": LabeledIdentity(
