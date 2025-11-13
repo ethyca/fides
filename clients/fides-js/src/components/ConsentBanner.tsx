@@ -11,6 +11,7 @@ import {
   PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
 import { FidesEventTargetType } from "../lib/events";
+import { processGpcConditionals } from "../lib/gpc-utils";
 import { messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
@@ -60,12 +61,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   // If explicit "banner_description" or "banner_title" values are set, use
   // those to populate the banner. Otherwise, use the generic "description" and
   // "title" values that are shared with the modal component
-  const bannerTitle = messageExists(i18n, "exp.banner_title")
+  const rawBannerTitle = messageExists(i18n, "exp.banner_title")
     ? i18n.t("exp.banner_title")
     : i18n.t("exp.title");
-  const bannerDescription = messageExists(i18n, "exp.banner_description")
+  const rawBannerDescription = messageExists(i18n, "exp.banner_description")
     ? i18n.t("exp.banner_description")
     : i18n.t("exp.description");
+
+  // Process GPC conditionals in the banner text
+  const bannerTitle = processGpcConditionals(rawBannerTitle, !!showGpcBadge);
+  const bannerDescription = processGpcConditionals(
+    rawBannerDescription,
+    !!showGpcBadge,
+  );
 
   const containerClassName = [
     "fides-banner",

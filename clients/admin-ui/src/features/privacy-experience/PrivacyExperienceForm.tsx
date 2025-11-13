@@ -116,7 +116,7 @@ const bannerButtonOptions: SelectProps["options"] = [
     value: Layer1ButtonOption.ACKNOWLEDGE,
   },
   {
-    label: "GPC conditional",
+    label: "GPC adaptive",
     value: Layer1ButtonOption.GPC_CONDITIONAL,
   },
 ];

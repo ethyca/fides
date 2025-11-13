@@ -1,6 +1,7 @@
 import {
   AntFlex as Flex,
   AntSegmented as Segmented,
+  AntSwitch as Switch,
   Icons,
   Spacer,
   Text,
@@ -111,6 +112,7 @@ const ConfigurePrivacyExperience = ({
   const toast = useToast();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [mockGpcEnabled, setMockGpcEnabled] = useState(false);
 
   const router = useRouter();
 
@@ -252,26 +254,37 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <Segmented
-                options={[
-                  {
-                    value: "mobile",
-                    icon: <Icons.Mobile title="Mobile" />,
-                  },
-                  {
-                    value: "desktop",
-                    icon: <Icons.Screen title="Desktop" />,
-                  },
-                ]}
-                defaultValue="desktop"
-                onChange={(value) => setIsMobilePreview(value === "mobile")}
-              />
+              <Flex className="flex-row items-center gap-2">
+                <Switch
+                  aria-label="Toggle GPC preview mode"
+                  checkedChildren="GPC"
+                  unCheckedChildren="GPC"
+                  checked={mockGpcEnabled}
+                  onChange={setMockGpcEnabled}
+                  data-testid="gpc-preview-toggle"
+                />
+                <Segmented
+                  options={[
+                    {
+                      value: "mobile",
+                      icon: <Icons.Mobile title="Mobile" />,
+                    },
+                    {
+                      value: "desktop",
+                      icon: <Icons.Screen title="Desktop" />,
+                    },
+                  ]}
+                  defaultValue="desktop"
+                  onChange={(value) => setIsMobilePreview(value === "mobile")}
+                />
+              </Flex>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}
               initialValues={initialValues}
               translation={translationToEdit}
               isMobilePreview={isMobilePreview}
+              mockGpcEnabled={mockGpcEnabled}
             />
           </Flex>
         </Flex>
