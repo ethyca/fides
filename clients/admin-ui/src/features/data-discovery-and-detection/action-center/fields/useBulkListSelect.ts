@@ -1,7 +1,9 @@
 import { AntCheckboxProps as CheckboxProps } from "fidesui";
 import _ from "lodash";
-import { useState } from "react";
+import { Key, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+
+import type { Node } from "~/features/common/hooks/useNodeMap";
 
 export const BULK_LIST_HOTKEYS = {
   SELECT_ALL: "h",
@@ -11,71 +13,59 @@ export const BULK_LIST_HOTKEYS = {
 
 type SelectMode = "inclusive" | "exclusive";
 
-interface ListItem {
-  itemKey: React.Key;
-}
+export const extractListItemKeys = <T>(data: Array<Node<T>>) =>
+  data.map(({ key }) => key);
 
-export const extractListItemKeys = <T extends ListItem>(data: Array<T>) =>
-  data.map(({ itemKey }) => itemKey);
-
-interface UseBulkListSelectOptions<T extends ListItem> {
-  activeListItem?: T | null;
+interface UseBulkListSelectOptions<T> {
+  activeListItem?: Node<T> | null;
   enableKeyboardShortcuts?: boolean;
 }
 
-export const useBulkListSelect = <T extends ListItem>(
+export const useBulkListSelect = <T>(
+  listKeys: Key[] | undefined,
   options: UseBulkListSelectOptions<T> = {},
+  initialMode: SelectMode = "inclusive",
 ) => {
   const { activeListItem = null, enableKeyboardShortcuts = false } = options;
-  const [mode, setMode] = useState<SelectMode>("inclusive");
-  /** list of items currently in view */
-  const [listItems, setListItemsState] = useState<Array<T>>([]);
+
+  const [mode, setMode] = useState<SelectMode>(initialMode);
   /**
    * Delta between selected vs non-selected elements
    * includes selected elements when in inclusive mode
    * will be deselected elements when in exclusive mode
    */
-  const [delta, setDeltaState] = useState<Array<T>>([]);
+  const [deltaKeys, setDeltaKeysState] = useState<Key[]>([]);
 
-  const setDelta = (newDelta: Array<T>) => {
-    setDeltaState(_.uniqBy(newDelta, "itemKey"));
-  };
+  const updateSelectedListItem = (key: React.Key, isSelected: boolean) => {
+    const updateMode: "add" | "remove" = (
+      mode === "inclusive" ? isSelected : !isSelected
+    )
+      ? "add"
+      : "remove";
 
-  const updateSelectedListItem = (itemKey: React.Key, isSelected: boolean) => {
-    const updatedItem = listItems.find((item) => itemKey === item.itemKey);
-
-    if (updatedItem) {
-      const updateMode: "add" | "remove" = (
-        mode === "inclusive" ? isSelected : !isSelected
-      )
-        ? "add"
-        : "remove";
-
-      switch (updateMode) {
-        case "add":
-          setDelta([...delta, updatedItem]);
-          break;
-        default:
-          setDelta(delta.filter((item) => item.itemKey !== itemKey));
-      }
+    switch (updateMode) {
+      case "add":
+        setDeltaKeysState([...deltaKeys, key]);
+        break;
+      default:
+        setDeltaKeysState(deltaKeys.filter((k) => k !== key));
     }
   };
 
   const updateListSelectMode = (newMode: SelectMode) => {
     setMode(newMode);
-    setDeltaState([]);
+    setDeltaKeysState([]);
   };
 
   const resetListSelect = () => {
-    setDeltaState([]);
+    setDeltaKeysState([]);
     setMode("inclusive");
   };
 
-  const inverseDelta = listItems.filter(
-    ({ itemKey }) => !delta.find((d) => d.itemKey === itemKey),
-  );
-  const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
-  const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
+  const inverseDeltaKeys = _.difference(listKeys, deltaKeys);
+
+  const selectedKeys = mode === "inclusive" ? deltaKeys : inverseDeltaKeys;
+  const excludedKeys = mode === "exclusive" ? deltaKeys : inverseDeltaKeys;
 
   // Note: Activation hotkeys (j, k, escape) are handled by CustomList component
   useHotkeys(
@@ -102,39 +92,34 @@ export const useBulkListSelect = <T extends ListItem>(
     (e) => {
       if (activeListItem) {
         e.preventDefault(); // Prevent page scroll
-        const isSelected = selectedListItems.some(
-          (item) => item.itemKey === activeListItem.itemKey,
-        );
-        updateSelectedListItem(activeListItem.itemKey, !isSelected);
+        const isSelected = selectedKeys.includes(activeListItem.key);
+        updateSelectedListItem(activeListItem.key, !isSelected);
       }
     },
     { enabled: enableKeyboardShortcuts },
-    [activeListItem, selectedListItems, updateSelectedListItem],
+    [activeListItem, selectedKeys, updateSelectedListItem],
   );
 
   const checkboxProps: CheckboxProps = {
     checked:
       mode === "inclusive"
-        ? selectedListItems.length > 0 &&
-          listItems.length === selectedListItems.length
-        : excludedListItems.length === 0,
+        ? selectedKeys.length > 0 && listKeys?.length === selectedKeys.length
+        : excludedKeys.length === 0,
     indeterminate:
       mode === "inclusive"
-        ? selectedListItems.length > 0 &&
-          listItems.length !== selectedListItems.length
-        : excludedListItems.length > 0,
+        ? selectedKeys.length > 0 && listKeys?.length !== selectedKeys.length
+        : excludedKeys.length > 0,
     onChange: (e) =>
       updateListSelectMode(e.target.checked ? "exclusive" : "inclusive"),
   };
 
   return {
-    excludedListItems,
+    checkboxProps,
+    excludedKeys,
     listSelectMode: mode,
     resetListSelect,
-    selectedListItems,
-    updateListItems: setListItemsState,
+    selectedKeys,
     updateListSelectMode,
     updateSelectedListItem,
-    checkboxProps,
   };
 };

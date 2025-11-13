@@ -388,11 +388,11 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     getStagedResourceDetails: build.query<
       MonitorResource,
-      { stagedResourceUrn: string }
+      { stagedResourceUrn?: string }
     >({
       query: ({ stagedResourceUrn }) => ({
         url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
-          stagedResourceUrn,
+          stagedResourceUrn ?? false,
         )}`,
       }),
       providesTags: ["Monitor Field Details"],
