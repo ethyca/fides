@@ -2,13 +2,7 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import {
-  AntButton as Button,
-  Box,
-  Flex,
-  Spacer,
-  Stack,
-} from "fidesui";
+import { AntButton as Button, Box, Flex, Spacer, Stack } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";

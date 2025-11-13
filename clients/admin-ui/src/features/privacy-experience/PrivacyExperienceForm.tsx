@@ -560,42 +560,42 @@ export const PrivacyExperienceForm = ({
       {(values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.MODAL) &&
         !!values.allow_vendor_asset_disclosure && (
-        <ControlledSelect
-          name="asset_disclosure_include_types"
-          id="asset_disclosure_include_types"
-          mode="multiple"
-          label="Asset types to disclose"
-          layout="stacked"
-          tooltip="Select the asset types to disclose. Only cookies are currently supported."
-          options={[
-            {
-              label: StagedResourceTypeValue.COOKIE,
-              value: StagedResourceTypeValue.COOKIE,
-              disabled: false,
-            },
-            {
-              label: StagedResourceTypeValue.BROWSER_REQUEST,
-              value: StagedResourceTypeValue.BROWSER_REQUEST,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.I_FRAME,
-              value: StagedResourceTypeValue.I_FRAME,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.JAVASCRIPT_TAG,
-              value: StagedResourceTypeValue.JAVASCRIPT_TAG,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.IMAGE,
-              value: StagedResourceTypeValue.IMAGE,
-              disabled: true,
-            },
-          ]}
-        />
-      )}
+          <ControlledSelect
+            name="asset_disclosure_include_types"
+            id="asset_disclosure_include_types"
+            mode="multiple"
+            label="Asset types to disclose"
+            layout="stacked"
+            tooltip="Select the asset types to disclose. Only cookies are currently supported."
+            options={[
+              {
+                label: StagedResourceTypeValue.COOKIE,
+                value: StagedResourceTypeValue.COOKIE,
+                disabled: false,
+              },
+              {
+                label: StagedResourceTypeValue.BROWSER_REQUEST,
+                value: StagedResourceTypeValue.BROWSER_REQUEST,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.I_FRAME,
+                value: StagedResourceTypeValue.I_FRAME,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.JAVASCRIPT_TAG,
+                value: StagedResourceTypeValue.JAVASCRIPT_TAG,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.IMAGE,
+                value: StagedResourceTypeValue.IMAGE,
+                disabled: true,
+              },
+            ]}
+          />
+        )}
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Cookie Deletion

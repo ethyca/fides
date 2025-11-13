@@ -518,125 +518,125 @@ const SystemInformationForm = ({
               !values.exempt_from_privacy_regulations && (
                 <>
                   <SystemFormInputGroup heading="Cookie properties">
-                <DictSuggestionSwitch
-                  name="uses_cookies"
-                  label="This system uses cookies"
-                  tooltip="Does this system use cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="cookie_refresh"
-                  label="This system refreshes cookies"
-                  tooltip="Does this system automatically refresh cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="uses_non_cookie_access"
-                  label="This system uses non-cookie trackers"
-                  tooltip="Does this system use other types of trackers?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionNumberInput
-                  name="cookie_max_age_seconds"
-                  label="Maximum duration (seconds)"
-                  tooltip="What is the maximum amount of time a cookie will live?"
-                  disabled={lockedForGVL}
-                />
-              </SystemFormInputGroup>
-              <SystemFormInputGroup heading="Administrative properties">
-                <CustomTextInput
-                  label="Data stewards"
-                  name="data_stewards"
-                  tooltip="Who are the stewards assigned to the system?"
-                  variant="stacked"
-                  disabled
-                />
-                <DictSuggestionTextInput
-                  id="privacy_policy"
-                  name="privacy_policy"
-                  label="Privacy policy URL"
-                  tooltip="Where can the privacy policy be located?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionTextInput
-                  id="legal_name"
-                  name="legal_name"
-                  label="Legal name"
-                  tooltip="What is the legal name of the business?"
-                />
-                <DictSuggestionTextArea
-                  id="legal_address"
-                  name="legal_address"
-                  label="Legal address"
-                  tooltip="What is the legal address for the business?"
-                />
-                <CustomTextInput
-                  label="Department"
-                  name="administrating_department"
-                  tooltip="Which department is concerned with this system?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <ControlledSelect
-                  mode="multiple"
-                  layout="stacked"
-                  label="Responsibility"
-                  name="responsibility"
-                  options={responsibilityOptions}
-                  tooltip="What is the role of the business with regard to data processing?"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <DictSuggestionTextInput
-                  name="dpo"
-                  id="dpo"
-                  label="Legal contact (DPO)"
-                  tooltip="What is the official privacy contact information?"
-                  disabled={lockedForGVL}
-                />
-                <CustomTextInput
-                  label="Joint controller"
-                  name="joint_controller_info"
-                  tooltip="Who are the party or parties that share responsibility for processing data?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <DictSuggestionTextInput
-                  label="Data security practices"
-                  name="data_security_practices"
-                  id="data_security_practices"
-                  tooltip="Which data security practices are employed to keep the data safe?"
-                />
-                <DictSuggestionTextInput
-                  label="Legitimate interest disclosure URL"
-                  name="legitimate_interest_disclosure_url"
-                  id="legitimate_interest_disclosure_url"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionTextInput
-                  label="Vendor deleted date"
-                  name="vendor_deleted_date"
-                  id="vendor_deleted_date"
-                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
-                  // disable this field for editing:
-                  // deleted date is populated by the GVL and should not be editable by users
-                  disabled
-                />
-              </SystemFormInputGroup>
-              {values.fides_key ? (
-                <CustomFieldsList
-                  resourceType={ResourceTypes.SYSTEM}
-                  resourceFidesKey={values.fides_key}
-                />
-              ) : null}
+                    <DictSuggestionSwitch
+                      name="uses_cookies"
+                      label="This system uses cookies"
+                      tooltip="Does this system use cookies?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionSwitch
+                      name="cookie_refresh"
+                      label="This system refreshes cookies"
+                      tooltip="Does this system automatically refresh cookies?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionSwitch
+                      name="uses_non_cookie_access"
+                      label="This system uses non-cookie trackers"
+                      tooltip="Does this system use other types of trackers?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionNumberInput
+                      name="cookie_max_age_seconds"
+                      label="Maximum duration (seconds)"
+                      tooltip="What is the maximum amount of time a cookie will live?"
+                      disabled={lockedForGVL}
+                    />
+                  </SystemFormInputGroup>
+                  <SystemFormInputGroup heading="Administrative properties">
+                    <CustomTextInput
+                      label="Data stewards"
+                      name="data_stewards"
+                      tooltip="Who are the stewards assigned to the system?"
+                      variant="stacked"
+                      disabled
+                    />
+                    <DictSuggestionTextInput
+                      id="privacy_policy"
+                      name="privacy_policy"
+                      label="Privacy policy URL"
+                      tooltip="Where can the privacy policy be located?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionTextInput
+                      id="legal_name"
+                      name="legal_name"
+                      label="Legal name"
+                      tooltip="What is the legal name of the business?"
+                    />
+                    <DictSuggestionTextArea
+                      id="legal_address"
+                      name="legal_address"
+                      label="Legal address"
+                      tooltip="What is the legal address for the business?"
+                    />
+                    <CustomTextInput
+                      label="Department"
+                      name="administrating_department"
+                      tooltip="Which department is concerned with this system?"
+                      variant="stacked"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <ControlledSelect
+                      mode="multiple"
+                      layout="stacked"
+                      label="Responsibility"
+                      name="responsibility"
+                      options={responsibilityOptions}
+                      tooltip="What is the role of the business with regard to data processing?"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <DictSuggestionTextInput
+                      name="dpo"
+                      id="dpo"
+                      label="Legal contact (DPO)"
+                      tooltip="What is the official privacy contact information?"
+                      disabled={lockedForGVL}
+                    />
+                    <CustomTextInput
+                      label="Joint controller"
+                      name="joint_controller_info"
+                      tooltip="Who are the party or parties that share responsibility for processing data?"
+                      variant="stacked"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <DictSuggestionTextInput
+                      label="Data security practices"
+                      name="data_security_practices"
+                      id="data_security_practices"
+                      tooltip="Which data security practices are employed to keep the data safe?"
+                    />
+                    <DictSuggestionTextInput
+                      label="Legitimate interest disclosure URL"
+                      name="legitimate_interest_disclosure_url"
+                      id="legitimate_interest_disclosure_url"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionTextInput
+                      label="Vendor deleted date"
+                      name="vendor_deleted_date"
+                      id="vendor_deleted_date"
+                      tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                      // disable this field for editing:
+                      // deleted date is populated by the GVL and should not be editable by users
+                      disabled
+                    />
+                  </SystemFormInputGroup>
+                  {values.fides_key ? (
+                    <CustomFieldsList
+                      resourceType={ResourceTypes.SYSTEM}
+                      resourceFidesKey={values.fides_key}
+                    />
+                  ) : null}
                 </>
               )}
           </Stack>
