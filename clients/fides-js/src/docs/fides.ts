@@ -260,8 +260,6 @@ export interface Fides {
    * If your consent keys are different (e.g., `ai_analytics`, `marketing`),
    * you MUST provide custom `purposeMapping` and `ecidMapping`.
    *
-   * For diagnostics and configuration help, use `Fides.nvidia.status()` and `Fides.nvidia.consent()`.
-   *
    * @example
    * Check Adobe consent state:
    * ```javascript
@@ -338,77 +336,6 @@ export interface Fides {
      * ```
      */
     migrate: () => Promise<boolean>;
-  };
-
-  /**
-   * NVIDIA-specific utilities for Adobe + OneTrust integration.
-   *
-   * Demo helpers optimized for nvidia.com (OneTrust + Adobe environment).
-   */
-  nvidia: {
-    /**
-     * Get comprehensive environment diagnostics.
-     *
-     * Shows status of Fides, Adobe (Web SDK, ECID, Launch, Analytics), and OneTrust.
-     *
-     * @example
-     * ```javascript
-     * const info = Fides.nvidia.status();
-     * console.log('ECID:', info.visitor.marketingCloudVisitorID);
-     * console.log('OneTrust detected:', info.oneTrust?.detected);
-     * ```
-     */
-    status: () => object;
-
-    /**
-     * Get consent state showing ACTUAL values across all systems.
-     *
-     * Shows the complete mapping chain with real runtime values:
-     * OneTrust Category → Fides Key → Adobe Purposes → ECID Category
-     *
-     * This makes it clear what's configuration vs. actual consent values.
-     *
-     * @example
-     * ```javascript
-     * const state = Fides.nvidia.consent();
-     *
-     * // See actual values at each step:
-     * state.rows.forEach(row => {
-     *   console.log(`${row.oneTrustCategory}: OT=${row.oneTrustActive}, Fides=${row.fidesValue}, Adobe=${row.ecidApproved}`);
-     * });
-     *
-     * // Example output:
-     * // C0002: OT=false, Fides=false, Adobe=false (performance → aa Analytics)
-     * // C0003: OT=true, Fides=true, Adobe=true (functional → target)
-     * // C0004: OT=true, Fides=true, Adobe=true (advertising → aam)
-     * ```
-     */
-    consent: () => object;
-
-    /**
-     * Run comprehensive demo of Fides → Adobe → OneTrust integration.
-     *
-     * Demonstrates the full consent synchronization workflow:
-     * - Initializes Fides from OneTrust consent
-     * - Sets up Adobe Web SDK with explicit purpose mapping
-     * - Sets up Adobe ECID Opt-In with explicit category mapping
-     * - Sets up Google Consent Mode v2
-     * - Tests toggle, opt-in all, opt-out all scenarios
-     *
-     * NVIDIA mappings:
-     * - Web SDK: performance→(collect,measure), functional→(personalize), advertising→(personalize,share)
-     * - ECID: performance→aa, functional→target, advertising→aam
-     * - Google: performance→analytics_storage, functional→functionality/personalization, advertising→ad_storage/ad_personalization/ad_user_data
-     *
-     * @example
-     * ```javascript
-     * const aep = await Fides.nvidia.demo();
-     * aep.consent(); // Check Adobe consent after demo
-     * ```
-     */
-    demo: () => Promise<{
-      consent: () => object;
-    }>;
   };
 
   /**

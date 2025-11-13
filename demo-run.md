@@ -249,10 +249,7 @@ Run [State Check Commands](#state-check-commands-reference) **#1** and **#3** or
 
 ### 5.1 Full Diagnostics
 
-```javascript
-Fides.nvidia.status()
-console.table(Fides.nvidia.consent().rows)
-```
+Use the state check commands from the reference section to inspect all consent values across Fides, Adobe, and Google.
 
 ### 5.2 Verify ECID Preserved
 
@@ -286,4 +283,4 @@ window.Visitor?.getInstance(window.adobe_mc_orgid)?.getMarketingCloudVisitorID()
 
 **Adobe Debugger stale:** Click refresh button in each tab
 
-**gtag not found:** NVIDIA may not have gtag on all pages (not an error)
+**gtag not found:** nvidia.com may not have gtag on all pages (not an error)
