@@ -20,7 +20,6 @@ declare global {
       analytics?: any;
     };
     _satellite?: any;
-    adobe_mc_orgid?: string;
   }
 }
 
