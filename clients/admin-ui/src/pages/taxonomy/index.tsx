@@ -204,7 +204,6 @@ const TaxonomyPage: NextPage = () => {
 
   return (
     <Layout title="Taxonomy">
-      {messageContext}
       {modalContext}
       <Flex vertical className="h-full">
         <div>

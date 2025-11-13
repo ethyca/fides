@@ -35,7 +35,6 @@ type ActiveListItem =
  * @param fieldActions - The field actions object from useFieldActions
  * @param updateSelectedListItem - Function to update the selected list item
  * @param onNavigate - Function to handle navigation to field details
- * @param messageApi - Ant Design message API instance (needs to be passed in to avoid re-rendering the hook)
  * @param isDrawerOpen - Whether the details drawer is currently open
  */
 export const useFieldActionHotkeys = (

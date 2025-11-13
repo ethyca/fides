@@ -139,7 +139,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         throw err;
       }
     },
-    [editingIndex, conditions, saveConditions],
+    [conditions, editingIndex, saveConditions, message],
   );
 
   const handleDeleteCondition = useCallback(
@@ -173,7 +173,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
       setConditionToDelete(null);
     }
     onDeleteClose();
-  }, [conditionToDelete, conditions, saveConditions, onDeleteClose]);
+  }, [conditionToDelete, onDeleteClose, conditions, saveConditions, message]);
 
   if (isLoading) {
     return (
