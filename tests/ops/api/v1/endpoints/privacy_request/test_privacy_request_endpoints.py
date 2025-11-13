@@ -6082,7 +6082,13 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
-    @mock.patch("fides.service.messaging.messaging_service.dispatch_message")
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+        "messaging_config",
+    )
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_message,
@@ -6091,8 +6097,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         db,
         api_client: TestClient,
         policy,
-        messaging_config,
-        subject_identity_verification_required,
     ):
         data = [
             {
@@ -6117,18 +6121,24 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert not mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
-
-        assert mock_dispatch_message.called
-        kwargs = mock_dispatch_message.call_args.kwargs
+        assert mock_dispatch_message.call_count == 1
+        call_args = mock_dispatch_message.call_args[1]
+        task_kwargs = call_args["kwargs"]
+        message_meta = task_kwargs["message_meta"]
         assert (
-            kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
+            message_meta["action_type"]
+            == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
-        assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
-        assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
-            verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
+        assert (
+            message_meta["body_params"]["verification_code"]
+            == pr.get_cached_verification_code()
         )
+        assert (
+            message_meta["body_params"]["verification_code_ttl_seconds"]
+            == CONFIG.redis.identity_verification_code_ttl_seconds
+        )
+        assert task_kwargs["to_identity"]["email"] == "test@example.com"
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         pr.delete(db=db)
 
