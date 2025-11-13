@@ -53,10 +53,14 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
-from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import (
+    IdentityValue,
+    PrivacyRequestResponse,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField,
     Identity,
@@ -1209,6 +1213,157 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
+
+    @pytest.mark.parametrize(
+        "custom_identities,expected_identity_values",
+        [
+            # Test case 1: List of integers (regi_id from error logs)
+            (
+                {
+                    "regi_id": LabeledIdentity(label="Regi ID", value=[12345678]),
+                },
+                {
+                    "regi_id": {"label": "Regi ID", "value": [12345678]},
+                },
+            ),
+            # Test case 2: List of strings (agent_id from error logs)
+            (
+                {
+                    "agent_id": LabeledIdentity(
+                        label="Agent ID", value=["one", "two", "three"]
+                    ),
+                },
+                {
+                    "agent_id": {"label": "Agent ID", "value": ["one", "two", "three"]},
+                },
+            ),
+            # Test case 3: Mixed list (user_id from error logs)
+            (
+                {
+                    "user_id": LabeledIdentity(
+                        label="User ID", value=[12345678, "one", "two", "three"]
+                    ),
+                },
+                {
+                    "user_id": {
+                        "label": "User ID",
+                        "value": [12345678, "one", "two", "three"],
+                    },
+                },
+            ),
+            # Test case 4: All three cases together
+            (
+                {
+                    "regi_id": LabeledIdentity(label="Regi ID", value=[12345678]),
+                    "agent_id": LabeledIdentity(
+                        label="Agent ID", value=["one", "two", "three"]
+                    ),
+                    "user_id": LabeledIdentity(
+                        label="User ID", value=[12345678, "one", "two", "three"]
+                    ),
+                },
+                {
+                    "regi_id": {"label": "Regi ID", "value": [12345678]},
+                    "agent_id": {"label": "Agent ID", "value": ["one", "two", "three"]},
+                    "user_id": {
+                        "label": "User ID",
+                        "value": [12345678, "one", "two", "three"],
+                    },
+                },
+            ),
+            # Test case 5: Single integer in list
+            (
+                {
+                    "customer_id": LabeledIdentity(label="Customer ID", value=[999]),
+                },
+                {
+                    "customer_id": {"label": "Customer ID", "value": [999]},
+                },
+            ),
+            # Test case 6: Empty list
+            (
+                {
+                    "empty_list": LabeledIdentity(label="Empty List", value=[]),
+                },
+                {
+                    "empty_list": {"label": "Empty List", "value": []},
+                },
+            ),
+        ],
+    )
+    def test_get_privacy_requests_with_custom_identities_list_values(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        policy,
+        custom_identities,
+        expected_identity_values,
+    ):
+        """Test that privacy requests with custom identities containing list values
+        can be retrieved and validated correctly.
+
+        This test would have caught the validation error where IdentityValue.value
+        was too restrictive and couldn't accept list values like [12345678] or
+        ['one', 'two', 'three'].
+
+        The test is parametrized to cover all the failing cases from the error logs:
+        - regi_id with value [12345678]
+        - agent_id with value ['one', 'two', 'three']
+        - user_id with value [12345678, 'one', 'two', 'three']
+        """
+        # Create a privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Persist identity with custom fields that have list values
+        identity_dict = {"email": "user@example.com", **custom_identities}
+        privacy_request.persist_identity(db=db, identity=Identity(**identity_dict))
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?include_identities=true", headers=auth_header
+        )
+        assert response.status_code == 200
+        resp = response.json()
+
+        # Verify the response validates correctly
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+        # Verify the identity field is present and contains the list values
+        identity = resp["items"][0]["identity"]
+        assert identity is not None
+
+        # Verify standard identity field
+        assert identity["email"] == {
+            "label": "Email",
+            "value": "user@example.com",
+        }
+
+        # Verify custom identity fields with list values
+        for field_name, expected_value in expected_identity_values.items():
+            assert identity[field_name] == expected_value
+
+        validated_response = PrivacyRequestResponse(**resp["items"][0])
+        assert validated_response.identity is not None
+
+        # Verify each custom identity field can be accessed and has the correct value
+        for field_name, expected_value in expected_identity_values.items():
+            assert field_name in validated_response.identity
+            identity_value = validated_response.identity[field_name]
+            assert isinstance(identity_value, IdentityValue)
+            assert identity_value.value == expected_value["value"]
+            assert identity_value.label == expected_value["label"]
+
+        privacy_request.delete(db)
 
     def test_get_privacy_requests_with_custom_fields(
         self,
