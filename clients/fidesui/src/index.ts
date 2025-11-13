@@ -68,7 +68,6 @@ export {
   InputNumber as AntInputNumber,
   Layout as AntLayout,
   Menu as AntMenu,
-  message as AntMessage,
   Modal as AntModal,
   notification as AntNotification,
   Pagination as AntPagination,
