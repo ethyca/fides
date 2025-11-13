@@ -166,7 +166,6 @@ const loadEnvironmentVariables = () => {
         .FIDES_PRIVACY_CENTER__FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING as
         | "enabled_acknowledge_not_supported"
         | "disabled") || "disabled",
-    ADOBE_ORG_ID: process.env.FIDES_PRIVACY_CENTER__ADOBE_ORG_ID || null,
   };
   return settings;
 };

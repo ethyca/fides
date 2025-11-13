@@ -75,5 +75,4 @@ export interface PrivacyCenterSettings {
   FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING:
     | "enabled_acknowledge_not_supported"
     | "disabled"; // (optional) controls handling of unsupported repeated script loading (defaults to "disabled")
-  ADOBE_ORG_ID: string | null; // (optional) Adobe Marketing Cloud Org ID (e.g. "ABC123@AdobeOrg")
 }
