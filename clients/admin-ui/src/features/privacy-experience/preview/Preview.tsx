@@ -70,13 +70,11 @@ const Preview = ({
   initialValues,
   translation,
   isMobilePreview,
-  mockGpcEnabled,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
-  mockGpcEnabled: boolean;
 }) => {
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
@@ -193,7 +191,7 @@ const Preview = ({
     ) {
       return;
     }
-    window.navigator.globalPrivacyControl = mockGpcEnabled;
+
     const updatedConfig = baseConfig;
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
     if (values.component === ComponentType.MODAL) {
@@ -255,7 +253,6 @@ const Preview = ({
     values.dismissable,
     initialValues,
     noticesOnConfig,
-    mockGpcEnabled,
   ]);
 
   const modal = document.getElementById("fides-modal");
