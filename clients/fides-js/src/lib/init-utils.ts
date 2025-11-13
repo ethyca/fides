@@ -1,5 +1,4 @@
 import { aep } from "../integrations/aep";
-import { status as oneTrustStatus, readConsent as oneTrustReadConsent, migrate as oneTrustMigrate } from "../integrations/onetrust";
 import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
@@ -31,7 +30,6 @@ declare global {
     Fides: FidesGlobal;
     fides_overrides: Partial<FidesOptions>;
     fidesDebugger: (...args: unknown[]) => void;
-    adobe_mc_orgid?: string; // Adobe Marketing Cloud Org ID (set by Fides for Adobe integrations)
   }
 }
 
@@ -128,11 +126,6 @@ export const getCoreFides = ({
     initialized: false,
     onFidesEvent,
     aep,
-    onetrust: {
-      status: oneTrustStatus,
-      readConsent: oneTrustReadConsent,
-      migrate: oneTrustMigrate,
-    },
     blueconic,
     gtm,
     meta,

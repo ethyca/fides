@@ -8,7 +8,6 @@
 
 import { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
-import { readConsent as readOneTrustConsent } from "./onetrust";
 
 declare global {
   interface Window {
@@ -108,18 +107,6 @@ export interface AEPDiagnostics {
     reportSuite?: string;
     trackingServer?: string;
     visitorNamespace?: string;
-  };
-  oneTrust?: {
-    detected: boolean;
-    activeGroups?: string[];
-    categoriesConsent?: Record<string, boolean>;
-    rawCookieString?: string;
-    rawCookieValue?: string;
-    parseError?: string;
-    adobeIntegration?: {
-      detected: boolean;
-      mapping?: Record<string, string[]>;
-    };
   };
 }
 
@@ -681,8 +668,6 @@ function getAdobeConsentState(): AEPConsentState {
  * - Adobe Web SDK (modern Alloy SDK)
  * - ECID Opt-In Service (legacy AppMeasurement)
  *
- * On first load, reads existing OneTrust consent if available.
- *
  * @param options - Configuration options
  * @returns Integration API with diagnostic utilities
  *
@@ -714,23 +699,6 @@ function getAdobeConsentState(): AEPConsentState {
  * ```
  */
 export const aep = (options?: AEPOptions): AEPIntegration => {
-  const debug = options?.debug || false;
-
-  // Read OneTrust consent once on initialization for migration
-  // BUT: Skip if Fides is already initialized (e.g., from a demo or explicit initialization)
-  const fidesAlreadyInitialized = !!(window as any).Fides?.initialized &&
-                                   Object.keys((window as any).Fides?.consent || {}).length > 0;
-
-  if (!fidesAlreadyInitialized) {
-    const oneTrustConsent = readOneTrustConsent();
-    if (oneTrustConsent && debug) {
-      console.log(
-        "[Fides Adobe] OneTrust consent detected on initialization:",
-        oneTrustConsent,
-      );
-    }
-  }
-
   // Subscribe to Fides consent events using shared helper
   subscribeToConsent((consent) => pushConsentToAdobe(consent, options));
 
