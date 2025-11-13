@@ -275,7 +275,7 @@ describe("Consent cookie with suffix", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("button#fides-modal-link").click();
-        cy.get(".fides-modal-content").within(() => {
+        cy.getByTestId("fides-modal-content").within(() => {
           cy.get("button").contains("Opt out of all").click();
         });
       });
