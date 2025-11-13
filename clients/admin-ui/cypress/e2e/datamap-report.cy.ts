@@ -587,7 +587,7 @@ describe("Data map report table", () => {
     it.skip("should download the export file", () => {});
   });
 
-  describe.only("System preview drawer", () => {
+  describe("System preview drawer", () => {
     it("should open the system preview drawer", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
