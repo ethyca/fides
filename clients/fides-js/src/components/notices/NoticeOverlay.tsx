@@ -71,7 +71,9 @@ const NoticeOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie(
+    options.fidesCookieSuffix,
+  );
 
   const getEnabledNoticeKeys = useCallback(
     (consent: NoticeConsent) => {

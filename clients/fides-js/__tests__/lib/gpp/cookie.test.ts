@@ -77,7 +77,7 @@ describe("GPP cookie handling", () => {
       const parts = (window.Fides.cookie.fides_string || ",,").split(",");
       parts[2] = gppString;
       window.Fides.cookie.fides_string = parts.join(",");
-      saveFidesCookie(window.Fides.cookie, false);
+      saveFidesCookie(window.Fides.cookie, { base64Cookie: false });
     };
     window.addEventListener("FidesUpdated", updateHandler);
 
@@ -112,7 +112,9 @@ describe("GPP cookie handling", () => {
     );
 
     expect(window.Fides.cookie?.fides_string).toBe(",,DBABLA~BVAUAAAAAWA.QA");
-    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, false);
+    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, {
+      base64Cookie: false,
+    });
   });
 
   it("appends GPP string to existing fides_string when TCF is enabled", () => {
@@ -133,7 +135,9 @@ describe("GPP cookie handling", () => {
     expect(window.Fides.cookie?.fides_string).toBe(
       "TCF_STRING,AC_STRING,DBABLA~BVAUAAAAAWA.QA",
     );
-    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, false);
+    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, {
+      base64Cookie: false,
+    });
   });
 
   it("handles missing parts in fides_string when TCF is enabled", () => {
@@ -154,7 +158,9 @@ describe("GPP cookie handling", () => {
     expect(window.Fides.cookie?.fides_string).toBe(
       "TCF_STRING,,DBABLA~BVAUAAAAAWA.QA",
     );
-    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, false);
+    expect(saveFidesCookie).toHaveBeenCalledWith(window.Fides.cookie, {
+      base64Cookie: false,
+    });
   });
 
   it("handles empty GPP string", () => {

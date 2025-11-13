@@ -15,7 +15,7 @@ import { PhoneInput } from "~/components/phone-input";
 import { useConfig } from "~/features/common/config.slice";
 import { CustomConfigField } from "~/types/config";
 
-import useConsentRequestForm from "./useConsentReuestForm";
+import useConsentRequestForm from "./useConsentRequestForm";
 
 type ConsentRequestFormProps = {
   isOpen: boolean;

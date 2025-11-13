@@ -166,6 +166,8 @@ const loadEnvironmentVariables = () => {
         .FIDES_PRIVACY_CENTER__FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING as
         | "enabled_acknowledge_not_supported"
         | "disabled") || "disabled",
+    FIDES_COOKIE_SUFFIX:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_COOKIE_SUFFIX ?? null,
   };
   return settings;
 };

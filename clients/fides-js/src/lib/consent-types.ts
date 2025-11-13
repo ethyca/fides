@@ -193,6 +193,8 @@ export interface FidesInitOptions {
   fidesUnsupportedRepeatedScriptLoading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  fidesCookieSuffix?: string | null;
 }
 
 /**
@@ -872,6 +874,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
+  | "fidesCookieSuffix"
 >;
 
 export type FidesExperienceTranslationOverrides = {

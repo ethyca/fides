@@ -14,7 +14,11 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    MultiValue,
+)
 from fides.api.schemas.user import PrivacyRequestUser
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
@@ -311,8 +315,19 @@ class PrivacyRequestStatus(str, EnumType):
 
 
 class IdentityValue(BaseModel):
+    """Represents an identity value with a label in API responses.
+
+    The value field accepts MultiValue types which match what LabeledIdentity supports:
+    - int
+    - str
+    - List[Union[int, str]]
+
+    This allows the schema to accept list values that were previously causing
+    validation errors.
+    """
+
     label: str
-    value: Optional[str] = None
+    value: Optional[MultiValue] = None
 
 
 class PrivacyRequestResponse(FidesSchema):

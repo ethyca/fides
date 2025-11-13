@@ -6,6 +6,7 @@ import { ConsentContext } from "./consent-context";
 import {
   Cookies as CookiesType,
   FidesCookie,
+  FidesInitOptions,
   LegacyConsentConfig,
   NoticeConsent,
   PrivacyExperience,
@@ -28,6 +29,17 @@ import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
+const getConsentCookieName = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+) => {
+  const safeSuffix = (suffix ?? "").trim();
+
+  if (safeSuffix.length > 0) {
+    return `${CONSENT_COOKIE_NAME}_${safeSuffix}`;
+  }
+
+  return CONSENT_COOKIE_NAME;
+};
 /**
  * The js-cookie default codec has a more conservative strategy in order to
  * comply with the exact requirements of RFC 6265. For ease of use in external pages,
@@ -103,8 +115,10 @@ export const getCookieByName = (cookieName: string): string | undefined =>
 /**
  * Retrieve and decode fides consent cookie
  */
-export const getFidesConsentCookie = (): FidesCookie | undefined => {
-  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
+export const getFidesConsentCookie = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+): FidesCookie | undefined => {
+  const cookieString = getCookieByName(getConsentCookieName(suffix));
   if (!cookieString) {
     return undefined;
   }
@@ -131,7 +145,12 @@ export const getFidesConsentCookie = (): FidesCookie | undefined => {
  */
 export const getOrMakeFidesCookie = (
   defaults?: NoticeConsent,
-  fidesClearCookie: boolean = false,
+  {
+    fidesClearCookie = false,
+    fidesCookieSuffix,
+  }: Partial<
+    Pick<FidesInitOptions, "fidesClearCookie" | "fidesCookieSuffix">
+  > = {},
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -140,13 +159,13 @@ export const getOrMakeFidesCookie = (
   }
 
   if (fidesClearCookie) {
-    document.cookie =
-      "fides_consent=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = `${getConsentCookieName(fidesCookieSuffix)}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT`;
     return defaultCookie;
   }
 
   // Check for an existing cookie for this device
-  let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  let parsedCookie: FidesCookie | undefined =
+    getFidesConsentCookie(fidesCookieSuffix);
 
   // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
   if (parsedCookie?.consent) {
@@ -208,7 +227,10 @@ export const getOrMakeFidesCookie = (
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
-  base64Cookie: boolean = false,
+  {
+    base64Cookie = false,
+    fidesCookieSuffix,
+  }: Partial<Pick<FidesInitOptions, "base64Cookie" | "fidesCookieSuffix">> = {},
 ) => {
   if (typeof document === "undefined") {
     return;
@@ -230,15 +252,19 @@ export const saveFidesCookie = (
   for (let i = 1; i <= hostnameParts.length; i += 1) {
     // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
     topViableDomain = hostnameParts.slice(-i).join(".");
-    const c = cookies.set(CONSENT_COOKIE_NAME, encodedCookie, {
-      // An explicit path ensures this is always set to the entire domain.
-      path: "/",
-      // An explicit domain allows subdomains to access the cookie.
-      domain: topViableDomain,
-      expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-    });
+    const c = cookies.set(
+      getConsentCookieName(fidesCookieSuffix),
+      encodedCookie,
+      {
+        // An explicit path ensures this is always set to the entire domain.
+        path: "/",
+        // An explicit domain allows subdomains to access the cookie.
+        domain: topViableDomain,
+        expires: CONSENT_COOKIE_MAX_AGE_DAYS,
+      },
+    );
     if (c) {
-      const savedCookie = getFidesConsentCookie();
+      const savedCookie = getFidesConsentCookie(fidesCookieSuffix);
       // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
       if (
         savedCookie &&

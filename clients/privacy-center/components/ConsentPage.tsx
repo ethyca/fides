@@ -118,7 +118,7 @@ const ConsentPage: NextPage = () => {
   useEffect(() => {
     const cookie: FidesCookie = getOrMakeFidesCookie();
     if (isNoticeDriven) {
-      saveFidesCookie(cookie, BASE_64_COOKIE);
+      saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
     }
   }, [
     consentOptions,
