@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
+
+## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
+
+### Fixed
+- Fixed the IdentityValue schema so it uses Multivalue instead of string [#6964](https://github.com/ethyca/fides/pull/6964)
 
 ## [2.74.1](https://github.com/ethyca/fides/compare/2.74.0..2.74.1)
 
