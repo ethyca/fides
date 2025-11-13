@@ -373,9 +373,10 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     """The schema for the more detailed PrivacyRequest response containing both
     detailed execution logs and audit logs."""
 
-    execution_and_audit_logs_by_dataset: Dict[
-        str, List[ExecutionAndAuditLogResponse]
-    ] = Field(alias="results")
+    execution_and_audit_logs_by_dataset: Optional[
+        Dict[str, List[ExecutionAndAuditLogResponse]]
+    ] = Field(default=None, alias="results")
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ReviewPrivacyRequestIds(FidesSchema):
