@@ -28,7 +28,7 @@ class OktaSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
 
-    _required_components: ClassVar[List[str]] = ["org_url"]
+    _required_components: ClassVar[List[str]] = ["org_url", "access_token"]
 
 
 class OktaDocsSchema(OktaSchema, NoValidationSchema):

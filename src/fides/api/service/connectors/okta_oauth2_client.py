@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, Optional
 
 import requests
@@ -25,23 +25,27 @@ class OktaOAuth2Client:
     DEFAULT_EXPIRATION_SECONDS = 3600
     EXPIRATION_BUFFER_SECONDS = 300
 
+    @staticmethod
+    def _default_clock() -> datetime:
+        return datetime.now(timezone.utc)
+
     def __init__(
         self,
         connection_config: ConnectionConfig,
         *,
         scope: Optional[str] = None,
-        clock: Callable[[], datetime] = datetime.utcnow,
+        clock: Callable[[], datetime] = None,
     ) -> None:
         self.connection_config = connection_config
         self.scope = scope or self.DEFAULT_SCOPE
-        self.clock = clock
+        self.clock = clock or self._default_clock
 
     def get_access_token(self, db: Optional[Session] = None) -> str:
         """
         Retrieve a valid OAuth2 access token for Okta.
         Returns a cached token when still valid or requests a new one as needed.
         """
-        self._validate_required_secrets()
+        self._validate_required_secrets(self.connection_config)
 
         secrets = self.connection_config.secrets or {}
         access_token: Optional[str] = secrets.get("access_token")
@@ -53,8 +57,9 @@ class OktaOAuth2Client:
         token_response = self._request_new_token()
         return self._persist_token(token_response, db)
 
-    def _validate_required_secrets(self) -> None:
-        secrets = self.connection_config.secrets or {}
+    @staticmethod
+    def _validate_required_secrets(connection_config: ConnectionConfig) -> None:
+        secrets = connection_config.secrets or {}
         missing = [
             secret_name
             for secret_name in ("org_url", "client_id", "client_secret")
