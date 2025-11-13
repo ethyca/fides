@@ -42,7 +42,7 @@ export interface AEPOptions {
    * Used for legacy Adobe ECID Opt-In Service (AppMeasurement)
    * Categories: 'aa' (Analytics), 'target' (Target), 'aam' (Audience Manager),
    * 'adcloud' (AdCloud), 'campaign' (Campaign), 'ecid' (ECID), 'livefyre' (Livefyre), 'mediaaa' (Media Analytics)
-   * @default Derived from purposeMapping if not provided (for backward compatibility)
+   * @default { analytics: ['aa'], functional: ['target'], advertising: ['aam'] }
    */
   ecidMapping?: {
     [fidesKey: string]: string[];
@@ -95,6 +95,20 @@ const DEFAULT_PURPOSE_MAPPING = {
   analytics: ["collect", "measure"],
   functional: ["personalize"],
   advertising: ["share", "personalize"],
+};
+
+/**
+ * Default mapping of Fides consent keys to Adobe ECID categories
+ *
+ * Maps to legacy ECID Opt-In Service categories:
+ * - analytics → aa (Analytics)
+ * - functional → target (Target)
+ * - advertising → aam (Audience Manager)
+ */
+const DEFAULT_ECID_MAPPING = {
+  analytics: ["aa"],
+  functional: ["target"],
+  advertising: ["aam"],
 };
 
 /**
@@ -154,46 +168,20 @@ const pushConsentToAdobe = (
     try {
       // Dynamic approvals: support all Adobe categories, not just hardcoded ones
       const ecidApprovals: Record<string, boolean> = {};
+      const ecidMapping = options?.ecidMapping || DEFAULT_ECID_MAPPING;
 
-      // Use explicit ecidMapping if provided, otherwise derive from purposeMapping (backward compatibility)
-      if (options?.ecidMapping) {
-        // Direct ECID mapping - cleaner and explicit
-        Object.entries(options.ecidMapping).forEach(([fidesKey, ecidCategories]) => {
-          const hasConsent = !!consent[fidesKey];
+      // Map Fides consent to ECID categories
+      Object.entries(ecidMapping).forEach(([fidesKey, ecidCategories]) => {
+        const hasConsent = !!consent[fidesKey];
 
-          ecidCategories.forEach((category) => {
-            // Use OR logic: if ANY Fides key grants consent to a category, approve it
-            ecidApprovals[category] = ecidApprovals[category] || hasConsent;
-          });
+        ecidCategories.forEach((category) => {
+          // Use OR logic: if ANY Fides key grants consent to a category, approve it
+          ecidApprovals[category] = ecidApprovals[category] || hasConsent;
         });
+      });
 
-        if (debug) {
-          console.log("[Fides Adobe] ECID approvals computed from ecidMapping:", ecidApprovals);
-        }
-      } else {
-        // Backward compatibility: derive ECID categories from purposeMapping
-        // Map Adobe purposes to ECID categories using default mapping
-        const purposeToEcidMapping: Record<string, string> = {
-          collect: "aa",
-          measure: "aa",
-          personalize: "target",
-          share: "aam",
-        };
-
-        Object.entries(purposeMapping).forEach(([fidesKey, adobePurposes]) => {
-          const hasConsent = !!consent[fidesKey];
-
-          adobePurposes.forEach((purpose) => {
-            const ecidCategory = purposeToEcidMapping[purpose];
-            if (ecidCategory) {
-              ecidApprovals[ecidCategory] = ecidApprovals[ecidCategory] || hasConsent;
-            }
-          });
-        });
-
-        if (debug) {
-          console.log("[Fides Adobe] ECID approvals computed from purposeMapping (legacy):", ecidApprovals);
-        }
+      if (debug) {
+        console.log("[Fides Adobe] ECID approvals computed from ecidMapping:", ecidApprovals);
       }
 
       // Dynamically apply approvals/denials for all categories
@@ -351,7 +339,11 @@ function getAdobeConsentState(): AEPConsentState {
  *
  * @example
  * ```javascript
- * // Recommended: Explicit mappings for both systems
+ * // Basic usage with defaults
+ * const aep = Fides.aep();
+ * // Uses default mappings: analytics->aa, functional->target, advertising->aam
+ *
+ * // Custom mappings for both systems
  * const aep = Fides.aep({
  *   purposeMapping: {
  *     analytics: ['collect', 'measure'],
@@ -363,17 +355,9 @@ function getAdobeConsentState(): AEPConsentState {
  *   }
  * });
  *
- * // Backward compatible: ECID mapping derived from purposeMapping
- * const aep = Fides.aep({
- *   purposeMapping: {
- *     analytics: ['collect', 'measure'],
- *     marketing: ['personalize', 'share']
- *   }
- * });
- *
  * // Check current consent state
  * const state = aep.consent();
- * console.log(state.ecidOptIn); // { aa: true, target: false, ... }
+ * console.log(state.ecidOptIn?.categories); // { aa: true, target: false, aam: true, ... }
  * ```
  */
 export const aep = (options?: AEPOptions): AEPIntegration => {
