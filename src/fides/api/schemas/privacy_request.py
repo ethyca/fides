@@ -10,7 +10,6 @@ from pydantic import (
     Field,
     field_serializer,
     field_validator,
-    model_serializer,
 )
 
 from fides.api.custom_types import SafeStr
@@ -380,20 +379,10 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     """The schema for the more detailed PrivacyRequest response containing both
     detailed execution logs and audit logs."""
 
-    execution_and_audit_logs_by_dataset: Optional[
-        Dict[str, List[ExecutionAndAuditLogResponse]]
-    ] = Field(default=None, alias="results")
+    execution_and_audit_logs_by_dataset: Dict[
+        str, List[ExecutionAndAuditLogResponse]
+    ] = Field(alias="results")
     model_config = ConfigDict(populate_by_name=True)
-
-    @model_serializer(when_used="json")
-    def serialize_model(self):
-        """Serialize the model, excluding execution_and_audit_logs_by_dataset when None."""
-        # Get the base model data
-        data = self.model_dump(mode="json", exclude_none=False, by_alias=True)
-        # Remove 'results' (the alias) if it's None
-        if data.get("results") is None:
-            data.pop("results", None)
-        return data
 
 
 class ReviewPrivacyRequestIds(FidesSchema):
