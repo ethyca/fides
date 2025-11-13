@@ -19,16 +19,23 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.1..main)
 
 ### Added
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
 - Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
 - Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
+- Added GPC conditional button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
+- Added default identity definitions [#6952](https://github.com/ethyca/fides/pull/6952)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
+- Replaced filter modal with a filter bar in the new request manager screen [#6943](https://github.com/ethyca/fides/pull/6943)
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
+- De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
+
+### Fixed
+- Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 
 ### Developer Experience
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
@@ -40,6 +47,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
+
+## [2.74.1](https://github.com/ethyca/fides/compare/2.74.0..2.74.1)
+
+### Fixed
+- Fixed an issue where FidesJS TCF CMP temporarily returns legacy TCF policy version 4 until a TC string is set [#6953](https://github.com/ethyca/fides/pull/6953)
 
 ## [2.74.0](https://github.com/ethyca/fides/compare/2.73.1..2.74.0)
 
