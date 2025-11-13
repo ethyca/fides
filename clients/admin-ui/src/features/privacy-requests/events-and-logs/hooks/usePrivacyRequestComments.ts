@@ -1,4 +1,4 @@
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useEffect } from "react";
 
 import { useFeatures } from "~/features/common/features";
@@ -14,6 +14,8 @@ import { CommentResponse } from "~/types/api/models/CommentResponse";
  */
 export const usePrivacyRequestComments = (privacyRequestId: string) => {
   const { plus: isPlusEnabled } = useFeatures();
+
+  const message = useMessage();
 
   // Fetch comments data for this privacy request
   const {
@@ -35,7 +37,7 @@ export const usePrivacyRequestComments = (privacyRequestId: string) => {
     if (error) {
       message.error("Failed to fetch the request comments");
     }
-  }, [error]);
+  }, [error, message]);
 
   // Map comments to ActivityTimelineItem
   const commentItems: ActivityTimelineItem[] = !commentsData?.items

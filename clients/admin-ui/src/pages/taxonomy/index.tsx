@@ -284,7 +284,6 @@ const TaxonomyPage: NextPage = () => {
           >
             <CreateCustomTaxonomyForm
               onClose={() => setIsAddNewItemModalOpen(false)}
-              messageApi={messageApi}
             />
           </Modal>
 
@@ -339,7 +338,6 @@ const TaxonomyPage: NextPage = () => {
           onClose={() => setTaxonomyTypeToEdit(null)}
           onDelete={confirmDelete}
           taxonomy={taxonomyTypeToEdit}
-          messageApi={messageApi}
         />
       )}
     </Layout>
