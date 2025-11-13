@@ -60,12 +60,6 @@ export interface AEPOptions {
  */
 export interface AEPDiagnostics {
   timestamp: string;
-  fides?: {
-    configured: boolean;
-    consentKeys?: string[];
-    currentConsent?: Record<string, boolean>;
-    suggestedMapping?: Record<string, string[]>;
-  };
   alloy?: {
     configured: boolean;
     consent?: any;
@@ -375,92 +369,6 @@ function buildAdobePurposes(
 // ============================================================================
 // Diagnostic Functions
 // ============================================================================
-
-/**
- * Suggest Adobe purpose mapping based on Fides consent key names
- */
-function suggestPurposeMapping(
-  consentKeys: string[],
-): Record<string, string[]> {
-  const suggestions: Record<string, string[]> = {};
-
-  consentKeys.forEach((key) => {
-    const lowerKey = key.toLowerCase();
-
-    // Analytics-related keys
-    if (
-      lowerKey.includes("analytic") ||
-      lowerKey.includes("measurement") ||
-      lowerKey.includes("performance")
-    ) {
-      suggestions[key] = ["collect", "measure"];
-    }
-    // Marketing/Advertising keys
-    else if (
-      lowerKey.includes("marketing") ||
-      lowerKey.includes("advertising") ||
-      lowerKey.includes("ad_")
-    ) {
-      suggestions[key] = ["personalize", "share"];
-    }
-    // Data sales/sharing keys
-    else if (
-      lowerKey.includes("sale") ||
-      lowerKey.includes("sharing") ||
-      lowerKey.includes("third_party")
-    ) {
-      suggestions[key] = ["share"];
-    }
-    // Personalization/Functional keys
-    else if (
-      lowerKey.includes("personali") ||
-      lowerKey.includes("functional") ||
-      lowerKey.includes("preference")
-    ) {
-      suggestions[key] = ["personalize"];
-    }
-    // Essential/Required keys - typically not mapped
-    else if (
-      lowerKey.includes("essential") ||
-      lowerKey.includes("necessary") ||
-      lowerKey.includes("required")
-    ) {
-      // Skip essential cookies - they're always allowed
-    }
-    // Default fallback for unknown keys
-    else {
-      suggestions[key] = ["collect"]; // Conservative default
-    }
-  });
-
-  return suggestions;
-}
-
-/**
- * Get Fides consent diagnostics
- */
-export function getFidesDiagnostics(): AEPDiagnostics["fides"] {
-  const diagnostics: AEPDiagnostics["fides"] = {
-    configured: false,
-  };
-
-  if (window.Fides && window.Fides.consent) {
-    const consentKeys = Object.keys(window.Fides.consent);
-    diagnostics.configured = true;
-    diagnostics.consentKeys = consentKeys;
-
-    // Convert consent values to boolean for diagnostics
-    const currentConsent: Record<string, boolean> = {};
-    Object.entries(window.Fides.consent).forEach(([key, value]) => {
-      // Handle both boolean and UserConsentPreference types
-      currentConsent[key] = !!value && value !== "opt_out";
-    });
-    diagnostics.currentConsent = currentConsent;
-    diagnostics.suggestedMapping = suggestPurposeMapping(consentKeys);
-  }
-
-  return diagnostics;
-}
 
 /**
  * Get ECID from cookies
