@@ -146,8 +146,6 @@ class MessagingService:
                 self.config_proxy.notifications.notification_service_type
                 or get_email_messaging_config_service_type(db=self.db)
             )
-            if not service_type and isinstance(request, ConsentRequest):
-                service_type = get_email_messaging_config_service_type(db=self.db)
             if not service_type:
                 raise MessageDispatchException(
                     "No notification service type configured."
