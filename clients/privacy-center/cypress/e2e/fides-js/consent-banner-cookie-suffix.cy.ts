@@ -275,14 +275,6 @@ describe("Consent cookie with suffix", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("button#fides-modal-link").click();
-        // BUG: After multiple page reloads with different cookie suffixes, the modal renders
-        // without the outer container wrapper. The outer <div data-testid="consent-modal">
-        // is missing, leaving only the inner <div class="fides-modal-content">.
-        // This appears to be a component lifecycle issue: when initOverlay unmounts/remounts
-        // the overlay after multiple reloads, the a11y-dialog instance cleanup may not run
-        // properly, causing DOM manipulation conflicts that result in only the inner content
-        // being rendered. The cookie suffix implementation itself is fine; this is a rendering
-        // bug that surfaces with multiple reloads. Using .fides-modal-content as a workaround.
         cy.get(".fides-modal-content").within(() => {
           cy.get("button").contains("Opt out of all").click();
         });
