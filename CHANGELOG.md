@@ -21,8 +21,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
 
-
-
 ## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
 
 ### Fixed
