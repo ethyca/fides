@@ -1,7 +1,7 @@
 """Module that adds models for connectors"""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import ClassVar, List, Optional, Any, Dict
+from typing import Any, ClassVar, Dict, List, Optional
 
 from pydantic import BaseModel
 

@@ -60,8 +60,7 @@ class OktaConnector(BaseConnector):
         access_token = self.configuration.secrets.get("access_token")
         if not access_token:
             raise ConnectionException(
-                "Okta OAuth2 access token is not configured. Implement the OAuth2 Client "
-                "Credentials module and ensure secrets include an 'access_token'."
+                "Okta access_token is not configured. Provide a valid OAuth2 access token in the connection secrets."
             )
         return access_token
 
