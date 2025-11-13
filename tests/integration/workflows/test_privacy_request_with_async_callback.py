@@ -47,7 +47,7 @@ class TestPrivacyRequestWithAsyncCallback:
                 "access": AccessLevel.write,
                 "secrets": {
                     "domain": "example.com",
-                    "api_token": "123",
+                    "access_token": "123",
                 },
                 "saas_config": saas_config,
             },

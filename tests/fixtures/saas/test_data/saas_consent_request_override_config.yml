@@ -7,16 +7,17 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: api_token
-      label: API token
+    - name: access_token
+      label: Access token
+      sensitive: True
 
   client_config:
-    protocol: http
+    protocol: https
     host: <domain>
     authentication:
       strategy: bearer
       configuration:
-        token: <api_token>
+        token: <access_token>
 
   test_request:
     method: GET
