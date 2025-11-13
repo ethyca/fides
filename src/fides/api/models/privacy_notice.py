@@ -391,6 +391,26 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         res = [result for result in experience_regions_cursor_result]
         return res[0]["regions"] if res else []
 
+    @staticmethod
+    def _set_child_notice_display_order(
+        child_notices: List[Dict[str, Any]],
+        existing_notices: List[PrivacyNotice],
+    ) -> None:
+        """
+        Sets display_order on child notice objects based on their position in the child_notices list.
+
+        Args:
+            child_notices: List of dictionaries containing notice IDs in the desired order
+            existing_notices: List of PrivacyNotice objects to update
+        """
+        notice_id_to_index = {
+            child_notice["id"]: index
+            for index, child_notice in enumerate(child_notices)
+        }
+        for child_notice_obj in existing_notices:
+            if child_notice_obj.id in notice_id_to_index:
+                child_notice_obj.display_order = notice_id_to_index[child_notice_obj.id]
+
     @classmethod
     def fetch_and_validate_notices(
         cls,
@@ -460,13 +480,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         created.children = existing_notices
 
         # Set display_order on children based on their position in the ORIGINAL child_notices list
-        notice_id_to_index = {
-            child_notice["id"]: index
-            for index, child_notice in enumerate(child_notices)
-        }
-        for child_notice_obj in existing_notices:
-            if child_notice_obj.id in notice_id_to_index:
-                child_notice_obj.display_order = notice_id_to_index[child_notice_obj.id]
+        cls._set_child_notice_display_order(child_notices, existing_notices)
 
         db.commit()
 
@@ -508,13 +522,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         self.children = existing_notices
 
         # Set display_order on children based on their position in the ORIGINAL child_notices list
-        notice_id_to_index = {
-            child_notice["id"]: index
-            for index, child_notice in enumerate(child_notices)
-        }
-        for child_notice_obj in existing_notices:
-            if child_notice_obj.id in notice_id_to_index:
-                child_notice_obj.display_order = notice_id_to_index[child_notice_obj.id]
+        self._set_child_notice_display_order(child_notices, existing_notices)
 
         # Performs a patch update of the base privacy notice
         base_notice_updated: bool = update_if_modified(self, db=db, data=data)

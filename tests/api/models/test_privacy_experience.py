@@ -12,6 +12,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
     RejectAllMechanism,
+    link_notices_to_experience_config,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.models.tcf_publisher_restrictions import TCFConfiguration
@@ -902,27 +903,11 @@ class TestNoticeDisplayOrder:
         privacy_notice,
         privacy_notice_us_ca_provide,
         privacy_notice_us_co_third_party_sharing,
+        experience_config_banner_and_modal,
     ):
         """Test that link_notices_to_experience_config sets display_order correctly"""
-        from fides.api.models.privacy_experience import (
-            link_notices_to_experience_config,
-        )
 
-        # Create an experience config
-        config = PrivacyExperienceConfig.create(
-            db=db,
-            data={
-                "component": "banner_and_modal",
-                "name": "Test Experience Config",
-                "translations": [
-                    {
-                        "language": "en",
-                        "title": "Test",
-                        "description": "Test description",
-                    }
-                ],
-            },
-        )
+        config = experience_config_banner_and_modal
 
         # Link notices in a specific order
         notice_ids = [
@@ -959,9 +944,6 @@ class TestNoticeDisplayOrder:
         privacy_notice_us_co_third_party_sharing,
     ):
         """Test that reordering notices updates display_order correctly"""
-        from fides.api.models.privacy_experience import (
-            link_notices_to_experience_config,
-        )
 
         # Create an experience config with notices in order A, B, C
         config = PrivacyExperienceConfig.create(
