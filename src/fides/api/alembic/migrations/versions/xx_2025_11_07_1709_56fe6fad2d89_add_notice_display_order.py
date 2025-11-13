@@ -1,7 +1,7 @@
 """add_notice_display_order
 
 Revision ID: 56fe6fad2d89
-Revises: 7d82c8fc4c34
+Revises: b2c3d4e5f6a7
 Create Date: 2025-11-07 17:09:24.917188
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "56fe6fad2d89"
-down_revision = "7d82c8fc4c34"
+down_revision = "b2c3d4e5f6a7"
 branch_labels = None
 depends_on = None
 
