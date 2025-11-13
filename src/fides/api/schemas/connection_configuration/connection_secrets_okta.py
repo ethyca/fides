@@ -21,6 +21,12 @@ class OktaSchema(ConnectionConfigSecretsSchema):
         description="Legacy API token (ignored). Configure OAuth2 Client Credentials instead.",
         json_schema_extra={"sensitive": True, "deprecated": True},
     )
+    access_token: Optional[str] = Field(
+        default=None,
+        title="Access Token",
+        description="OAuth2 access token used to authenticate with Okta",
+        json_schema_extra={"sensitive": True},
+    )
 
     _required_components: ClassVar[List[str]] = ["org_url"]
 

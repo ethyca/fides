@@ -223,7 +223,7 @@ def pytest_ops(
             "-e",
             "OKTA_ORG_URL",
             "-e",
-            "OKTA_API_TOKEN",
+            "OKTA_ACCESS_TOKEN",
             "-e",
             "RDS_MYSQL_AWS_ACCESS_KEY_ID",
             "-e",
