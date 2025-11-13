@@ -304,11 +304,11 @@ def authorize_connection(
     response_model=SaasConnectionTemplateResponse,
 )
 def instantiate_connection_from_template(
-    saas_connector_type: str,
+    connector_template_type: str,
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> SaasConnectionTemplateResponse:
-    return instantiate_connection(db, saas_connector_type, template_values)
+    return instantiate_connection(db, connector_template_type, template_values)
 
 
 def instantiate_connection(

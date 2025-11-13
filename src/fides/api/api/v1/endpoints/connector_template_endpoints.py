@@ -43,7 +43,7 @@ def get_all_connector_templates() -> List[ConnectorTemplateListResponse]:
     Returns a list of all available connector templates with summary information.
 
     Each template includes:
-    - **connector_type**: The unique identifier for the connector (used in other endpoints)
+    - **type**: The unique identifier for the connector (used in other endpoints)
     - **name**: Human-readable name of the connector
     - **supported_actions**: List of actions this connector supports (e.g., access, erasure)
     - **category**: Optional category classification for the connector
@@ -108,24 +108,24 @@ def register_custom_connector_template_deprecated(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
 )
 def get_connector_template_config(
-    saas_connector_type: str,
+    connector_template_type: str,
 ) -> Response:
     """
     Retrieves the SaaS config YAML for a connector template by its type.
 
-    The `saas_connector_type` parameter comes from the `connector_type` field
+    The `connector_template_type` parameter comes from the `type` field
     returned by the `GET /connector-templates` endpoint.
 
     Returns the raw YAML configuration that can be used to understand
     or customize the connector template.
     """
-    logger.info("Finding connector template with type '{}'", saas_connector_type)
-    template = ConnectorRegistry.get_connector_template(saas_connector_type)
+    logger.info("Finding connector template with type '{}'", connector_template_type)
+    template = ConnectorRegistry.get_connector_template(connector_template_type)
 
     if not template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with type '{saas_connector_type}'",
+            detail=f"No connector template found with type '{connector_template_type}'",
         )
 
     return Response(
@@ -139,26 +139,26 @@ def get_connector_template_config(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
 )
 def get_connector_template_dataset(
-    saas_connector_type: str,
+    connector_template_type: str,
 ) -> Response:
     """
     Retrieves the dataset YAML for a connector template by its type.
 
-    The `saas_connector_type` parameter comes from the `connector_type` field
+    The `connector_template_type` parameter comes from the `type` field
     returned by the `GET /connector-templates` endpoint.
 
     Returns the raw dataset YAML configuration that defines the data structure
     for the connector template.
     """
     logger.info(
-        "Finding connector template dataset with type '{}'", saas_connector_type
+        "Finding connector template dataset with type '{}'", connector_template_type
     )
-    template = ConnectorRegistry.get_connector_template(saas_connector_type)
+    template = ConnectorRegistry.get_connector_template(connector_template_type)
 
     if not template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No connector template found with type '{saas_connector_type}'",
+            detail=f"No connector template found with type '{connector_template_type}'",
         )
 
     return Response(

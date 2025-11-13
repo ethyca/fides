@@ -59,7 +59,7 @@ class ConnectorTemplateListResponse(FidesSchema):
     Provides summary information about available connector templates.
     """
 
-    connector_type: str
+    type: str
     name: str
     supported_actions: List[ActionType]
     category: Optional[ConnectionCategory] = None

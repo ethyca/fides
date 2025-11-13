@@ -344,7 +344,7 @@ class ConnectorRegistry:
 
             summaries.append(
                 ConnectorTemplateListResponse(
-                    connector_type=connector_type,
+                    type=connector_type,
                     name=template.human_readable,
                     supported_actions=template.supported_actions,
                     category=template.category,

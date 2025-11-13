@@ -191,13 +191,13 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
-SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
+SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
 
 # Connector Template URLs
 CONNECTOR_TEMPLATES = "/connector-templates"
 CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
-CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{saas_connector_type}/config"
-CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{saas_connector_type}/dataset"
+CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
+CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
 
 # Deprecated: Old connector template register URL
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
@@ -205,7 +205,7 @@ REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 # System Connections
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 INSTANTIATE_SYSTEM_CONNECTION = (
-    "/system/{fides_key}/connection/instantiate/{saas_connector_type}"
+    "/system/{fides_key}/connection/instantiate/{connector_template_type}"
 )
 
 # User URLs
