@@ -69,11 +69,6 @@ export interface AEPConsentState {
     aam?: boolean;
     configured: boolean;
   };
-  summary: {
-    analytics: boolean;
-    personalization: boolean;
-    advertising: boolean;
-  };
 }
 
 /**
@@ -304,11 +299,6 @@ function buildAdobePurposes(
 function getAdobeConsentState(): AEPConsentState {
   const state: AEPConsentState = {
     timestamp: new Date().toISOString(),
-    summary: {
-      analytics: false,
-      personalization: false,
-      advertising: false,
-    },
   };
 
   // Check Adobe Web SDK (Alloy) - Note: alloy doesn't expose consent state directly
@@ -341,11 +331,6 @@ function getAdobeConsentState(): AEPConsentState {
         target: targetApproved,
         aam: aamApproved,
       };
-
-      // Build summary from ECID state
-      state.summary.analytics = !!aaApproved;
-      state.summary.personalization = !!targetApproved;
-      state.summary.advertising = !!aamApproved;
     } catch (e) {
       state.ecidOptIn = {
         configured: true,
