@@ -1344,14 +1344,12 @@ class TestGetPrivacyRequests:
         ['one', 'two', 'three'].
 
         The test is parametrized to cover:
-        - List values (the original failing cases from error logs)
+        - List values
         - String values
         - Integer values
         - Mixed types (string, int, list)
 
-        Note: LabeledIdentity only accepts MultiValue types (int, str, or list of int/str),
-        so dict values are not tested here. However, IdentityValue.value accepts Any type,
-        so dicts would work if they came through the API response.
+        Note: LabeledIdentity only accepts MultiValue types (int, str, or list of int/str)
         """
         # Create a privacy request
         privacy_request = PrivacyRequest.create(
