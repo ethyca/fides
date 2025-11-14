@@ -36,7 +36,7 @@ import {
   HealthCheck,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
-  ResourceTypes,
+  // ResourceTypes,
   SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
@@ -263,13 +263,13 @@ const plusApi = baseApi.injectEndpoints({
       invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
 
-    // Custom Metadata Custom Field Definition By Resource Type
+    // Custom Metadata Custom Field Definition By Resource Type (supports taxonomy:<key>)
     getCustomFieldDefinitionsByResourceType: build.query<
       CustomFieldDefinitionWithId[],
-      ResourceTypes
+      string
     >({
-      query: (resource_type: ResourceTypes) => ({
-        url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
+      query: (resource_type: string) => ({
+        url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
       }),
       providesTags: ["Custom Field Definition"],
       transformResponse: (
@@ -283,6 +283,15 @@ const plusApi = baseApi.injectEndpoints({
           (a.name ?? "").localeCompare(b.name ?? ""),
         );
       },
+    }),
+    // Custom Fields: dynamic locations (legacy + custom taxonomies)
+    getCustomFieldLocations: build.query<string[], void>({
+      query: () => ({
+        url: `plus/custom-fields/locations`,
+      }),
+      providesTags: ["Custom Field Definition"],
+      transformResponse: (data: string[]) =>
+        data.sort((a, b) => a.localeCompare(b)),
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
@@ -522,6 +531,7 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetCustomFieldLocationsQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useLazyGetDictionaryDataUsesQuery,
