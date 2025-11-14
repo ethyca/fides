@@ -2,6 +2,7 @@ import type { ModalFuncProps } from "antd/es/modal";
 import { Icons, SparkleIcon } from "fidesui";
 import { ReactNode } from "react";
 
+import { pluralize } from "~/features/common/utils";
 import { DiffStatus } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -179,19 +180,19 @@ export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   "assign-categories": (_targetItemCount: number) => null,
   "promote-removals": (targetItemCount: number) =>
-    `Are you sure you want to remove these ${targetItemCount.toLocaleString()} resources?`,
+    `Are you sure you want to remove ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   "un-approve": (_targetItemCount: number) => null,
   "un-mute": (targetItemCount: number) =>
-    `Are you sure you want to restore ${targetItemCount.toLocaleString()} resources?`,
+    `Are you sure you want to restore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
   approve: (targetItemCount: number) =>
-    `Are you sure you want to approve ${targetItemCount.toLocaleString()} resources?`,
+    `Are you sure you want to approve ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
   classify: (targetItemCount: number) =>
-    `Are you sure you want to run the classifier and apply data categories to ${targetItemCount.toLocaleString()} unlabeled resources?`,
+    `Are you sure you want to run the classifier and apply data categories to ${targetItemCount.toLocaleString()} unlabeled ${pluralize(targetItemCount, "resource", "resources")}?`,
   mute: (targetItemCount: number) =>
-    `Are you sure you want to ignore ${targetItemCount.toLocaleString()} resources? After ignoring, these resources may reappear in future scans.`,
+    `Are you sure you want to ignore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After ignoring, these resources may reappear in future scans.`,
   promote: (targetItemCount: number) =>
-    `Are you sure you want to confirm these ${targetItemCount.toLocaleString()} resources? After confirming this data can be used for policy automation and DSRs. `,
+    `Are you sure you want to confirm ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After confirming this data can be used for policy automation and DSRs. `,
 } as const satisfies Readonly<
   Record<FieldActionType, (targetItemCount: number) => ReactNode>
 >;
