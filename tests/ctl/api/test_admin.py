@@ -70,7 +70,7 @@ def test_heap_dump_when_disabled(
 ) -> None:
     """Test that heap dump returns 405 when memory_watchdog_enabled is False (default)."""
     response = test_client.post(
-        test_config.cli.server_url + API_PREFIX + "/admin/heap_dump/",
+        test_config.cli.server_url + API_PREFIX + "/admin/heap-dump/",
         headers=test_config.user.auth_header,
     )
 
@@ -88,7 +88,7 @@ def test_heap_dump_explicitly_disabled(
 ) -> None:
     """Test that heap dump returns 405 when memory_watchdog_enabled is explicitly set to False."""
     response = test_client.post(
-        test_config.cli.server_url + API_PREFIX + "/admin/heap_dump/",
+        test_config.cli.server_url + API_PREFIX + "/admin/heap-dump/",
         headers=test_config.user.auth_header,
     )
 
@@ -107,7 +107,7 @@ def test_heap_dump_logs_heap_stats(
 ) -> None:
     """Test that heap dump endpoint logs heap statistics."""
     response = test_client.post(
-        test_config.cli.server_url + API_PREFIX + "/admin/heap_dump/",
+        test_config.cli.server_url + API_PREFIX + "/admin/heap-dump/",
         headers=test_config.user.auth_header,
     )
 

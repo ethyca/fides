@@ -90,7 +90,7 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
 
 
 @ADMIN_ROUTER.post(
-    "/admin/heap_dump",
+    "/admin/heap-dump",
     tags=["Admin"],
     dependencies=[Security(verify_oauth_client_prod, scopes=[HEAP_DUMP_EXEC])],
     status_code=status.HTTP_200_OK,
