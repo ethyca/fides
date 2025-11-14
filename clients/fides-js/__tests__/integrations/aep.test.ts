@@ -359,7 +359,7 @@ describe("aep", () => {
       setupFidesWithConsent({ analytics: true });
 
       aep();
-      
+
       // Should not throw
       expect(() => {
         triggerConsentEvent("FidesUpdated", { analytics: true });
