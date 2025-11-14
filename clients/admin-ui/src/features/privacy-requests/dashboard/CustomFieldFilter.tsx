@@ -23,15 +23,23 @@ export const CustomFieldFilter = ({
   value,
   onChange,
 }: CustomFieldFilterProps) => {
-  const { label, field_type, options } = fieldDefinition;
+  const { label, field_type: fieldType, options } = fieldDefinition;
 
   // Skip location fields - not implemented yet
-  if (field_type === "location") {
+  if (fieldType === "location") {
     return null;
   }
 
-  // For select and multiselect, render a single Select component
-  if (field_type === "select" || field_type === "multiselect") {
+  // Skip multiselect fields - backend filtering doesn't support array values.
+  // The backend explicitly filters out list values in the query logic
+  // (see src/fides/api/api/v1/endpoints/privacy_request_endpoints.py:611)
+  // because array values are not indexed for searching.
+  if (fieldType === "multiselect") {
+    return null;
+  }
+
+  // For select fields, render a single Select component
+  if (fieldType === "select") {
     const selectOptions =
       options?.map((opt) => ({
         label: opt,
@@ -54,7 +62,7 @@ export const CustomFieldFilter = ({
     );
   }
 
-  // Default to text input for text or undefined field_type
+  // Default to text input for text or undefined fieldType
   return (
     <Input
       placeholder={label}
