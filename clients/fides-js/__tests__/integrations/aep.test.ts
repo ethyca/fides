@@ -304,7 +304,7 @@ describe("aep", () => {
 
     test("does not touch unmapped categories", () => {
       const { mockApprove } = setupOptIn();
-      
+
       // Don't set Fides as initialized to avoid synthetic events
       window.Fides = {
         consent: {
@@ -459,7 +459,7 @@ describe("aep", () => {
 
     test("defaults to no debug logging when debug option is not set", () => {
       const mockAlloy = setupAlloy();
-      
+
       // Don't set Fides as initialized to avoid synthetic events
       window.Fides = {
         consent: {
@@ -653,4 +653,3 @@ describe("aep", () => {
     });
   });
 });
-
