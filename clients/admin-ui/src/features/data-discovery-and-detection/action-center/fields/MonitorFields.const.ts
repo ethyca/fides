@@ -95,7 +95,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     color: CUSTOM_TAG_COLOR.ERROR,
   },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.CAUTION },
+  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal_promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
