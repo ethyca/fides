@@ -96,10 +96,9 @@ export function subscribeToConsent(
 
   // Filter for events marked as true
   const eventsToForward = (
-    Object.entries(eventConfig).filter(([, shouldForward]) => shouldForward) as [
-      FidesEventType,
-      boolean,
-    ][]
+    Object.entries(eventConfig).filter(
+      ([, shouldForward]) => shouldForward,
+    ) as [FidesEventType, boolean][]
   ).map(([eventName]) => eventName);
 
   // Listen for Fides events
