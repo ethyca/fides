@@ -248,6 +248,7 @@ const ActionCenterFields: NextPage = () => {
     handleNavigate,
     messageApi,
     !!detailsUrn,
+    () => refetch(),
   );
 
   return (

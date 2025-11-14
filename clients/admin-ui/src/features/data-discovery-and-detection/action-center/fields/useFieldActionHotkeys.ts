@@ -37,6 +37,7 @@ type ActiveListItem =
  * @param onNavigate - Function to handle navigation to field details
  * @param messageApi - Ant Design message API instance (needs to be passed in to avoid re-rendering the hook)
  * @param isDrawerOpen - Whether the details drawer is currently open
+ * @param onRefresh - Function to handle refreshing the list
  */
 export const useFieldActionHotkeys = (
   activeListItem: ActiveListItem | undefined,
@@ -45,6 +46,7 @@ export const useFieldActionHotkeys = (
   onNavigate: (urn: string | undefined) => void,
   messageApi: ReturnType<typeof Message.useMessage>[0],
   isDrawerOpen: boolean,
+  onRefresh: () => void,
 ) => {
   // Helper to open a category select dropdown programmatically
   const openCategorySelect = (selectElement: Element): boolean => {
@@ -130,11 +132,10 @@ export const useFieldActionHotkeys = (
     [activeListItem, fieldActions],
   );
 
-  useHotkeys(
-    FIELD_ACTION_HOTKEYS.UN_MUTE,
-    () => handleHotkeyAction(FieldActionType.UN_MUTE),
-    [activeListItem, fieldActions],
-  );
+  useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [
+    activeListItem,
+    fieldActions,
+  ]);
 
   useHotkeys(
     FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER,
