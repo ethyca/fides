@@ -211,13 +211,10 @@ const pushConsentToAdobe = (
         });
       });
 
-      if (debug) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[Fides Adobe] ECID approvals computed from ecidMapping:",
+      fidesDebugger(
+        "[Fides Adobe] ECID approvals computed from ecidMapping:",
           ecidApprovals,
-        );
-      }
+      );
 
       // Dynamically apply approvals/denials for all categories
       const categories = window.adobe!.optIn.Categories;
