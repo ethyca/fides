@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.3..main)
 
 ### Added
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added GPC conditional button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
 - Added default identity definitions [#6952](https://github.com/ethyca/fides/pull/6952)
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
+- Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
@@ -40,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 
 ### Developer Experience
+- Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
@@ -49,6 +51,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
+
+## [2.74.3](https://github.com/ethyca/fides/compare/2.74.2..2.74.3)
+
+### Added
+- Added admin API endpoint to allow debugging memory issues with a memory dump [#6973](https://github.com/ethyca/fides/pull/6973)
 
 ## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
 
