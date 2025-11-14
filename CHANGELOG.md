@@ -46,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
+- Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
 
 ### Fixed
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
