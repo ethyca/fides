@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3b0.post0.dev2"
+    "version": "2.74.3b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13991,6 +13991,37 @@
         }
       }
     },
+    "/api/v1/admin/heap-dump": {
+      "post": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Trigger Heap Dump",
+        "description": "Trigger a heap dump for memory diagnostics.\n\nCaptures and logs detailed memory profiling information including:\n- Process memory stats (RSS, VMS)\n- Top object type counts\n- Garbage collector stats\n- Uncollectable objects (memory leaks)\n\nThe full heap dump report is logged to error logs.",
+        "operationId": "trigger_heap_dump_api_v1_admin_heap_dump_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Trigger Heap Dump Api V1 Admin Heap Dump Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "heap_dump:exec"
+            ]
+          }
+        ]
+      }
+    },
     "/health/database": {
       "get": {
         "tags": [
@@ -27164,6 +27195,7 @@
           "dataset:read",
           "dataset:test",
           "encryption:exec",
+          "heap_dump:exec",
           "messaging-template:update",
           "evaluation:create",
           "evaluation:read",
