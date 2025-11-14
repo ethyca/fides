@@ -442,8 +442,11 @@ const ActionCenterFields: NextPage = () => {
                             </NextLink>
                             <Button
                               type="primary"
-                              onClick={() => refetch()}
-                              aria-label="Refresh"
+                              aria-label="Refresh page"
+                              onClick={() => {
+                                restMonitorFieldsFilters.resetToInitialState();
+                                router.reload();
+                              }}
                             >
                               Refresh page
                             </Button>
