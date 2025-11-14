@@ -10,7 +10,7 @@ const mockConsoleError = jest.spyOn(console, "error").mockImplementation();
  * Mock Adobe Web SDK (Alloy)
  */
 const setupAlloy = () => {
-  const mockAlloy = jest.fn((command: string, options: any) => {
+  const mockAlloy = jest.fn((_command: string, _options: any) => {
     return Promise.resolve();
   });
   window.alloy = mockAlloy;
@@ -23,7 +23,7 @@ const setupAlloy = () => {
 const setupOptIn = () => {
   const mockApprove = jest.fn();
   const mockDeny = jest.fn();
-  const mockIsApproved = jest.fn((category: string) => false);
+  const mockIsApproved = jest.fn((_category: string) => false);
 
   window.adobe = {
     optIn: {
@@ -251,7 +251,7 @@ describe("aep", () => {
     });
 
     test("uses OR logic when multiple Fides keys map to same category", () => {
-      const { mockApprove, mockDeny } = setupOptIn();
+      const { mockApprove } = setupOptIn();
       setupFidesWithConsent({
         analytics: false,
         marketing: true,
@@ -444,7 +444,7 @@ describe("aep", () => {
 
   describe("Debug logging", () => {
     test("logs debug info when debug option is true", () => {
-      const mockAlloy = setupAlloy();
+      setupAlloy();
       setupFidesWithConsent({
         analytics: true,
       });
@@ -490,7 +490,7 @@ describe("aep", () => {
     });
 
     test("warns about unmatched consent keys in debug mode", () => {
-      const mockAlloy = setupAlloy();
+      setupAlloy();
       setupFidesWithConsent({
         analytics: true,
         unknown_key: true,

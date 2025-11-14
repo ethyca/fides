@@ -111,110 +111,6 @@ const DEFAULT_ECID_MAPPING = {
 };
 
 /**
- * Push Fides consent to Adobe products
- */
-const pushConsentToAdobe = (
-  consent: NoticeConsent,
-  options?: AEPOptions,
-): void => {
-  const purposeMapping = options?.purposeMapping || DEFAULT_PURPOSE_MAPPING;
-  const debug = options?.debug || false;
-
-  if (debug) {
-    console.log("[Fides Adobe] Pushing consent to Adobe:", consent);
-  }
-
-  // Check if Adobe is loaded
-  const hasAlloy = typeof window.alloy === "function";
-  const hasOptIn = !!window.adobe?.optIn;
-
-  if (!hasAlloy && !hasOptIn) {
-    if (debug) {
-      console.warn(
-        "[Fides Adobe] Adobe not detected. Ensure Adobe Web SDK or ECID is loaded.",
-      );
-    }
-    return;
-  }
-
-  // Build Adobe Web SDK consent object (Consent v2)
-  if (hasAlloy) {
-    const adobePurposes = buildAdobePurposes(consent, purposeMapping, debug);
-
-    try {
-      window.alloy("setConsent", {
-        consent: [
-          {
-            standard: "Adobe",
-            version: "2.0",
-            value: adobePurposes,
-          },
-        ],
-      });
-
-      if (debug) {
-        console.log("[Fides Adobe] Sent consent to Adobe Web SDK:", {
-          purposes: adobePurposes,
-        });
-      }
-    } catch (error) {
-      console.error("[Fides Adobe] Error calling alloy.setConsent:", error);
-    }
-  }
-
-  // Handle legacy ECID Opt-In Service
-  if (hasOptIn) {
-    try {
-      // Dynamic approvals: support all Adobe categories, not just hardcoded ones
-      const ecidApprovals: Record<string, boolean> = {};
-      const ecidMapping = options?.ecidMapping || DEFAULT_ECID_MAPPING;
-
-      // Map Fides consent to ECID categories
-      Object.entries(ecidMapping).forEach(([fidesKey, ecidCategories]) => {
-        const hasConsent = !!consent[fidesKey];
-
-        ecidCategories.forEach((category) => {
-          // Use OR logic: if ANY Fides key grants consent to a category, approve it
-          ecidApprovals[category] = ecidApprovals[category] || hasConsent;
-        });
-      });
-
-      if (debug) {
-        console.log(
-          "[Fides Adobe] ECID approvals computed from ecidMapping:",
-          ecidApprovals,
-        );
-      }
-
-      // Dynamically apply approvals/denials for all categories
-      const categories = window.adobe!.optIn.Categories;
-
-      // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
-      Object.entries(categories).forEach(([categoryName, categoryId]) => {
-        if (typeof categoryId === "string") {
-          // Check if we have an approval decision for this category
-          if (ecidApprovals[categoryId] === true) {
-            window.adobe!.optIn.approve(categoryId);
-          } else if (ecidApprovals[categoryId] === false) {
-            window.adobe!.optIn.deny(categoryId);
-          }
-          // If undefined, we don't touch it (no mapping provided)
-        }
-      });
-
-      if (debug) {
-        console.log(
-          "[Fides Adobe] Updated ECID Opt-In Service:",
-          ecidApprovals,
-        );
-      }
-    } catch (error) {
-      console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
-    }
-  }
-};
-
-/**
  * Build Adobe purpose consent object from Fides consent
  */
 function buildAdobePurposes(
@@ -248,6 +144,7 @@ function buildAdobePurposes(
   });
 
   if (debug) {
+    // eslint-disable-next-line no-console
     console.log("[Fides Adobe] Purpose mapping:", {
       fidesConsentKeys: Object.keys(consent),
       mappingKeys: Object.keys(purposeMapping),
@@ -257,6 +154,7 @@ function buildAdobePurposes(
     });
 
     if (unmatchedKeys.length > 0) {
+      // eslint-disable-next-line no-console
       console.warn(
         `[Fides Adobe] Found ${unmatchedKeys.length} consent key(s) not in purposeMapping:`,
         unmatchedKeys,
@@ -267,6 +165,117 @@ function buildAdobePurposes(
 
   return purposes;
 }
+
+/**
+ * Push Fides consent to Adobe products
+ */
+const pushConsentToAdobe = (
+  consent: NoticeConsent,
+  options?: AEPOptions,
+): void => {
+  const purposeMapping = options?.purposeMapping || DEFAULT_PURPOSE_MAPPING;
+  const debug = options?.debug || false;
+
+  if (debug) {
+    // eslint-disable-next-line no-console
+    console.log("[Fides Adobe] Pushing consent to Adobe:", consent);
+  }
+
+  // Check if Adobe is loaded
+  const hasAlloy = typeof window.alloy === "function";
+  const hasOptIn = !!window.adobe?.optIn;
+
+  if (!hasAlloy && !hasOptIn) {
+    if (debug) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[Fides Adobe] Adobe not detected. Ensure Adobe Web SDK or ECID is loaded.",
+      );
+    }
+    return;
+  }
+
+  // Build Adobe Web SDK consent object (Consent v2)
+  if (hasAlloy) {
+    const adobePurposes = buildAdobePurposes(consent, purposeMapping, debug);
+
+    try {
+      window.alloy("setConsent", {
+        consent: [
+          {
+            standard: "Adobe",
+            version: "2.0",
+            value: adobePurposes,
+          },
+        ],
+      });
+
+      if (debug) {
+        // eslint-disable-next-line no-console
+        console.log("[Fides Adobe] Sent consent to Adobe Web SDK:", {
+          purposes: adobePurposes,
+        });
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("[Fides Adobe] Error calling alloy.setConsent:", error);
+    }
+  }
+
+  // Handle legacy ECID Opt-In Service
+  if (hasOptIn) {
+    try {
+      // Dynamic approvals: support all Adobe categories, not just hardcoded ones
+      const ecidApprovals: Record<string, boolean> = {};
+      const ecidMapping = options?.ecidMapping || DEFAULT_ECID_MAPPING;
+
+      // Map Fides consent to ECID categories
+      Object.entries(ecidMapping).forEach(([fidesKey, ecidCategories]) => {
+        const hasConsent = !!consent[fidesKey];
+
+        ecidCategories.forEach((category) => {
+          // Use OR logic: if ANY Fides key grants consent to a category, approve it
+          ecidApprovals[category] = ecidApprovals[category] || hasConsent;
+        });
+      });
+
+      if (debug) {
+        // eslint-disable-next-line no-console
+        console.log(
+          "[Fides Adobe] ECID approvals computed from ecidMapping:",
+          ecidApprovals,
+        );
+      }
+
+      // Dynamically apply approvals/denials for all categories
+      const categories = window.adobe!.optIn.Categories;
+
+      // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
+      Object.entries(categories).forEach(([_categoryName, categoryId]) => {
+        if (typeof categoryId === "string") {
+          // Check if we have an approval decision for this category
+          if (ecidApprovals[categoryId] === true) {
+            window.adobe!.optIn.approve(categoryId);
+          } else if (ecidApprovals[categoryId] === false) {
+            window.adobe!.optIn.deny(categoryId);
+          }
+          // If undefined, we don't touch it (no mapping provided)
+        }
+      });
+
+      if (debug) {
+        // eslint-disable-next-line no-console
+        console.log(
+          "[Fides Adobe] Updated ECID Opt-In Service:",
+          ecidApprovals,
+        );
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
+    }
+  }
+};
 
 /**
  * Get current Adobe consent state
@@ -303,7 +312,7 @@ function getAdobeConsentState(): AEPConsentState {
       if (optIn.Categories) {
         // Iterate through all available categories (ANALYTICS, TARGET, AAM, ADCLOUD, etc.)
         Object.entries(optIn.Categories).forEach(
-          ([categoryName, categoryId]) => {
+          ([_categoryName, categoryId]) => {
             if (
               typeof categoryId === "string" &&
               typeof optIn.isApproved === "function"
