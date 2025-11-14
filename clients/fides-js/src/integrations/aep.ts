@@ -217,7 +217,7 @@ const pushConsentToAdobe = (
       );
 
       // Dynamically apply approvals/denials for all categories
-      const categories = window.adobe!.optIn.Categories;
+      const categories = window.adobe?.optIn?.Categories;
 
       // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
       Object.entries(categories).forEach(([, categoryId]) => {
