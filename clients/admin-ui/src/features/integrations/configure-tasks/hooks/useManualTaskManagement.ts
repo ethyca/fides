@@ -1,4 +1,4 @@
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -20,6 +20,8 @@ export const useManualTaskManagement = ({
   integration,
 }: UseManualTaskManagementProps) => {
   const [manualTasks, setManualTasks] = useState<Task[]>([]);
+
+  const message = useMessage();
 
   const { data, refetch } = useGetManualFieldsQuery(
     { connectionKey: integration ? integration.key : "" },
@@ -58,7 +60,7 @@ export const useManualTaskManagement = ({
         message.error("Failed to delete manual task. Please try again.");
       }
     },
-    [deleteManualField, integration.key, refetch],
+    [deleteManualField, integration.key, message, refetch],
   );
 
   const refreshManualTasks = useCallback(() => {

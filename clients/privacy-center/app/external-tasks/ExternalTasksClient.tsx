@@ -1,6 +1,6 @@
 "use client";
 
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 import React, { useEffect } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
@@ -46,6 +46,8 @@ const ExternalTasksClientInner = ({
 }: ExternalTasksClientProps) => {
   const resolvedSearchParams = React.use(searchParams);
   const token = resolvedSearchParams?.access_token as string;
+
+  const message = useMessage();
 
   const dispatch = useExternalAppDispatch();
 

@@ -1,4 +1,4 @@
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useState } from "react";
 
 import {
@@ -17,6 +17,8 @@ export const useVerifyConfiguration = () => {
   const [verifiedConfigs, setVerifiedConfigs] = useState<
     Record<string, VerificationMeta>
   >({});
+
+  const message = useMessage();
 
   // Helper function to extract error message using the same logic as useAPIHelper
   const getErrorMessage = (error: any) => {

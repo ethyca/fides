@@ -1,4 +1,4 @@
-import { AntMessage as message, useDisclosure } from "fidesui";
+import { useDisclosure, useMessage } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -15,6 +15,8 @@ interface UseUserAssignmentProps {
 export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isSavingUsers, setIsSavingUsers] = useState(false);
+
+  const message = useMessage();
 
   // User creation modal state
   const {
@@ -86,7 +88,7 @@ export const useUserAssignment = ({ integration }: UseUserAssignmentProps) => {
         setIsSavingUsers(false);
       }
     },
-    [assignUsersToManualTask, integration.key, selectedUsers],
+    [assignUsersToManualTask, integration.key, message, selectedUsers],
   );
 
   const handleUserAssignmentChange = useCallback(

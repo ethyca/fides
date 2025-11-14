@@ -3,7 +3,6 @@ import { isErrorResult } from "common/helpers";
 import { useAPIHelper } from "common/hooks";
 import {
   AntButton as Button,
-  AntMessage as message,
   AntModal as Modal,
   AntSpace as Space,
   AntSwitch as Switch,
@@ -11,6 +10,7 @@ import {
   HStack,
   Icons,
   Text,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -50,6 +50,8 @@ export const useMessagingConfigurationsTable = () => {
   const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
   const [deleteMessagingConfiguration] =
     useDeleteMessagingConfigurationByKeyMutation();
+
+  const message = useMessage();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -119,7 +121,7 @@ export const useMessagingConfigurationsTable = () => {
         handleError(error);
       }
     },
-    [saveActiveConfiguration, handleError, setMessagingValue],
+    [saveActiveConfiguration, handleError, message],
   );
 
   const handleEditConfiguration = useCallback(
@@ -164,7 +166,7 @@ export const useMessagingConfigurationsTable = () => {
       setDeleteModalOpen(false);
       setConfigToDelete(null);
     }
-  }, [configToDelete, deleteMessagingConfiguration, handleError]);
+  }, [configToDelete, deleteMessagingConfiguration, handleError, message]);
 
   const cancelDelete = useCallback(() => {
     setDeleteModalOpen(false);

@@ -1,8 +1,8 @@
 import {
   AntMenuProps as MenuProps,
-  AntMessage as message,
   AntModal as modal,
   Icons,
+  useMessage,
 } from "fidesui";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -21,14 +21,12 @@ import {
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
 
-type MessageInstance = ReturnType<typeof message.useMessage>[0];
 type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
   clearSelectedIds: () => void;
-  messageApi: MessageInstance;
   modalApi: ModalInstance;
 }
 
@@ -91,13 +89,14 @@ export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
   clearSelectedIds,
-  messageApi,
   modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
   );
+
+  const messageApi = useMessage();
 
   // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
   useEffect(() => {

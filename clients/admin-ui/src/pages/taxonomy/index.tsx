@@ -3,11 +3,11 @@ import {
   AntFlex as Flex,
   AntInput as Input,
   AntMenuProps as MenuProps,
-  AntMessage as message,
   AntModal as Modal,
   AntSpace as Space,
   AntTypography as Typography,
   FloatingMenu,
+  useMessage,
 } from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
@@ -70,7 +70,7 @@ const TaxonomyPage: NextPage = () => {
   const searchParams = useSearchParams();
   const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
 
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
 
   useEffect(() => {
     getAllTrigger();
@@ -204,7 +204,6 @@ const TaxonomyPage: NextPage = () => {
 
   return (
     <Layout title="Taxonomy">
-      {messageContext}
       {modalContext}
       <Flex vertical className="h-full">
         <div>
@@ -285,7 +284,6 @@ const TaxonomyPage: NextPage = () => {
           >
             <CreateCustomTaxonomyForm
               onClose={() => setIsAddNewItemModalOpen(false)}
-              messageApi={messageApi}
             />
           </Modal>
 
@@ -340,7 +338,6 @@ const TaxonomyPage: NextPage = () => {
           onClose={() => setTaxonomyTypeToEdit(null)}
           onDelete={confirmDelete}
           taxonomy={taxonomyTypeToEdit}
-          messageApi={messageApi}
         />
       )}
     </Layout>

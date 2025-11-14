@@ -2,9 +2,9 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
   AntModal as Modal,
   AntSpace as Space,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -26,7 +26,7 @@ const TestEmailModal = ({
   digestType,
 }: TestEmailModalProps) => {
   const [form] = Form.useForm<{ email: string }>();
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [testDigestConfig, { isLoading }] = useTestDigestConfigMutation();
 
   const handleSubmit = async (values: { email: string }) => {
@@ -59,7 +59,6 @@ const TestEmailModal = ({
       footer={null}
       destroyOnClose
     >
-      {messageContext}
       <Form
         form={form}
         layout="vertical"

@@ -25,6 +25,7 @@ import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
+import MessageDemoCard from "~/features/poc/MessageDemoCard";
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
 import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
@@ -490,8 +491,13 @@ const AntPOC: NextPage = () => {
         </Row>
         <br />
         <Row gutter={16}>
-          <Col span={24}>
+          <Col span={12}>
             <ModalMethodsCard />
+          </Col>
+          <Col span={12}>
+            <Card title="Toasting" variant="borderless" className="h-full">
+              <MessageDemoCard />
+            </Card>
           </Col>
         </Row>
       </Content>

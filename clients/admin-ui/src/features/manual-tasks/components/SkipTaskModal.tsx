@@ -2,7 +2,6 @@ import {
   AntButton as Button,
   AntDivider as Divider,
   AntInput as Input,
-  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   Modal,
@@ -11,6 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
@@ -32,6 +32,8 @@ export const SkipTaskModal = ({
 }: SkipTaskModalProps) => {
   const [skipTask, { isLoading }] = useSkipTaskMutation();
   const [comment, setComment] = useState("");
+
+  const message = useMessage();
 
   const handleSave = async () => {
     try {

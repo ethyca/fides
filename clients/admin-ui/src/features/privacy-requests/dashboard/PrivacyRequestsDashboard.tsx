@@ -2,12 +2,12 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Icons,
+  useMessage,
 } from "fidesui";
 import React, { useMemo } from "react";
 
@@ -31,7 +31,7 @@ export const PrivacyRequestsDashboard = () => {
     pagination,
   });
 
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
@@ -75,7 +75,6 @@ export const PrivacyRequestsDashboard = () => {
     requests,
     selectedIds,
     clearSelectedIds,
-    messageApi,
     modalApi,
   });
 
@@ -142,7 +141,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {messageContext}
       {modalContext}
     </div>
   );

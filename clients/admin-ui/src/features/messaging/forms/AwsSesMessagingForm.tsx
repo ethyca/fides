@@ -3,12 +3,12 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
   AntSelect as Select,
   Box,
   GreenCheckCircleIcon,
   Heading,
   HStack,
+  useMessage,
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
@@ -41,6 +41,8 @@ const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
+
+  const message = useMessage();
 
   const isEditMode = !!configKey;
 

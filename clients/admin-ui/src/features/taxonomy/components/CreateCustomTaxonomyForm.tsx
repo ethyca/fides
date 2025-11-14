@@ -3,8 +3,8 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
-  AntMessageInstance as MessageInstance,
   AntTypography as Typography,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -19,15 +19,11 @@ interface CreateCustomTaxonomyFormValues {
 const FORM_COPY =
   "Create and organize the core terminology your team uses to describe data and how it's handled. Custom taxonomies let you define domain-specific concepts and then apply them to other privacy objects throughout the platform";
 
-const CreateCustomTaxonomyForm = ({
-  onClose,
-  messageApi,
-}: {
-  onClose: () => void;
-  messageApi: MessageInstance;
-}) => {
+const CreateCustomTaxonomyForm = ({ onClose }: { onClose: () => void }) => {
   const [createCustomTaxonomy, { isLoading: isSubmitting }] =
     useCreateCustomTaxonomyMutation();
+
+  const messageApi = useMessage();
 
   const handleSubmit = async (values: CreateCustomTaxonomyFormValues) => {
     const payload = {

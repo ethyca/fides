@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntMessageInstance as MessageInstance,
-} from "fidesui";
+import { AntButton as Button, AntFlex as Flex, useMessage } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
@@ -16,7 +12,6 @@ interface CustomTaxonomyEditDrawerProps
   extends Omit<DetailsDrawerProps, "itemKey"> {
   taxonomy?: TaxonomyResponse | null;
   onDelete: () => void;
-  messageApi: MessageInstance;
 }
 
 const FORM_ID = "custom-taxonomy-form";
@@ -25,11 +20,12 @@ const CustomTaxonomyEditDrawer = ({
   taxonomy,
   onClose,
   onDelete,
-  messageApi,
   ...props
 }: CustomTaxonomyEditDrawerProps) => {
   const [updateCustomTaxonomy, { isLoading: isUpdating }] =
     useUpdateCustomTaxonomyMutation();
+
+  const messageApi = useMessage();
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
     if (!taxonomy?.fides_key) {
