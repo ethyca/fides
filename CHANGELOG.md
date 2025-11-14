@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.3..main)
 
 ### Added
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
@@ -51,6 +51,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
+
+## [2.74.3](https://github.com/ethyca/fides/compare/2.74.2..2.74.3)
+
+### Added
+- Added admin API endpoint to allow debugging memory issues with a memory dump [#6973](https://github.com/ethyca/fides/pull/6973)
 
 ## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
 
