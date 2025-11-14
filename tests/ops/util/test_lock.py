@@ -43,11 +43,11 @@ class TestRedisLock:
         "blocking,blocking_timeout,expected_blocking,expected_timeout",
         [
             # blocking=True with no timeout - should use lock timeout as blocking timeout
-            (True, 0, True, 10),
+            (True, None, True, 10),
             # blocking=True with explicit timeout - should use explicit timeout
             (True, 60, True, 60),
             # blocking=False (default) - should use default values
-            (False, 0, False, 0),
+            (False, None, False, None),
         ],
     )
     @patch("fides.api.util.lock.get_redis_lock")
