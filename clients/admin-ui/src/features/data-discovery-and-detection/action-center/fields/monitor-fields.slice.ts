@@ -58,7 +58,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
       query: ({
         path: { monitor_config_id, action_type },
         query: { search, diff_status, confidence_score, ...arrayQueryParams },
-        ...body
+        body,
       }) => {
         const queryParams = buildArrayQueryParams({
           ...arrayQueryParams,
@@ -66,7 +66,6 @@ const monitorFieldApi = baseApi.injectEndpoints({
           ...(diff_status ? { diff_status } : {}),
           ...(confidence_score ? { confidence_score } : {}),
         });
-
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/fields/${action_type}?${queryParams.toString()}`,
           method: "POST",

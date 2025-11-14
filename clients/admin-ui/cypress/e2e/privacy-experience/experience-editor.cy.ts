@@ -78,7 +78,7 @@ describe("Experience editor", () => {
 
     it("doesn't show a preview for a privacy center", () => {
       cy.getByTestId("controlled-select-component").antSelect("Privacy center");
-      cy.getByTestId("input-dismissable").should("not.be.visible");
+      cy.getByTestId("input-dismissable").should("not.exist");
       cy.getByTestId("no-preview-notice").contains(
         "Privacy center preview not available",
       );

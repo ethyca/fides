@@ -84,7 +84,6 @@ describe("System Information Tab", () => {
       .should("not.be.disabled");
     cy.getByTestId("input-joint_controller_info").should("not.be.disabled");
     cy.getByTestId("input-data_security_practices").should("not.be.disabled");
-    cy.getByTestId("input-reason_for_exemption").should("be.disabled");
   });
 
   it("does not lock editing for a non-GVL vendor", () => {
@@ -103,7 +102,6 @@ describe("System Information Tab", () => {
       .should("not.be.disabled");
     cy.getByTestId("input-joint_controller_info").should("not.be.disabled");
     cy.getByTestId("input-data_security_practices").should("not.be.disabled");
-    cy.getByTestId("input-reason_for_exemption").should("not.be.disabled");
   });
 
   it("locks editing some fields and changing name for a GVL vendor when visiting 'edit system' page directly", () => {

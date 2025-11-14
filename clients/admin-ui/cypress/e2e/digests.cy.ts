@@ -39,7 +39,7 @@ describe("Digests", () => {
         });
 
       // Test search functionality
-      cy.getByTestId("search-input").type("Daily");
+      cy.getByTestId("search-bar").type("Daily");
       cy.get(".ant-list-item").should("have.length", 1);
       cy.contains("Daily Task Summary").should("be.visible");
     });

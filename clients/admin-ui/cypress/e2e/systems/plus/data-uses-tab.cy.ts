@@ -55,9 +55,7 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("controlled-select-data_subjects")
       .find("input")
       .should("not.be.disabled");
-    cy.getByTestId("input-impact_assessment_location").should(
-      "not.be.disabled",
-    );
+    cy.getByTestId("input-impact_assessment_location").should("not.exist");
     cy.getByTestId("input-processes_special_category_data").should(
       "not.be.disabled",
     );
@@ -90,6 +88,9 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("controlled-select-data_subjects")
       .find("input")
       .should("not.be.disabled");
+    cy.getByTestId("controlled-select-legal_basis_for_processing").antSelect(
+      "Legitimate interests",
+    );
     cy.getByTestId("input-impact_assessment_location").should(
       "not.be.disabled",
     );

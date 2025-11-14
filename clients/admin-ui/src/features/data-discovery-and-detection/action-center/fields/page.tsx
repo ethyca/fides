@@ -154,14 +154,12 @@ const ActionCenterFields: NextPage = () => {
   );
   const {
     excludedListItems,
-    indeterminate,
-    isBulkSelect,
     listSelectMode,
     resetListSelect,
     selectedListItems,
     updateListItems,
-    updateListSelectMode,
     updateSelectedListItem,
+    checkboxProps,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >({ activeListItem, enableKeyboardShortcuts: true });
@@ -171,7 +169,7 @@ const ActionCenterFields: NextPage = () => {
   };
 
   const onActionDropdownOpenChange = (open: boolean) => {
-    if (open && isBulkSelect) {
+    if (open && listSelectMode === "exclusive") {
       allowedActionsTrigger({
         ...baseMonitorFilters,
         query: {
@@ -193,13 +191,14 @@ const ActionCenterFields: NextPage = () => {
     [hotkeysHelperModalOpen],
   );
 
-  const availableActions = isBulkSelect
-    ? allowedActionsResult?.allowed_actions
-    : getAvailableActions(
-        selectedListItems.flatMap(({ diff_status }) =>
-          diff_status ? [diff_status] : [],
-        ),
-      );
+  const availableActions =
+    listSelectMode === "exclusive"
+      ? allowedActionsResult?.allowed_actions
+      : getAvailableActions(
+          selectedListItems.flatMap(({ diff_status }) =>
+            diff_status ? [diff_status] : [],
+          ),
+        );
   const responseCount = fieldsDataResponse?.total ?? 0;
   const selectedListItemCount =
     listSelectMode === "exclusive" && fieldsDataResponse?.total
@@ -345,7 +344,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
                         onClick: async () => {
-                          if (isBulkSelect) {
+                          if (listSelectMode === "exclusive") {
                             await bulkActions[actionType](
                               baseMonitorFilters,
                               excludedListItems.map((k) =>
@@ -387,16 +386,7 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
-              <Checkbox
-                id="select-all"
-                checked={isBulkSelect}
-                indeterminate={indeterminate}
-                onChange={(e) =>
-                  updateListSelectMode(
-                    e.target.checked ? "exclusive" : "inclusive",
-                  )
-                }
-              />
+              <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
               {!!selectedListItemCount && (
                 <Text strong>

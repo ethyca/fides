@@ -591,7 +591,7 @@ describe("Data map report table", () => {
     it("should open the system preview drawer", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
-      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.get(".ant-drawer-close").click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.be.visible");
     });
     it("should open the system preview drawer when grouped by data use", () => {
@@ -602,7 +602,7 @@ describe("Data map report table", () => {
       cy.wait("@getDatamapMinimal");
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
-      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.get(".ant-drawer-close").click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.be.visible");
     });
   });

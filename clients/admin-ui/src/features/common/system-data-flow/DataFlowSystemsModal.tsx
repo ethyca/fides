@@ -136,7 +136,6 @@ const DataFlowSystemsModal = ({
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"
-                withIcon
               />
               <DataFlowSystemsTable
                 flowType={flowType}

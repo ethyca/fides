@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  Collapse,
   ModalProps,
   Text,
   useToast,
@@ -177,7 +176,7 @@ const AddEditAssetModal = ({
                     label="Description"
                     variant="stacked"
                   />
-                  <Collapse in={isCookieAsset}>
+                  {isCookieAsset && (
                     <CustomTextInput
                       id="duration"
                       name="duration"
@@ -187,8 +186,8 @@ const AddEditAssetModal = ({
                       tooltip="Cookie duration is how long a cookie stays stored in the user's browser before automatically expiring and being deleted."
                       isRequired={isCookieAsset}
                     />
-                  </Collapse>
-                  <Collapse in={isNotCookieAsset}>
+                  )}
+                  {isNotCookieAsset && (
                     <CustomTextInput
                       id="base_url"
                       name="base_url"
@@ -196,7 +195,7 @@ const AddEditAssetModal = ({
                       variant="stacked"
                       isRequired={isNotCookieAsset}
                     />
-                  </Collapse>
+                  )}
                 </Flex>
               </Flex>
               <Flex justify="space-between">

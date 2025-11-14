@@ -18,6 +18,7 @@ export type {
 export type {
   AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
+  CheckboxProps as AntCheckboxProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
   DrawerProps as AntDrawerProps,
