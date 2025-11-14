@@ -815,7 +815,8 @@ def _shared_privacy_request_search(
 
     logger.debug("Finding all request statuses with pagination params {}", params)
 
-    query = db.query(PrivacyRequest)
+    # Use query_without_large_columns to prevent OOM errors when loading many privacy requests
+    query = PrivacyRequest.query_without_large_columns(db)
     query = _filter_privacy_request_queryset(
         db,
         query,

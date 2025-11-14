@@ -50,8 +50,9 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
         batch_id = str(uuid.uuid4())
         logger.info("Starting batch email send {}...", batch_id)
         with self.get_new_session() as session:
+            # Use query_without_large_columns to prevent OOM errors when processing many privacy requests
             privacy_requests: Query = (
-                session.query(PrivacyRequest)
+                PrivacyRequest.query_without_large_columns(session)
                 .filter(
                     PrivacyRequest.status == PrivacyRequestStatus.awaiting_email_send
                 )
