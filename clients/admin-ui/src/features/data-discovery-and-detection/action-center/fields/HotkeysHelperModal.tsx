@@ -122,8 +122,19 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
             children: "Edit data categories for the active field",
           },
           {
+            key: "/",
+            label: <Typography.Text keyboard>/</Typography.Text>,
+            children: "Focus the search input",
+          },
+          {
             key: "?",
-            label: <Typography.Text keyboard>?</Typography.Text>,
+            label: (
+              <div className="whitespace-nowrap">
+                <Typography.Text keyboard>?</Typography.Text> (
+                <Typography.Text keyboard>shift</Typography.Text>+
+                <Typography.Text keyboard>/</Typography.Text>)
+              </div>
+            ),
             children: "Open/close this modal",
           },
         ]}
