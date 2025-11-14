@@ -1,9 +1,6 @@
 import { FidesGlobal } from "../../src/fides";
 import { aep } from "../../src/integrations/aep";
 
-// Mock console.error for error handling tests
-const mockConsoleError = jest.spyOn(console, "error").mockImplementation();
-
 // Mock fidesDebugger global
 (global as any).fidesDebugger = jest.fn();
 
@@ -180,22 +177,6 @@ describe("aep", () => {
         ],
       });
     });
-
-    test("handles alloy errors gracefully", () => {
-      const mockAlloy = jest.fn(() => {
-        throw new Error("Alloy error");
-      });
-      window.alloy = mockAlloy;
-      setupFidesWithConsent({ analytics: true });
-
-      aep();
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        "[Fides Adobe] Error calling alloy.setConsent:",
-        expect.any(Error),
-      );
-    });
   });
 
   describe("ECID Opt-In Service", () => {
@@ -347,30 +328,6 @@ describe("aep", () => {
         expect(category).toBe("aa");
       });
     });
-
-    test("handles optIn errors gracefully", () => {
-      window.adobe = {
-        optIn: {
-          Categories: {
-            ANALYTICS: "aa",
-          },
-          approve: () => {
-            throw new Error("OptIn error");
-          },
-          deny: jest.fn(),
-          isApproved: jest.fn(),
-        },
-      };
-      setupFidesWithConsent({ analytics: true });
-
-      aep();
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        "[Fides Adobe] Error updating ECID Opt-In:",
-        expect.any(Error),
-      );
-    });
   });
 
   describe("Both Adobe products", () => {
@@ -402,10 +359,11 @@ describe("aep", () => {
       setupFidesWithConsent({ analytics: true });
 
       aep();
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      // Should not throw or cause errors
-      expect(mockConsoleError).not.toHaveBeenCalled();
+      
+      // Should not throw
+      expect(() => {
+        triggerConsentEvent("FidesUpdated", { analytics: true });
+      }).not.toThrow();
     });
   });
 

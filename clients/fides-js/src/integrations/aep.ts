@@ -183,8 +183,7 @@ const pushConsentToAdobe = (
         purposes: adobePurposes,
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("[Fides Adobe] Error calling alloy.setConsent:", error);
+      fidesDebugger("[Fides Adobe] Error calling alloy.setConsent:", error);
     }
   }
 
@@ -234,8 +233,7 @@ const pushConsentToAdobe = (
         ecidApprovals,
       );
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
+      fidesDebugger("[Fides Adobe] Error updating ECID Opt-In:", error);
     }
   }
 };
