@@ -11,6 +11,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 
 import styles from "./SearchInput.module.scss";
 
+export const SEARCH_INPUT_HOTKEY = "/";
+
 export interface SearchInputProps
   extends Omit<InputProps, "onChange" | "variant"> {
   onChange: (value: string) => void;
@@ -32,7 +34,7 @@ const SearchInput = ({
   const inputRef = useRef<InputRef>(null);
 
   useHotkeys(
-    "/",
+    SEARCH_INPUT_HOTKEY,
     () => {
       inputRef.current?.focus();
     },
