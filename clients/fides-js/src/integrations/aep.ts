@@ -151,10 +151,7 @@ const pushConsentToAdobe = (
       : DEFAULT_PURPOSE_MAPPING;
   const debug = options?.debug || false;
 
-  if (debug) {
-    // eslint-disable-next-line no-console
-    console.log("[Fides Adobe] Pushing consent to Adobe:", consent);
-  }
+  fidesDebugger("[Fides Adobe] Pushing consent to Adobe:", consent);
 
   // Check if Adobe is loaded
   const hasAlloy = typeof window.alloy === "function";
