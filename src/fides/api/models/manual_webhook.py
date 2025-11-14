@@ -5,7 +5,7 @@ from pydantic import ConfigDict, create_model
 from sqlalchemy import Column, ForeignKey, String, or_, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, relationship, selectinload
 
 from fides.api.db.base_class import Base
 from fides.api.models.attachment import Attachment, AttachmentReference
@@ -137,11 +137,22 @@ class AccessManualWebhook(Base):
     ) -> list["AccessManualWebhook"]:
         """Get all enabled access manual webhooks with fields"""
 
-        query = db.query(cls).filter(
-            AccessManualWebhook.connection_config_id == ConnectionConfig.id,
-            ConnectionConfig.disabled.is_(False),
-            AccessManualWebhook.fields != text("'null'"),
-            AccessManualWebhook.fields != "[]",
+        query = (
+            db.query(cls)
+            .join(
+                ConnectionConfig,
+                AccessManualWebhook.connection_config_id == ConnectionConfig.id,
+            )
+            .options(
+                selectinload(AccessManualWebhook.connection_config).selectinload(
+                    ConnectionConfig.system
+                ),  # type: ignore[attr-defined]
+            )
+            .filter(
+                ConnectionConfig.disabled.is_(False),
+                AccessManualWebhook.fields != text("'null'"),
+                AccessManualWebhook.fields != "[]",
+            )
         )
 
         # Add action_type filter only if action_type is provided
