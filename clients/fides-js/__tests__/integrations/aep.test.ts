@@ -10,7 +10,7 @@ const mockConsoleError = jest.spyOn(console, "error").mockImplementation();
  * Mock Adobe Web SDK (Alloy)
  */
 const setupAlloy = () => {
-  const mockAlloy = jest.fn((_command: string, _options: any) => {
+  const mockAlloy = jest.fn(() => {
     return Promise.resolve();
   });
   window.alloy = mockAlloy;
@@ -23,7 +23,7 @@ const setupAlloy = () => {
 const setupOptIn = () => {
   const mockApprove = jest.fn();
   const mockDeny = jest.fn();
-  const mockIsApproved = jest.fn((_category: string) => false);
+  const mockIsApproved = jest.fn().mockReturnValue(false);
 
   window.adobe = {
     optIn: {

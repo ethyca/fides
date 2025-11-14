@@ -223,7 +223,7 @@ const pushConsentToAdobe = (
       const categories = window.adobe!.optIn.Categories;
 
       // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
-      Object.entries(categories).forEach(([_categoryName, categoryId]) => {
+      Object.entries(categories).forEach(([, categoryId]) => {
         if (typeof categoryId === "string") {
           // Check if we have an approval decision for this category
           if (ecidApprovals[categoryId] === true) {
@@ -283,16 +283,14 @@ function getAdobeConsentState(): AEPConsentState {
 
       if (optIn.Categories) {
         // Iterate through all available categories (ANALYTICS, TARGET, AAM, ADCLOUD, etc.)
-        Object.entries(optIn.Categories).forEach(
-          ([_categoryName, categoryId]) => {
-            if (
-              typeof categoryId === "string" &&
-              typeof optIn.isApproved === "function"
-            ) {
-              categories[categoryId] = optIn.isApproved(categoryId);
-            }
-          },
-        );
+        Object.entries(optIn.Categories).forEach(([, categoryId]) => {
+          if (
+            typeof categoryId === "string" &&
+            typeof optIn.isApproved === "function"
+          ) {
+            categories[categoryId] = optIn.isApproved(categoryId);
+          }
+        });
       }
 
       state.ecidOptIn = {
