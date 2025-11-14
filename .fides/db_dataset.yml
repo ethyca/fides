@@ -1650,6 +1650,8 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: display_order
+      data_categories: [system.operations]
   - name: privacynoticehistory
     description: For auditing purposes, a record of how a privacy notice and a translation has changed
     fields:
@@ -2492,6 +2494,8 @@ dataset:
     - name: notice_id
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: display_order
       data_categories: [system.operations]
   - name: plus_property
     fields:

@@ -80,7 +80,7 @@ def _capture_heap_dump() -> None:
         report_lines = [
             "",  # Leading newline for visual separation
             "=" * 80,
-            "MEMORY DUMP - THRESHOLD EXCEEDED",
+            "MEMORY DUMP",
             "=" * 80,
             "",
         ]

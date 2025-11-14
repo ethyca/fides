@@ -9,7 +9,16 @@ from typing import Any, Dict, List, Optional, Set, Type
 from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, false, or_, text
+from sqlalchemy import (
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    false,
+    or_,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship, selectinload
@@ -162,11 +171,18 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         ForeignKey("privacynotice.id", ondelete="SET NULL"),
         nullable=True,
     )
+    display_order = Column(
+        Integer,
+        nullable=True,
+        doc="Optional ordering for child notices within a parent. Lower values appear first.",
+    )
+
     children: "RelationshipProperty[List[PrivacyNotice]]" = relationship(
         "PrivacyNotice",
         back_populates="parent",
         cascade="all",
         passive_deletes=True,
+        order_by=lambda: PrivacyNotice.display_order.asc().nullslast(),
     )
     parent: "RelationshipProperty[Optional[PrivacyNotice]]" = relationship(
         "PrivacyNotice",
@@ -375,6 +391,26 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         res = [result for result in experience_regions_cursor_result]
         return res[0]["regions"] if res else []
 
+    @staticmethod
+    def _set_child_notice_display_order(
+        child_notices: List[Dict[str, Any]],
+        existing_notices: List[PrivacyNotice],
+    ) -> None:
+        """
+        Sets display_order on child notice objects based on their position in the child_notices list.
+
+        Args:
+            child_notices: List of dictionaries containing notice IDs in the desired order
+            existing_notices: List of PrivacyNotice objects to update
+        """
+        notice_id_to_index = {
+            child_notice["id"]: index
+            for index, child_notice in enumerate(child_notices)
+        }
+        for child_notice_obj in existing_notices:
+            if child_notice_obj.id in notice_id_to_index:
+                child_notice_obj.display_order = notice_id_to_index[child_notice_obj.id]
+
     @classmethod
     def fetch_and_validate_notices(
         cls,
@@ -442,6 +478,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
         # automatically links and unlinks at the DB level with this assignment
         created.children = existing_notices
+
+        # Set display_order on children based on their position in the ORIGINAL child_notices list
+        cls._set_child_notice_display_order(child_notices, existing_notices)
+
         db.commit()
 
         data.pop(
@@ -480,6 +520,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         )
         # automatically links and unlinks at the DB level with this assignment
         self.children = existing_notices
+
+        # Set display_order on children based on their position in the ORIGINAL child_notices list
+        self._set_child_notice_display_order(child_notices, existing_notices)
 
         # Performs a patch update of the base privacy notice
         base_notice_updated: bool = update_if_modified(self, db=db, data=data)
@@ -680,6 +723,7 @@ def create_historical_record_for_notice_and_translation(
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
     history_data.pop("parent_id", None)
+    history_data.pop("display_order", None)
     # The source PrivacyNotice may have cached/computed attributes (e.g., @cached_property)
     # stored on the instance dict. These should not be included in historical payloads.
     # For example, 'cookies' is cached on the PrivacyNotice instance when accessed.

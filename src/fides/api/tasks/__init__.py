@@ -19,6 +19,8 @@ from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
+PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME = "fides.privacy_request_exports"
+PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME = "fides.privacy_request_ingestion"
 DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
 CONSENT_WEBHOOK_QUEUE_NAME = "fidesplus.consent_webhooks"  # This queue is used for processing consent webhooks from 3rd-party APIs
 DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detection"  # This queue is used for running discovery monitors detection tasks
