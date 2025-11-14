@@ -555,6 +555,7 @@ const ActionCenterFields: NextPage = () => {
         onClose={() => setDetailsUrn(undefined)}
         resource={resource}
         fieldActions={fieldActions}
+        mask={!activeListItem}
       />
       <HotkeysHelperModal
         open={hotkeysHelperModalOpen}
