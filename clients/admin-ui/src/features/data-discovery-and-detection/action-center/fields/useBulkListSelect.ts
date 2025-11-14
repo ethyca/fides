@@ -1,3 +1,4 @@
+import { AntCheckboxProps as CheckboxProps } from "fidesui";
 import _ from "lodash";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -111,23 +112,29 @@ export const useBulkListSelect = <T extends ListItem>(
     [activeListItem, selectedListItems, updateSelectedListItem],
   );
 
-  return {
-    excludedListItems,
+  const checkboxProps: CheckboxProps = {
+    checked:
+      mode === "inclusive"
+        ? selectedListItems.length > 0 &&
+          listItems.length === selectedListItems.length
+        : excludedListItems.length === 0,
     indeterminate:
       mode === "inclusive"
         ? selectedListItems.length > 0 &&
           listItems.length !== selectedListItems.length
         : excludedListItems.length > 0,
-    isBulkSelect:
-      mode === "inclusive"
-        ? selectedListItems.length > 0 &&
-          listItems.length === selectedListItems.length
-        : excludedListItems.length === 0,
+    onChange: (e) =>
+      updateListSelectMode(e.target.checked ? "exclusive" : "inclusive"),
+  };
+
+  return {
+    excludedListItems,
     listSelectMode: mode,
     resetListSelect,
     selectedListItems,
     updateListItems: setListItemsState,
     updateListSelectMode,
     updateSelectedListItem,
+    checkboxProps,
   };
 };
