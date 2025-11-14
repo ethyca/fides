@@ -400,17 +400,6 @@ describe("aep", () => {
   });
 
   describe("Adobe not loaded", () => {
-    test("warns when neither Adobe product is loaded", () => {
-      setupFidesWithConsent({ analytics: true });
-
-      aep({ debug: true });
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        "[Fides Adobe] Adobe not detected. Ensure Adobe Web SDK or ECID is loaded.",
-      );
-    });
-
     test("does nothing when Adobe is not loaded", () => {
       setupFidesWithConsent({ analytics: true });
 
