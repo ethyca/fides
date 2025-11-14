@@ -2074,7 +2074,7 @@ class TestConnectorTemplateEndpoints:
 
         # Find a specific connector template to verify data
         mailchimp_template = next(
-            (item for item in data if item["connector_type"] == MAILCHIMP), None
+            (item for item in data if item["type"] == MAILCHIMP), None
         )
         assert mailchimp_template is not None
         assert mailchimp_template["custom"] is False  # Built-in connector
