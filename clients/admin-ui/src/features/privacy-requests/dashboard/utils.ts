@@ -1,7 +1,13 @@
 import { isEmpty, isNil } from "lodash";
 import { createParser } from "nuqs";
 
-import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
+import {
+  IdentityValue,
+  PrivacyRequestOption,
+  PrivacyRequestResponse,
+} from "~/types/api";
+
+import { CustomFieldDefinition } from "./CustomFieldFilter";
 
 /**
  * Custom nuqs parser for custom_privacy_request_fields
@@ -110,4 +116,34 @@ export const getCustomFields = (
           value: field.value,
         }))
     : [];
+};
+
+/**
+ * Extracts all unique custom fields from the privacy center config actions.
+ * Returns a map of field_name -> field_definition for all unique custom fields.
+ */
+export const extractUniqueCustomFields = (
+  actions: PrivacyRequestOption[] | undefined,
+): Record<string, CustomFieldDefinition> => {
+  if (!actions) {
+    return {};
+  }
+
+  const uniqueFields: Record<string, CustomFieldDefinition> = {};
+
+  actions.forEach((action) => {
+    if (action.custom_privacy_request_fields) {
+      Object.entries(action.custom_privacy_request_fields).forEach(
+        ([fieldName, fieldInfo]) => {
+          // Only add if not already present (first occurrence wins)
+          if (!uniqueFields[fieldName]) {
+            // Cast to our extended type that includes field_type and options
+            uniqueFields[fieldName] = fieldInfo as CustomFieldDefinition;
+          }
+        },
+      );
+    }
+  });
+
+  return uniqueFields;
 };

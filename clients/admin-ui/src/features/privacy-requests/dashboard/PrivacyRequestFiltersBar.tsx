@@ -13,43 +13,10 @@ import {
   SubjectRequestStatusOptions,
 } from "~/features/privacy-requests/constants";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import {
-  ActionType,
-  PrivacyRequestOption,
-  PrivacyRequestStatus,
-} from "~/types/api";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
-import { CustomFieldDefinition, CustomFieldFilter } from "./CustomFieldFilter";
-
-/**
- * Extracts all unique custom fields from the privacy center config actions.
- * Returns a map of field_name -> field_definition for all unique custom fields.
- */
-const extractUniqueCustomFields = (
-  actions: PrivacyRequestOption[] | undefined,
-): Record<string, CustomFieldDefinition> => {
-  if (!actions) {
-    return {};
-  }
-
-  const uniqueFields: Record<string, CustomFieldDefinition> = {};
-
-  actions.forEach((action) => {
-    if (action.custom_privacy_request_fields) {
-      Object.entries(action.custom_privacy_request_fields).forEach(
-        ([fieldName, fieldInfo]) => {
-          // Only add if not already present (first occurrence wins)
-          if (!uniqueFields[fieldName]) {
-            // Cast to our extended type that includes field_type and options
-            uniqueFields[fieldName] = fieldInfo as CustomFieldDefinition;
-          }
-        },
-      );
-    }
-  });
-
-  return uniqueFields;
-};
+import { CustomFieldFilter } from "./CustomFieldFilter";
+import { extractUniqueCustomFields } from "./utils";
 
 interface PrivacyRequestFiltersBarProps {
   filters: {
