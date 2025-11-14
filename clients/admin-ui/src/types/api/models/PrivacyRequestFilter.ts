@@ -10,7 +10,7 @@ export type PrivacyRequestFilter = {
   request_id?: string | null;
   identities?: null;
   fuzzy_search_str?: string | null;
-  custom_privacy_request_fields?: null;
+  custom_privacy_request_fields?: Record<string, string | null> | null;
   status?: PrivacyRequestStatus | Array<PrivacyRequestStatus> | null;
   created_lt?: string | null;
   created_gt?: string | null;

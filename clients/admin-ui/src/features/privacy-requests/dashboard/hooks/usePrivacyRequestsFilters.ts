@@ -1,4 +1,5 @@
 import {
+  createParser,
   parseAsArrayOf,
   parseAsString,
   parseAsStringEnum,
@@ -9,12 +10,26 @@ import { useEffect, useMemo } from "react";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
+// Custom parser for custom_privacy_request_fields
+// Serializes as JSON string in URL query params
+const parseAsCustomFields = createParser({
+  parse: (value: string) => {
+    try {
+      return JSON.parse(value) as Record<string, string | null>;
+    } catch {
+      return null;
+    }
+  },
+  serialize: (value: Record<string, string | null>) => JSON.stringify(value),
+});
+
 export interface FilterQueryParams {
   fuzzy_search_str: string | null;
   from: string | null;
   to: string | null;
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
+  custom_privacy_request_fields: Record<string, string | null> | null;
   sort_field: string | null;
   sort_direction: ColumnSort | null;
 }
@@ -41,6 +56,7 @@ const usePrivacyRequestsFilters = ({
         parseAsStringEnum(Object.values(PrivacyRequestStatus)),
       ),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
+      custom_privacy_request_fields: parseAsCustomFields,
     },
     {
       history: "push",
@@ -50,15 +66,36 @@ const usePrivacyRequestsFilters = ({
   // A user friendly count of the number of filters applied
   // It counts only non-search filters, and counts the range date filter as one
   const filtersCount = useMemo(() => {
-    const filtersWithoutSearchAndTo = {
-      ...filters,
-      search: undefined,
-      to: undefined,
-    };
-    return Object.values(filtersWithoutSearchAndTo).filter(
-      (value) => value && value.length > 0,
-    ).length;
-  }, [filters]);
+    let count = 0;
+
+    // Count array filters (status, action_type)
+    if (filters.status && filters.status.length > 0) {
+      count += 1;
+    }
+    if (filters.action_type && filters.action_type.length > 0) {
+      count += 1;
+    }
+
+    // Count date range as one filter if either from or to is set
+    if (filters.from || filters.to) {
+      count += 1;
+    }
+
+    // Count each custom field filter
+    if (filters.custom_privacy_request_fields) {
+      count += Object.values(filters.custom_privacy_request_fields).filter(
+        (value) => value !== null,
+      ).length;
+    }
+
+    return count;
+  }, [
+    filters.status,
+    filters.action_type,
+    filters.from,
+    filters.to,
+    filters.custom_privacy_request_fields,
+  ]);
 
   const [sortState, setSortState] = useQueryStates(
     {
@@ -77,6 +114,7 @@ const usePrivacyRequestsFilters = ({
       to: filters.to,
       status: filters.status,
       action_type: filters.action_type,
+      custom_privacy_request_fields: filters.custom_privacy_request_fields,
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
     }),
@@ -86,6 +124,7 @@ const usePrivacyRequestsFilters = ({
       filters.to,
       filters.status,
       filters.action_type,
+      filters.custom_privacy_request_fields,
       sortState.sort_field,
       sortState.sort_direction,
     ],
