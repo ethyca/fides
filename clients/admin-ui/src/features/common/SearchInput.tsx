@@ -36,8 +36,8 @@ const SearchInput = ({
       }
       allowClear
       className={classNames({
-        [styles.searchInput]: true,
-        [styles.searchInputCompact]: isCompact,
+        [styles.searchInput]: !props.width,
+        [styles.searchInputCompact]: isCompact && !props.width,
         [styles.searchInputIcon]: withIcon,
       })}
       data-testid="search-bar"
