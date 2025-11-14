@@ -14,7 +14,7 @@ from fides.api.cryptography.cryptographic_util import (
 )
 from fides.api.db.base_class import Base
 
-INVITE_CODE_TTL_HOURS = 24
+INVITE_CODE_TTL_HOURS = 72
 
 
 class FidesUserInvite(Base):
