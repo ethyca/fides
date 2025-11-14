@@ -201,6 +201,57 @@ class DataCategory(Base, FidesBase):
     )
 
     @classmethod
+    def create(
+        cls: Type["DataCategory"],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "DataCategory":
+        """
+        Override create to skip name uniqueness check for hierarchical taxonomy.
+
+        DataCategory is hierarchical - fides_key provides sufficient uniqueness.
+        Multiple categories can share the same name as long as their keys differ.
+        """
+        # Check if data category with same fides_key already exists
+        if "fides_key" in data and data["fides_key"]:
+            existing_by_key = (
+                db.query(cls).filter(cls.fides_key == data["fides_key"]).first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Data category with fides_key "{data["fides_key"]}" already exists.'
+                )
+        # Always skip name check - fides_key uniqueness is sufficient
+        return super().create(db=db, data=data, check_name=False)
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> "DataCategory":
+        """
+        Override update to check for existing data categories with the same fides_key
+        when fides_key is being changed.
+        """
+        # Check if fides_key is being changed and if it conflicts with an existing category
+        if (
+            "fides_key" in data
+            and data["fides_key"]
+            and data["fides_key"] != self.fides_key
+        ):
+            existing_by_key = (
+                db.query(DataCategory)
+                .filter(
+                    DataCategory.fides_key == data["fides_key"],
+                    DataCategory.fides_key != self.fides_key,  # Exclude current element
+                )
+                .first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Data category with fides_key "{data["fides_key"]}" already exists.'
+                )
+        return super().update(db=db, data=data)
+
+    @classmethod
     def from_fideslang_obj(
         cls, data_category: FideslangDataCategory
     ) -> DataCategoryType:
@@ -230,6 +281,53 @@ class DataSubject(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    @classmethod
+    def create(
+        cls: Type["DataSubject"],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "DataSubject":
+        """
+        Override create to check for existing data subjects with the same fides_key.
+        """
+        # Check if data subject with same fides_key already exists
+        if "fides_key" in data and data["fides_key"]:
+            existing_by_key = (
+                db.query(cls).filter(cls.fides_key == data["fides_key"]).first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Data subject with fides_key "{data["fides_key"]}" already exists.'
+                )
+        return super().create(db=db, data=data, check_name=check_name)
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> "DataSubject":
+        """
+        Override update to check for existing data subjects with the same fides_key
+        when fides_key is being changed.
+        """
+        # Check if fides_key is being changed and if it conflicts with an existing subject
+        if (
+            "fides_key" in data
+            and data["fides_key"]
+            and data["fides_key"] != self.fides_key
+        ):
+            existing_by_key = (
+                db.query(DataSubject)
+                .filter(
+                    DataSubject.fides_key == data["fides_key"],
+                    DataSubject.fides_key != self.fides_key,  # Exclude current element
+                )
+                .first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Data subject with fides_key "{data["fides_key"]}" already exists.'
+                )
+        return super().update(db=db, data=data)
 
 
 class DataUse(Base, FidesBase):
@@ -263,6 +361,57 @@ class DataUse(Base, FidesBase):
         back_populates="children",
         remote_side=[fides_key],
     )
+
+    @classmethod
+    def create(
+        cls: Type["DataUse"],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "DataUse":
+        """
+        Override create to skip name uniqueness check for hierarchical taxonomy.
+
+        DataUse is hierarchical - fides_key provides sufficient uniqueness.
+        Multiple uses can share the same name as long as their keys differ.
+        """
+        # Check if data use with same fides_key already exists
+        if "fides_key" in data and data["fides_key"]:
+            existing_by_key = (
+                db.query(cls).filter(cls.fides_key == data["fides_key"]).first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Data use with fides_key "{data["fides_key"]}" already exists.'
+                )
+        # Always skip name check - fides_key uniqueness is sufficient
+        return super().create(db=db, data=data, check_name=False)
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> "DataUse":
+        """
+        Override update to check for existing data uses with the same fides_key
+        when fides_key is being changed.
+        """
+        # Check if fides_key is being changed and if it conflicts with an existing use
+        if (
+            "fides_key" in data
+            and data["fides_key"]
+            and data["fides_key"] != self.fides_key
+        ):
+            existing_by_key = (
+                db.query(DataUse)
+                .filter(
+                    DataUse.fides_key == data["fides_key"],
+                    DataUse.fides_key != self.fides_key,  # Exclude current element
+                )
+                .first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'DataUse with fides_key "{data["fides_key"]}" already exists.'
+                )
+        return super().update(db=db, data=data)
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
@@ -311,7 +460,7 @@ class Dataset(Base, FidesBase):
         Duplicate names are allowed.
         """
         # Check if dataset with same fides_key already exists
-        if "fides_key" in data:
+        if "fides_key" in data and data["fides_key"]:
             existing_by_key = (
                 db.query(cls).filter(cls.fides_key == data["fides_key"]).first()
             )

@@ -209,6 +209,26 @@ class TestTaxonomyServiceCreate:
                 taxonomy_type, {"name": "Child", "parent_key": other_parent.fides_key}
             )
 
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_create_element_with_duplicate_name_under_different_parents_succeeds(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        first_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_1", "name": "Parent 1"}
+        )
+        second_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_2", "name": "Parent 2"}
+        )
+        db.flush()
+        taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": first_parent.fides_key}
+        )
+        db.flush()
+        taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": second_parent.fides_key}
+        )
+        db.flush()
+
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_nonexistent_parent_raises_validation_error(
         self, taxonomy_service, taxonomy_type
