@@ -6,6 +6,7 @@ import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
 /**
  * Custom nuqs parser for custom_privacy_request_fields
  * Serializes as JSON string in URL query params
+ * Throttled to prevent URL updates on every keystroke for text inputs
  */
 export const parseAsCustomFields = createParser({
   parse: (value: string) => {
@@ -16,7 +17,7 @@ export const parseAsCustomFields = createParser({
     }
   },
   serialize: (value: Record<string, string | null>) => JSON.stringify(value),
-});
+}).withOptions({ throttleMs: 500 });
 
 interface CustomFieldWithKey {
   key: string;
