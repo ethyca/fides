@@ -1,5 +1,4 @@
 import {
-  createParser,
   parseAsArrayOf,
   parseAsString,
   parseAsStringEnum,
@@ -10,18 +9,7 @@ import { useEffect, useMemo } from "react";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
-// Custom parser for custom_privacy_request_fields
-// Serializes as JSON string in URL query params
-const parseAsCustomFields = createParser({
-  parse: (value: string) => {
-    try {
-      return JSON.parse(value) as Record<string, string | null>;
-    } catch {
-      return null;
-    }
-  },
-  serialize: (value: Record<string, string | null>) => JSON.stringify(value),
-});
+import { parseAsCustomFields } from "../utils";
 
 export interface FilterQueryParams {
   fuzzy_search_str: string | null;

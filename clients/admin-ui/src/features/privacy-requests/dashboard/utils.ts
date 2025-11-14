@@ -1,6 +1,22 @@
 import { isEmpty, isNil } from "lodash";
+import { createParser } from "nuqs";
 
 import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
+
+/**
+ * Custom nuqs parser for custom_privacy_request_fields
+ * Serializes as JSON string in URL query params
+ */
+export const parseAsCustomFields = createParser({
+  parse: (value: string) => {
+    try {
+      return JSON.parse(value) as Record<string, string | null>;
+    } catch {
+      return null;
+    }
+  },
+  serialize: (value: Record<string, string | null>) => JSON.stringify(value),
+});
 
 interface CustomFieldWithKey {
   key: string;
