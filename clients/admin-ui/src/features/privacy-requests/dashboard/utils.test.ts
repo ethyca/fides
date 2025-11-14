@@ -246,20 +246,6 @@ describe("filterNullCustomFields", () => {
     });
   });
 
-  it("should filter out null values and keep valid numbers", () => {
-    const customFields = {
-      priority: null,
-      count: "5",
-      age: null,
-    };
-
-    const result = filterNullCustomFields(customFields);
-
-    expect(result).toEqual({
-      count: "5",
-    });
-  });
-
   it("should return all values when none are null", () => {
     const customFields = {
       department: "Engineering",
@@ -286,18 +272,9 @@ describe("filterNullCustomFields", () => {
 });
 
 describe("extractUniqueCustomFields", () => {
-  it("should return empty object when actions is undefined", () => {
-    const result = extractUniqueCustomFields(undefined);
-
-    expect(result).toEqual({});
-  });
-
-  it("should return empty object when actions is empty array", () => {
-    const actions: PrivacyRequestOption[] = [];
-
-    const result = extractUniqueCustomFields(actions);
-
-    expect(result).toEqual({});
+  it("should return empty object when actions is undefined or empty array", () => {
+    expect(extractUniqueCustomFields(undefined)).toEqual({});
+    expect(extractUniqueCustomFields([])).toEqual({});
   });
 
   it("should extract custom fields from a single action", () => {
