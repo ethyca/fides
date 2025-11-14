@@ -324,7 +324,7 @@ class TestGetConnectorTemplateConfig:
         self, get_connector_template_config_url: str, api_client
     ) -> None:
         response = api_client.get(
-            get_connector_template_config_url.format(saas_connector_type="stripe"),
+            get_connector_template_config_url.format(connector_template_type="stripe"),
             headers={},
         )
         assert response.status_code == 401
@@ -337,7 +337,7 @@ class TestGetConnectorTemplateConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CLIENT_READ])
         response = api_client.get(
-            get_connector_template_config_url.format(saas_connector_type="stripe"),
+            get_connector_template_config_url.format(connector_template_type="stripe"),
             headers=auth_header,
         )
         assert response.status_code == 403
@@ -351,7 +351,7 @@ class TestGetConnectorTemplateConfig:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
             get_connector_template_config_url.format(
-                saas_connector_type="nonexistent_connector"
+                connector_template_type="nonexistent_connector"
             ),
             headers=auth_header,
         )
@@ -369,7 +369,7 @@ class TestGetConnectorTemplateConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
-            get_connector_template_config_url.format(saas_connector_type="stripe"),
+            get_connector_template_config_url.format(connector_template_type="stripe"),
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -408,7 +408,7 @@ class TestGetConnectorTemplateConfig:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
             get_connector_template_config_url.format(
-                saas_connector_type="planet_express"
+                connector_template_type="planet_express"
             ),
             headers=auth_header,
         )
@@ -446,7 +446,7 @@ class TestGetConnectorTemplateDataset:
         self, get_connector_template_dataset_url: str, api_client
     ) -> None:
         response = api_client.get(
-            get_connector_template_dataset_url.format(saas_connector_type="stripe"),
+            get_connector_template_dataset_url.format(connector_template_type="stripe"),
             headers={},
         )
         assert response.status_code == 401
@@ -459,7 +459,7 @@ class TestGetConnectorTemplateDataset:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CLIENT_READ])
         response = api_client.get(
-            get_connector_template_dataset_url.format(saas_connector_type="stripe"),
+            get_connector_template_dataset_url.format(connector_template_type="stripe"),
             headers=auth_header,
         )
         assert response.status_code == 403
@@ -473,7 +473,7 @@ class TestGetConnectorTemplateDataset:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
             get_connector_template_dataset_url.format(
-                saas_connector_type="nonexistent_connector"
+                connector_template_type="nonexistent_connector"
             ),
             headers=auth_header,
         )
@@ -491,7 +491,7 @@ class TestGetConnectorTemplateDataset:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
-            get_connector_template_dataset_url.format(saas_connector_type="stripe"),
+            get_connector_template_dataset_url.format(connector_template_type="stripe"),
             headers=auth_header,
         )
         assert response.status_code == 200
@@ -530,7 +530,7 @@ class TestGetConnectorTemplateDataset:
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         response = api_client.get(
             get_connector_template_dataset_url.format(
-                saas_connector_type="planet_express"
+                connector_template_type="planet_express"
             ),
             headers=auth_header,
         )

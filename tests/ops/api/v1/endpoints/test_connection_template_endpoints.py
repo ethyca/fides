@@ -1709,7 +1709,7 @@ class TestInstantiateConnectionFromTemplate:
 
     def test_instantiate_connection_not_authenticated(self, api_client, base_url):
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers={}
+            base_url.format(connector_template_type="mailchimp"), headers={}
         )
         assert resp.status_code == 401
 
@@ -1718,7 +1718,7 @@ class TestInstantiateConnectionFromTemplate:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers=auth_header
+            base_url.format(connector_template_type="mailchimp"), headers=auth_header
         )
         assert resp.status_code == 403
 
@@ -1734,7 +1734,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "unsupported_connector",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="does_not_exist"),
+            base_url.format(connector_template_type="does_not_exist"),
             headers=auth_header,
             json=request_body,
         )
@@ -1760,7 +1760,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1787,7 +1787,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1821,7 +1821,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": connection_config.key,
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1847,7 +1847,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "brand_new_key",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1870,7 +1870,7 @@ class TestInstantiateConnectionFromTemplate:
             "description": "Mailchimp ConnectionConfig description",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1905,7 +1905,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1937,7 +1937,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1985,7 +1985,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -2078,7 +2078,7 @@ class TestConnectorTemplateEndpoints:
         """Test config endpoint returns YAML"""
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
-            saas_connector_type=HUBSPOT
+            connector_template_type=HUBSPOT
         )
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
@@ -2089,7 +2089,7 @@ class TestConnectorTemplateEndpoints:
         """Test dataset endpoint returns YAML"""
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_DATASET.format(
-            saas_connector_type=HUBSPOT
+            connector_template_type=HUBSPOT
         )
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 200
@@ -2100,7 +2100,7 @@ class TestConnectorTemplateEndpoints:
         """Test that requesting a non-existent template returns 404"""
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
         url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
-            saas_connector_type="nonexistent_connector"
+            connector_template_type="nonexistent_connector"
         )
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 404
