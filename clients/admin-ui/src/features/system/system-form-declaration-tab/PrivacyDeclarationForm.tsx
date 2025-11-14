@@ -2,14 +2,7 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import {
-  AntButton as Button,
-  Box,
-  Collapse,
-  Flex,
-  Spacer,
-  Stack,
-} from "fidesui";
+import { AntButton as Button, Box, Flex, Spacer, Stack } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -190,11 +183,7 @@ export const PrivacyDeclarationFormComponents = ({
             layout="stacked"
             disabled={lockedForGVL}
           />
-          <Collapse
-            in={values.legal_basis_for_processing === "Legitimate interests"}
-            animateOpacity
-            style={{ overflow: "visible" }}
-          >
+          {values.legal_basis_for_processing === "Legitimate interests" && (
             <Box mt={4}>
               <CustomTextInput
                 name="impact_assessment_location"
@@ -203,7 +192,7 @@ export const PrivacyDeclarationFormComponents = ({
                 variant="stacked"
               />
             </Box>
-          </Collapse>
+          )}
         </Stack>
         <Box mt={5} pl={4}>
           <CustomSwitch
@@ -251,11 +240,7 @@ export const PrivacyDeclarationFormComponents = ({
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             variant="stacked"
           />
-          <Collapse
-            in={values.processes_special_category_data}
-            animateOpacity
-            style={{ overflow: "visible" }}
-          >
+          {values.processes_special_category_data && (
             <Box mt={4}>
               <ControlledSelect
                 name="special_category_legal_basis"
@@ -266,7 +251,7 @@ export const PrivacyDeclarationFormComponents = ({
                 layout="stacked"
               />
             </Box>
-          </Collapse>
+          )}
         </Stack>
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Third parties">
@@ -277,11 +262,7 @@ export const PrivacyDeclarationFormComponents = ({
             tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
             variant="stacked"
           />
-          <Collapse
-            in={values.data_shared_with_third_parties}
-            animateOpacity
-            style={{ overflow: "visible" }}
-          >
+          {values.data_shared_with_third_parties && (
             <Stack mt={4} spacing={4}>
               <CustomTextInput
                 name="third_parties"
@@ -301,7 +282,7 @@ export const PrivacyDeclarationFormComponents = ({
                 mode="multiple"
               />
             </Stack>
-          </Collapse>
+          )}
         </Stack>
       </SystemFormInputGroup>
       {includeCustomFields ? (
