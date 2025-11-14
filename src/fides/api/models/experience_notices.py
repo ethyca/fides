@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Integer, String
 
 from fides.api.db.base_class import Base
 
@@ -41,4 +41,9 @@ class ExperienceNotices(Base):
         index=True,
         nullable=False,
         primary_key=True,
+    )
+    display_order = Column(
+        Integer,
+        nullable=True,
+        doc="Optional ordering for notices within an experience. Lower values appear first.",
     )
