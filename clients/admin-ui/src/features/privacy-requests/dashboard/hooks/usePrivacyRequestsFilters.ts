@@ -63,40 +63,6 @@ const usePrivacyRequestsFilters = ({
     },
   );
 
-  // A user friendly count of the number of filters applied
-  // It counts only non-search filters, and counts the range date filter as one
-  const filtersCount = useMemo(() => {
-    let count = 0;
-
-    // Count array filters (status, action_type)
-    if (filters.status && filters.status.length > 0) {
-      count += 1;
-    }
-    if (filters.action_type && filters.action_type.length > 0) {
-      count += 1;
-    }
-
-    // Count date range as one filter if either from or to is set
-    if (filters.from || filters.to) {
-      count += 1;
-    }
-
-    // Count each custom field filter
-    if (filters.custom_privacy_request_fields) {
-      count += Object.values(filters.custom_privacy_request_fields).filter(
-        (value) => value !== null,
-      ).length;
-    }
-
-    return count;
-  }, [
-    filters.status,
-    filters.action_type,
-    filters.from,
-    filters.to,
-    filters.custom_privacy_request_fields,
-  ]);
-
   const [sortState, setSortState] = useQueryStates(
     {
       sort_field: parseAsString,
@@ -139,7 +105,6 @@ const usePrivacyRequestsFilters = ({
   return {
     filters,
     setFilters,
-    filtersCount,
     sortState,
     setSortState,
     filterQueryParams,
