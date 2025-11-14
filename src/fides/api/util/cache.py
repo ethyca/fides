@@ -19,6 +19,8 @@ from fides.api.tasks import (
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
+    PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
+    PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
 )
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
@@ -432,6 +434,8 @@ def get_queue_counts() -> Dict[str, int]:
         for queue in [
             MESSAGING_QUEUE_NAME,
             PRIVACY_PREFERENCES_QUEUE_NAME,
+            PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
+            PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
             DSR_QUEUE_NAME,
             DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
             DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
