@@ -202,7 +202,10 @@ const pushConsentToAdobe = (
     try {
       // Dynamic approvals: support all Adobe categories, not just hardcoded ones
       const ecidApprovals: Record<string, boolean> = {};
-      const ecidMapping = options?.ecidMapping || DEFAULT_ECID_MAPPING;
+      const ecidMapping =
+        options?.ecidMapping && Object.keys(options.ecidMapping).length > 0
+          ? options.ecidMapping
+          : DEFAULT_ECID_MAPPING;
 
       // Map Fides consent to ECID categories
       Object.entries(ecidMapping).forEach(([fidesKey, ecidCategories]) => {
