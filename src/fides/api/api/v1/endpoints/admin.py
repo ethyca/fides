@@ -8,7 +8,12 @@ from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, migrate_db, reset_db
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
+from fides.api.util.memory_watchdog import (
+    _capture_heap_dump,
+    get_memory_watchdog_enabled,
+)
 from fides.common.api import scope_registry
+from fides.common.api.scope_registry import HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
@@ -80,5 +85,39 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
     return {
         "data": {
             "message": f"Fides database action performed successfully: {action_text}"
+        }
+    }
+
+
+@ADMIN_ROUTER.post(
+    "/admin/heap_dump",
+    tags=["Admin"],
+    dependencies=[Security(verify_oauth_client_prod, scopes=[HEAP_DUMP_EXEC])],
+    status_code=status.HTTP_200_OK,
+)
+def trigger_heap_dump() -> Dict:
+    """
+    Trigger a heap dump for memory diagnostics.
+
+    Captures and logs detailed memory profiling information including:
+    - Process memory stats (RSS, VMS)
+    - Top object type counts
+    - Garbage collector stats
+    - Uncollectable objects (memory leaks)
+
+    The full heap dump report is logged to error logs.
+    """
+    if not get_memory_watchdog_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            detail="Heap dump functionality is not enabled. Set memory_watchdog_enabled to true in application configuration.",
+        )
+
+    logger.warning("Manual heap dump triggered via API")
+    _capture_heap_dump()
+
+    return {
+        "data": {
+            "message": "Heap dump captured successfully. Check server logs for detailed report."
         }
     }
