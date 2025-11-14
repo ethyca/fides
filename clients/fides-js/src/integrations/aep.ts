@@ -232,13 +232,10 @@ const pushConsentToAdobe = (
         }
       });
 
-      if (debug) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[Fides Adobe] Updated ECID Opt-In Service:",
+      fidesDebugger(
+        "[Fides Adobe] Updated ECID Opt-In Service:",
           ecidApprovals,
-        );
-      }
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
