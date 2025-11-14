@@ -1,4 +1,4 @@
-import { isEmpty, isNil } from "lodash";
+import { isEmpty, isNil, pickBy } from "lodash";
 import { createParser } from "nuqs";
 
 import {
@@ -146,4 +146,24 @@ export const extractUniqueCustomFields = (
   });
 
   return uniqueFields;
+};
+
+/**
+ * Filters out null values from custom privacy request fields.
+ * The backend API expects Record<string, string | number> and doesn't accept null values.
+ * Returns null if the input is null or if all values are filtered out.
+ */
+export const filterNullCustomFields = (
+  customFields: Record<string, string | null> | null,
+): Record<string, string | number> | null => {
+  if (!customFields) {
+    return null;
+  }
+
+  const filtered = pickBy(customFields, (value) => value !== null) as Record<
+    string,
+    string | number
+  >;
+
+  return Object.keys(filtered).length > 0 ? filtered : null;
 };
