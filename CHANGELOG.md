@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.74.2..main)
 
 ### Added
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Replaced filter modal with a filter bar in the new request manager screen [#6943](https://github.com/ethyca/fides/pull/6943)
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
+- Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
 
 ### Fixed
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
@@ -47,6 +48,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
+
+## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
+
+### Fixed
+- Fixed the IdentityValue schema so it uses Multivalue instead of string [#6964](https://github.com/ethyca/fides/pull/6964)
 
 ## [2.74.1](https://github.com/ethyca/fides/compare/2.74.0..2.74.1)
 
