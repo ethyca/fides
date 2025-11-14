@@ -226,7 +226,7 @@ const pushConsentToAdobe = (
           if (ecidApprovals[categoryId] === true) {
             window.adobe?.optIn?.approve(categoryId);
           } else if (ecidApprovals[categoryId] === false) {
-            window.adobe!.optIn.deny(categoryId);
+            window.adobe?.optIn?.deny(categoryId);
           }
           // If undefined, we don't touch it (no mapping provided)
         }
