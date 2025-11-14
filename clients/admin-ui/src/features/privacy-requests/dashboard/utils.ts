@@ -1,6 +1,29 @@
-import { isEmpty, isNil } from "lodash";
+import { isEmpty, isNil, pickBy } from "lodash";
+import { createParser } from "nuqs";
 
-import { IdentityValue, PrivacyRequestResponse } from "~/types/api";
+import {
+  IdentityValue,
+  PrivacyRequestOption,
+  PrivacyRequestResponse,
+} from "~/types/api";
+
+import { CustomFieldDefinition } from "./CustomFieldFilter";
+
+/**
+ * Custom nuqs parser for custom_privacy_request_fields
+ * Serializes as JSON string in URL query params
+ * Throttled to prevent URL updates on every keystroke for text inputs
+ */
+export const parseAsCustomFields = createParser({
+  parse: (value: string) => {
+    try {
+      return JSON.parse(value) as Record<string, string | null>;
+    } catch {
+      return null;
+    }
+  },
+  serialize: (value: Record<string, string | null>) => JSON.stringify(value),
+}).withOptions({ throttleMs: 500 });
 
 interface CustomFieldWithKey {
   key: string;
@@ -93,4 +116,54 @@ export const getCustomFields = (
           value: field.value,
         }))
     : [];
+};
+
+/**
+ * Extracts all unique custom fields from the privacy center config actions.
+ * Returns a map of field_name -> field_definition for all unique custom fields.
+ */
+export const extractUniqueCustomFields = (
+  actions: PrivacyRequestOption[] | undefined,
+): Record<string, CustomFieldDefinition> => {
+  if (!actions) {
+    return {};
+  }
+
+  const uniqueFields: Record<string, CustomFieldDefinition> = {};
+
+  actions.forEach((action) => {
+    if (action.custom_privacy_request_fields) {
+      Object.entries(action.custom_privacy_request_fields).forEach(
+        ([fieldName, fieldInfo]) => {
+          // Only add if not already present (first occurrence wins)
+          if (!uniqueFields[fieldName]) {
+            // Cast to our extended type that includes field_type and options
+            uniqueFields[fieldName] = fieldInfo as CustomFieldDefinition;
+          }
+        },
+      );
+    }
+  });
+
+  return uniqueFields;
+};
+
+/**
+ * Filters out null values from custom privacy request fields.
+ * The backend API expects Record<string, string | number> and doesn't accept null values.
+ * Returns null if the input is null or if all values are filtered out.
+ */
+export const filterNullCustomFields = (
+  customFields: Record<string, string | null> | null,
+): Record<string, string | number> | null => {
+  if (!customFields) {
+    return null;
+  }
+
+  const filtered = pickBy(customFields, (value) => value !== null) as Record<
+    string,
+    string | number
+  >;
+
+  return Object.keys(filtered).length > 0 ? filtered : null;
 };

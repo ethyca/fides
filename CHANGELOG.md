@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
 - Added GPC conditional button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
 - Added default identity definitions [#6952](https://github.com/ethyca/fides/pull/6952)
+- Added custom fields filters to new request manager screen [#6974](https://github.com/ethyca/fides/pull/6974)
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
 - Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
 

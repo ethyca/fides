@@ -53,7 +53,10 @@ const PrivacyRequests: NextPage = () => {
   }, [availableTabs.manualTask, availableTabs.request]);
 
   return (
-    <FixedLayout title="Privacy Requests" mainProps={{ minWidth: "784px" }}>
+    <FixedLayout
+      title="Privacy Requests"
+      mainProps={{ minWidth: "784px", overflowY: "scroll" }}
+    >
       <PageHeader
         heading="Privacy Requests"
         breadcrumbItems={[{ title: "All requests" }]}
