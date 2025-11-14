@@ -12,9 +12,11 @@ import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slic
 import type { PrivacyNoticeResponse } from "~/types/api";
 import type { ConsentPreferenceCreate } from "~/types/api/models/ConsentPreferenceCreate";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
+import type { OverrideMode } from "~/types/api/models/OverrideMode";
+import { OverrideMode as OverrideModeEnum } from "~/types/api/models/OverrideMode";
 import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 
-import CascadeConsentToggle from "./CascadeConsentToggle";
+import OverrideModeDropdown from "./OverrideModeDropdown";
 import PreviewCard from "./PreviewCard";
 import PrivacyNoticesTree from "./PrivacyNoticesTree";
 
@@ -31,8 +33,8 @@ export interface NoticeMappings {
 }
 
 interface SavePreferencesSectionProps {
-  cascadeConsent: boolean;
-  onCascadeConsentChange: (enabled: boolean) => void;
+  overrideMode: OverrideMode | null;
+  onOverrideModeChange: (mode: OverrideMode | null) => void;
   privacyNotices: PrivacyNoticeResponse[];
   preferenceState: PreferenceState;
   noticeMappings: NoticeMappings;
@@ -42,8 +44,8 @@ interface SavePreferencesSectionProps {
 }
 
 const SavePreferencesSection = ({
-  cascadeConsent,
-  onCascadeConsentChange,
+  overrideMode,
+  onOverrideModeChange,
   privacyNotices,
   preferenceState,
   noticeMappings,
@@ -104,11 +106,13 @@ const SavePreferencesSection = ({
       return;
     }
 
-    // Apply cascade filtering if enabled
+    // Apply filtering based on override mode
     let keysToProcess = changedKeys;
-    if (cascadeConsent) {
+
+    if (overrideMode === OverrideModeEnum.DESCENDANTS) {
+      // For DESCENDANTS: filter out children when their parent is also changed
+      // Only send parent preferences, the API will cascade to descendants
       keysToProcess = changedKeys.filter((noticeKey) => {
-        // Check if this key is a child
         const parentKey = childToParentMap.get(noticeKey);
         if (parentKey) {
           // This is a child. Only include it if its parent is NOT in the changed keys
@@ -116,6 +120,25 @@ const SavePreferencesSection = ({
         }
         // This is not a child (it's a parent or standalone), always include it
         return true;
+      });
+    } else if (overrideMode === OverrideModeEnum.ANCESTORS) {
+      // For ANCESTORS: filter out parents when their child is also changed
+      // Only send child preferences, the API will cascade to ancestors
+      keysToProcess = changedKeys.filter((noticeKey) => {
+        // Check if any of this key's children are in the changed keys
+        const hasChangedChild = changedKeys.some(
+          (key) => childToParentMap.get(key) === noticeKey,
+        );
+        // Include this key only if none of its children are changed
+        return !hasChangedChild;
+      });
+    } else if (overrideMode === OverrideModeEnum.ALL) {
+      // For ALL: send all changed keys, API will handle both directions
+      // Filter based on hierarchy to avoid redundancy
+      keysToProcess = changedKeys.filter((noticeKey) => {
+        const parentKey = childToParentMap.get(noticeKey);
+        // Only include if parent is not also changed (prefer parent changes for efficiency)
+        return !parentKey || !changedKeys.includes(parentKey);
       });
     }
 
@@ -148,7 +171,7 @@ const SavePreferencesSection = ({
           },
           preferences,
         },
-        override_children: cascadeConsent,
+        override_mode: overrideMode,
       }).unwrap();
 
       setPostResponse(response);
@@ -160,7 +183,7 @@ const SavePreferencesSection = ({
   }, [
     createKeySets,
     noticeKeyToHistoryMap,
-    cascadeConsent,
+    overrideMode,
     childToParentMap,
     experienceConfigHistoryId,
     email,
@@ -178,16 +201,23 @@ const SavePreferencesSection = ({
 
         {hasCurrentResponse ? (
           <>
-            <CascadeConsentToggle
-              isEnabled={cascadeConsent}
-              onToggle={onCascadeConsentChange}
+            <OverrideModeDropdown
+              value={overrideMode}
+              onChange={onOverrideModeChange}
             />
 
             <PrivacyNoticesTree
               privacyNotices={privacyNotices}
               checkedKeys={checkedKeys}
               onCheckedKeysChange={onCheckedKeysChange}
-              cascadeConsent={cascadeConsent}
+              cascadeConsent={
+                overrideMode === OverrideModeEnum.DESCENDANTS ||
+                overrideMode === OverrideModeEnum.ALL
+              }
+              cascadeAncestors={
+                overrideMode === OverrideModeEnum.ANCESTORS ||
+                overrideMode === OverrideModeEnum.ALL
+              }
             />
 
             <Button
@@ -221,7 +251,7 @@ const SavePreferencesSection = ({
           header={
             postResponse
               ? `POST /api/v3/privacy-preferences${
-                  cascadeConsent ? "?override_children=true" : ""
+                  overrideMode ? `?override_mode=${overrideMode}` : ""
                 }`
               : null
           }
