@@ -57,8 +57,8 @@ export function subscribeToConsent(
     });
   });
 
-  // Handle already-initialized Fides (synthetic event)
-  if (handleSynthetic && window.Fides?.initialized && window.Fides.consent) {
+  // Handle existing Fides consent (synthetic event for late-loading integrations)
+  if (handleSynthetic && window.Fides?.consent) {
     handler(window.Fides.consent);
   }
 }
