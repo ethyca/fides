@@ -224,7 +224,7 @@ const pushConsentToAdobe = (
         if (typeof categoryId === "string") {
           // Check if we have an approval decision for this category
           if (ecidApprovals[categoryId] === true) {
-            window.adobe!.optIn.approve(categoryId);
+            window.adobe?.optIn?.approve(categoryId);
           } else if (ecidApprovals[categoryId] === false) {
             window.adobe!.optIn.deny(categoryId);
           }
