@@ -182,12 +182,9 @@ const pushConsentToAdobe = (
         ],
       });
 
-      if (debug) {
-        // eslint-disable-next-line no-console
-        console.log("[Fides Adobe] Sent consent to Adobe Web SDK:", {
-          purposes: adobePurposes,
-        });
-      }
+      fidesDebugger("[Fides Adobe] Sent consent to Adobe Web SDK:", {
+        purposes: adobePurposes,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("[Fides Adobe] Error calling alloy.setConsent:", error);
