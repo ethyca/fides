@@ -26,17 +26,12 @@ interface AdobeOptIn {
 
 interface AdobeNamespace {
   optIn?: AdobeOptIn;
-  target?: unknown;
-  analytics?: unknown;
 }
 
 declare global {
   interface Window {
     alloy?: AlloySDK;
-    Visitor?: unknown; // Adobe Visitor API (ECID) - not directly used
-    s?: unknown; // Adobe Analytics (AppMeasurement) - not directly used
     adobe?: AdobeNamespace;
-    _satellite?: unknown; // Adobe Launch - not directly used
   }
 }
 
