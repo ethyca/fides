@@ -2064,7 +2064,7 @@ class TestConnectorTemplateEndpoints:
 
         # Verify structure of responses
         for item in data:
-            assert "connector_type" in item
+            assert "type" in item
             assert "name" in item
             assert "supported_actions" in item
             assert "category" in item
