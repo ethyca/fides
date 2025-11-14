@@ -132,10 +132,7 @@ export const useFieldActionHotkeys = (
     [activeListItem, fieldActions],
   );
 
-  useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [
-    activeListItem,
-    fieldActions,
-  ]);
+  useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [onRefresh]);
 
   useHotkeys(
     FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER,

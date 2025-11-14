@@ -487,7 +487,7 @@ const ActionCenterFields: NextPage = () => {
                     setActiveListItem(undefined);
                   }
                 },
-                [detailsUrn],
+                [detailsUrn, setSetActiveListItemIndex, setActiveListItem],
               )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
