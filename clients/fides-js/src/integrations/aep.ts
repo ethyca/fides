@@ -180,7 +180,10 @@ const pushConsentToAdobe = (
       });
 
       if (debug) {
-        console.log("[Fides Adobe] ECID approvals computed from ecidMapping:", ecidApprovals);
+        console.log(
+          "[Fides Adobe] ECID approvals computed from ecidMapping:",
+          ecidApprovals,
+        );
       }
 
       // Dynamically apply approvals/denials for all categories
@@ -200,13 +203,15 @@ const pushConsentToAdobe = (
       });
 
       if (debug) {
-        console.log("[Fides Adobe] Updated ECID Opt-In Service:", ecidApprovals);
+        console.log(
+          "[Fides Adobe] Updated ECID Opt-In Service:",
+          ecidApprovals,
+        );
       }
     } catch (error) {
       console.error("[Fides Adobe] Error updating ECID Opt-In:", error);
     }
   }
-
 };
 
 /**
@@ -297,11 +302,16 @@ function getAdobeConsentState(): AEPConsentState {
 
       if (optIn.Categories) {
         // Iterate through all available categories (ANALYTICS, TARGET, AAM, ADCLOUD, etc.)
-        Object.entries(optIn.Categories).forEach(([categoryName, categoryId]) => {
-          if (typeof categoryId === "string" && typeof optIn.isApproved === "function") {
-            categories[categoryId] = optIn.isApproved(categoryId);
-          }
-        });
+        Object.entries(optIn.Categories).forEach(
+          ([categoryName, categoryId]) => {
+            if (
+              typeof categoryId === "string" &&
+              typeof optIn.isApproved === "function"
+            ) {
+              categories[categoryId] = optIn.isApproved(categoryId);
+            }
+          },
+        );
       }
 
       state.ecidOptIn = {

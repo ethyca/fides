@@ -283,7 +283,16 @@ describe("aep", () => {
 
       aep({
         ecidMapping: {
-          everything: ["aa", "target", "aam", "adcloud", "campaign", "ecid", "livefyre", "mediaaa"],
+          everything: [
+            "aa",
+            "target",
+            "aam",
+            "adcloud",
+            "campaign",
+            "ecid",
+            "livefyre",
+            "mediaaa",
+          ],
         },
       });
 
@@ -330,10 +339,10 @@ describe("aep", () => {
       // Only 'aa' should be approved
       expect(mockApprove).toHaveBeenCalledWith("aa");
       // Check the actual calls to ensure only 'aa' was in them
-      const actualCalls = mockApprove.mock.calls.map(call => call[0]);
+      const actualCalls = mockApprove.mock.calls.map((call) => call[0]);
       expect(actualCalls).toContain("aa");
       // All calls should be for 'aa' (no other categories)
-      actualCalls.forEach(category => {
+      actualCalls.forEach((category) => {
         expect(category).toBe("aa");
       });
     });
@@ -494,7 +503,9 @@ describe("aep", () => {
       });
 
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining("[Fides Adobe] Found 1 consent key(s) not in purposeMapping:"),
+        expect.stringContaining(
+          "[Fides Adobe] Found 1 consent key(s) not in purposeMapping:",
+        ),
         ["unknown_key"],
         expect.any(String),
       );

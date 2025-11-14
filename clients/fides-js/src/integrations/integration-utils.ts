@@ -47,10 +47,8 @@ export function subscribeToConsent(
   handler: (consent: NoticeConsent) => void,
   config?: ConsentEventConfig,
 ): void {
-  const {
-    events = ["FidesReady", "FidesUpdated"],
-    handleSynthetic = true,
-  } = config || {};
+  const { events = ["FidesReady", "FidesUpdated"], handleSynthetic = true } =
+    config || {};
 
   // Listen for Fides events
   events.forEach((eventName) => {
@@ -64,4 +62,3 @@ export function subscribeToConsent(
     handler(window.Fides.consent);
   }
 }
-
