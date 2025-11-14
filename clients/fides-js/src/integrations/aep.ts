@@ -220,7 +220,7 @@ const pushConsentToAdobe = (
       const categories = window.adobe?.optIn?.Categories;
 
       // Get all available category constants (e.g., ANALYTICS -> "aa", TARGET -> "target")
-      Object.entries(categories).forEach(([, categoryId]) => {
+      Object.entries(categories || {}).forEach(([, categoryId]) => {
         if (typeof categoryId === "string") {
           // Check if we have an approval decision for this category
           if (ecidApprovals[categoryId] === true) {
