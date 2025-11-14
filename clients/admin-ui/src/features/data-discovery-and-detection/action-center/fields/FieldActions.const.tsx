@@ -61,7 +61,7 @@ export const DRAWER_ACTIONS = {
   promotion_error: DEFAULT_DRAWER_ACTIONS,
   removal: [MUTE, PROMOTE_REMOVALS],
   removal_promotion_error: [MUTE, PROMOTE_REMOVALS],
-  removing: DEFAULT_DRAWER_ACTIONS,
+  removing: [MUTE, PROMOTE_REMOVALS],
 } as const satisfies Readonly<
   Record<DiffStatus, ReadonlyArray<FieldActionType>>
 >;
@@ -91,7 +91,7 @@ export const LIST_ITEM_ACTIONS = {
   promotion_error: DEFAULT_LIST_ITEM_ACTIONS,
   removal: [PROMOTE_REMOVALS],
   removal_promotion_error: [PROMOTE_REMOVALS],
-  removing: DEFAULT_LIST_ITEM_ACTIONS,
+  removing: [PROMOTE_REMOVALS],
 } as const satisfies Readonly<
   Record<DiffStatus, ReadonlyArray<FieldActionType>>
 >;
