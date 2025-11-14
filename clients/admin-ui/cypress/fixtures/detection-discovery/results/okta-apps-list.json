@@ -1,5 +1,26 @@
 {
-  "items": [],
+  "items": [
+    {
+      "urn": "urn:okta:app:12345678-1234-1234-1234-123456789012",
+      "name": "Salesforce",
+      "description": "Customer relationship management platform",
+      "resource_type": "okta_app",
+      "diff_status": "addition",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "monitor_config_id": "okta_monitor_001",
+      "system": "Okta Identity Provider",
+      "metadata": {
+        "app_type": "SAML_2_0",
+        "status": "ACTIVE",
+        "created": "2023-06-15T09:00:00Z",
+        "sign_on_url": "https://company.okta.com/app/salesforce/sso/saml",
+        "vendor_match_confidence": "medium",
+        "vendor_logo_url": "https://logo.clearbit.com/salesforce.com"
+      },
+      "vendor_id": "fds.1234",
+      "system_id": "okta_system_001"
+    }
+  ],
   "total": 10,
   "page": 1,
   "size": 25,

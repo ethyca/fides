@@ -7,9 +7,8 @@ import type { ConsentInfo } from "./ConsentInfo";
 import type { ConsentStatus } from "./ConsentStatus";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
+import type { OktaAppMetadata } from "./OktaAppMetadata";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
-
-import { OktaAppMetadata } from "~/features/data-discovery-and-detection/types/OktaAppMetadata";
 /**
  * Pydantic Schema used to represent any StageResource plus extra fields, used only for API responses.
  * It includes all the StagedResource fields, plus all the fields from Database, Schema, Table, and Field,
