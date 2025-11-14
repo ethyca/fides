@@ -145,7 +145,10 @@ const pushConsentToAdobe = (
   consent: NoticeConsent,
   options?: AEPOptions,
 ): void => {
-  const purposeMapping = options?.purposeMapping || DEFAULT_PURPOSE_MAPPING;
+  const purposeMapping =
+    options?.purposeMapping && Object.keys(options.purposeMapping).length > 0
+      ? options.purposeMapping
+      : DEFAULT_PURPOSE_MAPPING;
   const debug = options?.debug || false;
 
   if (debug) {
