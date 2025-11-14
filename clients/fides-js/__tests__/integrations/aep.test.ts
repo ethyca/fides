@@ -457,7 +457,7 @@ describe("aep", () => {
         expect.any(Object),
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        "[Fides Adobe] Purpose mapping:",
+        "[Fides Adobe] Purpose mapping result:",
         expect.any(Object),
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
@@ -487,28 +487,6 @@ describe("aep", () => {
       // Alloy should still be called (integration works)
       expect(mockAlloy).toHaveBeenCalled();
       // No need to test absence of logs due to test isolation issues
-    });
-
-    test("warns about unmatched consent keys in debug mode", () => {
-      setupAlloy();
-      setupFidesWithConsent({
-        analytics: true,
-        unknown_key: true,
-      });
-
-      aep({ debug: true });
-      triggerConsentEvent("FidesUpdated", {
-        analytics: true,
-        unknown_key: true,
-      });
-
-      expect(mockConsoleWarn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "[Fides Adobe] Found 1 consent key(s) not in purposeMapping:",
-        ),
-        ["unknown_key"],
-        expect.any(String),
-      );
     });
   });
 

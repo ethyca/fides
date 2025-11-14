@@ -119,48 +119,20 @@ function buildAdobePurposes(
   debug: boolean = false,
 ): Record<string, "in" | "out"> {
   const purposes: Record<string, "in" | "out"> = {};
-  const matchedKeys: string[] = [];
-  const unmatchedKeys: string[] = [];
 
   // Map each Fides consent key to Adobe purposes
   Object.entries(purposeMapping).forEach(([fidesKey, adobePurposes]) => {
     const hasConsent = !!consent[fidesKey];
     const value = hasConsent ? "in" : "out";
 
-    if (consent[fidesKey] !== undefined) {
-      matchedKeys.push(fidesKey);
-    }
-
     adobePurposes.forEach((purpose) => {
       purposes[purpose] = value;
     });
   });
 
-  // Check for Fides consent keys that aren't in the mapping
-  Object.keys(consent).forEach((key) => {
-    if (!purposeMapping[key]) {
-      unmatchedKeys.push(key);
-    }
-  });
-
   if (debug) {
     // eslint-disable-next-line no-console
-    console.log("[Fides Adobe] Purpose mapping:", {
-      fidesConsentKeys: Object.keys(consent),
-      mappingKeys: Object.keys(purposeMapping),
-      matchedKeys,
-      unmatchedKeys: unmatchedKeys.length > 0 ? unmatchedKeys : "none",
-      resultingPurposes: purposes,
-    });
-
-    if (unmatchedKeys.length > 0) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[Fides Adobe] Found ${unmatchedKeys.length} consent key(s) not in purposeMapping:`,
-        unmatchedKeys,
-        "\nTo map these keys, pass a custom purposeMapping option to Fides.aep()",
-      );
-    }
+    console.log("[Fides Adobe] Purpose mapping result:", purposes);
   }
 
   return purposes;
