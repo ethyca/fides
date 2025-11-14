@@ -1,9 +1,7 @@
 import { FidesGlobal } from "../../src/fides";
 import { aep } from "../../src/integrations/aep";
 
-// Mock console methods
-const mockConsoleLog = jest.spyOn(console, "log").mockImplementation();
-const mockConsoleWarn = jest.spyOn(console, "warn").mockImplementation();
+// Mock console.error for error handling tests
 const mockConsoleError = jest.spyOn(console, "error").mockImplementation();
 
 // Mock fidesDebugger global
