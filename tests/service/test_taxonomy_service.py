@@ -448,6 +448,99 @@ class TestTaxonomyServiceUpdate:
         db.flush()
         assert moved.parent_key == p2.fides_key
 
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_update_element_with_duplicate_name_under_different_parents_succeeds(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate name under a different parent succeeds."""
+        # Create two parent elements
+        first_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_1", "name": "Parent 1"}
+        )
+        second_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_2", "name": "Parent 2"}
+        )
+        db.flush()
+
+        # Create a child under the first parent with name "Child"
+        first_child = taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": first_parent.fides_key}
+        )
+        db.flush()
+
+        # Create another child under the second parent with a different name
+        second_child = taxonomy_service.create_element(
+            taxonomy_type,
+            {"name": "Other Child", "parent_key": second_parent.fides_key},
+        )
+        db.flush()
+
+        # Update the second child to have the same name as the first child
+        updated_child = taxonomy_service.update_element(
+            taxonomy_type, second_child.fides_key, {"name": "Child"}
+        )
+        db.flush()
+
+        # Verify both children have the same name but different parents
+        assert updated_child.name == "Child"
+        assert updated_child.parent_key == second_parent.fides_key
+
+        # Verify the first child still has the same name and parent
+        first_child_refreshed = taxonomy_service.get_element(
+            taxonomy_type, first_child.fides_key
+        )
+        assert first_child_refreshed.name == "Child"
+        assert first_child_refreshed.parent_key == first_parent.fides_key
+
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_update_element_with_duplicate_name_under_same_parent_keeps_unique_fides_keys(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate name under the same parent keeps unique fides_keys."""
+        # Create a parent element
+        parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent", "name": "Parent"}
+        )
+        db.flush()
+
+        # Create two children under the same parent with different names
+        first_child = taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": parent.fides_key}
+        )
+        db.flush()
+
+        second_child = taxonomy_service.create_element(
+            taxonomy_type,
+            {"name": "Other Child", "parent_key": parent.fides_key},
+        )
+        db.flush()
+
+        # Store the original fides_keys
+        first_child_key = first_child.fides_key
+        second_child_key = second_child.fides_key
+
+        # Update the second child to have the same name as the first child
+        updated_child = taxonomy_service.update_element(
+            taxonomy_type, second_child.fides_key, {"name": "Child"}
+        )
+        db.flush()
+
+        # Verify both children have the same name but different fides_keys
+        assert updated_child.name == "Child"
+        assert updated_child.fides_key == second_child_key
+        assert updated_child.parent_key == parent.fides_key
+
+        # Verify the first child still has the same name and fides_key
+        first_child_refreshed = taxonomy_service.get_element(
+            taxonomy_type, first_child_key
+        )
+        assert first_child_refreshed.name == "Child"
+        assert first_child_refreshed.fides_key == first_child_key
+        assert first_child_refreshed.parent_key == parent.fides_key
+
+        # Verify the fides_keys are different
+        assert first_child_key != second_child_key
+
 
 class TestTaxonomyServiceDelete:
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
