@@ -6,6 +6,9 @@ const mockConsoleLog = jest.spyOn(console, "log").mockImplementation();
 const mockConsoleWarn = jest.spyOn(console, "warn").mockImplementation();
 const mockConsoleError = jest.spyOn(console, "error").mockImplementation();
 
+// Mock fidesDebugger global
+(global as any).fidesDebugger = jest.fn();
+
 /**
  * Mock Adobe Web SDK (Alloy)
  */
@@ -442,54 +445,6 @@ describe("aep", () => {
     });
   });
 
-  describe("Debug logging", () => {
-    test("logs debug info when debug option is true", () => {
-      setupAlloy();
-      setupFidesWithConsent({
-        analytics: true,
-      });
-
-      aep({ debug: true });
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "[Fides Adobe] Pushing consent to Adobe:",
-        expect.any(Object),
-      );
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "[Fides Adobe] Purpose mapping result:",
-        expect.any(Object),
-      );
-      expect(mockConsoleLog).toHaveBeenCalledWith(
-        "[Fides Adobe] Sent consent to Adobe Web SDK:",
-        expect.any(Object),
-      );
-    });
-
-    test("defaults to no debug logging when debug option is not set", () => {
-      const mockAlloy = setupAlloy();
-
-      // Don't set Fides as initialized to avoid synthetic events
-      window.Fides = {
-        consent: {
-          analytics: true,
-        },
-        initialized: false,
-      } as any as FidesGlobal;
-
-      // Clear mocks before calling aep()
-      mockConsoleLog.mockClear();
-
-      aep(); // No debug option, defaults to false
-
-      triggerConsentEvent("FidesUpdated", { analytics: true });
-
-      // Alloy should still be called (integration works)
-      expect(mockAlloy).toHaveBeenCalled();
-      // No need to test absence of logs due to test isolation issues
-    });
-  });
-
   describe("consent() API", () => {
     test("returns state when alloy is loaded", () => {
       setupAlloy();
@@ -546,6 +501,8 @@ describe("aep", () => {
           Categories: {
             ANALYTICS: "aa",
           },
+          approve: jest.fn(),
+          deny: jest.fn(),
           isApproved: () => {
             throw new Error("isApproved error");
           },

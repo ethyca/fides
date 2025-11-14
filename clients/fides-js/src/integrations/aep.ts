@@ -9,17 +9,34 @@
 import { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
 
+// Adobe SDK type definitions
+// Note: Adobe does not provide official TypeScript types, so we define minimal interfaces
+// based on the API surface we actually use in this integration.
+
+interface AlloySDK {
+  (command: string, options?: unknown): Promise<unknown>;
+}
+
+interface AdobeOptIn {
+  Categories: Record<string, string>;
+  approve(category: string): void;
+  deny(category: string): void;
+  isApproved(category: string): boolean;
+}
+
+interface AdobeNamespace {
+  optIn?: AdobeOptIn;
+  target?: unknown;
+  analytics?: unknown;
+}
+
 declare global {
   interface Window {
-    alloy?: any;
-    Visitor?: any;
-    s?: any;
-    adobe?: {
-      optIn?: any;
-      target?: any;
-      analytics?: any;
-    };
-    _satellite?: any;
+    alloy?: AlloySDK;
+    Visitor?: unknown; // Adobe Visitor API (ECID) - not directly used
+    s?: unknown; // Adobe Analytics (AppMeasurement) - not directly used
+    adobe?: AdobeNamespace;
+    _satellite?: unknown; // Adobe Launch - not directly used
   }
 }
 
@@ -172,7 +189,7 @@ const pushConsentToAdobe = (
     const adobePurposes = buildAdobePurposes(consent, purposeMapping, debug);
 
     try {
-      window.alloy("setConsent", {
+      window.alloy!("setConsent", {
         consent: [
           {
             standard: "Adobe",
