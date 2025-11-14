@@ -180,6 +180,7 @@ export const PrivacyRequestFiltersBar = ({
         className="w-44"
         maxTagPlaceholder={maxTagPlaceholder}
       />
+      {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
         ([fieldName, fieldDefinition]) => (
           <CustomFieldFilter
