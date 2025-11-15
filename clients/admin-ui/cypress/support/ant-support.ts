@@ -172,7 +172,10 @@ Cypress.Commands.add(
         if (classes.includes("ant-select-multiple")) {
           cy.get(subject.selector).first().find("input").blur();
         }
-        cy.get(".ant-select-dropdown").should("not.be.visible");
+        cy.get("body").should(() => {
+          const dropdown = Cypress.$(".ant-select-dropdown:visible");
+          expect(dropdown.length).to.equal(0);
+        });
       });
   },
 );
