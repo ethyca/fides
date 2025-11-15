@@ -312,7 +312,7 @@ class TaxonomyElement(Base, FidesBase):
                     raise KeyOrNameAlreadyExists(
                         f'Taxonomy element with fides_key "{data["fides_key"]}" already exists in taxonomy "{taxonomy_type}".'
                     )
-        return super().update(db=db, data=data)
+        return super().update(db=db, data=data)  # type: ignore[return-value]
 
 
 class TaxonomyUsage(Base):
