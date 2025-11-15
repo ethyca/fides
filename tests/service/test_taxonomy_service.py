@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from fides.api.common_exceptions import ValidationError
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
@@ -209,6 +209,47 @@ class TestTaxonomyServiceCreate:
                 taxonomy_type, {"name": "Child", "parent_key": other_parent.fides_key}
             )
 
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_create_element_with_duplicate_name_under_different_parents_succeeds(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        first_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_1", "name": "Parent 1"}
+        )
+        second_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_2", "name": "Parent 2"}
+        )
+        db.flush()
+        taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": first_parent.fides_key}
+        )
+        db.flush()
+        taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": second_parent.fides_key}
+        )
+        db.flush()
+
+    def test_create_data_subject_with_duplicate_name_succeeds(
+        self, db, taxonomy_service
+    ):
+        """Test that data_subject allows duplicate names (only fides_key must be unique)."""
+        taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer_1", "name": "Customer"}
+        )
+        db.flush()
+        # Should succeed - duplicate names are allowed
+        taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer_2", "name": "Customer"}
+        )
+        db.flush()
+
+        # Both should exist with same name
+        subject1 = taxonomy_service.get_element("data_subject", "customer_1")
+        subject2 = taxonomy_service.get_element("data_subject", "customer_2")
+        assert subject1.name == "Customer"
+        assert subject2.name == "Customer"
+        assert subject1.fides_key != subject2.fides_key
+
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_nonexistent_parent_raises_validation_error(
         self, taxonomy_service, taxonomy_type
@@ -237,12 +278,10 @@ class TestTaxonomyServiceCreate:
             taxonomy_type, {"fides_key": "dupkey", "name": "DupKey"}
         )
         db.flush()
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             taxonomy_service.create_element(
                 taxonomy_type, {"fides_key": "dupkey", "name": "DupKey Again"}
             )
-            db.flush()
-        db.rollback()
 
 
 class TestTaxonomyServiceUpdate:
@@ -427,6 +466,142 @@ class TestTaxonomyServiceUpdate:
         )
         db.flush()
         assert moved.parent_key == p2.fides_key
+
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_update_element_with_duplicate_name_under_different_parents_succeeds(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate name under a different parent succeeds."""
+        # Create two parent elements
+        first_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_1", "name": "Parent 1"}
+        )
+        second_parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent_2", "name": "Parent 2"}
+        )
+        db.flush()
+
+        # Create a child under the first parent with name "Child"
+        first_child = taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": first_parent.fides_key}
+        )
+        db.flush()
+
+        # Create another child under the second parent with a different name
+        second_child = taxonomy_service.create_element(
+            taxonomy_type,
+            {"name": "Other Child", "parent_key": second_parent.fides_key},
+        )
+        db.flush()
+
+        # Update the second child to have the same name as the first child
+        updated_child = taxonomy_service.update_element(
+            taxonomy_type, second_child.fides_key, {"name": "Child"}
+        )
+        db.flush()
+
+        # Verify both children have the same name but different parents
+        assert updated_child.name == "Child"
+        assert updated_child.parent_key == second_parent.fides_key
+
+        # Verify the first child still has the same name and parent
+        first_child_refreshed = taxonomy_service.get_element(
+            taxonomy_type, first_child.fides_key
+        )
+        assert first_child_refreshed.name == "Child"
+        assert first_child_refreshed.parent_key == first_parent.fides_key
+
+    @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
+    def test_update_element_with_duplicate_name_under_same_parent_keeps_unique_fides_keys(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate name under the same parent keeps unique fides_keys."""
+        # Create a parent element
+        parent = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "parent", "name": "Parent"}
+        )
+        db.flush()
+
+        # Create two children under the same parent with different names
+        first_child = taxonomy_service.create_element(
+            taxonomy_type, {"name": "Child", "parent_key": parent.fides_key}
+        )
+        db.flush()
+
+        second_child = taxonomy_service.create_element(
+            taxonomy_type,
+            {"name": "Other Child", "parent_key": parent.fides_key},
+        )
+        db.flush()
+
+        # Store the original fides_keys
+        first_child_key = first_child.fides_key
+        second_child_key = second_child.fides_key
+
+        # Update the second child to have the same name as the first child
+        updated_child = taxonomy_service.update_element(
+            taxonomy_type, second_child.fides_key, {"name": "Child"}
+        )
+        db.flush()
+
+        # Verify both children have the same name but different fides_keys
+        assert updated_child.name == "Child"
+        assert updated_child.fides_key == second_child_key
+        assert updated_child.parent_key == parent.fides_key
+
+        # Verify the first child still has the same name and fides_key
+        first_child_refreshed = taxonomy_service.get_element(
+            taxonomy_type, first_child_key
+        )
+        assert first_child_refreshed.name == "Child"
+        assert first_child_refreshed.fides_key == first_child_key
+        assert first_child_refreshed.parent_key == parent.fides_key
+
+        # Verify the fides_keys are different
+        assert first_child_key != second_child_key
+
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
+    def test_update_element_with_duplicate_fides_key_raises_error(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate fides_key raises error."""
+        element1 = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "element_one", "name": "Element One"}
+        )
+        element2 = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "element_two", "name": "Element Two"}
+        )
+        db.flush()
+
+        # Attempt to update element2's fides_key to match element1's
+        with pytest.raises(KeyOrNameAlreadyExists):
+            taxonomy_service.update_element(
+                taxonomy_type, element2.fides_key, {"fides_key": "element_one"}
+            )
+
+    def test_update_data_subject_with_duplicate_name_succeeds(
+        self, db, taxonomy_service
+    ):
+        """Test that updating data_subject to duplicate name succeeds."""
+        subject1 = taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer", "name": "Customer"}
+        )
+        subject2 = taxonomy_service.create_element(
+            "data_subject", {"fides_key": "employee", "name": "Employee"}
+        )
+        db.flush()
+
+        # Should succeed - duplicate names are allowed
+        updated = taxonomy_service.update_element(
+            "data_subject", subject2.fides_key, {"name": "Customer"}
+        )
+        db.flush()
+
+        # Both should have the same name but different fides_keys
+        subject1_refreshed = taxonomy_service.get_element("data_subject", "customer")
+        assert updated.name == "Customer"
+        assert subject1_refreshed.name == "Customer"
+        assert updated.fides_key != subject1_refreshed.fides_key
 
 
 class TestTaxonomyServiceDelete:
@@ -625,12 +800,10 @@ class TestTaxonomyServiceCreateOrUpdateReactivation:
             taxonomy_type, element.fides_key, {"active": False}
         )
         db.flush()
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             taxonomy_service.create_or_update_element(
                 taxonomy_type, {"fides_key": "dupe", "name": "Other"}
             )
-            db.flush()
-        db.rollback()
 
     @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
     def test_create_or_update_name_mismatch_does_not_reactivate_creates_new(

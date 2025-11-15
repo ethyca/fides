@@ -17,7 +17,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
-from fides.api.common_exceptions import ValidationError
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
@@ -253,6 +253,66 @@ class TaxonomyElement(Base, FidesBase):
         back_populates="children",
         remote_side="TaxonomyElement.fides_key",
     )
+
+    @classmethod
+    def create(
+        cls: Type["TaxonomyElement"],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "TaxonomyElement":
+        """
+        Override create to skip name uniqueness check for hierarchical taxonomy.
+
+        TaxonomyElement is hierarchical - fides_key provides sufficient uniqueness.
+        Multiple elements can share the same name as long as their keys differ.
+        """
+        # Check if taxonomy element with same fides_key already exists within the same taxonomy_type
+        if "fides_key" in data and data["fides_key"] and "taxonomy_type" in data:
+            existing_by_key = (
+                db.query(cls)
+                .filter(
+                    cls.fides_key == data["fides_key"],
+                    cls.taxonomy_type == data["taxonomy_type"],
+                )
+                .first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Taxonomy element with fides_key "{data["fides_key"]}" already exists in taxonomy "{data["taxonomy_type"]}".'
+                )
+        # Always skip name check - fides_key uniqueness is sufficient
+        return super().create(db=db, data=data, check_name=False)
+
+    def update(self, db: Session, *, data: dict[str, Any]) -> "TaxonomyElement":
+        """
+        Override update to check for existing taxonomy elements with the same fides_key
+        within the same taxonomy_type when fides_key is being changed.
+        """
+        # Check if fides_key is being changed and if it conflicts with an existing element
+        if (
+            "fides_key" in data
+            and data["fides_key"]
+            and data["fides_key"] != self.fides_key
+        ):
+            # Ensure taxonomy_type is available (either in data or from self)
+            taxonomy_type = data.get("taxonomy_type") or self.taxonomy_type
+            if taxonomy_type:
+                existing_by_key = (
+                    db.query(TaxonomyElement)
+                    .filter(
+                        TaxonomyElement.fides_key == data["fides_key"],
+                        TaxonomyElement.taxonomy_type == taxonomy_type,
+                        TaxonomyElement.id != self.id,  # Exclude current element
+                    )
+                    .first()
+                )
+                if existing_by_key:
+                    raise KeyOrNameAlreadyExists(
+                        f'Taxonomy element with fides_key "{data["fides_key"]}" already exists in taxonomy "{taxonomy_type}".'
+                    )
+        return super().update(db=db, data=data)  # type: ignore[return-value]
 
 
 class TaxonomyUsage(Base):
