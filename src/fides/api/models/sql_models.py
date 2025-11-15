@@ -291,7 +291,10 @@ class DataSubject(Base, FidesBase):
         check_name: bool = True,
     ) -> "DataSubject":
         """
-        Override create to check for existing data subjects with the same fides_key.
+        Override create to skip name uniqueness check for data subjects.
+
+        DataSubject allows duplicate names - fides_key provides sufficient uniqueness.
+        Multiple subjects can share the same name as long as their keys differ.
         """
         # Check if data subject with same fides_key already exists
         if "fides_key" in data and data["fides_key"]:
@@ -302,7 +305,8 @@ class DataSubject(Base, FidesBase):
                 raise KeyOrNameAlreadyExists(
                     f'Data subject with fides_key "{data["fides_key"]}" already exists.'
                 )
-        return super().create(db=db, data=data, check_name=check_name)
+        # Always skip name check - fides_key uniqueness is sufficient
+        return super().create(db=db, data=data, check_name=False)
 
     def update(self, db: Session, *, data: dict[str, Any]) -> "DataSubject":
         """

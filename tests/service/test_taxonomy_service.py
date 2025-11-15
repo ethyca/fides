@@ -229,6 +229,27 @@ class TestTaxonomyServiceCreate:
         )
         db.flush()
 
+    def test_create_data_subject_with_duplicate_name_succeeds(
+        self, db, taxonomy_service
+    ):
+        """Test that data_subject allows duplicate names (only fides_key must be unique)."""
+        taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer_1", "name": "Customer"}
+        )
+        db.flush()
+        # Should succeed - duplicate names are allowed
+        taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer_2", "name": "Customer"}
+        )
+        db.flush()
+
+        # Both should exist with same name
+        subject1 = taxonomy_service.get_element("data_subject", "customer_1")
+        subject2 = taxonomy_service.get_element("data_subject", "customer_2")
+        assert subject1.name == "Customer"
+        assert subject2.name == "Customer"
+        assert subject1.fides_key != subject2.fides_key
+
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_create_element_with_nonexistent_parent_raises_validation_error(
         self, taxonomy_service, taxonomy_type
@@ -538,6 +559,30 @@ class TestTaxonomyServiceUpdate:
 
         # Verify the fides_keys are different
         assert first_child_key != second_child_key
+
+    def test_update_data_subject_with_duplicate_name_succeeds(
+        self, db, taxonomy_service
+    ):
+        """Test that updating data_subject to duplicate name succeeds."""
+        subject1 = taxonomy_service.create_element(
+            "data_subject", {"fides_key": "customer", "name": "Customer"}
+        )
+        subject2 = taxonomy_service.create_element(
+            "data_subject", {"fides_key": "employee", "name": "Employee"}
+        )
+        db.flush()
+
+        # Should succeed - duplicate names are allowed
+        updated = taxonomy_service.update_element(
+            "data_subject", subject2.fides_key, {"name": "Customer"}
+        )
+        db.flush()
+
+        # Both should have the same name but different fides_keys
+        subject1_refreshed = taxonomy_service.get_element("data_subject", "customer")
+        assert updated.name == "Customer"
+        assert subject1_refreshed.name == "Customer"
+        assert updated.fides_key != subject1_refreshed.fides_key
 
 
 class TestTaxonomyServiceDelete:
