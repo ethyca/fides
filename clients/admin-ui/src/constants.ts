@@ -19,3 +19,5 @@ export const CONNECTION_TYPE_ROUTE = "/connection_type";
 export const CONNECTOR_TEMPLATE = "/connector_template";
 
 export const PREVIEW_CONTAINER_ID = "preview-container";
+
+export const NO_VALUE = "N/A";
