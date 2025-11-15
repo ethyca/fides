@@ -560,6 +560,25 @@ class TestTaxonomyServiceUpdate:
         # Verify the fides_keys are different
         assert first_child_key != second_child_key
 
+    @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
+    def test_update_element_with_duplicate_fides_key_raises_error(
+        self, db, taxonomy_service, taxonomy_type
+    ):
+        """Test that updating an element to have a duplicate fides_key raises error."""
+        element1 = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "element_one", "name": "Element One"}
+        )
+        element2 = taxonomy_service.create_element(
+            taxonomy_type, {"fides_key": "element_two", "name": "Element Two"}
+        )
+        db.flush()
+
+        # Attempt to update element2's fides_key to match element1's
+        with pytest.raises(KeyOrNameAlreadyExists):
+            taxonomy_service.update_element(
+                taxonomy_type, element2.fides_key, {"fides_key": "element_one"}
+            )
+
     def test_update_data_subject_with_duplicate_name_succeeds(
         self, db, taxonomy_service
     ):
