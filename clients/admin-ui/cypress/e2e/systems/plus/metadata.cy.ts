@@ -67,10 +67,17 @@ describe("Plus Custom Metadata", () => {
     cy.getByTestId("save-btn").should("be.disabled");
     const testId =
       "controlled-select-customFieldValues.id-custom-field-definition-pokemon-party";
+
+    // Wait for the custom field values to load
+    cy.wait("@getCustomFields");
+
+    // Verify the initial values are loaded
+    cy.getByTestId(testId).scrollIntoView().should("be.visible");
     cy.getByTestId(testId).contains("Charmander");
     cy.getByTestId(testId).contains("Eevee");
     cy.getByTestId(testId).contains("Snorlax");
-    cy.getByTestId(testId).type("Bulbasaur{enter}");
+
+    cy.getByTestId(testId).antSelect("Bulbasaur");
 
     // Should be able to save now that form is dirty
     cy.getByTestId("save-btn").should("be.enabled");

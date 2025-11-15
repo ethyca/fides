@@ -167,11 +167,16 @@ Cypress.Commands.add(
               .click(clickOptions);
           }
         }
+        cy.antSelectDropdownVisible();
+        cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
+        if (classes.includes("ant-select-multiple")) {
+          cy.get(subject.selector).first().find("input").blur();
+        }
+        cy.get("body").should(() => {
+          const dropdown = Cypress.$(".ant-select-dropdown:visible");
+          expect(dropdown.length).to.equal(0);
+        });
       });
-    cy.antSelectDropdownVisible();
-    cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
-    // eslint-disable-next-line cypress/no-unnecessary-waiting
-    cy.wait(200); // Wait for the dropdown to close
   },
 );
 
