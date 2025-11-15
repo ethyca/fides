@@ -7,7 +7,7 @@ declare global {
 /**
  * Returns `window.navigator.globalPrivacyControl` as defined by the spec.
  *
- * If the GPC value is undefined, then current page URL is checked for a `globalPrivacyControl`
+ * If the GPC value is not true, then current page URL is checked for a `globalPrivacyControl`
  * query parameter. For example: `privacy-center.example.com/consent?globalPrivacyControl=true`.
  * This allows fides.js to function as if GPC is enabled while testing or demoing without
  * having to modify the browser before the script runs.
@@ -27,7 +27,8 @@ const getGlobalPrivacyControl = (): boolean | undefined => {
     return false;
   }
 
-  if (typeof window.navigator?.globalPrivacyControl === "boolean") {
+  if (window.navigator?.globalPrivacyControl === true) {
+    // NOTE: When GPC is disabled Firefox returns `false`, other browsers return `undefined`.
     return window.navigator.globalPrivacyControl;
   }
 
@@ -40,7 +41,8 @@ const getGlobalPrivacyControl = (): boolean | undefined => {
     return false;
   }
 
-  return undefined;
+  // will be undefined or false depending on the browser
+  return window.navigator?.globalPrivacyControl;
 };
 
 export type ConsentContext = {

@@ -1,6 +1,8 @@
 import {
   AntFlex as Flex,
   AntSegmented as Segmented,
+  AntSwitch as Switch,
+  AntTooltip as Tooltip,
   Icons,
   Spacer,
   Text,
@@ -111,6 +113,8 @@ const ConfigurePrivacyExperience = ({
   const toast = useToast();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [mockGpcEnabled, setMockGpcEnabled] = useState(false);
+  const isBrowserGpcEnabled = window.navigator?.globalPrivacyControl === true;
 
   const router = useRouter();
 
@@ -252,26 +256,59 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <Segmented
-                options={[
-                  {
-                    value: "mobile",
-                    icon: <Icons.Mobile title="Mobile" />,
-                  },
-                  {
-                    value: "desktop",
-                    icon: <Icons.Screen title="Desktop" />,
-                  },
-                ]}
-                defaultValue="desktop"
-                onChange={(value) => setIsMobilePreview(value === "mobile")}
-              />
+              <Flex className="flex-row items-center gap-2">
+                <Tooltip
+                  title={
+                    isBrowserGpcEnabled
+                      ? "GPC is enabled at the browser level. Disable it to use this toggle."
+                      : undefined
+                  }
+                >
+                  <Switch
+                    aria-label="Toggle GPC preview mode"
+                    checkedChildren="GPC"
+                    unCheckedChildren="GPC"
+                    checked={
+                      !isBrowserGpcEnabled
+                        ? mockGpcEnabled
+                        : isBrowserGpcEnabled
+                    }
+                    onChange={(value) => {
+                      setMockGpcEnabled(value);
+                      router.replace({
+                        pathname: router.pathname,
+                        query: {
+                          ...router.query,
+                          globalPrivacyControl: value.toString(),
+                        },
+                      });
+                    }}
+                    data-testid="gpc-preview-toggle"
+                    disabled={isBrowserGpcEnabled}
+                  />
+                </Tooltip>
+                <Segmented
+                  options={[
+                    {
+                      value: "mobile",
+                      icon: <Icons.Mobile title="Mobile" />,
+                    },
+                    {
+                      value: "desktop",
+                      icon: <Icons.Screen title="Desktop" />,
+                    },
+                  ]}
+                  defaultValue="desktop"
+                  onChange={(value) => setIsMobilePreview(value === "mobile")}
+                />
+              </Flex>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}
               initialValues={initialValues}
               translation={translationToEdit}
               isMobilePreview={isMobilePreview}
+              mockGpcEnabled={mockGpcEnabled}
             />
           </Flex>
         </Flex>
