@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from fides.api.common_exceptions import ValidationError
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
@@ -257,12 +257,10 @@ class TestTaxonomyServiceCreate:
             taxonomy_type, {"fides_key": "dupkey", "name": "DupKey"}
         )
         db.flush()
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             taxonomy_service.create_element(
                 taxonomy_type, {"fides_key": "dupkey", "name": "DupKey Again"}
             )
-            db.flush()
-        db.rollback()
 
 
 class TestTaxonomyServiceUpdate:
@@ -738,12 +736,10 @@ class TestTaxonomyServiceCreateOrUpdateReactivation:
             taxonomy_type, element.fides_key, {"active": False}
         )
         db.flush()
-        with pytest.raises(IntegrityError):
+        with pytest.raises(KeyOrNameAlreadyExists):
             taxonomy_service.create_or_update_element(
                 taxonomy_type, {"fides_key": "dupe", "name": "Other"}
             )
-            db.flush()
-        db.rollback()
 
     @pytest.mark.parametrize("taxonomy_type", HIERARCHICAL_TAXONOMY_TYPES)
     def test_create_or_update_name_mismatch_does_not_reactivate_creates_new(
