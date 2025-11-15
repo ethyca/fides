@@ -24,10 +24,12 @@ export interface CustomListProps<T> extends Omit<ListProps<T>, "renderItem"> {
    * Defaults to false. */
   enableKeyboardShortcuts?: boolean;
   /** Callback that fires when the focused item index changes.
-   * Receives the active item data and the new active index (or null if no item is active). */
+   * Receives the active item data, the new active index (or null if no item is active),
+   * and a setter function to programmatically update the active index. */
   onActiveItemChange?: (
     activeListItem: T | null,
-    activeListItemIndex?: number | null,
+    activeListItemIndex: number | null,
+    setActiveListItemIndex: (index: number | null) => void,
   ) => void;
 }
 
@@ -119,7 +121,7 @@ const withCustomProps = (WrappedComponent: typeof List) => {
     );
 
     // Keyboard navigation hook - always enabled, works with or without rowSelection
-    const { activeListItemIndex } = useListHotkeys({
+    const { activeListItemIndex, setActiveListItemIndex } = useListHotkeys({
       itemCount: dataSource?.length ?? 0,
       selectedKeys: selectedRowKeys,
       onToggleSelection: rowSelection ? handleKeyboardToggle : undefined,
@@ -134,9 +136,18 @@ const withCustomProps = (WrappedComponent: typeof List) => {
       if (onActiveItemChange && dataSource) {
         const activeListItem =
           activeListItemIndex !== null ? dataSource[activeListItemIndex] : null;
-        onActiveItemChange(activeListItem, activeListItemIndex);
+        onActiveItemChange(
+          activeListItem,
+          activeListItemIndex,
+          setActiveListItemIndex,
+        );
       }
-    }, [activeListItemIndex, dataSource, onActiveItemChange]);
+    }, [
+      activeListItemIndex,
+      dataSource,
+      onActiveItemChange,
+      setActiveListItemIndex,
+    ]);
 
     // Helper function to apply focus styling and data attributes
     const applyActiveStyling = useCallback(

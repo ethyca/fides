@@ -127,7 +127,7 @@ export const FIELD_ACTION_HOTKEYS = {
   APPROVE: "a",
   PROMOTE: "c",
   MUTE: "i",
-  UN_MUTE: "r",
+  REFRESH: "r",
   TOGGLE_DRAWER: "o",
   OPEN_CLASSIFICATION_SELECT: "e",
 } as const;
