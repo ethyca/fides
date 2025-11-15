@@ -121,7 +121,6 @@ const AssignSystemsModal = ({
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"
-                withIcon
               />
               <AssignSystemsTable
                 allSystems={filteredSystems}
