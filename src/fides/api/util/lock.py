@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Optional
 
 from loguru import logger
 from redis.lock import Lock
@@ -18,7 +18,12 @@ def get_redis_lock(lock_key: str, timeout: int) -> Lock:
 
 
 @contextmanager
-def redis_lock(lock_key: str, timeout: int) -> Generator[Lock | None, None, None]:
+def redis_lock(
+    lock_key: str,
+    timeout: int,
+    blocking: bool = False,
+    blocking_timeout: Optional[int] = None,
+) -> Generator[Lock | None, None, None]:
     """
     A context manager for acquiring a Redis lock.
     If the lock is acquired, it yields the lock object.
@@ -30,7 +35,12 @@ def redis_lock(lock_key: str, timeout: int) -> Generator[Lock | None, None, None
     """
     lock = get_redis_lock(lock_key, timeout)
 
-    if not lock.acquire(blocking=False):
+    # If we're blocking but no blocking timeout is provided
+    # fall back to the lock timeout as the blocking timeout
+    if blocking and blocking_timeout is None:
+        blocking_timeout = timeout
+
+    if not lock.acquire(blocking=blocking, blocking_timeout=blocking_timeout):
         logger.info(
             f"Another process is already running for lock '{lock_key}'. Skipping this execution."
         )

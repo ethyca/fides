@@ -1,3 +1,7 @@
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from fides.api.util.lock import get_redis_lock, redis_lock
 
 
@@ -34,3 +38,46 @@ class TestRedisLock:
         finally:
             # Release the external lock to clean up
             external_lock.release()
+
+    @pytest.mark.parametrize(
+        "blocking,blocking_timeout,expected_blocking,expected_timeout",
+        [
+            # blocking=True with no timeout - should use lock timeout as blocking timeout
+            (True, None, True, 10),
+            # blocking=True with explicit timeout - should use explicit timeout
+            (True, 60, True, 60),
+            # blocking=False (default) - should use default values
+            (False, None, False, None),
+        ],
+    )
+    @patch("fides.api.util.lock.get_redis_lock")
+    def test_redis_lock_blocking_parameters(
+        self,
+        mock_get_redis_lock,
+        blocking,
+        blocking_timeout,
+        expected_blocking,
+        expected_timeout,
+    ):
+        """
+        Tests that redis_lock correctly passes blocking and blocking_timeout parameters to lock.acquire.
+        """
+        mock_lock = MagicMock()
+        mock_lock.acquire.return_value = True
+        mock_lock.owned.return_value = True
+        mock_get_redis_lock.return_value = mock_lock
+
+        lock_timeout = 10
+        with redis_lock(
+            "test_key",
+            lock_timeout,
+            blocking=blocking,
+            blocking_timeout=blocking_timeout,
+        ) as lock:
+            assert lock is not None
+
+        # Verify acquire was called with correct blocking parameters
+        mock_lock.acquire.assert_called_once_with(
+            blocking=expected_blocking, blocking_timeout=expected_timeout
+        )
+        mock_lock.release.assert_called_once()
