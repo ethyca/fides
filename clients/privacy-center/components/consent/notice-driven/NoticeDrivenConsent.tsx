@@ -305,7 +305,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     window.Fides.consent = noticeConsent;
     const updatedCookie = { ...cookie, consent: noticeConsent };
     updatedCookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
-    saveFidesCookie(updatedCookie, base64Cookie);
+    saveFidesCookie(updatedCookie, { base64Cookie });
     toast({
       title: "Your consent preferences have been saved",
       ...SuccessToastOptions,

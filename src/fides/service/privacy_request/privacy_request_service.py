@@ -56,7 +56,6 @@ from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
-    send_verification_code_to_user,
 )
 
 
@@ -371,6 +370,7 @@ class PrivacyRequestService:
                 privacy_request_data,
                 policy,
                 authenticated,
+                self.messaging_service,
             )
 
             if not isinstance(privacy_request_data, PrivacyRequestResubmit):
@@ -822,6 +822,7 @@ def _handle_notifications_and_processing(
     privacy_request_data: PrivacyRequestCreate,
     policy: Policy,
     authenticated: bool,
+    messaging_service: MessagingService,
 ) -> None:
     """Handle notifications and request processing after creation"""
     if not authenticated and message_send_enabled(
@@ -830,8 +831,7 @@ def _handle_notifications_and_processing(
         MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         config_proxy.execution.subject_identity_verification_required,
     ):
-        send_verification_code_to_user(
-            db,
+        messaging_service.send_verification_code(
             privacy_request,
             privacy_request_data.identity,
             privacy_request.property_id,

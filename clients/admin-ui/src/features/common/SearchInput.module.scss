@@ -4,3 +4,6 @@
 .searchInputCompact {
   width: 240px;
 }
+.searchInputIcon {
+  --ant-padding-xxs: var(--ant-padding-xs); // right margin of icon
+}

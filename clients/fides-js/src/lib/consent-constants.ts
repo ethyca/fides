@@ -142,6 +142,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_unsupported_repeated_script_loading",
       validationRegex: /^(enabled_acknowledge_not_supported|disabled)$/,
     },
+    {
+      overrideName: "fidesCookieSuffix",
+      overrideType: "string",
+      overrideKey: "fides_cookie_suffix",
+      validationRegex: /.*/,
+    },
   ];
 
 /**
