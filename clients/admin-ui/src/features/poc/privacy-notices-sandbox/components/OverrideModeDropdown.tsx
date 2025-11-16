@@ -3,6 +3,7 @@ import {
   AntSelect as Select,
   AntTypography as Typography,
 } from "fidesui";
+
 import type { OverrideMode } from "~/types/api/models/OverrideMode";
 import { OverrideMode as OverrideModeEnum } from "~/types/api/models/OverrideMode";
 
@@ -23,10 +24,13 @@ const OverrideModeDropdown = ({
 
   return (
     <Flex align="center" gap={3} className="mb-4">
-      <Typography.Text strong style={{ whiteSpace: "nowrap" }}>
-        Override mode:
-      </Typography.Text>
+      <label htmlFor="override-mode-select" id="override-mode-select-label">
+        <Typography.Text strong style={{ whiteSpace: "nowrap" }}>
+          Override mode:
+        </Typography.Text>
+      </label>
       <Select
+        id="override-mode-select"
         value={value ?? undefined}
         onChange={(newValue) => {
           // Handle undefined (from clear action) or null
@@ -36,6 +40,7 @@ const OverrideModeDropdown = ({
         placeholder="No override"
         allowClear
         options={options}
+        aria-labelledby="override-mode-select-label"
       />
     </Flex>
   );
