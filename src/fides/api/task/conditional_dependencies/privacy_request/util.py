@@ -137,11 +137,7 @@ def _introspect_orm_model(
             )
 
             # Recurse into whitelisted relationships (e.g., policy)
-            if (
-                relationship_name in relationship_whitelist
-                if relationship_whitelist
-                else False
-            ):
+            if relationship_name in relationship_whitelist:
                 _introspect_orm_model(
                     target_class,
                     field_path,
