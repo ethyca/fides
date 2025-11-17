@@ -6,8 +6,8 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
+  fides__api__schemas__privacy_center_config__PrivacyCenterConfig,
   Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__,
-  PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestFilter,
@@ -528,7 +528,10 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.body,
       }),
     }),
-    getPrivacyCenterConfig: build.query<PrivacyCenterConfig, void>({
+    getPrivacyCenterConfig: build.query<
+      fides__api__schemas__privacy_center_config__PrivacyCenterConfig,
+      void
+    >({
       query: () => ({
         method: "GET",
         url: `plus/privacy-center-config`,
