@@ -13,7 +13,7 @@ import {
   ColumnBuilderParams,
   isIdentityProvider,
   isIdentityProviderColumns,
-} from "../utils/useAggregateColumnsUtils";
+} from "../utils/columnBuilders";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
