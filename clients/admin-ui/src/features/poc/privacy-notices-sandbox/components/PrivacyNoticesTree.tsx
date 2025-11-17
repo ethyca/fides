@@ -18,12 +18,15 @@ interface PrivacyNoticesTreeProps {
   checkedKeys: Key[];
   onCheckedKeysChange: (checkedKeys: Key[]) => void;
   cascadeConsent?: boolean;
+  cascadeAncestors?: boolean;
+  onExplicitChange?: (key: Key) => void;
 }
 
 interface TreeBuildResult {
   treeData: TreeDataNode[];
   allKeys: Key[]; // All keys in the tree (for expansion)
   descendantsMap: Map<Key, Key[]>; // Fast lookup: parent key -> all descendant keys
+  ancestorsMap: Map<Key, Key[]>; // Fast lookup: child key -> all ancestor keys
 }
 
 /**
@@ -33,12 +36,15 @@ const buildTreeWithMaps = (
   notices: PrivacyNoticeResponse[],
   checkedKeys: Key[],
   parentKey?: string,
+  ancestorKeys: Key[] = [],
+  disableChildren: boolean = false,
 ): TreeBuildResult => {
   const checkedArray = checkedKeys.map((k) => k.toString());
 
   // Initialize maps for fast lookups
   const allKeys: Key[] = []; // Collect all keys for tree expansion
   const descendantsMap = new Map<Key, Key[]>(); // Map parent key -> all descendant keys for cascade
+  const ancestorsMap = new Map<Key, Key[]>(); // Map child key -> all ancestor keys
   const treeData: TreeDataNode[] = [];
 
   notices.forEach((notice) => {
@@ -47,8 +53,9 @@ const buildTreeWithMaps = (
       notice.translations?.[0]?.privacy_notice_history_id || notice.id;
 
     // Determine if this node should be disabled
-    // Children are disabled if their parent is not checked
-    const disabled = parentKey ? !checkedArray.includes(parentKey) : false;
+    // Children are only disabled if disableChildren is true AND their parent is not checked
+    const disabled =
+      disableChildren && parentKey ? !checkedArray.includes(parentKey) : false;
 
     const node: TreeDataNode = {
       title: notice.name,
@@ -61,19 +68,32 @@ const buildTreeWithMaps = (
     // Register this node in the lookup maps
     allKeys.push(node.key);
 
+    // Store ancestor keys for this node
+    if (ancestorKeys.length > 0) {
+      ancestorsMap.set(node.key, [...ancestorKeys]);
+    }
+
     // Recursively build children if they exist
     if (notice.children && notice.children.length > 0) {
       const {
         treeData: childTreeData,
         allKeys: childKeys,
         descendantsMap: childDescendantsMap,
-      } = buildTreeWithMaps(notice.children, checkedKeys, notice.notice_key);
+        ancestorsMap: childAncestorsMap,
+      } = buildTreeWithMaps(
+        notice.children,
+        checkedKeys,
+        notice.notice_key,
+        [...ancestorKeys, node.key],
+        disableChildren,
+      );
 
       // Merge child results into parent maps (bubble up from recursion)
       childKeys.forEach((key) => allKeys.push(key));
       childDescendantsMap.forEach((value, key) =>
         descendantsMap.set(key, value),
       );
+      childAncestorsMap.forEach((value, key) => ancestorsMap.set(key, value));
 
       // Store all descendant keys for this parent (for cascade behavior)
       descendantsMap.set(node.key, childKeys);
@@ -89,6 +109,7 @@ const buildTreeWithMaps = (
     treeData,
     allKeys,
     descendantsMap,
+    ancestorsMap,
   };
 };
 
@@ -97,11 +118,21 @@ const PrivacyNoticesTree = ({
   checkedKeys,
   onCheckedKeysChange,
   cascadeConsent,
+  cascadeAncestors,
+  onExplicitChange,
 }: PrivacyNoticesTreeProps) => {
   // Build tree data and lookup maps in a single pass through the notices
-  const { treeData, allKeys, descendantsMap } = useMemo(
-    () => buildTreeWithMaps(privacyNotices, checkedKeys),
-    [privacyNotices, checkedKeys],
+  // Disable children when NOT cascading ancestors (i.e., for DESCENDANTS or NO override modes)
+  const { treeData, allKeys, descendantsMap, ancestorsMap } = useMemo(
+    () =>
+      buildTreeWithMaps(
+        privacyNotices,
+        checkedKeys,
+        undefined,
+        [],
+        !cascadeAncestors,
+      ),
+    [privacyNotices, checkedKeys, cascadeAncestors],
   );
 
   const [expandedKeys, setExpandedKeys] = useState<Key[]>(allKeys);
@@ -140,45 +171,56 @@ const PrivacyNoticesTree = ({
         (key) => !newCheckedKeys.includes(key),
       );
 
-      // Determine if a parent node changed
-      let parentChanged = false;
-      let toggledParentKey: Key | undefined;
+      let finalKeys: Key[] = newCheckedKeys;
 
-      if (addedKeys.length > 0) {
-        [toggledParentKey] = addedKeys;
-        parentChanged = isParentNode(toggledParentKey);
-      } else if (removedKeys.length > 0) {
-        [toggledParentKey] = removedKeys;
-        parentChanged = isParentNode(toggledParentKey);
-      }
+      // Determine which key was toggled
+      const toggledKey = addedKeys.length > 0 ? addedKeys[0] : removedKeys[0];
+      const isChecked = addedKeys.length > 0;
 
-      // If cascade is enabled and a parent changed, propagate to descendants
-      if (cascadeConsent && parentChanged && toggledParentKey !== undefined) {
-        const descendantKeys = descendantsMap.get(toggledParentKey) || [];
-        const parentIsChecked = newCheckedKeys.includes(toggledParentKey);
-
-        let finalKeys: Key[] = [];
-        if (parentIsChecked) {
-          // Parent was checked, check all its descendants
-          finalKeys = [...new Set([...newCheckedKeys, ...descendantKeys])];
-        } else {
-          // Parent was unchecked, uncheck all its descendants
-          finalKeys = newCheckedKeys.filter(
-            (key) => !descendantKeys.includes(key),
-          );
+      if (toggledKey !== undefined) {
+        // Track the key the user explicitly clicked
+        if (onExplicitChange) {
+          onExplicitChange(toggledKey);
         }
-        onCheckedKeysChange(finalKeys);
-      } else {
-        // No cascade or parent didn't change, pass through as normal
-        onCheckedKeysChange(newCheckedKeys);
+
+        // Handle descendant cascade (parent -> children)
+        if (cascadeConsent && isParentNode(toggledKey)) {
+          const descendantKeys = descendantsMap.get(toggledKey) || [];
+          if (isChecked) {
+            // Parent was checked, check all its descendants
+            finalKeys = [...new Set([...newCheckedKeys, ...descendantKeys])];
+          } else {
+            // Parent was unchecked, uncheck all its descendants
+            finalKeys = newCheckedKeys.filter(
+              (key) => !descendantKeys.includes(key),
+            );
+          }
+        }
+
+        // Handle ancestor cascade (child -> parents)
+        if (cascadeAncestors) {
+          const ancestorKeys = ancestorsMap.get(toggledKey) || [];
+          if (isChecked) {
+            // Child was checked, check all its ancestors
+            finalKeys = [...new Set([...finalKeys, ...ancestorKeys])];
+          } else {
+            // Child was unchecked, uncheck all its ancestors
+            finalKeys = finalKeys.filter((key) => !ancestorKeys.includes(key));
+          }
+        }
       }
+
+      onCheckedKeysChange(finalKeys);
     },
     [
       cascadeConsent,
+      cascadeAncestors,
       checkedKeys,
       onCheckedKeysChange,
       isParentNode,
       descendantsMap,
+      ancestorsMap,
+      onExplicitChange,
     ],
   );
 
