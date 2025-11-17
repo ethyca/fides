@@ -9,12 +9,15 @@ import { useEffect, useMemo } from "react";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
+import { filterNullCustomFields, parseAsCustomFields } from "../utils";
+
 export interface FilterQueryParams {
   fuzzy_search_str: string | null;
   from: string | null;
   to: string | null;
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
+  custom_privacy_request_fields: Record<string, string | number> | null;
   sort_field: string | null;
   sort_direction: ColumnSort | null;
 }
@@ -41,24 +44,12 @@ const usePrivacyRequestsFilters = ({
         parseAsStringEnum(Object.values(PrivacyRequestStatus)),
       ),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
+      custom_privacy_request_fields: parseAsCustomFields,
     },
     {
       history: "push",
     },
   );
-
-  // A user friendly count of the number of filters applied
-  // It counts only non-search filters, and counts the range date filter as one
-  const filtersCount = useMemo(() => {
-    const filtersWithoutSearchAndTo = {
-      ...filters,
-      search: undefined,
-      to: undefined,
-    };
-    return Object.values(filtersWithoutSearchAndTo).filter(
-      (value) => value && value.length > 0,
-    ).length;
-  }, [filters]);
 
   const [sortState, setSortState] = useQueryStates(
     {
@@ -77,6 +68,9 @@ const usePrivacyRequestsFilters = ({
       to: filters.to,
       status: filters.status,
       action_type: filters.action_type,
+      custom_privacy_request_fields: filterNullCustomFields(
+        filters.custom_privacy_request_fields,
+      ),
       sort_field: sortState.sort_field,
       sort_direction: sortState.sort_direction,
     }),
@@ -86,6 +80,7 @@ const usePrivacyRequestsFilters = ({
       filters.to,
       filters.status,
       filters.action_type,
+      filters.custom_privacy_request_fields,
       sortState.sort_field,
       sortState.sort_direction,
     ],
@@ -100,7 +95,6 @@ const usePrivacyRequestsFilters = ({
   return {
     filters,
     setFilters,
-    filtersCount,
     sortState,
     setSortState,
     filterQueryParams,

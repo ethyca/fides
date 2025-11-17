@@ -544,6 +544,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
+    promoteRemovalStagedResources: build.mutation<
+      PromoteResourcesResponse,
+      BaseStagedResourcesRequest & { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key, ...body }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/promote-removal`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+    }),
   }),
 });
 
@@ -573,4 +584,5 @@ export const {
   useClassifyStagedResourcesMutation,
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
+  usePromoteRemovalStagedResourcesMutation,
 } = actionCenterApi;
