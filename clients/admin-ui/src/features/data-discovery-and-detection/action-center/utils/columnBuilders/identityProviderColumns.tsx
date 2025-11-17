@@ -5,7 +5,6 @@ import {
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
-import { VendorMatchBadge } from "../../../components/VendorMatchBadge";
 import { DiscoveredSystemStatusCell } from "../../tables/cells/DiscoveredSystemAggregateStatusCell";
 import { ColumnBuilderParams } from "./columnTypes";
 
@@ -44,16 +43,7 @@ export const isIdentityProviderColumns = ({
     title: "Vendor",
     dataIndex: "vendor_id",
     key: "vendor",
-    render: (
-      vendorId: string,
-      record: SystemStagedResourcesAggregateRecord,
-    ) => (
-      <VendorMatchBadge
-        vendorName={vendorId}
-        vendorLogoUrl={record.metadata?.vendor_logo_url}
-        confidence={record.metadata?.vendor_match_confidence}
-      />
-    ),
+    render: (metadata) => <span>{metadata ?? "-"}</span>,
   },
   {
     title: "Sign-on URL",

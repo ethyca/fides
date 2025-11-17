@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { ConsentAlertInfo } from "./ConsentAlertInfo";
-import { IdentityProviderApplicationMetadata } from "./IdentityProviderApplicationMetadata";
 
 /**
  * API response model for records of aggregated staged resources by system
@@ -21,5 +20,5 @@ export type SystemStagedResourcesAggregateRecord = {
   locations?: Array<string>;
   domains?: Array<string>;
   consent_status?: ConsentAlertInfo | null;
-  metadata?: IdentityProviderApplicationMetadata | null;
+  metadata?: null;
 };
