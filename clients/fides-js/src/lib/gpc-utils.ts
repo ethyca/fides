@@ -66,8 +66,5 @@ export const processGpcConditionals = (
     );
   }
 
-  // Clean up any extra whitespace that might have been left behind
-  processed = processed.replace(/\s{2,}/g, " ").trim();
-
   return processed;
 };
