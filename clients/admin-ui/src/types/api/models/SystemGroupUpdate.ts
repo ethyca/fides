@@ -11,7 +11,7 @@ export type SystemGroupUpdate = {
   /**
    * Human-readable name for this resource
    */
-  name?: string;
+  name?: string | null;
   /**
    * A detailed description of what this resource is
    */

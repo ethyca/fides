@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { AssignedUserSummary } from "./AssignedUserSummary";
-import type { ConditionGroup } from "./ConditionGroup";
 import type { ManualTaskParentEntityType } from "./ManualTaskParentEntityType";
 import type { StatusType } from "./StatusType";
 
@@ -42,5 +41,9 @@ export type ManualTaskResponse = {
   /**
    * Dependency conditions
    */
-  dependency_conditions?: Array<ConditionGroup> | null;
+  dependency_conditions?: null;
+  /**
+   * Validation warnings for dependency conditions
+   */
+  validation_warnings?: null;
 };

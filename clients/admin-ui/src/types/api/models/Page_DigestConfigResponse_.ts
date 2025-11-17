@@ -4,12 +4,10 @@
 
 import type { DigestConfigResponse } from "./DigestConfigResponse";
 
-/**
- * Response schema for listing digest configurations.
- */
-export type DigestConfigListResponse = {
+export type Page_DigestConfigResponse_ = {
   items: Array<DigestConfigResponse>;
-  total: number;
-  page?: number;
-  size?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };

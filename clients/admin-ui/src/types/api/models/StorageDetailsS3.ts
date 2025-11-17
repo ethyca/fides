@@ -12,4 +12,6 @@ export type StorageDetailsS3 = {
   auth_method: AWSAuthMethod;
   bucket: string;
   max_retries?: number | null;
+  enable_streaming?: boolean | null;
+  enable_access_package_redirect?: boolean | null;
 };

@@ -4,6 +4,7 @@
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
+import type { IdentityValue } from "./IdentityValue";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
@@ -27,7 +28,7 @@ export type PrivacyRequestVerboseResponse = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<string, string | null> | null;
+  identity?: Record<string, string | IdentityValue | null> | null;
   custom_privacy_request_fields?: null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
@@ -41,5 +42,6 @@ export type PrivacyRequestVerboseResponse = {
   deleted_by?: string | null;
   finalized_at?: string | null;
   finalized_by?: string | null;
+  duplicate_request_group_id?: string | null;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };

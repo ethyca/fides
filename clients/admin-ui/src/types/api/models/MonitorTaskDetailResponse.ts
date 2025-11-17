@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ExecutionLogResponse } from "./ExecutionLogResponse";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { MonitorTaskType } from "./MonitorTaskType";
 
 /**
@@ -14,15 +15,16 @@ export type MonitorTaskDetailResponse = {
   updated_at: string;
   monitor_config_id?: string | null;
   action_type: MonitorTaskType;
-  status?: string | null;
+  status?: ExecutionLogStatus | string | null;
+  message?: string | null;
   celery_id?: string | null;
   staged_resource_urns?: Array<string>;
-  child_resource_urns?: Array<string>;
-  message?: string | null;
-  task_arguments?: any;
-  execution_logs?: Array<ExecutionLogResponse>;
+  dismissed?: boolean | null;
   monitor_name?: string | null;
   connection_name?: string | null;
   connection_type?: string | null;
   field_count?: number | null;
+  child_resource_urns?: Array<string>;
+  task_arguments?: any;
+  execution_logs?: Array<ExecutionLogResponse>;
 };

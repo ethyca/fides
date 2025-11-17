@@ -13,6 +13,7 @@ export type ClassifyLlmParams = {
   prompt_template?: ClassifyLlmPromptTemplateOptions | null;
   include_rationale?: boolean;
   num_workers?: number;
+  max_tokens?: number;
   taxonomy_instructions?: string | null;
   tagging_instructions?: Record<string, any> | null;
   tagging_instructions_override_all?: Record<string, any> | null;

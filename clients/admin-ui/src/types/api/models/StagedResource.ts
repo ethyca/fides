@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { DiffStatus } from "./DiffStatus";
+import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
@@ -30,4 +31,8 @@ export type StagedResource = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
+  /**
+   * List of errors encountered during processing
+   */
+  errors?: Array<ResourceError>;
 };

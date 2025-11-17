@@ -16,4 +16,8 @@ export type ManualFieldPrivacyRequest = {
   request_type: ManualFieldRequestType;
   subject_identities: any;
   custom_fields: any;
+  /**
+   * Mapping of custom field keys to their display labels
+   */
+  custom_field_labels?: Record<string, string>;
 };

@@ -9,9 +9,6 @@
 export type AssetUpdate = {
   data_uses?: Array<string> | null;
   description?: string | null;
-  /**
-   * Human-readable duration for which this asset persists (e.g., cookie lifetime)
-   */
   duration?: string | null;
   id: string;
   system_key?: string | null;

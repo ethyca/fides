@@ -28,7 +28,7 @@ export type DigestConfigRequest = {
   /**
    * Type of messaging service (email, sms, etc.)
    */
-  messaging_service_type?: MessagingMethod | null;
+  messaging_service_type?: MessagingMethod;
   /**
    * Cron expression for digest scheduling (default: weekly on Monday at 9 AM)
    */

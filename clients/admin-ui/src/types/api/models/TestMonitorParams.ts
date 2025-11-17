@@ -42,4 +42,12 @@ export type TestMonitorParams = {
    * Number of fields to generate for each nested field
    */
   num_fields_per_nested?: number;
+  /**
+   * Whether to simulate classification when calling the /classify endpoint
+   */
+  simulate_classification?: boolean;
+  /**
+   * Number of seconds to sleep during classification to simulate processing time
+   */
+  classification_sleep_seconds?: number;
 };

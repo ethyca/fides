@@ -185,7 +185,7 @@ export type BasicSystemResponseExtended = {
    */
   system_groups?: Array<string>;
   /**
-   * List of data stewards from all system groups
+   * List of data steward usernames assigned to this system
    */
   data_stewards?: Array<string>;
 };

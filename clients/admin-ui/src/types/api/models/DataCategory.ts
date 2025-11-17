@@ -41,4 +41,8 @@ export type DataCategory = {
    * Indicates whether the resource is currently 'active'.
    */
   active?: boolean;
+  /**
+   * Instructions for LLM-based data classification tagging.
+   */
+  tagging_instructions?: string | null;
 };

@@ -4,6 +4,7 @@
 
 import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
+import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 export type Database = {
@@ -28,6 +29,10 @@ export type Database = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
+  /**
+   * List of errors encountered during processing
+   */
+  errors?: Array<ResourceError>;
   source_modified?: string | null;
   classifications?: Array<Classification>;
   schemas?: Array<string>;

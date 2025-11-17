@@ -8,9 +8,6 @@
 export type AssetCreate = {
   data_uses?: Array<string>;
   description?: string | null;
-  /**
-   * Human-readable duration for which this asset persists (e.g., cookie lifetime)
-   */
   duration?: string | null;
   name: string;
   asset_type: string;

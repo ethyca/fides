@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AsyncConfig } from "./AsyncConfig";
 import type { ClientConfig } from "./ClientConfig";
 import type { Header } from "./Header";
 import type { HTTPMethod } from "./HTTPMethod";
@@ -32,6 +31,10 @@ export type SaaSRequest = {
   grouped_inputs?: Array<string> | null;
   ignore_errors?: boolean | Array<number> | null;
   rate_limit_config?: RateLimitConfig | null;
-  async_config?: AsyncConfig | null;
+  async_config?: Strategy | null;
   skip_missing_param_values?: boolean | null;
+  /**
+   * The path to the correlation ID in the response. For use with async polling.
+   */
+  correlation_id_path?: string | null;
 };

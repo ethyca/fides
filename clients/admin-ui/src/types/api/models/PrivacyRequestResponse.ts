@@ -27,12 +27,7 @@ export type PrivacyRequestResponse = {
   status: PrivacyRequestStatus;
   external_id?: string | null;
   identity?: Record<string, string | IdentityValue | null> | null;
-  // custom_privacy_request_fields was manually overriden to have the correct type
-  // until the generated types work correctly
-  custom_privacy_request_fields?: Record<
-    string,
-    { label: string; value: string | number | Array<string | number> }
-  > | null;
+  custom_privacy_request_fields?: null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
   resume_endpoint?: string | null;

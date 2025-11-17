@@ -26,4 +26,8 @@ export type DataCategoryCreateOrUpdate = {
   tags?: Array<string> | null;
   organization_fides_key?: string | null;
   parent_key?: string | null;
+  /**
+   * Instructions for LLM-based data classification tagging.
+   */
+  tagging_instructions?: string | null;
 };

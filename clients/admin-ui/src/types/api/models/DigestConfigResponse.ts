@@ -12,17 +12,13 @@ import type { MessagingMethod } from "./MessagingMethod";
  */
 export type DigestConfigResponse = {
   /**
-   * Digest configuration ID
-   */
-  id: string;
-  /**
-   * Digest configuration name
+   * Human-readable name for the digest configuration
    */
   name: string;
   /**
-   * Digest configuration description
+   * Optional description of the digest configuration
    */
-  description: string | null;
+  description?: string | null;
   /**
    * Digest type
    */
@@ -34,7 +30,7 @@ export type DigestConfigResponse = {
   /**
    * Type of messaging service (email, sms, etc.)
    */
-  messaging_service_type: MessagingMethod;
+  messaging_service_type?: MessagingMethod;
   /**
    * Cron expression for digest scheduling (default: weekly on Monday at 9 AM)
    */
@@ -46,7 +42,11 @@ export type DigestConfigResponse = {
   /**
    * Additional configuration metadata (service-specific settings)
    */
-  config_metadata: null;
+  config_metadata?: null;
+  /**
+   * Digest configuration ID
+   */
+  id: string;
   /**
    * Digest conditions
    */

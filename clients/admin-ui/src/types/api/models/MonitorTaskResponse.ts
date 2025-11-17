@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { MonitorTaskType } from "./MonitorTaskType";
 
 /**
@@ -13,7 +14,8 @@ export type MonitorTaskResponse = {
   updated_at: string;
   monitor_config_id?: string | null;
   action_type: MonitorTaskType;
-  status?: string | null;
+  status?: ExecutionLogStatus | string | null;
+  message?: string | null;
   celery_id?: string | null;
   staged_resource_urns?: Array<string>;
   dismissed?: boolean | null;

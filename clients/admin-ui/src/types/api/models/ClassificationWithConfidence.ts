@@ -10,6 +10,7 @@ import type { ConfidenceScoreRange } from "./ConfidenceScoreRange";
 export type ClassificationWithConfidence = {
   label: string;
   score: number;
+  rationale?: string | null;
   /**
    * The confidence score according to the classification score and the confidence score threshold
    */

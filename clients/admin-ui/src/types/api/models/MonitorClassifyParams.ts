@@ -25,6 +25,7 @@ export type MonitorClassifyParams = {
   llm_model_override?: string | null;
   prompt_template?: ClassifyLlmPromptTemplateOptions | null;
   num_workers?: number;
+  max_tokens?: number;
   language?: string;
   decision_method?: string;
   aggregation_method?: string;

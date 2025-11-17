@@ -12,7 +12,7 @@ import type { PrivacyRequestOption } from "./PrivacyRequestOption";
  * (i.e. unauthenticated) API responses. If a field has
  * sensitive information, it should NOT be added to this schema!
  */
-export type PrivacyCenterConfig = {
+export type fides__api__schemas__privacy_center_config__PrivacyCenterConfig = {
   title: string;
   description: string;
   description_subtext?: Array<string> | null;

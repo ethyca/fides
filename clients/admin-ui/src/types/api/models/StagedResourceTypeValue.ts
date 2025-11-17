@@ -11,6 +11,7 @@ export enum StagedResourceTypeValue {
   TABLE = "Table",
   FIELD = "Field",
   ENDPOINT = "Endpoint",
+  OKTA_APP = "okta_app",
   COOKIE = "Cookie",
   BROWSER_REQUEST = "Browser request",
   IMAGE = "Image",
