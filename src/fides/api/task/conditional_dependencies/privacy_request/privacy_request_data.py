@@ -34,6 +34,10 @@ class PrivacyRequestDataTransformer:
             privacy_request: The PrivacyRequest ORM object to transform
         """
         self.privacy_request = privacy_request
+        # Build the data objects just once to avoid multiple calls to the database
+        self.policy_data = self._transform_policy_object(privacy_request.policy)
+        self.identity_data = privacy_request.get_persisted_identity()
+        self.custom_privacy_request_fields_data = privacy_request.get_persisted_custom_privacy_request_fields()
 
     def to_evaluation_data(self, field_addresses: set[str]) -> dict[str, Any]:
         """
@@ -96,14 +100,14 @@ class PrivacyRequestDataTransformer:
         # Track the identity object if we're extracting from identity
         identity_obj = None
         if parts[0] == "policy":
-            current = self._transform_policy_object(self.privacy_request.policy)
+            current = self.policy_data
         elif parts[0] == "identity":
-            current = self.privacy_request.get_persisted_identity()
+            current = self.identity_data
             identity_obj = (
                 current  # Save reference to detect if we didn't extract a field
             )
         elif parts[0] == "custom_privacy_request_fields":
-            current = self.privacy_request.get_persisted_custom_privacy_request_fields()
+            current = self.custom_privacy_request_fields_data
 
         if current != self.privacy_request:
             parts.pop(0)
