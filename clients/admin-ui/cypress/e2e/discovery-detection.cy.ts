@@ -91,13 +91,17 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000000.test_dataset_1-col-action",
         ).within(() => {
-          cy.getByTestId("action-Monitor").click();
+          cy.getByTestId("action-Monitor")
+            .scrollIntoView()
+            .click({ force: true });
           cy.wait("@confirmResource");
         });
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000000.test_dataset_1-col-action",
         ).within(() => {
-          cy.getByTestId("action-Ignore").click();
+          cy.getByTestId("action-Ignore")
+            .scrollIntoView()
+            .click({ force: true });
           cy.wait("@ignoreResource");
         });
       });
@@ -126,13 +130,17 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
-          cy.getByTestId("action-Monitor").click();
+          cy.getByTestId("action-Monitor")
+            .scrollIntoView()
+            .click({ force: true });
           cy.wait("@confirmResource");
         });
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
-          cy.getByTestId("action-Ignore").click();
+          cy.getByTestId("action-Ignore")
+            .scrollIntoView()
+            .click({ force: true });
           cy.wait("@ignoreResource");
         });
       });

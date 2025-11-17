@@ -129,6 +129,9 @@ const ActionCenterFields: NextPage = () => {
   const [activeListItem, setActiveListItem] = useState<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >();
+  const [setActiveListItemIndex, setSetActiveListItemIndex] = useState<
+    ((index: number | null) => void) | null
+  >(null);
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -166,6 +169,21 @@ const ActionCenterFields: NextPage = () => {
   >({ activeListItem, enableKeyboardShortcuts: true });
 
   const handleNavigate = async (urn: string | undefined) => {
+    if (
+      activeListItem?.urn &&
+      urn &&
+      setActiveListItemIndex &&
+      fieldsDataResponse?.items
+    ) {
+      // When navigating via mouse click after using the keyboard,
+      // update the active item to match the clicked item
+      const itemIndex = fieldsDataResponse.items.findIndex(
+        (item) => item.urn === urn,
+      );
+      if (itemIndex !== -1) {
+        setActiveListItemIndex(itemIndex);
+      }
+    }
     setDetailsUrn(urn);
   };
 
@@ -249,6 +267,7 @@ const ActionCenterFields: NextPage = () => {
     handleNavigate,
     messageApi,
     !!detailsUrn,
+    () => refetch(),
   );
 
   return (
@@ -449,7 +468,14 @@ const ActionCenterFields: NextPage = () => {
               }
               onActiveItemChange={useCallback(
                 // useCallback prevents infinite re-renders
-                (item: DatastoreStagedResourceAPIResponse | null) => {
+                (
+                  item: DatastoreStagedResourceAPIResponse | null,
+                  _activeListItemIndex: number | null,
+                  setActiveIndexFn: (index: number | null) => void,
+                ) => {
+                  // Store the setter function so handleNavigate can use it
+                  setSetActiveListItemIndex(() => setActiveIndexFn);
+
                   if (item?.urn) {
                     setActiveListItem({
                       ...item,
@@ -558,6 +584,7 @@ const ActionCenterFields: NextPage = () => {
         onClose={() => setDetailsUrn(undefined)}
         resource={resource}
         fieldActions={fieldActions}
+        mask={!activeListItem}
       />
       <HotkeysHelperModal
         open={hotkeysHelperModalOpen}
