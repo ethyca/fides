@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type { ConsentAlertInfo } from "./ConsentAlertInfo";
-import { OktaAppMetadata } from "~/features/data-discovery-and-detection/types/OktaAppMetadata";
+import { IdentityProviderApplicationMetadata } from "./IdentityProviderApplicationMetadata";
 
 /**
  * API response model for records of aggregated staged resources by system
@@ -21,5 +21,5 @@ export type SystemStagedResourcesAggregateRecord = {
   locations?: Array<string>;
   domains?: Array<string>;
   consent_status?: ConsentAlertInfo | null;
-  metadata?: OktaAppMetadata | null;
+  metadata?: IdentityProviderApplicationMetadata | null;
 };
