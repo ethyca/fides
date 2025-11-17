@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 import type { ConsentAlertInfo } from "./ConsentAlertInfo";
-
 import { IdentityProviderApplicationMetadata } from "./IdentityProviderApplicationMetadata";
+
 
 
 /**
@@ -23,5 +23,5 @@ export type SystemStagedResourcesAggregateRecord = {
   locations?: Array<string>;
   domains?: Array<string>;
   consent_status?: ConsentAlertInfo | null;
-  metadata?: IdentityProviderApplicationMetadata | null;
+  metadata?: null;
 };
