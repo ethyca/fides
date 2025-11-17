@@ -120,6 +120,8 @@ const bannerButtonOptions: SelectProps["options"] = [
   },
 ];
 
+const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`;
+
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 
 export const PrivacyExperienceConfigColumnLayout = ({
@@ -381,7 +383,7 @@ export const PrivacyExperienceForm = ({
           layout="stacked"
           tooltip={
             values.component === ComponentType.BANNER_AND_MODAL
-              ? `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`
+              ? GPC_ADAPTIVE_TOOLTIP
               : undefined
           }
         />
