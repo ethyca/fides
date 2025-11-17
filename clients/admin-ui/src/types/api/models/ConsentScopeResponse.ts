@@ -8,5 +8,8 @@ import type { FidesConsentScopes } from "./FidesConsentScopes";
  * Scope information with reserved 'fides' namespace and arbitrary additional fields
  */
 export type ConsentScopeResponse = {
-  fides: FidesConsentScopes;
+  /**
+   * A reserved 'fides' namespace for Fides-defined scope properties.
+   */
+  fides?: FidesConsentScopes | null;
 };

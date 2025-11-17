@@ -4,7 +4,7 @@
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
-import type { IdentityValue } from "./IdentityValue";
+import type { fides__api__schemas__privacy_request__IdentityValue } from "./fides__api__schemas__privacy_request__IdentityValue";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
@@ -28,7 +28,10 @@ export type PrivacyRequestVerboseResponse = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<string, string | IdentityValue | null> | null;
+  identity?: Record<
+    string,
+    string | fides__api__schemas__privacy_request__IdentityValue | null
+  > | null;
   custom_privacy_request_fields?: null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;

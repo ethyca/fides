@@ -5,7 +5,7 @@
 /**
  * Some PII grouping pertaining to a human
  */
-export type Identity = {
+export type fides__api__schemas__redis_cache__Identity = {
   phone_number?: string | null;
   email?: string | null;
   ga_client_id?: string | null;

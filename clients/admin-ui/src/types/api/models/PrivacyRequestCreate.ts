@@ -4,7 +4,7 @@
 
 import type { Consent } from "./Consent";
 import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
-import type { Identity } from "./Identity";
+import type { fides__api__schemas__redis_cache__Identity } from "./fides__api__schemas__redis_cache__Identity";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 
 /**
@@ -15,7 +15,7 @@ export type PrivacyRequestCreate = {
   started_processing_at?: string | null;
   finished_processing_at?: string | null;
   requested_at?: string | null;
-  identity: Identity;
+  identity: fides__api__schemas__redis_cache__Identity;
   consent_request_id?: string | null;
   custom_privacy_request_fields?: Record<
     string,

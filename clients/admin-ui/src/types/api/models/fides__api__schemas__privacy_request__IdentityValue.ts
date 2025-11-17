@@ -13,7 +13,7 @@
  * This allows the schema to accept list values that were previously causing
  * validation errors.
  */
-export type IdentityValue = {
+export type fides__api__schemas__privacy_request__IdentityValue = {
   label: string;
   value?: number | string | null;
 };

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from "./Identity";
+import type { fides__api__schemas__redis_cache__Identity } from "./fides__api__schemas__redis_cache__Identity";
 
 /**
  * Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints.
@@ -14,7 +14,7 @@ export type ConsentReport = {
   has_gpc_flag?: boolean;
   conflicts_with_gpc?: boolean;
   id: string;
-  identity: Identity;
+  identity: fides__api__schemas__redis_cache__Identity;
   created_at: string;
   updated_at: string;
 };

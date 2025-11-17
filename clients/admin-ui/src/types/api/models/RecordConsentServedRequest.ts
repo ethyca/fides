@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from "./Identity";
+import type { fides__api__schemas__redis_cache__Identity } from "./fides__api__schemas__redis_cache__Identity";
 import type { ServingComponent } from "./ServingComponent";
 
 /**
@@ -19,7 +19,7 @@ export type RecordConsentServedRequest = {
   tcf_system_consents?: Array<string>;
   tcf_system_legitimate_interests?: Array<string>;
   privacy_notice_history_ids?: Array<string>;
-  browser_identity: Identity;
+  browser_identity: fides__api__schemas__redis_cache__Identity;
   code?: string | null;
   privacy_experience_id?: string | null;
   privacy_experience_config_history_id?: string | null;

@@ -4,7 +4,7 @@
 
 import type { Consent } from "./Consent";
 import type { ConsentWithExecutableStatus } from "./ConsentWithExecutableStatus";
-import type { Identity } from "./Identity";
+import type { fides__api__schemas__redis_cache__Identity } from "./fides__api__schemas__redis_cache__Identity";
 
 /**
  * Schema for consent preferences including the verification code.
@@ -14,5 +14,5 @@ export type ConsentPreferencesWithVerificationCode = {
   consent: Array<Consent>;
   policy_key?: string | null;
   executable_options?: Array<ConsentWithExecutableStatus> | null;
-  browser_identity?: Identity | null;
+  browser_identity?: fides__api__schemas__redis_cache__Identity | null;
 };
