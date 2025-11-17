@@ -374,7 +374,6 @@ export type { NoticeTranslation } from "./models/NoticeTranslation";
 export type { NoticeTranslationCreate } from "./models/NoticeTranslationCreate";
 export type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export type { NotificationApplicationConfig } from "./models/NotificationApplicationConfig";
-export type { OktaAppMetadata } from "./models/OktaAppMetadata";
 export type { OktaConfig } from "./models/OktaConfig";
 export type { OktaDocsSchema } from "./models/OktaDocsSchema";
 export type { OpenIDProvider } from "./models/OpenIDProvider";
