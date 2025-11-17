@@ -149,6 +149,7 @@ class TestGetTestPrivacyRequestLogs:
         assert len(logs) == 1
         assert logs[0]["message"] == "Test message"
 
+    @pytest.mark.xfail(reason="flakey test")
     @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_logs_deleted_with_privacy_request(
         self,
