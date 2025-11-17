@@ -47,6 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 
 ### Developer Experience
+- Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
 - Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
