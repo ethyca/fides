@@ -22,9 +22,9 @@ export type ResourceError = {
    */
   error_type?: ErrorType;
   /**
-   * The error `diff_status`, which indicates the phase in which the error occurred
+   * Phase where error occurred, i.e. the error diff_status value
    */
-  diff_status: DiffStatus;
+  phase: DiffStatus;
   /**
    * ID of the task that encountered the error
    */

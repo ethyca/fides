@@ -4,14 +4,14 @@ import { useHotkeys } from "react-hotkeys-hook";
 /**
  * Keyboard shortcuts for list navigation and selection
  */
-const LIST_HOTKEYS = {
+export const LIST_HOTKEYS = {
   NAVIGATE_UP: "k",
   NAVIGATE_DOWN: "j",
   TOGGLE_SELECTION: "space",
   CLEAR_FOCUS: "escape",
 } as const;
 
-interface UseListKeyboardNavigationOptions {
+interface UseListHotkeysOptions {
   itemCount: number;
   selectedKeys: React.Key[];
   onToggleSelection?: (key: React.Key, checked: boolean) => void;
@@ -37,41 +37,43 @@ interface UseListKeyboardNavigationOptions {
  * - space: Toggle selection of focused item (only if onToggleSelection is provided)
  * - escape: Clear focus
  */
-export const useListKeyboardNavigation = ({
+export const useListHotkeys = ({
   itemCount,
   selectedKeys,
   onToggleSelection,
   getItemKey,
   listId,
-  enabled,
-}: UseListKeyboardNavigationOptions) => {
-  const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null);
+  enabled = false,
+}: UseListHotkeysOptions) => {
+  const [activeListItemIndex, setActiveListItemIndex] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (focusedItemIndex !== null && focusedItemIndex >= itemCount) {
+    if (activeListItemIndex !== null && activeListItemIndex >= itemCount) {
       // If items are filtered/removed, the focused index could be out of bounds, so we clear it
-      setFocusedItemIndex(null);
+      setActiveListItemIndex(null);
     }
-  }, [itemCount, focusedItemIndex]);
+  }, [itemCount, activeListItemIndex]);
 
   // Scroll focused item into view
   useEffect(() => {
-    if (focusedItemIndex !== null) {
+    if (activeListItemIndex !== null) {
       const element = document.querySelector(
-        `[data-listitem="${listId}-${focusedItemIndex}"]`,
+        `[data-listitem="${listId}-${activeListItemIndex}"]`,
       );
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     }
-  }, [focusedItemIndex, listId]);
+  }, [activeListItemIndex, listId]);
 
   // Navigate up (previous item)
   useHotkeys(
     LIST_HOTKEYS.NAVIGATE_UP,
     () => {
       if (itemCount > 0) {
-        setFocusedItemIndex((prev) =>
+        setActiveListItemIndex((prev) =>
           prev === null ? 0 : Math.max(prev - 1, 0),
         );
       }
@@ -85,7 +87,7 @@ export const useListKeyboardNavigation = ({
     LIST_HOTKEYS.NAVIGATE_DOWN,
     () => {
       if (itemCount > 0) {
-        setFocusedItemIndex((prev) =>
+        setActiveListItemIndex((prev) =>
           prev === null ? 0 : Math.min(prev + 1, itemCount - 1),
         );
       }
@@ -98,7 +100,7 @@ export const useListKeyboardNavigation = ({
   useHotkeys(
     LIST_HOTKEYS.CLEAR_FOCUS,
     () => {
-      setFocusedItemIndex(null);
+      setActiveListItemIndex(null);
     },
     { enabled },
   );
@@ -109,21 +111,27 @@ export const useListKeyboardNavigation = ({
     (e) => {
       if (
         onToggleSelection &&
-        focusedItemIndex !== null &&
-        focusedItemIndex < itemCount
+        activeListItemIndex !== null &&
+        activeListItemIndex < itemCount
       ) {
         e.preventDefault(); // Prevent page scroll
-        const itemKey = getItemKey(focusedItemIndex);
+        const itemKey = getItemKey(activeListItemIndex);
         const isSelected = selectedKeys.includes(itemKey);
         onToggleSelection(itemKey, !isSelected);
       }
     },
     { enabled: enabled && !!onToggleSelection },
-    [focusedItemIndex, itemCount, selectedKeys, getItemKey, onToggleSelection],
+    [
+      activeListItemIndex,
+      itemCount,
+      selectedKeys,
+      getItemKey,
+      onToggleSelection,
+    ],
   );
 
   return {
-    focusedItemIndex,
-    setFocusedItemIndex,
+    activeListItemIndex,
+    setActiveListItemIndex,
   };
 };

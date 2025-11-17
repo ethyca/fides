@@ -4,6 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
@@ -193,6 +194,8 @@ export interface FidesInitOptions {
   fidesUnsupportedRepeatedScriptLoading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  fidesCookieSuffix?: string | null;
 }
 
 /**
@@ -228,6 +231,7 @@ export interface FidesGlobal
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   version: string;
+  aep: typeof aep;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
@@ -872,6 +876,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
+  | "fidesCookieSuffix"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -903,6 +908,7 @@ export enum Layer1ButtonOption {
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
   OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+  GPC_CONDITIONAL = "gpc_conditional", // show acknowledge when GPC is on, opt in/opt out when GPC is off
 }
 
 export enum RejectAllMechanism {

@@ -13,6 +13,7 @@ killed by the system's OOM killer which would result in a WorkerLostError and in
 
 from __future__ import annotations
 
+import gc
 import os
 import signal
 import threading
@@ -21,6 +22,7 @@ from functools import wraps
 from types import FrameType, TracebackType
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
+import objgraph  # type: ignore
 import psutil  # type: ignore
 from loguru import logger
 
@@ -54,6 +56,118 @@ class MemoryLimitExceeded(RuntimeError):
     def __init__(self, message: str, *, memory_percent: Optional[float] = None) -> None:
         super().__init__(message)
         self.memory_percent: Optional[float] = memory_percent
+
+
+def _capture_heap_dump() -> None:
+    """Capture and log actionable heap dump information for memory leak diagnosis.
+
+    This function builds and logs a comprehensive memory profiling report as a single
+    message to help identify memory leaks. It's designed to be called when memory
+    threshold is exceeded, just before task termination.
+
+    The report includes:
+    - Process memory stats (RSS, VMS)
+    - Top 10 object type counts (spot anomalies like 100k of a custom class)
+    - Garbage collector stats (uncollectable objects indicate leaks)
+
+    All exceptions are caught to ensure heap dump failures don't prevent graceful
+    task termination.
+    """
+    try:
+        # Force garbage collection to get accurate counts
+        gc.collect()
+
+        report_lines = [
+            "",  # Leading newline for visual separation
+            "=" * 80,
+            "MEMORY DUMP",
+            "=" * 80,
+            "",
+        ]
+
+        # Section 1: Process Memory Stats
+        try:
+            process = psutil.Process()
+            mem_info = process.memory_info()
+            report_lines.extend(
+                [
+                    "PROCESS MEMORY STATS",
+                    "-" * 80,
+                    f"RSS (Resident Set Size):  {mem_info.rss / 1024 / 1024:.1f} MiB",
+                    f"VMS (Virtual Memory):     {mem_info.vms / 1024 / 1024:.1f} MiB",
+                    "",
+                ]
+            )
+        except Exception as exc:
+            logger.debug("Failed to get process memory stats: {}", exc)
+
+        # Section 2: Object Type Counts (most actionable for finding leaks)
+        type_stats = objgraph.most_common_types(limit=10)
+
+        report_lines.extend(
+            [
+                "OBJECT TYPE COUNTS (Top 10)",
+                "-" * 80,
+            ]
+        )
+
+        if type_stats:
+            max_typename_len = max(len(typename) for typename, _ in type_stats)
+
+            for typename, count in type_stats:
+                # Right-align count for easy scanning
+                report_lines.append(f"{typename:<{max_typename_len}}  {count:>10,}")
+        else:
+            report_lines.append("No object type data available")
+
+        report_lines.append("")
+
+        # Section 3: Garbage Collector Stats
+        gc_count = gc.get_count()
+
+        report_lines.extend(
+            [
+                "GARBAGE COLLECTOR STATS",
+                "-" * 80,
+                f"Collections: gen0={gc_count[0]}, gen1={gc_count[1]}, gen2={gc_count[2]}",
+                f"Tracked objects: {len(gc.get_objects()):,}",
+            ]
+        )
+
+        # Show uncollectable objects (strong indicator of memory leaks)
+        uncollectable = gc.garbage
+        if uncollectable:
+            report_lines.append(
+                f"⚠ UNCOLLECTABLE OBJECTS: {len(uncollectable)} (LEAK DETECTED!)"
+            )
+            # Show types of uncollectable objects
+            uncollectable_types: dict[str, int] = {}
+            for obj in uncollectable[:50]:  # Limit to first 50
+                obj_type = type(obj).__name__
+                uncollectable_types[obj_type] = uncollectable_types.get(obj_type, 0) + 1
+            for obj_type, count in sorted(
+                uncollectable_types.items(), key=lambda x: x[1], reverse=True
+            ):
+                report_lines.append(f"  {obj_type}: {count}")
+        else:
+            report_lines.append("No uncollectable objects detected")
+
+        report_lines.extend(
+            [
+                "",
+                "=" * 80,
+                "END OF MEMORY DUMP",
+                "=" * 80,
+                "",
+            ]
+        )
+
+        # Log the entire report as a single message
+        heap_dump_report = "\n".join(report_lines)
+        logger.error(heap_dump_report)
+
+    except Exception as exc:  # pragma: no cover
+        logger.exception("Failed to capture heap dump: {}", exc)
 
 
 class MemoryWatchdog:
@@ -138,6 +252,10 @@ class MemoryWatchdog:
         """Convert the signal into an exception on the main thread."""
         current_percent = _system_memory_percent()
         logger.error("Memory limit exceeded: {}%", current_percent)
+
+        # Capture heap dump before terminating
+        _capture_heap_dump()
+
         self.stop()
         raise MemoryLimitExceeded(
             "Memory usage exceeded threshold", memory_percent=current_percent

@@ -24,6 +24,8 @@ export const RESOURCE_STATUS = [
   "Confirmed",
   "Removed",
   "Ignored",
+  "Error",
+  "Removing...",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -33,6 +35,7 @@ export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
   "Confirmed",
   "Ignored",
   "Confirming...",
+  "Removing...",
 ];
 
 /**
@@ -48,14 +51,17 @@ export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
     addition: "Unlabeled",
     approved: "Approved",
     classification_addition: "In Review",
+    classification_error: "Error",
     classification_queued: "Classifying",
     classification_update: "In Review",
     classifying: "Classifying",
     monitored: "Confirmed",
     muted: "Ignored",
     promoting: "Confirming...",
+    promotion_error: "Error",
     removal: "Removed",
-    removing: "In Review",
+    removing: "Removing...",
+    removal_promotion_error: "Error",
   } as const;
 
 export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
@@ -71,6 +77,10 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     label: "In Review",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
+  classification_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
   classification_queued: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
   classification_update: {
     label: "In Review",
@@ -80,8 +90,16 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
   promoting: { label: "Confirming...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promotion_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
+  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  removal_promotion_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
 } as const;
 
 // Map resource type to icon

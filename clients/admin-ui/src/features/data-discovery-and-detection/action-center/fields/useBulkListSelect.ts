@@ -1,5 +1,13 @@
+import { AntCheckboxProps as CheckboxProps } from "fidesui";
 import _ from "lodash";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+
+export const BULK_LIST_HOTKEYS = {
+  SELECT_ALL: "h",
+  DESELECT_ALL: "l",
+  TOGGLE_SELECTION: "space",
+} as const;
 
 type SelectMode = "inclusive" | "exclusive";
 
@@ -10,7 +18,15 @@ interface ListItem {
 export const extractListItemKeys = <T extends ListItem>(data: Array<T>) =>
   data.map(({ itemKey }) => itemKey);
 
-export const useBulkListSelect = <T extends ListItem>() => {
+interface UseBulkListSelectOptions<T extends ListItem> {
+  activeListItem?: T | null;
+  enableKeyboardShortcuts?: boolean;
+}
+
+export const useBulkListSelect = <T extends ListItem>(
+  options: UseBulkListSelectOptions<T> = {},
+) => {
+  const { activeListItem = null, enableKeyboardShortcuts = false } = options;
   const [mode, setMode] = useState<SelectMode>("inclusive");
   /** list of items currently in view */
   const [listItems, setListItemsState] = useState<Array<T>>([]);
@@ -61,23 +77,64 @@ export const useBulkListSelect = <T extends ListItem>() => {
   const selectedListItems = mode === "inclusive" ? delta : inverseDelta;
   const excludedListItems = mode === "exclusive" ? delta : inverseDelta;
 
-  return {
-    excludedListItems,
+  // Note: Activation hotkeys (j, k, escape) are handled by CustomList component
+  useHotkeys(
+    BULK_LIST_HOTKEYS.SELECT_ALL,
+    () => {
+      updateListSelectMode("exclusive");
+    },
+    { enabled: enableKeyboardShortcuts },
+  );
+
+  useHotkeys(
+    BULK_LIST_HOTKEYS.DESELECT_ALL,
+    () => {
+      updateListSelectMode("inclusive");
+    },
+    { enabled: enableKeyboardShortcuts },
+  );
+
+  // Space hotkey to toggle selection of focused item
+  // This provides the same functionality as CustomList's built-in space hotkey,
+  // but works with custom checkbox implementations that don't use rowSelection
+  useHotkeys(
+    BULK_LIST_HOTKEYS.TOGGLE_SELECTION,
+    (e) => {
+      if (activeListItem) {
+        e.preventDefault(); // Prevent page scroll
+        const isSelected = selectedListItems.some(
+          (item) => item.itemKey === activeListItem.itemKey,
+        );
+        updateSelectedListItem(activeListItem.itemKey, !isSelected);
+      }
+    },
+    { enabled: enableKeyboardShortcuts },
+    [activeListItem, selectedListItems, updateSelectedListItem],
+  );
+
+  const checkboxProps: CheckboxProps = {
+    checked:
+      mode === "inclusive"
+        ? selectedListItems.length > 0 &&
+          listItems.length === selectedListItems.length
+        : excludedListItems.length === 0,
     indeterminate:
       mode === "inclusive"
         ? selectedListItems.length > 0 &&
           listItems.length !== selectedListItems.length
         : excludedListItems.length > 0,
-    isBulkSelect:
-      mode === "inclusive"
-        ? selectedListItems.length > 0 &&
-          listItems.length === selectedListItems.length
-        : excludedListItems.length === 0,
+    onChange: (e) =>
+      updateListSelectMode(e.target.checked ? "exclusive" : "inclusive"),
+  };
+
+  return {
+    excludedListItems,
     listSelectMode: mode,
     resetListSelect,
     selectedListItems,
     updateListItems: setListItemsState,
     updateListSelectMode,
     updateSelectedListItem,
+    checkboxProps,
   };
 };

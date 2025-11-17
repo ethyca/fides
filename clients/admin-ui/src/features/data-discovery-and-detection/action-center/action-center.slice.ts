@@ -6,10 +6,7 @@ import {
 import {
   ConnectionType,
   ConsentStatus,
-  Database,
-  DatastoreStagedResource,
   DiffStatus,
-  Field,
   MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
@@ -18,7 +15,6 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
-  Table,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
@@ -35,6 +31,7 @@ import {
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
+import { MonitorResource } from "./fields/types";
 import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
@@ -89,7 +86,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           monitorType: getMonitorType(monitor.connection_type),
           isTestMonitor:
             monitor.connection_type === ConnectionType.TEST_WEBSITE ||
-            monitor.connection_type === ConnectionType.FIDES,
+            monitor.connection_type === ConnectionType.TEST_DATASTORE,
         })),
       }),
       providesTags: ["Discovery Monitor Results"],
@@ -389,7 +386,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
     }),
     getStagedResourceDetails: build.query<
-      DatastoreStagedResource | Database | Schema | Table | Field,
+      MonitorResource,
       { stagedResourceUrn: string }
     >({
       query: ({ stagedResourceUrn }) => ({
@@ -547,6 +544,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
+    promoteRemovalStagedResources: build.mutation<
+      PromoteResourcesResponse,
+      BaseStagedResourcesRequest & { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key, ...body }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/promote-removal`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+    }),
   }),
 });
 
@@ -576,4 +584,5 @@ export const {
   useClassifyStagedResourcesMutation,
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
+  usePromoteRemovalStagedResourcesMutation,
 } = actionCenterApi;

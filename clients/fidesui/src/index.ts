@@ -18,6 +18,7 @@ export type {
 export type {
   AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
+  CheckboxProps as AntCheckboxProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
   DrawerProps as AntDrawerProps,
@@ -77,6 +78,7 @@ export {
   Radio as AntRadio,
   Result as AntResult,
   Row as AntRow,
+  Segmented as AntSegmented,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
@@ -99,6 +101,7 @@ export type {
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
+export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
@@ -117,6 +120,8 @@ export type {
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
+export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
+export type { MessageInstance as AntMessageInstance } from "antd/lib/message/interface";
 
 // Export utils
 export * from "./components/data-display/filter.utils";

@@ -2,7 +2,10 @@ import { AntMessage as Message, AntModal as Modal } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
-import { useClassifyStagedResourcesMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useClassifyStagedResourcesMutation,
+  usePromoteRemovalStagedResourcesMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
   useApproveStagedResourcesMutation,
   useMuteResourcesMutation,
@@ -10,26 +13,29 @@ import {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { Field } from "~/types/api";
+import { DiffStatus, Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
 import {
-  AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
   FIELD_ACTION_CONFIRMATION_MESSAGE,
   FIELD_ACTION_INTERMEDIATE,
   FIELD_ACTION_LABEL,
 } from "./FieldActions.const";
-import { ResourceStatusLabel } from "./MonitorFields.const";
 import {
   getActionErrorMessage,
   getActionModalProps,
   getActionSuccessMessage,
 } from "./utils";
 
-export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
-  const [init, ...availableActions] = statusList.map(
-    (status) => AVAILABLE_ACTIONS[status],
+export const getAvailableActions = (statusList: DiffStatus[]) => {
+  const [init, ...availableActions] = statusList.map((status) =>
+    Object.values(FieldActionType).flatMap((actionType) =>
+      ACTION_ALLOWED_STATUSES[actionType].some((s) => s === status)
+        ? [actionType]
+        : [],
+    ),
   );
 
   return availableActions.reduce<Readonly<Array<FieldActionType>>>(
@@ -51,6 +57,7 @@ export const useFieldActions = (
   const [promoteResourcesMutation] = usePromoteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
   const [updateResourcesCategoryMutation] = useUpdateResourceCategoryMutation();
+  const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
 
   const handleAction =
     (
@@ -153,12 +160,22 @@ export const useFieldActions = (
     });
   };
 
+  const handlePromoteRemoval = async (urns: string[]) => {
+    return promoteRemovalMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: urns,
+    });
+  };
+
   return {
     "assign-categories": handleAction(
       FieldActionType.ASSIGN_CATEGORIES,
       handleSetDataCategories,
     ),
-    "promote-removals": () => {},
+    "promote-removals": handleAction(
+      FieldActionType.PROMOTE_REMOVALS,
+      handlePromoteRemoval,
+    ),
     "un-approve": () => {},
     "un-mute": handleAction(FieldActionType.UN_MUTE, handleUnMute),
     approve: handleAction(FieldActionType.APPROVE, handleApprove),
