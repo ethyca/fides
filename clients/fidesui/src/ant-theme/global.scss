@@ -222,3 +222,11 @@ h6 {
     justify-content: center;
   }
 }
+
+.ant-switch {
+  &.ant-switch-checked {
+    &.ant-switch-disabled {
+      opacity: 0.3;
+    }
+  }
+}
