@@ -8,7 +8,6 @@ import type { ConsentStatus } from "./ConsentStatus";
 import type { ConsentStatusDetail } from "./ConsentStatusDetail";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
-import type { IdentityProviderApplicationMetadata } from "./IdentityProviderApplicationMetadata";
 import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
@@ -117,5 +116,5 @@ export type StagedResourceAPIResponse = {
   /**
    * Okta application metadata for identity provider resources (app_type, status, created, sign_on_url, etc.)
    */
-  metadata?: IdentityProviderApplicationMetadata | null;
+  metadata?: null;
 };
