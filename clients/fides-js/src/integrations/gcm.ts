@@ -10,9 +10,23 @@
 import { NoticeConsent } from "../lib/consent-types";
 import { subscribeToConsent } from "./integration-utils";
 
+/**
+ * Google gtag function signature for consent commands
+ */
+type GtagConsentCommand = (
+  command: "consent",
+  action: "update" | "default",
+  params: Record<string, "granted" | "denied">,
+) => void;
+
+/**
+ * General gtag function signature
+ */
+type GtagFunction = GtagConsentCommand & ((...args: unknown[]) => void);
+
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: GtagFunction;
   }
 }
 
