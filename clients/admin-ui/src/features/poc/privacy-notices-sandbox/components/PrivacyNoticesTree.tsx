@@ -19,6 +19,7 @@ interface PrivacyNoticesTreeProps {
   onCheckedKeysChange: (checkedKeys: Key[]) => void;
   cascadeConsent?: boolean;
   cascadeAncestors?: boolean;
+  onExplicitChange?: (key: Key) => void;
 }
 
 interface TreeBuildResult {
@@ -118,6 +119,7 @@ const PrivacyNoticesTree = ({
   onCheckedKeysChange,
   cascadeConsent,
   cascadeAncestors,
+  onExplicitChange,
 }: PrivacyNoticesTreeProps) => {
   // Build tree data and lookup maps in a single pass through the notices
   // Disable children when NOT cascading ancestors (i.e., for DESCENDANTS or NO override modes)
@@ -176,6 +178,11 @@ const PrivacyNoticesTree = ({
       const isChecked = addedKeys.length > 0;
 
       if (toggledKey !== undefined) {
+        // Track the key the user explicitly clicked
+        if (onExplicitChange) {
+          onExplicitChange(toggledKey);
+        }
+
         // Handle descendant cascade (parent -> children)
         if (cascadeConsent && isParentNode(toggledKey)) {
           const descendantKeys = descendantsMap.get(toggledKey) || [];

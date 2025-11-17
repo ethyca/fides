@@ -41,6 +41,8 @@ interface SavePreferencesSectionProps {
   experienceConfigHistoryId: string | null;
   email: string;
   hasCurrentResponse: boolean;
+  explicitlyChangedKeys: Key[];
+  onExplicitlyChangedKeysChange: (keys: Key[]) => void;
 }
 
 const SavePreferencesSection = ({
@@ -52,6 +54,8 @@ const SavePreferencesSection = ({
   experienceConfigHistoryId,
   email,
   hasCurrentResponse,
+  explicitlyChangedKeys,
+  onExplicitlyChangedKeysChange,
 }: SavePreferencesSectionProps) => {
   // Destructure grouped props for easier use
   const {
@@ -106,49 +110,20 @@ const SavePreferencesSection = ({
       return;
     }
 
-    // Apply filtering based on override mode
-    let keysToProcess = changedKeys;
-
-    if (overrideMode === OverrideModeEnum.DESCENDANTS) {
-      // For DESCENDANTS: filter out children when their parent is also changed
-      // Only send parent preferences, the API will cascade to descendants
-      keysToProcess = changedKeys.filter((noticeKey) => {
-        const parentKey = childToParentMap.get(noticeKey);
-        if (parentKey) {
-          // This is a child. Only include it if its parent is NOT in the changed keys
-          return !changedKeys.includes(parentKey);
-        }
-        // This is not a child (it's a parent or standalone), always include it
-        return true;
-      });
-    } else if (overrideMode === OverrideModeEnum.ANCESTORS) {
-      // For ANCESTORS: filter out parents when their child is also changed
-      // Only send child preferences, the API will cascade to ancestors
-      keysToProcess = changedKeys.filter((noticeKey) => {
-        // Check if any of this key's children are in the changed keys
-        const hasChangedChild = changedKeys.some(
-          (key) => childToParentMap.get(key) === noticeKey,
-        );
-        // Include this key only if none of its children are changed
-        return !hasChangedChild;
-      });
-    } else if (overrideMode === OverrideModeEnum.ALL) {
-      // For ALL: send all changed keys, API will handle both directions
-      // Filter based on hierarchy to avoid redundancy
-      keysToProcess = changedKeys.filter((noticeKey) => {
-        const parentKey = childToParentMap.get(noticeKey);
-        // Only include if parent is not also changed (prefer parent changes for efficiency)
-        return !parentKey || !changedKeys.includes(parentKey);
-      });
-    }
+    // Use the explicitly changed keys (the ones the user actually clicked)
+    // Filter to only include keys that are actually in the changed set
+    const keysToSend = explicitlyChangedKeys.filter((key) =>
+      changedKeys.includes(String(key)),
+    );
 
     // Build preferences array with opt_in/opt_out based on current state
-    const preferences: ConsentPreferenceCreate[] = keysToProcess.map(
+    const preferences: ConsentPreferenceCreate[] = keysToSend.map(
       (noticeKey) => {
-        const historyId = noticeKeyToHistoryMap.get(noticeKey) || "";
-        const isChecked = currentSet.has(noticeKey);
+        const noticeKeyStr = String(noticeKey);
+        const historyId = noticeKeyToHistoryMap.get(noticeKeyStr) || "";
+        const isChecked = currentSet.has(noticeKeyStr);
         return {
-          notice_key: noticeKey,
+          notice_key: noticeKeyStr,
           notice_history_id: historyId,
           value: isChecked
             ? UserConsentPreference.OPT_IN
@@ -177,6 +152,8 @@ const SavePreferencesSection = ({
       setPostResponse(response);
       // Update fetched state to current state after successful save
       onFetchedKeysChange(checkedKeys);
+      // Clear explicitly changed keys after successful save
+      onExplicitlyChangedKeysChange([]);
     } catch {
       // Error is handled by RTK Query state
     }
@@ -190,6 +167,8 @@ const SavePreferencesSection = ({
     savePreferences,
     onFetchedKeysChange,
     checkedKeys,
+    explicitlyChangedKeys,
+    onExplicitlyChangedKeysChange,
   ]);
   return (
     <Flex gap="large">
@@ -218,6 +197,15 @@ const SavePreferencesSection = ({
                 overrideMode === OverrideModeEnum.ANCESTORS ||
                 overrideMode === OverrideModeEnum.ALL
               }
+              onExplicitChange={(key) => {
+                // Always track when user clicks a key
+                // Remove the key if it's already there (user is toggling back)
+                // then add it fresh to mark this as the latest action
+                const filteredKeys = explicitlyChangedKeys.filter(
+                  (k) => k !== key,
+                );
+                onExplicitlyChangedKeysChange([...filteredKeys, key]);
+              }}
             />
 
             <Button

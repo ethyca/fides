@@ -31,6 +31,7 @@ const PrivacyNoticeSandboxRealData = () => {
   const [overrideMode, setOverrideMode] = useState<OverrideMode | null>(null);
   const [checkedKeys, setCheckedKeys] = useState<Key[]>([]);
   const [fetchedCheckedKeys, setFetchedCheckedKeys] = useState<Key[]>([]);
+  const [explicitlyChangedKeys, setExplicitlyChangedKeys] = useState<Key[]>([]);
   const [selectedNoticeKeys, setSelectedNoticeKeys] = useState<string[]>([]);
 
   // Experience data
@@ -208,6 +209,8 @@ const PrivacyNoticeSandboxRealData = () => {
       const finalKeys = mergePreferencesWithExisting(optInKeys, response);
       setCheckedKeys(finalKeys);
       setFetchedCheckedKeys(finalKeys);
+      // Clear explicitly changed keys when fetching new preferences
+      setExplicitlyChangedKeys([]);
     } catch (error) {
       // Error handling is done by RTK Query (isError, error props)
     }
@@ -305,6 +308,8 @@ const PrivacyNoticeSandboxRealData = () => {
               experienceConfigHistoryId={experienceConfigHistoryId}
               email={email}
               hasCurrentResponse={getCurrentResponse !== null}
+              explicitlyChangedKeys={explicitlyChangedKeys}
+              onExplicitlyChangedKeysChange={setExplicitlyChangedKeys}
             />
           </div>
         )}
