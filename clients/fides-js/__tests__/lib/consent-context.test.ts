@@ -28,6 +28,16 @@ describe("getConsentContext", () => {
   });
 
   describe("globalPrivacyControl", () => {
+    it("returns undefined when navigator.globalPrivacyControl is not defined", () => {
+      Object.defineProperty(window.navigator, "globalPrivacyControl", {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+      const context = getConsentContext();
+      expect(context.globalPrivacyControl).toBeUndefined();
+    });
+
     it("returns true when navigator.globalPrivacyControl is true", () => {
       Object.defineProperty(window.navigator, "globalPrivacyControl", {
         value: true,
