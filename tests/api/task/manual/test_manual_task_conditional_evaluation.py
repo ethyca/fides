@@ -46,7 +46,7 @@ def city_eq_new_york_conditional_dependency(db, manual_task):
 
 
 @pytest.fixture
-def group_input_conditional_dependency(
+def input_group_conditional_dependency(
     db,
     manual_task,
     email_exists_conditional_dependency,
@@ -71,6 +71,7 @@ def group_input_conditional_dependency(
     ]
     db.commit()
     return dependency
+
 
 @pytest.fixture
 def privacy_request_location_dependency(db, manual_task):
@@ -115,12 +116,13 @@ def privacy_request_policy_id_dependency(db, manual_task, policy):
         },
     )
 
+
 @pytest.fixture
 def privacy_request_group_conditional_dependency(
     db,
     manual_task,
     privacy_request_location_dependency,
-    privacy_request_access_rule_dependency
+    privacy_request_access_rule_dependency,
 ):
     dependency = ManualTaskConditionalDependency.create(
         db=db,
@@ -145,8 +147,8 @@ def privacy_request_group_conditional_dependency(
 def group_conditional_dependency(
     db,
     manual_task,
-    group_input_conditional_dependency,
-    privacy_request_group_conditional_dependency
+    input_group_conditional_dependency,
+    privacy_request_group_conditional_dependency,
 ):
     dependency = ManualTaskConditionalDependency.create(
         db=db,
@@ -157,14 +159,15 @@ def group_conditional_dependency(
             "sort_order": 1,
         },
     )
-    group_input_conditional_dependency.parent = dependency
+    input_group_conditional_dependency.parent = dependency
     privacy_request_group_conditional_dependency.parent = dependency
     dependency.children = [
-        group_input_conditional_dependency,
+        input_group_conditional_dependency,
         privacy_request_group_conditional_dependency,
     ]
     db.commit()
     return dependency
+
 
 class TestManualTaskConditionalDependencies:
     """Test that Manual Tasks only create instances when conditional dependencies are met"""
@@ -181,8 +184,8 @@ class TestManualTaskConditionalDependencies:
                     },
                     "privacy_request": {
                         "location": "New York",
-                        "policy": {"has_access_rule": True}
-                    }
+                        "policy": {"has_access_rule": True},
+                    },
                 },
                 True,
                 id="all_conditions_met",
@@ -195,8 +198,8 @@ class TestManualTaskConditionalDependencies:
                     },
                     "privacy_request": {
                         "location": "New York",
-                        "policy": {"has_access_rule": True}
-                    }
+                        "policy": {"has_access_rule": True},
+                    },
                 },
                 False,
                 id="some_conditions_not_met",
@@ -209,14 +212,26 @@ class TestManualTaskConditionalDependencies:
                     },
                     "privacy_request": {
                         "location": "Los Angeles",
-                        "policy": {"has_access_rule": False}
-                    }
+                        "policy": {"has_access_rule": False},
+                    },
                 },
                 False,
                 id="no_conditions_met",
             ),
         ],
     )
+    def test_evaluate_group_conditional_dependencies(
+        self, db, manual_task, conditional_data, expected_evaluation_result
+    ):
+        result = evaluate_conditional_dependencies(db, manual_task, conditional_data)
+        assert result.result == expected_evaluation_result
+
+    def test_evaluate_group_conditional_dependencies_no_root_condition(
+        self, db, manual_task
+    ):
+        result = evaluate_conditional_dependencies(db, manual_task, {})
+        assert result is None
+
     @pytest.mark.usefixtures("email_exists_conditional_dependency")
     @pytest.mark.parametrize(
         "conditional_data, expected_evaluation_result",
@@ -253,9 +268,13 @@ class TestManualTaskDataExtraction:
 
         self.CollectionAddress = CollectionAddress
 
-    @pytest.mark.usefixtures("email_exists_conditional_dependency")
-    def test_extract_conditional_dependency_data_from_inputs_simple_field(
-        self, manual_task_graph_task, db, manual_task
+    @pytest.mark.usefixtures(
+        "email_exists_conditional_dependency",
+        "privacy_request_location_dependency",
+        "privacy_request_access_rule_dependency",
+    )
+    def test_extract_conditional_dependency_data_from_inputs_and_privacy_request(
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
         # Mock the execution node to have specific input keys
@@ -277,7 +296,54 @@ class TestManualTaskDataExtraction:
             ]
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
+            )
+
+            # Should extract the email field data
+            expected = {
+                "postgres_example_test_dataset": {
+                    "customer": {
+                        "email": "customer-1@example.com"  # First non-None value found
+                    }
+                },
+                "privacy_request": {
+                    "location": None,
+                    "policy": {"has_access_rule": True},
+                },
+            }
+            assert result == expected
+
+    @pytest.mark.usefixtures("email_exists_conditional_dependency")
+    def test_extract_conditional_dependency_data_from_inputs_simple_field(
+        self, manual_task_graph_task, db, manual_task, privacy_request
+    ):
+        """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
+        # Mock the execution node to have specific input keys
+        with patch.object(
+            manual_task_graph_task, "execution_node", autospec=True
+        ) as mock_node:
+            mock_node.input_keys = [
+                self.CollectionAddress.from_string(
+                    "postgres_example_test_dataset:customer"
+                )
+            ]
+
+            # Create test input data
+            inputs = [
+                [
+                    {"id": 1, "email": "customer-1@example.com", "name": "Customer 1"},
+                    {"id": 2, "email": "customer-2@example.com", "name": "Customer 2"},
+                ]
+            ]
+            # Extract the data
+            result = extract_conditional_dependency_data_from_inputs(
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should extract the email field data
@@ -291,7 +357,7 @@ class TestManualTaskDataExtraction:
             assert result == expected
 
     def test_extract_conditional_dependency_data_from_inputs_nested_field(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting nested fields like 'dataset:collection:subcollection:field'"""
         # Mock the execution node to have specific input keys
@@ -324,7 +390,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should extract the nested field data
@@ -337,7 +406,7 @@ class TestManualTaskDataExtraction:
 
     @pytest.mark.usefixtures("email_exists_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_missing_field(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior when the field doesn't exist in input data"""
         # Mock the execution node to have specific input keys
@@ -355,7 +424,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should include the field with None value
@@ -370,7 +442,7 @@ class TestManualTaskDataExtraction:
         "email_exists_conditional_dependency", "city_eq_new_york_conditional_dependency"
     )
     def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting from multiple input collections"""
         # Mock the execution node to have multiple input keys
@@ -394,7 +466,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should extract data from both collections
@@ -408,7 +483,7 @@ class TestManualTaskDataExtraction:
 
     @pytest.mark.usefixtures("email_exists_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_field_address_parsing(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test that FieldAddress.from_string() works correctly"""
         # Mock the execution node to have specific input keys
@@ -426,7 +501,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should correctly parse the field address and extract the data
@@ -439,7 +517,7 @@ class TestManualTaskDataExtraction:
 
     @pytest.mark.usefixtures("email_exists_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_empty_inputs(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior with empty input data"""
         # Mock the execution node to have specific input keys
@@ -457,7 +535,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should handle empty inputs gracefully
@@ -469,7 +550,7 @@ class TestManualTaskDataExtraction:
             assert result == expected
 
     def test_extract_conditional_dependency_data_from_inputs_no_conditional_dependencies(
-        self, manual_task_graph_task, db, manual_task
+        self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior when there are no conditional dependencies"""
         # Mock the execution node to have specific input keys
@@ -489,7 +570,10 @@ class TestManualTaskDataExtraction:
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_task=manual_task, input_keys=mock_node.input_keys
+                *inputs,
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
             )
 
             # Should return empty dict when no conditional dependencies exist

@@ -37,7 +37,9 @@ class PrivacyRequestDataTransformer:
         # Build the data objects just once to avoid multiple calls to the database
         self.policy_data = self._transform_policy_object(privacy_request.policy)
         self.identity_data = privacy_request.get_persisted_identity()
-        self.custom_privacy_request_fields_data = privacy_request.get_persisted_custom_privacy_request_fields()
+        self.custom_privacy_request_fields_data = (
+            privacy_request.get_persisted_custom_privacy_request_fields()
+        )
 
     def to_evaluation_data(self, field_addresses: set[str]) -> dict[str, Any]:
         """

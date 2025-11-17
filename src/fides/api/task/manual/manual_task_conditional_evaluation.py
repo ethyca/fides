@@ -10,14 +10,19 @@ from fides.api.models.manual_task.conditional_dependency import (
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
-from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import PrivacyRequestDataTransformer
+from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
+    PrivacyRequestDataTransformer,
+)
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 from fides.api.util.collection_util import Row
 
 
 def extract_conditional_dependency_data_from_inputs(
-    *inputs: list[Row], manual_task: ManualTask, input_keys: list[CollectionAddress], privacy_request: PrivacyRequest
+    *inputs: list[Row],
+    manual_task: ManualTask,
+    input_keys: list[CollectionAddress],
+    privacy_request: PrivacyRequest,
 ) -> dict[str, Any]:
     """
     Extract data for conditional dependency field addresses from input data.
@@ -40,21 +45,27 @@ def extract_conditional_dependency_data_from_inputs(
     field_addresses = [
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
-        if dependency.field_address and not dependency.field_address.startswith("privacy_request.")
+        if dependency.field_address
+        and not dependency.field_address.startswith("privacy_request.")
     ]
 
     # Get all privacy request conditional dependencies field addresses
     privacy_request_field_addresses = [
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
-        if dependency.field_address and dependency.field_address.startswith("privacy_request.")
+        if dependency.field_address
+        and dependency.field_address.startswith("privacy_request.")
     ]
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
     if privacy_request_field_addresses:
-        privacy_request_data_transformer = PrivacyRequestDataTransformer(privacy_request)
-        conditional_privacy_request_data = privacy_request_data_transformer.to_evaluation_data(
-            privacy_request_field_addresses
+        privacy_request_data_transformer = PrivacyRequestDataTransformer(
+            privacy_request
+        )
+        conditional_privacy_request_data = (
+            privacy_request_data_transformer.to_evaluation_data(
+                privacy_request_field_addresses
+            )
         )
         conditional_data = {**conditional_privacy_request_data}
 
