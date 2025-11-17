@@ -99,7 +99,7 @@ User's current consent string(s) combined into a single value. This is used by
 FidesJS to store IAB consent strings from various frameworks such as TCF, GPP,
 and Google's "Additional Consent" string. Additionally, we support passing a
 Notice Consent string, which is a base64 encoded string of the user's Notice
-Consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Consent preferences. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 The string consists of four parts separated by commas in the format:
 `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
@@ -143,7 +143,7 @@ To always return in the default language only, pass the `disableLocalization` op
 
 | Parameter | Type |
 | ------ | ------ |
-| `options`? | `object` |
+| `options`? | \{ `disableLocalization`: `boolean`; \} |
 | `options.disableLocalization`? | `boolean` |
 
 #### Returns
@@ -264,7 +264,7 @@ See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-mana
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options`? | `object` | Optional configuration for the GTM integration |
+| `options`? | \{ `non_applicable_flag_mode`: `"omit"` \| `"include"`; `flag_type`: `"boolean"` \| `"consent_mechanism"`; \} | Optional configuration for the GTM integration |
 | `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
 | `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
 
@@ -312,7 +312,7 @@ See the [Shopify installation tutorial](/tutorials/consent-management/consent-ma
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options`? | `object` | Optional configuration for the Shopify integration |
+| `options`? | \{ `sale_of_data_default`: `boolean`; \} | Optional configuration for the Shopify integration |
 | `options.sale_of_data_default`? | `boolean` | Controls the default value for Shopify's "sale of data" consent. If `true`, the user will be opted-in by default. If `false` or omitted, the user will be opted-out by default. |
 
 #### Returns
@@ -491,7 +491,7 @@ preferences) or in the case when the previous consent is no longer valid.
 
 > **encodeNoticeConsentString**: (`consent`) => `string`
 
-Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 #### Parameters
 
@@ -516,7 +516,7 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 
 > **decodeNoticeConsentString**: (`base64String`) => `object`
 
-Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 #### Parameters
 
@@ -601,7 +601,7 @@ If both are provided, `fidesString` takes priority.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options` | `object` | Options for updating consent |
+| `options` | \{ `consent`: `Record`\<`string`, `string` \| `boolean`\>; `fidesString`: `string`; `validation`: `"throw"` \| `"warn"` \| `"ignore"`; \} | Options for updating consent |
 | `options.consent`? | `Record`\<`string`, `string` \| `boolean`\> | Object mapping notice keys to consent values: - Boolean values: `true` (opt-in/consent granted) or `false` (opt-out/consent declined) - String values: - `"opt_in"` - user has explicitly opted in to this notice - `"opt_out"` - user has explicitly opted out of this notice - `"acknowledge"` - ONLY valid for notices with "notice_only" consent mechanism |
 | `options.fidesString`? | `string` | A Fides string containing encoded consent preferences |
 | `options.validation`? | `"throw"` \| `"warn"` \| `"ignore"` | Controls validation behavior: "throw" (default), "warn", or "ignore" - "throw": Throws an error if any consent value is invalid (default) - "warn": Logs a warning if any consent value is invalid, but continues processing - "ignore": Silently accepts invalid values without validation |
