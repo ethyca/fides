@@ -1,5 +1,4 @@
 import {
-  AntBadge as Badge,
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
@@ -8,16 +7,12 @@ import {
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  Portal,
-  useDisclosure,
+  Icons,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
-import { DownloadLightIcon } from "~/features/common/Icon";
-import { GlobalFilterV2 } from "~/features/common/table/v2";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
   useSearchPrivacyRequestsQuery,
@@ -28,18 +23,11 @@ import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
-import { PrivacyRequestFiltersModal } from "./PrivacyRequestFiltersModal";
+import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const {
-    filterQueryParams,
-    fuzzySearchTerm,
-    setFuzzySearchTerm,
-    modalFilters,
-    modalFiltersCount,
-    setModalFilters,
-  } = usePrivacyRequestsFilters({
+  const { filterQueryParams, filters, setFilters } = usePrivacyRequestsFilters({
     pagination,
   });
 
@@ -48,13 +36,12 @@ export const PrivacyRequestsDashboard = () => {
 
   const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const { data, isLoading, isFetching } = useSearchPrivacyRequestsQuery({
-    ...filterQueryParams,
-    page: pagination.pageIndex,
-    size: pagination.pageSize,
-  });
+  const { data, isLoading, isFetching, refetch } =
+    useSearchPrivacyRequestsQuery({
+      ...filterQueryParams,
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+    });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -94,41 +81,32 @@ export const PrivacyRequestsDashboard = () => {
 
   return (
     <div>
-      <Flex justify="space-between" align="center" className="my-2">
-        <GlobalFilterV2
-          globalFilter={fuzzySearchTerm}
-          setGlobalFilter={setFuzzySearchTerm}
-          placeholder="Search by request ID or identity value"
-        />
-        <div className="flex items-center gap-2">
-          <BulkActionsDropdown
-            selectedIds={selectedIds}
-            menuItems={bulkActionMenuItems}
-          />
-          <Button data-testid="filter-btn" onClick={onOpen}>
-            Filter
-            <Badge
-              size="small"
-              color={palette.FIDESUI_MINOS}
-              count={modalFiltersCount}
-            />
-          </Button>
-          <Button
-            aria-label="Export report"
-            data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
-            onClick={handleExport}
-          />
-        </div>
-        <Portal>
-          <PrivacyRequestFiltersModal
-            open={isOpen}
-            onClose={onClose}
-            modalFilters={modalFilters}
-            setModalFilters={setModalFilters}
-          />
-        </Portal>
+      {/* First row: Search and Filters */}
+      <Flex gap="small" align="center" className="mb-4">
+        <PrivacyRequestFiltersBar filters={filters} setFilters={setFilters} />
       </Flex>
+
+      {/* Second row: Actions */}
+      <Flex gap="small" align="center" justify="flex-end" className="mb-2">
+        <BulkActionsDropdown
+          selectedIds={selectedIds}
+          menuItems={bulkActionMenuItems}
+          totalResults={totalRows ?? 0}
+        />
+        <Button
+          aria-label="Reload"
+          data-testid="reload-btn"
+          icon={<Icons.Renew />}
+          onClick={() => refetch()}
+        />
+        <Button
+          aria-label="Export report"
+          data-testid="export-btn"
+          icon={<Icons.Download />}
+          onClick={handleExport}
+        />
+      </Flex>
+
       {isLoading ? (
         <div className=" p-2">
           <List
