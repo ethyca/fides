@@ -243,4 +243,3 @@ export const gcm = (options?: Partial<GcmOptions>): GcmIntegration => {
     consent: () => getCurrentGoogleConsent(finalOptions.purposeMapping),
   };
 };
-
