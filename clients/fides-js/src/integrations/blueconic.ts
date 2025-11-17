@@ -1,4 +1,6 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
+import { NoticeConsent } from "../lib/consent-types";
+import { subscribeToConsent } from "./integration-utils";
 
 declare global {
   interface Window {
@@ -23,14 +25,13 @@ const blueConicLoaded = () =>
   typeof window.blueConicClient.event !== "undefined" &&
   typeof window.blueConicClient.event.subscribe !== "undefined";
 
-const configureObjectives = () => {
+const pushConsentToBlueConic = (consent: NoticeConsent) => {
   if (!blueConicLoaded() || !window.blueConicClient?.profile) {
     return;
   }
 
   const profile = window.blueConicClient?.profile?.getProfile();
 
-  const { consent } = window.Fides;
   const hasConsentFlags =
     consent !== undefined && Object.entries(consent).length > 0;
   const optedIn = MARKETING_CONSENT_KEYS.some((key) => consent[key]);
@@ -63,9 +64,13 @@ export const blueconic = (
     throw new Error("Unsupported approach");
   }
 
-  window.addEventListener("FidesReady", configureObjectives);
-  window.addEventListener("FidesUpdated", configureObjectives);
-  window.addEventListener("onBlueConicLoaded", configureObjectives);
+  // Subscribe to Fides consent events using shared helper
+  subscribeToConsent(pushConsentToBlueConic);
 
-  configureObjectives();
+  // Also listen for BlueConic's own load event
+  window.addEventListener("onBlueConicLoaded", () => {
+    if (window.Fides?.consent) {
+      pushConsentToBlueConic(window.Fides.consent);
+    }
+  });
 };
