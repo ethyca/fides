@@ -11,7 +11,7 @@ import {
 import { useCallback, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
-import { MonitorTaskInProgressResponse } from "~/types/api";
+import { MonitorTaskResponse } from "~/types/api";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
@@ -141,7 +141,7 @@ export const InProgressMonitorTasksList = () => {
       <List
         {...listProps}
         className="h-full overflow-scroll"
-        renderItem={(task: MonitorTaskInProgressResponse) => (
+        renderItem={(task: MonitorTaskResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
           </List.Item>

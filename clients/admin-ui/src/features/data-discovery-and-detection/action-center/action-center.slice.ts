@@ -7,9 +7,11 @@ import {
   ConnectionType,
   ConsentStatus,
   DiffStatus,
+  MonitorActionResponse,
   MonitorConfig,
-  MonitorTaskInProgressResponse,
+  MonitorTaskResponse,
   Page_ConsentBreakdown_,
+  Page_MonitorTaskResponse_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
   PromoteResourcesResponse,
@@ -18,7 +20,6 @@ import {
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
-import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
@@ -451,13 +452,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getInProgressMonitorTasks: build.query<
-      {
-        items: MonitorTaskInProgressResponse[];
-        total: number;
-        page: number;
-        pages: number;
-        size: number;
-      },
+      Page_MonitorTaskResponse_,
       SearchQueryParams &
         PaginationQueryParams & {
           task_types?: string[];
@@ -513,18 +508,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Tasks"],
     }),
-    dismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
-      { taskId: string }
-    >({
-      query: ({ taskId }) => ({
-        url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Monitor Tasks"],
-    }),
+    dismissMonitorTask: build.mutation<MonitorTaskResponse, { taskId: string }>(
+      {
+        query: ({ taskId }) => ({
+          url: `/plus/discovery-monitor/tasks/${taskId}/dismissed`,
+          method: "POST",
+        }),
+        invalidatesTags: ["Monitor Tasks"],
+      },
+    ),
     undismissMonitorTask: build.mutation<
-      MonitorTaskInProgressResponse,
+      MonitorTaskResponse,
       { taskId: string }
     >({
       query: ({ taskId }) => ({
@@ -534,7 +528,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Monitor Tasks"],
     }),
     classifyStagedResources: build.mutation<
-      ClassifyResourcesResponse,
+      MonitorActionResponse,
       BaseStagedResourcesRequest & { monitor_config_key: string }
     >({
       query: ({ monitor_config_key, ...body }) => ({

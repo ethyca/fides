@@ -20,7 +20,7 @@ import ConnectionTypeLogo, {
 } from "~/features/datastore-connections/ConnectionTypeLogo";
 import {
   ConnectionType,
-  MonitorTaskInProgressResponse,
+  MonitorTaskResponse,
   MonitorTaskType,
 } from "~/types/api";
 
@@ -43,7 +43,7 @@ const formatStatusForDisplay = (status: string): string => {
 };
 
 interface InProgressMonitorTaskItemProps extends ListItemProps {
-  task: MonitorTaskInProgressResponse;
+  task: MonitorTaskResponse;
 }
 
 export const InProgressMonitorTaskItem = ({
