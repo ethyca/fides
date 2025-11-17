@@ -3,7 +3,6 @@ import { useFeatures } from "common/features";
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntInput as Input,
   AntLayout as Layout,
   AntRow as Row,
   AntSpace as Space,
@@ -12,7 +11,7 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
@@ -20,6 +19,7 @@ import {
   selectPurposes,
   useGetPurposesQuery,
 } from "~/features/common/purpose.slice";
+import SearchInput from "~/features/common/SearchInput";
 import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
@@ -163,13 +163,6 @@ export const TableMigrationPOC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
 
-  const onSearchInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchInput(e.target.value);
-    },
-    [],
-  );
-
   const onSearch = (value: string) => {
     setSearchInput(value);
   };
@@ -289,13 +282,7 @@ export const TableMigrationPOC = () => {
       ) : null}
 
       <Flex justify="space-between" align="center" className="mb-4">
-        <Input.Search
-          placeholder="Search"
-          onSearch={onSearch}
-          style={{ width: 300 }}
-          value={searchInput}
-          onChange={onSearchInputChange}
-        />
+        <SearchInput onChange={onSearch} value={searchInput} />
         <Space size={8}>
           <AddVendor
             buttonLabel="Add vendors"

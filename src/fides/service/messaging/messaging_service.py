@@ -2,12 +2,15 @@ import secrets
 from typing import Optional, Set, Union
 
 from loguru import logger
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
+    MessageDispatchException,
     PolicyNotFoundException,
 )
+from fides.api.models.messaging import MessagingConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -29,13 +32,20 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
-    dispatch_message,
     dispatch_message_task,
+    get_email_messaging_config_service_type,
     message_send_enabled,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.config import FidesConfig, get_config
+from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
+
+
+class MessageDispatchParams(BaseModel):
+    message_meta: Optional[FidesopsMessage]
+    service_type: Optional[str]
+    to_identity: Optional[Identity]
+    property_id: Optional[str]
 
 
 class MessagingService:
@@ -67,15 +77,15 @@ class MessagingService:
 
             dispatch_message_task.apply_async(
                 queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
+                kwargs=MessageDispatchParams(
+                    message_meta=FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                         body_params=None,
-                    ).model_dump(mode="json"),
-                    "service_type": self.config_proxy.notifications.notification_service_type,
-                    "to_identity": to_identity.model_dump(mode="json"),
-                    "property_id": privacy_request.property_id,
-                },
+                    ),
+                    service_type=self.config_proxy.notifications.notification_service_type,
+                    to_identity=to_identity,
+                    property_id=privacy_request.property_id,
+                ).model_dump(mode="json"),
             )
 
     def send_request_denied(
@@ -103,17 +113,17 @@ class MessagingService:
 
             dispatch_message_task.apply_async(
                 queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
+                kwargs=MessageDispatchParams(
+                    message_meta=FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                         body_params=RequestReviewDenyBodyParams(
                             rejection_reason=deny_reason
                         ),
-                    ).model_dump(mode="json"),
-                    "service_type": self.config_proxy.notifications.notification_service_type,
-                    "to_identity": to_identity.model_dump(mode="json"),
-                    "property_id": privacy_request.property_id,
-                },
+                    ),
+                    service_type=self.config_proxy.notifications.notification_service_type,
+                    to_identity=to_identity,
+                    property_id=privacy_request.property_id,
+                ).model_dump(mode="json"),
             )
 
     def send_verification_code(
@@ -131,19 +141,37 @@ class MessagingService:
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             self.config_proxy.execution.subject_identity_verification_required,
         ):
+            # Note: Fallback to email messaging config is only used for ConsentRequests
+            service_type = (
+                self.config_proxy.notifications.notification_service_type
+                or get_email_messaging_config_service_type(db=self.db)
+            )
+            if not service_type:
+                raise MessageDispatchException(
+                    "No notification service type configured."
+                )
+
+            # For PrivacyRequest, validate the config exists before dispatching
+            if isinstance(request, PrivacyRequest):
+                MessagingConfig.get_configuration(db=self.db, service_type=service_type)
+
             verification_code = _generate_id_verification_code()
             request.cache_identity_verification_code(verification_code)
 
-            dispatch_message(
-                self.db,
-                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-                to_identity=to_identity,
-                service_type=self.config_proxy.notifications.notification_service_type,
-                message_body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code=verification_code,
-                    verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
-                ),
-                property_id=property_id,
+            dispatch_message_task.apply_async(
+                queue=MESSAGING_QUEUE_NAME,
+                kwargs=MessageDispatchParams(
+                    message_meta=FidesopsMessage(
+                        action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                        body_params=SubjectIdentityVerificationBodyParams(
+                            verification_code=verification_code,
+                            verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
+                        ),
+                    ),
+                    service_type=service_type,
+                    to_identity=to_identity,
+                    property_id=property_id,
+                ).model_dump(mode="json"),
             )
 
         return verification_code
@@ -185,17 +213,17 @@ class MessagingService:
 
             dispatch_message_task.apply_async(
                 queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
+                kwargs=MessageDispatchParams(
+                    message_meta=FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                         body_params=RequestReceiptBodyParams(
                             request_types=request_types_list
                         ),
-                    ).model_dump(mode="json"),
-                    "service_type": self.config.notifications.notification_service_type,
-                    "to_identity": identity.labeled_dict(),
-                    "property_id": privacy_request.property_id,
-                },
+                    ),
+                    service_type=self.config.notifications.notification_service_type,
+                    to_identity=identity,
+                    property_id=privacy_request.property_id,
+                ).model_dump(mode="json"),
             )
 
 
@@ -229,50 +257,23 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
         for email in privacy_request_notifications[0].email.split(EMAIL_JOIN_STRING):
             dispatch_message_task.apply_async(
                 queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
+                kwargs=MessageDispatchParams(
+                    message_meta=FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
                         body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
-                    ).model_dump(mode="json"),
-                    "service_type": config_proxy.notifications.notification_service_type,
-                    "to_identity": {"email": email},
-                    "property_id": None,
-                },
+                    ),
+                    service_type=config_proxy.notifications.notification_service_type,
+                    to_identity=Identity(email=email),
+                    property_id=None,
+                ).model_dump(mode="json"),
             )
 
         for error in unsent_errors:
             error.update(db=db, data={"message_sent": True})
 
     return None
-
-
-def send_verification_code_to_user(
-    db: Session,
-    request: Union[ConsentRequest, PrivacyRequest],
-    to_identity: Optional[Identity],
-    property_id: Optional[str],
-) -> str:
-    """Generate and cache a verification code, and then message the user"""
-    config = get_config()
-    config_proxy = ConfigProxy(db)
-    verification_code = _generate_id_verification_code()
-    request.cache_identity_verification_code(verification_code)
-    messaging_action_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
-    dispatch_message(
-        db,
-        action_type=messaging_action_type,
-        to_identity=to_identity,
-        service_type=config_proxy.notifications.notification_service_type,
-        message_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
-        property_id=property_id,
-    )
-
-    return verification_code
 
 
 def send_privacy_request_receipt_message_to_user(
@@ -305,13 +306,13 @@ def send_privacy_request_receipt_message_to_user(
 
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
-        kwargs={
-            "message_meta": FidesopsMessage(
+        kwargs=MessageDispatchParams(
+            message_meta=FidesopsMessage(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types_list),
-            ).model_dump(mode="json"),
-            "service_type": service_type,
-            "to_identity": to_identity.labeled_dict(),
-            "property_id": property_id,
-        },
+            ),
+            service_type=service_type,
+            to_identity=to_identity,
+            property_id=property_id,
+        ).model_dump(mode="json"),
     )

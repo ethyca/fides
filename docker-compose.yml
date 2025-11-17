@@ -120,7 +120,7 @@ services:
 
   worker-other:
     image: ethyca/fides:local
-    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
+    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
       redis:
         condition: service_started
@@ -144,7 +144,7 @@ services:
 
   worker-privacy-preferences:
     image: ethyca/fides:local
-    command: fides worker --queues=fides.privacy_preferences
+    command: fides worker --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
     depends_on:
       redis:
         condition: service_started
