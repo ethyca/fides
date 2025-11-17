@@ -90,11 +90,6 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-<<<<<<< HEAD
-    clearSelectedIds,
-=======
-    messageApi,
->>>>>>> main
     modalApi,
   });
 
