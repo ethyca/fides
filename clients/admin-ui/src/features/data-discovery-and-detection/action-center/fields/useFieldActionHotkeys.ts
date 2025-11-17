@@ -36,6 +36,7 @@ type ActiveListItem =
  * @param updateSelectedListItem - Function to update the selected list item
  * @param onNavigate - Function to handle navigation to field details
  * @param isDrawerOpen - Whether the details drawer is currently open
+ * @param onRefresh - Function to handle refreshing the list
  */
 export const useFieldActionHotkeys = (
   activeListItem: ActiveListItem | undefined,
@@ -43,6 +44,7 @@ export const useFieldActionHotkeys = (
   updateSelectedListItem: (itemKey: React.Key, selected: boolean) => void,
   onNavigate: (urn: string | undefined) => void,
   isDrawerOpen: boolean,
+  onRefresh: () => void,
 ) => {
   const messageApi = useMessage();
   // Helper to open a category select dropdown programmatically
@@ -129,11 +131,7 @@ export const useFieldActionHotkeys = (
     [activeListItem, fieldActions],
   );
 
-  useHotkeys(
-    FIELD_ACTION_HOTKEYS.UN_MUTE,
-    () => handleHotkeyAction(FieldActionType.UN_MUTE),
-    [activeListItem, fieldActions],
-  );
+  useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [onRefresh]);
 
   useHotkeys(
     FIELD_ACTION_HOTKEYS.TOGGLE_DRAWER,

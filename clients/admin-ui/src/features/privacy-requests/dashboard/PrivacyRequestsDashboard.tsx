@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
   AntModal as modal,
@@ -9,7 +10,7 @@ import {
   Icons,
   useMessage,
 } from "fidesui";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
@@ -34,8 +35,6 @@ export const PrivacyRequestsDashboard = () => {
   const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
-  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
       ...filterQueryParams,
@@ -52,6 +51,23 @@ export const PrivacyRequestsDashboard = () => {
 
     return { ...results, items: itemsWithKeys };
   }, [data]);
+
+  const {
+    selectedIds,
+    setSelectedIds,
+    clearSelectedIds,
+    checkboxSelectState,
+    handleSelectAll,
+  } = useSelection({
+    currentPageKeys: requests.map((request) => request.id),
+  });
+
+  // Clear selections when requests change
+  // Once we have full support for select all, we can reset this only on filter changes and add a
+  // manual clear selection after a bulk action is performed
+  useEffect(() => {
+    clearSelectedIds();
+  }, [requests, clearSelectedIds]);
 
   const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
@@ -74,7 +90,11 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
+<<<<<<< HEAD
     clearSelectedIds,
+=======
+    messageApi,
+>>>>>>> main
     modalApi,
   });
 
@@ -86,28 +106,41 @@ export const PrivacyRequestsDashboard = () => {
       </Flex>
 
       {/* Second row: Actions */}
-      <Flex gap="small" align="center" justify="flex-end" className="mb-2">
-        <BulkActionsDropdown
-          selectedIds={selectedIds}
-          menuItems={bulkActionMenuItems}
-          totalResults={totalRows ?? 0}
-        />
-        <Button
-          aria-label="Reload"
-          data-testid="reload-btn"
-          icon={<Icons.Renew />}
-          onClick={() => refetch()}
-        />
-        <Button
-          aria-label="Export report"
-          data-testid="export-btn"
-          icon={<Icons.Download />}
-          onClick={handleExport}
-        />
+      <Flex gap="small" align="center" justify="space-between" className="mb-2">
+        <Flex align="center" gap="small">
+          <Checkbox
+            id="select-all"
+            checked={checkboxSelectState === "checked"}
+            indeterminate={checkboxSelectState === "indeterminate"}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+          />
+          <label htmlFor="select-all" className="cursor-pointer">
+            Select all
+          </label>
+        </Flex>
+        <Flex align="center" gap="small">
+          <BulkActionsDropdown
+            selectedIds={selectedIds}
+            menuItems={bulkActionMenuItems}
+            totalResults={totalRows ?? 0}
+          />
+          <Button
+            aria-label="Reload"
+            data-testid="reload-btn"
+            icon={<Icons.Renew />}
+            onClick={() => refetch()}
+          />
+          <Button
+            aria-label="Export report"
+            data-testid="export-btn"
+            icon={<Icons.Download />}
+            onClick={handleExport}
+          />
+        </Flex>
       </Flex>
 
       {isLoading ? (
-        <div className=" p-2">
+        <div className="p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (

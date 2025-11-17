@@ -2,7 +2,10 @@ import { AntModal as Modal, useMessage } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
-import { useClassifyStagedResourcesMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useClassifyStagedResourcesMutation,
+  usePromoteRemovalStagedResourcesMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
   useApproveStagedResourcesMutation,
   useMuteResourcesMutation,
@@ -53,6 +56,7 @@ export const useFieldActions = (
   const [promoteResourcesMutation] = usePromoteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
   const [updateResourcesCategoryMutation] = useUpdateResourceCategoryMutation();
+  const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
 
   const messageApi = useMessage();
 
@@ -157,12 +161,22 @@ export const useFieldActions = (
     });
   };
 
+  const handlePromoteRemoval = async (urns: string[]) => {
+    return promoteRemovalMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: urns,
+    });
+  };
+
   return {
     "assign-categories": handleAction(
       FieldActionType.ASSIGN_CATEGORIES,
       handleSetDataCategories,
     ),
-    "promote-removals": () => {},
+    "promote-removals": handleAction(
+      FieldActionType.PROMOTE_REMOVALS,
+      handlePromoteRemoval,
+    ),
     "un-approve": () => {},
     "un-mute": handleAction(FieldActionType.UN_MUTE, handleUnMute),
     approve: handleAction(FieldActionType.APPROVE, handleApprove),

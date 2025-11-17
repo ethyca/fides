@@ -27,9 +27,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
 - Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
 - Added GPC conditional button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
+- Added select all checkbox to new request manager screen [#6954](https://github.com/ethyca/fides/pull/6954)
 - Added default identity definitions [#6952](https://github.com/ethyca/fides/pull/6952)
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
 - Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
+- Added support for removals in the action center [#6941](https://github.com/ethyca/fides/pull/6941)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
@@ -47,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
+- Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
 
 ### Fixed
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)

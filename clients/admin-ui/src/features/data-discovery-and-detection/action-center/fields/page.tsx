@@ -39,6 +39,7 @@ import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/Datastore
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
+  DEFAULT_DRAWER_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
   FIELD_ACTION_ICON,
@@ -126,6 +127,9 @@ const ActionCenterFields: NextPage = () => {
   const [activeListItem, setActiveListItem] = useState<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >();
+  const [setActiveListItemIndex, setSetActiveListItemIndex] = useState<
+    ((index: number | null) => void) | null
+  >(null);
   const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
     useLazyGetStagedResourceDetailsQuery();
 
@@ -161,6 +165,21 @@ const ActionCenterFields: NextPage = () => {
   >({ activeListItem, enableKeyboardShortcuts: true });
 
   const handleNavigate = async (urn: string | undefined) => {
+    if (
+      activeListItem?.urn &&
+      urn &&
+      setActiveListItemIndex &&
+      fieldsDataResponse?.items
+    ) {
+      // When navigating via mouse click after using the keyboard,
+      // update the active item to match the clicked item
+      const itemIndex = fieldsDataResponse.items.findIndex(
+        (item) => item.urn === urn,
+      );
+      if (itemIndex !== -1) {
+        setActiveListItemIndex(itemIndex);
+      }
+    }
     setDetailsUrn(urn);
   };
 
@@ -243,6 +262,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
     handleNavigate,
     !!detailsUrn,
+    () => refetch(),
   );
 
   return (
@@ -443,7 +463,14 @@ const ActionCenterFields: NextPage = () => {
               }
               onActiveItemChange={useCallback(
                 // useCallback prevents infinite re-renders
-                (item: DatastoreStagedResourceAPIResponse | null) => {
+                (
+                  item: DatastoreStagedResourceAPIResponse | null,
+                  _activeListItemIndex: number | null,
+                  setActiveIndexFn: (index: number | null) => void,
+                ) => {
+                  // Store the setter function so handleNavigate can use it
+                  setSetActiveListItemIndex(() => setActiveIndexFn);
+
                   if (item?.urn) {
                     setActiveListItem({
                       ...item,
@@ -476,7 +503,7 @@ const ActionCenterFields: NextPage = () => {
                       )
                     : true,
                   actions: props?.diff_status
-                    ? LIST_ITEM_ACTIONS.map((action) => (
+                    ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
                         <Tooltip
                           key={action}
                           title={FIELD_ACTION_LABEL[action]}
@@ -536,7 +563,10 @@ const ActionCenterFields: NextPage = () => {
                 .label
             : null,
         }}
-        actions={DRAWER_ACTIONS.map((action) => ({
+        actions={(resource?.diff_status
+          ? DRAWER_ACTIONS[resource.diff_status]
+          : DEFAULT_DRAWER_ACTIONS
+        ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
@@ -549,6 +579,7 @@ const ActionCenterFields: NextPage = () => {
         onClose={() => setDetailsUrn(undefined)}
         resource={resource}
         fieldActions={fieldActions}
+        mask={!activeListItem}
       />
       <HotkeysHelperModal
         open={hotkeysHelperModalOpen}
