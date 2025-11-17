@@ -34,12 +34,12 @@ export default function middleware(request: NextRequest) {
     },
   });
 
-  configureResponseSecurityHeaders(
-    settings,
+  configureResponseSecurityHeaders({
     request,
     response,
     internalResponseHeaders,
-  );
+    settings,
+  });
 
   return response;
 }

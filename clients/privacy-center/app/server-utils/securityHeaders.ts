@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { PrivacyCenterSettings } from "./PrivacyCenterSettings";
 
-const CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+export const CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+
+type CspPrivacyCenterSettings = Pick<
+  PrivacyCenterSettings,
+  "FIDES_API_URL" | "GEOLOCATION_API_URL"
+>;
+
+type SecurityHeaderPrivacyCenterSettings = Pick<
+  PrivacyCenterSettings,
+  "SECURITY_HEADERS_MODE"
+>;
 
 function getCspHeader(
   nonce: string,
   isDev: boolean,
-  settings: PrivacyCenterSettings,
+  settings: CspPrivacyCenterSettings,
 ) {
   let fidesApiUrlHost = "";
   let fidesGeolocationApiUrlHost = "";
@@ -50,7 +60,7 @@ function getCspHeader(
 }
 
 export function configureSecurityHeaderContext(
-  settings: PrivacyCenterSettings,
+  settings: CspPrivacyCenterSettings & SecurityHeaderPrivacyCenterSettings,
   internalResponseHeaders: Headers,
 ) {
   if (settings.SECURITY_HEADERS_MODE) {
@@ -70,17 +80,26 @@ export function configureSecurityHeaderContext(
   }
 }
 
-export function configureResponseSecurityHeaders(
-  settings: PrivacyCenterSettings,
-  request: NextRequest,
-  response: NextResponse<unknown>,
-  internalResponseHeaders: Headers,
-) {
-  if (settings.SECURITY_HEADERS_MODE) {
-    // Recommended matcher: https://nextjs.org/docs/15/pages/guides/content-security-policy#adding-a-nonce-with-middleware
-    const includePaths = /\/((?!api|_next\/static|_next\/image|favicon.ico).*)/;
-    const isIncludedPath = includePaths.test(request.nextUrl.pathname);
+function checkIncludedPath(pathname: string) {
+  const includePaths = /\/((?!api|_next\/static|_next\/image|favicon\.ico).*)/;
+  const matchedContent = includePaths.exec(pathname);
+  const isIncludedPath =
+    ((matchedContent ?? [])[0]?.length ?? 0) === pathname.length;
+  return isIncludedPath;
+}
 
+export function configureResponseSecurityHeaders({
+  settings,
+  request,
+  response,
+  internalResponseHeaders,
+}: {
+  settings: Pick<PrivacyCenterSettings, "SECURITY_HEADERS_MODE">;
+  request: NextRequest;
+  response: NextResponse<unknown>;
+  internalResponseHeaders: Headers;
+}) {
+  if (settings.SECURITY_HEADERS_MODE === "recommended") {
     response.headers.set("x-Frame-Options", "deny");
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set(
@@ -92,6 +111,9 @@ export function configureResponseSecurityHeaders(
       CONTENT_SECURITY_POLICY_HEADER,
     );
 
+    // Recommended matcher: https://nextjs.org/docs/15/pages/guides/content-security-policy#adding-a-nonce-with-middleware
+    const { pathname } = request.nextUrl;
+    const isIncludedPath = checkIncludedPath(pathname);
     if (isIncludedPath && consentSecurityPolicy) {
       response.headers.set(
         CONTENT_SECURITY_POLICY_HEADER,
