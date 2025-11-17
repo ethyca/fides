@@ -133,7 +133,7 @@ export const useInProgressMonitorTasksList = () => {
 
     paginationProps: {
       ...paginationProps,
-      total: data?.total,
+      total: data?.total || undefined,
     },
 
     // Loading states
