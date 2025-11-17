@@ -29,7 +29,6 @@ export interface PreferenceState {
 
 export interface NoticeMappings {
   noticeKeyToHistoryMap: Map<string, string>;
-  childToParentMap: Map<string, string>;
 }
 
 interface SavePreferencesSectionProps {
@@ -64,7 +63,7 @@ const SavePreferencesSection = ({
     onCheckedKeysChange,
     onFetchedKeysChange,
   } = preferenceState;
-  const { noticeKeyToHistoryMap, childToParentMap } = noticeMappings;
+  const { noticeKeyToHistoryMap } = noticeMappings;
   // Local state for POST response
   const [postResponse, setPostResponse] = useState<ConsentResponse | null>(
     null,
@@ -161,7 +160,6 @@ const SavePreferencesSection = ({
     createKeySets,
     noticeKeyToHistoryMap,
     overrideMode,
-    childToParentMap,
     experienceConfigHistoryId,
     email,
     savePreferences,

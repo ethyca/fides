@@ -220,6 +220,7 @@ const PrivacyNoticesTree = ({
       isParentNode,
       descendantsMap,
       ancestorsMap,
+      onExplicitChange,
     ],
   );
 

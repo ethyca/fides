@@ -303,7 +303,6 @@ const PrivacyNoticeSandboxRealData = () => {
               }}
               noticeMappings={{
                 noticeKeyToHistoryMap,
-                childToParentMap,
               }}
               experienceConfigHistoryId={experienceConfigHistoryId}
               email={email}
