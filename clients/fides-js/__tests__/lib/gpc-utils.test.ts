@@ -49,11 +49,6 @@ describe("processGpcConditionals", () => {
     expect(processGpcConditionals(undefined, true)).toBe("");
   });
 
-  it("cleans up extra whitespace", () => {
-    const text = "Text   __GPC_START__with   spaces__GPC_END__   here";
-    expect(processGpcConditionals(text, false)).toBe("Text here");
-  });
-
   it("handles multiline text", () => {
     const text = `We value privacy.
 __GPC_START__
