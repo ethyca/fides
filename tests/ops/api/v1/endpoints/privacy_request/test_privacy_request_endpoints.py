@@ -13,6 +13,7 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
+from freezegun import freeze_time
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
@@ -2366,19 +2367,20 @@ class TestGetPrivacyRequests:
         "due_date, days_left",
         [
             (
-                datetime.utcnow() + timedelta(days=7),
+                datetime(2025, 11, 17, 12, 0, 0) + timedelta(days=7),
                 7,
             ),
             (
-                datetime.utcnow(),
+                datetime(2025, 11, 17, 12, 0, 0),
                 0,
             ),
             (
-                datetime.utcnow() + timedelta(days=-7),
+                datetime(2025, 11, 17, 12, 0, 0) + timedelta(days=-7),
                 -7,
             ),
         ],
     )
+    @freeze_time("2025-11-17 12:00:00")
     def test_get_privacy_requests_sets_days_left(
         self,
         api_client: TestClient,
@@ -3529,19 +3531,20 @@ class TestPrivacyRequestSearch:
         "due_date, days_left",
         [
             (
-                datetime.utcnow() + timedelta(days=7),
+                datetime(2025, 11, 17, 12, 0, 0) + timedelta(days=7),
                 7,
             ),
             (
-                datetime.utcnow(),
+                datetime(2025, 11, 17, 12, 0, 0),
                 0,
             ),
             (
-                datetime.utcnow() + timedelta(days=-7),
+                datetime(2025, 11, 17, 12, 0, 0) + timedelta(days=-7),
                 -7,
             ),
         ],
     )
+    @freeze_time("2025-11-17 12:00:00")
     def test_privacy_request_search_sets_days_left(
         self,
         api_client: TestClient,
