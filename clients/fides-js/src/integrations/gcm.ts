@@ -230,7 +230,10 @@ const getCurrentGoogleConsent = (
  */
 export const gcm = (options?: Partial<GcmOptions>): GcmIntegration => {
   const finalOptions: GcmOptions = {
-    purposeMapping: options?.purposeMapping || DEFAULT_CONSENT_MAPPING,
+    purposeMapping:
+      options?.purposeMapping && Object.keys(options.purposeMapping).length > 0
+        ? options.purposeMapping
+        : DEFAULT_CONSENT_MAPPING,
   };
 
   // Subscribe to Fides consent events
