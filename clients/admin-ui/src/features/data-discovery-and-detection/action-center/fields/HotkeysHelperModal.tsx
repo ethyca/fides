@@ -6,6 +6,8 @@ import {
   LIST_HOTKEYS,
 } from "fidesui";
 
+import { SEARCH_INPUT_HOTKEY } from "~/features/common/SearchInput";
+
 import { FIELD_ACTION_HOTKEYS } from "./FieldActions.const";
 import { BULK_LIST_HOTKEYS } from "./useBulkListSelect";
 
@@ -122,8 +124,19 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
             children: "Edit data categories for the active field",
           },
           {
+            key: SEARCH_INPUT_HOTKEY,
+            label: <Typography.Text keyboard>/</Typography.Text>,
+            children: "Focus the search input",
+          },
+          {
             key: "?",
-            label: <Typography.Text keyboard>?</Typography.Text>,
+            label: (
+              <div className="whitespace-nowrap">
+                <Typography.Text keyboard>?</Typography.Text> (
+                <Typography.Text keyboard>shift</Typography.Text>+
+                <Typography.Text keyboard>/</Typography.Text>)
+              </div>
+            ),
             children: "Open/close this modal",
           },
         ]}

@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntDropdown as Dropdown,
+  AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
   AntModal as modal,
@@ -12,7 +13,9 @@ import {
   AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
+import _ from "lodash";
 import { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useCallback, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -20,7 +23,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useSearch } from "~/features/common/hooks";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
+import {
+  ACTION_CENTER_ROUTE,
+  DATASET_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import {
@@ -47,6 +53,7 @@ import {
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  EXCLUDED_FILTER_STATUSES,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
   ResourceStatusLabel,
@@ -143,14 +150,12 @@ const ActionCenterFields: NextPage = () => {
   );
   const {
     excludedListItems,
-    indeterminate,
-    isBulkSelect,
     listSelectMode,
     resetListSelect,
     selectedListItems,
     updateListItems,
-    updateListSelectMode,
     updateSelectedListItem,
+    checkboxProps,
   } = useBulkListSelect<
     DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
   >({ activeListItem, enableKeyboardShortcuts: true });
@@ -160,7 +165,7 @@ const ActionCenterFields: NextPage = () => {
   };
 
   const onActionDropdownOpenChange = (open: boolean) => {
-    if (open && isBulkSelect) {
+    if (open && listSelectMode === "exclusive") {
       allowedActionsTrigger({
         ...baseMonitorFilters,
         query: {
@@ -182,13 +187,14 @@ const ActionCenterFields: NextPage = () => {
     [hotkeysHelperModalOpen],
   );
 
-  const availableActions = isBulkSelect
-    ? allowedActionsResult?.allowed_actions
-    : getAvailableActions(
-        selectedListItems.flatMap(({ diff_status }) =>
-          diff_status ? [diff_status] : [],
-        ),
-      );
+  const availableActions =
+    listSelectMode === "exclusive"
+      ? allowedActionsResult?.allowed_actions
+      : getAvailableActions(
+          selectedListItems.flatMap(({ diff_status }) =>
+            diff_status ? [diff_status] : [],
+          ),
+        );
   const responseCount = fieldsDataResponse?.total ?? 0;
   const selectedListItemCount =
     listSelectMode === "exclusive" && fieldsDataResponse?.total
@@ -333,7 +339,7 @@ const ActionCenterFields: NextPage = () => {
                           isFetchingAllowedActions ||
                           !availableActions?.includes(actionType),
                         onClick: async () => {
-                          if (isBulkSelect) {
+                          if (listSelectMode === "exclusive") {
                             await bulkActions[actionType](
                               baseMonitorFilters,
                               excludedListItems.map((k) =>
@@ -375,16 +381,7 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex gap="middle" align="center">
-              <Checkbox
-                id="select-all"
-                checked={isBulkSelect}
-                indeterminate={indeterminate}
-                onChange={(e) =>
-                  updateListSelectMode(
-                    e.target.checked ? "exclusive" : "inclusive",
-                  )
-                }
-              />
+              <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
               {!!selectedListItemCount && (
                 <Text strong>
@@ -397,6 +394,53 @@ const ActionCenterFields: NextPage = () => {
               className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
               loading={isFetching}
               enableKeyboardShortcuts
+              locale={
+                !search.searchProps.value &&
+                _(resourceStatus)
+                  .intersection(EXCLUDED_FILTER_STATUSES)
+                  .isEmpty()
+                  ? {
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <>
+                              <div>All resources have been confirmed.</div>
+                              <div>
+                                {`You'll now find this data in Managed Datasets
+                                view.`}
+                              </div>
+                              <div>
+                                {`To see confirmed or ignored resources, adjust
+                                your filters`}
+                              </div>
+                            </>
+                          }
+                        >
+                          <Flex gap="middle" justify="center">
+                            <NextLink
+                              href={DATASET_ROUTE}
+                              passHref
+                              legacyBehavior
+                            >
+                              <Button>Manage datasets view</Button>
+                            </NextLink>
+                            <Button
+                              type="primary"
+                              aria-label="Refresh page"
+                              onClick={() => {
+                                restMonitorFieldsFilters.resetToInitialState();
+                                router.reload();
+                              }}
+                            >
+                              Refresh page
+                            </Button>
+                          </Flex>
+                        </Empty>
+                      ),
+                    }
+                  : undefined
+              }
               onActiveItemChange={useCallback(
                 // useCallback prevents infinite re-renders
                 (item: DatastoreStagedResourceAPIResponse | null) => {
