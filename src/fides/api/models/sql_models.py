@@ -398,9 +398,7 @@ class DataUse(Base, FidesBase):
             and data["fides_key"] != self.fides_key
         ):
             existing_by_key = (
-                db.query(DataUse)
-                .filter(DataUse.fides_key == data["fides_key"])
-                .first()
+                db.query(DataUse).filter(DataUse.fides_key == data["fides_key"]).first()
             )
             if existing_by_key:
                 raise KeyOrNameAlreadyExists(
