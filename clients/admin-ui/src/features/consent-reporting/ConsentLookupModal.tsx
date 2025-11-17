@@ -1,8 +1,9 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   AntEmpty as Empty,
   AntForm as Form,
-  AntInput as Input,
+  AntSpace as Space,
   AntTypography as Typography,
   Modal,
   ModalBody,
@@ -21,6 +22,7 @@ import {
 } from "~/types/api";
 
 import { getErrorMessage } from "../common/helpers";
+import SearchInput from "../common/SearchInput";
 import { FidesTableV2 } from "../common/table/v2";
 import { useLazyGetCurrentPrivacyPreferencesQuery } from "./consent-reporting.slice";
 import useConsentLookupTableColumns from "./hooks/useConsentLookupTableColumns";
@@ -38,6 +40,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const [searchResults, setSearchResults] = useState<
     PreferencesSavedExtended | undefined | null
   >();
+  const [searchQuery, setSearchQuery] = useState("");
   const [getCurrentPrivacyPreferencesTrigger] =
     useLazyGetCurrentPrivacyPreferencesQuery();
 
@@ -126,13 +129,22 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
 
           <Form layout="vertical" className="w-1/2">
             <Form.Item label="Subject search" className="mb-4 mt-6">
-              <Input.Search
-                data-testid="subject-search-input"
-                placeholder="Enter email, phone number, external ID or device ID"
-                enterButton="Search"
-                onSearch={handleSearch}
-                loading={isSearching}
-              />
+              <Space.Compact className="w-full">
+                <SearchInput
+                  data-testid="subject-search-input"
+                  placeholder="Enter email, phone number, external ID or device ID"
+                  onChange={setSearchQuery}
+                  width="100%"
+                  onPressEnter={() => handleSearch(searchQuery)}
+                />
+                <Button
+                  type="primary"
+                  loading={isSearching}
+                  onClick={() => handleSearch(searchQuery)}
+                >
+                  Search
+                </Button>
+              </Space.Compact>
             </Form.Item>
           </Form>
           <div className="mb-4">

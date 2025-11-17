@@ -108,7 +108,7 @@ describe("Locations and regulations", () => {
       });
 
       // Clear search should reset to initial state
-      cy.get("button").contains("Clear").click();
+      cy.get("button.ant-input-clear-icon").click();
       cy.getByTestId("picker-card-Europe");
       cy.getByTestId("picker-card-North America");
       cy.getByTestId("picker-card-South America");
