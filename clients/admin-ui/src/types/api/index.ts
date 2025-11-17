@@ -382,6 +382,7 @@ export type { OpenIDProviderSimple } from "./models/OpenIDProviderSimple";
 export { Operator } from "./models/Operator";
 export type { Organization } from "./models/Organization";
 export type { OrganizationMetadata } from "./models/OrganizationMetadata";
+export type { OverrideMode } from "./models/OverrideMode";
 export type { Page_Asset_ } from "./models/Page_Asset_";
 export type { Page_AttachmentResponse_ } from "./models/Page_AttachmentResponse_";
 export type { Page_BasicSystemResponseExtended_ } from "./models/Page_BasicSystemResponseExtended_";

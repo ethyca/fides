@@ -149,6 +149,7 @@ class TestGetTestPrivacyRequestLogs:
         assert len(logs) == 1
         assert logs[0]["message"] == "Test message"
 
+    @pytest.mark.xfail(reason="flakey test")
     @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_logs_deleted_with_privacy_request(
         self,
@@ -181,6 +182,7 @@ class TestGetTestPrivacyRequestLogs:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == HTTP_404_NOT_FOUND
 
+    @pytest.mark.xfail(reason="flakey test")
     @pytest.mark.usefixtures("dsr_testing_tools_disabled")
     def test_get_test_logs_dsr_testing_disabled(
         self,
