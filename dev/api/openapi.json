@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3a1.post0.dev9"
+    "version": "2.74.3a1.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8010,9 +8010,9 @@
         "tags": [
           "Pre Approval Webhooks"
         ],
-        "summary": "Create Or Update Pre Execution Webhooks",
+        "summary": "Create Or Update Pre Approval Webhooks",
         "description": "Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.\nThis endpoint is all-or-nothing.\nEither all webhooks should be created/updated or none should be updated. Deletes any webhooks not present\nin the request body.",
-        "operationId": "create_or_update_pre_execution_webhooks_api_v1_dsr_webhook_pre_approval_put",
+        "operationId": "create_or_update_pre_approval_webhooks_api_v1_dsr_webhook_pre_approval_put",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -8045,7 +8045,7 @@
                   "items": {
                     "$ref": "#/components/schemas/PreApprovalWebhookResponse"
                   },
-                  "title": "Response Create Or Update Pre Execution Webhooks Api V1 Dsr Webhook Pre Approval Put"
+                  "title": "Response Create Or Update Pre Approval Webhooks Api V1 Dsr Webhook Pre Approval Put"
                 }
               }
             }
@@ -8116,9 +8116,9 @@
         "tags": [
           "Pre Approval Webhooks"
         ],
-        "summary": "Update Pre Execution Webhook",
+        "summary": "Update Pre Approval Webhook",
         "description": "PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created.",
-        "operationId": "update_pre_execution_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__patch",
+        "operationId": "update_pre_approval_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__patch",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -8174,9 +8174,9 @@
         "tags": [
           "Pre Approval Webhooks"
         ],
-        "summary": "Delete Pre Execution Webhook",
+        "summary": "Delete Pre Approval Webhook",
         "description": "Delete the Pre-Approval Webhook given webhook key",
-        "operationId": "delete_pre_execution_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__delete",
+        "operationId": "delete_pre_approval_webhook_api_v1_dsr_webhook_pre_approval__webhook_key__delete",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
