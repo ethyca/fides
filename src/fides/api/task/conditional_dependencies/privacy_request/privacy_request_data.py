@@ -11,10 +11,6 @@ from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     get_policy_convenience_fields,
 )
-from fides.api.task.conditional_dependencies.schemas import (
-    ConditionGroup,
-    ConditionLeaf,
-)
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 
 
@@ -36,7 +32,9 @@ class PrivacyRequestDataTransformer:
         self.privacy_request = privacy_request
         self.policy_data = self._transform_policy_object(privacy_request.policy)
         self.identity_data = self.privacy_request.get_persisted_identity()
-        self.custom_privacy_request_fields_data = self.privacy_request.get_persisted_custom_privacy_request_fields()
+        self.custom_privacy_request_fields_data = (
+            self.privacy_request.get_persisted_custom_privacy_request_fields()
+        )
 
     def to_evaluation_data(self, field_addresses: set[str]) -> dict[str, Any]:
         """
