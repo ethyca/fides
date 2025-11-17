@@ -100,6 +100,23 @@ class ConditionGroup(BaseModel):
         return self
 
 
+class ConditionalDependencyFieldInfo(BaseModel):
+    """Information about a field available for conditional dependencies."""
+
+    field_path: str = Field(
+        ...,
+        description="Field path with privacy_request prefix (e.g., 'privacy_request.location')",
+    )
+    field_type: str = Field(
+        ..., description="Type of the field (e.g., 'string', 'boolean', 'array')"
+    )
+    description: Optional[str] = Field(None, description="Description of the field")
+    is_convenience_field: bool = Field(
+        False,
+        description="Whether this is a convenience field (derived from other fields)",
+    )
+
+
 # Evaluation result for a single condition
 class ConditionEvaluationResult(BaseModel):
     field_address: str
