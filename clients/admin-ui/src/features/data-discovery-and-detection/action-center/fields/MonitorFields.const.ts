@@ -25,6 +25,7 @@ export const RESOURCE_STATUS = [
   "Removed",
   "Ignored",
   "Error",
+  "Removing...",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -34,6 +35,7 @@ export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
   "Confirmed",
   "Ignored",
   "Confirming...",
+  "Removing...",
 ];
 
 /**
@@ -58,7 +60,7 @@ export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
     promoting: "Confirming...",
     promotion_error: "Error",
     removal: "Removed",
-    removing: "In Review",
+    removing: "Removing...",
     removal_promotion_error: "Error",
   } as const;
 
@@ -93,7 +95,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     color: CUSTOM_TAG_COLOR.ERROR,
   },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
+  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal_promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
