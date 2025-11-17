@@ -239,10 +239,7 @@ class DataCategory(Base, FidesBase):
         ):
             existing_by_key = (
                 db.query(DataCategory)
-                .filter(
-                    DataCategory.fides_key == data["fides_key"],
-                    DataCategory.fides_key != self.fides_key,  # Exclude current element
-                )
+                .filter(DataCategory.fides_key == data["fides_key"])
                 .first()
             )
             if existing_by_key:
@@ -321,10 +318,7 @@ class DataSubject(Base, FidesBase):
         ):
             existing_by_key = (
                 db.query(DataSubject)
-                .filter(
-                    DataSubject.fides_key == data["fides_key"],
-                    DataSubject.fides_key != self.fides_key,  # Exclude current element
-                )
+                .filter(DataSubject.fides_key == data["fides_key"])
                 .first()
             )
             if existing_by_key:
@@ -405,10 +399,7 @@ class DataUse(Base, FidesBase):
         ):
             existing_by_key = (
                 db.query(DataUse)
-                .filter(
-                    DataUse.fides_key == data["fides_key"],
-                    DataUse.fides_key != self.fides_key,  # Exclude current element
-                )
+                .filter(DataUse.fides_key == data["fides_key"])
                 .first()
             )
             if existing_by_key:
