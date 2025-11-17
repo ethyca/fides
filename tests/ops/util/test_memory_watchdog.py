@@ -5,6 +5,7 @@ The memory watchdog provides proactive memory monitoring to prevent OOM kills
 in Celery tasks by gracefully terminating when memory usage is high.
 """
 
+import gc
 import os
 import signal
 import threading
@@ -17,6 +18,7 @@ from fides.api.models.application_config import ApplicationConfig
 from fides.api.util.memory_watchdog import (
     MemoryLimitExceeded,
     MemoryWatchdog,
+    _capture_heap_dump,
     _cgroup_memory_percent,
     _system_memory_percent,
     get_memory_watchdog_enabled,
@@ -436,3 +438,110 @@ class TestMemoryLimitExceeded:
 
         assert str(exc) == "Memory exceeded"
         assert exc.memory_percent is None
+
+
+class TestHeapDumpFunctionality:
+    """Test heap dump and memory profiling capabilities."""
+
+    @patch("fides.api.util.memory_watchdog.gc.get_count")
+    @patch("fides.api.util.memory_watchdog.gc.get_objects")
+    @patch("fides.api.util.memory_watchdog.gc.garbage", [])
+    @patch("fides.api.util.memory_watchdog.objgraph.most_common_types")
+    @patch("fides.api.util.memory_watchdog.psutil.Process")
+    @patch("fides.api.util.memory_watchdog.logger")
+    def test_capture_heap_dump_single_log_message(
+        self, mock_logger, mock_process, mock_objgraph, mock_get_objects, mock_get_count
+    ):
+        """Test that capture_heap_dump logs entire report as a single message."""
+        # Mock process memory info
+        mock_mem_info = Mock()
+        mock_mem_info.rss = 1024 * 1024 * 512  # 512 MiB
+        mock_mem_info.vms = 1024 * 1024 * 1024  # 1024 MiB
+        mock_process.return_value.memory_info.return_value = mock_mem_info
+
+        # Mock objgraph
+        mock_objgraph.return_value = [
+            ("dict", 1000),
+            ("list", 500),
+            ("str", 300),
+        ]
+
+        # Mock gc stats
+        mock_get_count.return_value = (100, 10, 1)
+        mock_get_objects.return_value = list(range(5000))
+
+        _capture_heap_dump()
+
+        # Verify logger.error was called exactly ONCE with the full report
+        assert (
+            mock_logger.error.call_count == 1
+        ), "Should log entire report as single message"
+
+        # Get the logged message
+        logged_message = str(mock_logger.error.call_args[0][0])
+
+        # Verify all expected sections are in the single message
+        assert "MEMORY DUMP" in logged_message
+        assert "PROCESS MEMORY STATS" in logged_message
+        assert "RSS (Resident Set Size)" in logged_message
+        assert "512.0 MiB" in logged_message
+        assert "OBJECT TYPE COUNTS" in logged_message
+        assert "GARBAGE COLLECTOR STATS" in logged_message
+        assert "END OF MEMORY DUMP" in logged_message
+        assert "dict" in logged_message
+        assert "1,000" in logged_message
+        assert "No uncollectable objects detected" in logged_message
+
+    @patch("fides.api.util.memory_watchdog.objgraph.most_common_types")
+    @patch("fides.api.util.memory_watchdog.logger")
+    def test_capture_heap_dump_handles_exceptions(self, mock_logger, mock_objgraph):
+        """Test that capture_heap_dump handles exceptions gracefully."""
+        # Make objgraph raise an exception
+        mock_objgraph.side_effect = Exception("Objgraph error")
+
+        # _capture_heap_dump should handle the exception internally and not raise
+        _capture_heap_dump()
+
+        # Verify exception was logged
+        mock_logger.exception.assert_called()
+
+    @patch("fides.api.util.memory_watchdog.gc.collect")
+    @patch("fides.api.util.memory_watchdog.objgraph.most_common_types")
+    @patch("fides.api.util.memory_watchdog.logger")
+    def test_capture_heap_dump_aligned_columns(
+        self, mock_logger, mock_objgraph, mock_gc_collect
+    ):
+        """Test that object counts are aligned for readability."""
+        mock_objgraph.return_value = [
+            ("dict", 1000),
+            ("list", 500),
+            ("very_long_type_name", 123),
+        ]
+
+        _capture_heap_dump()
+
+        logged_message = str(mock_logger.error.call_args[0][0])
+
+        # Verify counts are formatted with commas and right-aligned
+        assert "1,000" in logged_message
+        assert "500" in logged_message
+        assert "123" in logged_message
+        # Verify gc.collect was called
+        mock_gc_collect.assert_called_once()
+
+    @patch("fides.api.util.memory_watchdog._capture_heap_dump")
+    @patch("fides.api.util.memory_watchdog._system_memory_percent")
+    def test_heap_dump_called_on_memory_exceeded(
+        self, mock_memory_percent, mock_capture_heap_dump
+    ):
+        """Test that heap dump is captured when memory threshold is exceeded."""
+        mock_memory_percent.return_value = 95.0
+
+        watchdog = MemoryWatchdog()
+
+        # Test signal handler directly
+        with pytest.raises(MemoryLimitExceeded):
+            watchdog._signal_handler(signal.SIGUSR1, None)
+
+        # Verify heap dump was captured before exception was raised
+        mock_capture_heap_dump.assert_called_once()

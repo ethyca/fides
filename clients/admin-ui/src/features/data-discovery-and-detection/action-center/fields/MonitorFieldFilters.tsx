@@ -1,4 +1,5 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
+import { uniq } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
@@ -171,14 +172,6 @@ export const MonitorFieldFilters = ({
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
 
-  // Reset filters to default state when stagedResourceUrn changes
-  // Use JSON.stringify to compare array contents, not reference
-  const stagedResourceUrnKey = stagedResourceUrn.join(",");
-  useEffect(() => {
-    resetToInitialState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagedResourceUrnKey]);
-
   const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
     useGetDatastoreFiltersQuery(
       {
@@ -202,9 +195,6 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  // All statuses are always available (hardcoded)
-  const availableResourceFilters = useMemo(() => [...RESOURCE_STATUS], []);
-
   /* TODO: Uncomment this when we have a proper confidence score from the backend */
   /* const availableConfidenceScores =
     datastoreFilterResponse?.confidence_score?.reduce(
@@ -225,14 +215,14 @@ export const MonitorFieldFilters = ({
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(
     () =>
-      availableResourceFilters.map((label) => ({
+      RESOURCE_STATUS.map((label) => ({
         title: label.replace(/\.{3}$/, ""), // Remove trailing ellipsis for display
         key: label,
         checkable: true,
         selectable: false,
         isLeaf: true,
       })),
-    [availableResourceFilters],
+    [],
   );
 
   const dataCategoryTreeData: DataNode[] = useMemo(() => {
@@ -297,17 +287,10 @@ export const MonitorFieldFilters = ({
   }, [statusTreeData, dataCategoryTreeData]);
 
   // Get current checked keys from LOCAL state
-  const checkedKeys = useMemo(() => {
-    const keys: React.Key[] = [];
-    if (localResourceStatus) {
-      keys.push(...localResourceStatus);
-    }
-    if (localDataCategory) {
-      keys.push(...localDataCategory);
-    }
-    // Deduplicate to avoid duplicate keys in the tree
-    return Array.from(new Set(keys));
-  }, [localResourceStatus, localDataCategory]);
+  const checkedKeys = useMemo(
+    () => uniq([...(localResourceStatus ?? []), ...(localDataCategory ?? [])]),
+    [localResourceStatus, localDataCategory],
+  );
 
   // Calculate active filters count from APPLIED state (not local)
   const activeFiltersCount = useMemo(() => {
@@ -332,7 +315,7 @@ export const MonitorFieldFilters = ({
     const categoryKeys: string[] = [];
 
     // Section keys that should be excluded from filter values
-    const sectionKeys = Object.values(FIELDS_FILTER_SECTION_KEYS) as string[];
+    const sectionKeys = Object.values(FIELDS_FILTER_SECTION_KEYS);
 
     // Helper to check if a key is a parent of any other key in the list
     // For nested categories like "user.account.settings", we only want the leaf nodes
@@ -348,13 +331,13 @@ export const MonitorFieldFilters = ({
       const keyStr = key.toString();
 
       // Skip section keys
-      if (sectionKeys.includes(keyStr)) {
+      if (sectionKeys.some((sk) => sk === keyStr)) {
         return;
       }
 
-      // Check if it's a status key
-      if (availableResourceFilters?.includes(keyStr as ResourceStatusLabel)) {
-        statusKeys.push(keyStr as ResourceStatusLabel);
+      const statusKey = RESOURCE_STATUS.find((rs) => rs === keyStr);
+      if (statusKey) {
+        statusKeys.push(statusKey);
       } else if (!isParentKey(keyStr, allKeysAsStrings)) {
         // Only include leaf data category keys (not parents)
         categoryKeys.push(keyStr);
@@ -370,7 +353,7 @@ export const MonitorFieldFilters = ({
   const handleReset = () => {
     // Reset to initial state (preselect statuses except excluded ones)
     resetToInitialState();
-    setLocalResourceStatus(getFilterableStatuses(availableResourceFilters));
+    setLocalResourceStatus(getFilterableStatuses([...RESOURCE_STATUS]));
     setLocalDataCategory([]);
   };
 

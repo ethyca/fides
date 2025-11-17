@@ -1660,3 +1660,257 @@ class TestHierarchicalNotices:
         # verify the child is unlinked but not deleted
         db.refresh(child_privacy_notice)
         assert child_privacy_notice.parent_id is None
+
+
+class TestChildNoticeDisplayOrder:
+    """Tests for child notice display order functionality"""
+
+    def test_creating_notice_with_children_sets_display_order(
+        self,
+        db: Session,
+        privacy_notice: PrivacyNotice,
+        privacy_notice_us_ca_provide: PrivacyNotice,
+        privacy_notice_us_co_third_party_sharing: PrivacyNotice,
+    ):
+        """Test that creating a notice with children sets display_order correctly"""
+        # Create a parent notice with children in a specific order
+        parent = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Parent Notice",
+                "notice_key": "parent_notice_display_order",
+                "consent_mechanism": ConsentMechanism.opt_in.value,
+                "data_uses": ["marketing"],
+                "enforcement_level": EnforcementLevel.frontend.value,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Parent Notice Title",
+                        "description": "Parent Notice Description",
+                    }
+                ],
+                "children": [
+                    {
+                        "id": privacy_notice_us_co_third_party_sharing.id,
+                        "name": privacy_notice_us_co_third_party_sharing.name,
+                    },
+                    {"id": privacy_notice.id, "name": privacy_notice.name},
+                    {
+                        "id": privacy_notice_us_ca_provide.id,
+                        "name": privacy_notice_us_ca_provide.name,
+                    },
+                ],
+            },
+        )
+
+        # Refresh to load the children relationship
+        db.refresh(parent)
+
+        # Verify each child has correct display_order value
+        assert len(parent.children) == 3
+        assert parent.children[0].id == privacy_notice_us_co_third_party_sharing.id
+        assert parent.children[0].display_order == 0
+        assert parent.children[1].id == privacy_notice.id
+        assert parent.children[1].display_order == 1
+        assert parent.children[2].id == privacy_notice_us_ca_provide.id
+        assert parent.children[2].display_order == 2
+
+    def test_updating_notice_children_changes_display_order(
+        self,
+        db: Session,
+        privacy_notice: PrivacyNotice,
+        privacy_notice_us_ca_provide: PrivacyNotice,
+        privacy_notice_us_co_third_party_sharing: PrivacyNotice,
+    ):
+        """Test that updating notice children changes display_order"""
+        # Create parent with children in order X, Y, Z
+        parent = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Parent Notice",
+                "notice_key": "parent_notice_reorder",
+                "consent_mechanism": ConsentMechanism.opt_in.value,
+                "data_uses": ["marketing"],
+                "enforcement_level": EnforcementLevel.frontend.value,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Parent Notice Title",
+                        "description": "Parent Notice Description",
+                    }
+                ],
+                "children": [
+                    {"id": privacy_notice.id, "name": privacy_notice.name},
+                    {
+                        "id": privacy_notice_us_ca_provide.id,
+                        "name": privacy_notice_us_ca_provide.name,
+                    },
+                    {
+                        "id": privacy_notice_us_co_third_party_sharing.id,
+                        "name": privacy_notice_us_co_third_party_sharing.name,
+                    },
+                ],
+            },
+        )
+
+        db.refresh(parent)
+
+        # Verify initial order
+        assert parent.children[0].id == privacy_notice.id
+        assert parent.children[0].display_order == 0
+        assert parent.children[1].id == privacy_notice_us_ca_provide.id
+        assert parent.children[1].display_order == 1
+        assert parent.children[2].id == privacy_notice_us_co_third_party_sharing.id
+        assert parent.children[2].display_order == 2
+
+        # Update with new order (Z, X, Y)
+        parent.update(
+            db,
+            data={
+                "children": [
+                    {
+                        "id": privacy_notice_us_co_third_party_sharing.id,
+                        "name": privacy_notice_us_co_third_party_sharing.name,
+                    },
+                    {"id": privacy_notice.id, "name": privacy_notice.name},
+                    {
+                        "id": privacy_notice_us_ca_provide.id,
+                        "name": privacy_notice_us_ca_provide.name,
+                    },
+                ],
+            },
+        )
+
+        # Refresh to reload the children relationship
+        db.refresh(parent)
+
+        # Verify display_order values are updated and children returns them in new order
+        assert len(parent.children) == 3
+        assert parent.children[0].id == privacy_notice_us_co_third_party_sharing.id
+        assert parent.children[0].display_order == 0
+        assert parent.children[1].id == privacy_notice.id
+        assert parent.children[1].display_order == 1
+        assert parent.children[2].id == privacy_notice_us_ca_provide.id
+        assert parent.children[2].display_order == 2
+
+    def test_children_relationship_ordering_with_null_values(
+        self,
+        db: Session,
+        privacy_notice: PrivacyNotice,
+        privacy_notice_us_ca_provide: PrivacyNotice,
+        privacy_notice_us_co_third_party_sharing: PrivacyNotice,
+    ):
+        """Test that children with NULL display_order appear last"""
+        # Create parent with children
+        parent = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Parent Notice",
+                "notice_key": "parent_notice_null_order",
+                "consent_mechanism": ConsentMechanism.opt_in.value,
+                "data_uses": ["marketing"],
+                "enforcement_level": EnforcementLevel.frontend.value,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Parent Notice Title",
+                        "description": "Parent Notice Description",
+                    }
+                ],
+                "children": [
+                    {"id": privacy_notice.id, "name": privacy_notice.name},
+                    {
+                        "id": privacy_notice_us_ca_provide.id,
+                        "name": privacy_notice_us_ca_provide.name,
+                    },
+                    {
+                        "id": privacy_notice_us_co_third_party_sharing.id,
+                        "name": privacy_notice_us_co_third_party_sharing.name,
+                    },
+                ],
+            },
+        )
+
+        # Manually set some child display_order to NULL
+        privacy_notice.display_order = None
+        privacy_notice.save(db)
+        privacy_notice_us_ca_provide.display_order = 0
+        privacy_notice_us_ca_provide.save(db)
+        privacy_notice_us_co_third_party_sharing.display_order = 1
+        privacy_notice_us_co_third_party_sharing.save(db)
+
+        db.refresh(parent)
+
+        # Verify children with NULL display_order appear last
+        assert len(parent.children) == 3
+        assert parent.children[0].id == privacy_notice_us_ca_provide.id
+        assert parent.children[0].display_order == 0
+        assert parent.children[1].id == privacy_notice_us_co_third_party_sharing.id
+        assert parent.children[1].display_order == 1
+        assert parent.children[2].id == privacy_notice.id
+        assert parent.children[2].display_order is None
+
+        # Verify no errors occur
+        assert parent.children is not None
+
+    def test_display_order_not_saved_to_historical_records(
+        self,
+        db: Session,
+        privacy_notice: PrivacyNotice,
+        privacy_notice_us_ca_provide: PrivacyNotice,
+    ):
+        """Test that display_order field is not saved to historical records"""
+        # Create a notice with children
+        parent = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Parent Notice",
+                "notice_key": "parent_notice_history",
+                "consent_mechanism": ConsentMechanism.opt_in.value,
+                "data_uses": ["marketing"],
+                "enforcement_level": EnforcementLevel.frontend.value,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Parent Notice Title",
+                        "description": "Parent Notice Description",
+                    }
+                ],
+                "children": [
+                    {"id": privacy_notice.id, "name": privacy_notice.name},
+                    {
+                        "id": privacy_notice_us_ca_provide.id,
+                        "name": privacy_notice_us_ca_provide.name,
+                    },
+                ],
+            },
+        )
+
+        # Update the notice to create a new version
+        parent.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Updated Parent Notice Title",
+                        "description": "Updated Parent Notice Description",
+                    }
+                ],
+            },
+        )
+
+        # Query PrivacyNoticeHistory records
+        histories = (
+            PrivacyNoticeHistory.query(db)
+            .filter(PrivacyNoticeHistory.notice_key == parent.notice_key)
+            .all()
+        )
+
+        # Should have 2 history records (v1.0 and v2.0)
+        assert len(histories) == 2
+
+        # Verify display_order is not in the serialized history data
+        for history in histories:
+            # The PrivacyNoticeHistory model shouldn't have a display_order column
+            assert not hasattr(history, "display_order")

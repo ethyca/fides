@@ -53,10 +53,14 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
-from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import (
+    IdentityValue,
+    PrivacyRequestResponse,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField,
     Identity,
@@ -95,6 +99,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
+    PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -1209,6 +1214,195 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert resp["items"][0].get("identity") is None
 
+    @pytest.mark.parametrize(
+        "custom_identities,expected_identity_values",
+        [
+            # Test case 1: List of integers
+            (
+                {
+                    "regi_id": LabeledIdentity(label="Regi ID", value=[12345678]),
+                },
+                {
+                    "regi_id": {"label": "Regi ID", "value": [12345678]},
+                },
+            ),
+            # Test case 2: List of strings
+            (
+                {
+                    "agent_id": LabeledIdentity(
+                        label="Agent ID", value=["one", "two", "three"]
+                    ),
+                },
+                {
+                    "agent_id": {"label": "Agent ID", "value": ["one", "two", "three"]},
+                },
+            ),
+            # Test case 3: Mixed list
+            (
+                {
+                    "user_id": LabeledIdentity(
+                        label="User ID", value=[12345678, "one", "two", "three"]
+                    ),
+                },
+                {
+                    "user_id": {
+                        "label": "User ID",
+                        "value": [12345678, "one", "two", "three"],
+                    },
+                },
+            ),
+            # Test case 4: All three cases together
+            (
+                {
+                    "regi_id": LabeledIdentity(label="Regi ID", value=[12345678]),
+                    "agent_id": LabeledIdentity(
+                        label="Agent ID", value=["one", "two", "three"]
+                    ),
+                    "user_id": LabeledIdentity(
+                        label="User ID", value=[12345678, "one", "two", "three"]
+                    ),
+                },
+                {
+                    "regi_id": {"label": "Regi ID", "value": [12345678]},
+                    "agent_id": {"label": "Agent ID", "value": ["one", "two", "three"]},
+                    "user_id": {
+                        "label": "User ID",
+                        "value": [12345678, "one", "two", "three"],
+                    },
+                },
+            ),
+            # Test case 5: Single integer in list
+            (
+                {
+                    "customer_id": LabeledIdentity(label="Customer ID", value=[999]),
+                },
+                {
+                    "customer_id": {"label": "Customer ID", "value": [999]},
+                },
+            ),
+            # Test case 6: Empty list
+            (
+                {
+                    "empty_list": LabeledIdentity(label="Empty List", value=[]),
+                },
+                {
+                    "empty_list": {"label": "Empty List", "value": []},
+                },
+            ),
+            # Test case 7: String value (not a list)
+            (
+                {
+                    "customer_name": LabeledIdentity(
+                        label="Customer Name", value="John Doe"
+                    ),
+                },
+                {
+                    "customer_name": {"label": "Customer Name", "value": "John Doe"},
+                },
+            ),
+            # Test case 8: Integer value (not a list)
+            (
+                {
+                    "account_number": LabeledIdentity(
+                        label="Account Number", value=98765
+                    ),
+                },
+                {
+                    "account_number": {"label": "Account Number", "value": 98765},
+                },
+            ),
+            # Test case 9: Mixed types - string, int, and list
+            (
+                {
+                    "name": LabeledIdentity(label="Name", value="Jane Smith"),
+                    "id": LabeledIdentity(label="ID", value=456789),
+                    "tags": LabeledIdentity(label="Tags", value=["tag1", "tag2"]),
+                },
+                {
+                    "name": {"label": "Name", "value": "Jane Smith"},
+                    "id": {"label": "ID", "value": 456789},
+                    "tags": {"label": "Tags", "value": ["tag1", "tag2"]},
+                },
+            ),
+        ],
+    )
+    def test_get_privacy_requests_with_custom_identities(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        db,
+        policy,
+        custom_identities,
+        expected_identity_values,
+    ):
+        """Test that privacy requests with custom identities containing various value types
+        can be retrieved and validated correctly.
+
+        This test would have caught the validation error where IdentityValue.value
+        was too restrictive and couldn't accept list values like [12345678] or
+        ['one', 'two', 'three'].
+
+        The test is parametrized to cover:
+        - List values
+        - String values
+        - Integer values
+        - Mixed types (string, int, list)
+
+        Note: LabeledIdentity only accepts MultiValue types (int, str, or list of int/str)
+        """
+        # Create a privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Persist identity with custom fields that have various value types
+        identity_dict = {"email": "user@example.com", **custom_identities}
+        privacy_request.persist_identity(db=db, identity=Identity(**identity_dict))
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            url + f"?include_identities=true", headers=auth_header
+        )
+        assert response.status_code == 200
+        resp = response.json()
+
+        # Verify the response validates correctly
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+
+        # Verify the identity field is present and contains the list values
+        identity = resp["items"][0]["identity"]
+        assert identity is not None
+
+        # Verify standard identity field
+        assert identity["email"] == {
+            "label": "Email",
+            "value": "user@example.com",
+        }
+
+        # Verify custom identity fields with various value types
+        for field_name, expected_value in expected_identity_values.items():
+            assert identity[field_name] == expected_value
+
+        validated_response = PrivacyRequestResponse(**resp["items"][0])
+        assert validated_response.identity is not None
+
+        # Verify each custom identity field can be accessed and has the correct value
+        for field_name, expected_value in expected_identity_values.items():
+            assert field_name in validated_response.identity
+            identity_value = validated_response.identity[field_name]
+            assert isinstance(identity_value, IdentityValue)
+            assert identity_value.value == expected_value["value"]
+            assert identity_value.label == expected_value["label"]
+
+        privacy_request.delete(db)
+
     def test_get_privacy_requests_with_custom_fields(
         self,
         api_client: TestClient,
@@ -1250,29 +1444,31 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][0].get("custom_privacy_request_fields") is None
 
+    @pytest.mark.parametrize(
+        "action_type, expected_count",
+        [
+            (ActionType.access, 1),
+            (ActionType.consent, 1),
+            (ActionType.erasure, 0),
+        ],
+    )
     def test_filter_privacy_requests_by_action(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
+        action_type,
+        expected_count,
         privacy_request,
         executable_consent_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?action_type=access", headers=auth_header)
+        response = api_client.get(
+            url + f"?action_type={action_type}", headers=auth_header
+        )
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.get(url + f"?action_type=consent", headers=auth_header)
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.get(url + f"?action_type=erasure", headers=auth_header)
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 0
+        assert len(resp["items"]) == expected_count
 
     def test_filter_privacy_requests_by_status(
         self,
@@ -1296,7 +1492,7 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == failed_privacy_request.id
 
-    def test_filter_privacy_requests_include_deleted_requests(
+    def test_filter_privacy_requests_include_type_requests(
         self,
         api_client: TestClient,
         url,
@@ -1329,7 +1525,8 @@ class TestGetPrivacyRequests:
             == 1
         )
 
-    def test_filter_privacy_requests_exclude_deleted_requests(
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
+    def test_filter_privacy_requests_exclude_type_requests(
         self,
         api_client: TestClient,
         url,
@@ -1348,13 +1545,13 @@ class TestGetPrivacyRequests:
 
         assert resp["items"][0]["id"] == privacy_request.id
 
-    def test_filter_privacy_requests_excludes_deleted_requests_by_default(
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
+    def test_filter_privacy_requests_excludes_type_requests_by_default(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
-        soft_deleted_privacy_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(url, headers=auth_header)
@@ -2623,35 +2820,31 @@ class TestPrivacyRequestSearch:
         resp = response.json()
         assert len(resp["items"]) == 2
 
+    @pytest.mark.usefixtures("privacy_request", "executable_consent_request")
+    @pytest.mark.parametrize(
+        "action_type, expected_count",
+        [
+            (ActionType.access, 1),
+            ([ActionType.access, ActionType.consent], 2),
+            (ActionType.consent, 1),
+            (ActionType.erasure, 0),
+        ],
+    )
     def test_privacy_request_search_by_action(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
-        privacy_request,
-        executable_consent_request,
+        action_type,
+        expected_count,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
-            url, headers=auth_header, json={"action_type": "access"}
+            url, headers=auth_header, json={"action_type": action_type}
         )
         assert 200 == response.status_code
         resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.post(
-            url, headers=auth_header, json={"action_type": "consent"}
-        )
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 1
-
-        response = api_client.post(
-            url, headers=auth_header, json={"action_type": "erasure"}
-        )
-        assert 200 == response.status_code
-        resp = response.json()
-        assert len(resp["items"]) == 0
+        assert len(resp["items"]) == expected_count
 
     def test_privacy_request_search_by_status(
         self,
@@ -2696,13 +2889,13 @@ class TestPrivacyRequestSearch:
         assert resp["items"][0]["id"] == failed_privacy_request.id
         assert resp["items"][1]["id"] == succeeded_privacy_request.id
 
-    def test_privacy_request_search_excludes_deleted_by_default(
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
+    def test_privacy_request_search_excludes_deleted_requests_by_default(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
-        soft_deleted_privacy_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
@@ -2713,13 +2906,13 @@ class TestPrivacyRequestSearch:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
+    @pytest.mark.usefixtures("soft_deleted_privacy_request")
     def test_privacy_request_search_exclude_deleted_requests(
         self,
         api_client: TestClient,
         url,
         generate_auth_header,
         privacy_request,
-        soft_deleted_privacy_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
@@ -2744,7 +2937,7 @@ class TestPrivacyRequestSearch:
         response = api_client.post(
             url,
             headers=auth_header,
-            json={"status": "in_processing", "include_deleted_requests": True},
+            json={"include_deleted_requests": True},
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -4814,6 +5007,260 @@ class TestDenyPrivacyRequest:
         privacy_request.delete(db)
 
 
+class TestCancelPrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_CANCEL
+
+    def test_cancel_privacy_request_not_authenticated(self, url, api_client):
+        response = api_client.patch(url)
+        assert response.status_code == 401
+
+    def test_cancel_privacy_request_bad_scopes(
+        self, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.patch(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_privacy_request_does_not_exist(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": ["does_not_exist"]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "No privacy request found with id 'does_not_exist'"
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_completed_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            "Cannot cancel privacy request in complete status"
+            in response_body["failed"][0]["message"]
+        )
+        assert response_body["failed"][0]["data"]["status"] == "complete"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_already_canceled_privacy_request(
+        self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.canceled
+        privacy_request.save(db=db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            "Cannot cancel privacy request in canceled status"
+            in response_body["failed"][0]["message"]
+        )
+        assert response_body["failed"][0]["data"]["status"] == "canceled"
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_deleted_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        soft_deleted_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [soft_deleted_privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot transition status for a deleted request"
+        )
+        assert (
+            response_body["failed"][0]["data"]["id"] == soft_deleted_privacy_request.id
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_pending_privacy_request_without_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        body = {"request_ids": [privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was canceled
+
+        privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_pending_privacy_request_with_reason(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        cancel_reason = "User requested cancellation"
+        body = {"request_ids": [privacy_request.id], "reason": cancel_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+        assert privacy_request.cancel_reason == cancel_reason
+
+        assert not submit_mock.called  # Shouldn't run! Privacy request was canceled
+
+        privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_cancel_in_processing_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_request,
+    ):
+        """Test that we can cancel a privacy request that's currently in_processing"""
+        privacy_request.status = PrivacyRequestStatus.in_processing
+        privacy_request.save(db=db)
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        cancel_reason = "Cancelling in-progress request"
+        body = {"request_ids": [privacy_request.id], "reason": cancel_reason}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+        assert response_body["succeeded"][0]["status"] == "canceled"
+        assert response_body["succeeded"][0]["id"] == privacy_request.id
+
+        # Check that the privacy request was actually canceled
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.canceled
+        assert privacy_request.canceled_at is not None
+        assert privacy_request.cancel_reason == cancel_reason
+
+        assert not submit_mock.called
+
+        privacy_request.delete(db)
+
+
 class TestResumePrivacyRequest:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request):
@@ -5828,7 +6275,13 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
-    @mock.patch("fides.service.messaging.messaging_service.dispatch_message")
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+        "messaging_config",
+    )
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_message,
@@ -5837,8 +6290,6 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         db,
         api_client: TestClient,
         policy,
-        messaging_config,
-        subject_identity_verification_required,
     ):
         data = [
             {
@@ -5863,18 +6314,24 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert not mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
-
-        assert mock_dispatch_message.called
-        kwargs = mock_dispatch_message.call_args.kwargs
+        assert mock_dispatch_message.call_count == 1
+        call_args = mock_dispatch_message.call_args[1]
+        task_kwargs = call_args["kwargs"]
+        message_meta = task_kwargs["message_meta"]
         assert (
-            kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
+            message_meta["action_type"]
+            == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
-        assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["service_type"] == MessagingServiceType.mailgun.value
-        assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
-            verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
+        assert (
+            message_meta["body_params"]["verification_code"]
+            == pr.get_cached_verification_code()
         )
+        assert (
+            message_meta["body_params"]["verification_code_ttl_seconds"]
+            == CONFIG.redis.identity_verification_code_ttl_seconds
+        )
+        assert task_kwargs["to_identity"]["email"] == "test@example.com"
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         pr.delete(db=db)
 

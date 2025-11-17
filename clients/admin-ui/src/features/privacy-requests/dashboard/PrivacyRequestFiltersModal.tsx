@@ -17,23 +17,23 @@ interface PrivacyRequestFiltersModalProps {
   open: boolean;
   onClose: () => void;
   modalFilters: {
-    from: string;
-    to: string;
-    status: PrivacyRequestStatus[];
-    action_type: ActionType[];
+    from: string | null;
+    to: string | null;
+    status: PrivacyRequestStatus[] | null;
+    action_type: ActionType[] | null;
   };
   setModalFilters: (filters: {
-    from: string;
-    to: string;
-    status: PrivacyRequestStatus[];
-    action_type: ActionType[];
+    from: string | null;
+    to: string | null;
+    status: PrivacyRequestStatus[] | null;
+    action_type: ActionType[] | null;
   }) => void;
 }
 
 interface FormValues {
   dateRange?: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null;
-  status?: PrivacyRequestStatus[];
-  action_type?: ActionType[];
+  status?: PrivacyRequestStatus[] | null;
+  action_type?: ActionType[] | null;
 }
 
 export const PrivacyRequestFiltersModal = ({

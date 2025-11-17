@@ -1,6 +1,6 @@
 from enum import Enum
 
-from sqlalchemy import Column, String, Text
+from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base, FidesBase
@@ -63,3 +63,4 @@ class IdentityDefinition(Base):
         nullable=False,
     )
     created_by = Column(String(255), nullable=True)
+    is_default = Column(Boolean, nullable=False, server_default="false")

@@ -2,10 +2,21 @@ import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
 import {
   ConfidenceScoreRange,
-  DiffStatus,
+  Database,
+  DatastoreStagedResource,
+  Field,
+  Schema,
+  Table,
   TreeResourceChangeIndicator,
 } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
+
+export type MonitorResource =
+  | DatastoreStagedResource
+  | Database
+  | Schema
+  | Table
+  | Field;
 
 /**
  * Extend TreeDataNode to include the update status from the API response

@@ -1017,7 +1017,7 @@ class TestSmartOpenStreamingStorageAttachments:
 
         mock_zip_buffer = BytesIO()
         with zipfile.ZipFile(mock_zip_buffer, "w") as mock_zip:
-            mock_zip.writestr("welcome.html", "<html>Welcome</html>")
+            mock_zip.writestr("clickme.html", "<html>Welcome</html>")
             mock_zip.writestr("data/main.css", "body { color: black; }")
         mock_zip_buffer.seek(0)
         mock_dsr_builder.generate.return_value = mock_zip_buffer

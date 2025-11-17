@@ -9,10 +9,12 @@ export enum PrivacyRequestStatus {
   PENDING = "pending",
   IDENTITY_UNVERIFIED = "identity_unverified",
   REQUIRES_INPUT = "requires_input",
+  DUPLICATE = "duplicate",
 }
 
 export enum Layer1ButtonOption {
   // defines the buttons to show in the layer 1 banner
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+  GPC_CONDITIONAL = "gpc_conditional", // show acknowledge when GPC is on, opt in/opt out when GPC is off
 }
