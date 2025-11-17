@@ -18,6 +18,7 @@ export type {
 export type {
   AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
+  CheckboxProps as AntCheckboxProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
   DrawerProps as AntDrawerProps,
@@ -100,6 +101,7 @@ export type {
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
+export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {

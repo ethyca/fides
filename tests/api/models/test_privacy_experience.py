@@ -3,6 +3,7 @@ from copy import copy
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_experience import (
     ComponentType,
@@ -11,6 +12,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
     RejectAllMechanism,
+    link_notices_to_experience_config,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.models.tcf_publisher_restrictions import TCFConfiguration
@@ -890,3 +892,228 @@ class TestExperienceTranslation:
             )
 
         et.delete(db)
+
+
+class TestNoticeDisplayOrder:
+    """Tests for the notice display order feature"""
+
+    def test_link_notices_sets_display_order(
+        self,
+        db,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_notice_us_co_third_party_sharing,
+        experience_config_banner_and_modal,
+    ):
+        """Test that link_notices_to_experience_config sets display_order correctly"""
+
+        config = experience_config_banner_and_modal
+
+        # Link notices in a specific order
+        notice_ids = [
+            privacy_notice_us_co_third_party_sharing.id,
+            privacy_notice.id,
+            privacy_notice_us_ca_provide.id,
+        ]
+
+        link_notices_to_experience_config(db, notice_ids, config)
+
+        # Query the junction table to verify display_order
+        junction_records = (
+            db.query(ExperienceNotices)
+            .filter(ExperienceNotices.experience_config_id == config.id)
+            .order_by(ExperienceNotices.display_order)
+            .all()
+        )
+
+        assert len(junction_records) == 3
+        assert (
+            junction_records[0].notice_id == privacy_notice_us_co_third_party_sharing.id
+        )
+        assert junction_records[0].display_order == 0
+        assert junction_records[1].notice_id == privacy_notice.id
+        assert junction_records[1].display_order == 1
+        assert junction_records[2].notice_id == privacy_notice_us_ca_provide.id
+        assert junction_records[2].display_order == 2
+
+    def test_reordering_notices_updates_display_order(
+        self,
+        db,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_notice_us_co_third_party_sharing,
+    ):
+        """Test that reordering notices updates display_order correctly"""
+
+        # Create an experience config with notices in order A, B, C
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Experience Config",
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice_us_ca_provide.id,
+                    privacy_notice_us_co_third_party_sharing.id,
+                ],
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Test",
+                        "description": "Test description",
+                    }
+                ],
+            },
+        )
+
+        # Verify initial order
+        junction_records = (
+            db.query(ExperienceNotices)
+            .filter(ExperienceNotices.experience_config_id == config.id)
+            .order_by(ExperienceNotices.display_order)
+            .all()
+        )
+        assert junction_records[0].notice_id == privacy_notice.id
+        assert junction_records[1].notice_id == privacy_notice_us_ca_provide.id
+        assert (
+            junction_records[2].notice_id == privacy_notice_us_co_third_party_sharing.id
+        )
+
+        # Reorder to B, A, C
+        new_order = [
+            privacy_notice_us_ca_provide.id,
+            privacy_notice.id,
+            privacy_notice_us_co_third_party_sharing.id,
+        ]
+        link_notices_to_experience_config(db, new_order, config)
+
+        # Verify display_order values are updated correctly
+        junction_records = (
+            db.query(ExperienceNotices)
+            .filter(ExperienceNotices.experience_config_id == config.id)
+            .order_by(ExperienceNotices.display_order)
+            .all()
+        )
+
+        assert len(junction_records) == 3
+        assert junction_records[0].notice_id == privacy_notice_us_ca_provide.id
+        assert junction_records[0].display_order == 0
+        assert junction_records[1].notice_id == privacy_notice.id
+        assert junction_records[1].display_order == 1
+        assert (
+            junction_records[2].notice_id == privacy_notice_us_co_third_party_sharing.id
+        )
+        assert junction_records[2].display_order == 2
+
+    def test_privacy_notices_relationship_returns_notices_in_order(
+        self,
+        db,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_notice_us_co_third_party_sharing,
+    ):
+        """Test that privacy_notices relationship returns notices in display_order"""
+        # Create an experience config with notices
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Experience Config",
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice_us_ca_provide.id,
+                    privacy_notice_us_co_third_party_sharing.id,
+                ],
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Test",
+                        "description": "Test description",
+                    }
+                ],
+            },
+        )
+
+        # Manually set custom display_order values (2, 0, 1)
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice.id,
+        ).update({"display_order": 2})
+
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice_us_ca_provide.id,
+        ).update({"display_order": 0})
+
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice_us_co_third_party_sharing.id,
+        ).update({"display_order": 1})
+
+        db.commit()
+        db.expire(config, ["privacy_notices"])
+
+        # Access privacy_notices relationship and verify order
+        notices = config.privacy_notices
+        assert len(notices) == 3
+        assert notices[0].id == privacy_notice_us_ca_provide.id
+        assert notices[1].id == privacy_notice_us_co_third_party_sharing.id
+        assert notices[2].id == privacy_notice.id
+
+    def test_display_order_handles_null_values(
+        self,
+        db,
+        privacy_notice,
+        privacy_notice_us_ca_provide,
+        privacy_notice_us_co_third_party_sharing,
+    ):
+        """Test that NULL display_order values appear last (backward compatibility)"""
+        # Create an experience config with notices
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Experience Config",
+                "privacy_notice_ids": [
+                    privacy_notice.id,
+                    privacy_notice_us_ca_provide.id,
+                    privacy_notice_us_co_third_party_sharing.id,
+                ],
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Test",
+                        "description": "Test description",
+                    }
+                ],
+            },
+        )
+
+        # Manually set some display_order to NULL
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice.id,
+        ).update({"display_order": None})
+
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice_us_ca_provide.id,
+        ).update({"display_order": 0})
+
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.experience_config_id == config.id,
+            ExperienceNotices.notice_id == privacy_notice_us_co_third_party_sharing.id,
+        ).update({"display_order": 1})
+
+        db.commit()
+        db.expire(config, ["privacy_notices"])
+
+        # Verify notices with NULL display_order appear after those with values
+        notices = config.privacy_notices
+        assert len(notices) == 3
+        assert notices[0].id == privacy_notice_us_ca_provide.id
+        assert notices[1].id == privacy_notice_us_co_third_party_sharing.id
+        assert notices[2].id == privacy_notice.id  # NULL value, should be last
+
+        # Verify no errors occur when accessing the relationship
+        assert config.privacy_notices is not None

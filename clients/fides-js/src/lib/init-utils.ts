@@ -1,3 +1,4 @@
+import { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
@@ -124,6 +125,7 @@ export const getCoreFides = ({
     config: undefined,
     initialized: false,
     onFidesEvent,
+    aep,
     blueconic,
     gtm,
     meta,
