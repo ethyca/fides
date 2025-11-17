@@ -34,7 +34,9 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  const currentDataUses = [...(asset.preferred_data_uses || [])].sort();
+  const currentDataUses = [
+    ...(asset.user_assigned_data_uses || asset.data_uses || []),
+  ].sort();
 
   const truncatedAssetName = truncate(asset.name || "", { length: 50 });
 
