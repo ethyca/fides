@@ -63,12 +63,6 @@ export interface GcmOptions {
    * ```
    */
   purposeMapping: GcmConsentMapping;
-
-  /**
-   * Enable debug logging
-   * @default false
-   */
-  debug?: boolean;
 }
 
 /**
@@ -108,7 +102,6 @@ const DEFAULT_CONSENT_MAPPING: GcmConsentMapping = {
 const buildGoogleConsent = (
   consent: NoticeConsent,
   mapping: GcmConsentMapping,
-  debug = false,
 ): Record<GoogleConsentType, GoogleConsentState> => {
   const googleConsent: Partial<Record<GoogleConsentType, GoogleConsentState>> =
     {};
@@ -128,21 +121,17 @@ const buildGoogleConsent = (
         googleConsent[googleType] = consentState;
       });
 
-      if (debug) {
-        console.log(
-          `[Fides GCM] Mapped ${fidesKey}=${hasConsent} to ${googleTypes.join(", ")}=${consentState}`,
-        );
-      }
-    } else if (debug) {
-      console.log(
+      fidesDebugger(
+        `[Fides GCM] Mapped ${fidesKey}=${hasConsent} to ${googleTypes.join(", ")}=${consentState}`,
+      );
+    } else {
+      fidesDebugger(
         `[Fides GCM] Skipping ${fidesKey} (not present in Fides consent)`,
       );
     }
   });
 
-  if (debug) {
-    console.log("[Fides GCM] Built consent object:", googleConsent);
-  }
+  fidesDebugger("[Fides GCM] Built consent object:", googleConsent);
 
   return googleConsent as Record<GoogleConsentType, GoogleConsentState>;
 };
@@ -154,32 +143,26 @@ const pushConsentToGtag = (
   consent: NoticeConsent,
   options: GcmOptions,
 ): void => {
-  const { purposeMapping, debug = false } = options;
+  const { purposeMapping } = options;
 
-  if (debug) {
-    console.log("[Fides GCM] Pushing consent to gtag:", consent);
-  }
+  fidesDebugger("[Fides GCM] Pushing consent to gtag:", consent);
 
   // Check if gtag is available
   if (typeof window.gtag !== "function") {
-    if (debug) {
-      console.warn(
-        "[Fides GCM] gtag() not found. Ensure Google Tag Manager or gtag.js is loaded.",
-      );
-    }
+    fidesDebugger(
+      "[Fides GCM] gtag() not found. Ensure Google Tag Manager or gtag.js is loaded.",
+    );
     return;
   }
 
   // Build Google consent object
-  const googleConsent = buildGoogleConsent(consent, purposeMapping, debug);
+  const googleConsent = buildGoogleConsent(consent, purposeMapping);
 
   // Only update if we have consent values to send
   if (Object.keys(googleConsent).length === 0) {
-    if (debug) {
-      console.log(
-        "[Fides GCM] No matching consent keys found, skipping gtag update",
-      );
-    }
+    fidesDebugger(
+      "[Fides GCM] No matching consent keys found, skipping gtag update",
+    );
     return;
   }
 
@@ -187,14 +170,12 @@ const pushConsentToGtag = (
     // Update consent via gtag
     window.gtag("consent", "update", googleConsent);
 
-    if (debug) {
-      console.log(
-        "[Fides GCM] Successfully updated gtag consent:",
-        googleConsent,
-      );
-    }
+    fidesDebugger(
+      "[Fides GCM] Successfully updated gtag consent:",
+      googleConsent,
+    );
   } catch (error) {
-    console.error("[Fides GCM] Error calling gtag():", error);
+    fidesDebugger("[Fides GCM] Error calling gtag():", error);
   }
 };
 
@@ -236,24 +217,20 @@ const getCurrentGoogleConsent = (
  * @example
  * ```typescript
  * // Basic usage with default mapping
+ * const gcm = Fides.gcm();
+ *
+ * // With custom purpose mapping
  * const gcm = Fides.gcm({
  *   purposeMapping: {
  *     analytics: ['analytics_storage'],
  *     advertising: ['ad_storage', 'ad_personalization', 'ad_user_data']
  *   }
  * });
- *
- * // With debug logging
- * const gcm = Fides.gcm({
- *   purposeMapping: { ... },
- *   debug: true
- * });
  * ```
  */
 export const gcm = (options?: Partial<GcmOptions>): GcmIntegration => {
   const finalOptions: GcmOptions = {
     purposeMapping: options?.purposeMapping || DEFAULT_CONSENT_MAPPING,
-    debug: options?.debug || false,
   };
 
   // Subscribe to Fides consent events

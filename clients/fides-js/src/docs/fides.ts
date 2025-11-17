@@ -274,7 +274,6 @@ export interface Fides {
    *
    * @param options - Configuration for the Google Consent Mode integration
    * @param options.purposeMapping - Maps Fides consent keys to Google consent types. Default mapping includes: analytics → analytics_storage, advertising → [ad_storage, ad_personalization, ad_user_data], functional → [functionality_storage, personalization_storage], data_sales_and_sharing → [ad_storage, ad_personalization, ad_user_data], marketing → [ad_storage, ad_personalization, ad_user_data]
-   * @param options.debug - Enable debug logging
    *
    * @example
    * Basic usage with default mapping:
@@ -301,24 +300,9 @@ export interface Fides {
    *   </script>
    * </head>
    * ```
-   *
-   * @example
-   * With debug logging enabled:
-   * ```html
-   * <script>
-   *   Fides.gcm({
-   *     purposeMapping: {
-   *       analytics: ['analytics_storage'],
-   *       advertising: ['ad_storage', 'ad_personalization', 'ad_user_data']
-   *     },
-   *     debug: true
-   *   });
-   * </script>
-   * ```
    */
   gcm: (options?: {
     purposeMapping?: Record<string, ("ad_storage" | "ad_personalization" | "ad_user_data" | "analytics_storage" | "functionality_storage" | "personalization_storage" | "security_storage")[]>;
-    debug?: boolean;
   }) => { consent: () => Record<string, "granted" | "denied"> | null };
 
   /**
