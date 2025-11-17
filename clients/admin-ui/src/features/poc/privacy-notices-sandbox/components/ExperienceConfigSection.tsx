@@ -103,9 +103,9 @@ const ExperienceConfigSection = ({
             headerColor={palette.FIDESUI_MINOS}
             emptyMessage="Available notices will appear here after fetching experience"
           >
-            {privacyNotices.length > 0 && (
+            {privacyNotices.length > 0 ? (
               <PrivacyNoticesList privacyNotices={privacyNotices} />
-            )}
+            ) : null}
           </PreviewCard>
         </Flex>
       </Flex>
