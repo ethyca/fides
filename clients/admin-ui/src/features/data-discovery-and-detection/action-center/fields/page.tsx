@@ -40,6 +40,7 @@ import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/Datastore
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
+  DEFAULT_DRAWER_ACTIONS,
   DRAWER_ACTIONS,
   DROPDOWN_ACTIONS,
   FIELD_ACTION_ICON,
@@ -481,7 +482,7 @@ const ActionCenterFields: NextPage = () => {
                       )
                     : true,
                   actions: props?.diff_status
-                    ? LIST_ITEM_ACTIONS.map((action) => (
+                    ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
                         <Tooltip
                           key={action}
                           title={FIELD_ACTION_LABEL[action]}
@@ -541,7 +542,10 @@ const ActionCenterFields: NextPage = () => {
                 .label
             : null,
         }}
-        actions={DRAWER_ACTIONS.map((action) => ({
+        actions={(resource?.diff_status
+          ? DRAWER_ACTIONS[resource.diff_status]
+          : DEFAULT_DRAWER_ACTIONS
+        ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
           callback: (value) => fieldActions[action]([value]),
           disabled: resource?.diff_status
