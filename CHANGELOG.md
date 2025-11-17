@@ -51,6 +51,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
 - Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
+- Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
 
 ### Fixed
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
