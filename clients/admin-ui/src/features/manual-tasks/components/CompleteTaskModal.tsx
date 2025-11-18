@@ -3,7 +3,6 @@ import {
   AntCheckbox as Checkbox,
   AntDivider as Divider,
   AntInput as Input,
-  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   AntUpload as Upload,
@@ -13,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
@@ -37,6 +37,8 @@ export const CompleteTaskModal = ({
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
   const [fileList, setFileList] = useState<any[]>([]);
+
+  const message = useMessage();
 
   const handleSave = async () => {
     try {

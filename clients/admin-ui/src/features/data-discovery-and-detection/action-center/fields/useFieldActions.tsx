@@ -1,8 +1,11 @@
-import { AntMessage as Message, AntModal as Modal } from "fidesui";
+import { AntModal as Modal, useMessage } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
-import { useClassifyStagedResourcesMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useClassifyStagedResourcesMutation,
+  usePromoteRemovalStagedResourcesMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
   useApproveStagedResourcesMutation,
   useMuteResourcesMutation,
@@ -44,7 +47,6 @@ export const getAvailableActions = (statusList: DiffStatus[]) => {
 export const useFieldActions = (
   monitorId: string,
   modalApi: ReturnType<typeof Modal.useModal>[0],
-  messageApi: ReturnType<typeof Message.useMessage>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
   const [approveStagedResourcesMutation] = useApproveStagedResourcesMutation();
@@ -54,6 +56,9 @@ export const useFieldActions = (
   const [promoteResourcesMutation] = usePromoteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
   const [updateResourcesCategoryMutation] = useUpdateResourceCategoryMutation();
+  const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
+
+  const messageApi = useMessage();
 
   const handleAction =
     (
@@ -156,12 +161,22 @@ export const useFieldActions = (
     });
   };
 
+  const handlePromoteRemoval = async (urns: string[]) => {
+    return promoteRemovalMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: urns,
+    });
+  };
+
   return {
     "assign-categories": handleAction(
       FieldActionType.ASSIGN_CATEGORIES,
       handleSetDataCategories,
     ),
-    "promote-removals": () => {},
+    "promote-removals": handleAction(
+      FieldActionType.PROMOTE_REMOVALS,
+      handlePromoteRemoval,
+    ),
     "un-approve": () => {},
     "un-mute": handleAction(FieldActionType.UN_MUTE, handleUnMute),
     approve: handleAction(FieldActionType.APPROVE, handleApprove),

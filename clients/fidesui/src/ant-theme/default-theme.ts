@@ -58,6 +58,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
       borderRadiusLG: 8,
     },
+    Drawer: {
+      zIndexPopupBase: 1300, // below chakra's modal (so the contents of a drawer can open a modal eg. data map drawer)
+    },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },

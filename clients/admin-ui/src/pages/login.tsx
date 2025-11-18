@@ -226,9 +226,13 @@ const Login: NextPage = () => {
     data: authMethods,
     isLoading: authMethodsLoading,
     error: authMethodsError,
-  } = useGetAuthenticationMethodsQuery();
+  } = useGetAuthenticationMethodsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const { data: openidProviders, isLoading: providersLoading } =
-    useGetAllOpenIDProvidersSimpleQuery();
+    useGetAllOpenIDProvidersSimpleQuery(undefined, {
+      refetchOnMountOrArgChange: true,
+    });
 
   const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
 

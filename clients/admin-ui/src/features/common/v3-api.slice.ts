@@ -7,6 +7,7 @@ import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalRe
 import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
+import type { OverrideMode } from "~/types/api/models/OverrideMode";
 
 export interface PrivacyExperienceQueryParams {
   region: string;
@@ -57,13 +58,13 @@ export const privacyNoticesSandboxV3Api = v3Api.injectEndpoints({
   endpoints: (build) => ({
     savePrivacyPreferences: build.mutation<
       ConsentResponse,
-      { body: ConsentCreate; override_children?: boolean }
+      { body: ConsentCreate; override_mode?: OverrideMode | null }
     >({
-      query: ({ body, override_children }) => ({
+      query: ({ body, override_mode }) => ({
         url: "privacy-preferences",
         method: "POST",
         body,
-        params: override_children ? { override_children: true } : undefined,
+        params: override_mode ? { override_mode } : undefined,
       }),
     }),
     getCurrentPreferences: build.query<

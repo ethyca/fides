@@ -22,13 +22,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.74.3..main)
 
 ### Added
+- Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
+- Added Google Consent Mode v2 integration for FidesJS [#6982](https://github.com/ethyca/fides/pull/6982)
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
 - Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
 - Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
-- Added GPC conditional button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
+- Added select all checkbox to new request manager screen [#6954](https://github.com/ethyca/fides/pull/6954)
+- Added GPC adaptive button option for privacy experiences [#6945](https://github.com/ethyca/fides/pull/6945)
+- Added GPC adaptive text template support in privacy experiences [#6966](https://github.com/ethyca/fides/pull/6966)
+- Added the ability to toggle GPC on or off while viewing privacy experience previews in Admin UI [#6966](https://github.com/ethyca/fides/pull/6966)
 - Added default identity definitions [#6952](https://github.com/ethyca/fides/pull/6952)
+- Added custom fields filters to new request manager screen [#6974](https://github.com/ethyca/fides/pull/6974)
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
 - Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
+- Added support for removals in the action center [#6941](https://github.com/ethyca/fides/pull/6941)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
@@ -38,14 +45,19 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
 
 ### Fixed
+- Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
+- Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
 
 ### Developer Experience
+- Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
 - Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
+- Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
+- Refactored AntMessage hooks to apply theming globally [#6934](https://github.com/ethyca/fides/pull/6934)
 
 ### Fixed
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
@@ -57,6 +69,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added admin API endpoint to allow debugging memory issues with a memory dump [#6973](https://github.com/ethyca/fides/pull/6973)
+
+### Changed
+- Allow duplicate taxonomy names for non-sibling entries [#6971](https://github.com/ethyca/fides/pull/6971)
+- Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
 
