@@ -1,5 +1,5 @@
 import json
-from pprint import pprint
+from typing import Any
 from typing import Any
 
 import pytest
