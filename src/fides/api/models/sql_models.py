@@ -917,7 +917,7 @@ class CustomFieldDefinition(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(String)
     field_type = Column(
-        EnumColumn(AllowedTypes),
+        String,
         nullable=False,
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
