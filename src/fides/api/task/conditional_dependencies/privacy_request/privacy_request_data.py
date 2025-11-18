@@ -11,6 +11,9 @@ from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     get_policy_convenience_fields,
 )
+from fides.api.task.conditional_dependencies.privacy_request.util import (
+    set_nested_value,
+)
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 
 
@@ -51,7 +54,7 @@ class PrivacyRequestDataTransformer:
         # Extract each field dynamically based on its path
         for field_path in field_paths:
             value = self._extract_value_by_path(field_path)
-            privacy_request_data: Optional[dict[str, Any]] = self._set_nested_value(
+            privacy_request_data: Optional[dict[str, Any]] = set_nested_value(
                 field_path.split("."), value
             )
             if privacy_request_data:
@@ -139,29 +142,3 @@ class PrivacyRequestDataTransformer:
         if isinstance(value, UUID):
             return str(value)
         return value
-
-    def _set_nested_value(
-        self, path: list[str], value: Any
-    ) -> Optional[dict[str, Any]]:
-        """
-        Returns a dictionary with a nested value set at the path.
-
-        Args:
-            path: List of keys to traverse (e.g., ["policy", "key"])
-            value: The value to set at the end of the path
-        """
-        result: dict[str, Any] = {}
-        current = result
-        for key in path[:-1]:
-            if key not in current:
-                current[key] = {}
-            current = current[key]
-            # Ensure we're still in a dict (no array indexing support)
-            if not isinstance(current, dict):
-                return None
-
-        # Set the final value
-        final_key = path[-1]
-        if isinstance(current, dict):
-            current[final_key] = value
-        return result
