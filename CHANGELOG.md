@@ -42,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
+- Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ### Fixed
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
