@@ -1,12 +1,12 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntMessage as message,
   AntTitle as Title,
   AntTooltip as Tooltip,
   AntUpload as Upload,
   Icons,
   UploadFile,
+  useMessage,
 } from "fidesui";
 import { useCallback, useState } from "react";
 
@@ -42,6 +42,8 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
   const canUserUploadAttachments = useHasPermission([
     ScopeRegistryEnum.ATTACHMENT_CREATE,
   ]);
+
+  const message = useMessage();
 
   const [uploadAttachment] = useUploadAttachmentMutation();
   const {

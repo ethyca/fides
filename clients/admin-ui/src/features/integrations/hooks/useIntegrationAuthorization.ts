@@ -1,5 +1,5 @@
 import { useAPIHelper } from "common/hooks";
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { useLazyGetAuthorizationUrlQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import {
@@ -27,6 +27,8 @@ export const useIntegrationAuthorization = ({
 }: UseIntegrationAuthorizationProps): UseIntegrationAuthorizationResult => {
   const [getAuthorizationUrl] = useLazyGetAuthorizationUrlQuery();
   const { handleError } = useAPIHelper();
+
+  const message = useMessage();
 
   const handleAuthorize = async () => {
     if (!connection?.key) {
