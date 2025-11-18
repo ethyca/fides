@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from loguru import logger
+from pydantic.v1.utils import deep_update
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_center_config import (
@@ -30,18 +31,7 @@ def _build_nested_field_dict(
 
     for field in fields:
         path_parts = field.field_path.split(".")
-        current = result
-
-        # Navigate/create the nested structure
-        for i, part in enumerate(path_parts):
-            # Last part - store the ConditionalDependencyFieldInfo
-            if i == len(path_parts) - 1:
-                current[part] = field
-            # Intermediate part - create nested dict if needed
-            else:
-                if part not in current:
-                    current[part] = {}
-                current = current[part]
+        result = deep_update(result, set_nested_value(path_parts, field))
 
     return result
 
@@ -127,6 +117,28 @@ def _get_identity_fields_from_privacy_center_config(
             f"Could not parse privacy center config for identity fields: {exc}"
         )
     return identity_field_names
+
+
+def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
+    """
+    Returns a dictionary with a nested value set at the path.
+
+    Args:
+        path: List of keys to traverse (e.g., ["policy", "key"])
+        value: The value to set at the end of the path
+    """
+    result: dict[str, Any] = {}
+    final_key = path[-1]
+    current = result
+
+    for key in path[:-1]:
+        if key not in current:
+            current[key] = {}
+        current = current[key]
+
+    # Set the final value
+    current[final_key] = value
+    return result
 
 
 def build_privacy_request_fields() -> list[ConditionalDependencyFieldInfo]:
