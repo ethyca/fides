@@ -95,7 +95,7 @@ class PrivacyRequestDataTransformer:
         # If we started with an Identity object and didn't extract any field from it
         # (current is still the identity object), return None
         # Otherwise, transform the value (which could be a BaseModel like LabeledIdentity)
-        if current is not None and current is self.identity_data:
+        if current is self.identity_data:
             return None
 
         return self._transform_value(current)
