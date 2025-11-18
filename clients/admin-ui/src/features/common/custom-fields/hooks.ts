@@ -15,7 +15,7 @@ import { CustomFieldsFormValues, CustomFieldValues } from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
-  resourceType?: ResourceTypes;
+  resourceType: ResourceTypes | string;
 };
 
 export const useCustomFields = ({
