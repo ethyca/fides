@@ -80,10 +80,7 @@ def get_policy_convenience_fields(
         action_type.value for action_type in action_types if action_type
     ]
     for action_type in ActionType:
-        extra_fields[f"has_{action_type.value}_rule"] = any(
-            hasattr(rule, "action_type") and rule.action_type.value == action_type.value
-            for rule in rules
-        )
+        extra_fields[f"has_{action_type.value}_rule"] = action_type in action_types
     extra_fields["rule_count"] = len(rules) if rules else 0
     extra_fields["rule_names"] = [
         rule.name for rule in rules if hasattr(rule, "name") and rule.name
