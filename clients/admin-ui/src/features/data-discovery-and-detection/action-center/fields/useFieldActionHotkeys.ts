@@ -1,4 +1,4 @@
-import { AntMessage as Message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
@@ -35,7 +35,6 @@ type ActiveListItem =
  * @param fieldActions - The field actions object from useFieldActions
  * @param updateSelectedListItem - Function to update the selected list item
  * @param onNavigate - Function to handle navigation to field details
- * @param messageApi - Ant Design message API instance (needs to be passed in to avoid re-rendering the hook)
  * @param isDrawerOpen - Whether the details drawer is currently open
  * @param onRefresh - Function to handle refreshing the list
  */
@@ -44,10 +43,10 @@ export const useFieldActionHotkeys = (
   fieldActions: ReturnType<typeof useFieldActions>,
   updateSelectedListItem: (itemKey: React.Key, selected: boolean) => void,
   onNavigate: (urn: string | undefined) => void,
-  messageApi: ReturnType<typeof Message.useMessage>[0],
   isDrawerOpen: boolean,
   onRefresh: () => void,
 ) => {
+  const messageApi = useMessage();
   // Helper to open a category select dropdown programmatically
   const openCategorySelect = (selectElement: Element): boolean => {
     const selectorElement = selectElement.querySelector(

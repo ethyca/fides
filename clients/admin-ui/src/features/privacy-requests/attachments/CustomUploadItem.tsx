@@ -1,11 +1,11 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntMessage as message,
   AntText as Text,
   AntTooltip as Tooltip,
   Icons,
   UploadFile,
+  useMessage,
 } from "fidesui";
 import React, { useState } from "react";
 
@@ -28,6 +28,8 @@ const CustomUploadItem = ({ file }: CustomUploadItemProps) => {
 
   // Use the lazy version of the query which returns a trigger function
   const [getAttachmentDetails] = useLazyGetAttachmentDetailsQuery();
+
+  const message = useMessage();
 
   const handleDownload = async () => {
     if (file.customData?.attachment_id && file.customData?.privacy_request_id) {

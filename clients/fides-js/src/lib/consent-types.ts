@@ -6,6 +6,7 @@ import type {
 } from "../docs";
 import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
+import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -233,6 +234,7 @@ export interface FidesGlobal
   version: string;
   aep: typeof aep;
   blueconic: typeof blueconic;
+  gcm: typeof gcm;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
