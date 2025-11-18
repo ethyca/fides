@@ -3,11 +3,11 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
   Box,
   GreenCheckCircleIcon,
   Heading,
   HStack,
+  useMessage,
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
@@ -45,6 +45,8 @@ const TwilioEmailMessagingForm = ({
   const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [form] = Form.useForm();
+
+  const message = useMessage();
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
