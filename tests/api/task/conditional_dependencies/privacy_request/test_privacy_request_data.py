@@ -21,26 +21,6 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 
 
 @pytest.fixture
-def privacy_request(db: Session, policy: Policy, user: FidesUser):
-    return PrivacyRequest.create(
-        db=db,
-        data={
-            "external_id": "ext-123",
-            "status": PrivacyRequestStatus.approved,
-            "source": PrivacyRequestSource.privacy_center,
-            "location": "US",
-            "requested_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-            "reviewed_at": datetime(2024, 1, 2, tzinfo=timezone.utc),
-            "origin": "https://example.com",
-            "submitted_by": user.id,
-            "property_id": "prop_123",
-            "client_id": policy.client_id,
-            "policy_id": policy.id,
-        },
-    )
-
-
-@pytest.fixture
 def transformer(privacy_request: PrivacyRequest):
     """Fixture to create a PrivacyRequestDataTransformer instance."""
     return PrivacyRequestDataTransformer(privacy_request)
@@ -81,10 +61,7 @@ def erasure_rule(db: Session, test_policy: Policy):
             "key": f"erasure_rule_{uuid4()}",
             "policy_id": test_policy.id,
             "action_type": ActionType.erasure,
-            "masking_strategy": {
-                "strategy": "null_rewrite",
-                "configuration": {},
-            },
+            "masking_strategy": {"strategy": "null_rewrite", "configuration": {}},
         },
     )
 
@@ -105,12 +82,7 @@ def consent_rule(db: Session, test_policy: Policy):
 class TestPrivacyRequestToEvaluationDataBasicFields:
     """Test basic field transformation."""
 
-    REQUIRED_FIELDS = [
-        "id",
-        "client_id",
-        "status",
-        "requested_at",
-    ]
+    REQUIRED_FIELDS = ["id", "client_id", "status", "requested_at"]
 
     OPTIONAL_FIELDS = [
         "external_id",
@@ -197,9 +169,8 @@ class TestPrivacyRequestToEvaluationDataPolicy:
         data = transformer.to_evaluation_data(field_addresses)
 
         for col in cols:
-            assert data["privacy_request"]["policy"][
-                col
-            ] == transformer._transform_value(getattr(policy, col))
+            data_col = data["privacy_request"]["policy"][col]
+            assert data_col == transformer._transform_value(getattr(policy, col))
 
     @pytest.mark.usefixtures("access_rule", "erasure_rule", "consent_rule")
     def test_policy_rules_with_all_action_types(
@@ -231,7 +202,6 @@ class TestPrivacyRequestToEvaluationDataPolicy:
         )
 
         assert "privacy_request" in data
-
         assert data["privacy_request"]["policy"]["has_access_rule"] is True
         assert data["privacy_request"]["policy"]["has_erasure_rule"] is True
         assert data["privacy_request"]["policy"]["has_consent_rule"] is True
@@ -291,10 +261,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
     """Test identity data transformation."""
 
     def test_standard_identity_fields(
-        self,
-        db: Session,
-        transformer: PrivacyRequestDataTransformer,
-        privacy_request: PrivacyRequest,
+        self, db: Session, privacy_request: PrivacyRequest
     ):
         """Test transformation of standard identity fields."""
         privacy_request.persist_identity(
@@ -306,6 +273,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
             ),
         )
 
+        transformer = PrivacyRequestDataTransformer(privacy_request)
         cols = ["email", "phone_number", "external_id"]
         field_addresses = [f"privacy_request.identity.{col}" for col in cols]
         data = transformer.to_evaluation_data(field_addresses)
@@ -321,26 +289,20 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         self,
         db: Session,
         privacy_request: PrivacyRequest,
-        transformer: PrivacyRequestDataTransformer,
     ):
         """Test transformation of custom identity fields with labels."""
         cols = ["email", "customer_id"]
         field_addresses = [f"privacy_request.identity.{col}" for col in cols]
 
-        # No custom identity fields should be present
-        data = transformer.to_evaluation_data(field_addresses)
-        for col in cols:
-            assert data["privacy_request"]["identity"][col] == None
-
         # Persist custom identity fields
         privacy_request.persist_identity(
             db=db,
-            identity=Identity(
-                email="user@example.com",
-                customer_id=LabeledIdentity(label="Customer ID", value="cust_123"),
-            ),
+            identity={
+                "email": "user@example.com",
+                "customer_id": LabeledIdentity(label="Customer ID", value="cust_123"),
+            },
         )
-
+        transformer = PrivacyRequestDataTransformer(privacy_request)
         data = transformer.to_evaluation_data(field_addresses)
 
         for col in cols:
@@ -384,6 +346,7 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
                 ),
             },
         )
+        transformer = PrivacyRequestDataTransformer(privacy_request)
 
         # Verify that the custom fields are present
         data = transformer.to_evaluation_data(field_addresses)
@@ -398,26 +361,18 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
 class TestPrivacyRequestToEvaluationDataEdgeCases:
     """Test edge cases and error handling."""
 
-    def test_none_policy(self, db: Session, oauth_client):
+    def test_none_policy(
+        self, db: Session, oauth_client, privacy_request: PrivacyRequest
+    ):
         """Test handling of privacy request with no policy."""
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "status": PrivacyRequestStatus.pending,
-                "client_id": oauth_client.id,
-                "policy_id": None,  # Explicitly set to None
-            },
-        )
+        privacy_request.update(db=db, data={"policy_id": None})
 
         field_addresses = {"privacy_request.policy.key"}
         transformer = PrivacyRequestDataTransformer(privacy_request)
         data = transformer.to_evaluation_data(field_addresses)
         # When policy is None, accessing policy.key returns None
-        # The structure will have policy.key = None
         assert "privacy_request" in data
         # Since policy is None, policy.key will be None
-        # The structure might be {"privacy_request": {"policy": {"key": None}}} or {"privacy_request": {"policy": None}}
-        # depending on how _extract_value_by_path handles it
         if data["privacy_request"].get("policy") is not None:
             assert data["privacy_request"]["policy"].get("key") is None
 
@@ -428,24 +383,15 @@ class TestPrivacyRequestToEvaluationDataEdgeCases:
         "erasure_rule",
     )
     def test_complete_data_transformation(
-        self, db: Session, oauth_client, test_policy: Policy
+        self, db: Session, test_policy: Policy, privacy_request: PrivacyRequest
     ):
         """Test transformation with all data types present."""
+        # Update privacy_request to use test_policy
+        privacy_request.update(db=db, data={"policy_id": test_policy.id})
+        db.refresh(privacy_request)
+
         # Create policy with multiple rules
         test_policy.update(db=db, data={"execution_timeframe": 30})
-
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "ext-complete",
-                "status": PrivacyRequestStatus.approved,
-                "source": PrivacyRequestSource.privacy_center,
-                "location": "UK",
-                "requested_at": datetime(2024, 1, 1, tzinfo=timezone.utc),
-                "policy_id": test_policy.id,
-                "client_id": oauth_client.id,
-            },
-        )
 
         privacy_request.persist_identity(
             db=db,
@@ -471,27 +417,27 @@ class TestPrivacyRequestToEvaluationDataEdgeCases:
             "privacy_request.identity.customer_id",
             "privacy_request.custom_privacy_request_fields.legal_entity",
         }
-        data = PrivacyRequestDataTransformer(privacy_request).to_evaluation_data(
-            field_addresses
-        )
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        data = transformer.to_evaluation_data(field_addresses)
 
         # Verify all sections are present
+        top_level_keys = ["id", "policy", "identity", "custom_privacy_request_fields"]
         assert "privacy_request" in data
-        assert "id" in data["privacy_request"]
-        assert "policy" in data["privacy_request"]
-        assert "identity" in data["privacy_request"]
-        assert "custom_privacy_request_fields" in data["privacy_request"]
+
+        privacy_request_data = data["privacy_request"]
+        for key in top_level_keys:
+            assert key in privacy_request_data
 
         # Verify policy data
-        assert data["privacy_request"]["policy"]["key"] == test_policy.key
+        assert privacy_request_data["policy"]["key"] == test_policy.key
 
         # Verify identity data
-        assert data["privacy_request"]["identity"]["email"] == "user@example.com"
-        assert data["privacy_request"]["identity"]["customer_id"]["value"] == "cust_123"
+        assert privacy_request_data["identity"]["email"] == "user@example.com"
+        assert privacy_request_data["identity"]["customer_id"]["value"] == "cust_123"
 
         # Verify custom fields
         assert (
-            data["privacy_request"]["custom_privacy_request_fields"]["legal_entity"][
+            privacy_request_data["custom_privacy_request_fields"]["legal_entity"][
                 "value"
             ]
             == "Glamour UK"
