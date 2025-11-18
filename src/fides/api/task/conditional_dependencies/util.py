@@ -20,34 +20,13 @@ def create_conditional_dependency_field_info(
     )
 
 
-def merge_dicts_no_overwrite(
-    result: dict[str, Any], privacy_request_data: dict[str, Any]
-) -> dict[str, Any]:
-    """
-    Merges two dictionaries, avoiding overwriting existing values.
-
-    Args:
-        result: The dictionary to merge into
-        privacy_request_data: The dictionary to merge from
-
-    Returns:
-        The merged dictionary
-    """
-    for key, value in privacy_request_data.items():
-        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-            merge_dicts_no_overwrite(result[key], value)
-        elif key not in result:
-            result[key] = value
-    return result
-
-
-def extract_nested_field_value(data: dict[str, Any], field_path: list[str]) -> Any:
+def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
     """
     Extracts a value from a dictionary by following the path.
 
     Args:
         data: The dictionary to extract from
-        path: The path to extract the value from
+        field_path: The path to extract the value from
 
     Returns:
         The extracted value

@@ -246,7 +246,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request(self, mock_dispatch_message, api_client, url):
         data = {"identity": {"email": "test@example.com"}}
         response = api_client.post(url, json=data)
@@ -258,7 +260,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_identity_present(
         self,
         mock_dispatch_message,
@@ -288,7 +292,9 @@ class TestConsentRequest:
         "messaging_config",
         "sovrn_email_connection_config",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_subject_verification_disabled_no_email(
         self, mock_dispatch_message, api_client, url
     ):
@@ -302,7 +308,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_phone_number(self, mock_dispatch_message, api_client, url):
         data = {"identity": {"phone_number": "+3368675309"}}
         response = api_client.post(url, json=data)
@@ -314,7 +322,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_email_and_phone_use_config(
         self,
         mock_dispatch_message,
@@ -341,7 +351,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_email_and_phone_default_to_email(
         self,
         mock_dispatch_message,
@@ -372,7 +384,9 @@ class TestConsentRequest:
         "messaging_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_with_source(
         self,
         mock_dispatch_message,
@@ -399,7 +413,9 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.service.messaging.messaging_service.dispatch_message")
+    @patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
     def test_consent_request_with_custom_privacy_request_fields(
         self,
         mock_dispatch_message,

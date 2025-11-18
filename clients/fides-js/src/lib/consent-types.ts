@@ -4,7 +4,9 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
+import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -193,6 +195,8 @@ export interface FidesInitOptions {
   fidesUnsupportedRepeatedScriptLoading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  fidesCookieSuffix?: string | null;
 }
 
 /**
@@ -228,7 +232,9 @@ export interface FidesGlobal
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   version: string;
+  aep: typeof aep;
   blueconic: typeof blueconic;
+  gcm: typeof gcm;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
@@ -872,6 +878,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
+  | "fidesCookieSuffix"
 >;
 
 export type FidesExperienceTranslationOverrides = {

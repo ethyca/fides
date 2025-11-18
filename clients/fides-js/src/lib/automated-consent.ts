@@ -57,7 +57,9 @@ export const automaticallyApplyPreferences = async (
   const { consent: migratedConsent, method: migrationMethod } =
     readConsentFromAnyProvider(options);
   const hasMigratedConsent =
-    !!migratedConsent && !!migrationMethod && !getFidesConsentCookie();
+    !!migratedConsent &&
+    !!migrationMethod &&
+    !getFidesConsentCookie(options.fidesCookieSuffix);
 
   if (
     !context.globalPrivacyControl &&

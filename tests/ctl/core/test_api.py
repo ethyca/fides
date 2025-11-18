@@ -3402,6 +3402,8 @@ class TestHealthchecks:
                 "fides.dsr": 0,
                 "fidesops.messaging": 0,
                 "fides.privacy_preferences": 0,
+                "fides.privacy_request_exports": 0,
+                "fides.privacy_request_ingestion": 0,
                 "fidesplus.discovery_monitors_classification": 0,
                 "fidesplus.discovery_monitors_detection": 0,
                 "fidesplus.discovery_monitors_promotion": 0,
