@@ -20,13 +20,13 @@ def create_conditional_dependency_field_info(
     )
 
 
-def extract_nested_field_value(data: dict[str, Any], field_path: list[str]) -> Any:
+def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
     """
     Extracts a value from a dictionary by following the path.
 
     Args:
         data: The dictionary to extract from
-        path: The path to extract the value from
+        field_path: The path to extract the value from
 
     Returns:
         The extracted value
