@@ -5,7 +5,6 @@ import {
   AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
@@ -80,7 +79,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [messageApi, messageContext] = message.useMessage();
   const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -143,7 +141,6 @@ const ActionCenterFields: NextPage = () => {
   const bulkActions = useBulkActions(
     monitorId,
     modalApi,
-    messageApi,
     async (urns: string[]) => {
       await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
     },
@@ -151,7 +148,6 @@ const ActionCenterFields: NextPage = () => {
   const fieldActions = useFieldActions(
     monitorId,
     modalApi,
-    messageApi,
     async (urns: string[]) => {
       await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
     },
@@ -265,7 +261,6 @@ const ActionCenterFields: NextPage = () => {
     fieldActions,
     updateSelectedListItem,
     handleNavigate,
-    messageApi,
     !!detailsUrn,
     () => refetch(),
   );
@@ -591,7 +586,6 @@ const ActionCenterFields: NextPage = () => {
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
       {modalContext}
-      {messageContext}
     </FixedLayout>
   );
 };

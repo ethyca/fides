@@ -3,12 +3,12 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Icons,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
 
@@ -32,7 +32,7 @@ export const PrivacyRequestsDashboard = () => {
     pagination,
   });
 
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
   const { data, isLoading, isFetching, refetch } =
@@ -90,7 +90,6 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    messageApi,
     modalApi,
   });
 
@@ -170,7 +169,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {messageContext}
       {modalContext}
     </div>
   );
