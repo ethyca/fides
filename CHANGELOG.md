@@ -46,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
+- Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
 
 ### Developer Experience
 - Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
