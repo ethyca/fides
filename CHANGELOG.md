@@ -46,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ### Fixed
+- Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 - Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
 
