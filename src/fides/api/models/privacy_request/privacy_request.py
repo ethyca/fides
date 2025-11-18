@@ -12,7 +12,14 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
+from sqlalchemy.orm import (
+    Query,
+    RelationshipProperty,
+    Session,
+    backref,
+    defer,
+    relationship,
+)
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -373,6 +380,29 @@ class PrivacyRequest(
                 )
 
         return super().create(db=db, data=data, check_name=check_name)
+
+    @classmethod
+    def query_without_large_columns(cls, db: Session) -> Query:
+        """
+        Returns a query for PrivacyRequest with large columns deferred to prevent OOM errors.
+
+        This excludes the large columns (_filtered_final_upload and access_result_urls)
+        which can be very large (MBs per request). Use this method for list views, bulk
+        operations, and background tasks that don't need the filtered results.
+
+        The large columns can still be accessed later if needed by accessing them directly
+        on individual PrivacyRequest instances.
+
+        Args:
+            db: Database session
+
+        Returns:
+            Query with large columns deferred
+        """
+        return db.query(cls).options(
+            defer(cls._filtered_final_upload),
+            defer(cls.access_result_urls),
+        )
 
     def to_safe_dict(self) -> Dict[str, Any]:
         """
