@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
+- Added Google Consent Mode v2 integration for FidesJS [#6982](https://github.com/ethyca/fides/pull/6982)
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
 - Added Admin UI support for the Fides v3 API [#6933](https://github.com/ethyca/fides/pull/6933)
 - Added table to store SaaS template datasets for future diff comparison [#6913](https://github.com/ethyca/fides/pull/6913)
@@ -42,18 +43,21 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
+- Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 
 ### Developer Experience
+- Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
 - Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
 - Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
+- Refactored AntMessage hooks to apply theming globally [#6934](https://github.com/ethyca/fides/pull/6934)
 
 ### Fixed
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
