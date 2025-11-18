@@ -90,7 +90,7 @@ def get_pre_approval_webhook_detail(
     ],
     response_model=List[schemas.PreApprovalWebhookResponse],
 )
-def create_or_update_pre_execution_webhooks(
+def create_or_update_pre_approval_webhooks(
     *,
     db: Session = Depends(deps.get_db),
     webhooks: Annotated[List[schemas.PreApprovalWebhookCreate], Field(max_length=50)],  # type: ignore
@@ -148,7 +148,7 @@ def create_or_update_pre_execution_webhooks(
         webhooks_to_remove.delete()
 
     logger.info(
-        "Creating/updating Policy Pre-Execution Webhooks: {}", staged_webhook_keys
+        "Creating/updating Policy Pre-Approval Webhooks: {}", staged_webhook_keys
     )
     # Committing to database now, as a last step, once we've verified that all the webhooks
     # in the request are free of issues.
@@ -164,7 +164,7 @@ def create_or_update_pre_execution_webhooks(
     ],
     response_model=schemas.PreApprovalWebhookResponse,
 )
-def update_pre_execution_webhook(
+def update_pre_approval_webhook(
     *,
     db: Session = Depends(deps.get_db),
     webhook_key: FidesKey,
@@ -193,7 +193,7 @@ def update_pre_execution_webhook(
             detail=exc.args[0],
         )
 
-    # Pre Execution Webhooks are not committed by default, so we commit at the end.
+    # Pre Approval Webhooks are not committed by default, so we commit at the end.
     db.commit()
     return schemas.PreApprovalWebhookResponse(
         connection_config=loaded_webhook.connection_config,
@@ -207,7 +207,7 @@ def update_pre_execution_webhook(
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.WEBHOOK_DELETE])],
 )
-def delete_pre_execution_webhook(
+def delete_pre_approval_webhook(
     *,
     db: Session = Depends(deps.get_db),
     webhook_key: FidesKey,

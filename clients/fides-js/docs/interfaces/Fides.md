@@ -297,6 +297,68 @@ With options to include non-applicable notices and use consent mechanism strings
 
 ***
 
+### gcm()
+
+> **gcm**: (`options`?) => `object`
+
+Enable Google Consent Mode v2 integration. This integration automatically
+syncs Fides consent with Google's Consent Mode v2 API via gtag(), enabling
+proper consent management for Google Analytics, Google Ads, and other
+Google services that respect Consent Mode.
+
+This integration uses the gtag() API to update consent for Google's standard
+consent types: ad_storage, ad_personalization, ad_user_data, analytics_storage,
+and optional types like functionality_storage and personalization_storage.
+
+The integration gracefully handles cases where not all mapped consent keys
+are configured in Fides - it will only process consent for keys that exist
+in both the purposeMapping and the Fides consent object.
+
+See the [Google Consent Mode documentation](https://developers.google.com/tag-platform/security/guides/consent) for more.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `object` | Configuration for the Google Consent Mode integration |
+| `options.purposeMapping`? | `Record`\<`string`, (`"ad_storage"` \| `"ad_personalization"` \| `"ad_user_data"` \| `"analytics_storage"` \| `"functionality_storage"` \| `"personalization_storage"` \| `"security_storage"`)[]\> | Maps Fides consent keys to Google consent types. Default mapping includes: analytics → analytics_storage, advertising → [ad_storage, ad_personalization, ad_user_data], functional → [functionality_storage, personalization_storage], data_sales_and_sharing → [ad_storage, ad_personalization, ad_user_data], marketing → [ad_storage, ad_personalization, ad_user_data] |
+
+#### Returns
+
+`object`
+
+| Name | Type |
+| ------ | ------ |
+| `consent` | () => `null` \| `Record`\<`string`, `"granted"` \| `"denied"`\> |
+
+#### Examples
+
+Basic usage with default mapping:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.gcm()</script>
+</head>
+```
+
+With custom consent mapping:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.gcm({
+      purposeMapping: {
+        analytics: ['analytics_storage'],
+        advertising: ['ad_storage', 'ad_personalization', 'ad_user_data'],
+        functional: ['functionality_storage', 'personalization_storage']
+      }
+    });
+  </script>
+</head>
+```
+
+***
+
 ### shopify()
 
 > **shopify**: (`options`?) => `void`
