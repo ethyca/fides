@@ -391,7 +391,11 @@ class DuplicateDetectionService:
             duplicate
             for duplicate in duplicates
             if duplicate.status
-            not in [PrivacyRequestStatus.duplicate, PrivacyRequestStatus.complete]
+            not in [
+                PrivacyRequestStatus.duplicate,
+                PrivacyRequestStatus.complete,
+                PrivacyRequestStatus.denied,
+            ]
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:
