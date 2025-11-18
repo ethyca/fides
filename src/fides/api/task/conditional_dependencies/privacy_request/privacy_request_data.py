@@ -38,12 +38,7 @@ class PrivacyRequestDataTransformer:
         Transforms the PrivacyRequest into an evaluation-ready dictionary structure.
 
         Args:
-            field_addresses: Set of field addresses referenced in conditions (e.g.,
-                {"privacy_request.location", "privacy_request.policy.rules.0.action_type"}).
-                Only addresses starting with "privacy_request." or "privacy_request:" are processed.
-
-        Returns:
-            A dictionary with the referenced privacy request data under the "privacy_request" key.
+            field_addresses: Set of field addresses referenced in conditions
         """
         if not field_addresses:
             return {}
@@ -64,12 +59,7 @@ class PrivacyRequestDataTransformer:
 
     def _extract_value_by_path(self, field_address: str) -> Any:
         """
-        Dynamically extract a value from PrivacyRequest by following the field address path.
-
-        This method follows the path through the PrivacyRequest object structure:
-        - Direct attributes: "location", "status"
-        - Relationship attributes: "policy.key", "policy.name"
-        - Method calls: "identity.email", "custom_privacy_request_fields.legal_entity.value"
+        Extracts a value from PrivacyRequest by following the field address path.
 
         Args:
             field_address: The field address path (e.g., "privacy_request.location", "privacy_request.policy.rules")
@@ -107,9 +97,6 @@ class PrivacyRequestDataTransformer:
 
         Args:
             policy: The Policy ORM object
-
-        Returns:
-            Dictionary representation of the policy with convenience fields added
         """
         if not policy:
             return {}
@@ -121,16 +108,7 @@ class PrivacyRequestDataTransformer:
         return policy_dict
 
     def _transform_value(self, value: Any) -> Any:
-        """
-        Transform a value to its evaluation-ready form.
-
-        Args:
-            value: The raw value to transform
-            field_address: The field address (for context)
-
-        Returns:
-            The transformed value
-        """
+        """Transforms a value to its evaluation-ready form."""
         if value is None:
             return None
         if isinstance(value, BaseModel):
