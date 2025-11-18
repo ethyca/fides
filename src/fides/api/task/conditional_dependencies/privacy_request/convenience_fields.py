@@ -11,10 +11,7 @@ from fides.api.task.conditional_dependencies.util import (
 
 
 def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
-    """
-    Build a list of convenience fields for the privacy request.
-    """
-
+    """Builds a list of ConditionalDependencyFieldInfo objects for convenience fields."""
     return [
         create_conditional_dependency_field_info(
             "privacy_request.policy.rule_action_types",
@@ -70,7 +67,7 @@ def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
 def get_policy_convenience_fields(
     policy: Policy,
 ) -> dict[str, Any]:
-
+    """Gets convenience fields for a policy."""
     extra_fields: dict[str, Any] = {}
     extra_fields["id"] = policy.id
 

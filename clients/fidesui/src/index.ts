@@ -18,6 +18,7 @@ export type {
 export type {
   AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
+  CheckboxProps as AntCheckboxProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
   DrawerProps as AntDrawerProps,
@@ -68,7 +69,6 @@ export {
   InputNumber as AntInputNumber,
   Layout as AntLayout,
   Menu as AntMenu,
-  message as AntMessage,
   Modal as AntModal,
   notification as AntNotification,
   Pagination as AntPagination,
@@ -120,7 +120,6 @@ export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
-export type { MessageInstance as AntMessageInstance } from "antd/lib/message/interface";
 
 // Export utils
 export * from "./components/data-display/filter.utils";

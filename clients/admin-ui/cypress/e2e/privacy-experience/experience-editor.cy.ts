@@ -78,7 +78,7 @@ describe("Experience editor", () => {
 
     it("doesn't show a preview for a privacy center", () => {
       cy.getByTestId("controlled-select-component").antSelect("Privacy center");
-      cy.getByTestId("input-dismissable").should("not.be.visible");
+      cy.getByTestId("input-dismissable").should("not.exist");
       cy.getByTestId("no-preview-notice").contains(
         "Privacy center preview not available",
       );
@@ -128,6 +128,40 @@ describe("Experience editor", () => {
       cy.getByTestId("input-translations.0.title").type("Edit");
       cy.getByTestId("save-btn").click();
       cy.get(`#${PREVIEW_CONTAINER_ID}`).find("#fides-banner").contains("Edit");
+    });
+
+    it("can toggle GPC preview mode", () => {
+      cy.getByTestId("controlled-select-component").antSelect(
+        "Banner and modal",
+      );
+      cy.getByTestId("add-privacy-notice").click();
+      cy.getByTestId("select-privacy-notice").antSelect(0);
+
+      // Verify GPC toggle exists and is initially unchecked
+      cy.getByTestId("gpc-preview-toggle").should("exist");
+      cy.getByTestId("gpc-preview-toggle").should(
+        "have.attr",
+        "aria-checked",
+        "false",
+      );
+
+      // Toggle GPC on
+      cy.getByTestId("gpc-preview-toggle").click();
+      cy.getByTestId("gpc-preview-toggle").should(
+        "have.attr",
+        "aria-checked",
+        "true",
+      );
+      cy.get("#fides-modal").contains("Global Privacy Control detected");
+      cy.get("#fides-banner").contains("Global Privacy Control Applied");
+
+      // Toggle GPC off
+      cy.getByTestId("gpc-preview-toggle").click();
+      cy.getByTestId("gpc-preview-toggle").should(
+        "have.attr",
+        "aria-checked",
+        "false",
+      );
     });
   });
 

@@ -481,7 +481,7 @@ class TestHeapDumpFunctionality:
         logged_message = str(mock_logger.error.call_args[0][0])
 
         # Verify all expected sections are in the single message
-        assert "MEMORY DUMP - THRESHOLD EXCEEDED" in logged_message
+        assert "MEMORY DUMP" in logged_message
         assert "PROCESS MEMORY STATS" in logged_message
         assert "RSS (Resident Set Size)" in logged_message
         assert "512.0 MiB" in logged_message

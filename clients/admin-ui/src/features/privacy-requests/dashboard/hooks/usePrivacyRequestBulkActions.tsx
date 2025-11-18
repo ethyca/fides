@@ -1,10 +1,10 @@
 import {
   AntMenuProps as MenuProps,
-  AntMessage as message,
   AntModal as modal,
   Icons,
+  useMessage,
 } from "fidesui";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
 import { PrivacyRequestResponse } from "~/types/api";
@@ -21,14 +21,11 @@ import {
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
 
-type MessageInstance = ReturnType<typeof message.useMessage>[0];
 type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
-  clearSelectedIds: () => void;
-  messageApi: MessageInstance;
   modalApi: ModalInstance;
 }
 
@@ -90,8 +87,6 @@ const formatResultMessage = (
 export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
-  clearSelectedIds,
-  messageApi,
   modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
@@ -99,10 +94,7 @@ export const usePrivacyRequestBulkActions = ({
     [requests, selectedIds],
   );
 
-  // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
-  useEffect(() => {
-    clearSelectedIds();
-  }, [requests, clearSelectedIds]);
+  const messageApi = useMessage();
 
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
