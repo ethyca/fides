@@ -48,7 +48,7 @@ export const transformSystemToFormValues = (
 ): FormValues => {
   // @ts-ignore
   const dataStewards = system?.data_stewards
-    ?.map((user: any) => user.username) || [];
+    ?.map((user: UserResponse) => user.username) || [];
 
   return {
     ...system,
