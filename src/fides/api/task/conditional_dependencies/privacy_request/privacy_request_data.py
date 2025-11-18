@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -10,10 +10,6 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     get_policy_convenience_fields,
-)
-from fides.api.task.conditional_dependencies.schemas import (
-    ConditionGroup,
-    ConditionLeaf,
 )
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 
@@ -27,18 +23,11 @@ class PrivacyRequestDataTransformer:
     """
 
     def __init__(self, privacy_request: PrivacyRequest):
-        """
-        Initialize the transformer with a PrivacyRequest object.
-
-        Args:
-            privacy_request: The PrivacyRequest ORM object to transform
-        """
         self.privacy_request = privacy_request
-        # Build the data objects just once to avoid multiple calls to the database
         self.policy_data = self._transform_policy_object(privacy_request.policy)
-        self.identity_data = privacy_request.get_persisted_identity()
+        self.identity_data = self.privacy_request.get_persisted_identity()
         self.custom_privacy_request_fields_data = (
-            privacy_request.get_persisted_custom_privacy_request_fields()
+            self.privacy_request.get_persisted_custom_privacy_request_fields()
         )
 
     def to_evaluation_data(self, field_addresses: set[str]) -> dict[str, Any]:
@@ -47,21 +36,11 @@ class PrivacyRequestDataTransformer:
 
         Args:
             field_addresses: Set of field addresses referenced in conditions (e.g.,
-                {"privacy_request.location", "privacy_request.policy.rules.0.action_type",
-                "privacy_request.custom_privacy_request_fields.legal_entity.value"}).
+                {"privacy_request.location", "privacy_request.policy.rules.0.action_type"}).
                 Only addresses starting with "privacy_request." or "privacy_request:" are processed.
 
         Returns:
-            A dictionary containing only the referenced privacy request data under the
-            "privacy_request" key, suitable for condition evaluation.
-
-        Example:
-            >>> transformer = PrivacyRequestDataTransformer(privacy_request)
-            >>> data = transformer.to_evaluation_data(
-            ...     {"privacy_request.location", "privacy_request.policy.rules.0.action_type"}
-            ... )
-            >>> data["privacy_request"]["location"]  # "US"
-            >>> data["privacy_request"]["policy"]["has_access_rule"]  # True
+            A dictionary with the referenced privacy request data under the "privacy_request" key.
         """
         if not field_addresses:
             return {}
@@ -92,22 +71,16 @@ class PrivacyRequestDataTransformer:
         Args:
             field_address: The field address path (e.g., "privacy_request.location", "privacy_request.policy.rules")
 
-        Returns:
-            The extracted value, with special handling for enums, datetimes, and UUIDs
         """
         # first part will always be privacy_request
         parts: list[str] = field_address.split(".")[1:]
         current: Any = self.privacy_request
 
         # Track the identity object if we're extracting from identity
-        identity_obj = None
         if parts[0] == "policy":
             current = self.policy_data
         elif parts[0] == "identity":
             current = self.identity_data
-            identity_obj = (
-                current  # Save reference to detect if we didn't extract a field
-            )
         elif parts[0] == "custom_privacy_request_fields":
             current = self.custom_privacy_request_fields_data
 
@@ -119,7 +92,7 @@ class PrivacyRequestDataTransformer:
         # If we started with an Identity object and didn't extract any field from it
         # (current is still the identity object), return None
         # Otherwise, transform the value (which could be a BaseModel like LabeledIdentity)
-        if current is not None and current is identity_obj:
+        if current is not None and current is self.identity_data:
             return None
 
         return self._transform_value(current)
@@ -192,49 +165,3 @@ class PrivacyRequestDataTransformer:
         if isinstance(current, dict):
             current[final_key] = value
         return result
-
-
-def extract_privacy_request_field_addresses(
-    condition: Union[ConditionLeaf, ConditionGroup]
-) -> set[str]:
-    """
-    Extract all privacy request field addresses from a condition tree.
-
-    This function recursively traverses a condition tree and extracts field addresses
-    that reference privacy request data (those starting with "privacy_request." or "privacy_request:" namespace).
-
-    Args:
-        condition: The condition to extract field addresses from
-
-    Returns:
-        Set of privacy request field addresses (e.g., {"privacy_request.location", "privacy_request.policy.has_access_rule"})
-
-    Example:
-        >>> condition = ConditionGroup(
-        ...     logical_operator="and",
-        ...     conditions=[
-        ...         ConditionLeaf(field_address="privacy_request.location", operator="eq", value="US"),
-        ...         ConditionLeaf(field_address="privacy_request.policy.has_access_rule", operator="eq", value=True),
-        ...     ]
-        ... )
-        >>> addresses = extract_privacy_request_field_addresses(condition)
-        >>> addresses == {"privacy_request.location", "privacy_request.policy.has_access_rule"}
-        True
-    """
-    field_addresses: set[str] = set()
-
-    if isinstance(condition, ConditionLeaf):
-        # Include addresses that start with privacy_request prefix
-        # Skip other colon-notation addresses (task data fields without privacy_request prefix)
-        if condition.field_address.startswith(
-            "privacy_request."
-        ) or condition.field_address.startswith("privacy_request:"):
-            field_addresses.add(condition.field_address)
-    elif isinstance(condition, ConditionGroup):
-        # Recursively extract from nested conditions
-        for sub_condition in condition.conditions:
-            field_addresses.update(
-                extract_privacy_request_field_addresses(sub_condition)
-            )
-
-    return field_addresses
