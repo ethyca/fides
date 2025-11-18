@@ -5,10 +5,8 @@
 import type { Classification } from "./Classification";
 import type { ConsentInfo } from "./ConsentInfo";
 import type { ConsentStatus } from "./ConsentStatus";
-import type { ConsentStatusDetail } from "./ConsentStatusDetail";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
-import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
@@ -47,10 +45,6 @@ export type StagedResourceAPIResponse = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
-  /**
-   * List of errors encountered during processing
-   */
-  errors?: Array<ResourceError>;
   source_modified?: string | null;
   classifications?: Array<Classification>;
   domain?: string | null;
@@ -75,17 +69,6 @@ export type StagedResourceAPIResponse = {
    * Aggregated consent for the asset
    */
   consent_aggregated?: ConsentStatus | null;
-  /**
-   * Detailed consent status for each page and location where the asset was found
-   */
-  consent_status_details?: Record<
-    string,
-    Record<string, ConsentStatusDetail>
-  > | null;
-  /**
-   * The web monitor group ID associated with the asset
-   */
-  group_id?: string | null;
   /**
    * The Compass Vendor ID associated with the asset
    */
@@ -113,8 +96,8 @@ export type StagedResourceAPIResponse = {
    * A map of diff statuses present in the descendants of this resource, e.g. {'addition': true}
    */
   child_diff_statuses?: Record<string, boolean>;
-  /**
-   * Okta application metadata for identity provider resources (app_type, status, created, sign_on_url, etc.)
+  /** An array of the "preferred" data uses for the asset; this encapsulates backend logic
+   * that will use either user_assigned_data_uses or data_uses, depending on their values.
    */
-  metadata?: null;
+  preferred_data_uses?: Array<string> | null;
 };
