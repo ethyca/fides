@@ -178,13 +178,12 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
   });
 
   // Setup Google Consent Mode
-  window.fidesGtag = Fides.gtagConsent({
+  window.fidesGcm = Fides.gcm({
     purposeMapping: {
       performance: ['analytics_storage'],
       functional: ['functionality_storage', 'personalization_storage'],
       advertising: ['ad_storage', 'ad_personalization', 'ad_user_data']
-    },
-    debug: true
+    }
   });
 
   // Show modal
@@ -193,7 +192,7 @@ Now we simulate the "migration day" where Fides replaces OneTrust.
 })();
 ```
 
-The modal will open automatically. Watch the console for `[Fides Adobe]` and `[Fides gtag]` debug logs.
+The modal will open automatically. Watch the console for `[Fides Adobe]` and `[Fides GCM]` debug logs.
 
 ### 3.2 Verify Migration Success
 
