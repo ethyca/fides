@@ -15,6 +15,7 @@ import {
 } from "~/features/common/v3-api.slice";
 import type { PrivacyNoticeResponse } from "~/types/api";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
+import type { OverrideMode } from "~/types/api/models/OverrideMode";
 import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 
 import {
@@ -27,9 +28,10 @@ import { EXPERIENCE_DEFAULTS } from "./constants";
 const PrivacyNoticeSandboxRealData = () => {
   const [region, setRegion] = useState<string>(EXPERIENCE_DEFAULTS.REGION);
   const [email, setEmail] = useState("");
-  const [cascadeConsent, setCascadeConsent] = useState(false);
+  const [overrideMode, setOverrideMode] = useState<OverrideMode | null>(null);
   const [checkedKeys, setCheckedKeys] = useState<Key[]>([]);
   const [fetchedCheckedKeys, setFetchedCheckedKeys] = useState<Key[]>([]);
+  const [explicitlyChangedKeys, setExplicitlyChangedKeys] = useState<Key[]>([]);
   const [selectedNoticeKeys, setSelectedNoticeKeys] = useState<string[]>([]);
 
   // Experience data
@@ -207,6 +209,8 @@ const PrivacyNoticeSandboxRealData = () => {
       const finalKeys = mergePreferencesWithExisting(optInKeys, response);
       setCheckedKeys(finalKeys);
       setFetchedCheckedKeys(finalKeys);
+      // Clear explicitly changed keys when fetching new preferences
+      setExplicitlyChangedKeys([]);
     } catch (error) {
       // Error handling is done by RTK Query (isError, error props)
     }
@@ -288,8 +292,8 @@ const PrivacyNoticeSandboxRealData = () => {
 
             {/* Row 2: Save Preferences Section */}
             <SavePreferencesSection
-              cascadeConsent={cascadeConsent}
-              onCascadeConsentChange={setCascadeConsent}
+              overrideMode={overrideMode}
+              onOverrideModeChange={setOverrideMode}
               privacyNotices={privacyNotices}
               preferenceState={{
                 checkedKeys,
@@ -299,11 +303,12 @@ const PrivacyNoticeSandboxRealData = () => {
               }}
               noticeMappings={{
                 noticeKeyToHistoryMap,
-                childToParentMap,
               }}
               experienceConfigHistoryId={experienceConfigHistoryId}
               email={email}
               hasCurrentResponse={getCurrentResponse !== null}
+              explicitlyChangedKeys={explicitlyChangedKeys}
+              onExplicitlyChangedKeysChange={setExplicitlyChangedKeys}
             />
           </div>
         )}

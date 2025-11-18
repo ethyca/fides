@@ -370,10 +370,10 @@ async def create_data_use(
         return taxonomy_service.create_or_update_element(
             "data_use", data_use.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
@@ -401,10 +401,10 @@ async def create_data_category(
         return taxonomy_service.create_or_update_element(
             "data_category", data_category.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
@@ -432,10 +432,10 @@ async def create_data_subject(
         return taxonomy_service.create_or_update_element(
             "data_subject", data_subject.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
