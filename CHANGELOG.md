@@ -43,7 +43,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
-- Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
@@ -70,6 +69,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added admin API endpoint to allow debugging memory issues with a memory dump [#6973](https://github.com/ethyca/fides/pull/6973)
+
+### Changed
+- Allow duplicate taxonomy names for non-sibling entries [#6971](https://github.com/ethyca/fides/pull/6971)
+- Updated several privacy_request queries to avoid loading large columns when not needed. [#6975](https://github.com/ethyca/fides/pull/6975)
 
 ## [2.74.2](https://github.com/ethyca/fides/compare/2.74.1..2.74.2)
 
