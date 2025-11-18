@@ -9,6 +9,7 @@ import { useEffect, useMemo } from "react";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { ActionType, ColumnSort, PrivacyRequestStatus } from "~/types/api";
 
+import { SubjectRequestStatusMap } from "../../constants";
 import { filterNullCustomFields, parseAsCustomFields } from "../utils";
 
 export interface FilterQueryParams {
@@ -35,14 +36,19 @@ interface UsePrivacyRequestsFiltersProps {
 const usePrivacyRequestsFilters = ({
   pagination,
 }: UsePrivacyRequestsFiltersProps) => {
+  const allowedStatusFilterOptions = [...SubjectRequestStatusMap.keys()];
+  const defaultStatusFilter = allowedStatusFilterOptions.filter(
+    (status) => status !== PrivacyRequestStatus.DUPLICATE,
+  );
+
   const [filters, setFilters] = useQueryStates(
     {
       search: parseAsString.withOptions({ throttleMs: 300 }),
       from: parseAsString,
       to: parseAsString,
-      status: parseAsArrayOf(
-        parseAsStringEnum(Object.values(PrivacyRequestStatus)),
-      ),
+      status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions))
+        .withDefault(defaultStatusFilter)
+        .withOptions({ clearOnDefault: true }),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
       custom_privacy_request_fields: parseAsCustomFields,
     },
