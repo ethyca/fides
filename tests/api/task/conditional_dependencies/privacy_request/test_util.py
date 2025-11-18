@@ -20,11 +20,6 @@ from fides.api.util.saas_util import load_as_string
 
 
 @pytest.fixture
-def convenience_fields():
-    return build_convenience_field_list()
-
-
-@pytest.fixture
 def fields_dict(db: Session):
     return get_available_privacy_request_fields_dict(db)
 
