@@ -18,8 +18,10 @@ const useApproveDenyPrivacyRequest = ({
 
   const isPendingStatus =
     privacyRequest.status === PrivacyRequestStatus.PENDING;
+  const isDuplicateStatus =
+    privacyRequest.status === PrivacyRequestStatus.DUPLICATE;
 
-  const showAction = isPendingStatus;
+  const showAction = isPendingStatus || isDuplicateStatus;
   const modal = useDisclosure();
 
   const performAction = async ({ reason }: { reason: string }) => {
