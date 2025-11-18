@@ -1,8 +1,6 @@
-import { FieldTypes } from "~/features/custom-fields/constants";
 import { CustomFieldDefinition } from "~/types/api";
 
-export interface CustomFieldsFormValues
-  extends Omit<CustomFieldDefinition, "field_type"> {
+export interface CustomFieldsFormValues extends CustomFieldDefinition {
   options?: string[];
-  field_type: FieldTypes;
+  value_type: string;
 }
