@@ -199,12 +199,23 @@ const initialState: SubjectRequestsState = {
   status: defaultStatusFilter,
 };
 
+// State to return when clearing all filters (no default status filter)
+const clearedState: SubjectRequestsState = {
+  checkAll: false,
+  errorRequests: [],
+  from: "",
+  id: "",
+  page: 1,
+  size: 25,
+  to: "",
+};
+
 export const subjectRequestsSlice = createSlice({
   name: "subjectRequests",
   initialState,
   reducers: {
     clearAllFilters: () => ({
-      ...initialState,
+      ...clearedState,
     }),
     clearSortKeys: (state) => ({
       ...state,
