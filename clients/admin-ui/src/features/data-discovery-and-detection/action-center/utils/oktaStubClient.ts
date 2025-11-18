@@ -43,17 +43,7 @@ interface OktaStubClientParams {
   filterTab?: string;
 }
 
-/**
- * Stub client for Okta application data.
- * This centralizes all mock/stub data for Okta apps in one place.
- * Eventually, this should be replaced with actual API calls.
- */
 export const oktaStubClient = {
-  /**
-   * Get Okta application aggregate results
-   * Note: This is synchronous for now, but should match the async API signature
-   * when the real API is implemented.
-   */
   getDiscoveredSystemAggregate: (
     params: OktaStubClientParams,
   ): Page_SystemStagedResourcesAggregateRecord_ => {
@@ -84,9 +74,6 @@ export const oktaStubClient = {
     };
   },
 
-  /**
-   * Get all mock Okta apps (for filter counts and other operations)
-   */
   getAllMockApps: (): SystemStagedResourcesAggregateRecord[] => {
     return MOCK_OKTA_APPS;
   },
