@@ -109,8 +109,7 @@ const AddVendor = ({
 
   const formRef = useRef(null);
   const selectedVendorId = formRef.current
-    ? // @ts-ignore
-      formRef.current.values.vendor_id
+    ? (formRef.current as { values: FormValues }).values.vendor_id
     : undefined;
   const dictEntry = useAppSelector(selectDictEntry(selectedVendorId || ""));
 

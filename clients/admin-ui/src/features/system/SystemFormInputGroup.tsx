@@ -32,13 +32,12 @@ const SystemFormInputGroup = ({
         <Heading as="h3" size="xs">
           {heading}
         </Heading>
-        {HeadingButton ? (
+        {HeadingButton && (
           <>
             <Spacer />
-            {/* @ts-ignore */}
-            <HeadingButton />
+            {HeadingButton}
           </>
-        ) : null}
+        )}
       </Box>
 
       <Stack spacing={4} px={6} py={6}>

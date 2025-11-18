@@ -118,7 +118,6 @@ export const ConnectorParameters = ({
           params.secrets[key[0]] = values[key[0]];
         });
 
-        // @ts-ignore
         const payload = await createSassConnectionConfig(params).unwrap();
         dispatch(setConnection(payload.connection));
         successAlert(`Connector successfully added!`);

@@ -168,8 +168,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
             <MenuButton
               as={Button}
               size="small"
-              // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
-              // @ts-ignore
+              // @ts-expect-error - Ant type, not Chakra type because of `as` prop
               type="text"
               icon={<MoreIcon transform="rotate(90deg)" />}
               className="w-6 gap-0"
