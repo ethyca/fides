@@ -23,12 +23,6 @@ class PrivacyRequestDataTransformer:
     """
 
     def __init__(self, privacy_request: PrivacyRequest):
-        """
-        Initialize the transformer with a PrivacyRequest object.
-
-        Args:
-            privacy_request: The PrivacyRequest ORM object to transform
-        """
         self.privacy_request = privacy_request
         self.policy_data = self._transform_policy_object(privacy_request.policy)
         self.identity_data = self.privacy_request.get_persisted_identity()
@@ -42,21 +36,11 @@ class PrivacyRequestDataTransformer:
 
         Args:
             field_addresses: Set of field addresses referenced in conditions (e.g.,
-                {"privacy_request.location", "privacy_request.policy.rules.0.action_type",
-                "privacy_request.custom_privacy_request_fields.legal_entity.value"}).
+                {"privacy_request.location", "privacy_request.policy.rules.0.action_type"}).
                 Only addresses starting with "privacy_request." or "privacy_request:" are processed.
 
         Returns:
-            A dictionary containing only the referenced privacy request data under the
-            "privacy_request" key, suitable for condition evaluation.
-
-        Example:
-            >>> transformer = PrivacyRequestDataTransformer(privacy_request)
-            >>> data = transformer.to_evaluation_data(
-            ...     {"privacy_request.location", "privacy_request.policy.rules.0.action_type"}
-            ... )
-            >>> data["privacy_request"]["location"]  # "US"
-            >>> data["privacy_request"]["policy"]["has_access_rule"]  # True
+            A dictionary with the referenced privacy request data under the "privacy_request" key.
         """
         if not field_addresses:
             return {}
@@ -87,8 +71,6 @@ class PrivacyRequestDataTransformer:
         Args:
             field_address: The field address path (e.g., "privacy_request.location", "privacy_request.policy.rules")
 
-        Returns:
-            The extracted value, with special handling for enums, datetimes, and UUIDs
         """
         # first part will always be privacy_request
         parts: list[str] = field_address.split(".")[1:]
