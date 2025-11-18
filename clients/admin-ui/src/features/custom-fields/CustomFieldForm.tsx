@@ -5,6 +5,7 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntSelect as Select,
+  AntSelectProps as SelectProps,
   AntSkeleton as Skeleton,
   AntTypography as Typography,
   ConfirmationModal,
@@ -14,6 +15,7 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -30,6 +32,12 @@ import {
   useGetCustomFieldLocationsQuery,
 } from "~/features/plus/plus.slice";
 import {
+  CoreTaxonomiesEnum,
+  TaxonomyTypeEnum,
+} from "~/features/taxonomy/constants";
+import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
+import {
+  AllowedTypes,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
   ScopeRegistryEnum,
@@ -48,6 +56,14 @@ export const SkeletonCustomFieldForm = () => {
   );
 };
 
+const parseValueType = (fieldType: string): string => {
+  // eslint-disable-next-line no-underscore-dangle
+  if (fieldType === AllowedTypes.STRING_ || fieldType === AllowedTypes.STRING) {
+    return "custom";
+  }
+  return fieldType;
+};
+
 const CustomFieldForm = ({
   initialField,
   isLoading,
@@ -56,11 +72,13 @@ const CustomFieldForm = ({
   isLoading?: boolean;
 }) => {
   const [form] = Form.useForm<CustomFieldsFormValues>();
+  const valueType = Form.useWatch("value_type", form);
   const router = useRouter();
 
   const messageApi = useMessage();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
+  const features = useFeatures();
 
   const { data: allowList, isLoading: isAllowListLoading } =
     useGetAllowListQuery(initialField?.allow_list_id as string, {
@@ -71,6 +89,43 @@ const CustomFieldForm = ({
     useDeleteCustomFieldDefinitionMutation();
   const { data: locationOptions, isLoading: isLocationsLoading } =
     useGetCustomFieldLocationsQuery();
+  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(
+    undefined as void,
+    {
+      skip: !features.plus,
+    },
+  );
+
+  const isPlusEnabled = features.plus;
+
+  // Build options for Type select: Custom + core taxonomies + custom taxonomies
+  const typeOptions: SelectProps["options"] = [
+    { label: "Custom", value: "custom" },
+    {
+      label: CoreTaxonomiesEnum.DATA_CATEGORIES,
+      value: TaxonomyTypeEnum.DATA_CATEGORY,
+    },
+    {
+      label: CoreTaxonomiesEnum.DATA_USES,
+      value: TaxonomyTypeEnum.DATA_USE,
+    },
+    {
+      label: CoreTaxonomiesEnum.DATA_SUBJECTS,
+      value: TaxonomyTypeEnum.DATA_SUBJECT,
+    },
+    ...(isPlusEnabled
+      ? [
+          {
+            label: CoreTaxonomiesEnum.SYSTEM_GROUPS,
+            value: TaxonomyTypeEnum.SYSTEM_GROUP,
+          },
+        ]
+      : []),
+    ...(customTaxonomies?.map((taxonomy) => ({
+      label: taxonomy.name,
+      value: taxonomy.fides_key,
+    })) || []),
+  ];
 
   const showDeleteButton =
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
@@ -97,11 +152,11 @@ const CustomFieldForm = ({
     }
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
-    } else {
-      messageApi.success(
-        `Custom field ${initialField ? "updated" : "created"} successfully`,
-      );
+      return;
     }
+    messageApi.success(
+      `Custom field ${initialField ? "updated" : "created"} successfully`,
+    );
     router.push(CUSTOM_FIELDS_ROUTE);
   };
 
@@ -113,6 +168,7 @@ const CustomFieldForm = ({
     }
     return {
       ...field,
+      value_type: parseValueType(field.field_type),
       field_type: getCustomFieldType(field),
       options: allowList?.allowed_values ?? [],
     };
@@ -144,8 +200,143 @@ const CustomFieldForm = ({
         <Input.TextArea rows={2} data-testid="input-description" />
       </Form.Item>
 
+      <Form.Item label="Type" name="value_type">
+        <Select
+          options={typeOptions}
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
+          data-testid="select-type"
+        />
+      </Form.Item>
+
+      {valueType === "custom" && (
+        <>
+          <Form.Item
+            label="Field Type"
+            name="field_type"
+            rules={[{ required: true, message: "Please select a field type" }]}
+          >
+            <Select
+              options={FIELD_TYPE_OPTIONS}
+              getPopupContainer={(trigger) =>
+                trigger.parentElement || document.body
+              }
+              data-testid="select-field-type"
+            />
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) =>
+              prevValues.field_type !== currentValues.field_type
+            }
+          >
+            {({ getFieldValue }) => {
+              const fieldType = getFieldValue("field_type");
+              const isSelectType =
+                fieldType === FieldTypes.SINGLE_SELECT ||
+                fieldType === FieldTypes.MULTIPLE_SELECT;
+
+              return (
+                isSelectType && (
+                  <Form.List
+                    name="options"
+                    rules={[
+                      {
+                        validator: async (_, options) => {
+                          if (!options || options.length < 1) {
+                            return Promise.reject(
+                              new Error(
+                                "At least one option is required for selects",
+                              ),
+                            );
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  >
+                    {(fields, { add, remove }, { errors }) => (
+                      <>
+                        {fields.map((field, index) => (
+                          <Form.Item
+                            required={false}
+                            key={field.key}
+                            label={index === 0 ? "Options" : ""}
+                            data-testid="options-form-item"
+                          >
+                            <Flex gap="middle">
+                              <Form.Item
+                                {...field}
+                                validateTrigger={["onChange", "onBlur"]}
+                                rules={[
+                                  {
+                                    required: true,
+                                    whitespace: true,
+                                    message: "Options cannot be empty",
+                                  },
+                                  () => ({
+                                    validator(_, value) {
+                                      const duplicateCount = getFieldValue(
+                                        "options",
+                                      ).filter(
+                                        (opt: string) => opt === value,
+                                      ).length;
+                                      if (duplicateCount > 1) {
+                                        return Promise.reject(
+                                          new Error(
+                                            "Option values must be unique",
+                                          ),
+                                        );
+                                      }
+                                      return Promise.resolve();
+                                    },
+                                  }),
+                                ]}
+                                noStyle
+                              >
+                                <Input
+                                  placeholder="Enter option value"
+                                  data-testid={`input-option-${index}`}
+                                />
+                              </Form.Item>
+                              {fields.length > 1 && (
+                                <Button
+                                  icon={<Icons.TrashCan />}
+                                  onClick={() => remove(field.name)}
+                                  aria-label="Remove option"
+                                />
+                              )}
+                            </Flex>
+                          </Form.Item>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            icon={<Icons.Add />}
+                            data-testid="add-option-btn"
+                          >
+                            Add select option
+                          </Button>
+                        </Form.Item>
+                        <Form.ErrorList
+                          errors={errors}
+                          className="-mt-4 mb-4"
+                        />
+                      </>
+                    )}
+                  </Form.List>
+                )
+              );
+            }}
+          </Form.Item>
+        </>
+      )}
+
       <Form.Item
-        label="Location"
+        label="Applies to"
         name="resource_type"
         rules={[{ required: true, message: "Please select a resource type" }]}
         tooltip="Choose where this field applies, including custom taxonomies."
@@ -163,121 +354,6 @@ const CustomFieldForm = ({
         />
       </Form.Item>
 
-      <Form.Item
-        label="Field Type"
-        name="field_type"
-        rules={[{ required: true, message: "Please select a field type" }]}
-      >
-        <Select
-          options={FIELD_TYPE_OPTIONS}
-          getPopupContainer={(trigger) =>
-            trigger.parentElement || document.body
-          }
-          data-testid="select-field-type"
-        />
-      </Form.Item>
-
-      <Form.Item
-        noStyle
-        shouldUpdate={(prevValues, currentValues) =>
-          prevValues.field_type !== currentValues.field_type
-        }
-      >
-        {({ getFieldValue }) => {
-          const fieldType = getFieldValue("field_type");
-          const isSelectType =
-            fieldType === FieldTypes.SINGLE_SELECT ||
-            fieldType === FieldTypes.MULTIPLE_SELECT;
-
-          return (
-            isSelectType && (
-              <Form.List
-                name="options"
-                rules={[
-                  {
-                    validator: async (_, options) => {
-                      if (!options || options.length < 1) {
-                        return Promise.reject(
-                          new Error(
-                            "At least one option is required for selects",
-                          ),
-                        );
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
-              >
-                {(fields, { add, remove }, { errors }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Form.Item
-                        required={false}
-                        key={field.key}
-                        label={index === 0 ? "Options" : ""}
-                        data-testid="options-form-item"
-                      >
-                        <Flex gap="middle">
-                          <Form.Item
-                            {...field}
-                            validateTrigger={["onChange", "onBlur"]}
-                            rules={[
-                              {
-                                required: true,
-                                whitespace: true,
-                                message: "Options cannot be empty",
-                              },
-                              () => ({
-                                validator(_, value) {
-                                  const duplicateCount = getFieldValue(
-                                    "options",
-                                  ).filter(
-                                    (opt: string) => opt === value,
-                                  ).length;
-                                  if (duplicateCount > 1) {
-                                    return Promise.reject(
-                                      new Error("Option values must be unique"),
-                                    );
-                                  }
-                                  return Promise.resolve();
-                                },
-                              }),
-                            ]}
-                            noStyle
-                          >
-                            <Input
-                              placeholder="Enter option value"
-                              data-testid={`input-option-${index}`}
-                            />
-                          </Form.Item>
-                          {fields.length > 1 && (
-                            <Button
-                              icon={<Icons.TrashCan />}
-                              onClick={() => remove(field.name)}
-                              aria-label="Remove option"
-                            />
-                          )}
-                        </Flex>
-                      </Form.Item>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<Icons.Add />}
-                        data-testid="add-option-btn"
-                      >
-                        Add select option
-                      </Button>
-                    </Form.Item>
-                    <Form.ErrorList errors={errors} className="-mt-4 mb-4" />
-                  </>
-                )}
-              </Form.List>
-            )
-          );
-        }}
-      </Form.Item>
       <Flex justify="space-between">
         {showDeleteButton && (
           <>
