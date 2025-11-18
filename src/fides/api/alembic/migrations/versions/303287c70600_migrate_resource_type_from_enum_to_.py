@@ -1,7 +1,7 @@
 """migrate resource type from enum to string to account for custom taxonomies
 
 Revision ID: 303287c70600
-Revises: a55e12c2c2df
+Revises: 56fe6fad2d89
 Create Date: 2025-10-22 15:31:12.980243
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '303287c70600'
-down_revision = 'a55e12c2c2df'
+down_revision = '56fe6fad2d89'
 branch_labels = None
 depends_on = None
 
