@@ -14,7 +14,6 @@ import {
   useTableState,
 } from "~/features/common/table/hooks";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { MOCK_OKTA_APPS } from "~/mocks/data";
 import {
   AlertLevel,
   ConsentAlertInfo,
@@ -33,6 +32,7 @@ import {
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { SuccessToastContent } from "../SuccessToastContent";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
+import { oktaStubClient } from "../utils/oktaStubClient";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -94,9 +94,10 @@ export const useDiscoveredSystemAggregateTable = ({
       return {};
     }
 
+    const allMockApps = oktaStubClient.getAllMockApps();
     const counts: Record<string, number> = {};
     OKTA_APP_FILTER_TABS.forEach((tab) => {
-      const filteredItems = MOCK_OKTA_APPS.filter((item) => {
+      const filteredItems = allMockApps.filter((item) => {
         return tab.filter(item as StagedResourceAPIResponse);
       });
       counts[tab.value] = filteredItems.length;
@@ -114,18 +115,36 @@ export const useDiscoveredSystemAggregateTable = ({
     const activeFilter = OKTA_APP_FILTER_TABS.find(
       (tab) => tab.value === oktaActiveTab,
     );
-    const filteredItems = MOCK_OKTA_APPS.filter((item) => {
+    const allMockApps = oktaStubClient.getAllMockApps();
+
+    // Apply filter tab first
+    let filteredItems = allMockApps.filter((item) => {
       return activeFilter?.filter(item as StagedResourceAPIResponse);
     });
 
+    // Apply search if provided
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      filteredItems = filteredItems.filter(
+        (item) =>
+          item.name?.toLowerCase().includes(searchLower) ??
+          item.vendor_id?.toLowerCase().includes(searchLower),
+      );
+    }
+
+    // Apply pagination
+    const startIndex = (pageIndex - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
     return {
-      items: filteredItems,
+      items: paginatedItems,
       total: filteredItems.length,
-      page: 1,
-      size: 50,
-      pages: 1,
+      page: pageIndex,
+      size: pageSize,
+      pages: Math.ceil(filteredItems.length / pageSize),
     };
-  }, [isOktaApp, oktaActiveTab]);
+  }, [isOktaApp, oktaActiveTab, pageIndex, pageSize, searchQuery]);
 
   // Helper function to generate consistent row keys
   const getRecordKey = useCallback(

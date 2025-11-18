@@ -1,39 +1,41 @@
-import { MOCK_OKTA_APPS } from "~/mocks/data";
+import { oktaStubClient } from "~/features/data-discovery-and-detection/action-center/utils/oktaStubClient";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
 
 describe("Okta App Filters — predicates", () => {
+  const mockApps = oktaStubClient.getAllMockApps();
+
   const cases = [
     {
       label: "new",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) => a.diff_status === "addition",
+      filter: (a: StagedResourceAPIResponse) => a.diff_status === "addition",
       expected: ["Salesforce"],
     },
     {
       label: "active",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) =>
-        a.metadata?.status === "ACTIVE",
+      filter: (a: StagedResourceAPIResponse) => a.metadata?.status === "ACTIVE",
       expected: ["Salesforce"],
     },
     {
       label: "inactive",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) =>
+      filter: (a: StagedResourceAPIResponse) =>
         a.metadata?.status === "INACTIVE",
       expected: [],
     },
     {
       label: "known",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) => !!a.vendor_id,
+      filter: (a: StagedResourceAPIResponse) => !!a.vendor_id,
       expected: ["Salesforce"],
     },
     {
       label: "unknown",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) => !a.vendor_id,
+      filter: (a: StagedResourceAPIResponse) => !a.vendor_id,
       expected: [],
     },
     {
       label: "removed",
-      filter: (a: (typeof MOCK_OKTA_APPS)[0]) => a.diff_status === "removal",
+      filter: (a: StagedResourceAPIResponse) => a.diff_status === "removal",
       expected: [],
     },
   ];
@@ -41,9 +43,11 @@ describe("Okta App Filters — predicates", () => {
   it.each(cases)(
     "filter $label returns expected items",
     ({ filter, expected }) => {
-      expect(MOCK_OKTA_APPS.filter(filter).map((a) => a.name)).toEqual(
-        expected,
-      );
+      expect(
+        mockApps
+          .filter((a) => filter(a as StagedResourceAPIResponse))
+          .map((a) => a.name),
+      ).toEqual(expected);
     },
   );
 });
@@ -63,7 +67,8 @@ describe("Okta App Filters — tabs config", () => {
     "tab '%s' shows count %d",
     (value, expected) => {
       const tab = OKTA_APP_FILTER_TABS.find((t) => t.value === value);
-      expect(MOCK_OKTA_APPS.filter((a) => tab!.filter(a as any)).length).toBe(
+      const mockApps = oktaStubClient.getAllMockApps();
+      expect(mockApps.filter((a) => tab!.filter(a as any)).length).toBe(
         expected,
       );
     },
