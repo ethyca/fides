@@ -1,6 +1,5 @@
 import json
 from typing import Any
-from typing import Any
 
 import pytest
 from sqlalchemy.orm import Session
