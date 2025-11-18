@@ -1,8 +1,8 @@
 import {
   AntMenuProps as MenuProps,
-  AntMessage as message,
   AntModal as modal,
   Icons,
+  useMessage,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
@@ -21,13 +21,11 @@ import {
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
 
-type MessageInstance = ReturnType<typeof message.useMessage>[0];
 type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
-  messageApi: MessageInstance;
   modalApi: ModalInstance;
 }
 
@@ -89,13 +87,14 @@ const formatResultMessage = (
 export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
-  messageApi,
   modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
   );
+
+  const messageApi = useMessage();
 
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();

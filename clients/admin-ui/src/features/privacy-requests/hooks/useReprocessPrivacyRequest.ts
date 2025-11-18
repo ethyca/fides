@@ -1,4 +1,4 @@
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -15,6 +15,8 @@ const useReprocessPrivacyRequest = ({
   const { errorAlert, successAlert } = useAlert();
   const isErrorStatus = privacyRequest.status === PrivacyRequestStatus.ERROR;
   const showReprocess = isErrorStatus;
+
+  const message = useMessage();
 
   const [retry] = useRetryMutation();
 
