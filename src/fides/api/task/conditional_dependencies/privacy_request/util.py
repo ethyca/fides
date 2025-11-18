@@ -1,10 +1,16 @@
 from typing import Any, Optional
 
-from sqlalchemy.exc import NoInspectionAvailable
-from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import RelationshipProperty
+from loguru import logger
+from sqlalchemy.orm import Session
 
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigModel,
+)
+from fides.api.models.property import Property
+from fides.api.schemas.privacy_center_config import (
+    PrivacyCenterConfig as PrivacyCenterConfigSchema,
+)
+from fides.api.schemas.privacy_center_config import PrivacyRequestOption
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     build_convenience_field_list,
 )
@@ -16,207 +22,257 @@ from fides.api.task.conditional_dependencies.util import (
 )
 
 
-def _get_column_type(column: Any) -> str:
-    """
-    Map SQLAlchemy column type to JSON type string.
-
-    Args:
-        column: SQLAlchemy Column object
-
-    Returns:
-        JSON type string (e.g., "string", "integer", "boolean")
-    """
-    column_type = type(column.type).__name__
-
-    # Map SQLAlchemy types to JSON types
-    type_mapping = {
-        "String": "string",
-        "Text": "string",
-        "Integer": "integer",
-        "BigInteger": "integer",
-        "SmallInteger": "integer",
-        "Boolean": "boolean",
-        "DateTime": "string",  # Datetimes are serialized as strings
-        "Date": "string",
-        "Time": "string",
-        "Float": "float",
-        "Numeric": "float",
-        "JSON": "object",
-        "JSONB": "object",
-        "UUID": "string",  # UUIDs are serialized as strings
-        "Enum": "string",  # Enums are serialized as strings
-        "StringEncryptedType": "string",  # Encrypted types are strings
-    }
-
-    # Check for array types
-    if "ARRAY" in column_type or "Array" in column_type:
-        return "array"
-
-    # Check for encrypted types (they're typically strings)
-    if "Encrypted" in column_type:
-        return "string"
-
-    # Return mapped type or default to string
-    return type_mapping.get(column_type, "string")
-
-
-def _introspect_orm_model(
-    orm_class: type,
-    base_path: str,
+def _build_nested_field_dict(
     fields: list[ConditionalDependencyFieldInfo],
-    visited: Optional[set[type]] = None,
-    relationship_whitelist: Optional[set[str]] = None,
-) -> None:
-    """
-    Recursively introspect a SQLAlchemy ORM model to extract field information.
+) -> dict[str, Any]:
+    """Converts a flat list of ConditionalDependencyFieldInfo objects into a nested dictionary."""
+    result: dict[str, Any] = {}
 
-    Args:
-        orm_class: The SQLAlchemy ORM model class to introspect
-        base_path: The base path prefix (e.g., "privacy_request.policy")
-        fields: List to append field info to
-        visited: Set of already visited model classes to avoid cycles
-        relationship_whitelist: Set of relationship names to recurse into (e.g., {"policy"})
-    """
-    if visited is None:
-        visited = set()
-    if relationship_whitelist is None:
-        relationship_whitelist = set()
+    for field in fields:
+        path_parts = field.field_path.split(".")
+        current = result
 
-    # Avoid infinite recursion on circular references
-    if orm_class in visited:
-        return
+        # Navigate/create the nested structure
+        for i, part in enumerate(path_parts):
+            # Last part - store the ConditionalDependencyFieldInfo
+            if i == len(path_parts) - 1:
+                current[part] = field
+            # Intermediate part - create nested dict if needed
+            else:
+                if part not in current:
+                    current[part] = {}
+                current = current[part]
 
-    visited.add(orm_class)
+    return result
+
+
+def _get_privacy_center_config_dict(
+    db: Session,
+) -> Optional[dict[str, Any]]:
+    """Gets privacy center config dict from database."""
+    config_dict: Optional[dict[str, Any]] = None
+
+    # 1. Try default property config
+    default_prop = Property.get_by(db, field="is_default", value=True)
+    if default_prop and getattr(default_prop, "privacy_center_config", None):
+        config_dict = default_prop.privacy_center_config  # type: ignore[return-value]
+
+    # 2. Try single-row global config
+    if not config_dict:
+        privacy_center_config_record = db.query(PrivacyCenterConfigModel).first()
+        if privacy_center_config_record:
+            # The config field stores the config dict directly
+            config_dict = privacy_center_config_record.config  # type: ignore[return-value]
+
+    return config_dict
+
+
+def _get_custom_fields_from_privacy_center_config(
+    db: Session,
+) -> dict[str, set[str]]:
+    """Extracts custom field names per policy from privacy center configs."""
+    config_dict = _get_privacy_center_config_dict(db)
+    if not config_dict:
+        return {}
+
+    policy_custom_fields: dict[str, set[str]] = {}
 
     try:
-        mapper = inspect(orm_class)
-    except NoInspectionAvailable:
-        return
+        config = PrivacyCenterConfigSchema.model_validate(config_dict)
+        if not config.actions:
+            return {}
+        for action in config.actions:
+            if (
+                not isinstance(action, PrivacyRequestOption)
+                or not action.policy_key
+                or not action.custom_privacy_request_fields
+            ):
+                continue
+            field_names = set(action.custom_privacy_request_fields.keys())
+            if field_names:
+                policy_custom_fields[action.policy_key] = field_names
+    except Exception as exc:  # pylint: disable=broad-except
+        # If we can't parse the config, just return empty dict
+        # Log the exception for debugging but don't fail
+        logger.debug(f"Could not parse privacy center config: {exc}")
 
-    # Introspect columns
-    for column in mapper.columns.values():
-        field_path = f"{base_path}.{column.name}" if base_path else column.name
-        field_type = _get_column_type(column)
-        description = getattr(column, "comment", None)
-        fields.append(
-            create_conditional_dependency_field_info(
-                field_path, field_type, description
-            )
-        )
+    return policy_custom_fields
 
-    # Introspect relationships
-    for relationship_name, relationship_prop in mapper.relationships.items():
-        if not isinstance(relationship_prop, RelationshipProperty):
-            continue
 
-        field_path = (
-            f"{base_path}.{relationship_name}" if base_path else relationship_name
-        )
+def _get_identity_fields_from_privacy_center_config(
+    db: Session,
+) -> set[str]:
+    """Extracts all unique identity field names from privacy center configs."""
+    config_dict = _get_privacy_center_config_dict(db)
+    if not config_dict:
+        return set()
 
-        # Determine if this is a collection (one-to-many, many-to-many) or single (many-to-one, one-to-one)
-        is_collection = relationship_prop.uselist
+    identity_field_names: set[str] = set()
 
-        if is_collection:
-            # Collections are arrays - we don't recurse into them
-            fields.append(
-                create_conditional_dependency_field_info(
-                    field_path,
-                    "array",
-                    f"Relationship to {relationship_prop.entity.class_.__name__} (collection)",
+    try:
+        config = PrivacyCenterConfigSchema.model_validate(config_dict)
+        if not config.actions:
+            return set()
+        for action in config.actions:
+            if isinstance(action, PrivacyRequestOption) and action.identity_inputs:
+                # Extract all keys from identity_inputs (both standard and custom)
+                identity_inputs_dict = action.identity_inputs.model_dump(
+                    exclude_none=True
                 )
-            )
-        else:
-            # Single relationship - recurse if in whitelist
-            target_class = relationship_prop.entity.class_
-            fields.append(
-                create_conditional_dependency_field_info(
-                    field_path,
-                    "object",
-                    f"Relationship to {target_class.__name__}",
-                )
-            )
-
-            # Recurse into whitelisted relationships (e.g., policy)
-            if relationship_name in relationship_whitelist:
-                _introspect_orm_model(
-                    target_class,
-                    field_path,
-                    fields,
-                    visited.copy() if visited else None,
-                    relationship_whitelist,
-                )
-
-    # Add special method-based fields for PrivacyRequest
-    if orm_class == PrivacyRequest:
-        # identity is a method that returns a dict
-        fields.append(
-            create_conditional_dependency_field_info(
-                f"{base_path}.identity",
-                "object",
-                "Persisted identity data (email, phone_number, etc.)",
-            )
+                identity_field_names.update(identity_inputs_dict.keys())
+    except Exception as exc:  # pylint: disable=broad-except
+        # If we can't parse the config, just return empty set
+        # Log the exception for debugging but don't fail
+        logger.debug(
+            f"Could not parse privacy center config for identity fields: {exc}"
         )
-        # custom_privacy_request_fields is a method that returns a dict
-        fields.append(
-            create_conditional_dependency_field_info(
-                f"{base_path}.custom_privacy_request_fields",
-                "object",
-                "Custom privacy request fields",
-            )
+    return identity_field_names
+
+
+def build_privacy_request_fields() -> list[ConditionalDependencyFieldInfo]:
+    """Builds a list of ConditionalDependencyFieldInfo objects for the PrivacyRequest model."""
+    standard_field_names = {
+        "created_at",
+        "due_date",
+        "identity_verified_at",
+        "location",
+        "origin",
+        "requested_at",
+        "source",
+        "submitted_by",
+    }
+    return [
+        create_conditional_dependency_field_info(
+            f"privacy_request.{field_name}", "string", f"Privacy request {field_name}"
         )
+        for field_name in standard_field_names
+    ]
 
 
-def _generate_field_list_from_orm_model(
-    orm_class: type,
-    base_path: str,
-    convenience_fields: Optional[list[ConditionalDependencyFieldInfo]] = None,
-    relationship_whitelist: Optional[set[str]] = None,
-) -> list[ConditionalDependencyFieldInfo]:
-    """
-    Generate a list of available fields by introspecting a SQLAlchemy ORM model.
-
-    Args:
-        orm_class: The SQLAlchemy ORM model class to introspect
-        base_path: The base path prefix (e.g., "privacy_request")
-        convenience_fields: Optional list of convenience fields to append
-        relationship_whitelist: Set of relationship names to recurse into (e.g., {"policy"})
-
-    Returns:
-        List of ConditionalDependencyFieldInfo objects describing available fields
-    """
-    fields: list[ConditionalDependencyFieldInfo] = []
-
-    # Introspect the ORM model
-    _introspect_orm_model(
-        orm_class, base_path, fields, relationship_whitelist=relationship_whitelist
+def build_policy_fields(db: Session) -> list[ConditionalDependencyFieldInfo]:
+    """Builds a list of ConditionalDependencyFieldInfo objects for the Policy model."""
+    standard_field_names = {
+        "id",
+        "name",
+        "key",
+        "description",
+        "execution_timeframe",
+        "rules",
+        "drp_action",
+    }
+    fields = [
+        create_conditional_dependency_field_info(
+            f"privacy_request.policy.{field_name}",
+            "string",
+            f"Privacy request policy {field_name}",
+        )
+        for field_name in standard_field_names
+    ]
+    policy_custom_fields: dict[str, set[str]] = (
+        _get_custom_fields_from_privacy_center_config(db)
     )
+    # Collect all unique custom field names from all policies
+    all_custom_field_names: set[str] = set()
+    for field_names in policy_custom_fields.values():
+        all_custom_field_names.update(field_names)
 
-    # Add convenience fields if provided
-    if convenience_fields:
-        fields.extend(convenience_fields)
-
+    for field_name in all_custom_field_names:
+        policies_with_field = [
+            policy_key
+            for policy_key, field_names in policy_custom_fields.items()
+            if field_name in field_names
+        ]
+        fields.append(
+            create_conditional_dependency_field_info(
+                f"privacy_request.policy.custom_privacy_request_fields.{field_name}",
+                "string",
+                f"Privacy request policy custom field {field_name} available for policies: {', '.join(sorted(policies_with_field))}",
+            )
+        )
     return fields
 
 
-def get_available_privacy_request_fields() -> list[ConditionalDependencyFieldInfo]:
+def build_identity_fields(db: Session) -> list[ConditionalDependencyFieldInfo]:
+    """
+    Build a list of ConditionalDependencyFieldInfo objects for the Identity model.
+    """
+    standard_field_names = {
+        "email",
+        "phone_number",
+        "external_id",
+        "fides_user_device_id",
+        "ljt_readerID",
+        "ga_client_id",
+    }
+    fields = [
+        create_conditional_dependency_field_info(
+            f"privacy_request.identity.{field_name}",
+            "string",
+            f"Privacy request identity {field_name}",
+        )
+        for field_name in standard_field_names
+    ]
+    config_identity_fields = _get_identity_fields_from_privacy_center_config(db)
+    for config_field_name in config_identity_fields:
+        # Skip standard fields that are already added
+        if config_field_name not in standard_field_names:
+            fields.append(
+                create_conditional_dependency_field_info(
+                    f"privacy_request.identity.custom_identity_fields.{config_field_name}",
+                    "string",
+                    f"Custom identity field '{config_field_name}'",
+                )
+            )
+    return fields
+
+
+def get_available_privacy_request_fields_list(
+    db: Session,
+) -> list[ConditionalDependencyFieldInfo]:
     """
     Generate a list of available fields for privacy request conditional dependencies.
 
-    This function dynamically introspects the SQLAlchemy ORM model to determine
-    available fields, and includes convenience fields that are computed from the data.
+    Args:
+        db: Database session to query privacy center configs for custom fields
 
     Returns:
-        List of ConditionalDependencyFieldInfo objects describing available fields
+        List of ConditionalDependencyFieldInfo objects
+        {
+            ConditionalDependencyFieldInfo(...),
+            ConditionalDependencyFieldInfo(...),
+            ...
+        }
     """
     # Add derived convenience fields
-    convenience_fields = build_convenience_field_list()
+    fields = build_privacy_request_fields()
+    fields.extend(build_policy_fields(db))
+    fields.extend(build_identity_fields(db))
+    fields.extend(build_convenience_field_list())
+    return fields
 
-    # Whitelist relationships to recurse into
-    relationship_whitelist = {"policy", "identity", "custom_privacy_request_fields"}
 
-    return _generate_field_list_from_orm_model(
-        PrivacyRequest,
-        "privacy_request",
-        convenience_fields,
-        relationship_whitelist=relationship_whitelist,
-    )
+def get_available_privacy_request_fields_dict(db: Session) -> dict[str, Any]:
+    """Generate a nested dictionary of available fields for privacy request conditional dependencies.
+
+    Args:
+        db: Database session to query privacy center configs for custom fields
+
+    Returns:
+        Nested dictionary structure like:
+        {
+            "privacy_request": {
+                "policy": {
+                    "has_access_rule": ConditionalDependencyFieldInfo(...),
+                    "custom_privacy_request_fields": {
+                        "first_name": ConditionalDependencyFieldInfo(...),
+                        "last_name": ConditionalDependencyFieldInfo(...),
+                        ...
+                    },
+                    ...
+                },
+                "id": ConditionalDependencyFieldInfo(...),
+                ...
+            }
+        }
+    """
+    return _build_nested_field_dict(get_available_privacy_request_fields_list(db))
