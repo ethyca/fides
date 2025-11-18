@@ -21,6 +21,7 @@ import {
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
+import { DuplicateRequestsLink } from "./DuplicateRequestsLink";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -113,6 +114,10 @@ export const PrivacyRequestsDashboard = () => {
           <label htmlFor="select-all" className="cursor-pointer">
             Select all
           </label>
+          <DuplicateRequestsLink
+            className="ml-3"
+            currentStatusFilter={filters.status}
+          />
         </Flex>
         <Flex align="center" gap="small">
           <BulkActionsDropdown
