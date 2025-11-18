@@ -26,7 +26,7 @@ def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
 
     Args:
         data: The dictionary to extract from
-        path: The path to extract the value from
+        field_path: The path to extract the value from
 
     Returns:
         The extracted value
