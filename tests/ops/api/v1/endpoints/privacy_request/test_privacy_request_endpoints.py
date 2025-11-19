@@ -4095,6 +4095,10 @@ class TestApprovePrivacyRequest:
 
         assert submit_mock.called
 
+    @pytest.mark.parametrize(
+        "privacy_request_status",
+        [PrivacyRequestStatus.pending, PrivacyRequestStatus.duplicate],
+    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
@@ -4111,8 +4115,9 @@ class TestApprovePrivacyRequest:
         generate_auth_header,
         user,
         privacy_request,
+        privacy_request_status,
     ):
-        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.status = privacy_request_status
         privacy_request.save(db=db)
 
         payload = {
@@ -4150,6 +4155,73 @@ class TestApprovePrivacyRequest:
         assert not mock_dispatch_message.called
 
         privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_approve_privacy_requests_with_duplicates(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_requests,
+    ):
+        # Set first request to pending/duplicate, second to duplicate/pending, third to complete (should fail)
+        privacy_requests[0].update(
+            db=db, data={"status": PrivacyRequestStatus.duplicate}
+        )
+        privacy_requests[1].update(
+            db=db, data={"status": PrivacyRequestStatus.duplicate}
+        )
+        privacy_requests[2].update(
+            db=db, data={"status": PrivacyRequestStatus.complete}
+        )
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        body = {
+            "request_ids": [
+                privacy_requests[0].id,
+                privacy_requests[1].id,
+                privacy_requests[2].id,
+            ]
+        }
+        response = api_client.patch(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+
+        response_body = response.json()
+        # First two should succeed (pending and duplicate), third should fail (complete)
+        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["failed"]) == 1
+        assert response_body["succeeded"][0]["status"] == "approved"
+        assert response_body["succeeded"][1]["status"] == "approved"
+        succeeded_ids = [
+            response_body["succeeded"][0]["id"],
+            response_body["succeeded"][1]["id"],
+        ]
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id in succeeded_ids
+        assert response_body["failed"][0]["message"] == "Cannot transition status"
+        assert response_body["failed"][0]["data"]["id"] == privacy_requests[2].id
+
+        assert submit_mock.call_count == 2  # Called for each successful approval
+        assert not mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
@@ -4863,6 +4935,10 @@ class TestDenyPrivacyRequest:
         )
         assert not submit_mock.called
 
+    @pytest.mark.parametrize(
+        "privacy_request_status",
+        [PrivacyRequestStatus.pending, PrivacyRequestStatus.duplicate],
+    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
@@ -4879,8 +4955,9 @@ class TestDenyPrivacyRequest:
         generate_auth_header,
         user,
         privacy_request,
+        privacy_request_status,
     ):
-        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.status = privacy_request_status
         privacy_request.save(db=db)
 
         payload = {
@@ -4936,6 +5013,10 @@ class TestDenyPrivacyRequest:
 
         privacy_request.delete(db)
 
+    @pytest.mark.parametrize(
+        "privacy_request_status",
+        [PrivacyRequestStatus.pending, PrivacyRequestStatus.duplicate],
+    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
@@ -4952,8 +5033,9 @@ class TestDenyPrivacyRequest:
         generate_auth_header,
         user,
         privacy_request,
+        privacy_request_status,
     ):
-        privacy_request.status = PrivacyRequestStatus.pending
+        privacy_request.status = privacy_request_status
         privacy_request.save(db=db)
 
         payload = {
@@ -5008,6 +5090,68 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called  # Shouldn't run! Privacy request was denied
 
         privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_deny_privacy_requests_with_duplicates(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_requests,
+    ):
+        # Set first request to pending/duplicate, second to duplicate/pending, third to complete (should fail)
+        privacy_requests[0].update(
+            db=db, data={"status": PrivacyRequestStatus.duplicate}
+        )
+        privacy_requests[1].update(db=db, data={"status": PrivacyRequestStatus.pending})
+        privacy_requests[2].update(
+            db=db, data={"status": PrivacyRequestStatus.complete}
+        )
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        body = {
+            "request_ids": [
+                privacy_requests[0].id,
+                privacy_requests[1].id,
+                privacy_requests[2].id,
+            ],
+            "reason": "Bulk denial test",
+        }
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        # First two should succeed (pending and duplicate), third should fail (complete)
+        assert len(response_body["succeeded"]) == 2
+        assert len(response_body["failed"]) == 1
+        assert response_body["succeeded"][0]["status"] == "denied"
+        assert response_body["succeeded"][1]["status"] == "denied"
+        succeeded_ids = [
+            response_body["succeeded"][0]["id"],
+            response_body["succeeded"][1]["id"],
+        ]
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id in succeeded_ids
+        assert response_body["failed"][0]["message"] == "Cannot transition status"
+        assert response_body["failed"][0]["data"]["id"] == privacy_requests[2].id
 
 
 class TestCancelPrivacyRequest:
