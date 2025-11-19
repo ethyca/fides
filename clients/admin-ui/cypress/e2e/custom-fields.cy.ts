@@ -104,7 +104,6 @@ describe("Custom Fields V2", () => {
 
   describe("Custom Field Edit", () => {
     it("loads existing field data for editing", () => {
-      // Assuming we have a custom field with ID "test-id"
       cy.visit("/settings/custom-fields");
       cy.getByTestId("edit-btn").first().click();
 
