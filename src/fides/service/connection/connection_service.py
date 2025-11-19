@@ -667,12 +667,13 @@ class ConnectionService:
         merged_field = copy.deepcopy(primary_field)
 
         # Merge nested fields if they exist in any of the versions
-        base_nested_fields = base_field.get("fields", []) if base_field else []
+        # Convert empty list or None to []
+        base_nested_fields = (base_field.get("fields", []) or []) if base_field else []
         customer_nested_fields = (
-            customer_field.get("fields", []) if customer_field else []
+            customer_field.get("fields", []) or [] if customer_field else []
         )
         original_nested_fields = (
-            original_field.get("fields", []) if original_field else []
+            original_field.get("fields", []) or [] if original_field else []
         )
 
         if base_nested_fields or customer_nested_fields:
@@ -686,10 +687,14 @@ class ConnectionService:
                 field["name"]: field for field in original_nested_fields
             }
 
-            merged_field["fields"] = self._merge_fields(
+            merged_nested_fields = self._merge_fields(
                 nested_base_fields_by_name,
                 nested_customer_fields_by_name,
                 nested_original_fields_by_name,
+            )
+            # empty field list means the field should be None
+            merged_field["fields"] = (
+                merged_nested_fields if merged_nested_fields else None
             )
 
         return merged_field
@@ -754,19 +759,20 @@ class ConnectionService:
 
         # Build field maps for easy lookup
         base_fields_by_name = {
-            field["name"]: field for field in base_collection.get("fields", [])
+            field["name"]: field for field in (base_collection.get("fields") or [])
         }
         original_fields_by_name = {
-            field["name"]: field for field in original_collection.get("fields", [])
+            field["name"]: field for field in (original_collection.get("fields") or [])
         }
         customer_fields_by_name = {
-            field["name"]: field for field in customer_collection.get("fields", [])
+            field["name"]: field for field in (customer_collection.get("fields") or [])
         }
 
         # Merge fields recursively
-        merged_collection["fields"] = self._merge_fields(
+        merged_fields = self._merge_fields(
             base_fields_by_name, customer_fields_by_name, original_fields_by_name
         )
+        merged_collection["fields"] = merged_fields if merged_fields else None
 
         return merged_collection
 

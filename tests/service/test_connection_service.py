@@ -1323,10 +1323,10 @@ class TestConnectionService:
             ],
         }
 
-        # the integration update contains a new collection and a deleted field
+        # integration update changes
         upcoming_dataset = copy.deepcopy(stored_dataset)
-        del upcoming_dataset["collections"][0]["fields"][2]
-        upcoming_dataset["collections"].append(new_collection)
+        del upcoming_dataset["collections"][0]["fields"][2]  # delete email field
+        upcoming_dataset["collections"].append(new_collection)  # add orders collection
         # change data type of product_id field
         upcoming_dataset["collections"][0]["fields"][0]["fides_meta"][
             "data_type"
@@ -1336,6 +1336,7 @@ class TestConnectionService:
             "user.contact.email"
         ]
 
+        # customer changes
         # customer changed the data categories of the customer_id field
         customer_dataset = copy.deepcopy(stored_dataset)
         customer_dataset["collections"][0]["fields"][1]["data_categories"] = [
@@ -1345,6 +1346,27 @@ class TestConnectionService:
         customer_dataset["collections"][0]["fields"][0]["fides_meta"][
             "data_type"
         ] = "object"
+
+        new_field = {
+            "name": "custom_attribute",
+            "description": None,
+            "data_categories": ["user.preferences"],
+            "fides_meta": {
+                "custom_request_field": None,
+                "data_type": "boolean",
+                "identity": None,
+                "length": None,
+                "masking_strategy_override": None,
+                "primary_key": True,
+                "read_only": True,
+                "redact": None,
+                "references": None,
+                "return_all_elements": None,
+            },
+            "fields": None,
+        }
+        # add new field to customer dataset
+        customer_dataset["collections"][0]["fields"].append(new_field)
 
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
@@ -1359,6 +1381,7 @@ class TestConnectionService:
         # - products collection: customer_id field data categories changed (customer dataset change)
         # - products collection: product_id field data type changed from integer to object (customer dataset change took priority over upcoming dataset change)
         # - products collection: address field data categories changed from None to ["user.contact.email"] (customer dataset change)
+        # - products collection: custom_attribute field added (customer dataset change)
         expected_dataset = {
             "fides_key": "test_instance_key",
             "name": "Template Dataset",
@@ -1543,6 +1566,24 @@ class TestConnectionService:
                                 },
                             ],
                         },
+                        {
+                            "name": "custom_attribute",
+                            "description": None,
+                            "data_categories": ["user.preferences"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "boolean",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": True,
+                                "read_only": True,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
                     ],
                 },
             ],
@@ -1569,24 +1610,174 @@ class TestConnectionService:
             instance_key="test_instance_key",
         )
 
+        # Normalize both datasets for comparison (ignoring order of collections and fields)
         normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_stored = normalize_dataset_for_comparison(stored_dataset)
-        diff = DeepDiff(normalized_stored, normalized_result)
-        # verifying that the only differences are the changes made by the customer
-        assert diff == {
-            "values_changed": {
-                "root['collections'][1]['fields'][1]['data_categories'][0]": {
-                    "new_value": "user.name",
-                    "old_value": "user.unique_id",
+        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
+
+        assert normalized_result == normalized_expected
+
+        # test that the customer can delete a field they added but not fields that exist in the official dataset
+        customer_dataset_no_fields = copy.deepcopy(customer_dataset)
+        customer_dataset_no_fields["collections"][0]["fields"] = None
+
+        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+            stored_dataset=stored_dataset,
+            customer_dataset=customer_dataset_no_fields,
+            upcoming_dataset=upcoming_dataset,
+            instance_key="test_instance_key",
+        )
+
+        # since the customer deleted all its fields
+        # Their changes are now lost and we will use what is in the upcoming dataset
+        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
+        normalized_expected = normalize_dataset_for_comparison(upcoming_dataset)
+
+        assert normalized_result == normalized_expected
+
+        # test that an integration update deletes all fields except the ones that were added by the customer
+        upcoming_dataset_no_fields = copy.deepcopy(upcoming_dataset)
+        upcoming_dataset_no_fields["collections"][0]["fields"] = None
+        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+            stored_dataset=stored_dataset,
+            customer_dataset=customer_dataset,
+            upcoming_dataset=upcoming_dataset_no_fields,
+            instance_key="test_instance_key",
+        )
+
+        # only the customer added field is present in products collection
+        expected_dataset = {
+            "fides_key": "test_instance_key",
+            "name": "Template Dataset",
+            "description": "Dataset from template",
+            "data_categories": None,
+            "fides_meta": None,
+            "collections": [
+                {
+                    "name": "orders",
+                    "data_categories": None,
+                    "description": None,
+                    "fides_meta": None,
+                    "fields": [
+                        {
+                            "name": "order_id",
+                            "description": None,
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "integer",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": True,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "customer_id",
+                            "description": None,
+                            "data_categories": ["user.unique_id"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "integer",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "email",
+                            "description": None,
+                            "data_categories": ["user.contact.email"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "string",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["user.name"],
+                            "description": None,
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "string",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                    ],
                 },
-                "root['collections'][1]['fields'][2]['fides_meta']['data_type']": {
-                    "new_value": "object",
-                    "old_value": "string",
+                {
+                    "name": "products",
+                    "description": None,
+                    "data_categories": None,
+                    "fides_meta": None,
+                    "fields": [
+                        {
+                            "name": "custom_attribute",
+                            "description": None,
+                            "data_categories": ["user.preferences"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "boolean",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": True,
+                                "read_only": True,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        }
+                    ],
                 },
-            }
+            ],
         }
 
-        # Normalize both datasets for comparison (ignoring order of collections and fields)
+        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
         normalized_expected = normalize_dataset_for_comparison(expected_dataset)
+
+        assert normalized_result == normalized_expected
+
+        customer_dataset_no_fields = copy.deepcopy(normalized_expected)
+        customer_dataset_no_fields["collections"][1]["fields"] = None
+        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+            stored_dataset=stored_dataset,
+            customer_dataset=customer_dataset_no_fields,
+            upcoming_dataset=upcoming_dataset_no_fields,
+            instance_key="test_instance_key",
+        )
+
+        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
+        normalized_expected = normalize_dataset_for_comparison(
+            upcoming_dataset_no_fields
+        )
 
         assert normalized_result == normalized_expected
