@@ -48,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 - Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
+- Confirmation screen tree pagination on first level [#7000](https://github.com/ethyca/fides/pull/7000)
 
 ### Developer Experience
 - Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
