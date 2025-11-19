@@ -5,6 +5,7 @@ Revises: 303287c70600
 Create Date: 2025-11-18 18:30:00.000000
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from loguru import logger
@@ -46,4 +47,3 @@ def downgrade():
     Converting string back to enum would fail if taxonomy keys are present.
     """
     logger.info("Conversion of str to enum AllowedTypes is unsupported.")
-

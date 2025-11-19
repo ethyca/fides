@@ -15,9 +15,10 @@ from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetCollection as FideslangDatasetCollection
 from pydantic import BaseModel
-from sqlalchemy import BOOLEAN, JSON, Column
-from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
+    BOOLEAN,
+    JSON,
+    Column,
     ForeignKey,
     Index,
     Integer,
