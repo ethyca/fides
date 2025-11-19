@@ -1,7 +1,6 @@
 import {
   LOG_LEVEL_LABELS,
   PrivacyCenterSettings,
-  SECURITY_HEADER_MODES,
 } from "~/app/server-utils/PrivacyCenterSettings";
 import type { ConsentMethod } from "~/types/api";
 import type {
