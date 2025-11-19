@@ -115,15 +115,17 @@ export const PrivacyRequestsDashboard = () => {
           <label htmlFor="select-all" className="cursor-pointer">
             Select all
           </label>
+          <div className="ml-3">
+            <ResultsSelectedCount
+              selectedIds={selectedIds}
+              totalResults={totalRows ?? 0}
+            />
+          </div>
+        </Flex>
+        <Flex align="center" gap="small">
           <DuplicateRequestsButton
             className="ml-3"
             currentStatusFilter={filters.status}
-          />
-        </Flex>
-        <Flex align="center" gap="small">
-          <ResultsSelectedCount
-            selectedIds={selectedIds}
-            totalResults={totalRows ?? 0}
           />
           <BulkActionsDropdown
             selectedIds={selectedIds}
