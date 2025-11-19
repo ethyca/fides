@@ -45,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
 - Duplicate DSRs can now be approved or denied. [#6998](https://github.com/ethyca/fides/pull/6998)
+- Updated several request runner queries to reduce N+1 query issues causing processing bottlenecks. [#6951](https://github.com/ethyca/fides/pull/6951)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
