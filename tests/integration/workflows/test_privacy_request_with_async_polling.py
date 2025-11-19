@@ -109,6 +109,14 @@ class TestPrivacyRequestWithAsyncPolling:
             status_code=200,
         )
 
+        # Status checks for DELETE - first check returns processing, then completed
+        # This ensures the erasure test can do two separate requeues (access then erasure)
+        client.add_response(
+            "GET",
+            "/api/anonymize-user/123/status",
+            {"status": "processing"},
+            status_code=200,
+        )
         client.add_response(
             "GET",
             "/api/anonymize-user/123/status",
