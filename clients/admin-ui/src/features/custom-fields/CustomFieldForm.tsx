@@ -20,6 +20,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import {
   FIELD_TYPE_OPTIONS,
   FieldTypes,
+  RESOURCE_TYPE_MAP,
 } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
@@ -34,6 +35,7 @@ import {
   AllowedTypes,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
+  ResourceTypes,
   ScopeRegistryEnum,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -56,6 +58,14 @@ const parseValueType = (fieldType: string): string => {
     return "custom";
   }
   return fieldType;
+};
+
+const parseResourceType = (resourceType: string): string => {
+  if (RESOURCE_TYPE_MAP.has(resourceType as ResourceTypes)) {
+    return RESOURCE_TYPE_MAP.get(resourceType as ResourceTypes) as string;
+  }
+  // if not in map, resource is a custom taxonomy type
+  return `taxonomy:${resourceType}`;
 };
 
 const CustomFieldForm = ({
@@ -129,16 +139,19 @@ const CustomFieldForm = ({
       ...field,
       value_type: parseValueType(field.field_type),
       field_type: getCustomFieldType(field),
+      resource_type: parseResourceType(field.resource_type),
       options: allowList?.allowed_values ?? [],
     };
   };
 
-  const initialValues = {
-    ...parseFieldToFormValues(initialField),
-    resource_type: queryResourceType
-      ? `taxonomy:${queryResourceType}`
-      : undefined,
-  };
+  const defaultInitialValues = parseFieldToFormValues(initialField);
+
+  const initialValues = queryResourceType
+    ? {
+        ...defaultInitialValues,
+        resource_type: `taxonomy:${queryResourceType}`,
+      }
+    : defaultInitialValues;
 
   if (isLoading || isAllowListLoading || isLocationsLoading) {
     return <SkeletonCustomFieldForm />;
