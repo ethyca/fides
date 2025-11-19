@@ -103,7 +103,7 @@ export class RecommendedSecurityHeaderService implements SecurityHeaderService {
     request: NextRequest,
     response: NextResponse,
   ): void {
-    response.headers.set("x-Frame-Options", "deny");
+    response.headers.set("X-Frame-Options", "deny");
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set(
       "Cache-Control",
