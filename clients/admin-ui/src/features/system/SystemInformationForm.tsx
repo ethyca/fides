@@ -317,19 +317,22 @@ const SystemInformationForm = ({
     if (result.data?.fides_key) {
       // Get current stewards from the system response (with both username and id)
       const currentStewardsMap = new Map(
-        (result.data.data_stewards || []).map((user) => [user.username, user.id])
+        (result.data.data_stewards || []).map((user) => [
+          user.username,
+          user.id,
+        ]),
       );
       const currentStewards = Array.from(currentStewardsMap.keys());
       const desiredStewards = values.data_stewards || [];
 
       // Find stewards that need to be added (not already assigned)
       const stewardsToAdd = desiredStewards.filter(
-        (steward) => !currentStewards.includes(steward)
+        (steward) => !currentStewards.includes(steward),
       );
 
       // Find stewards that need to be removed (no longer in desired list)
       const stewardsToRemove = currentStewards.filter(
-        (steward) => !desiredStewards.includes(steward)
+        (steward) => !desiredStewards.includes(steward),
       );
 
       // Assign each new steward to the system
@@ -377,7 +380,9 @@ const SystemInformationForm = ({
 
       // Refetch the system to get updated data stewards
       if (stewardsToAdd.length > 0 || stewardsToRemove.length > 0) {
-        const refreshedSystem = await getSystemByFidesKey(result.data.fides_key);
+        const refreshedSystem = await getSystemByFidesKey(
+          result.data.fides_key,
+        );
         if (refreshedSystem.data) {
           // Update the result with the refreshed system data
           result.data = refreshedSystem.data;
