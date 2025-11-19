@@ -14,6 +14,7 @@ import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
+import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
   useSearchPrivacyRequestsQuery,
@@ -120,10 +121,13 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
         <Flex align="center" gap="small">
+          <ResultsSelectedCount
+            selectedIds={selectedIds}
+            totalResults={totalRows ?? 0}
+          />
           <BulkActionsDropdown
             selectedIds={selectedIds}
             menuItems={bulkActionMenuItems}
-            totalResults={totalRows ?? 0}
           />
           <Button
             aria-label="Reload"
