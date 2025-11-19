@@ -3,15 +3,25 @@ import { v4 } from "uuid";
 
 import loadEnvironmentVariables from "./app/server-utils/loadEnvironmentVariables";
 import { createLogger } from "./app/server-utils/logger";
+import { NullSecurityHeaderService } from "./app/server-utils/nullSecurityHeaderService";
+import { RecommendedSecurityHeaderService } from "./app/server-utils/recommendedSecurityHeaderService";
 import {
-  configureResponseSecurityHeaders,
-  configureSecurityHeaderContext,
-} from "./app/server-utils/securityHeaders";
+  MiddlewareResponseInit,
+  SecurityHeaderService,
+} from "./app/server-utils/securityHeadersService";
 
 export default function middleware(request: NextRequest) {
   const settings = loadEnvironmentVariables();
   const log = createLogger();
   const requestId = v4();
+  const securityHeadersService: SecurityHeaderService =
+    settings.SECURITY_HEADERS_MODE === "recommended"
+      ? new RecommendedSecurityHeaderService(
+          process.env.NODE_ENV,
+          settings,
+          crypto.randomUUID,
+        )
+      : new NullSecurityHeaderService();
 
   const logDict = {
     method: request.method,
@@ -23,23 +33,23 @@ export default function middleware(request: NextRequest) {
 
   // internalResponseHeaders are used to pass data between different contexts in NextJS.
   // These headers will not appear on the actual response headers on a network call.
-  const internalResponseHeaders = new Headers(request.headers);
-  internalResponseHeaders.set("x-request-id", requestId);
-
-  configureSecurityHeaderContext(settings, internalResponseHeaders);
-
-  const response = NextResponse.next({
+  const middlewareResponseHeaders = new Headers(request.headers);
+  middlewareResponseHeaders.set("x-request-id", requestId);
+  const middlewareResponse: MiddlewareResponseInit = {
     request: {
-      headers: internalResponseHeaders,
+      headers: middlewareResponseHeaders,
     },
-  });
+  };
 
-  configureResponseSecurityHeaders({
+  securityHeadersService.applyRequestContext(middlewareResponse);
+
+  const response = NextResponse.next(middlewareResponse);
+
+  securityHeadersService.applyResponseHeaders(
+    middlewareResponse,
     request,
     response,
-    internalResponseHeaders,
-    settings,
-  });
+  );
 
   return response;
 }
