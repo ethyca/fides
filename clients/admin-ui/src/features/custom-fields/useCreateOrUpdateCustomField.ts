@@ -44,8 +44,8 @@ const useCreateOrUpdateCustomField = () => {
 
   const createOrUpdate = async (
     values: CustomFieldsFormValues,
-    initialField: CustomFieldDefinitionWithId | undefined,
-    initialAllowList: AllowList | undefined,
+    initialField: CustomFieldDefinitionWithId | undefined = undefined,
+    initialAllowList: AllowList | undefined = undefined,
   ) => {
     const normalizedResourceType = normalizeResourceType(
       values.resource_type as string,
