@@ -109,6 +109,11 @@ export const generateFidesString = async ({
       : uniqueGvlVendorIds(experience as PrivacyExperience);
     tcModel.gvl.narrowVendorsTo(gvlUID);
 
+    // All TCF vendors that were shown to the user must be marked as disclosed
+    gvlUID.forEach((vendorId) => {
+      tcModel.vendorsDisclosed.set(vendorId);
+    });
+
     if (tcStringPreferences) {
       // Set vendors on tcModel
       tcStringPreferences.vendorsConsent.forEach((vendorId) => {
@@ -223,8 +228,8 @@ export const generateFidesString = async ({
       }
 
       encodedString = TCString.encode(tcModel, {
-        // We do not want to include vendors disclosed or publisher tc at the moment
-        segments: [Segment.CORE],
+        // We do not want to include the Publisher TC segment at the moment.
+        segments: [Segment.CORE, Segment.VENDORS_DISCLOSED],
       });
 
       fidesDebugger(
