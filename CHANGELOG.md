@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.3..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
+
+## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
