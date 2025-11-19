@@ -5,7 +5,6 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntSelect as Select,
-  AntSelectProps as SelectProps,
   AntSkeleton as Skeleton,
   AntTypography as Typography,
   ConfirmationModal,
@@ -15,7 +14,6 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import { getErrorMessage } from "~/features/common/helpers";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -25,17 +23,13 @@ import {
 } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
+import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
 import { getCustomFieldType } from "~/features/custom-fields/utils";
 import {
   useDeleteCustomFieldDefinitionMutation,
   useGetAllowListQuery,
   useGetCustomFieldLocationsQuery,
 } from "~/features/plus/plus.slice";
-import {
-  CoreTaxonomiesEnum,
-  TaxonomyTypeEnum,
-} from "~/features/taxonomy/constants";
-import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import {
   AllowedTypes,
   CustomFieldDefinition,
@@ -78,7 +72,6 @@ const CustomFieldForm = ({
   const messageApi = useMessage();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
-  const features = useFeatures();
 
   const { data: allowList, isLoading: isAllowListLoading } =
     useGetAllowListQuery(initialField?.allow_list_id as string, {
@@ -89,43 +82,8 @@ const CustomFieldForm = ({
     useDeleteCustomFieldDefinitionMutation();
   const { data: locationOptions, isLoading: isLocationsLoading } =
     useGetCustomFieldLocationsQuery();
-  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(
-    undefined as void,
-    {
-      skip: !features.plus,
-    },
-  );
 
-  const isPlusEnabled = features.plus;
-
-  // Build options for Type select: Custom + core taxonomies + custom taxonomies
-  const typeOptions: SelectProps["options"] = [
-    { label: "Custom", value: "custom" },
-    {
-      label: CoreTaxonomiesEnum.DATA_CATEGORIES,
-      value: TaxonomyTypeEnum.DATA_CATEGORY,
-    },
-    {
-      label: CoreTaxonomiesEnum.DATA_USES,
-      value: TaxonomyTypeEnum.DATA_USE,
-    },
-    {
-      label: CoreTaxonomiesEnum.DATA_SUBJECTS,
-      value: TaxonomyTypeEnum.DATA_SUBJECT,
-    },
-    ...(isPlusEnabled
-      ? [
-          {
-            label: CoreTaxonomiesEnum.SYSTEM_GROUPS,
-            value: TaxonomyTypeEnum.SYSTEM_GROUP,
-          },
-        ]
-      : []),
-    ...(customTaxonomies?.map((taxonomy) => ({
-      label: taxonomy.name,
-      value: taxonomy.fides_key,
-    })) || []),
-  ];
+  const { valueTypeOptions } = useCustomFieldValueTypeOptions();
 
   const showDeleteButton =
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
@@ -202,7 +160,7 @@ const CustomFieldForm = ({
 
       <Form.Item label="Type" name="value_type">
         <Select
-          options={typeOptions}
+          options={valueTypeOptions}
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }

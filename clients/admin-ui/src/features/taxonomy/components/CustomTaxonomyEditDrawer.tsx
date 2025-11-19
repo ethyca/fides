@@ -1,16 +1,18 @@
 import { AntButton as Button, AntFlex as Flex, useMessage } from "fidesui";
 
+import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import CustomTaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
+import { CustomFieldDefinitionWithId } from "~/types/api";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
 interface CustomTaxonomyEditDrawerProps
   extends Omit<DetailsDrawerProps, "itemKey"> {
-  taxonomy?: TaxonomyResponse | null;
+  taxonomy: TaxonomyResponse;
   onDelete: () => void;
 }
 
@@ -26,6 +28,14 @@ const CustomTaxonomyEditDrawer = ({
     useUpdateCustomTaxonomyMutation();
 
   const messageApi = useMessage();
+  const { sortedCustomFieldDefinitionIds, idToCustomFieldDefinition } =
+    useCustomFields({
+      resourceType: taxonomy.fides_key,
+    });
+
+  const customFields = sortedCustomFieldDefinitionIds.map(
+    (id) => idToCustomFieldDefinition.get(id) as CustomFieldDefinitionWithId,
+  );
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
     if (!taxonomy?.fides_key) {
@@ -69,6 +79,7 @@ const CustomTaxonomyEditDrawer = ({
         taxonomy={taxonomy}
         onSubmit={handleUpdate}
         formId={FORM_ID}
+        customFields={customFields}
       />
     </DetailsDrawer>
   );
