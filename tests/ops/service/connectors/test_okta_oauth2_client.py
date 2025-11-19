@@ -4,6 +4,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+import requests
 
 from fides.api.common_exceptions import ConnectionException, OAuth2TokenException
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -49,7 +50,8 @@ class TestGetAccessToken:
             (datetime.utcnow() - timedelta(seconds=1)).timestamp()
         )
 
-        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post:
+        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post, \
+             mock.patch("fides.api.service.connectors.okta_oauth2_client.Session.object_session", return_value=None):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {
@@ -67,7 +69,8 @@ class TestGetAccessToken:
         connection_config.secrets["access_token"] = None
         connection_config.secrets["expires_at"] = None
 
-        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post:
+        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post, \
+             mock.patch("fides.api.service.connectors.okta_oauth2_client.Session.object_session", return_value=None):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "fresh-token"}
@@ -97,7 +100,7 @@ class TestGetAccessToken:
 
         with mock.patch(
             "fides.api.service.connectors.okta_oauth2_client.requests.post",
-            side_effect=Exception("boom"),
+            side_effect=requests.exceptions.RequestException("boom"),
         ):
             oauth_client = OktaOAuth2Client(connection_config)
             with pytest.raises(OAuth2TokenException):
@@ -109,7 +112,8 @@ class TestGetAccessToken:
         connection_config.secrets["access_token"] = None
         connection_config.secrets["expires_at"] = None
 
-        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post:
+        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post, \
+             mock.patch("fides.api.service.connectors.okta_oauth2_client.Session.object_session", return_value=None):
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"not_access_token": "oops"}
@@ -123,7 +127,8 @@ class TestGetAccessToken:
         connection_config.secrets["access_token"] = None
         connection_config.secrets["expires_at"] = None
 
-        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post:
+        with mock.patch("fides.api.service.connectors.okta_oauth2_client.requests.post") as mock_post, \
+             mock.patch("fides.api.service.connectors.okta_oauth2_client.Session.object_session", return_value=None):
             mock_response = Mock()
             mock_response.status_code = 400
             mock_response.text = "Bad Request"
