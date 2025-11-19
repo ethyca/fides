@@ -55,12 +55,12 @@ export const DuplicateRequestsButton = ({
 
   return (
     <Button
-      type="link"
+      type="text"
       onClick={handleClick}
       className={className}
       data-testid="duplicate-requests-button"
     >
-      View {duplicateCount} duplicate{" "}
+      {duplicateCount} duplicate{" "}
       {pluralize(duplicateCount, "request", "requests")}
     </Button>
   );

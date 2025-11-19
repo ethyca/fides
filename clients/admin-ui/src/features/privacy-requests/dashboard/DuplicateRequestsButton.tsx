@@ -1,4 +1,4 @@
-import { AntTypography as Typography } from "fidesui";
+import { AntButton as Button } from "fidesui";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -6,20 +6,20 @@ import { pluralize } from "~/features/common/utils";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestStatus } from "~/types/api";
 
-interface DuplicateRequestsLinkProps {
+interface DuplicateRequestsButtonProps {
   className?: string;
   currentStatusFilter?: PrivacyRequestStatus[] | null;
 }
 
 /**
- * Component that displays a link to view duplicate privacy requests.
+ * Component that displays a button to view duplicate privacy requests.
  * Only renders if there are duplicate requests and duplicates are not already being shown.
  * Fetches just 1 result to get the count.
  */
-export const DuplicateRequestsLink = ({
+export const DuplicateRequestsButton = ({
   className,
   currentStatusFilter,
-}: DuplicateRequestsLinkProps) => {
+}: DuplicateRequestsButtonProps) => {
   const router = useRouter();
 
   const { data } = useSearchPrivacyRequestsQuery({
@@ -52,13 +52,14 @@ export const DuplicateRequestsLink = ({
       passHref
       legacyBehavior
     >
-      <Typography.Link
-        data-testid="duplicate-requests-link"
+      <Button
+        type="text"
+        data-testid="duplicate-requests-button"
         className={className}
       >
-        View {duplicateCount} duplicate{" "}
+        {duplicateCount} duplicate{" "}
         {pluralize(duplicateCount, "request", "requests")}
-      </Typography.Link>
+      </Button>
     </Link>
   );
 };
