@@ -22,6 +22,11 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
     BulkActionType.DENY,
     BulkActionType.DELETE,
   ],
+  [PrivacyRequestStatus.DUPLICATE]: [
+    BulkActionType.APPROVE,
+    BulkActionType.DENY,
+    BulkActionType.DELETE,
+  ],
   [PrivacyRequestStatus.IDENTITY_UNVERIFIED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.REQUIRES_INPUT]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.APPROVED]: [BulkActionType.DELETE],
@@ -33,11 +38,6 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
-  [PrivacyRequestStatus.DUPLICATE]: [
-    BulkActionType.APPROVE,
-    BulkActionType.DENY,
-    BulkActionType.DELETE,
-  ],
 } as const;
 
 /**
