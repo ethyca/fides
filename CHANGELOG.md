@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
+- Duplicate DSRs can now be approved or denied. [#6998](https://github.com/ethyca/fides/pull/6998)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
