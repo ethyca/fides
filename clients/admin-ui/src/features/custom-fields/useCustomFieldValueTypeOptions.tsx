@@ -7,17 +7,21 @@ import {
 } from "~/features/taxonomy/constants";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 
-const useCustomFieldValueTypeOptions = () => {
+const useCustomFieldValueTypeOptions = (
+  {
+    customOptionLabel,
+  }: {
+    customOptionLabel: string;
+  } = { customOptionLabel: "Custom" },
+) => {
   const { plus: isPlusEnabled } = useFeatures();
-  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(
-    undefined as void,
-    {
+  const { data: customTaxonomies, isLoading: isCustomTaxonomiesLoading } =
+    useGetCustomTaxonomiesQuery(undefined as void, {
       skip: !isPlusEnabled,
-    },
-  );
+    });
   // Build options for Type select: Custom + core taxonomies + custom taxonomies
   const valueTypeOptions: SelectProps["options"] = [
-    { label: "Custom", value: "custom" },
+    { label: customOptionLabel, value: "custom" },
     {
       label: CoreTaxonomiesEnum.DATA_CATEGORIES,
       value: TaxonomyTypeEnum.DATA_CATEGORY,
@@ -37,6 +41,10 @@ const useCustomFieldValueTypeOptions = () => {
       label: CoreTaxonomiesEnum.SYSTEM_GROUPS,
       value: TaxonomyTypeEnum.SYSTEM_GROUP,
     });
+  }
+
+  if (isCustomTaxonomiesLoading) {
+    return { valueTypeOptions, customTaxonomies: [] };
   }
 
   if (customTaxonomies?.length) {

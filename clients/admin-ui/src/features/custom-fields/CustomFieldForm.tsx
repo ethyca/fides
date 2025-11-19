@@ -68,6 +68,7 @@ const CustomFieldForm = ({
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const valueType = Form.useWatch("value_type", form);
   const router = useRouter();
+  const { resource_type: queryResourceType } = router.query;
 
   const messageApi = useMessage();
 
@@ -132,7 +133,12 @@ const CustomFieldForm = ({
     };
   };
 
-  const initialValues = parseFieldToFormValues(initialField);
+  const initialValues = {
+    ...parseFieldToFormValues(initialField),
+    resource_type: queryResourceType
+      ? `taxonomy:${queryResourceType}`
+      : undefined,
+  };
 
   if (isLoading || isAllowListLoading || isLocationsLoading) {
     return <SkeletonCustomFieldForm />;

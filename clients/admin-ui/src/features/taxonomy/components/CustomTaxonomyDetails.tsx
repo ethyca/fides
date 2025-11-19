@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
@@ -40,8 +41,9 @@ const CustomTaxonomyDetails = ({
 
   const [isAdding, setIsAdding] = useState(false);
 
-  const { valueTypeOptions, customTaxonomies } =
-    useCustomFieldValueTypeOptions();
+  const { valueTypeOptions, customTaxonomies } = useCustomFieldValueTypeOptions(
+    { customOptionLabel: "Create custom attribute (new tab)" },
+  );
 
   const canDeleteCustomFieldDefinition = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_DELETE,
@@ -99,7 +101,11 @@ const CustomTaxonomyDetails = ({
 
   const handleSelectAttributeType = (value: string) => {
     if (value === "custom") {
-      console.log("custom attribute type selected");
+      window.open(
+        `${CUSTOM_FIELDS_ROUTE}/new?resource_type=${fidesKey}`,
+        "_blank",
+      );
+      setIsAdding(false);
     } else {
       handleAddCustomFieldDefinition(value);
     }
