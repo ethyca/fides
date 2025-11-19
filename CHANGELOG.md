@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
 - Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
 - Added support for removals in the action center [#6941](https://github.com/ethyca/fides/pull/6941)
+- Added support for duplicate request in the request manager ui [#6999](https://github.com/ethyca/fides/pull/6999)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
@@ -43,6 +44,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
 - Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
+- Duplicate DSRs can now be approved or denied. [#6998](https://github.com/ethyca/fides/pull/6998)
+- Updated several request runner queries to reduce N+1 query issues causing processing bottlenecks. [#6951](https://github.com/ethyca/fides/pull/6951)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)

@@ -56,6 +56,7 @@ const PrivacyRequests: NextPage = () => {
     <FixedLayout
       title="Privacy Requests"
       mainProps={{ minWidth: "784px", overflowY: "scroll" }}
+      fullHeight
     >
       <PageHeader
         heading="Privacy Requests"

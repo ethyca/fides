@@ -10,7 +10,7 @@ from loguru import logger
 # pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
@@ -494,7 +494,15 @@ def run_privacy_request(
                 )
 
             try:
-                datasets = DatasetConfig.all(db=session)
+                # Eager load connection_config and ctl_dataset to avoid N+1 queries
+                datasets = (
+                    session.query(DatasetConfig)
+                    .options(
+                        selectinload(DatasetConfig.connection_config),
+                        selectinload(DatasetConfig.ctl_dataset),
+                    )
+                    .all()
+                )
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
@@ -521,7 +529,12 @@ def run_privacy_request(
                     key: value["value"] if isinstance(value, dict) else value
                     for key, value in privacy_request.get_cached_identity_data().items()
                 }
-                connection_configs = ConnectionConfig.all(db=session)
+                # Eager load datasets relationship to avoid N+1 queries in filter_fides_connector_datasets
+                connection_configs = (
+                    session.query(ConnectionConfig)
+                    .options(selectinload(ConnectionConfig.datasets))
+                    .all()
+                )
                 fides_connector_datasets: set[str] = filter_fides_connector_datasets(
                     connection_configs
                 )
