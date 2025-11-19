@@ -38,8 +38,8 @@ describe("Custom Fields V2", () => {
       cy.get("form").within(() => {
         cy.getByTestId("input-name").should("exist");
         cy.getByTestId("input-description").should("exist");
+        cy.getByTestId("select-type").should("exist");
         cy.getByTestId("select-resource-type").should("exist");
-        cy.getByTestId("select-field-type").should("exist");
       });
     });
 
@@ -47,10 +47,15 @@ describe("Custom Fields V2", () => {
       cy.getByTestId("save-btn").click();
       cy.contains("Please enter a name").should("be.visible");
       cy.contains("Please select a resource type").should("be.visible");
+
+      // When custom type is selected, field type is also required
+      cy.getByTestId("select-type").antSelect("Custom");
+      cy.getByTestId("save-btn").click();
       cy.contains("Please select a field type").should("be.visible");
     });
 
     it("shows options field for select types", () => {
+      cy.getByTestId("select-type").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add and validate options
@@ -64,7 +69,7 @@ describe("Custom Fields V2", () => {
     });
 
     it("validates unique options for select types", () => {
-      // Select single select type
+      cy.getByTestId("select-type").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add duplicate options
@@ -83,10 +88,11 @@ describe("Custom Fields V2", () => {
 
       cy.getByTestId("input-name").type(fieldName);
       cy.getByTestId("input-description").type(fieldDesc);
-      cy.getByTestId("select-resource-type").antSelect("system:information");
+      cy.getByTestId("select-type").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
       cy.getByTestId("add-option-btn").click();
       cy.getByTestId("input-option-0").type("Option 1");
+      cy.getByTestId("select-resource-type").antSelect("system:information");
       cy.getByTestId("save-btn").click();
       cy.wait("@createCustomFieldDefinition")
         .its("response.statusCode")
@@ -104,6 +110,7 @@ describe("Custom Fields V2", () => {
 
       // Verify form is populated
       cy.getByTestId("input-name").should("have.value", "Test Custom Field");
+      cy.getByTestId("select-type").should("exist");
       cy.getByTestId("select-resource-type").should("exist");
       cy.getByTestId("select-field-type").should("exist");
     });
