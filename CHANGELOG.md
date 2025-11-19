@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
 
+### Changed
+- Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
+
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
