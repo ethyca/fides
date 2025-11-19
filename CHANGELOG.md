@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `display_order` to `PrivacyNotice` and `ExperienceNotices` models [#6939](https://github.com/ethyca/fides/pull/6939)
 - Added new empty message to the action center schema explorer screen [#6972](https://github.com/ethyca/fides/pull/6972)
 - Added support for removals in the action center [#6941](https://github.com/ethyca/fides/pull/6941)
+- Added support for duplicate request in the request manager ui [#6999](https://github.com/ethyca/fides/pull/6999)
 
 ### Changed
 - Updated logging configuration to intercept all standard library logs and route them through Loguru[#6891](https://github.com/ethyca/fides/pull/6891)
