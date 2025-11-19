@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.74.3..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
+
+## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
@@ -43,15 +45,17 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Replaced filter modal with a filter bar in the new request manager screen [#6943](https://github.com/ethyca/fides/pull/6943)
 - Changed name of main file in DSR package from welcome.html to clickme.html [#6923](https://github.com/ethyca/fides/pull/6923)
 - De-select list items after performing an action in the action center [#6942](https://github.com/ethyca/fides/pull/6942)
-- Updated identity verification emails to use ansync calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
+- Updated identity verification emails to use async calls bringing them in line with other messaging endpoints [#6949](https://github.com/ethyca/fides/pull/6949)
 - Duplicate DSRs can now be approved or denied. [#6998](https://github.com/ethyca/fides/pull/6998)
 - Updated several request runner queries to reduce N+1 query issues causing processing bottlenecks. [#6951](https://github.com/ethyca/fides/pull/6951)
+- Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
 
 ### Fixed
 - Fixed SSO login button not appearing after session timeout without manual refresh [#6988](https://github.com/ethyca/fides/pull/6988)
 - Data Subject email identity no longer included in Generic DSR email list if the DSR was submitted on a policy that has more than just the erasure action type. [#6938](https://github.com/ethyca/fides/pull/6938)
 - Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
 - Confirmation screen tree pagination on first level [#7000](https://github.com/ethyca/fides/pull/7000)
+- Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
 
 ### Developer Experience
 - Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
@@ -62,12 +66,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
 - Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
 - Refactored AntMessage hooks to apply theming globally [#6934](https://github.com/ethyca/fides/pull/6934)
-
-### Fixed
-- Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
-
-### Changed
-- Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
 
 ## [2.74.3](https://github.com/ethyca/fides/compare/2.74.2..2.74.3)
 
