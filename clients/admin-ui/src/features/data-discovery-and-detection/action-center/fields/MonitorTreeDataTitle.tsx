@@ -17,6 +17,7 @@ import { CustomTreeDataNode } from "./types";
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
     const { children } = node;
+
     return children && !!children.find((child) => child.key.toString() === key);
   });
 };
@@ -25,17 +26,20 @@ const recFindNodeParent = (
   data: CustomTreeDataNode[],
   key: string,
 ): CustomTreeDataNode | null => {
-  return data.reduce(
-    (agg, current) => {
-      if (current.children) {
-        return (
-          findNodeParent(current.children, key) ??
-          recFindNodeParent(current.children, key)
-        );
-      }
-      return agg;
-    },
-    null as null | CustomTreeDataNode,
+  return (
+    findNodeParent(data, key) ??
+    data.reduce(
+      (agg, current) => {
+        if (current.children) {
+          return (
+            findNodeParent(current.children, key) ??
+            recFindNodeParent(current.children, key)
+          );
+        }
+        return agg;
+      },
+      null as null | CustomTreeDataNode,
+    )
   );
 };
 
@@ -54,6 +58,7 @@ export const MonitorTreeDataTitle = ({
 
   if (node.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX)) {
     const nodeParent = recFindNodeParent(treeData, node.key.toString());
+
     return (
       <Button
         type="link"

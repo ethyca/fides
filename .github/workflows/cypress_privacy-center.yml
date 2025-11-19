@@ -29,6 +29,7 @@ jobs:
           filters: |
             privacy_center:
               - 'clients/privacy-center/**'
+              - '!clients/privacy-center/pages/api/fides-js.ts'
               - '.github/workflows/cypress_privacy-center.yml'
 
       - name: Log changed files

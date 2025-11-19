@@ -1,4 +1,4 @@
-import { AntMessage as Message, AntModal as Modal } from "fidesui";
+import { AntModal as Modal, useMessage } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
@@ -20,10 +20,11 @@ import {
 export const useBulkActions = (
   monitorId: string,
   modalApi: ReturnType<typeof Modal.useModal>[0],
-  messageApi: ReturnType<typeof Message.useMessage>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
   const [bulkAction] = useFieldActionsMutation();
+
+  const messageApi = useMessage();
 
   const handleBulkAction =
     (actionType: FieldActionType) =>
