@@ -3,11 +3,11 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
   Box,
   GreenCheckCircleIcon,
   Heading,
   HStack,
+  useMessage,
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
@@ -50,6 +50,8 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
     useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
+
+  const message = useMessage();
 
   const isEditMode = !!configKey;
 
