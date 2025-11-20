@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
+  AntAutoComplete as AutoComplete,
   AntButton as Button,
   AntFlex as Flex,
   AntForm as Form,
@@ -83,6 +84,7 @@ const CustomFieldForm = ({
 }) => {
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const valueType = Form.useWatch("value_type", form);
+  const name = Form.useWatch("name", form);
   const router = useRouter();
   const { resource_type: queryResourceType } = router.query;
 
@@ -163,6 +165,10 @@ const CustomFieldForm = ({
     return <SkeletonCustomFieldForm />;
   }
 
+  const isTaxonomyType = valueTypeOptions.some(
+    (option) => option.value === valueType,
+  );
+
   return (
     <Form
       form={form}
@@ -176,25 +182,52 @@ const CustomFieldForm = ({
         name="name"
         rules={[{ required: true, message: "Please enter a name" }]}
       >
-        <Input data-testid="input-name" />
+        <AutoComplete
+          options={valueTypeOptions}
+          onSelect={(_, option) => {
+            form.setFieldsValue({
+              name: option.label as string,
+              value_type: option.value as string,
+            });
+          }}
+          disabled={isTaxonomyType}
+        >
+          <Input
+            data-testid="input-name"
+            suffix={
+              isTaxonomyType ? (
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Icons.Close />}
+                  onClick={() => {
+                    form.setFieldsValue({
+                      name: undefined,
+                      value_type: undefined,
+                    });
+                  }}
+                />
+              ) : undefined
+            }
+          />
+        </AutoComplete>
       </Form.Item>
 
-      <Form.Item label="Description" name="description">
-        <Input.TextArea rows={2} data-testid="input-description" />
-      </Form.Item>
-
-      <Form.Item label="Type" name="value_type">
+      <Form.Item label="Type" name="value_type" hidden>
         <Select
           options={valueTypeOptions}
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
-          data-testid="select-type"
         />
       </Form.Item>
 
-      {valueType === "custom" && (
+      {!!name && !isTaxonomyType && (
         <>
+          <Form.Item label="Description" name="description">
+            <Input.TextArea rows={2} data-testid="input-description" />
+          </Form.Item>
+
           <Form.Item
             label="Field Type"
             name="field_type"

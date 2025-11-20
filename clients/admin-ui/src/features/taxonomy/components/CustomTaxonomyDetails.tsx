@@ -39,7 +39,7 @@ const CustomTaxonomyDetails = ({
 
   const [isAdding, setIsAdding] = useState(false);
 
-  const { valueTypeOptions } = useCustomFieldValueTypeOptions(false);
+  const { valueTypeOptions } = useCustomFieldValueTypeOptions();
 
   const canDeleteCustomFieldDefinition = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_DELETE,
