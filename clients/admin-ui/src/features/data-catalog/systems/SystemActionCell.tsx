@@ -17,9 +17,7 @@ const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
       <MenuButton
         as={AntButton}
         size="small"
-        // Chakra is expecting the Chakra "type" prop, i.e. HTML type,
-        // but Ant buttons use "type" for styling
-        // @ts-ignore
+        // @ts-expect-error - Ant type, not Chakra type because of `as` prop
         type="text"
         className="max-w-4"
         icon={<MoreIcon transform="rotate(90deg)" ml={2} />}

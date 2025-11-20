@@ -3439,8 +3439,6 @@ describe("Consent overlay", () => {
 
       // Next, change some Fides options to enable embed and reinitialize()
       cy.window().then((win) => {
-        // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
         win.fides_overrides = {
           fides_embed: true,
           fides_disable_banner: false,
@@ -3458,8 +3456,6 @@ describe("Consent overlay", () => {
 
       // Change the options  and reinitialize() again
       cy.window().then((win) => {
-        // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
         win.fides_overrides = {
           fides_embed: true,
           fides_disable_banner: true,

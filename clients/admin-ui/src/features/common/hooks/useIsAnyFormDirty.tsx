@@ -29,7 +29,7 @@ const modalResponsePromise = createRef() as MutableRefObject<
   Promise<boolean> | undefined
 >;
 
-type BooleanReturnFn = (value: boolean) => boolean;
+type BooleanReturnFn = (value: boolean) => void;
 const modalResolvePromise = createRef() as MutableRefObject<
   BooleanReturnFn | undefined
 >;
@@ -69,18 +69,9 @@ export const useIsAnyFormDirty = () => {
        * modal both calls correctly resolve at the same time.
        */
       if (!modalResponsePromise.current) {
-        modalResponsePromise.current = new Promise(
-          /*
-           * This type is ignored for now because the type checker
-           * isn't convinced that the `resolve` type is correct.
-           * It is in practice. In the future it may be worth figuring
-           * out exactly how to type this situation.
-           */
-          // @ts-ignore
-          (resolve: (value: boolean) => boolean) => {
-            modalResolvePromise.current = resolve;
-          },
-        );
+        modalResponsePromise.current = new Promise((resolve) => {
+          modalResolvePromise.current = resolve;
+        });
       }
       return modalResponsePromise.current as Promise<boolean>;
     }
