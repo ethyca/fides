@@ -38,6 +38,7 @@ import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTabl
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
+import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { useRequestFilters } from "./hooks/useRequestFilters";
 
@@ -135,6 +136,10 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={2}>
+          <DuplicateRequestsButton
+            className="-mr-2"
+            onFilterChange={resetPagination}
+          />
           {anyFiltersApplied && (
             <Button type="text" onClick={handleClearAllFilters}>
               Clear filters

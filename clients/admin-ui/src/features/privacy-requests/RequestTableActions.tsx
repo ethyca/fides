@@ -54,7 +54,10 @@ export const RequestTableActions = ({
     config?.notifications?.send_request_completion_notification;
 
   const renderApproveButton = () => {
-    if (subjectRequest.status !== "pending") {
+    if (
+      subjectRequest.status !== "pending" &&
+      subjectRequest.status !== "duplicate"
+    ) {
       return null;
     }
 
@@ -73,7 +76,10 @@ export const RequestTableActions = ({
   };
 
   const renderDenyButton = () => {
-    if (subjectRequest.status !== "pending") {
+    if (
+      subjectRequest.status !== "pending" &&
+      subjectRequest.status !== "duplicate"
+    ) {
       return null;
     }
 
