@@ -51,8 +51,10 @@ def get_privacy_request_and_task(
     Retrieves and validates a privacy request and its associated task
     """
 
-    privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
-        db=session, object_id=privacy_request_id
+    privacy_request: Optional[PrivacyRequest] = (
+        PrivacyRequest.query_without_large_columns(session)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
     )
     request_task: Optional[RequestTask] = RequestTask.get(
         db=session, object_id=privacy_request_task_id
