@@ -50,12 +50,12 @@ def extract_conditional_dependency_data_from_inputs(
     ]
 
     # Get all privacy request conditional dependencies field addresses
-    privacy_request_field_addresses = [
+    privacy_request_field_addresses = {
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
         if dependency.field_address
         and dependency.field_address.startswith("privacy_request.")
-    ]
+    }
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
     if privacy_request_field_addresses:
