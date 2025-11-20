@@ -169,6 +169,8 @@ const CustomFieldForm = ({
     (option) => option.value === valueType,
   );
 
+  console.log(form.getFieldsValue());
+
   return (
     <Form
       form={form}
@@ -191,6 +193,7 @@ const CustomFieldForm = ({
             });
           }}
           disabled={isTaxonomyType}
+          data-testid="input-name-autocomplete"
         >
           <Input
             data-testid="input-name"
@@ -219,6 +222,7 @@ const CustomFieldForm = ({
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
+          data-testid="select-value-type"
         />
       </Form.Item>
 
@@ -354,8 +358,8 @@ const CustomFieldForm = ({
       <Form.Item
         label="Applies to"
         name="resource_type"
-        rules={[{ required: true, message: "Please select a resource type" }]}
-        tooltip="Choose where this field applies, including custom taxonomies."
+        rules={[{ required: true, message: "Please select a location" }]}
+        tooltip="Choose where this field applies, including taxonomies"
       >
         <Select
           options={(locationOptions || []).map((loc: string) => {
