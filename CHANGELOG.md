@@ -24,6 +24,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
 
+### Developer Experience
+- Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
+
+
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
@@ -68,7 +72,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added rules and commands for the AI assistant. [#6944](https://github.com/ethyca/fides/pull/6944)
 - Updated SearchInput component to rely more on Ant Design defaults [#6968](https://github.com/ethyca/fides/pull/6968)
 - Replaced restore hotkey with refresh hotkey in Action Center fields [#6978](https://github.com/ethyca/fides/pull/6978)
-- Refactored AntMessage hooks to apply theming globally [#6934](https://github.com/ethyca/fides/pull/6934)
+
+### Fixed
+- Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
+
+### Changed
+- Monitor field filters no longer reset to default values when selecting resources from the tree [#6935](https://github.com/ethyca/fides/pull/6935)
 
 ## [2.74.3](https://github.com/ethyca/fides/compare/2.74.2..2.74.3)
 

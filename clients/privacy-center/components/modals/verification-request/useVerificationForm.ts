@@ -63,7 +63,7 @@ export const useVerificationForm = ({
           `${settings.FIDES_API_URL}/${verificationType}/${requestId}/verify`,
           {
             method: "POST",
-            headers,
+            headers: headers as unknown as HeadersInit,
             body: JSON.stringify(body),
           },
         );
