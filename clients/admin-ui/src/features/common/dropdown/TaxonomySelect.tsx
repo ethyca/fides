@@ -10,6 +10,7 @@ import styles from "./TaxonomySelect.module.scss";
 
 export interface TaxonomySelectOption {
   value: string;
+  label?: ReactNode;
   name?: string;
   primaryName?: string;
   description: string;
@@ -28,6 +29,19 @@ export type TaxonomySelectOptions = (
   | TaxonomySelectOptionGroup
 )[];
 
+const TaxonomyLabel = ({
+  name,
+  primaryName,
+}: {
+  name?: string;
+  primaryName?: string;
+}) => (
+  <>
+    <strong>{primaryName || name}</strong>
+    {primaryName && `: ${name}`}
+  </>
+);
+
 const TaxonomyOption = ({
   data: { formattedTitle, description, name, primaryName },
 }: {
@@ -36,8 +50,7 @@ const TaxonomyOption = ({
   return (
     <Flex gap={12} title={`${formattedTitle} - ${description}`}>
       <div>
-        <strong>{primaryName || name}</strong>
-        {primaryName && `: ${name}`}
+        <TaxonomyLabel name={name} primaryName={primaryName} />
       </div>
       <em>{description}</em>
     </Flex>
@@ -74,13 +87,17 @@ const isOptionGroup = (
 // Helper function to format a single option
 const formatTaxonomyOption = (
   opt: TaxonomySelectOption,
-): TaxonomySelectOption => ({
-  ...opt,
-  className: styles.option,
-  formattedTitle:
-    opt.formattedTitle ||
-    [opt.primaryName, opt.name].filter((maybeString) => maybeString).join(": "),
-});
+): TaxonomySelectOption => {
+  const { name, primaryName, formattedTitle, label } = opt;
+  return {
+    ...opt,
+    className: styles.option,
+    formattedTitle:
+      formattedTitle ||
+      [primaryName, name].filter((maybeString) => maybeString).join(": "),
+    label: label ?? <TaxonomyLabel name={name} primaryName={primaryName} />,
+  };
+};
 
 export const TaxonomySelect = ({ options, ...props }: TaxonomySelectProps) => {
   const selectOptions: TaxonomySelectOptions | undefined = options?.map(

@@ -28,12 +28,6 @@ const ClassificationSelect = ({
 
     return {
       value: dataCategory.fides_key,
-      label: (
-        <div>
-          <strong>{primaryName || name}</strong>
-          {primaryName && `: ${name}`}
-        </div>
-      ),
       name,
       primaryName,
       description: dataCategory.description || "",
