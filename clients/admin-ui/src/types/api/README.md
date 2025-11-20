@@ -28,5 +28,5 @@ turbo run format
 
 ## Resources
 
-- [FastAPI Client Generation](https://fastapi.tiangolo.com/advanced/generate-clients/?h=typescript#install-openapi-typescript-codegen)
-- [OpenAPI Typescript Codegen](https://github.com/ferdikoomen/openapi-typescript-codegen)
+- [FastAPI Client Generation](https://fastapi.tiangolo.com/advanced/generate-clients/)
+- [@hey-api/openapi-ts](https://github.com/hey-api/openapi-ts)
