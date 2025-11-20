@@ -113,17 +113,10 @@ const useCreateOrUpdateCustomField = () => {
       const fieldPayload: CustomFieldDefinitionWithId = {
         ...rest,
         id: initialField.id,
-<<<<<<< HEAD
         allow_list_id:
           allowListResult && !isErrorResult(allowListResult)
             ? (allowListResult.data as AllowList).id
             : initialField.allow_list_id,
-=======
-        allow_list_id: allowListResult
-          ? // @ts-ignore - we returned early if there was an error so "data" will always be present here
-            allowListResult.data.id
-          : initialField.allow_list_id,
->>>>>>> cfc23c9a0ff5bc9e24f2df5b411fb2af3ff81ad3
         resource_type: normalizedResourceType,
         field_type:
           values.field_type === FieldTypes.SINGLE_SELECT
