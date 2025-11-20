@@ -93,7 +93,7 @@ User's current consent preferences; see [Fides.consent](Fides.md#consent) for de
 
 > `optional` **fides\_string**: `string`
 
-User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail.
+User's current consent string; see [Fides.fides\_string](Fides.md#fides_string) for detail.
 
 #### timestamp?
 
@@ -110,32 +110,32 @@ May be undefined if the Performance API is not available.
 
 Extra event properties, for additional context.
 
-#### extraDetails.servingComponent?
+##### extraDetails.servingComponent?
 
 > `optional` **servingComponent**: `"banner"` \| `"modal"` \| `"tcf_banner"` \| `"tcf_overlay"`
 
 Which FidesJS UI component (if any) caused this event.
 
-#### extraDetails.shouldShowExperience?
+##### extraDetails.shouldShowExperience?
 
 > `optional` **shouldShowExperience**: `boolean`
 
 Whether the user should be shown the consent experience. Only available on FidesConsentLoaded and FidesReady events.
 
-#### extraDetails.consentMethod?
+##### extraDetails.consentMethod?
 
 > `optional` **consentMethod**: `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"acknowledge"` \| `"gpc"` \| `"script"` \| `"external_provider"`
 
 What consent method (if any) caused this event.
 
-#### extraDetails.trigger?
+##### extraDetails.trigger?
 
 > `optional` **trigger**: `object`
 
 What UI element (if any) triggered this event, as well as the origin of
 the event.
 
-#### extraDetails.trigger.origin?
+##### extraDetails.trigger.origin?
 
 > `optional` **origin**: `"fides"` \| `"external"`
 
@@ -143,7 +143,7 @@ Where the event originated from. If the event was triggered using an
 SDK script, for example, this will be "external", meaning the event
 was triggered by something other than a FidesJS UI element.
 
-#### extraDetails.trigger.type?
+##### extraDetails.trigger.type?
 
 > `optional` **type**: `"toggle"` \| `"button"` \| `"link"`
 
@@ -151,27 +151,27 @@ The type of element that triggered the event. Additional types may be
 added over time, so expect this type to grow.
 Only present when origin is "fides".
 
-#### extraDetails.trigger.label?
+##### extraDetails.trigger.label?
 
 > `optional` **label**: `string`
 
 The UI label of the element that triggered the event.
 
-#### extraDetails.trigger.checked?
+##### extraDetails.trigger.checked?
 
 > `optional` **checked**: `boolean`
 
 The checked state of the element that triggered the event.
 Only present when type is "toggle".
 
-#### extraDetails.preference?
+##### extraDetails.preference?
 
 > `optional` **preference**: `object`
 
 Information about the specific preference being changed, if this event
 was triggered by a preference change.
 
-##### Example
+###### Example
 
 ```ts
 // For a notice toggle:
@@ -197,37 +197,37 @@ preference: {
 }
 ```
 
-#### extraDetails.preference.key
+##### extraDetails.preference.key
 
 > **key**: `string`
 
 The unique key identifying this preference
 
-#### extraDetails.preference.type
+##### extraDetails.preference.type
 
 > **type**: `"notice"` \| `"tcf_purpose_consent"` \| `"tcf_purpose_legitimate_interest"` \| `"tcf_special_feature"` \| `"tcf_vendor_consent"` \| `"tcf_vendor_legitimate_interest"`
 
 The type of preference being changed
 
-#### extraDetails.preference.vendor\_id?
+##### extraDetails.preference.vendor\_id?
 
 > `optional` **vendor\_id**: `string`
 
 The vendor ID if this is a vendor-related preference
 
-#### extraDetails.preference.vendor\_list?
+##### extraDetails.preference.vendor\_list?
 
 > `optional` **vendor\_list**: `"gvl"` \| `"gacp"` \| `"fds"`
 
 The vendor list type if this is a vendor-related preference
 
-#### extraDetails.preference.vendor\_list\_id?
+##### extraDetails.preference.vendor\_list\_id?
 
 > `optional` **vendor\_list\_id**: `string`
 
 The vendor list ID if this is a vendor-related preference
 
-#### extraDetails.preference.vendor\_name?
+##### extraDetails.preference.vendor\_name?
 
 > `optional` **vendor\_name**: `string`
 

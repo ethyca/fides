@@ -22,6 +22,7 @@ import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesR
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginatedResponse,
@@ -232,7 +233,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      PromoteResourcesResponse,
+      MonitorActionResponse,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -265,7 +266,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<
-      PromoteResourcesResponse,
+      MonitorActionResponse,
       { urnList?: string[] }
     >({
       query: (params) => {

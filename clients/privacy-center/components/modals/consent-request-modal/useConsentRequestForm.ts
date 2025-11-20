@@ -103,7 +103,7 @@ const useConsentRequestForm = ({
           `${settings.FIDES_API_URL}/${VerificationType.ConsentRequest}`,
           {
             method: "POST",
-            headers,
+            headers: headers as unknown as HeadersInit,
             body: JSON.stringify(body),
           },
         );

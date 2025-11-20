@@ -531,7 +531,10 @@ class PrivacyRequestService:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
-            if privacy_request.status != PrivacyRequestStatus.pending:
+            if privacy_request.status not in [
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.duplicate,
+            ]:
                 failed.append(
                     BulkUpdateFailed(
                         message="Cannot transition status",
@@ -603,7 +606,10 @@ class PrivacyRequestService:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
-            if privacy_request.status != PrivacyRequestStatus.pending:
+            if privacy_request.status not in [
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.duplicate,
+            ]:
                 failed.append(
                     BulkUpdateFailed(
                         message="Cannot transition status",
