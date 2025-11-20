@@ -55,9 +55,8 @@ def requeue_requires_input_requests(db: Session) -> None:
     lingering in a "requires_input" state.
     """
     if not AccessManualWebhook.get_enabled(db):
-        for pr in (
-            PrivacyRequest.query_without_large_columns(db)
-            .filter(PrivacyRequest.status == PrivacyRequestStatus.requires_input)
+        for pr in PrivacyRequest.query_without_large_columns(db).filter(
+            PrivacyRequest.status == PrivacyRequestStatus.requires_input
         ):
             logger.info(
                 "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",

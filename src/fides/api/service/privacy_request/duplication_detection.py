@@ -165,7 +165,7 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id).filter(
             PrivacyRequest.deleted_at.is_(None)
         )
-         # Apply defer options to prevent loading large columns when checking for duplicates
+        # Apply defer options to prevent loading large columns when checking for duplicates
         query = query.options(
             defer(PrivacyRequest._filtered_final_upload),
             defer(PrivacyRequest.access_result_urls),
