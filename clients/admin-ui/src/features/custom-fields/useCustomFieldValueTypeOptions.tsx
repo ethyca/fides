@@ -1,4 +1,4 @@
-import { AntSelectProps as SelectProps } from "fidesui";
+import { AntSelectProps } from "fidesui";
 
 import { useFeatures } from "~/features/common/features";
 import {
@@ -8,33 +8,35 @@ import {
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 const useCustomFieldValueTypeOptions = (
-  {
-    customOptionLabel,
-  }: {
-    customOptionLabel: string;
-  } = { customOptionLabel: "Custom" },
+  includeCustomOption: boolean = true,
 ) => {
   const { plus: isPlusEnabled } = useFeatures();
   const { data: customTaxonomies, isLoading: isCustomTaxonomiesLoading } =
     useGetCustomTaxonomiesQuery(undefined as void, {
       skip: !isPlusEnabled,
     });
-  // Build options for Type select: Custom + core taxonomies + custom taxonomies
-  const valueTypeOptions: SelectProps["options"] = [
-    { label: customOptionLabel, value: "custom" },
-    {
-      label: CoreTaxonomiesEnum.DATA_CATEGORIES,
-      value: TaxonomyTypeEnum.DATA_CATEGORY,
-    },
-    {
-      label: CoreTaxonomiesEnum.DATA_USES,
-      value: TaxonomyTypeEnum.DATA_USE,
-    },
-    {
-      label: CoreTaxonomiesEnum.DATA_SUBJECTS,
-      value: TaxonomyTypeEnum.DATA_SUBJECT,
-    },
-  ];
+  const valueTypeOptions: AntSelectProps["options"] = [];
+
+  if (includeCustomOption) {
+    valueTypeOptions.push({ label: "Custom", value: "custom" });
+  }
+
+  valueTypeOptions.push(
+    ...[
+      {
+        label: CoreTaxonomiesEnum.DATA_CATEGORIES,
+        value: TaxonomyTypeEnum.DATA_CATEGORY,
+      },
+      {
+        label: CoreTaxonomiesEnum.DATA_USES,
+        value: TaxonomyTypeEnum.DATA_USE,
+      },
+      {
+        label: CoreTaxonomiesEnum.DATA_SUBJECTS,
+        value: TaxonomyTypeEnum.DATA_SUBJECT,
+      },
+    ],
+  );
 
   if (isPlusEnabled) {
     valueTypeOptions.push({

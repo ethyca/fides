@@ -265,15 +265,20 @@ const plusApi = baseApi.injectEndpoints({
 
     // Custom Metadata Custom Field Definition By Resource Type (supports taxonomy:<key>)
     getCustomFieldDefinitionsByResourceType: build.query<
-      CustomFieldDefinitionWithId[],
+      (CustomFieldDefinitionWithId & { created_at: string })[],
       string
     >({
       query: (resource_type: string) => ({
         url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
       }),
       providesTags: ["Custom Field Definition"],
+      transformErrorResponse: () => {
+        return [];
+      },
       transformResponse: (
-        response: CustomFieldDefinitionWithId[] | { detail: string },
+        response:
+          | (CustomFieldDefinitionWithId & { created_at: string })[]
+          | { detail: string },
       ) => {
         // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
         if ("detail" in response) {
