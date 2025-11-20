@@ -29,9 +29,9 @@ const modalResponsePromise = createRef() as MutableRefObject<
   Promise<boolean> | undefined
 >;
 
-type BooleanReturnFn = (value: boolean) => void;
+type PromiseReturnFn = (value: boolean) => void;
 const modalResolvePromise = createRef() as MutableRefObject<
-  BooleanReturnFn | undefined
+  PromiseReturnFn | undefined
 >;
 
 export const useIsAnyFormDirty = () => {
