@@ -3,17 +3,18 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Icons,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
+import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import {
   useLazyDownloadPrivacyRequestCsvV2Query,
   useSearchPrivacyRequestsQuery,
@@ -21,6 +22,7 @@ import {
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
+import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -32,7 +34,7 @@ export const PrivacyRequestsDashboard = () => {
     pagination,
   });
 
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [modalApi, modalContext] = modal.useModal();
 
   const { data, isLoading, isFetching, refetch } =
@@ -90,7 +92,6 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    messageApi,
     modalApi,
   });
 
@@ -113,12 +114,21 @@ export const PrivacyRequestsDashboard = () => {
           <label htmlFor="select-all" className="cursor-pointer">
             Select all
           </label>
+          <div className="ml-3">
+            <ResultsSelectedCount
+              selectedIds={selectedIds}
+              totalResults={totalRows ?? 0}
+            />
+          </div>
         </Flex>
         <Flex align="center" gap="small">
+          <DuplicateRequestsButton
+            className="ml-3"
+            currentStatusFilter={filters.status}
+          />
           <BulkActionsDropdown
             selectedIds={selectedIds}
             menuItems={bulkActionMenuItems}
-            totalResults={totalRows ?? 0}
           />
           <Button
             aria-label="Reload"
@@ -170,7 +180,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {messageContext}
       {modalContext}
     </div>
   );

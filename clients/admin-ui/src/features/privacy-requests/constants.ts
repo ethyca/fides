@@ -13,6 +13,7 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.IDENTITY_UNVERIFIED, "Unverified"],
   [PrivacyRequestStatus.REQUIRES_INPUT, "Requires input"],
   [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION, "Requires finalization"],
+  [PrivacyRequestStatus.DUPLICATE, "Duplicate"],
 ]);
 
 export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(

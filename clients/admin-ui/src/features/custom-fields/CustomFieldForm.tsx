@@ -4,12 +4,12 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
-  AntMessage as message,
   AntSelect as Select,
   AntSkeleton as Skeleton,
   AntTypography as Typography,
   ConfirmationModal,
   Icons,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -58,7 +58,7 @@ const CustomFieldForm = ({
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const router = useRouter();
 
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
@@ -130,7 +130,6 @@ const CustomFieldForm = ({
       validateTrigger={["onBlur", "onChange"]}
       onFinish={onSubmit}
     >
-      {messageContext}
       <Form.Item
         label="Name"
         name="name"
