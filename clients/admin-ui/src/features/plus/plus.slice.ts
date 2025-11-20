@@ -36,7 +36,6 @@ import {
   HealthCheck,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
-  // ResourceTypes,
   SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
@@ -268,26 +267,37 @@ const plusApi = baseApi.injectEndpoints({
       (CustomFieldDefinitionWithId & { created_at: string })[],
       string
     >({
-      query: (resource_type: string) => ({
-        url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
-      }),
-      providesTags: ["Custom Field Definition"],
-      transformErrorResponse: () => {
-        return [];
-      },
-      transformResponse: (
-        response:
-          | (CustomFieldDefinitionWithId & { created_at: string })[]
-          | { detail: string },
-      ) => {
-        // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
-        if ("detail" in response) {
-          return [];
+      async queryFn(resource_type, _queryApi, _extraOptions, fetchWithBQ) {
+        const result = await fetchWithBQ({
+          url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
+        });
+
+        // the API will 404 if there are no fields for the given resource
+        // type; we want to return an empty array in this case so that the last
+        // result doesn't remain cached
+        if (
+          result.error &&
+          "status" in result.error &&
+          result.error.status === 404
+        ) {
+          return { data: [] };
         }
-        return response.sort((a, b) =>
-          (a.name ?? "").localeCompare(b.name ?? ""),
-        );
+
+        // any other errors should error as normal
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        const response = result.data as (CustomFieldDefinitionWithId & {
+          created_at: string;
+        })[];
+        return {
+          data: response.sort((a, b) =>
+            (a.name ?? "").localeCompare(b.name ?? ""),
+          ),
+        };
       },
+      providesTags: ["Custom Field Definition"],
     }),
     // Custom Fields: dynamic locations (legacy + custom taxonomies)
     getCustomFieldLocations: build.query<string[], void>({
@@ -632,7 +642,7 @@ export const selectClassifyInstanceFieldMap = createSelector(
 );
 /**
  * Note that this selects the field that is currently active in the editor. Fields that are shown in
- * the table are looked up by their name using selectClassifyInstanceFieldMap.
+ * the table are looked up by their name using selectClas sifyInstanceFieldMap.
  */
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
