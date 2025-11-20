@@ -14,8 +14,6 @@ export enum FieldTypes {
   OPEN_TEXT = "openText",
 }
 
-export const RESOURCE_TYPE_OPTIONS: { label: string; value: string }[] = [];
-
 export const FIELD_TYPE_OPTIONS = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
   { label: "Multiple select", value: FieldTypes.MULTIPLE_SELECT },
