@@ -64,7 +64,13 @@ const parseResourceType = (resourceType: string): string => {
   if (RESOURCE_TYPE_MAP.has(resourceType as ResourceTypes)) {
     return RESOURCE_TYPE_MAP.get(resourceType as ResourceTypes) as string;
   }
-  // if not in map, resource is a custom taxonomy type
+  if (
+    resourceType.startsWith("taxonomy:") ||
+    resourceType.startsWith("system:")
+  ) {
+    return resourceType;
+  }
+  // otherwise, type is a custom taxonomy
   return `taxonomy:${resourceType}`;
 };
 
