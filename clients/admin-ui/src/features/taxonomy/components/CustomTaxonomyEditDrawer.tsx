@@ -33,9 +33,14 @@ const CustomTaxonomyEditDrawer = ({
       resourceType: taxonomy.fides_key,
     });
 
-  const customFields = sortedCustomFieldDefinitionIds.map(
-    (id) => idToCustomFieldDefinition.get(id) as CustomFieldDefinitionWithId,
-  );
+  const customFields = sortedCustomFieldDefinitionIds
+    .map(
+      (id) =>
+        idToCustomFieldDefinition.get(id) as CustomFieldDefinitionWithId & {
+          created_at: string;
+        },
+    )
+    .sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
     if (!taxonomy?.fides_key) {

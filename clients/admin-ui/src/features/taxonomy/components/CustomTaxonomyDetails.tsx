@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntDescriptions as Descriptions,
-  AntDivider as Divider,
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
@@ -14,7 +13,6 @@ import {
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
@@ -41,9 +39,7 @@ const CustomTaxonomyDetails = ({
 
   const [isAdding, setIsAdding] = useState(false);
 
-  const { valueTypeOptions, customTaxonomies } = useCustomFieldValueTypeOptions(
-    { customOptionLabel: "Create custom attribute (new tab)" },
-  );
+  const { valueTypeOptions } = useCustomFieldValueTypeOptions(false);
 
   const canDeleteCustomFieldDefinition = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_DELETE,
@@ -75,18 +71,16 @@ const CustomTaxonomyDetails = ({
   };
 
   const handleAddCustomFieldDefinition = async (fieldType: string) => {
-    const taxonomyType = customTaxonomies?.find(
-      (t) => t.fides_key === fieldType,
-    );
+    const taxonomyType = valueTypeOptions!.find((t) => t.value === fieldType);
     if (!taxonomyType || !fidesKey) {
       messageApi.error("Taxonomy type not found");
       return;
     }
     const result = await createOrUpdate(
       {
-        name: taxonomyType.name,
-        value_type: taxonomyType.fides_key,
-        resource_type: fidesKey,
+        name: (taxonomyType.label as string) ?? taxonomyType.value,
+        value_type: taxonomyType.value as string,
+        resource_type: fidesKey as string,
       },
       undefined,
       undefined,
@@ -97,18 +91,6 @@ const CustomTaxonomyDetails = ({
     }
     messageApi.success("Attribute added successfully");
     setIsAdding(false);
-  };
-
-  const handleSelectAttributeType = (value: string) => {
-    if (value === "custom") {
-      window.open(
-        `${CUSTOM_FIELDS_ROUTE}/new?resource_type=${fidesKey}`,
-        "_blank",
-      );
-      setIsAdding(false);
-    } else {
-      handleAddCustomFieldDefinition(value);
-    }
   };
 
   return (
@@ -134,7 +116,19 @@ const CustomTaxonomyDetails = ({
           <Input.TextArea />
         </Form.Item>
       </Form>
-      <Divider />
+      {isAdding && (
+        <Select
+          options={valueTypeOptions}
+          defaultOpen
+          aria-label="Attribute type"
+          onSelect={handleAddCustomFieldDefinition}
+        />
+      )}
+      {!isAdding && (
+        <Button onClick={() => setIsAdding(true)} icon={<Icons.Add />}>
+          Add attribute
+        </Button>
+      )}
       <List>
         {customFields.map((field) => (
           <List.Item
@@ -160,18 +154,6 @@ const CustomTaxonomyDetails = ({
           </List.Item>
         ))}
       </List>
-      {isAdding && (
-        <Select
-          options={valueTypeOptions}
-          aria-label="Attribute type"
-          onSelect={handleSelectAttributeType}
-        />
-      )}
-      {!isAdding && (
-        <Button onClick={() => setIsAdding(true)} icon={<Icons.Add />}>
-          Add attribute
-        </Button>
-      )}
     </Flex>
   );
 };
