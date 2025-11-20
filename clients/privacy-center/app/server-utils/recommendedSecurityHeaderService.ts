@@ -14,7 +14,8 @@ export type SecurityHeaderPrivacyCenterSettings = Pick<
   "FIDES_API_URL" | "GEOLOCATION_API_URL"
 >;
 
-function checkIncludedPath(pathname: string) {
+// Recommended matcher: https://nextjs.org/docs/15/pages/guides/content-security-policy#adding-a-nonce-with-middleware
+function isPrivacyCenterPath(pathname: string) {
   const includePaths = /\/((?!api|_next\/static|_next\/image|favicon\.ico).*)/;
   const matchedContent = includePaths.exec(pathname);
   const isIncludedPath =
@@ -103,7 +104,12 @@ export class RecommendedSecurityHeaderService implements SecurityHeaderService {
     request: NextRequest,
     response: NextResponse,
   ): void {
-    response.headers.set("X-Frame-Options", "deny");
+    const { pathname } = request.nextUrl;
+    const demoPath = isDemoPath(pathname);
+    const embedPath = isEmbedPath(pathname);
+    const privacyCenterPath = isPrivacyCenterPath(pathname);
+
+    // Headers for all paths
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set(
       "Cache-Control",
@@ -111,18 +117,21 @@ export class RecommendedSecurityHeaderService implements SecurityHeaderService {
     );
     response.headers.set("Strict-Transport-Security", "max-age=3153600");
 
+    response.headers.set("X-Frame-Options", "deny");
+
     const consentSecurityPolicy = middlewareResponse.request.headers.get(
       CONTENT_SECURITY_POLICY_HEADER,
     );
 
-    // Recommended matcher: https://nextjs.org/docs/15/pages/guides/content-security-policy#adding-a-nonce-with-middleware
-    const { pathname } = request.nextUrl;
-    const isIncludedPath = checkIncludedPath(pathname);
-    if (isIncludedPath && consentSecurityPolicy) {
-      response.headers.set(
-        CONTENT_SECURITY_POLICY_HEADER,
-        consentSecurityPolicy,
-      );
+    if (consentSecurityPolicy) {
+      if (embedPath) {
+        // apply embed path rules
+      } else if (privacyCenterPath) {
+        response.headers.set(
+          CONTENT_SECURITY_POLICY_HEADER,
+          consentSecurityPolicy,
+        );
+      }
     }
   }
 }
