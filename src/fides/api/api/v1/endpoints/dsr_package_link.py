@@ -31,9 +31,13 @@ router = APIRouter(tags=["Privacy Center"], prefix=V1_URL_PREFIX)
 def get_privacy_request_or_error(
     privacy_request_id: str, db: Session
 ) -> PrivacyRequest:
-    """Load the privacy request or throw a 404"""
+    """Load the privacy request or throw a 404
+
+    Note: This function needs to load the full privacy request including access_result_urls,
+    so it cannot use query_without_large_columns.
+    """
     # Note: UUID format validation is now done earlier in the endpoint
-    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(

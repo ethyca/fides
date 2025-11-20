@@ -1296,7 +1296,11 @@ def bulk_restart_privacy_request_from_failure(
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
     for privacy_request_id in privacy_request_ids:
-        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+        privacy_request = (
+            PrivacyRequest.query_without_large_columns(db)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
 
         if not privacy_request:
             failed.append(
@@ -1508,7 +1512,11 @@ def cancel_privacy_request(
 def _validate_privacy_request_pending_or_error(
     db: Session, privacy_request_id: str
 ) -> None:
-    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
     if not privacy_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -2213,7 +2221,11 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     for privacy_request_id in privacy_requests.request_ids:
-        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+        privacy_request = (
+            PrivacyRequest.query_without_large_columns(db)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
 
         if not privacy_request:
             failed.append(

@@ -71,8 +71,10 @@ class PrivacyRequestService:
         self.messaging_service = messaging_service
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
-        privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
-            self.db, object_id=privacy_request_id
+        privacy_request: Optional[PrivacyRequest] = (
+            PrivacyRequest.query_without_large_columns(self.db)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
         )
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
@@ -531,10 +533,7 @@ class PrivacyRequestService:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
-            if privacy_request.status not in [
-                PrivacyRequestStatus.pending,
-                PrivacyRequestStatus.duplicate,
-            ]:
+            if privacy_request.status != PrivacyRequestStatus.pending:
                 failed.append(
                     BulkUpdateFailed(
                         message="Cannot transition status",
@@ -606,10 +605,7 @@ class PrivacyRequestService:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
-            if privacy_request.status not in [
-                PrivacyRequestStatus.pending,
-                PrivacyRequestStatus.duplicate,
-            ]:
+            if privacy_request.status != PrivacyRequestStatus.pending:
                 failed.append(
                     BulkUpdateFailed(
                         message="Cannot transition status",
