@@ -166,6 +166,7 @@ class DuplicateDetectionService:
             PrivacyRequest.deleted_at.is_(None)
         )
         # Apply defer options to prevent loading large columns when checking for duplicates
+        # pylint: disable=protected-access
         query = query.options(
             defer(PrivacyRequest._filtered_final_upload),
             defer(PrivacyRequest.access_result_urls),
