@@ -6,7 +6,7 @@ import {
   TrashCanSolidIcon,
   VStack,
 } from "fidesui";
-import { FieldArray, Form, Formik, FormikProps } from "formik";
+import { FieldArray, Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
 import * as Yup from "yup";
@@ -91,8 +91,7 @@ const DSRCustomizationForm = ({
         ),
       })}
     >
-      {/* @ts-ignore */}
-      {(props: FormikProps<Values>) => (
+      {(props) => (
         <Form style={{ marginTop: 0 }} noValidate>
           <VStack align="stretch">
             <FieldArray

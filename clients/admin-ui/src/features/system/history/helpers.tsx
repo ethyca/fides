@@ -54,9 +54,7 @@ const categorizeFieldModifications = (
 
   Array.from(uniqueKeys).forEach((originalKey) => {
     const key = getUiLabel(originalKey);
-    // @ts-ignore
     const beforeValue = before[originalKey];
-    // @ts-ignore
     const afterValue = after[originalKey];
 
     // Handle booleans separately
