@@ -320,7 +320,7 @@ See the [Google Consent Mode documentation](https://developers.google.com/tag-pl
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options`? | `object` | Configuration for the Google Consent Mode integration |
+| `options`? | \{ `purposeMapping`: `Record`\<`string`, (`"ad_storage"` \| `"ad_personalization"` \| `"ad_user_data"` \| `"analytics_storage"` \| `"functionality_storage"` \| `"personalization_storage"` \| `"security_storage"`)[]\>; \} | Configuration for the Google Consent Mode integration |
 | `options.purposeMapping`? | `Record`\<`string`, (`"ad_storage"` \| `"ad_personalization"` \| `"ad_user_data"` \| `"analytics_storage"` \| `"functionality_storage"` \| `"personalization_storage"` \| `"security_storage"`)[]\> | Maps Fides consent keys to Google consent types. Default mapping includes: analytics → analytics_storage, advertising → [ad_storage, ad_personalization, ad_user_data], functional → [functionality_storage, personalization_storage], data_sales_and_sharing → [ad_storage, ad_personalization, ad_user_data], marketing → [ad_storage, ad_personalization, ad_user_data] |
 
 #### Returns
