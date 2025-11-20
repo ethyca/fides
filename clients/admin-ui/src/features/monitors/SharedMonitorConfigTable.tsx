@@ -70,10 +70,11 @@ const SharedMonitorConfigTable = ({
         columns={columns}
         dataSource={data?.items}
         pagination={false}
-        // @ts-ignore -- TS doesn't like the data-testid prop on rows
-        onRow={(row) => ({
-          "data-testid": `config-${row.id}`,
-        })}
+        onRow={(row) =>
+          ({
+            "data-testid": `config-${row.id}`,
+          }) as React.HTMLAttributes<HTMLTableRowElement>
+        }
         locale={{
           emptyText: (
             <CustomTypography.Paragraph className="py-8">

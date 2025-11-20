@@ -66,6 +66,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
+- Removed `@ts-ignore` comments and improved TypeScript type safety across frontend codebase [#6991](https://github.com/ethyca/fides/pull/6991)
 - Migrated Chakra Collapse components to Ant Design equivalents [#6962](https://github.com/ethyca/fides/pull/6962)
 - Improved pluralization handling throughout Admin UI with centralized utility function [#6930](https://github.com/ethyca/fides/pull/6930)
 - Switched `ConfigurableTestMonitor` to use `test_datastore` `ConnectionType` rather than `fides` [#6940](https://github.com/ethyca/fides/pull/6940) https://github.com/ethyca/fides/labels/db-migration
