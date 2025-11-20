@@ -50,13 +50,6 @@ export const DiscoveredSystemAggregateTable = ({
 
     // Loading states
     anyBulkActionIsLoading,
-
-    // Okta-specific functionality
-    isOktaApp,
-    oktaActiveTab,
-    setOktaActiveTab,
-    oktaFilterTabs,
-    oktaFilterCounts,
   } = useDiscoveredSystemAggregateTable({ monitorId });
 
   return (
@@ -64,24 +57,13 @@ export const DiscoveredSystemAggregateTable = ({
       <Menu
         aria-label="Asset state filter"
         mode="horizontal"
-        items={
-          isOktaApp
-            ? oktaFilterTabs.map((tab) => ({
-                key: tab.value,
-                label: `${tab.label} (${oktaFilterCounts[tab.value] || 0})`,
-              }))
-            : filterTabs.map((tab) => ({
-                key: tab.hash,
-                label: tab.label,
-              }))
-        }
-        selectedKeys={[isOktaApp ? oktaActiveTab : activeTab]}
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
-          if (isOktaApp) {
-            setOktaActiveTab(menuInfo.key as string);
-          } else {
-            await handleTabChange(menuInfo.key as ActionCenterTabHash);
-          }
+          await handleTabChange(menuInfo.key as string | ActionCenterTabHash);
         }}
         className="mb-4"
         data-testid="asset-state-filter"
@@ -110,7 +92,10 @@ export const DiscoveredSystemAggregateTable = ({
                   onClick: handleBulkAdd,
                   disabled: uncategorizedIsSelected,
                 },
-                !activeParams.diff_status.includes(DiffStatus.MUTED)
+                "diff_status" in activeParams &&
+                !(
+                  activeParams as { diff_status: DiffStatus[] }
+                ).diff_status.includes(DiffStatus.MUTED)
                   ? {
                       key: "ignore",
                       label: "Ignore",

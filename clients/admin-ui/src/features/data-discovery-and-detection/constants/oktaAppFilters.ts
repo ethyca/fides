@@ -1,4 +1,5 @@
-import { StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
+import { ApplicationStatus } from "~/types/api/models/ApplicationStatus";
 
 export interface OktaAppFilterTab {
   label: string;
@@ -19,21 +20,21 @@ export const OKTA_APP_FILTER_TABS: OktaAppFilterTab[] = [
     value: "new",
     count: null,
     filter: (resource: StagedResourceAPIResponse) =>
-      resource.diff_status === "addition",
+      resource.diff_status === DiffStatus.ADDITION,
   },
   {
     label: "Active",
     value: "active",
     count: null,
     filter: (resource: StagedResourceAPIResponse) =>
-      resource.metadata?.status === "ACTIVE",
+      resource.metadata?.status === ApplicationStatus.ACTIVE,
   },
   {
     label: "Inactive",
     value: "inactive",
     count: null,
     filter: (resource: StagedResourceAPIResponse) =>
-      resource.metadata?.status === "INACTIVE",
+      resource.metadata?.status === ApplicationStatus.INACTIVE,
   },
   {
     label: "Known Vendors",
@@ -52,6 +53,6 @@ export const OKTA_APP_FILTER_TABS: OktaAppFilterTab[] = [
     value: "removed",
     count: null,
     filter: (resource: StagedResourceAPIResponse) =>
-      resource.diff_status === "removal",
+      resource.diff_status === DiffStatus.REMOVAL,
   },
 ];

@@ -18,12 +18,10 @@ import {
   AlertLevel,
   ConsentAlertInfo,
   DiffStatus,
-  StagedResourceAPIResponse,
   StagedResourceTypeValue,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
-import { OKTA_APP_FILTER_TABS } from "../../constants/oktaAppFilters";
 import {
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredSystemAggregateQuery,
@@ -32,11 +30,11 @@ import {
 import { DiscoveredSystemAggregateColumnKeys } from "../constants";
 import { SuccessToastContent } from "../SuccessToastContent";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
-import { oktaStubClient } from "../utils/oktaStubClient";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
 import { useDiscoveredSystemAggregateColumns } from "./useDiscoveredSystemAggregateColumns";
+import { useOktaAppFilters } from "./useOktaAppFilters";
 
 interface UseDiscoveredSystemAggregateTableConfig {
   monitorId: string;
@@ -51,10 +49,9 @@ export const useDiscoveredSystemAggregateTable = ({
   const [firstPageConsentStatus, setFirstPageConsentStatus] = useState<
     ConsentAlertInfo | undefined
   >();
-  const [oktaActiveTab, setOktaActiveTab] = useState("all");
 
-  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
-    useActionCenterTabs();
+  // Check if this is an Okta app monitor
+  const isOktaApp = monitorId.toLowerCase().includes("okta");
 
   const tableState = useTableState<DiscoveredSystemAggregateColumnKeys>({
     sorting: {
@@ -65,8 +62,21 @@ export const useDiscoveredSystemAggregateTable = ({
   const { pageIndex, pageSize, searchQuery, updateSearch, resetState } =
     tableState;
 
-  // Check if this is an Okta app monitor
-  const isOktaApp = monitorId.toLowerCase().includes("okta");
+  // Use appropriate tab management based on monitor type
+  const regularTabs = useActionCenterTabs();
+  const oktaTabs = useOktaAppFilters({
+    pageIndex,
+    pageSize,
+    searchQuery: searchQuery ?? "",
+  });
+
+  // Unify tab interface - use Okta tabs if Okta, otherwise regular tabs
+  const filterTabs = isOktaApp ? oktaTabs.filterTabs : regularTabs.filterTabs;
+  const activeTab: string = isOktaApp
+    ? oktaTabs.activeTab
+    : (regularTabs.activeTab ?? "");
+  const activeParams = isOktaApp ? {} : regularTabs.activeParams;
+  const actionsDisabled = isOktaApp ? false : regularTabs.actionsDisabled;
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery(
     {
@@ -88,64 +98,6 @@ export const useDiscoveredSystemAggregateTable = ({
 
   const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
 
-  // Calculate counts for each Okta filter tab
-  const oktaFilterCounts = useMemo(() => {
-    if (!isOktaApp) {
-      return {};
-    }
-
-    const allMockApps = oktaStubClient.getAllMockApps();
-    const counts: Record<string, number> = {};
-    OKTA_APP_FILTER_TABS.forEach((tab) => {
-      const filteredItems = allMockApps.filter((item) => {
-        return tab.filter(item as StagedResourceAPIResponse);
-      });
-      counts[tab.value] = filteredItems.length;
-    });
-
-    return counts;
-  }, [isOktaApp]);
-
-  // Use mock data for Okta apps and apply filters
-  const mockData = useMemo(() => {
-    if (!isOktaApp) {
-      return null;
-    }
-
-    const activeFilter = OKTA_APP_FILTER_TABS.find(
-      (tab) => tab.value === oktaActiveTab,
-    );
-    const allMockApps = oktaStubClient.getAllMockApps();
-
-    // Apply filter tab first
-    let filteredItems = allMockApps.filter((item) => {
-      return activeFilter?.filter(item as StagedResourceAPIResponse);
-    });
-
-    // Apply search if provided
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      filteredItems = filteredItems.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(searchLower) ??
-          item.vendor_id?.toLowerCase().includes(searchLower),
-      );
-    }
-
-    // Apply pagination
-    const startIndex = (pageIndex - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedItems = filteredItems.slice(startIndex, endIndex);
-
-    return {
-      items: paginatedItems,
-      total: filteredItems.length,
-      page: pageIndex,
-      size: pageSize,
-      pages: Math.ceil(filteredItems.length / pageSize),
-    };
-  }, [isOktaApp, oktaActiveTab, pageIndex, pageSize, searchQuery]);
-
   // Helper function to generate consistent row keys
   const getRecordKey = useCallback(
     (record: SystemStagedResourcesAggregateRecord) =>
@@ -158,9 +110,10 @@ export const useDiscoveredSystemAggregateTable = ({
       const monitorType = isOktaApp
         ? MONITOR_TYPES.INFRASTRUCTURE
         : MONITOR_TYPES.WEBSITE;
-      return `${ACTION_CENTER_ROUTE}/${monitorType}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
+      const recordId = record.id ?? UNCATEGORIZED_SEGMENT;
+      const activeTabHash = activeTab ? `#${activeTab}` : "";
+      return `${ACTION_CENTER_ROUTE}/${monitorType}/${monitorId}/${recordId}${activeTabHash}`;
     },
-
     [monitorId, activeTab, isOktaApp],
   );
 
@@ -170,8 +123,10 @@ export const useDiscoveredSystemAggregateTable = ({
       getRowKey: getRecordKey,
       isLoading: isOktaApp ? false : isLoading,
       isFetching: isOktaApp ? false : isFetching,
-      dataSource: isOktaApp ? mockData?.items || [] : data?.items || [],
-      totalRows: isOktaApp ? mockData?.total || 0 : data?.total || 0,
+      dataSource: isOktaApp
+        ? oktaTabs.mockData?.items || []
+        : data?.items || [],
+      totalRows: isOktaApp ? oktaTabs.mockData?.total || 0 : data?.total || 0,
       customTableProps: {
         locale: {
           emptyText: (
@@ -190,7 +145,7 @@ export const useDiscoveredSystemAggregateTable = ({
       data?.items,
       data?.total,
       isOktaApp,
-      mockData,
+      oktaTabs.mockData,
     ],
   );
 
@@ -205,20 +160,29 @@ export const useDiscoveredSystemAggregateTable = ({
   const { selectedRows, resetSelections } = antTable;
 
   const handleTabChange = useCallback(
-    async (tab: ActionCenterTabHash) => {
+    async (tab: string | ActionCenterTabHash) => {
       setFirstPageConsentStatus(undefined);
-      await onTabChange(tab);
+      if (isOktaApp) {
+        await oktaTabs.handleTabChange(tab as string);
+      } else {
+        await regularTabs.onTabChange(tab as ActionCenterTabHash);
+      }
       resetState();
       resetSelections();
     },
-    [onTabChange, resetState, resetSelections],
+    [isOktaApp, oktaTabs, regularTabs, resetState, resetSelections],
   );
 
   const { columns } = useDiscoveredSystemAggregateColumns({
     monitorId,
     onTabChange: handleTabChange,
     readonly: actionsDisabled,
-    allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
+    allowIgnore: isOktaApp
+      ? false
+      : !("diff_status" in activeParams) ||
+        !(activeParams as { diff_status: DiffStatus[] }).diff_status.includes(
+          DiffStatus.MUTED,
+        ),
     consentStatus: firstPageConsentStatus,
     rowClickUrl,
     resourceType: isOktaApp ? StagedResourceTypeValue.OKTA_APP : undefined,
@@ -290,7 +254,7 @@ export const useDiscoveredSystemAggregateTable = ({
           SuccessToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
             async () => {
-              await onTabChange(ActionCenterTabHash.IGNORED);
+              await regularTabs.onTabChange(ActionCenterTabHash.IGNORED);
             },
           ),
         ),
@@ -302,7 +266,7 @@ export const useDiscoveredSystemAggregateTable = ({
     ignoreMonitorResultSystemsMutation,
     monitorId,
     toast,
-    onTabChange,
+    regularTabs,
     resetSelections,
   ]);
 
@@ -346,9 +310,5 @@ export const useDiscoveredSystemAggregateTable = ({
 
     // Okta-specific functionality
     isOktaApp,
-    oktaActiveTab,
-    setOktaActiveTab,
-    oktaFilterCounts,
-    oktaFilterTabs: OKTA_APP_FILTER_TABS,
   };
 };
