@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
 
+### Fixed
+- Fixed Action Center field review displaying raw taxonomy keys instead of user-friendly names [#7007](https://github.com/ethyca/fides/pull/7007)
+
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
