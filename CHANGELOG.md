@@ -56,6 +56,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed page width on Digest list page [#6992](https://github.com/ethyca/fides/pull/6992)
 - Confirmation screen tree pagination on first level [#7000](https://github.com/ethyca/fides/pull/7000)
 - Fixed async polling initial requests not respecting ignore_errors configuration [#6924](https://github.com/ethyca/fides/pull/6924)
+- Fixed dataset collection editing/deleting inconsistencies [#7009](https://github.com/ethyca/fides/pull/7009)
 
 ### Developer Experience
 - Fixed Ant Design drawer z-index to allow modal overlays [#6987](https://github.com/ethyca/fides/pull/6987)
