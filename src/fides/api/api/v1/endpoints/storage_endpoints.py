@@ -95,7 +95,11 @@ def upload_data(
     """
     logger.info("Finding privacy request with id '{}'", request_id)
 
-    privacy_request = PrivacyRequest.get(db, object_id=request_id)
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == request_id)
+        .first()
+    )
     if not privacy_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
