@@ -6,10 +6,22 @@ import { formatKey } from "~/features/datastore-connections/system_portal_config
 import { SystemSchemaExtended } from "~/types/api";
 import type { UserResponse } from "~/types/api/models/UserResponse";
 
-export type FormValues = SystemSchemaExtended &
+type SystemWithDataStewards = SystemSchemaExtended & {
+  data_stewards?: Array<{ username: string }>;
+};
+
+export type FormValues = Omit<
+  SystemSchemaExtended,
+  | "cookie_max_age_seconds"
+  | "legal_basis_for_profiling"
+  | "legal_basis_for_transfers"
+> &
   CustomFieldsFormValues & {
     customFieldValues?: CustomFieldValues;
     data_stewards: string[];
+    cookie_max_age_seconds?: number | string | null;
+    legal_basis_for_profiling?: Array<string> | "";
+    legal_basis_for_transfers?: Array<string> | "";
   };
 
 export const defaultInitialValues: FormValues = {
@@ -49,8 +61,10 @@ export const transformSystemToFormValues = (
   },
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
-  const dataStewards =
-    system?.data_stewards?.map((user: UserResponse) => user.username) || [];
+  const systemWithDataStewards = system as SystemWithDataStewards;
+  const dataStewards = systemWithDataStewards.data_stewards
+    ?.map((user) => user.username)
+    .join(", ");
 
   return {
     ...system,
@@ -58,9 +72,7 @@ export const transformSystemToFormValues = (
     description: system.description ? system.description : "",
     legal_address: system.legal_address ? system.legal_address : "",
     dpo: system.dpo ? system.dpo : "",
-    // It looks like number input uses strings under the hood
-    // The backend will parse the string into a number
-    // @ts-ignore
+    // Number input uses strings under the hood; backend parses the string into a number
     cookie_max_age_seconds: system.cookie_max_age_seconds
       ? system.cookie_max_age_seconds
       : "",
@@ -75,13 +87,10 @@ export const transformSystemToFormValues = (
     data_security_practices: system.data_security_practices
       ? system.data_security_practices
       : "",
-    // these fields require membership in their enums and won't let you assign them a blank string normally
-    // they're transformed back into appropriate systems on submission by transformFormValuesToSystem below
-    // @ts-ignore
+    // These enum fields accept empty strings in the form; transformed back to arrays on submission
     legal_basis_for_profiling: system.legal_basis_for_profiling
       ? system.legal_basis_for_profiling
       : "",
-    // @ts-ignore
     legal_basis_for_transfers: system.legal_basis_for_transfers
       ? system.legal_basis_for_transfers
       : "",
@@ -123,9 +132,11 @@ export const transformFormValuesToSystem = (
     organization_fides_key: formValues.organization_fides_key,
     dpa_progress: formValues.dpa_progress,
     previous_vendor_id: formValues.previous_vendor_id,
-    cookie_max_age_seconds: formValues.cookie_max_age_seconds
-      ? formValues.cookie_max_age_seconds
-      : undefined,
+    cookie_max_age_seconds:
+      formValues.cookie_max_age_seconds &&
+      formValues.cookie_max_age_seconds !== ""
+        ? Number(formValues.cookie_max_age_seconds)
+        : undefined,
     uses_cookies: formValues.uses_cookies,
     cookie_refresh: formValues.cookie_refresh,
     uses_non_cookie_access: formValues.uses_non_cookie_access,
@@ -147,13 +158,17 @@ export const transformFormValuesToSystem = (
     ...payload,
     dataset_references: formValues.dataset_references,
     uses_profiling: formValues.uses_profiling,
-    legal_basis_for_profiling: formValues.uses_profiling
-      ? formValues.legal_basis_for_profiling
-      : undefined,
+    legal_basis_for_profiling:
+      formValues.uses_profiling &&
+      Array.isArray(formValues.legal_basis_for_profiling)
+        ? (formValues.legal_basis_for_profiling as Array<any>)
+        : undefined,
     does_international_transfers: formValues.does_international_transfers,
-    legal_basis_for_transfers: formValues.does_international_transfers
-      ? formValues.legal_basis_for_transfers
-      : undefined,
+    legal_basis_for_transfers:
+      formValues.does_international_transfers &&
+      Array.isArray(formValues.legal_basis_for_transfers)
+        ? formValues.legal_basis_for_transfers
+        : undefined,
     requires_data_protection_assessments:
       formValues.requires_data_protection_assessments,
     dpa_location: formValues.requires_data_protection_assessments

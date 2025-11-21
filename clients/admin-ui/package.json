@@ -7,6 +7,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "build": "next build",
     "build:test": "NODE_ENV=test next build",
+    "build:vercel": "(cd ../fides-js && npm run build) & (cd ../admin-ui && next build) & wait",
     "chrome:debug": "BROWSER='google chrome' BROWSER_ARGS='--remote-debugging-port=9222' npm run dev",
     "clean": "rm -rf .turbo node_modules .next",
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
@@ -125,7 +126,7 @@
     "prettier": "^3.3.3",
     "sass": "^1.80.6",
     "tailwindcss": "^3.4.10",
-    "typescript": "4.9.5",
+    "typescript": "^5.7.2",
     "whatwg-fetch": "^3.6.2"
   },
   "lint-staged": {

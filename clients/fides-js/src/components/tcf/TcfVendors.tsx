@@ -126,7 +126,6 @@ const DataCategories = ({
   }
 
   const declarations: GvlDataDeclarations | undefined =
-    // @ts-ignore this type doesn't exist in v2.2 but does in v3
     gvlVendor.dataDeclaration;
 
   return (
@@ -199,7 +198,6 @@ const ToggleChild = ({
   const { i18n } = useI18n();
   const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
   const dataCategories: GvlDataCategories | undefined =
-    // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
     experience.gvl?.dataCategories;
   // DEFER (PROD-1804): Check to see if localized URLs exist in the GVL vendor data
   const hasUrls =

@@ -20,4 +20,5 @@ export type SystemStagedResourcesAggregateRecord = {
   locations?: Array<string>;
   domains?: Array<string>;
   consent_status?: ConsentAlertInfo | null;
+  metadata?: null;
 };

@@ -10,7 +10,7 @@ from loguru import logger
 # pylint: disable=no-name-in-module
 from psycopg2.errors import InternalError_  # type: ignore[import-untyped]
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 
 from fides.api import common_exceptions
 from fides.api.common_exceptions import (
@@ -427,7 +427,11 @@ def run_privacy_request(
             logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
     with self.get_new_session() as session:
-        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        privacy_request = (
+            PrivacyRequest.query_without_large_columns(session)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
         if not privacy_request:
             raise common_exceptions.PrivacyRequestNotFound(
                 f"Privacy request with id {privacy_request_id} not found"
@@ -494,7 +498,15 @@ def run_privacy_request(
                 )
 
             try:
-                datasets = DatasetConfig.all(db=session)
+                # Eager load connection_config and ctl_dataset to avoid N+1 queries
+                datasets = (
+                    session.query(DatasetConfig)
+                    .options(
+                        selectinload(DatasetConfig.connection_config),
+                        selectinload(DatasetConfig.ctl_dataset),
+                    )
+                    .all()
+                )
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
@@ -521,7 +533,12 @@ def run_privacy_request(
                     key: value["value"] if isinstance(value, dict) else value
                     for key, value in privacy_request.get_cached_identity_data().items()
                 }
-                connection_configs = ConnectionConfig.all(db=session)
+                # Eager load datasets relationship to avoid N+1 queries in filter_fides_connector_datasets
+                connection_configs = (
+                    session.query(ConnectionConfig)
+                    .options(selectinload(ConnectionConfig.datasets))
+                    .all()
+                )
                 fides_connector_datasets: set[str] = filter_fides_connector_datasets(
                     connection_configs
                 )
@@ -939,7 +956,11 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
     SessionLocal = get_db_session(CONFIG)
     db = SessionLocal()
-    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
     if not privacy_request:
         logger.info(
             "Attempted to mark as expired. No privacy request with id '{}' found.",

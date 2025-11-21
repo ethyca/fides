@@ -106,9 +106,10 @@ export default async function handler(
 
     // Validate that requestId is a valid pri_uuid to prevent SSRF attacks
     if (typeof requestId !== "string" || !isValidRequestId(requestId)) {
-      log.warn("DSR package request with invalid requestId format", {
-        requestId,
-      });
+      log.warn(
+        { requestId },
+        "DSR package request with invalid requestId format",
+      );
       return res
         .status(400)
         .send("Bad Request: requestId must be a valid pri_uuid format");
@@ -116,9 +117,7 @@ export default async function handler(
 
     // Validate that token is a string
     if (typeof token !== "string") {
-      log.warn("DSR package request with invalid token format", {
-        token,
-      });
+      log.warn({ token }, "DSR package request with invalid token format");
       return res.status(400).send("Bad Request: token must be a valid string");
     }
 
@@ -127,10 +126,13 @@ export default async function handler(
 
     // Optional: Log if encoding changed the value (shouldn't happen with valid UUIDs)
     if (encodedRequestId !== requestId) {
-      log.warn("RequestId was modified during encoding", {
-        original: requestId,
-        encoded: encodedRequestId,
-      });
+      log.warn(
+        {
+          original: requestId,
+          encoded: encodedRequestId,
+        },
+        "RequestId was modified during encoding",
+      );
     }
 
     // Use server-side URL if available, otherwise fall back to client URL
@@ -163,7 +165,6 @@ export default async function handler(
 
       if (isConnectionRefused) {
         log.error(
-          `Fides API connection refused - service may not be running or is not reachable: ${baseUrl}`,
           {
             url,
             error: "Connection refused (ECONNREFUSED)",
@@ -172,20 +173,24 @@ export default async function handler(
             baseUrl,
             fullError: fetchError,
           },
+          `Fides API connection refused - service may not be running or is not reachable: ${baseUrl}`,
         );
       } else {
-        log.error(`Fetch request failed.`, {
-          url,
-          error:
-            fetchError instanceof Error
-              ? fetchError.message
-              : String(fetchError),
-          errorStack:
-            fetchError instanceof Error ? fetchError.stack : undefined,
-          errorType: fetchError?.constructor?.name || typeof fetchError,
-          fullError: fetchError,
-          baseUrl,
-        });
+        log.error(
+          {
+            url,
+            error:
+              fetchError instanceof Error
+                ? fetchError.message
+                : String(fetchError),
+            errorStack:
+              fetchError instanceof Error ? fetchError.stack : undefined,
+            errorType: fetchError?.constructor?.name || typeof fetchError,
+            fullError: fetchError,
+            baseUrl,
+          },
+          "Fetch request failed",
+        );
       }
       throw fetchError; // Re-throw to be caught by outer catch block
     }
@@ -203,7 +208,10 @@ export default async function handler(
         responseData = await response.text();
       } catch (e) {
         responseData = "";
-        log.warn("Failed to read response body as text", e);
+        log.warn(
+          { error: e instanceof Error ? e.message : String(e) },
+          "Failed to read response body as text",
+        );
       }
     } else {
       // For binary responses (like ZIP files), use arrayBuffer
@@ -212,18 +220,24 @@ export default async function handler(
         isBinary = true;
       } catch (e) {
         responseData = new ArrayBuffer(0);
-        log.warn("Failed to read response body as arrayBuffer", e);
+        log.warn(
+          { error: e instanceof Error ? e.message : String(e) },
+          "Failed to read response body as arrayBuffer",
+        );
       }
     }
 
     // Check if this is a redirect response FIRST (before checking response.ok)
     if (response.status === 302 || response.status === 301) {
       const redirectUrl = response.headers.get("location");
-      log.debug(`Processing redirect response:`, {
-        status: response.status,
-        locationHeader: redirectUrl,
-        allHeaders: Object.fromEntries(response.headers.entries()),
-      });
+      log.debug(
+        {
+          status: response.status,
+          locationHeader: redirectUrl,
+          allHeaders: Object.fromEntries(response.headers.entries()),
+        },
+        "Processing redirect response",
+      );
 
       if (redirectUrl) {
         log.info(
@@ -231,10 +245,13 @@ export default async function handler(
         );
         return res.redirect(302, redirectUrl);
       }
-      log.error("Redirect response missing location header", {
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-      });
+      log.error(
+        {
+          status: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+        },
+        "Redirect response missing location header",
+      );
       return res
         .status(500)
         .send("Internal Server Error: Invalid redirect response");
@@ -272,22 +289,32 @@ export default async function handler(
     ) {
       try {
         data = JSON.parse(responseData);
-        log.debug(`Successfully parsed JSON response:`, {
-          dataKeys: Object.keys(data),
-          hasDownloadUrl: !!data?.download_url,
-          downloadUrl: data?.download_url,
-        });
+        log.debug(
+          {
+            dataKeys: Object.keys(data),
+            hasDownloadUrl: !!data?.download_url,
+            downloadUrl: data?.download_url,
+          },
+          "Successfully parsed JSON response",
+        );
       } catch (e) {
-        log.warn("Failed to parse JSON response", e);
-        log.debug(`Response text that failed to parse:`, {
-          responseText: responseData,
-        });
+        log.warn(
+          { error: e instanceof Error ? e.message : String(e) },
+          "Failed to parse JSON response",
+        );
+        log.debug(
+          { responseText: responseData },
+          "Response text that failed to parse",
+        );
       }
     } else if (!isBinary && typeof responseData === "string") {
-      log.debug(`Non-JSON text response received:`, {
-        contentType,
-        responseText: responseData,
-      });
+      log.debug(
+        {
+          contentType,
+          responseText: responseData,
+        },
+        "Non-JSON text response received",
+      );
     }
 
     // If not a redirect, check for JSON response with download_url
@@ -302,14 +329,17 @@ export default async function handler(
     if (!response.ok) {
       const errorMessage =
         data?.detail || data?.message || `HTTP ${response.status}`;
-      log.error(`Failed to fetch DSR package link: ${errorMessage}`, {
-        url,
-        status: response.status,
-        statusText: response.statusText,
-        responseData: data,
-        responseHeaders: Object.fromEntries(response.headers.entries()),
-        responseText: responseData,
-      });
+      log.error(
+        {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          responseData: data,
+          responseHeaders: Object.fromEntries(response.headers.entries()),
+          responseText: responseData,
+        },
+        `Failed to fetch DSR package link: ${errorMessage}`,
+      );
 
       // Return appropriate error status with HTML response
       return res
@@ -319,7 +349,6 @@ export default async function handler(
 
     // Enhanced logging for the invalid response case
     log.error(
-      "Invalid response from Fides API: neither redirect nor download_url found",
       {
         responseStatus: response.status,
         responseStatusText: response.statusText,
@@ -330,21 +359,25 @@ export default async function handler(
         headers: Object.fromEntries(response.headers.entries()),
         url,
       },
+      "Invalid response from Fides API: neither redirect nor download_url found",
     );
 
     return res
       .status(500)
       .send("Internal Server Error: Invalid response from backend API");
   } catch (error) {
-    log.error("Unexpected error in dsr-package endpoint:", {
-      error: error instanceof Error ? error.message : String(error),
-      errorStack: error instanceof Error ? error.stack : undefined,
-      errorType: error?.constructor?.name || typeof error,
-      fullError: error,
-      url: url || "unknown",
-      requestId: requestId || "unknown",
-      hasToken: !!token,
-    });
+    log.error(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        errorType: error?.constructor?.name || typeof error,
+        fullError: error,
+        url: url || "unknown",
+        requestId: requestId || "unknown",
+        hasToken: !!token,
+      },
+      "Unexpected error in dsr-package endpoint",
+    );
     return res
       .status(500)
       .send("Internal Server Error: An unexpected error occurred");

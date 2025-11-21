@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from fides.api.models.privacy_request.duplicate_group import (
     DuplicateGroup,
@@ -164,6 +164,12 @@ class DuplicateDetectionService:
 
         query = query.filter(PrivacyRequest.id != current_request.id).filter(
             PrivacyRequest.deleted_at.is_(None)
+        )
+        # Apply defer options to prevent loading large columns when checking for duplicates
+        # pylint: disable=protected-access
+        query = query.options(
+            defer(PrivacyRequest._filtered_final_upload),
+            defer(PrivacyRequest.access_result_urls),
         )
         return query.all()
 
@@ -391,7 +397,11 @@ class DuplicateDetectionService:
             duplicate
             for duplicate in duplicates
             if duplicate.status
-            not in [PrivacyRequestStatus.duplicate, PrivacyRequestStatus.complete]
+            not in [
+                PrivacyRequestStatus.duplicate,
+                PrivacyRequestStatus.complete,
+                PrivacyRequestStatus.denied,
+            ]
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:

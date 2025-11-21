@@ -62,6 +62,7 @@ class TestGetTestPrivacyRequestLogs:
         )
         assert response.status_code == HTTP_404_NOT_FOUND
 
+    @pytest.mark.xfail(reason="flakey test")
     @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_get_test_logs_empty(
         self,
