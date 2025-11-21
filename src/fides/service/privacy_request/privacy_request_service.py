@@ -84,6 +84,7 @@ class PrivacyRequestService:
 
     def _validate_privacy_request_for_bulk_operation(
         self,
+        privacy_request: Optional[PrivacyRequest],
         request_id: str,
     ) -> PrivacyRequest:
         """
@@ -92,7 +93,6 @@ class PrivacyRequestService:
 
         Returns the validated privacy request.
         """
-        privacy_request = self.get_privacy_request(request_id)
         if not privacy_request:
             raise PrivacyRequestError(
                 f"No privacy request found with id '{request_id}'",
@@ -105,7 +105,6 @@ class PrivacyRequestService:
                     mode="json"
                 ),
             )
-
         return privacy_request
 
     def _fetch_privacy_requests_for_bulk_operation(
@@ -552,25 +551,12 @@ class PrivacyRequestService:
 
         for request_id in request_ids:
             privacy_request = privacy_requests_dict.get(request_id)
-
-            if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
+            try:
+                privacy_request = self._validate_privacy_request_for_bulk_operation(
+                    privacy_request, request_id
                 )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
             if privacy_request.status not in [
@@ -653,25 +639,12 @@ class PrivacyRequestService:
 
         for request_id in request_ids:
             privacy_request = privacy_requests_dict.get(request_id)
-
-            if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
+            try:
+                privacy_request = self._validate_privacy_request_for_bulk_operation(
+                    privacy_request, request_id
                 )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
             if privacy_request.status not in [
@@ -751,31 +724,18 @@ class PrivacyRequestService:
 
         for request_id in request_ids:
             privacy_request = privacy_requests_dict.get(request_id)
-
-            if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
+            try:
+                privacy_request = self._validate_privacy_request_for_bulk_operation(
+                    privacy_request, request_id
                 )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
             if privacy_request.status in terminal_states:
                 failed.append(
                     BulkUpdateFailed(
-                        message=f"Cannot cancel privacy request in {privacy_request.status.value} status",
+                        message=f"Cannot cancel privacy request in {str(privacy_request.status)} status",
                         data=PrivacyRequestResponse.model_validate(
                             privacy_request
                         ).model_dump(mode="json"),
@@ -824,25 +784,12 @@ class PrivacyRequestService:
 
         for request_id in request_ids:
             privacy_request = privacy_requests_dict.get(request_id)
-
-            if not privacy_request:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
-                        data={"privacy_request_id": request_id},
-                    )
+            try:
+                privacy_request = self._validate_privacy_request_for_bulk_operation(
+                    privacy_request, request_id
                 )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status for a deleted request",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
-                    )
-                )
+            except PrivacyRequestError as exc:
+                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
                 continue
 
             if (
