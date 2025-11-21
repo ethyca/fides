@@ -1,15 +1,11 @@
 import { AntEmpty as Empty } from "fidesui";
 import { useCallback, useMemo } from "react";
 
-import {
-  ACTION_CENTER_ROUTE,
-  UNCATEGORIZED_SEGMENT,
-} from "~/features/common/nav/routes";
+import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import { useGetDiscoveredSystemAggregateQuery } from "../action-center.slice";
-import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
@@ -47,14 +43,6 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     (record: SystemStagedResourcesAggregateRecord) =>
       record.id ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT,
     [],
-  );
-
-  const rowClickUrl = useCallback(
-    (record: SystemStagedResourcesAggregateRecord) => {
-      const newUrl = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.INFRASTRUCTURE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
-      return newUrl;
-    },
-    [monitorId, activeTab],
   );
 
   const antTableConfig = useMemo(
@@ -95,9 +83,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     [onTabChange, resetState, resetSelections],
   );
 
-  const { columns } = useDiscoveredInfrastructureSystemsColumns({
-    rowClickUrl,
-  });
+  const { columns } = useDiscoveredInfrastructureSystemsColumns();
 
   return {
     // Table state and data

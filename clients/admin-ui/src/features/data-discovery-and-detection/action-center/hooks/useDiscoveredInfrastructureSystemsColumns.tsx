@@ -1,14 +1,6 @@
 import { useMemo } from "react";
 
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
-
-interface UseDiscoveredInfrastructureSystemsColumnsConfig {
-  rowClickUrl: (record: SystemStagedResourcesAggregateRecord) => string;
-}
-
-export const useDiscoveredInfrastructureSystemsColumns = ({
-  rowClickUrl,
-}: UseDiscoveredInfrastructureSystemsColumnsConfig) => {
+export const useDiscoveredInfrastructureSystemsColumns = () => {
   const columns = useMemo(
     () => [
       {
@@ -16,15 +8,9 @@ export const useDiscoveredInfrastructureSystemsColumns = ({
         dataIndex: "name",
         title: "System",
         sorter: true,
-        onCell: (record: SystemStagedResourcesAggregateRecord) => ({
-          onClick: () => {
-            window.location.href = rowClickUrl(record);
-          },
-          style: { cursor: "pointer" },
-        }),
       },
     ],
-    [rowClickUrl],
+    [],
   );
 
   return { columns };
