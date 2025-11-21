@@ -2,63 +2,62 @@ from typing import Any
 
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.api.task.conditional_dependencies.schemas import (
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     ConditionalDependencyFieldInfo,
-)
-from fides.api.task.conditional_dependencies.util import (
-    create_conditional_dependency_field_info,
+    ConditionalDependencyFieldType,
+    PrivacyRequestConvenienceFields,
 )
 
 
 def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
     """Builds a list of ConditionalDependencyFieldInfo objects for convenience fields."""
     return [
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.rule_action_types",
-            "array",
-            "List of action types from policy rules (e.g., ['access', 'erasure']). Use with list_contains operator.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.rule_action_types.value,
+            field_type=ConditionalDependencyFieldType.array,
+            description="List of action types from policy rules (e.g., ['access', 'erasure']). Use with list_contains operator.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.has_access_rule",
-            "boolean",
-            "Whether the policy has at least one rule with action_type 'access'.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.has_access_rule.value,
+            field_type=ConditionalDependencyFieldType.boolean,
+            description="Whether the policy has at least one rule with action_type 'access'.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.has_erasure_rule",
-            "boolean",
-            "Whether the policy has at least one rule with action_type 'erasure'.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.has_erasure_rule.value,
+            field_type=ConditionalDependencyFieldType.boolean,
+            description="Whether the policy has at least one rule with action_type 'erasure'.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.has_consent_rule",
-            "boolean",
-            "Whether the policy has at least one rule with action_type 'consent'.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.has_consent_rule.value,
+            field_type=ConditionalDependencyFieldType.boolean,
+            description="Whether the policy has at least one rule with action_type 'consent'.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.has_update_rule",
-            "boolean",
-            "Whether the policy has at least one rule with action_type 'update'.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.has_update_rule.value,
+            field_type=ConditionalDependencyFieldType.boolean,
+            description="Whether the policy has at least one rule with action_type 'update'.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.rule_count",
-            "integer",
-            "Number of rules in the policy.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.rule_count.value,
+            field_type=ConditionalDependencyFieldType.integer,
+            description="Number of rules in the policy.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.rule_names",
-            "array",
-            "List of rule names from the policy. Use with list_contains operator.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.rule_names.value,
+            field_type=ConditionalDependencyFieldType.array,
+            description="List of rule names from the policy. Use with list_contains operator.",
             is_convenience_field=True,
         ),
-        create_conditional_dependency_field_info(
-            "privacy_request.policy.has_storage_destination",
-            "boolean",
-            "Whether any rule in the policy has a storage destination configured.",
+        ConditionalDependencyFieldInfo(
+            field_path=PrivacyRequestConvenienceFields.has_storage_destination.value,
+            field_type=ConditionalDependencyFieldType.boolean,
+            description="Whether any rule in the policy has a storage destination configured.",
             is_convenience_field=True,
         ),
     ]
