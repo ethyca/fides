@@ -1048,6 +1048,17 @@ export const stubCustomFields = () => {
     statusCode: 200,
     fixture: "custom-fields/allow-list.json",
   }).as("upsertAllowList");
+
+  // Get custom field locations
+  cy.intercept("GET", "/api/v1/plus/custom-fields/locations", {
+    body: [
+      "taxonomy:data_category",
+      "taxonomy:data_subject",
+      "taxonomy:data_use",
+      "system:information",
+      "system:data use",
+    ],
+  }).as("getCustomFieldLocations");
 };
 
 export const stubSystemGroups = () => {
