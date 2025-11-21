@@ -59,6 +59,10 @@ from fides.service.messaging.messaging_service import (
     send_privacy_request_receipt_message_to_user,
 )
 
+# Maximum number of privacy requests that can be processed in a single bulk operation
+# This matches the limit for bulk privacy request creation (see privacy_request_endpoints.py)
+MAX_BULK_OPERATION_SIZE = 50
+
 
 class PrivacyRequestService:
     def __init__(
@@ -110,13 +114,7 @@ class PrivacyRequestService:
     def _fetch_privacy_requests_for_bulk_operation(
         self, request_ids: List[str]
     ) -> Dict[str, PrivacyRequest]:
-        """
-        Fetch multiple privacy requests in a single query for bulk operations.
-        Returns a dictionary mapping request_id to PrivacyRequest.
-        This avoids N+1 queries when processing bulk operations.
-
-        Note: Eager loads custom_fields since bulk approve checks this relationship.
-        """
+        """Fetch privacy requests in a single query to avoid N+1. Eager loads custom_fields."""
         privacy_requests = (
             PrivacyRequest.query_without_large_columns(self.db)
             .options(selectinload(PrivacyRequest.custom_fields))  # type: ignore[attr-defined]
@@ -540,6 +538,24 @@ class PrivacyRequestService:
         reviewed_by: Optional[str] = None,
         suppress_notification: Optional[bool] = False,
     ) -> BulkReviewResponse:
+        """Approve privacy requests. Auto-batches if >50 requests."""
+        # Auto-batch large requests
+        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+            logger.info(
+                f"Auto-batching {len(request_ids)} approvals into chunks of {MAX_BULK_OPERATION_SIZE}"
+            )
+            all_succeeded, all_failed = [], []
+            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
+                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+                result = self.approve_privacy_requests(
+                    batch,
+                    webhook_id=webhook_id,
+                    reviewed_by=reviewed_by,
+                    suppress_notification=suppress_notification,
+                )
+                all_succeeded.extend(result.succeeded)
+                all_failed.extend(result.failed)
+            return BulkReviewResponse(succeeded=all_succeeded, failed=all_failed)
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
@@ -634,6 +650,19 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
+        """Deny privacy requests. Auto-batches if >50 requests."""
+        # Auto-batch large requests
+        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+            logger.info(
+                f"Auto-batching {len(request_ids)} denials into chunks of {MAX_BULK_OPERATION_SIZE}"
+            )
+            all_succeeded, all_failed = [], []
+            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
+                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+                result = self.deny_privacy_requests(batch, deny_reason, user_id=user_id)
+                all_succeeded.extend(result.succeeded)
+                all_failed.extend(result.failed)
+            return BulkReviewResponse(succeeded=all_succeeded, failed=all_failed)
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
@@ -717,7 +746,21 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
-        """Cancel a list of privacy requests and/or report failure"""
+        """Cancel privacy requests. Auto-batches if >50 requests."""
+        # Auto-batch large requests
+        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+            logger.info(
+                f"Auto-batching {len(request_ids)} cancellations into chunks of {MAX_BULK_OPERATION_SIZE}"
+            )
+            all_succeeded, all_failed = [], []
+            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
+                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+                result = self.cancel_privacy_requests(
+                    batch, cancel_reason, user_id=user_id
+                )
+                all_succeeded.extend(result.succeeded)
+                all_failed.extend(result.failed)
+            return BulkReviewResponse(succeeded=all_succeeded, failed=all_failed)
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
@@ -792,7 +835,19 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
-        """Bulk finalize privacy requests that are in requires_manual_finalization status"""
+        """Finalize privacy requests. Auto-batches if >50 requests."""
+        # Auto-batch large requests
+        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+            logger.info(
+                f"Auto-batching {len(request_ids)} finalizations into chunks of {MAX_BULK_OPERATION_SIZE}"
+            )
+            all_succeeded, all_failed = [], []
+            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
+                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+                result = self.finalize_privacy_requests(batch, user_id=user_id)
+                all_succeeded.extend(result.succeeded)
+                all_failed.extend(result.failed)
+            return BulkReviewResponse(succeeded=all_succeeded, failed=all_failed)
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 

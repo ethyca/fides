@@ -191,6 +191,10 @@ router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
+# Maximum number of privacy requests that can be processed in a single bulk operation
+# This matches the limit for bulk privacy request creation and service layer operations
+MAX_BULK_OPERATION_SIZE = 50
+
 
 def get_privacy_request_or_error(
     db: Session, privacy_request_id: str, error_if_deleted: Optional[bool] = True
@@ -1314,7 +1318,19 @@ def bulk_restart_privacy_request_from_failure(
     *,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
-    """Bulk restart a of privacy request from failure."""
+    """Bulk restart privacy requests from failure. Auto-batches if >50 requests."""
+    # Auto-batch large requests
+    if len(privacy_request_ids) > MAX_BULK_OPERATION_SIZE:
+        logger.info(
+            f"Auto-batching {len(privacy_request_ids)} restarts into chunks of {MAX_BULK_OPERATION_SIZE}"
+        )
+        all_succeeded, all_failed = [], []
+        for i in range(0, len(privacy_request_ids), MAX_BULK_OPERATION_SIZE):
+            batch = privacy_request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            result = bulk_restart_privacy_request_from_failure(batch, db=db)
+            all_succeeded.extend(result.succeeded)
+            all_failed.extend(result.failed)
+        return BulkPostPrivacyRequests(succeeded=all_succeeded, failed=all_failed)
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
 
@@ -2235,27 +2251,40 @@ def bulk_soft_delete_privacy_requests(
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkSoftDeletePrivacyRequests:
-    """
-    Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
-    and its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an
-    object with the list of successfully deleted privacy requests and the list of failed deletions.
-    """
-    succeeded: List[str] = []
-    failed: List[Dict[str, Any]] = []
-
+    """Soft delete privacy requests. Auto-batches if >50 requests."""
     user_id = client.user_id
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
+
+    request_ids = privacy_requests.request_ids
+
+    # Auto-batch large requests
+    if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+        logger.info(
+            f"Auto-batching {len(request_ids)} soft deletes into chunks of {MAX_BULK_OPERATION_SIZE}"
+        )
+        all_succeeded, all_failed = [], []
+        for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
+            batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            batch_request = ReviewPrivacyRequestIds(request_ids=batch)
+            result = bulk_soft_delete_privacy_requests(
+                db=db, client=client, privacy_requests=batch_request
+            )
+            all_succeeded.extend(result.succeeded)
+            all_failed.extend(result.failed)
+        return BulkSoftDeletePrivacyRequests(succeeded=all_succeeded, failed=all_failed)
+    succeeded: List[str] = []
+    failed: List[Dict[str, Any]] = []
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
         pr.id: pr
         for pr in PrivacyRequest.query_without_large_columns(db)
-        .filter(PrivacyRequest.id.in_(privacy_requests.request_ids))
+        .filter(PrivacyRequest.id.in_(request_ids))
         .all()
     }
 
-    for privacy_request_id in privacy_requests.request_ids:
+    for privacy_request_id in request_ids:
         privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
