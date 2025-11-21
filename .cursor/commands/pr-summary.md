@@ -3,8 +3,10 @@
 ## Create PR
 Use the template found in `.github/pull_request_template.md` to provide a summary of the provided @Branch.
 
-- Be as concise as possible and leave out formatting or general clean up changes.
+- Be as concise as possible with the summary, but be sure to fill out the exact template entirely.
 - In the description, avoid phrases like "In this PR..." or "This PR," just start with the verb.
+- In the summary, ignore code formatting or general code clean up changes.
+- Do not include running tests as part of the Steps to Confirm, those will run automatically as part of the PR.
 
 Provide a link to a GitHub URL with the body of the PR template and title as query parameters. The body should be in Markdown code format, patterned after the template.
 
