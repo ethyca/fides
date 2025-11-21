@@ -88,6 +88,7 @@ from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetRe
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
@@ -191,10 +192,6 @@ router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
-# Maximum number of privacy requests that can be processed in a single bulk operation
-# This matches the limit for bulk privacy request creation and service layer operations
-MAX_BULK_OPERATION_SIZE = 50
-
 
 def get_privacy_request_or_error(
     db: Session, privacy_request_id: str, error_if_deleted: Optional[bool] = True
@@ -229,7 +226,9 @@ def create_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
+    data: Annotated[
+        List[PrivacyRequestCreate], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -255,7 +254,9 @@ def create_privacy_request_authenticated(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_CREATE],
     ),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
+    data: Annotated[
+        List[PrivacyRequestCreate], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -1323,8 +1324,8 @@ def bulk_restart_privacy_request_from_failure(
     failed: List[Dict[str, Any]] = []
 
     # Process in batches to avoid memory issues with large request lists
-    for i in range(0, len(privacy_request_ids), MAX_BULK_OPERATION_SIZE):
-        batch = privacy_request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+    for i in range(0, len(privacy_request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+        batch = privacy_request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
         privacy_requests_dict = {
             pr.id: pr
             for pr in PrivacyRequest.query_without_large_columns(db)
@@ -2251,8 +2252,8 @@ def bulk_soft_delete_privacy_requests(
     failed: List[Dict[str, Any]] = []
 
     # Process in batches to avoid memory issues with large request lists
-    for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
-        batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+    for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+        batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
 
         # Fetch all privacy requests in one query to avoid N+1
         privacy_requests_dict = {

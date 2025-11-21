@@ -34,6 +34,7 @@ from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
@@ -58,10 +59,6 @@ from fides.service.messaging.messaging_service import (
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
 )
-
-# Maximum number of privacy requests that can be processed in a single bulk operation
-# This matches the limit for bulk privacy request creation (see privacy_request_endpoints.py)
-MAX_BULK_OPERATION_SIZE = 50
 
 
 class PrivacyRequestService:
@@ -540,13 +537,13 @@ class PrivacyRequestService:
     ) -> BulkReviewResponse:
         """Approve privacy requests. Auto-batches if >50 requests."""
         # Auto-batch large requests
-        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
             logger.info(
-                f"Auto-batching {len(request_ids)} approvals into chunks of {MAX_BULK_OPERATION_SIZE}"
+                f"Auto-batching {len(request_ids)} approvals into chunks of {BULK_PRIVACY_REQUEST_BATCH_SIZE}"
             )
             all_succeeded, all_failed = [], []
-            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
-                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+                batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
                 result = self.approve_privacy_requests(
                     batch,
                     webhook_id=webhook_id,
@@ -652,13 +649,13 @@ class PrivacyRequestService:
     ) -> BulkReviewResponse:
         """Deny privacy requests. Auto-batches if >50 requests."""
         # Auto-batch large requests
-        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
             logger.info(
-                f"Auto-batching {len(request_ids)} denials into chunks of {MAX_BULK_OPERATION_SIZE}"
+                f"Auto-batching {len(request_ids)} denials into chunks of {BULK_PRIVACY_REQUEST_BATCH_SIZE}"
             )
             all_succeeded, all_failed = [], []
-            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
-                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+                batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
                 result = self.deny_privacy_requests(batch, deny_reason, user_id=user_id)
                 all_succeeded.extend(result.succeeded)
                 all_failed.extend(result.failed)
@@ -748,13 +745,13 @@ class PrivacyRequestService:
     ) -> BulkReviewResponse:
         """Cancel privacy requests. Auto-batches if >50 requests."""
         # Auto-batch large requests
-        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
             logger.info(
-                f"Auto-batching {len(request_ids)} cancellations into chunks of {MAX_BULK_OPERATION_SIZE}"
+                f"Auto-batching {len(request_ids)} cancellations into chunks of {BULK_PRIVACY_REQUEST_BATCH_SIZE}"
             )
             all_succeeded, all_failed = [], []
-            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
-                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+                batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
                 result = self.cancel_privacy_requests(
                     batch, cancel_reason, user_id=user_id
                 )
@@ -837,13 +834,13 @@ class PrivacyRequestService:
     ) -> BulkReviewResponse:
         """Finalize privacy requests. Auto-batches if >50 requests."""
         # Auto-batch large requests
-        if len(request_ids) > MAX_BULK_OPERATION_SIZE:
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
             logger.info(
-                f"Auto-batching {len(request_ids)} finalizations into chunks of {MAX_BULK_OPERATION_SIZE}"
+                f"Auto-batching {len(request_ids)} finalizations into chunks of {BULK_PRIVACY_REQUEST_BATCH_SIZE}"
             )
             all_succeeded, all_failed = [], []
-            for i in range(0, len(request_ids), MAX_BULK_OPERATION_SIZE):
-                batch = request_ids[i : i + MAX_BULK_OPERATION_SIZE]
+            for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+                batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
                 result = self.finalize_privacy_requests(batch, user_id=user_id)
                 all_succeeded.extend(result.succeeded)
                 all_failed.extend(result.failed)
