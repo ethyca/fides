@@ -1,23 +1,4 @@
-from typing import Any, Optional
-
-from fides.api.task.conditional_dependencies.schemas import (
-    ConditionalDependencyFieldInfo,
-)
-
-
-def create_conditional_dependency_field_info(
-    field_path: str,
-    field_type: str,
-    description: Optional[str] = None,
-    is_convenience_field: bool = False,
-) -> ConditionalDependencyFieldInfo:
-    """Helper to create ConditionalDependencyFieldInfo objects."""
-    return ConditionalDependencyFieldInfo(
-        field_path=field_path,
-        field_type=field_type,
-        description=description,
-        is_convenience_field=is_convenience_field,
-    )
+from typing import Any
 
 
 def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
@@ -48,3 +29,25 @@ def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
             # If we can't find the part, return None
             return None
     return current
+
+
+def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
+    """
+    Returns a dictionary with a nested value set at the path.
+
+    Args:
+        path: List of keys to traverse (e.g., ["policy", "key"])
+        value: The value to set at the end of the path
+    """
+    result: dict[str, Any] = {}
+    final_key = path[-1]
+    current = result
+
+    for key in path[:-1]:
+        if key not in current:
+            current[key] = {}
+        current = current[key]
+
+    # Set the final value
+    current[final_key] = value
+    return result
