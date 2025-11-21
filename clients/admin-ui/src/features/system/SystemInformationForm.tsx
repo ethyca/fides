@@ -13,12 +13,12 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
@@ -54,12 +54,12 @@ import {
 } from "~/features/system/form";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import {
+  useBulkAssignStewardMutation,
   useCreateSystemMutation,
   useGetAllSystemsQuery,
+  useLazyGetSystemByFidesKeyQuery,
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
-  useBulkAssignStewardMutation,
-  useLazyGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
@@ -290,7 +290,9 @@ const SystemInformationForm = ({
       }
     };
 
-    let result;
+    let result:
+      | { data: SystemResponse }
+      | { error: FetchBaseQueryError | SerializedError };
     if (isEditing) {
       result = await updateSystemMutationTrigger(systemBody);
     } else {
@@ -299,7 +301,12 @@ const SystemInformationForm = ({
 
     await customFields.upsertCustomFields(values);
 
-    if (!isEditing && values.vendor_id && result.data?.fides_key) {
+    if (
+      !isEditing &&
+      values.vendor_id &&
+      !isErrorResult(result) &&
+      result.data?.fides_key
+    ) {
       const assetResult = await populateSystemAssets({
         systemKey: result.data.fides_key,
       });
@@ -313,13 +320,13 @@ const SystemInformationForm = ({
     }
 
     // Handle data stewards assignment after system is created/updated
-    if (result.data?.fides_key) {
+    if (!isErrorResult(result) && result.data?.fides_key) {
+      const systemData = result.data;
       // Get current stewards from the system response (with both username and id)
       const currentStewardsMap = new Map(
-        (result.data.data_stewards || []).map((user) => [
-          user.username,
-          user.id,
-        ]),
+        (systemData.data_stewards || []).map(
+          (user: { username: string; id: string }) => [user.username, user.id],
+        ),
       );
       const currentStewards = Array.from(currentStewardsMap.keys());
       const desiredStewards = values.data_stewards || [];
@@ -331,7 +338,7 @@ const SystemInformationForm = ({
 
       // Find stewards that need to be removed (no longer in desired list)
       const stewardsToRemove = currentStewards.filter(
-        (steward) => !desiredStewards.includes(steward),
+        (steward: string) => !desiredStewards.includes(steward),
       );
 
       // Assign each new steward to the system
@@ -339,7 +346,7 @@ const SystemInformationForm = ({
         stewardsToAdd.map(async (steward) => {
           const assignResult = await bulkAssignSteward({
             data_steward: steward,
-            system_keys: [result.data.fides_key],
+            system_keys: [systemData.fides_key],
           });
           if (isErrorResult(assignResult)) {
             toast({
@@ -368,11 +375,14 @@ const SystemInformationForm = ({
             }
             return { steward, stewardId };
           })
-          .filter((item): item is { steward: string; stewardId: string } => item !== null)
+          .filter(
+            (item): item is { steward: string; stewardId: string } =>
+              item !== null,
+          )
           .map(async ({ steward, stewardId }) => {
             const removeResult = await removeUserManagedSystem({
               userId: stewardId,
-              systemKey: result.data.fides_key,
+              systemKey: systemData.fides_key,
             });
             if (isErrorResult(removeResult)) {
               toast({
@@ -388,12 +398,17 @@ const SystemInformationForm = ({
 
       // Refetch the system to get updated data stewards
       if (stewardsToAdd.length > 0 || stewardsToRemove.length > 0) {
-        const refreshedSystem = await getSystemByFidesKey(
-          result.data.fides_key,
+        const refreshedSystemResult = await getSystemByFidesKey(
+          systemData.fides_key,
         );
-        if (refreshedSystem.data) {
+        if (
+          refreshedSystemResult &&
+          "data" in refreshedSystemResult &&
+          refreshedSystemResult.data &&
+          !("error" in refreshedSystemResult)
+        ) {
           // Update the result with the refreshed system data
-          result.data = refreshedSystem.data;
+          result.data = refreshedSystemResult.data as SystemResponse;
         }
       }
     }
