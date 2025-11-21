@@ -699,7 +699,7 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
-        """Cancel privacy requests."""
+        """Cancel a list of privacy requests and/or report failure"""
         if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
             raise ValueError(
                 f"Bulk operations are limited to {BULK_PRIVACY_REQUEST_BATCH_SIZE} requests. "
