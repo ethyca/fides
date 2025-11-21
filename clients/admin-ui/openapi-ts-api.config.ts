@@ -7,5 +7,26 @@ export default defineConfig({
     path: "./src/types/api",
     format: "prettier",
   },
-  plugins: ["@hey-api/typescript"],
+  parser: {
+    patch: {
+      schemas: {
+        ScopeRegistryEnum: (schema) => {
+          // Add x-enum-varnames to replace colons with underscores in enum keys
+          if (schema.enum && Array.isArray(schema.enum)) {
+            // eslint-disable-next-line no-param-reassign
+            schema["x-enum-varnames"] = schema.enum.map((value: string) =>
+              value.toUpperCase().replace(/:/g, "_").replace(/-/g, "_"),
+            );
+          }
+        },
+      },
+    },
+  },
+  plugins: [
+    {
+      name: "@hey-api/typescript",
+      enums: "typescript",
+      case: "preserve",
+    },
+  ],
 });

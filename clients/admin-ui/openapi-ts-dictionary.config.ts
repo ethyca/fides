@@ -7,5 +7,8 @@ export default defineConfig({
     path: "./src/types/dictionary-api",
     format: "prettier",
   },
-  plugins: ["@hey-api/typescript"],
+  types: {
+    enums: "typescript",
+    identifierCase: "preserve",
+  },
 });

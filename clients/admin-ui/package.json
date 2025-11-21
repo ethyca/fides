@@ -24,7 +24,7 @@
     "lint": "next lint && eslint ./cypress/e2e/**/*.ts ./cypress/support/**/*.ts",
     "lint:fix": "next lint --fix && eslint --fix ./cypress/e2e/**/*.ts ./cypress/support/**/*.ts",
     "lint-staged:fix": "lint-staged --diff=main",
-    "openapi:generate": "openapi-ts --file openapi-ts-api.config.ts && prettier --write .",
+    "openapi:generate": "openapi-ts --file openapi-ts-api.config.ts",
     "openapi:generate-dictionary": "openapi-ts --file openapi-ts-dictionary.config.ts",
     "start": "next start",
     "test": "jest",
