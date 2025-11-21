@@ -29,7 +29,7 @@ from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import cast, column, null, or_, select
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -272,7 +272,10 @@ def privacy_request_csv_download(
     f = io.StringIO()
     csv_file = csv.writer(f)
 
-    privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
+    # Execute query once and convert to list to avoid multiple iterations
+    privacy_requests: List[PrivacyRequest] = privacy_request_query.all()
+    privacy_request_ids: List[str] = [r.id for r in privacy_requests]
+
     denial_audit_log_query: Query = db.query(AuditLog).filter(
         AuditLog.action == AuditLogAction.denied,
         AuditLog.privacy_request_id.in_(privacy_request_ids),
@@ -281,7 +284,7 @@ def privacy_request_csv_download(
         r.privacy_request_id: r.message for r in denial_audit_log_query
     }
 
-    identity_columns, custom_field_columns = get_variable_columns(privacy_request_query)
+    identity_columns, custom_field_columns = get_variable_columns(privacy_requests)
 
     csv_file.writerow(
         [
@@ -301,7 +304,7 @@ def privacy_request_csv_download(
     )
 
     pr: PrivacyRequest
-    for pr in privacy_request_query:
+    for pr in privacy_requests:
         denial_reason = (
             denial_audit_logs[pr.id]
             if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
@@ -346,12 +349,12 @@ def privacy_request_csv_download(
 
 
 def get_variable_columns(
-    privacy_request_query: Query,
+    privacy_requests: List[PrivacyRequest],
 ) -> tuple[List[str], Dict[str, str]]:
     identity_columns: Set[str] = set()
     custom_field_columns: Dict[str, str] = {}
 
-    for pr in privacy_request_query:
+    for pr in privacy_requests:
         identity_columns.update(
             extract_identity_column_names(pr.get_persisted_identity().model_dump())
         )
@@ -848,6 +851,12 @@ def _shared_privacy_request_search(
 
     if download_csv:
         _validate_result_size(query)
+        # Eager load relationships needed for CSV export to avoid N+1 queries
+        query = query.options(
+            selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.policy),
+        )
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
         return privacy_request_csv_download(db, query)
