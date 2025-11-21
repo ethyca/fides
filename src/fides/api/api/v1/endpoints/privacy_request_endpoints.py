@@ -1315,65 +1315,65 @@ def validate_manual_input(
     ],
 )
 def bulk_restart_privacy_request_from_failure(
-    privacy_request_ids: List[str],
+    privacy_request_ids: Annotated[
+        List[str], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],
     *,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
-    """Bulk restart privacy requests from failure. Auto-batches if >50 requests."""
+    """Bulk restart privacy requests from failure."""
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
 
-    # Process in batches to avoid memory issues with large request lists
-    for i in range(0, len(privacy_request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
-        batch = privacy_request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
-        privacy_requests_dict = {
-            pr.id: pr
-            for pr in PrivacyRequest.query_without_large_columns(db)
-            .filter(PrivacyRequest.id.in_(batch))
-            .all()
-        }
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(privacy_request_ids))
+        .all()
+    }
 
-        for privacy_request_id in batch:
-            privacy_request = privacy_requests_dict.get(privacy_request_id)
+    for privacy_request_id in privacy_request_ids:
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
-            if not privacy_request:
-                failed.append(
-                    {
-                        "message": f"No privacy request found with id '{privacy_request_id}'",
-                        "data": {"privacy_request_id": privacy_request_id},
-                    }
-                )
-                continue
-
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    {
-                        "message": "Cannot restart a deleted privacy request",
-                        "data": {"privacy_request_id": privacy_request_id},
-                    }
-                )
-                continue
-
-            if privacy_request.status != PrivacyRequestStatus.error:
-                failed.append(
-                    {
-                        "message": f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
-                        "data": {"privacy_request_id": privacy_request_id},
-                    }
-                )
-                continue
-
-            failed_details: Optional[CheckpointActionRequired] = (
-                privacy_request.get_failed_checkpoint_details()
+        if not privacy_request:
+            failed.append(
+                {
+                    "message": f"No privacy request found with id '{privacy_request_id}'",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
             )
+            continue
 
-            succeeded.append(
-                _process_privacy_request_restart(
-                    privacy_request,
-                    failed_details.step if failed_details else None,
-                    db,
-                )
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                {
+                    "message": "Cannot restart a deleted privacy request",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
             )
+            continue
+
+        if privacy_request.status != PrivacyRequestStatus.error:
+            failed.append(
+                {
+                    "message": f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        failed_details: Optional[CheckpointActionRequired] = (
+            privacy_request.get_failed_checkpoint_details()
+        )
+
+        succeeded.append(
+            _process_privacy_request_restart(
+                privacy_request,
+                failed_details.step if failed_details else None,
+                db,
+            )
+        )
 
     return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
 
@@ -2242,7 +2242,7 @@ def bulk_soft_delete_privacy_requests(
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkSoftDeletePrivacyRequests:
-    """Soft delete privacy requests. Auto-batches if >50 requests."""
+    """Soft delete privacy requests."""
     user_id = client.user_id
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
@@ -2251,41 +2251,37 @@ def bulk_soft_delete_privacy_requests(
     succeeded: List[str] = []
     failed: List[Dict[str, Any]] = []
 
-    # Process in batches to avoid memory issues with large request lists
-    for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
-        batch = request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE]
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(request_ids))
+        .all()
+    }
 
-        # Fetch all privacy requests in one query to avoid N+1
-        privacy_requests_dict = {
-            pr.id: pr
-            for pr in PrivacyRequest.query_without_large_columns(db)
-            .filter(PrivacyRequest.id.in_(batch))
-            .all()
-        }
+    for privacy_request_id in request_ids:
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
-        for privacy_request_id in batch:
-            privacy_request = privacy_requests_dict.get(privacy_request_id)
+        if not privacy_request:
+            failed.append(
+                {
+                    "message": f"No privacy request found with id '{privacy_request_id}'",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
 
-            if not privacy_request:
-                failed.append(
-                    {
-                        "message": f"No privacy request found with id '{privacy_request_id}'",
-                        "data": {"privacy_request_id": privacy_request_id},
-                    }
-                )
-                continue
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                {
+                    "message": f"Privacy request '{privacy_request_id}' has already been deleted.",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
 
-            if privacy_request.deleted_at is not None:
-                failed.append(
-                    {
-                        "message": f"Privacy request '{privacy_request_id}' has already been deleted.",
-                        "data": {"privacy_request_id": privacy_request_id},
-                    }
-                )
-                continue
-
-            privacy_request.soft_delete(db, user_id)
-            succeeded.append(privacy_request.id)
+        privacy_request.soft_delete(db, user_id)
+        succeeded.append(privacy_request.id)
 
     return BulkSoftDeletePrivacyRequests(succeeded=succeeded, failed=failed)
 
