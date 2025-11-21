@@ -2242,7 +2242,13 @@ def bulk_soft_delete_privacy_requests(
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkSoftDeletePrivacyRequests:
-    """Soft delete privacy requests."""
+    """
+    Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
+    and its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an
+    object with the list of successfully deleted privacy requests and the list of failed deletions.
+    """
+    succeeded: List[str] = []
+    failed: List[Dict[str, Any]] = []
     user_id = client.user_id
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
