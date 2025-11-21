@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
 
 ### Developer Experience
+- Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
 - Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
 
 
