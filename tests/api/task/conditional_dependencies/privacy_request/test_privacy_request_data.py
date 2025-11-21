@@ -373,5 +373,4 @@ class TestPrivacyRequestToEvaluationDataEdgeCases:
         # When policy is None, accessing policy.key returns None
         assert "privacy_request" in data
         # Since policy is None, policy.key will be None
-        if data["privacy_request"].get("policy") is not None:
-            assert data["privacy_request"]["policy"].get("key") is None
+        assert data["privacy_request"]["policy"]["key"] is None
