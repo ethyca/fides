@@ -60,7 +60,7 @@ def get_privacy_request_and_task(
     privacy_request: Optional[PrivacyRequest] = (
         session.query(PrivacyRequest)
         .options(
-            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),
+            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),  # type: ignore[attr-defined]
             selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
             selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
         )
