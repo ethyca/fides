@@ -73,8 +73,7 @@ def multiple_privacy_requests(db, policy):
 
     yield privacy_requests
 
-    for pr in privacy_requests:
-        pr.delete(db)
+    yield privacy_requests
 
 
 @pytest.mark.usefixtures(
