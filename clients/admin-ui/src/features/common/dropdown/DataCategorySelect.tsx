@@ -31,6 +31,13 @@ const DataCategorySelect = ({
         name,
         primaryName,
         description: category.description || "",
+        label: (
+          <>
+            <strong>{primaryName || name}</strong>
+            {primaryName && `: ${name}`}
+          </>
+        ),
+        title: category.fides_key,
       };
     });
 
