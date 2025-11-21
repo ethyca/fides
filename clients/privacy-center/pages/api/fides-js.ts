@@ -551,10 +551,12 @@ async function fetchCustomFidesCss(
           }
           if (!assetResponse.ok) {
             log.debug(
-              "Error fetching custom-fides.css:",
-              assetResponse.status,
-              assetResponse.statusText,
-              data,
+              {
+                status: assetResponse.status,
+                statusText: assetResponse.statusText,
+                data,
+              },
+              "Error fetching custom-fides.css",
             );
             throw new Error(
               `HTTP error occurred. Status: ${assetResponse.status}`,

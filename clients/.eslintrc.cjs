@@ -79,6 +79,16 @@ module.exports = {
         },
       },
     ],
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true,
+        "ts-nocheck": true,
+        "ts-check": true,
+        minimumDescriptionLength: 10, // require at least 10 chars on ts-expect-error explaining why
+      },
+    ],
     "prettier/prettier": "warn",
   },
 };

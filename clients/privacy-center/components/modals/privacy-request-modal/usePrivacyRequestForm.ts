@@ -200,7 +200,7 @@ const usePrivacyRequestForm = ({
           `${settings.FIDES_API_URL}/privacy-request`,
           {
             method: "POST",
-            headers,
+            headers: headers as unknown as HeadersInit,
             body: JSON.stringify(body),
           },
         );

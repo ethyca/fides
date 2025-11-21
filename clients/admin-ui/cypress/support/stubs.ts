@@ -1063,3 +1063,10 @@ export const stubSystemGroups = () => {
     statusCode: 200,
   }).as("updateSystemGroup");
 };
+
+export const stubOktaApps = () => {
+  // GET - List Okta apps
+  cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results", {
+    fixture: "detection-discovery/results/okta-apps-list.json",
+  }).as("getOktaApps");
+};
