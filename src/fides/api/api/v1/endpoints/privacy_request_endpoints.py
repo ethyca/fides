@@ -2249,6 +2249,7 @@ def bulk_soft_delete_privacy_requests(
     """
     succeeded: List[str] = []
     failed: List[Dict[str, Any]] = []
+
     user_id = client.user_id
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
