@@ -73,8 +73,6 @@ def multiple_privacy_requests(db, policy):
 
     yield privacy_requests
 
-    yield privacy_requests
-
 
 @pytest.mark.usefixtures(
     "allow_custom_privacy_request_field_collection_enabled",
