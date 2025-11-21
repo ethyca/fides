@@ -860,7 +860,7 @@ def _shared_privacy_request_search(
         query = query.options(
             selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
             selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
-            selectinload(PrivacyRequest.policy),
+            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),  # type: ignore[attr-defined]
         )
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
