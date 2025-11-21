@@ -13,6 +13,7 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomFieldsList,
   useCustomFields,
@@ -51,6 +52,7 @@ import {
   transformFormValuesToSystem,
   transformSystemToFormValues,
 } from "~/features/system/form";
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import {
   useCreateSystemMutation,
   useGetAllSystemsQuery,
@@ -62,20 +64,17 @@ import {
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
+import {
+  legalBasisForProfilingOptions,
+  legalBasisForTransferOptions,
+  responsibilityOptions,
+} from "~/features/system/SystemInformationFormSelectOptions";
 import VendorSelector from "~/features/system/VendorSelector";
 import {
   useGetAllUsersQuery,
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
 import { ResourceTypes, SystemResponse } from "~/types/api";
-
-import { ControlledSelect } from "../common/form/ControlledSelect";
-import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
-import {
-  legalBasisForProfilingOptions,
-  legalBasisForTransferOptions,
-  responsibilityOptions,
-} from "./SystemInformationFormSelectOptions";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -336,47 +335,56 @@ const SystemInformationForm = ({
       );
 
       // Assign each new steward to the system
-      for (const steward of stewardsToAdd) {
-        const assignResult = await bulkAssignSteward({
-          data_steward: steward,
-          system_keys: [result.data.fides_key],
-        });
-        if (isErrorResult(assignResult)) {
-          toast({
-            status: "warning",
-            description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
-              assignResult.error,
-              "Please try again.",
-            )}`,
+      await Promise.all(
+        stewardsToAdd.map(async (steward) => {
+          const assignResult = await bulkAssignSteward({
+            data_steward: steward,
+            system_keys: [result.data.fides_key],
           });
-        }
-      }
+          if (isErrorResult(assignResult)) {
+            toast({
+              status: "warning",
+              description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
+                assignResult.error,
+                "Please try again.",
+              )}`,
+            });
+          }
+        }),
+      );
 
       // Remove stewards that are no longer selected
       // Use the user ID from the current stewards map to call the remove endpoint
-      for (const steward of stewardsToRemove) {
-        const stewardId = currentStewardsMap.get(steward);
-        if (!stewardId) {
-          toast({
-            status: "warning",
-            description: `Could not find user ID for ${steward}. Skipping removal.`,
-          });
-          continue;
-        }
-        const removeResult = await removeUserManagedSystem({
-          userId: stewardId,
-          systemKey: result.data.fides_key,
-        });
-        if (isErrorResult(removeResult)) {
-          toast({
-            status: "warning",
-            description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
-              removeResult.error,
-              "Please try again.",
-            )}`,
-          });
-        }
-      }
+      await Promise.all(
+        stewardsToRemove
+          .map((steward) => {
+            const stewardId = currentStewardsMap.get(steward);
+            if (!stewardId) {
+              toast({
+                status: "warning",
+                description: `Could not find user ID for ${steward}. Skipping removal.`,
+              });
+              return null;
+            }
+            return { steward, stewardId };
+          })
+          .filter((item): item is { steward: string; stewardId: string } => item !== null)
+          .map(async ({ steward, stewardId }) => {
+            const removeResult = await removeUserManagedSystem({
+              userId: stewardId,
+              systemKey: result.data.fides_key,
+            });
+            if (isErrorResult(removeResult)) {
+              toast({
+                status: "warning",
+                description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
+                  removeResult.error,
+                  "Please try again.",
+                )}`,
+              });
+            }
+          }),
+      );
 
       // Refetch the system to get updated data stewards
       if (stewardsToAdd.length > 0 || stewardsToRemove.length > 0) {
