@@ -1,8 +1,9 @@
+# pylint: disable=too-many-lines
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -105,6 +106,24 @@ class PrivacyRequestService:
             )
 
         return privacy_request
+
+    def _fetch_privacy_requests_for_bulk_operation(
+        self, request_ids: List[str]
+    ) -> Dict[str, PrivacyRequest]:
+        """
+        Fetch multiple privacy requests in a single query for bulk operations.
+        Returns a dictionary mapping request_id to PrivacyRequest.
+        This avoids N+1 queries when processing bulk operations.
+
+        Note: Eager loads custom_fields since bulk approve checks this relationship.
+        """
+        privacy_requests = (
+            PrivacyRequest.query_without_large_columns(self.db)
+            .options(selectinload(PrivacyRequest.custom_fields))  # type: ignore[attr-defined]
+            .filter(PrivacyRequest.id.in_(request_ids))
+            .all()
+        )
+        return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
         self, privacy_request_data: PrivacyRequestCreate
@@ -524,13 +543,32 @@ class PrivacyRequestService:
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+            privacy_request = privacy_requests_dict.get(request_id)
+
+            if not privacy_request:
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"No privacy request found with id '{request_id}'",
+                        data={"privacy_request_id": request_id},
+                    )
                 )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                continue
+
+            if privacy_request.deleted_at is not None:
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Cannot transition status for a deleted request",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
                 continue
 
             if privacy_request.status not in [
@@ -599,13 +637,32 @@ class PrivacyRequestService:
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+            privacy_request = privacy_requests_dict.get(request_id)
+
+            if not privacy_request:
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"No privacy request found with id '{request_id}'",
+                        data={"privacy_request_id": request_id},
+                    )
                 )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                continue
+
+            if privacy_request.deleted_at is not None:
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Cannot transition status for a deleted request",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
                 continue
 
             if privacy_request.status not in [
@@ -672,13 +729,32 @@ class PrivacyRequestService:
             PrivacyRequestStatus.error,
         ]
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+            privacy_request = privacy_requests_dict.get(request_id)
+
+            if not privacy_request:
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"No privacy request found with id '{request_id}'",
+                        data={"privacy_request_id": request_id},
+                    )
                 )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                continue
+
+            if privacy_request.deleted_at is not None:
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Cannot transition status for a deleted request",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
                 continue
 
             if privacy_request.status in terminal_states:
@@ -720,13 +796,32 @@ class PrivacyRequestService:
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+            privacy_request = privacy_requests_dict.get(request_id)
+
+            if not privacy_request:
+                failed.append(
+                    BulkUpdateFailed(
+                        message=f"No privacy request found with id '{request_id}'",
+                        data={"privacy_request_id": request_id},
+                    )
                 )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                continue
+
+            if privacy_request.deleted_at is not None:
+                failed.append(
+                    BulkUpdateFailed(
+                        message="Cannot transition status for a deleted request",
+                        data=PrivacyRequestResponse.model_validate(
+                            privacy_request
+                        ).model_dump(mode="json"),
+                    )
+                )
                 continue
 
             if (

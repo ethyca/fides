@@ -861,6 +861,19 @@ def _shared_privacy_request_search(
         logger.info("Downloading privacy requests as csv")
         return privacy_request_csv_download(db, query)
 
+    # Eager load relationships for regular list view to avoid N+1 queries
+    if include_identities or include_custom_privacy_request_fields:
+        eager_load_options = []
+        if include_identities:
+            eager_load_options.append(
+                selectinload(PrivacyRequest.provided_identities)  # type: ignore[attr-defined]
+            )
+        if include_custom_privacy_request_fields:
+            eager_load_options.append(
+                selectinload(PrivacyRequest.custom_fields)  # type: ignore[attr-defined]
+            )
+        query = query.options(*eager_load_options)
+
     # Conditionally embed execution log details in the response.
     if verbose:
         logger.info("Finding execution and audit log details")
@@ -1304,12 +1317,17 @@ def bulk_restart_privacy_request_from_failure(
     """Bulk restart a of privacy request from failure."""
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
+
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(privacy_request_ids))
+        .all()
+    }
+
     for privacy_request_id in privacy_request_ids:
-        privacy_request = (
-            PrivacyRequest.query_without_large_columns(db)
-            .filter(PrivacyRequest.id == privacy_request_id)
-            .first()
-        )
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
             failed.append(
@@ -2229,12 +2247,16 @@ def bulk_soft_delete_privacy_requests(
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
 
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(privacy_requests.request_ids))
+        .all()
+    }
+
     for privacy_request_id in privacy_requests.request_ids:
-        privacy_request = (
-            PrivacyRequest.query_without_large_columns(db)
-            .filter(PrivacyRequest.id == privacy_request_id)
-            .first()
-        )
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
             failed.append(
