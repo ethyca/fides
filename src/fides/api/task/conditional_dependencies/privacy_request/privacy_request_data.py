@@ -11,10 +11,10 @@ from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     get_policy_convenience_fields,
 )
-from fides.api.task.conditional_dependencies.privacy_request.util import (
+from fides.api.task.conditional_dependencies.util import (
+    extract_nested_field_value,
     set_nested_value,
 )
-from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 
 
 class PrivacyRequestDataTransformer:
@@ -23,6 +23,8 @@ class PrivacyRequestDataTransformer:
 
     This class extracts the fields referenced in conditions and builds a minimal nested structure
     for evaluation. Privacy request fields must be prefixed with the "privacy_request" namespace.
+
+    Note: Privacy request relationships are eager loaded in the execute_request_tasks.py file.
     """
 
     def __init__(self, privacy_request: PrivacyRequest):

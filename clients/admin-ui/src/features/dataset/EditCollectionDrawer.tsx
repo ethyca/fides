@@ -33,8 +33,7 @@ const EditCollectionDrawer = ({
 }: Props) => {
   const collectionIndex = useMemo(
     () => dataset?.collections.indexOf(collection),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [collection, dataset?.collections],
   );
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
