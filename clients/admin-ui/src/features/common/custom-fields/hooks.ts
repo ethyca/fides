@@ -87,8 +87,7 @@ export const useCustomFields = ({
 
   const definitionIdToCustomField: Map<string, CustomFieldWithId> =
     useMemo(() => {
-      // @ts-ignore
-      if (isError && error?.status === 404) {
+      if (isError && error && "status" in error && error.status === 404) {
         return new Map();
       }
       const newMap = new Map(

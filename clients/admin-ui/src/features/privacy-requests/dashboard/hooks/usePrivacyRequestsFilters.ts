@@ -37,18 +37,13 @@ const usePrivacyRequestsFilters = ({
   pagination,
 }: UsePrivacyRequestsFiltersProps) => {
   const allowedStatusFilterOptions = [...SubjectRequestStatusMap.keys()];
-  const defaultStatusFilter = allowedStatusFilterOptions.filter(
-    (status) => status !== PrivacyRequestStatus.DUPLICATE,
-  );
 
   const [filters, setFilters] = useQueryStates(
     {
       search: parseAsString.withOptions({ throttleMs: 300 }),
       from: parseAsString,
       to: parseAsString,
-      status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions))
-        .withDefault(defaultStatusFilter)
-        .withOptions({ clearOnDefault: true }),
+      status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions)),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
       custom_privacy_request_fields: parseAsCustomFields,
     },

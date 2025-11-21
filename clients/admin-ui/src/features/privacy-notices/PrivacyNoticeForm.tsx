@@ -176,7 +176,6 @@ const PrivacyNoticeForm = ({
     }
   };
 
-  // @ts-ignore
   return (
     <Formik
       initialValues={initialValues}

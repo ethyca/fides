@@ -288,15 +288,13 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
             required: false,
           },
           location: {
             label: "Location",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "select",
             options: ["US", "EU"],
           },
@@ -331,8 +329,7 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -346,8 +343,7 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           reason: {
             label: "Reason",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -379,8 +375,7 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department (Access)",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
@@ -394,8 +389,7 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department (Erasure)",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "select",
             options: ["Eng", "Sales"],
           },
@@ -448,8 +442,7 @@ describe("extractUniqueCustomFields", () => {
         custom_privacy_request_fields: {
           department: {
             label: "Department",
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - field_type exists in backend but not in auto-generated types yet
+            // @ts-expect-error - field_type exists in backend but not in auto-generated types yet
             field_type: "text",
           },
         },
