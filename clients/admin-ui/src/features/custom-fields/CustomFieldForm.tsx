@@ -169,8 +169,6 @@ const CustomFieldForm = ({
     (option) => option.value === valueType,
   );
 
-  console.log(form.getFieldsValue());
-
   return (
     <Form
       form={form}

@@ -21,7 +21,7 @@ const generateNewAllowListName = () =>
 // Normalize resource_type from key-form selection
 // taxonomy:data_category -> data_category (custom metadata endpoint will map as needed)
 // system:information -> system
-// system:data_use -> privacy_declaration
+// system:data use -> privacy declaration
 const normalizeResourceType = (rt: string): string => {
   if (rt.startsWith("taxonomy:")) {
     return rt.split(":", 2)[1];
@@ -29,7 +29,7 @@ const normalizeResourceType = (rt: string): string => {
   if (rt === "system:information") {
     return "system";
   }
-  if (rt === "system:data_use") {
+  if (rt === "system:data use") {
     return "privacy declaration";
   }
   return rt;
