@@ -6,6 +6,7 @@ import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
+  useCreateIdentityProviderMonitorMutation,
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -15,6 +16,7 @@ import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -48,8 +50,19 @@ const ConfigureMonitorModal = ({
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
-  const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
+  const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
+
+  const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
+
+  const [
+    createIdentityProviderMonitorTrigger,
+    { isLoading: isSubmittingOkta },
+  ] = useCreateIdentityProviderMonitorMutation();
+
+  const isSubmitting = isOktaIntegration
+    ? isSubmittingOkta
+    : isSubmittingRegular;
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -75,7 +88,25 @@ const ConfigureMonitorModal = ({
         onClose();
       }
     }, TIMEOUT_DELAY);
-    result = await putMonitorMutationTrigger(values);
+
+    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+    if (isOktaIntegration) {
+      // Transform MonitorConfig to IdentityProviderMonitorConfig format
+      const oktaPayload = {
+        name: values.name,
+        key: values.key ?? undefined,
+        provider: "okta" as const,
+        connection_config_key: integration.key,
+        enabled: values.enabled ?? true,
+        execution_start_date: values.execution_start_date ?? undefined,
+        execution_frequency: values.execution_frequency ?? undefined,
+        classify_params: values.classify_params ?? {},
+      };
+      result = await createIdentityProviderMonitorTrigger(oktaPayload);
+    } else {
+      result = await putMonitorMutationTrigger(values);
+    }
+
     if (result) {
       clearTimeout(timeout);
       if (isErrorResult(result)) {

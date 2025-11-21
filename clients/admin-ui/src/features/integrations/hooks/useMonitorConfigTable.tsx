@@ -9,11 +9,15 @@ import { useMemo } from "react";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { pluralize } from "~/features/common/utils";
-import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import {
+  useGetIdentityProviderMonitorsQuery,
+  useGetMonitorsByIntegrationQuery,
+} from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
+  ConnectionType,
   MonitorConfig,
   PrivacyNoticeRegion,
   WebsiteSchema,
@@ -49,15 +53,37 @@ export const useMonitorConfigTable = ({
 
   const { pageIndex, pageSize } = tableState;
 
+  console.log("integration", integration);
+
+  const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
+
+  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+  const regularMonitorsQuery = useGetMonitorsByIntegrationQuery(
+    {
+      page: pageIndex,
+      size: pageSize,
+      connection_config_key: integration.key,
+    },
+    {
+      skip: isOktaIntegration,
+    },
+  );
+
+  const oktaMonitorsQuery = useGetIdentityProviderMonitorsQuery(
+    {
+      page: pageIndex,
+      size: pageSize,
+    },
+    {
+      skip: !isOktaIntegration,
+    },
+  );
+
   const {
     isLoading,
     isFetching,
     data: response,
-  } = useGetMonitorsByIntegrationQuery({
-    page: pageIndex,
-    size: pageSize,
-    connection_config_key: integration.key,
-  });
+  } = isOktaIntegration ? oktaMonitorsQuery : regularMonitorsQuery;
 
   const antTableConfig = useMemo(
     () => ({
@@ -70,6 +96,8 @@ export const useMonitorConfigTable = ({
     }),
     [isLoading, isFetching, response?.items, response?.total],
   );
+
+  console.log("response monitors table", response);
 
   const antTable = useAntTable<MonitorConfig, MonitorConfigColumnKeys>(
     tableState,
@@ -138,8 +166,8 @@ export const useMonitorConfigTable = ({
       render: (_: unknown, record: MonitorConfig) => {
         const locations =
           record.datasource_params &&
-          "locations" in record.datasource_params &&
-          Array.isArray(record.datasource_params.locations)
+            "locations" in record.datasource_params &&
+            Array.isArray(record.datasource_params.locations)
             ? record.datasource_params.locations
             : [];
 
@@ -168,7 +196,7 @@ export const useMonitorConfigTable = ({
             const regionRecord =
               regionCode &&
               PRIVACY_NOTICE_REGION_RECORD[
-                regionCode[1]
+              regionCode[1]
               ]; /* regionCode[1] refers to enum value that is the key for the region records enum (enum-ception) */
 
             return regionRecord;
