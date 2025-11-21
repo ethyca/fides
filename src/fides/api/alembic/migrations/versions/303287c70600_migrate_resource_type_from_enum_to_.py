@@ -56,6 +56,24 @@ def upgrade():
         nullable=False,
     )
 
+    # Data migration: Convert old enum value 'privacy_declaration' to 'privacy declaration'
+    # The old PostgreSQL enum used 'privacy_declaration' (with underscore) but the Python
+    # ResourceTypes enum expects 'privacy declaration' (with space)
+    op.execute(
+        """
+        UPDATE plus_custom_field_definition
+        SET resource_type = 'privacy declaration'
+        WHERE resource_type = 'privacy_declaration'
+        """
+    )
+    op.execute(
+        """
+        UPDATE plus_custom_field
+        SET resource_type = 'privacy declaration'
+        WHERE resource_type = 'privacy_declaration'
+        """
+    )
+
     # Recreate unique functional index on (resource_type, lower(name))
     # Note: Use a raw expression for lower(name)
     op.create_index(
