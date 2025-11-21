@@ -2254,8 +2254,6 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     request_ids = privacy_requests.request_ids
-    succeeded: List[str] = []
-    failed: List[Dict[str, Any]] = []
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
