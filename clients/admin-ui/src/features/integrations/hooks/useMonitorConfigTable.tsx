@@ -232,6 +232,7 @@ export const useMonitorConfigTable = ({
         <MonitorConfigActionsCell
           onEditClick={() => onEditMonitor(record)}
           isWebsiteMonitor={isWebsiteMonitor}
+          isOktaMonitor={isOktaIntegration}
           monitorId={record.key}
         />
       ),
