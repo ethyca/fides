@@ -1,16 +1,11 @@
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
   AntFlex as Flex,
   AntMenu as Menu,
   AntSpace as Space,
   AntTable as Table,
-  AntTooltip as Tooltip,
-  Icons,
 } from "fidesui";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
-import { DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
@@ -37,19 +32,10 @@ export const DiscoveredInfrastructureSystemsTable = ({
     filterTabs,
     activeTab,
     handleTabChange,
-    activeParams,
 
     // Selection
     selectedRows,
     hasSelectedRows,
-    uncategorizedIsSelected,
-
-    // Business actions
-    handleBulkAdd,
-    handleBulkIgnore,
-
-    // Loading states
-    anyBulkActionIsLoading,
   } = useDiscoveredInfrastructureSystemsTable({ monitorId });
 
   return (
@@ -72,48 +58,6 @@ export const DiscoveredInfrastructureSystemsTable = ({
         <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedRows.length} />}
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: "add",
-                  label: (
-                    <Tooltip
-                      title={
-                        uncategorizedIsSelected
-                          ? "Uncategorized assets can't be added to the inventory"
-                          : null
-                      }
-                      placement="left"
-                    >
-                      Add
-                    </Tooltip>
-                  ),
-                  onClick: handleBulkAdd,
-                  disabled: uncategorizedIsSelected,
-                },
-                !activeParams.diff_status.includes(DiffStatus.MUTED)
-                  ? {
-                      key: "ignore",
-                      label: "Ignore",
-                      onClick: handleBulkIgnore,
-                    }
-                  : null,
-              ],
-            }}
-            trigger={["click"]}
-          >
-            <Button
-              type="primary"
-              icon={<Icons.ChevronDown />}
-              iconPosition="end"
-              loading={anyBulkActionIsLoading}
-              disabled={!hasSelectedRows}
-              data-testid="bulk-actions-menu"
-            >
-              Actions
-            </Button>
-          </Dropdown>
         </Space>
       </Flex>
       <Table {...tableProps} columns={columns} rowSelection={selectionProps} />
