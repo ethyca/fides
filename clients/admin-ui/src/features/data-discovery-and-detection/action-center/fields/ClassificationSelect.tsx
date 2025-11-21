@@ -71,7 +71,7 @@ const ClassificationSelect = ({
         setOpen(false);
       }}
       data-classification-select={urn}
-      popupMatchSelectWidth={500}
+      popupMatchSelectWidth={600}
       {...props}
     />
   );
