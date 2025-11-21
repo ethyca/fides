@@ -4,6 +4,7 @@ import pino from "pino";
 export const createLogger = (options?: LoggerOptions) => {
   const isServer = typeof window === "undefined";
   const isNextEdgeRuntime = process.env.NEXT_RUNTIME === "edge";
+  // testing
   const logLevel =
     process.env.NODE_ENV === "development"
       ? "debug"
