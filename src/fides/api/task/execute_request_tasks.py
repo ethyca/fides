@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Tuple
 from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 from tenacity import (
     RetryCallState,
     retry,
@@ -21,6 +21,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.models.worker_task import (
     RESUMABLE_EXECUTION_LOG_STATUSES,
@@ -48,11 +49,21 @@ def get_privacy_request_and_task(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
 ) -> Tuple[PrivacyRequest, RequestTask]:
     """
-    Retrieves and validates a privacy request and its associated task
+    Retrieves and validates a privacy request and its associated task.
+    Eager loads policy.rules to avoid N+1 queries during manual task execution.
     """
 
+    # Eager load relationships to avoid N+1 queries during manual task execution:
+    # - policy.rules: accessed by get_policy_convenience_fields()
+    # - provided_identities: accessed by get_persisted_identity()
+    # - custom_fields: accessed by get_persisted_custom_privacy_request_fields()
     privacy_request: Optional[PrivacyRequest] = (
-        PrivacyRequest.query_without_large_columns(session)
+        session.query(PrivacyRequest)
+        .options(
+            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),
+            selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
+        )
         .filter(PrivacyRequest.id == privacy_request_id)
         .first()
     )
