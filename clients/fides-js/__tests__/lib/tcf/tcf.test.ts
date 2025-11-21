@@ -418,6 +418,7 @@ describe("generateFidesString", () => {
     tcf_special_purposes: [],
     tcf_features: mockFeatures,
     tcf_vendor_legitimate_interests: mockTCfVendorsLegitimateInterest,
+    tcf_vendor_relationships: [{ id: "gvl.740" }, { id: "gvl.254" }],
     minimal_tcf: false,
   } as unknown as PrivacyExperience;
 
@@ -606,5 +607,62 @@ describe("generateFidesString", () => {
     expect(decodedTCString.vendorLegitimateInterests.has(222)).toBe(false);
     expect(decodedTCString.vendorLegitimateInterests.has(333)).toBe(false);
     expect(decodedTCString.vendorLegitimateInterests.has(444)).toBe(false);
+  });
+
+  describe("TCF 2.3 disclosedVendors segment", () => {
+    it("includes the disclosedVendors segment in the TC String", async () => {
+      const fidesString = await generateFidesString({
+        experience,
+        tcStringPreferences: {
+          customPurposesConsent: [],
+          features: ["1", "2", "3"],
+          purposesConsent: ["1", "2", "3", "4", "7"],
+          purposesLegint: ["2", "7", "8", "10"],
+          specialFeatures: ["1"],
+          specialPurposes: ["1", "2"],
+          vendorsConsent: ["gvl.740", "gvl.254"],
+          vendorsLegint: ["gvl.740"],
+        },
+      });
+
+      const [tcfString] = fidesString.split(FIDES_SEPARATOR);
+      const decodedTCString = TCString.decode(tcfString);
+
+      // Verify that vendorsDisclosed exists and is populated
+      expect(decodedTCString.vendorsDisclosed).toBeDefined();
+      expect(decodedTCString.vendorsDisclosed.size).toBeGreaterThan(0);
+
+      // Both vendors from the experience should be marked as disclosed
+      expect(decodedTCString.vendorsDisclosed.has(740)).toBe(true);
+      expect(decodedTCString.vendorsDisclosed.has(254)).toBe(true);
+    });
+
+    it("marks all disclosed vendors regardless of consent choice", async () => {
+      // Test that vendors are marked as disclosed even if user opts out
+      const fidesString = await generateFidesString({
+        experience,
+        tcStringPreferences: {
+          customPurposesConsent: [],
+          features: [],
+          purposesConsent: [], // User opted out of all purposes
+          purposesLegint: [],
+          specialFeatures: [],
+          specialPurposes: [],
+          vendorsConsent: [], // User opted out of all vendors
+          vendorsLegint: [],
+        },
+      });
+
+      const [tcfString] = fidesString.split(FIDES_SEPARATOR);
+      const decodedTCString = TCString.decode(tcfString);
+
+      // Vendors should still be in disclosedVendors even though user opted out
+      expect(decodedTCString.vendorsDisclosed.has(740)).toBe(true);
+      expect(decodedTCString.vendorsDisclosed.has(254)).toBe(true);
+
+      // But they should NOT be in vendorConsents since user opted out
+      expect(decodedTCString.vendorConsents.has(740)).toBe(false);
+      expect(decodedTCString.vendorConsents.has(254)).toBe(false);
+    });
   });
 });
