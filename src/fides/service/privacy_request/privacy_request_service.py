@@ -735,7 +735,7 @@ class PrivacyRequestService:
             if privacy_request.status in terminal_states:
                 failed.append(
                     BulkUpdateFailed(
-                        message=f"Cannot cancel privacy request in {str(privacy_request.status)} status",
+                        message=f"Cannot cancel privacy request in {str(privacy_request.status)} status.value",
                         data=PrivacyRequestResponse.model_validate(
                             privacy_request
                         ).model_dump(mode="json"),
