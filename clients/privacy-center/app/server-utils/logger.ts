@@ -1,14 +1,13 @@
 import type { LoggerOptions } from "pino";
 import pino from "pino";
 
-import loadEnvironmentVariables from "./loadEnvironmentVariables";
-
 export const createLogger = (options?: LoggerOptions) => {
-  const settings = loadEnvironmentVariables();
   const isServer = typeof window === "undefined";
   const isNextEdgeRuntime = process.env.NEXT_RUNTIME === "edge";
   const logLevel =
-    process.env.NODE_ENV === "development" ? "debug" : settings.LOG_LEVEL;
+    process.env.NODE_ENV === "development"
+      ? "debug"
+      : process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL || "info";
 
   const logger = pino({
     // Standard pino config
