@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Set max width for Action center classification dropdown [#7015](https://github.com/ethyca/fides/pull/7015)
 
 ### Developer Experience
+- Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
 - Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
 
 
