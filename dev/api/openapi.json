@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3a1.post0.dev37"
+    "version": "2.74.3a1.post0.dev38"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9100,7 +9100,7 @@
           "Privacy Requests"
         ],
         "summary": "Bulk Restart Privacy Request From Failure",
-        "description": "Bulk restart a of privacy request from failure.",
+        "description": "Bulk restart privacy requests from failure.",
         "operationId": "bulk_restart_privacy_request_from_failure_api_v1_privacy_request_bulk_retry_post",
         "requestBody": {
           "content": {
@@ -9110,6 +9110,7 @@
                   "type": "string"
                 },
                 "type": "array",
+                "maxItems": 50,
                 "title": "Privacy Request Ids"
               }
             }
