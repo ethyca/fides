@@ -137,6 +137,7 @@ def _create_collection_from_manual_task(
         for dependency in manual_task.conditional_dependencies
         if dependency.condition_type == ConditionalDependencyType.leaf
         and dependency.field_address is not None
+        and not dependency.field_address.startswith("privacy_request.")
     }
 
     # Create scalar fields for data category fields and conditional dependency field addresses

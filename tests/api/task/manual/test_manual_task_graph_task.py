@@ -4,12 +4,19 @@ import pytest
 from pytest import param
 
 from fides.api.common_exceptions import AwaitingAsyncTask
+from fides.api.models.conditional_dependency.conditional_dependency_base import (
+    ConditionalDependencyType,
+)
 from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
 )
+from fides.api.models.manual_task.conditional_dependency import (
+    ManualTaskConditionalDependency,
+)
+from fides.api.models.policy import Rule
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.conditional_dependencies.schemas import (
@@ -725,6 +732,139 @@ class TestManualTaskConditionalDependencies:
         updated_instances = access_privacy_request.manual_task_instances
         assert len(updated_instances) == 1
         assert updated_instances[0].task_id == manual_task.id
+
+    @pytest.mark.parametrize(
+        "privacy_request_field_address,privacy_request_value,condition_met",
+        [
+            ("privacy_request.location", "New York", True),
+            ("privacy_request.location", "California", False),
+            ("privacy_request.policy.has_access_rule", True, True),
+            ("privacy_request.policy.has_access_rule", False, False),
+        ],
+    )
+    def test_manual_task_with_privacy_request_only_conditions(
+        self,
+        db,
+        build_graph_task,
+        access_privacy_request,
+        privacy_request_field_address,
+        privacy_request_value,
+        condition_met,
+    ):
+        """Test manual task instances with privacy request-only conditional dependencies"""
+        manual_task, graph_task = build_graph_task
+
+        # Create privacy request conditional dependency
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_type": ConditionalDependencyType.leaf,
+                "field_address": privacy_request_field_address,
+                "operator": "eq",
+                "value": privacy_request_value,
+                "sort_order": 1,
+            },
+        )
+
+        # Set up privacy request data based on field address
+        # When condition_met=False, set a different value than the condition expects
+        if privacy_request_field_address == "privacy_request.location":
+            if condition_met:
+                access_privacy_request.location = privacy_request_value
+            else:
+                # Set to a different value so condition fails
+                access_privacy_request.location = (
+                    "Texas" if privacy_request_value == "California" else "California"
+                )
+            access_privacy_request.save(db)
+
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
+
+        # Call _run_request with empty inputs (no task data, only privacy request data)
+        if condition_met:
+            # Should raise AwaitingAsyncTask since conditions are met but no submissions exist
+            with pytest.raises(AwaitingAsyncTask):
+                graph_task._run_request(
+                    ManualTaskConfigurationType.access_privacy_request,
+                    ActionType.access,
+                    [],  # Empty input data - only privacy request conditions
+                )
+        else:
+            # Should return None when conditions are not met
+            result = graph_task._run_request(
+                ManualTaskConfigurationType.access_privacy_request,
+                ActionType.access,
+                [],  # Empty input data - only privacy request conditions
+            )
+            assert result is None
+
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
+
+        # Verify instances were created only if conditions were met
+        updated_instances = access_privacy_request.manual_task_instances
+        if condition_met:
+            assert len(updated_instances) == 1
+            assert updated_instances[0].task_id == manual_task.id
+        else:
+            assert len(updated_instances) == 0
+
+    def test_manual_task_with_mixed_conditions_privacy_request_and_task_data(
+        self,
+        db,
+        build_graph_task,
+        access_privacy_request,
+        mock_conditional_functions,
+    ):
+        """Test manual task with both privacy request and task data conditions"""
+        manual_task, graph_task = build_graph_task
+        mock_extract, mock_evaluate = mock_conditional_functions
+
+        # Mock extraction to return both privacy request and task data
+        mock_extract.return_value = {
+            "privacy_request": {"policy": {"has_access_rule": True}},
+            "postgres_example": {"customer": {"email": "test@example.com"}},
+        }
+
+        # Mock evaluation to return success (both conditions met)
+        evaluation_result = ConditionEvaluationResult(
+            result=True,
+            message="Conditions met",
+            field_address="privacy_request.policy.has_access_rule",
+            operator="eq",
+            expected_value=True,
+            actual_value=True,
+        )
+        mock_evaluate.return_value = evaluation_result
+
+        # Verify no instances exist initially
+        initial_instances = access_privacy_request.manual_task_instances
+        assert len(initial_instances) == 0
+
+        # Call _run_request with task input data
+        with pytest.raises(AwaitingAsyncTask):
+            graph_task._run_request(
+                ManualTaskConfigurationType.access_privacy_request,
+                ActionType.access,
+                [{"email": "test@example.com"}],  # Task input data
+            )
+
+        # Refresh the privacy request to get updated instances
+        db.refresh(access_privacy_request)
+
+        # Verify that instances were created when both conditions are met
+        updated_instances = access_privacy_request.manual_task_instances
+        assert len(updated_instances) == 1
+        assert updated_instances[0].task_id == manual_task.id
+
+        # Verify that extract was called with privacy_request parameter
+        mock_extract.assert_called()
+        call_args = mock_extract.call_args
+        assert "privacy_request" in call_args.kwargs
+        assert call_args.kwargs["privacy_request"] == access_privacy_request
 
 
 class TestManualTaskGraphTaskHelperMethods:
