@@ -10,6 +10,7 @@ from fides.api.models.manual_task.conditional_dependency import (
 )
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
+from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 from fides.api.util.collection_util import Row
 
 
@@ -101,30 +102,6 @@ def parse_field_address(field_address: str) -> tuple[str, list[str]]:
         source_collection_key = str(field_address_obj.collection_address())
         field_path = list(field_address_obj.field_path.levels)
     return source_collection_key, field_path
-
-
-def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
-    """
-    Extract a nested field value by traversing the field path.
-
-    Args:
-        data: The data to extract from (usually a dict)
-        field_path: List of field names to traverse (e.g., ["profile", "preferences", "theme"])
-
-    Returns:
-        The value at the end of the field path, or None if not found
-    """
-    if not field_path:
-        return data
-
-    current = data
-    for field_name in field_path:
-        if isinstance(current, dict) and field_name in current:
-            current = current[field_name]
-        else:
-            return None
-
-    return current
 
 
 def set_nested_value(field_address: str, value: Any) -> dict[str, Any]:
