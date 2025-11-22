@@ -78,6 +78,49 @@ export const dummyDashboardData: DashboardData = {
       },
     ],
   },
+  dataClassification: {
+    systems: [
+      {
+        systemName: "Website Monitor",
+        categories: [
+          { name: "User.contact.email", value: 400, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.contact.phone", value: 350, fill: palette.FIDESUI_NECTAR },
+          { name: "User.demographic.age", value: 300, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.demographic.gender", value: 280, fill: palette.FIDESUI_TERRACOTTA },
+          { name: "User.location", value: 250, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.unique_id", value: 220, fill: palette.FIDESUI_NECTAR },
+          { name: "User.device.cookie_id", value: 200, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.browser", value: 180, fill: palette.FIDESUI_TERRACOTTA },
+        ],
+      },
+      {
+        systemName: "BigQuery Warehouse",
+        categories: [
+          { name: "User.contact.email", value: 450, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.contact.phone", value: 380, fill: palette.FIDESUI_NECTAR },
+          { name: "User.demographic.age", value: 320, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.demographic.gender", value: 290, fill: palette.FIDESUI_TERRACOTTA },
+          { name: "User.location", value: 270, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.unique_id", value: 240, fill: palette.FIDESUI_NECTAR },
+          { name: "User.device.cookie_id", value: 210, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.browser", value: 190, fill: palette.FIDESUI_TERRACOTTA },
+        ],
+      },
+      {
+        systemName: "Amazon S3",
+        categories: [
+          { name: "User.contact.email", value: 420, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.contact.phone", value: 360, fill: palette.FIDESUI_NECTAR },
+          { name: "User.demographic.age", value: 310, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.demographic.gender", value: 285, fill: palette.FIDESUI_TERRACOTTA },
+          { name: "User.location", value: 260, fill: palette.FIDESUI_SANDSTONE },
+          { name: "User.unique_id", value: 230, fill: palette.FIDESUI_NECTAR },
+          { name: "User.device.cookie_id", value: 205, fill: palette.FIDESUI_LIMESTONE },
+          { name: "User.browser", value: 185, fill: palette.FIDESUI_TERRACOTTA },
+        ],
+      },
+    ],
+  },
   helios: {
     discoveredFields: [
       { name: "Unlabeled", value: 450, color: palette.FIDESUI_NEUTRAL_400 },

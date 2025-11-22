@@ -78,9 +78,19 @@ export interface ConsentCategoriesData {
   timeRange: string;
 }
 
+export interface SystemDataClassificationData {
+  systemName: string;
+  categories: DataCategoryData[];
+}
+
+export interface DataClassificationData {
+  systems: SystemDataClassificationData[];
+}
+
 export interface DashboardData {
   summary: SummaryData;
   consentCategories: ConsentCategoriesData;
+  dataClassification: DataClassificationData;
   helios: HeliosData;
   janus: JanusData;
   lethe: LetheData;

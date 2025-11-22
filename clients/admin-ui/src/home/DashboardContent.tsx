@@ -3,6 +3,7 @@ import * as React from "react";
 
 import {
   ConsentCategoriesSection,
+  DataClassificationSection,
   HeliosSection,
   JanusSection,
   LetheSection,
@@ -11,7 +12,7 @@ import {
 
 /**
  * Main Dashboard Content Component
- * Displays insights across Summary, Consent Categories, Helios, Janus, and Lethe sections
+ * Displays insights across Summary, Consent Categories, Data Classification, Helios, Janus, and Lethe sections
  */
 const DashboardContent = () => (
   <Flex
@@ -23,9 +24,7 @@ const DashboardContent = () => (
   >
     <SummarySection />
     <ConsentCategoriesSection />
-    <HeliosSection />
-    <JanusSection />
-    <LetheSection />
+    <DataClassificationSection />
   </Flex>
 );
 
