@@ -1,6 +1,7 @@
 import { Flex } from "fidesui";
 import * as React from "react";
 
+import { DashboardBanner } from "./dashboard/components";
 import {
   ConsentCategoriesSection,
   DataClassificationSection,
@@ -22,6 +23,7 @@ const DashboardContent = () => (
     gap={10}
     data-testid="dashboard-content"
   >
+    <DashboardBanner />
     <SummarySection />
     <ConsentCategoriesSection />
     <DataClassificationSection />
