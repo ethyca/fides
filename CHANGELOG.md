@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
+- Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
 - Added Google Consent Mode v2 integration for FidesJS [#6982](https://github.com/ethyca/fides/pull/6982)
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)

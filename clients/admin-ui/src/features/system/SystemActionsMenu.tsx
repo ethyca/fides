@@ -46,6 +46,7 @@ const SystemActionsMenu = ({
     page: 1,
     size: 100,
     include_external: false,
+    exclude_approvers: true,
   });
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();
