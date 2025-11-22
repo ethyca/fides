@@ -13,19 +13,19 @@ const HomeContainer = () => {
   const showDashboardInsights = flags.alphaDashboardInsights;
 
   return (
-    <Layout title="Home" padded={false}>
-      <Flex direction="column" gap={10} pb={6}>
+  <Layout title="Home" padded={false}>
+    <Flex direction="column" gap={10} pb={6}>
         {showDashboardInsights ? (
           <DashboardContent />
         ) : (
           <>
-            <HomeBanner />
-            <HomeContent />
+      <HomeBanner />
+      <HomeContent />
           </>
         )}
-      </Flex>
-    </Layout>
-  );
+    </Flex>
+  </Layout>
+);
 };
 
 export default HomeContainer;

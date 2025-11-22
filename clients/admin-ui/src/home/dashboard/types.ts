@@ -42,7 +42,45 @@ export interface LetheData {
   pendingManualTasks: number;
 }
 
+export interface SummaryBreakdownItem {
+  label: string;
+  value: number;
+  color?: string;
+}
+
+export interface SummaryData {
+  privacyRequests: {
+    total: number;
+    totalLabel: string;
+    breakdown: SummaryBreakdownItem[];
+  };
+  systemDetection: {
+    total: number;
+    totalLabel: string;
+    breakdown: SummaryBreakdownItem[];
+  };
+  dataClassification: {
+    total: number;
+    totalLabel: string;
+    breakdown: SummaryBreakdownItem[];
+  };
+}
+
+export interface ConsentCategoryData {
+  category: string;
+  value: number;
+  change: number;
+  trendData: number[];
+}
+
+export interface ConsentCategoriesData {
+  categories: ConsentCategoryData[];
+  timeRange: string;
+}
+
 export interface DashboardData {
+  summary: SummaryData;
+  consentCategories: ConsentCategoriesData;
   helios: HeliosData;
   janus: JanusData;
   lethe: LetheData;

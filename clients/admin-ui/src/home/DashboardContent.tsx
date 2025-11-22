@@ -1,13 +1,17 @@
 import { Flex } from "fidesui";
 import * as React from "react";
 
-import { HeliosSection } from "./dashboard/sections/HeliosSection";
-import { JanusSection } from "./dashboard/sections/JanusSection";
-import { LetheSection } from "./dashboard/sections/LetheSection";
+import {
+  ConsentCategoriesSection,
+  HeliosSection,
+  JanusSection,
+  LetheSection,
+  SummarySection,
+} from "./dashboard/sections";
 
 /**
  * Main Dashboard Content Component
- * Displays insights across Helios, Janus, and Lethe sections
+ * Displays insights across Summary, Consent Categories, Helios, Janus, and Lethe sections
  */
 const DashboardContent = () => (
   <Flex
@@ -17,6 +21,8 @@ const DashboardContent = () => (
     gap={10}
     data-testid="dashboard-content"
   >
+    <SummarySection />
+    <ConsentCategoriesSection />
     <HeliosSection />
     <JanusSection />
     <LetheSection />

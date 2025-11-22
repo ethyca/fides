@@ -7,6 +7,77 @@ import type { DashboardData } from "../types";
  * TODO: Remove when real API integration is complete
  */
 export const dummyDashboardData: DashboardData = {
+  summary: {
+    privacyRequests: {
+      total: 480000,
+      totalLabel: "Due Soon",
+      breakdown: [
+        { label: "New", value: 120000, color: palette.FIDESUI_INFO },
+        { label: "In Progress", value: 120000, color: palette.FIDESUI_WARNING },
+        { label: "Pending Review", value: 120000, color: palette.FIDESUI_NEUTRAL_700 },
+        { label: "Errors", value: 120000, color: palette.FIDESUI_ERROR },
+      ],
+    },
+    systemDetection: {
+      total: 253,
+      totalLabel: "System Assets",
+      breakdown: [
+        { label: "Classified", value: 240, color: palette.FIDESUI_SUCCESS },
+        { label: "In Review", value: 50, color: palette.FIDESUI_WARNING },
+        { label: "Unknown", value: 13, color: palette.FIDESUI_NEUTRAL_400 },
+      ],
+    },
+    dataClassification: {
+      total: 3000,
+      totalLabel: "Data Assets",
+      breakdown: [
+        { label: "Data Classified", value: 1900, color: palette.FIDESUI_SUCCESS },
+        { label: "In Review", value: 1523, color: palette.FIDESUI_WARNING },
+        { label: "Personal Data", value: 1750, color: palette.FIDESUI_INFO },
+        { label: "Unlabeled", value: 1100, color: palette.FIDESUI_NEUTRAL_400 },
+      ],
+    },
+  },
+  consentCategories: {
+    timeRange: "30 days",
+    categories: [
+      {
+        category: "Marketing",
+        value: 15112893,
+        change: -112893,
+        // Declining trend with some variation
+        trendData: [15200000, 15180000, 15160000, 15140000, 15120000, 15112893],
+      },
+      {
+        category: "Data Sharing",
+        value: 15112893,
+        change: 112893,
+        // Increasing trend with variation (squiggly up)
+        trendData: [15000000, 15050000, 15020000, 15080000, 15040000, 15112893],
+      },
+      {
+        category: "Analytics",
+        value: 15112893,
+        change: -112893,
+        // Declining trend with more variation (squiggly down)
+        trendData: [15200000, 15150000, 15180000, 15130000, 15160000, 15112893],
+      },
+      {
+        category: "Consent Category",
+        value: 15112893,
+        change: 112893,
+        // Increasing trend with variation
+        trendData: [15000000, 15030000, 15010000, 15070000, 15050000, 15112893],
+      },
+      {
+        category: "Consent Category",
+        value: 15112893,
+        change: 112893,
+        // More squiggly increasing trend
+        trendData: [15000000, 15060000, 15020000, 15090000, 15040000, 15112893],
+      },
+    ],
+  },
   helios: {
     discoveredFields: [
       { name: "Unlabeled", value: 450, color: palette.FIDESUI_NEUTRAL_400 },
@@ -68,4 +139,3 @@ export const dummyDashboardData: DashboardData = {
     pendingManualTasks: 8,
   },
 };
-
