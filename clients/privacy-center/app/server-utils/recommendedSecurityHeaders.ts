@@ -20,6 +20,23 @@ export const staticPageCspHeader = (args: {
     upgrade-insecure-requests;
 `);
 
+export const embeddedConsentCspHeader = (args: {
+  fidesApiHost: string;
+  geolocationApiHost: string;
+}) =>
+  flattenHeader(`
+    default-src 'self';
+    script-src 'self' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
+    connect-src 'self' ${args.fidesApiHost} ${args.geolocationApiHost};
+    img-src 'self' blob: data:;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    upgrade-insecure-requests;
+`);
+
 export const privacyCenterPagesCspHeader = (args: {
   isDev: boolean;
   fidesApiHost: string;
@@ -59,13 +76,22 @@ export const recommendedSecurityHeaders = (
       headers: [["X-Frame-Options", "deny"]],
     },
     {
-      matcher:
-        /\/(embedded-consent\.html|fides-js-components.demo.html|fides-js-demo.html)|/,
+      matcher: /\/(fides-js-components.demo.html|fides-js-demo.html)|/,
       headers: [
         {
           name: CONTENT_SECURITY_POLICY_HEADER,
           value: () =>
             staticPageCspHeader({ fidesApiHost, geolocationApiHost }),
+        },
+      ],
+    },
+    {
+      matcher: /\/embedded-consent.html/,
+      headers: [
+        {
+          name: CONTENT_SECURITY_POLICY_HEADER,
+          value: () =>
+            embeddedConsentCspHeader({ fidesApiHost, geolocationApiHost }),
         },
       ],
     },
