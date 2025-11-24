@@ -17,5 +17,6 @@ const CustomizableMessagingTemplatesLabelEnum: Record<
   [CustomizableMessagingTemplatesEnum.SUBJECT_IDENTITY_VERIFICATION]:
     "Subject identity verification",
   [CustomizableMessagingTemplatesEnum.MANUAL_TASK_DIGEST]: "Manual task digest",
+  [CustomizableMessagingTemplatesEnum.EXTERNAL_USER_WELCOME]: "External user welcome",
 };
 export default CustomizableMessagingTemplatesLabelEnum;
