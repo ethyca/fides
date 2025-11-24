@@ -66,7 +66,6 @@ const PrivacyNoticeSandboxRealData = () => {
   // Build maps and extract data from privacy notices in a single traversal
   const { noticeKeyToHistoryMap, parentNoticeKeys } = useMemo(() => {
     const historyMap = new Map<string, string>();
-    const parentMap = new Map<string, string>();
     const parentKeys: Array<{ label: string; value: string }> = [];
 
     const traverse = (notices: PrivacyNoticeResponse[], parentKey?: string) => {
@@ -75,9 +74,7 @@ const PrivacyNoticeSandboxRealData = () => {
           notice.translations?.[0]?.privacy_notice_history_id || notice.id;
         historyMap.set(notice.notice_key, historyId);
 
-        if (parentKey) {
-          parentMap.set(notice.notice_key, parentKey);
-        } else {
+        if (!parentKey) {
           // Top-level notices are parents for the dropdown
           parentKeys.push({
             label: notice.name,
