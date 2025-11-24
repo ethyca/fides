@@ -72,7 +72,7 @@ export const recommendedSecurityHeaders = (
       ],
     },
     {
-      matcher: /\/?!embedded-consent\.html/,
+      matcher: /\/((?!embedded-consent\.html).*)/,
       headers: [["X-Frame-Options", "deny"]],
     },
     {
