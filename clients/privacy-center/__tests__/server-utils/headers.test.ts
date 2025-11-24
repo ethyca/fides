@@ -1,11 +1,22 @@
+import { NextResponse } from "next/server";
+
 import {
   applyRequestContext,
+  applyResponseHeaders,
   getApplicableHeaderRules,
   HeaderRule,
   MiddlewareResponseInit,
 } from "~/app/server-utils/headers";
 
+const contextFactory = jest.fn<MiddlewareResponseInit, []>(() => ({
+  request: { headers: new Headers() },
+}));
+
 describe("header utilities", () => {
+  afterEach(() => {
+    contextFactory.mockClear();
+  });
+
   describe(getApplicableHeaderRules, () => {
     it("returns the first matching header definition for a path", () => {
       const expectedHeaders: [string, string] = ["header-1", "value-1"];
@@ -50,12 +61,7 @@ describe("header utilities", () => {
 
   describe(applyRequestContext, () => {
     test("that the request context can be changed by the applier", () => {
-      const headers = new Headers();
-      const context: MiddlewareResponseInit = {
-        request: {
-          headers,
-        },
-      };
+      const context = contextFactory();
 
       applyRequestContext(
         [
@@ -66,18 +72,13 @@ describe("header utilities", () => {
         context,
       );
 
-      expect(headers.get("header-1")).toBe("value-1");
+      expect(context.request.headers.get("header-1")).toBe("value-1");
     });
 
     test("that a previous context variable can be retrieved", () => {
-      const headers = new Headers();
-      const context: MiddlewareResponseInit = {
-        request: {
-          headers,
-        },
-      };
+      const context = contextFactory();
 
-      headers.set("header-1", "value-1");
+      context.request.headers.set("header-1", "value-1");
 
       applyRequestContext(
         [
@@ -89,6 +90,30 @@ describe("header utilities", () => {
         ],
         context,
       );
+    });
+  });
+
+  describe(applyResponseHeaders, () => {
+    test("that simple response headers are applied", () => {
+      const context = contextFactory();
+      const response = NextResponse.next(context);
+
+      applyResponseHeaders(context, [["header-1", "value-1"]], response);
+
+      expect(response.headers.get("header-1")).toBe("value-1");
+    });
+
+    test("that dynamic response headers are applied", () => {
+      const context = contextFactory();
+      const response = NextResponse.next(context);
+
+      applyResponseHeaders(
+        context,
+        [{ name: "header-1", value: () => "value-1" }],
+        response,
+      );
+
+      expect(response.headers.get("header-1")).toBe("value-1");
     });
   });
 });
