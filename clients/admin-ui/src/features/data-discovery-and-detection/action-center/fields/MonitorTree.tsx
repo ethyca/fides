@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTitle as Title,
-  AntTree as Tree,
-  SparkleIcon,
-} from "fidesui";
+import { AntFlex as Flex, AntTitle as Title, AntTree as Tree } from "fidesui";
 import { useRouter } from "next/router";
 import {
   forwardRef,
@@ -205,22 +199,12 @@ export interface MonitorTreeRef {
 }
 
 interface MonitorTreeProps {
-  selectedNodeKeys: Key[];
   setSelectedNodeKeys: (keys: Key[]) => void;
-  onClickClassifyButton: () => void;
   nodeActions: Map<Key, TreeNodeAction>;
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
-  (
-    {
-      selectedNodeKeys,
-      setSelectedNodeKeys,
-      onClickClassifyButton,
-      nodeActions,
-    },
-    ref,
-  ) => {
+  ({ setSelectedNodeKeys, nodeActions }, ref) => {
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -599,16 +583,19 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             />
           )}
         />
-        {selectedNodeKeys.length > 0 && (
-          <Flex justify="space-between" align="center">
-            <Button
-              aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
-              icon={<SparkleIcon size={12} />}
-              size="small"
-              onClick={onClickClassifyButton}
-            />
-          </Flex>
-        )}
+        {
+          // Enable when multi select is supported
+          // {selectedNodeKeys.length > 0 && (
+          //   <Flex justify="space-between" align="center">
+          //     <Button
+          //       aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
+          //       icon={<SparkleIcon size={12} />}
+          //       size="small"
+          //       onClick={onClickClassifyButton}
+          //     />
+          //   </Flex>
+          // )}
+        }
       </Flex>
     );
   },
