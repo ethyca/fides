@@ -91,10 +91,10 @@ const useCreateOrUpdateCustomField = () => {
       const fieldPayload: CustomFieldDefinitionWithId = {
         ...rest,
         id: initialField.id,
-        allow_list_id: allowListResult
-          ? // @ts-ignore - we returned early if there was an error so "data" will always be present here
-            allowListResult.data.id
-          : initialField.allow_list_id,
+        allow_list_id:
+          allowListResult && !isErrorResult(allowListResult)
+            ? (allowListResult.data as AllowList).id
+            : initialField.allow_list_id,
         field_type:
           values.field_type === FieldTypes.SINGLE_SELECT
             ? AllowedTypes.STRING

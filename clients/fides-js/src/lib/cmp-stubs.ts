@@ -27,7 +27,7 @@ export const addFrame = (name: IabFrameName) => {
  * "__tcfapilLocator" frame on every level.
  */
 export const locateFrame = (name: IabFrameName) => {
-  let frameLocator = window;
+  let frameLocator: Window = window;
   let cmpFrame;
   while (frameLocator) {
     try {
@@ -44,7 +44,6 @@ export const locateFrame = (name: IabFrameName) => {
       break;
     }
     // Move up
-    // @ts-ignore
     frameLocator = frameLocator.parent;
   }
   return cmpFrame;

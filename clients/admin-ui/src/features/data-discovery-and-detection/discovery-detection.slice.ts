@@ -6,10 +6,12 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
+  MonitorFrequency,
   Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
+import { MonitorClassifyParams } from "~/types/api/models/MonitorClassifyParams";
 
 interface State {
   page?: number;
@@ -69,8 +71,8 @@ interface IdentityProviderMonitorConfig {
   connection_config_key: string;
   enabled: boolean;
   execution_start_date?: string;
-  execution_frequency?: string;
-  classify_params?: Record<string, unknown>;
+  execution_frequency?: MonitorFrequency;
+  classify_params?: MonitorClassifyParams;
 }
 
 interface IdentityProviderMonitorListQueryParams {
@@ -82,6 +84,7 @@ interface IdentityProviderMonitorResultsQueryParams {
   monitor_config_key: string;
   page?: number;
   size?: number;
+  search?: string;
 }
 
 interface IdentityProviderMonitorExecuteParams {
@@ -371,7 +374,6 @@ export const {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
   useApproveStagedResourcesMutation,
-  // Identity Provider Monitor hooks (Okta-specific)
   useCreateIdentityProviderMonitorMutation,
   useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,

@@ -18,7 +18,6 @@ import {
   AlertLevel,
   ConsentAlertInfo,
   DiffStatus,
-  StagedResourceTypeValue,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
@@ -34,7 +33,6 @@ import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
 import { useDiscoveredSystemAggregateColumns } from "./useDiscoveredSystemAggregateColumns";
-import { useOktaAppFilters } from "./useOktaAppFilters";
 
 interface UseDiscoveredSystemAggregateTableConfig {
   monitorId: string;
@@ -50,9 +48,6 @@ export const useDiscoveredSystemAggregateTable = ({
     ConsentAlertInfo | undefined
   >();
 
-  // Check if this is an Okta app monitor
-  const isOktaApp = monitorId.toLowerCase().includes("okta");
-
   const tableState = useTableState<DiscoveredSystemAggregateColumnKeys>({
     sorting: {
       validColumns: Object.values(DiscoveredSystemAggregateColumnKeys),
@@ -62,34 +57,16 @@ export const useDiscoveredSystemAggregateTable = ({
   const { pageIndex, pageSize, searchQuery, updateSearch, resetState } =
     tableState;
 
-  // Use appropriate tab management based on monitor type
-  const regularTabs = useActionCenterTabs();
-  const oktaTabs = useOktaAppFilters({
-    pageIndex,
-    pageSize,
-    searchQuery: searchQuery ?? "",
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs();
+
+  const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
+    key: monitorId,
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    ...activeParams,
   });
-
-  // Unify tab interface - use Okta tabs if Okta, otherwise regular tabs
-  const filterTabs = isOktaApp ? oktaTabs.filterTabs : regularTabs.filterTabs;
-  const activeTab: string = isOktaApp
-    ? oktaTabs.activeTab
-    : (regularTabs.activeTab ?? "");
-  const activeParams = isOktaApp ? {} : regularTabs.activeParams;
-  const actionsDisabled = isOktaApp ? false : regularTabs.actionsDisabled;
-
-  const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery(
-    {
-      key: monitorId,
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery,
-      ...activeParams,
-    },
-    {
-      skip: isOktaApp, // Skip API call when using mocks
-    },
-  );
 
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -107,26 +84,21 @@ export const useDiscoveredSystemAggregateTable = ({
 
   const rowClickUrl = useCallback(
     (record: SystemStagedResourcesAggregateRecord) => {
-      const monitorType = isOktaApp
-        ? MONITOR_TYPES.INFRASTRUCTURE
-        : MONITOR_TYPES.WEBSITE;
       const recordId = record.id ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
-      return `${ACTION_CENTER_ROUTE}/${monitorType}/${monitorId}/${recordId}${activeTabHash}`;
+      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
     },
-    [monitorId, activeTab, isOktaApp],
+    [monitorId, activeTab],
   );
 
   const antTableConfig = useMemo(
     () => ({
       enableSelection: true,
       getRowKey: getRecordKey,
-      isLoading: isOktaApp ? false : isLoading,
-      isFetching: isOktaApp ? false : isFetching,
-      dataSource: isOktaApp
-        ? oktaTabs.mockData?.items || []
-        : data?.items || [],
-      totalRows: isOktaApp ? oktaTabs.mockData?.total || 0 : data?.total || 0,
+      isLoading,
+      isFetching,
+      dataSource: data?.items || [],
+      totalRows: data?.total || 0,
       customTableProps: {
         locale: {
           emptyText: (
@@ -138,15 +110,7 @@ export const useDiscoveredSystemAggregateTable = ({
         },
       },
     }),
-    [
-      getRecordKey,
-      isLoading,
-      isFetching,
-      data?.items,
-      data?.total,
-      isOktaApp,
-      oktaTabs.mockData,
-    ],
+    [getRecordKey, isLoading, isFetching, data?.items, data?.total],
   );
 
   const antTable = useAntTable<
@@ -160,32 +124,26 @@ export const useDiscoveredSystemAggregateTable = ({
   const { selectedRows, resetSelections } = antTable;
 
   const handleTabChange = useCallback(
-    async (tab: string | ActionCenterTabHash) => {
+    async (tab: ActionCenterTabHash) => {
       setFirstPageConsentStatus(undefined);
-      if (isOktaApp) {
-        await oktaTabs.handleTabChange(tab as string);
-      } else {
-        await regularTabs.onTabChange(tab as ActionCenterTabHash);
-      }
+      await onTabChange(tab);
       resetState();
       resetSelections();
     },
-    [isOktaApp, oktaTabs, regularTabs, resetState, resetSelections],
+    [onTabChange, resetState, resetSelections],
   );
 
   const { columns } = useDiscoveredSystemAggregateColumns({
     monitorId,
     onTabChange: handleTabChange,
     readonly: actionsDisabled,
-    allowIgnore: isOktaApp
-      ? false
-      : !("diff_status" in activeParams) ||
-        !(activeParams as { diff_status: DiffStatus[] }).diff_status.includes(
-          DiffStatus.MUTED,
-        ),
+    allowIgnore:
+      !("diff_status" in activeParams) ||
+      !(activeParams as { diff_status: DiffStatus[] }).diff_status.includes(
+        DiffStatus.MUTED,
+      ),
     consentStatus: firstPageConsentStatus,
     rowClickUrl,
-    resourceType: isOktaApp ? StagedResourceTypeValue.OKTA_APP : undefined,
   });
 
   // Business logic effects
@@ -254,7 +212,7 @@ export const useDiscoveredSystemAggregateTable = ({
           SuccessToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
             async () => {
-              await regularTabs.onTabChange(ActionCenterTabHash.IGNORED);
+              await onTabChange(ActionCenterTabHash.IGNORED);
             },
           ),
         ),
@@ -266,7 +224,7 @@ export const useDiscoveredSystemAggregateTable = ({
     ignoreMonitorResultSystemsMutation,
     monitorId,
     toast,
-    regularTabs,
+    onTabChange,
     resetSelections,
   ]);
 
@@ -307,8 +265,5 @@ export const useDiscoveredSystemAggregateTable = ({
     anyBulkActionIsLoading,
     isAddingResults,
     isIgnoringResults,
-
-    // Okta-specific functionality
-    isOktaApp,
   };
 };
