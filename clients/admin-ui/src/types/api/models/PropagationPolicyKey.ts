@@ -7,7 +7,7 @@
  * Each policy key has its own PropagationPolicy implementation.
  */
 export enum PropagationPolicyKey {
-  DEFAULT = "default",
+  SYSTEM_ENFORCED = "system_enforced",
   CASCADE_DOWN = "cascade_down",
   CASCADE_UP = "cascade_up",
   CASCADE_UP_AND_DOWN = "cascade_up_and_down",
