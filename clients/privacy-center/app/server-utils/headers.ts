@@ -10,7 +10,7 @@ function isExactMatch(matcher: RegExp, pathname: string) {
     ((matchedContent ?? [])[0]?.length ?? 0) === pathname.length;
   return isIncludedPath;
 }
-type NodeEnv = typeof process.env.NODE_ENV;
+
 type SimpleHeader = [string, string];
 
 interface ContextController {
