@@ -114,7 +114,7 @@ describe("discovery and detection", () => {
       });
     });
 
-    describe.only("changes", () => {
+    describe("changes", () => {
       it("should show change icon", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-name",
