@@ -47,6 +47,7 @@ export type {
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  AutoComplete as AntAutoComplete,
   Avatar as AntAvatar,
   Badge as AntBadge,
   Breadcrumb as AntBreadcrumb,
