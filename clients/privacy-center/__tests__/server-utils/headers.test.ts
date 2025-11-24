@@ -1,6 +1,8 @@
 import {
+  applyRequestContext,
   getApplicableHeaderRules,
   HeaderRule,
+  MiddlewareResponseInit,
 } from "~/app/server-utils/headers";
 
 describe("header utilities", () => {
@@ -43,6 +45,50 @@ describe("header utilities", () => {
       const rules = getApplicableHeaderRules("/a-path", [header]);
       expect(rules.contextAppliers).toHaveLength(1);
       expect(rules.contextAppliers[0]).toBe(applier);
+    });
+  });
+
+  describe(applyRequestContext, () => {
+    test("that the request context can be changed by the applier", () => {
+      const headers = new Headers();
+      const context: MiddlewareResponseInit = {
+        request: {
+          headers,
+        },
+      };
+
+      applyRequestContext(
+        [
+          (controller) => {
+            controller.setContext("header-1", "value-1");
+          },
+        ],
+        context,
+      );
+
+      expect(headers.get("header-1")).toBe("value-1");
+    });
+
+    test("that a previous context variable can be retrieved", () => {
+      const headers = new Headers();
+      const context: MiddlewareResponseInit = {
+        request: {
+          headers,
+        },
+      };
+
+      headers.set("header-1", "value-1");
+
+      applyRequestContext(
+        [
+          (controller) => {
+            expect(controller.hasContext("header-1")).toBeTruthy();
+            expect(controller.hasContext("header-2")).toBeFalsy();
+            expect(controller.getContext("header-1")).toBe("value-1");
+          },
+        ],
+        context,
+      );
     });
   });
 });
