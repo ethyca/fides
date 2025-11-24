@@ -7,7 +7,6 @@ import {
 } from "~/features/common/nav/routes";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import {
-  AlertLevel,
   StagedResourceAPIResponse,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
@@ -92,22 +91,6 @@ export const useDiscoveredInfrastructureSystemsTable = ({
         (
           item: StagedResourceAPIResponse,
         ): SystemStagedResourcesAggregateRecord => {
-          let consentStatus = null;
-          if (item.consent_breakdown) {
-            let alertLevel: AlertLevel;
-            if (item.consent_aggregated === "with_consent") {
-              alertLevel = AlertLevel.SUCCESS;
-            } else if (item.consent_aggregated === "without_consent") {
-              alertLevel = AlertLevel.ERROR;
-            } else {
-              alertLevel = AlertLevel.WARNING;
-            }
-            consentStatus = {
-              status: alertLevel,
-              message: item.consent_breakdown.message ?? "",
-            };
-          }
-
           return {
             id: item.urn,
             name: item.name ?? null,
@@ -117,7 +100,9 @@ export const useDiscoveredInfrastructureSystemsTable = ({
             total_updates: 1, // Okta apps are individual items, not aggregates
             locations: item.locations ?? [],
             domains: item.domain ? [item.domain] : [],
-            consent_status: consentStatus,
+            // consent_status will be provided by the backend when ready
+            // For now, we leave it as null since we don't have the proper format
+            consent_status: null,
             metadata: item.metadata ?? null,
           };
         },
@@ -133,11 +118,11 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // For regular infrastructure, use standard tabs
   const filterTabs = isOktaApp
     ? [
-        {
-          label: "All Apps",
-          hash: "all",
-        },
-      ]
+      {
+        label: "All Apps",
+        hash: "all",
+      },
+    ]
     : regularTabs.filterTabs;
   const activeTab: string = isOktaApp ? "all" : (regularTabs.activeTab ?? "");
   const activeParams = isOktaApp ? {} : regularTabs.activeParams;
