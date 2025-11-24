@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 class PrivacyRequestConvenienceFields(Enum):
     """Convenience fields for privacy request."""
 
+    # Policy convenience fields
     rule_action_types = "privacy_request.policy.rule_action_types"
     has_access_rule = "privacy_request.policy.has_access_rule"
     has_erasure_rule = "privacy_request.policy.has_erasure_rule"
@@ -15,6 +16,10 @@ class PrivacyRequestConvenienceFields(Enum):
     rule_count = "privacy_request.policy.rule_count"
     rule_names = "privacy_request.policy.rule_names"
     has_storage_destination = "privacy_request.policy.has_storage_destination"
+    # Location hierarchy convenience fields
+    location_country = "privacy_request.location_country"
+    location_groups = "privacy_request.location_groups"
+    location_regulations = "privacy_request.location_regulations"
 
 
 class PrivacyRequestFields(Enum):

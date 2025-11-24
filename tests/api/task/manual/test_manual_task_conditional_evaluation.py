@@ -166,6 +166,7 @@ def group_conditional_dependency(
         privacy_request_group_conditional_dependency,
     ]
     db.commit()
+    print(dependency.model_dump(mode="json"))
     return dependency
 
 
@@ -692,3 +693,102 @@ class TestManualTaskDataExtraction:
                 db, manual_task, {"test": "data"}
             )
             assert result == mock_evaluation_result
+
+    @pytest.mark.parametrize(
+        "privacy_request_location,conditional_data,expected_result",
+        [
+            param(
+                "US-CA",
+                {"privacy_request": {"location_country": "us"}},
+                True,
+                id="location_country_us_california",
+            ),
+            param(
+                "US-CO",
+                {"privacy_request": {"location_country": "us"}},
+                True,
+                id="location_country_us_colorado",
+            ),
+            param(
+                "FR",
+                {"privacy_request": {"location_country": "us"}},
+                False,
+                id="location_country_france_not_us",
+            ),
+            param(
+                "FR",
+                {"privacy_request": {"location_groups": ["eea"]}},
+                True,
+                id="location_groups_france_in_eea",
+            ),
+            param(
+                "US-CA",
+                {"privacy_request": {"location_groups": ["eea"]}},
+                False,
+                id="location_groups_us_not_in_eea",
+            ),
+            param(
+                "FR",
+                {"privacy_request": {"location_regulations": ["gdpr"]}},
+                True,
+                id="location_regulations_france_has_gdpr",
+            ),
+            param(
+                "US-CA",
+                {"privacy_request": {"location_regulations": ["gdpr"]}},
+                False,
+                id="location_regulations_california_no_gdpr",
+            ),
+        ],
+    )
+    def test_extract_location_convenience_fields(
+        self,
+        manual_task_graph_task,
+        db,
+        manual_task,
+        privacy_request,
+        privacy_request_location,
+        conditional_data,
+        expected_result,
+    ):
+        """Test that location convenience fields are correctly extracted and match expected values."""
+        privacy_request.location = privacy_request_location
+        privacy_request.save(db)
+
+        with patch.object(
+            manual_task_graph_task, "execution_node", autospec=True
+        ) as mock_node:
+            mock_node.input_keys = []
+
+            result = extract_conditional_dependency_data_from_inputs(
+                manual_task=manual_task,
+                input_keys=mock_node.input_keys,
+                privacy_request=privacy_request,
+            )
+
+            # Verify the extracted location convenience fields match expected
+            for field_path, expected_value in conditional_data[
+                "privacy_request"
+            ].items():
+                if field_path in result.get("privacy_request", {}):
+                    actual_value = result["privacy_request"][field_path]
+                    if isinstance(expected_value, list):
+                        # For list fields, check if expected items are in actual
+                        if expected_result:
+                            assert all(
+                                item in actual_value for item in expected_value
+                            ), f"Expected {expected_value} to be in {actual_value}"
+                        else:
+                            assert not any(
+                                item in actual_value for item in expected_value
+                            ), f"Expected {expected_value} not to be in {actual_value}"
+                    else:
+                        # For scalar fields, check equality
+                        if expected_result:
+                            assert (
+                                actual_value == expected_value
+                            ), f"Expected {field_path}={expected_value}, got {actual_value}"
+                        else:
+                            assert (
+                                actual_value != expected_value
+                            ), f"Expected {field_path}!={expected_value}, but got {actual_value}"
