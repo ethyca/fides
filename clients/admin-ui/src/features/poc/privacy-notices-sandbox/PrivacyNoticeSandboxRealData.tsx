@@ -194,10 +194,6 @@ const PrivacyNoticeSandboxRealData = () => {
                 the selected region
               </li>
             </ul>
-            <Typography.Paragraph className="mb-0 mt-3">
-              If you don&apos;t want to make real API calls or set up a privacy
-              experience, go to the &quot;Simulated data&quot; tab.
-            </Typography.Paragraph>
           </>
         }
         showIcon
