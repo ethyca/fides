@@ -1,8 +1,9 @@
+# pylint: disable=too-many-lines
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -33,6 +34,7 @@ from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
@@ -82,6 +84,7 @@ class PrivacyRequestService:
 
     def _validate_privacy_request_for_bulk_operation(
         self,
+        privacy_request: Optional[PrivacyRequest],
         request_id: str,
     ) -> PrivacyRequest:
         """
@@ -90,7 +93,6 @@ class PrivacyRequestService:
 
         Returns the validated privacy request.
         """
-        privacy_request = self.get_privacy_request(request_id)
         if not privacy_request:
             raise PrivacyRequestError(
                 f"No privacy request found with id '{request_id}'",
@@ -103,8 +105,19 @@ class PrivacyRequestService:
                     mode="json"
                 ),
             )
-
         return privacy_request
+
+    def _fetch_privacy_requests_for_bulk_operation(
+        self, request_ids: List[str]
+    ) -> Dict[str, PrivacyRequest]:
+        """Fetch privacy requests in a single query to avoid N+1. Eager loads custom_fields."""
+        privacy_requests = (
+            PrivacyRequest.query_without_large_columns(self.db)
+            .options(selectinload(PrivacyRequest.custom_fields))  # type: ignore[attr-defined]
+            .filter(PrivacyRequest.id.in_(request_ids))
+            .all()
+        )
+        return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
         self, privacy_request_data: PrivacyRequestCreate
@@ -521,13 +534,26 @@ class PrivacyRequestService:
         reviewed_by: Optional[str] = None,
         suppress_notification: Optional[bool] = False,
     ) -> BulkReviewResponse:
+        """Approve privacy requests."""
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+            raise ValueError(
+                f"Bulk operations are limited to {BULK_PRIVACY_REQUEST_BATCH_SIZE} requests. "
+                f"Received {len(request_ids)}. Batch requests at the caller level."
+            )
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
+            privacy_request = privacy_requests_dict.get(request_id)
             try:
                 privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+                    privacy_request, request_id
                 )
             except PrivacyRequestError as exc:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
@@ -596,13 +622,26 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
+        """Deny privacy requests."""
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+            raise ValueError(
+                f"Bulk operations are limited to {BULK_PRIVACY_REQUEST_BATCH_SIZE} requests. "
+                f"Received {len(request_ids)}. Batch requests at the caller level."
+            )
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
+            privacy_request = privacy_requests_dict.get(request_id)
             try:
                 privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+                    privacy_request, request_id
                 )
             except PrivacyRequestError as exc:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
@@ -661,6 +700,12 @@ class PrivacyRequestService:
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
         """Cancel a list of privacy requests and/or report failure"""
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+            raise ValueError(
+                f"Bulk operations are limited to {BULK_PRIVACY_REQUEST_BATCH_SIZE} requests. "
+                f"Received {len(request_ids)}. Batch requests at the caller level."
+            )
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
@@ -672,10 +717,16 @@ class PrivacyRequestService:
             PrivacyRequestStatus.error,
         ]
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
+            privacy_request = privacy_requests_dict.get(request_id)
             try:
                 privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+                    privacy_request, request_id
                 )
             except PrivacyRequestError as exc:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
@@ -716,14 +767,26 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
-        """Bulk finalize privacy requests that are in requires_manual_finalization status"""
+        """Finalize privacy requests."""
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+            raise ValueError(
+                f"Bulk operations are limited to {BULK_PRIVACY_REQUEST_BATCH_SIZE} requests. "
+                f"Received {len(request_ids)}. Batch requests at the caller level."
+            )
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
+        # Fetch all privacy requests in one query to avoid N+1
+        privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+            request_ids
+        )
+
         for request_id in request_ids:
+            privacy_request = privacy_requests_dict.get(request_id)
             try:
                 privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
+                    privacy_request, request_id
                 )
             except PrivacyRequestError as exc:
                 failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
