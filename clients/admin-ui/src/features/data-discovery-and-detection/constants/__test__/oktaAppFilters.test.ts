@@ -1,10 +1,25 @@
-import { oktaStubClient } from "~/features/data-discovery-and-detection/action-center/utils/oktaStubClient";
 import { StagedResourceAPIResponse } from "~/types/api";
+import { ApplicationStatus } from "~/types/api/models/ApplicationStatus";
+import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
 
+// Mock data for testing filters
+const mockApps: (StagedResourceAPIResponse & {
+  diff_status?: string;
+})[] = [
+  {
+    urn: "urn:okta:app:12345678-1234-1234-1234-123456789012",
+    name: "Salesforce",
+    diff_status: DiffStatus.ADDITION,
+    metadata: {
+      status: ApplicationStatus.ACTIVE,
+    },
+    vendor_id: "fds.1234",
+  },
+];
+
 describe("Okta App Filters — predicates", () => {
-  const mockApps = oktaStubClient.getAllMockApps();
 
   const cases = [
     {
@@ -67,7 +82,6 @@ describe("Okta App Filters — tabs config", () => {
     "tab '%s' shows count %d",
     (value, expected) => {
       const tab = OKTA_APP_FILTER_TABS.find((t) => t.value === value);
-      const mockApps = oktaStubClient.getAllMockApps();
       expect(mockApps.filter((a) => tab!.filter(a as any)).length).toBe(
         expected,
       );
