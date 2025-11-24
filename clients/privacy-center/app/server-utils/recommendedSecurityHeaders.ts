@@ -76,7 +76,7 @@ export const recommendedSecurityHeaders = (
       headers: [["X-Frame-Options", "deny"]],
     },
     {
-      matcher: /\/(fides-js-components.demo.html|fides-js-demo.html)|/,
+      matcher: /\/(fides-js-components.demo.html|fides-js-demo.html)/,
       headers: [
         {
           name: CONTENT_SECURITY_POLICY_HEADER,
