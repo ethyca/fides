@@ -60,7 +60,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@iabtechlabtcf/core": "1.5.16",
+    "@iabtechlabtcf/core": "1.5.20",
     "@next/bundle-analyzer": "^12.0.10",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
