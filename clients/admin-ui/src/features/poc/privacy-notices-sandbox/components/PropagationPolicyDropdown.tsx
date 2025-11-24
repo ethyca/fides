@@ -17,7 +17,10 @@ const PropagationPolicyDropdown = ({
   onChange,
 }: PropagationPolicyDropdownProps) => {
   const options = [
-    { value: PropagationPolicyKeyEnum.DEFAULT, label: "Default" },
+    {
+      value: PropagationPolicyKeyEnum.SYSTEM_ENFORCED,
+      label: "System enforced",
+    },
     { value: PropagationPolicyKeyEnum.CASCADE_DOWN, label: "Cascade down" },
     { value: PropagationPolicyKeyEnum.CASCADE_UP, label: "Cascade up" },
     {
@@ -41,7 +44,7 @@ const PropagationPolicyDropdown = ({
           onChange(newValue === undefined ? null : newValue);
         }}
         style={{ width: 200 }}
-        placeholder="Default"
+        placeholder="System enforced"
         allowClear
         options={options}
         aria-labelledby="policy-select-label"
