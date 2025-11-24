@@ -100,7 +100,7 @@ const ExperienceConfigSection = ({
           </Typography.Text>
           <Flex gap="small" className="mb-4">
             <Input
-              placeholder="Property ID (e.g FDS-1234)"
+              placeholder="Property ID (e.g. FDS-1234)"
               value={propertyId}
               onChange={(e) => onPropertyIdChange(e.target.value)}
               className="w-64"
