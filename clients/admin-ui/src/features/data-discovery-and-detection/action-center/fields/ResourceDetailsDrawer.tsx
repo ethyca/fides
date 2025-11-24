@@ -120,9 +120,13 @@ export const ResourceDetailsDrawer = ({
                             : true
                         }
                         onChange={(values) =>
-                          fieldActions["assign-categories"]([resource.urn], {
-                            user_assigned_data_categories: values,
-                          })
+                          fieldActions["assign-categories"](
+                            [resource.urn],
+                            "Field",
+                            {
+                              user_assigned_data_categories: values,
+                            },
+                          )
                         }
                       />
                     </Form.Item>

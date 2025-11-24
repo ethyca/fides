@@ -45,6 +45,7 @@ import {
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
+  RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
@@ -137,6 +138,8 @@ const ActionCenterFields: NextPage = () => {
     allowedActionsTrigger,
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
+  const [allowedTreeActionsTrigger] = useLazyGetAllowedActionsQuery();
+
   const resource = stagedResourceDetailsResult.data;
   const bulkActions = useBulkActions(
     monitorId,
@@ -287,13 +290,31 @@ const ActionCenterFields: NextPage = () => {
         >
           <MonitorTree
             ref={monitorTreeRef}
-            selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={() => {
-              fieldActions.classify(
-                selectedNodeKeys.map((key) => key.toString()),
-              );
-            }}
+            nodeActions={
+              new Map(
+                RESOURCE_ACTIONS.map((action) => [
+                  action,
+                  {
+                    label: FIELD_ACTION_LABEL[action],
+                    disabled: async (node) => {
+                      const result = await allowedTreeActionsTrigger({
+                        path: baseMonitorFilters.path,
+                        query: {
+                          staged_resource_urn: [node.key.toString()],
+                        },
+                        body: {
+                          excluded_resource_urns: [],
+                        },
+                      });
+
+                      return !result.data?.allowed_actions.includes(action);
+                    },
+                    callback: (key) => fieldActions[action]([key]),
+                  },
+                ]),
+              )
+            }
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -372,6 +393,7 @@ const ActionCenterFields: NextPage = () => {
                               selectedListItems.map(({ itemKey }) =>
                                 itemKey.toString(),
                               ),
+                              "Field",
                             );
                           }
 
@@ -494,7 +516,7 @@ const ActionCenterFields: NextPage = () => {
                   onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], {
+                    fieldActions["assign-categories"]([urn], "Field", {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
@@ -511,7 +533,9 @@ const ActionCenterFields: NextPage = () => {
                           <Button
                             aria-label={FIELD_ACTION_LABEL[action]}
                             icon={FIELD_ACTION_ICON[action]}
-                            onClick={() => fieldActions[action]([props.urn])}
+                            onClick={() =>
+                              fieldActions[action]([props.urn], "Field")
+                            }
                             disabled={
                               props?.diff_status
                                 ? !ACTION_ALLOWED_STATUSES[action].some(
@@ -568,7 +592,7 @@ const ActionCenterFields: NextPage = () => {
           : DEFAULT_DRAWER_ACTIONS
         ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
-          callback: (value) => fieldActions[action]([value]),
+          callback: (key) => fieldActions[action]([key], "Field"),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
                 (status) => status === resource.diff_status,

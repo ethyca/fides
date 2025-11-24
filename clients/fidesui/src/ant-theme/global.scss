@@ -190,10 +190,18 @@ h6 {
 
 .ant-tree {
   .ant-tree-node-content-wrapper {
+    display: flex;
+    overflow: hidden;
     white-space: nowrap;
   }
+
   .ant-tree-treenode {
     --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
+  }
+
+  .ant-tree-title {
+    flex: 1;
+    overflow: hidden;
   }
 }
 
