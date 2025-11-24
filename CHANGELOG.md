@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
 
+### Added
+- Added convenience fields for creating Manual Task conditional dependencies on policies [#6995] (https://github.com/ethyca/fides/pull/6995)
+
 ### Changed
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
 - Set max width for Action center classification dropdown [#7015](https://github.com/ethyca/fides/pull/7015)
@@ -32,6 +35,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
+- Added disclosed vendors segment support to align with the TCF Technical Specifications 2.3 [#7006](https://github.com/ethyca/fides/pull/7006)
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
 - Added Google Consent Mode v2 integration for FidesJS [#6982](https://github.com/ethyca/fides/pull/6982)
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)
