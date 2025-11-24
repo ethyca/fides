@@ -45,6 +45,7 @@ import {
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
+  RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
@@ -60,6 +61,7 @@ import {
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { ALLOWED_RESOURCE_ACTIONS } from "./resource-actions.const";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
@@ -294,6 +296,21 @@ const ActionCenterFields: NextPage = () => {
                 selectedNodeKeys.map((key) => key.toString()),
               );
             }}
+            nodeActions={
+              new Map(
+                RESOURCE_ACTIONS.map((action) => [
+                  action,
+                  {
+                    label: FIELD_ACTION_LABEL[action],
+                    disabled: (node) =>
+                      !ALLOWED_RESOURCE_ACTIONS[action].some(
+                        (status) => status === node.status,
+                      ),
+                    callback: (key) => fieldActions[action]([key]),
+                  },
+                ]),
+              )
+            }
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}

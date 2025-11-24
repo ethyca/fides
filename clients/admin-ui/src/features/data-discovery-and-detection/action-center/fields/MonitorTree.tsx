@@ -42,7 +42,7 @@ import {
   removeChildrenFromNode,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -208,10 +208,19 @@ interface MonitorTreeProps {
   selectedNodeKeys: Key[];
   setSelectedNodeKeys: (keys: Key[]) => void;
   onClickClassifyButton: () => void;
+  nodeActions: Map<Key, TreeNodeAction>;
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
-  ({ selectedNodeKeys, setSelectedNodeKeys, onClickClassifyButton }, ref) => {
+  (
+    {
+      selectedNodeKeys,
+      setSelectedNodeKeys,
+      onClickClassifyButton,
+      nodeActions,
+    },
+    ref,
+  ) => {
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -586,12 +595,12 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               node={node}
               treeData={treeData}
               onLoadMore={onLoadMore}
+              actions={new Map([...nodeActions.entries()])}
             />
           )}
         />
         {selectedNodeKeys.length > 0 && (
           <Flex justify="space-between" align="center">
-            <span>{selectedNodeKeys.length} selected</span>
             <Button
               aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
               icon={<SparkleIcon size={12} />}
