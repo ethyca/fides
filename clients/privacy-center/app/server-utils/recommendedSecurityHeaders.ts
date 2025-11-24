@@ -68,7 +68,7 @@ export const recommendedSecurityHeaders = (
       headers: [
         ["X-Content-Type-Options", "nosniff"],
         ["Cache-Control", "no-cache, no-store, must-revalidate"],
-        ["Strict-Transport-Security", "max-age=3153600"],
+        ["Strict-Transport-Security", "max-age=31536000"],
       ],
     },
     {
