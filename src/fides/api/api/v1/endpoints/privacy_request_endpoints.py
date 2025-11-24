@@ -92,14 +92,15 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
-    CancelPrivacyRequests,
+    CancelPrivacyRequestSelection,
     CheckpointActionRequired,
-    DenyPrivacyRequests,
+    DenyPrivacyRequestSelection,
     ExecutionLogDetailResponse,
     FilteredPrivacyRequestResults,
     LogEntry,
     ManualWebhookData,
     PrivacyRequestAccessResults,
+    PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
@@ -109,7 +110,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
-    ReviewPrivacyRequestIds,
     VerificationCode,
 )
 from fides.api.service.deps import get_messaging_service, get_privacy_request_service
@@ -479,7 +479,7 @@ def execution_and_audit_logs_by_dataset_name(
 
 def _resolve_request_ids_from_filters(
     db: Session,
-    privacy_requests: "ReviewPrivacyRequestIds",
+    privacy_requests: "PrivacyRequestBulkSelection",
 ) -> List[str]:
     """
     Resolve privacy request IDs from either explicit request_ids or filters.
@@ -1565,7 +1565,7 @@ def approve_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """
     Approve and dispatch a list of privacy requests and/or report failure.
@@ -1602,7 +1602,7 @@ def deny_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: DenyPrivacyRequests,
+    privacy_requests: DenyPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """
     Deny a list of privacy requests and/or report failure.
@@ -1633,7 +1633,7 @@ def cancel_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: CancelPrivacyRequests,
+    privacy_requests: CancelPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """
     Cancel a list of privacy requests and/or report failure.
@@ -2163,7 +2163,7 @@ def bulk_finalize_privacy_requests(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """
     Bulk finalize privacy requests that are in requires_manual_finalization status.
@@ -2353,7 +2353,7 @@ def bulk_soft_delete_privacy_requests(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_DELETE],
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkSoftDeletePrivacyRequests:
     """
     Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime

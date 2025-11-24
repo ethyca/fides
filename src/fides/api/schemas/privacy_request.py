@@ -384,9 +384,9 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
 BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
 
 
-class ReviewPrivacyRequestIds(FidesSchema):
+class PrivacyRequestBulkSelection(FidesSchema):
     """
-    Pass in either a list of privacy request ids OR filters to select privacy requests.
+    Select privacy requests for bulk actions using either explicit IDs or filters.
 
     If request_ids is provided, it will be used directly.
     If filters is provided (without request_ids), filters will be used to select privacy requests,
@@ -406,14 +406,14 @@ class ReviewPrivacyRequestIds(FidesSchema):
     )
 
 
-class DenyPrivacyRequests(ReviewPrivacyRequestIds):
-    """Pass in a list of privacy request ids and rejection reason"""
+class DenyPrivacyRequestSelection(PrivacyRequestBulkSelection):
+    """Select privacy requests to deny with optional reason"""
 
     reason: Optional[SafeStr] = None
 
 
-class CancelPrivacyRequests(ReviewPrivacyRequestIds):
-    """Pass in a list of privacy request ids and cancellation reason"""
+class CancelPrivacyRequestSelection(PrivacyRequestBulkSelection):
+    """Select privacy requests to cancel with optional reason"""
 
     reason: Optional[SafeStr] = None
 
