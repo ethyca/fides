@@ -477,6 +477,82 @@ def execution_and_audit_logs_by_dataset_name(
     return all_logs
 
 
+def _resolve_request_ids_from_filters(
+    db: Session,
+    privacy_requests: "ReviewPrivacyRequestIds",
+) -> List[str]:
+    """
+    Resolve privacy request IDs from either explicit request_ids or filters.
+
+    If request_ids is provided, use it directly.
+    Otherwise, use filters to query for matching privacy requests and apply exclusions.
+
+    Returns:
+        List of privacy request IDs to act on
+
+    Raises:
+        HTTPException: If neither request_ids nor filters are provided, or if too many results
+    """
+    # If explicit request_ids are provided, use them directly
+    if privacy_requests.request_ids:
+        return privacy_requests.request_ids
+
+    # Otherwise, filters must be provided
+    if not privacy_requests.filters:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Either request_ids or filters must be provided.",
+        )
+
+    # Use filters to query for privacy requests
+    filters = privacy_requests.filters
+    query = PrivacyRequest.query_without_large_columns(db)
+    query = _filter_privacy_request_queryset(
+        db=db,
+        query=query,
+        request_id=filters.request_id,
+        fuzzy_search_str=filters.fuzzy_search_str,
+        identities=filters.identities,
+        custom_privacy_request_fields=filters.custom_privacy_request_fields,
+        status=filters.status,  # type: ignore
+        created_lt=filters.created_lt,
+        created_gt=filters.created_gt,
+        started_lt=filters.started_lt,
+        started_gt=filters.started_gt,
+        completed_lt=filters.completed_lt,
+        completed_gt=filters.completed_gt,
+        errored_lt=filters.errored_lt,
+        errored_gt=filters.errored_gt,
+        external_id=filters.external_id,
+        location=filters.location,
+        action_type=filters.action_type,
+        include_deleted_requests=filters.include_deleted_requests,
+    )
+
+    # Apply exclusions if provided
+    if privacy_requests.exclude_ids:
+        query = query.filter(~PrivacyRequest.id.in_(privacy_requests.exclude_ids))
+
+    # Limit to batch size for safety
+    request_ids = [
+        pr.id for pr in query.limit(BULK_PRIVACY_REQUEST_BATCH_SIZE + 1).all()
+    ]
+
+    if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Too many privacy requests match the provided filters. Maximum {BULK_PRIVACY_REQUEST_BATCH_SIZE} allowed per batch.",
+        )
+
+    if not request_ids:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="No privacy requests found matching the provided filters.",
+        )
+
+    return request_ids
+
+
 def _filter_privacy_request_queryset(
     db: Session,
     query: Query,
@@ -1481,6 +1557,7 @@ def verify_identification_code(
 )
 def approve_privacy_request(
     *,
+    db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1490,10 +1567,23 @@ def approve_privacy_request(
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkReviewResponse:
-    """Approve and dispatch a list of privacy requests and/or report failure"""
+    """
+    Approve and dispatch a list of privacy requests and/or report failure.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    Example with request_ids:
+        {"request_ids": ["pri_123", "pri_456"]}
+
+    Example with filters:
+        {"filters": {"status": ["pending"]}, "exclude_ids": ["pri_789"]}
+    """
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
     return privacy_request_service.approve_privacy_requests(
-        privacy_requests.request_ids, reviewed_by=client.user_id
+        request_ids, reviewed_by=client.user_id
     )
 
 
@@ -1504,6 +1594,7 @@ def approve_privacy_request(
 )
 def deny_privacy_request(
     *,
+    db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1513,10 +1604,17 @@ def deny_privacy_request(
     ),
     privacy_requests: DenyPrivacyRequests,
 ) -> BulkReviewResponse:
-    """Deny a list of privacy requests and/or report failure"""
+    """
+    Deny a list of privacy requests and/or report failure.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
+    """
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
     return privacy_request_service.deny_privacy_requests(
-        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
+        request_ids, privacy_requests.reason, user_id=client.user_id
     )
 
 
@@ -1527,6 +1625,7 @@ def deny_privacy_request(
 )
 def cancel_privacy_request(
     *,
+    db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -1536,10 +1635,17 @@ def cancel_privacy_request(
     ),
     privacy_requests: CancelPrivacyRequests,
 ) -> BulkReviewResponse:
-    """Cancel a list of privacy requests and/or report failure"""
+    """
+    Cancel a list of privacy requests and/or report failure.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
+    """
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
     return privacy_request_service.cancel_privacy_requests(
-        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
+        request_ids, privacy_requests.reason, user_id=client.user_id
     )
 
 
@@ -2049,6 +2155,7 @@ def resume_privacy_request_from_requires_input(
 )
 def bulk_finalize_privacy_requests(
     *,
+    db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
@@ -2062,9 +2169,15 @@ def bulk_finalize_privacy_requests(
     Bulk finalize privacy requests that are in requires_manual_finalization status.
     Each request will be moved from the 'requires_finalization' state to 'complete'.
     Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
     """
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+
     return privacy_request_service.finalize_privacy_requests(
-        privacy_requests.request_ids, user_id=client.user_id
+        request_ids, user_id=client.user_id
     )
 
 
@@ -2246,6 +2359,9 @@ def bulk_soft_delete_privacy_requests(
     Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
     and its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an
     object with the list of successfully deleted privacy requests and the list of failed deletions.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
     """
     succeeded: List[str] = []
     failed: List[Dict[str, Any]] = []
@@ -2254,7 +2370,8 @@ def bulk_soft_delete_privacy_requests(
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
 
-    request_ids = privacy_requests.request_ids
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {

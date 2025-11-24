@@ -4343,6 +4343,102 @@ class TestApprovePrivacyRequest:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+class TestFilteredBulkActions:
+    """Test bulk actions with filters and exclusions - reuses existing test logic"""
+
+    @pytest.fixture(scope="function")
+    def url_approve(self):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_approve_with_filters_and_exclusions(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url_approve,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_requests,
+    ):
+        """Test that filters and exclusions work correctly for bulk approve"""
+        # Set 3 to pending, 1 to complete
+        for pr in privacy_requests[:3]:
+            pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
+        privacy_requests[3].update(
+            db=db, data={"status": PrivacyRequestStatus.complete}
+        )
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        # Approve pending requests, but exclude one
+        body = {
+            "filters": {"status": ["pending"]},
+            "exclude_ids": [privacy_requests[1].id],
+        }
+        response = api_client.patch(url_approve, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+
+        # Should approve 2 of 3 pending requests (one excluded)
+        assert len(response_body["succeeded"]) == 2
+        succeeded_ids = [r["id"] for r in response_body["succeeded"]]
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id not in succeeded_ids  # Excluded
+        assert privacy_requests[2].id in succeeded_ids
+        assert privacy_requests[3].id not in succeeded_ids  # Wrong status
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_actions_prevent_n_plus_1_queries(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url_approve,
+        api_client,
+        generate_auth_header,
+        privacy_requests,
+    ):
+        """Verify filtered bulk operations don't introduce N+1 queries"""
+        from tests.conftest import QueryCounter
+
+        # Set 5 requests to pending
+        for pr in privacy_requests[:5]:
+            pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        with QueryCounter() as counter:
+            body = {"filters": {"status": ["pending"]}}
+            response = api_client.patch(url_approve, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        assert len(response.json()["succeeded"]) == 5
+
+        # Should use ~2 queries to resolve IDs + fetch requests, not N queries
+        assert counter.count < 600, f"Too many queries: {counter.count}"
+
+
 class TestMarkPrivacyRequestPreApproveEligible:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request_status_pending):

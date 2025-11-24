@@ -385,9 +385,25 @@ BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
 
 
 class ReviewPrivacyRequestIds(FidesSchema):
-    """Pass in a list of privacy request ids"""
+    """
+    Pass in either a list of privacy request ids OR filters to select privacy requests.
 
-    request_ids: List[str] = Field(..., max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    If request_ids is provided, it will be used directly.
+    If filters is provided (without request_ids), filters will be used to select privacy requests,
+    with optional exclusions via exclude_ids.
+    """
+
+    request_ids: Optional[List[str]] = Field(
+        None, max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE
+    )
+    filters: Optional["PrivacyRequestFilter"] = Field(
+        None,
+        description="Filters to select privacy requests (only used when request_ids is not provided)",
+    )
+    exclude_ids: Optional[List[str]] = Field(
+        None,
+        description="List of privacy request IDs to exclude from the action (only used with filters)",
+    )
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
