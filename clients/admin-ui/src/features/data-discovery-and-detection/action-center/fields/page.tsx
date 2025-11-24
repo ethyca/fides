@@ -35,6 +35,7 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
   ACTION_ALLOWED_STATUSES,
@@ -289,23 +290,22 @@ const ActionCenterFields: NextPage = () => {
         >
           <MonitorTree
             ref={monitorTreeRef}
-            selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={() => {
-              fieldActions.classify(
-                selectedNodeKeys.map((key) => key.toString()),
-              );
-            }}
             nodeActions={
               new Map(
                 RESOURCE_ACTIONS.map((action) => [
                   action,
                   {
                     label: FIELD_ACTION_LABEL[action],
-                    disabled: (node) =>
-                      !ALLOWED_RESOURCE_ACTIONS[action].some(
+                    disabled: (node) => {
+                      if (action === FieldActionType.CLASSIFY) {
+                        return !!node.classifyable;
+                      }
+
+                      return !ALLOWED_RESOURCE_ACTIONS[action].some(
                         (status) => status === node.status,
-                      ),
+                      );
+                    },
                     callback: (key) => fieldActions[action]([key]),
                   },
                 ]),
