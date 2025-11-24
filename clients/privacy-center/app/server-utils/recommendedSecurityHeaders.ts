@@ -1,10 +1,12 @@
 import { CONTENT_SECURITY_POLICY_HEADER, HeaderRule } from "./headers";
 
-const staticPageCspHeader = (args: {
+const flattenHeader = (header: string) => header.replace(/\s{2,}/g, " ").trim();
+
+export const staticPageCspHeader = (args: {
   fidesApiHost: string;
   geolocationApiHost: string;
 }) =>
-  `
+  flattenHeader(`
     default-src 'self';
     script-src 'self' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
@@ -16,17 +18,15 @@ const staticPageCspHeader = (args: {
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-`
-    .replace(/\s{2,}/g, " ")
-    .trim();
+`);
 
-const privacyCenterPagesCspHeader = (args: {
+export const privacyCenterPagesCspHeader = (args: {
   isDev: boolean;
   fidesApiHost: string;
   geolocationApiHost: string;
   nonce: string;
 }) =>
-  `
+  flattenHeader(`
     default-src 'self';
     script-src 'self' 'nonce-${args.nonce}' 'strict-dynamic' ${args.isDev ? "'unsafe-eval'" : ""};
     style-src 'self' ${args.isDev ? "'unsafe-inline'" : `'nonce-${args.nonce}'`};
@@ -38,9 +38,7 @@ const privacyCenterPagesCspHeader = (args: {
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-`
-    .replace(/\s{2,}/g, " ")
-    .trim();
+`);
 
 export const recommendedSecurityHeaders = (
   isDev: boolean,
