@@ -166,7 +166,6 @@ def group_conditional_dependency(
         privacy_request_group_conditional_dependency,
     ]
     db.commit()
-    print(dependency.model_dump(mode="json"))
     return dependency
 
 
