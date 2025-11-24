@@ -70,7 +70,6 @@ const EmailChipList = forwardRef(
           Email
         </FormLabel>
         <VStack align="flex-start" w="inherit">
-          {/* @ts-ignore */}
           <Input
             autoComplete="off"
             placeholder="Type or paste email addresses separated by commas and press `Enter` or `Tab`..."

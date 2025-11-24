@@ -427,7 +427,11 @@ def run_privacy_request(
             logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
     with self.get_new_session() as session:
-        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        privacy_request = (
+            PrivacyRequest.query_without_large_columns(session)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
+        )
         if not privacy_request:
             raise common_exceptions.PrivacyRequestNotFound(
                 f"Privacy request with id {privacy_request_id} not found"
@@ -952,7 +956,11 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
     SessionLocal = get_db_session(CONFIG)
     db = SessionLocal()
-    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
     if not privacy_request:
         logger.info(
             "Attempted to mark as expired. No privacy request with id '{}' found.",

@@ -3,7 +3,6 @@ import { narrow } from "narrow-minded";
 import dynamic from "next/dynamic";
 
 export const Editor = dynamic(
-  // @ts-ignore
   () => import("@monaco-editor/react").then((mod) => mod.default),
   { ssr: false },
 );

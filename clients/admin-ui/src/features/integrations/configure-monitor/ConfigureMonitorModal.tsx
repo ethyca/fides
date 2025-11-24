@@ -114,8 +114,7 @@ const ConfigureMonitorModal = ({
       >
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
-          // @ts-ignore - "secrets" is typed as "null"
-          url={integration.secrets!.url as string}
+          url={(integration.secrets as unknown as { url: string })?.url ?? ""}
           onClose={onClose}
           onSubmit={handleSubmit}
         />

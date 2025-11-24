@@ -21,7 +21,7 @@ import {
   Textarea,
   VStack,
 } from "fidesui";
-import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
+import { Field, FieldInputProps, Form, Formik } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -234,8 +234,7 @@ const ConnectorParametersForm = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
-      {/* @ts-ignore */}
-      {(props: FormikProps<Values>) => (
+      {(props) => (
         <Form noValidate>
           <VStack align="stretch" gap="16px">
             {/* Name */}
@@ -248,7 +247,7 @@ const ConnectorParametersForm = ({
                 <FormControl
                   display="flex"
                   isRequired
-                  isInvalid={props.errors.name && props.touched.name}
+                  isInvalid={!!(props.errors.name && props.touched.name)}
                 >
                   {getFormLabel("name", "Name")}
                   <VStack align="flex-start" w="inherit" mr="6">
@@ -263,7 +262,9 @@ const ConnectorParametersForm = ({
                       size="sm"
                       data-testid="input-name"
                     />
-                    <FormErrorMessage>{props.errors.name}</FormErrorMessage>
+                    <FormErrorMessage>
+                      {props.errors.name?.toString()}
+                    </FormErrorMessage>
                   </VStack>
                 </FormControl>
               )}
@@ -298,7 +299,7 @@ const ConnectorParametersForm = ({
                   display="flex"
                   isRequired
                   isInvalid={
-                    props.errors.instance_key && props.touched.instance_key
+                    !!(props.errors.instance_key && props.touched.instance_key)
                   }
                 >
                   {getFormLabel("instance_key", "Connection Identifier")}
@@ -314,7 +315,7 @@ const ConnectorParametersForm = ({
                       size="sm"
                     />
                     <FormErrorMessage>
-                      {props.errors.instance_key}
+                      {props.errors.instance_key?.toString()}
                     </FormErrorMessage>
                   </VStack>
                   <Flex alignItems="center" h={8} ml={2}>
