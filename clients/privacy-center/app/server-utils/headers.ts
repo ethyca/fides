@@ -88,6 +88,8 @@ export function applyResponseHeaders(
   headerDefinitions: HeaderDefinition[],
   response: NextResponse,
 ): void {
+  // Docs say that we shouldn't do this, but we have historically been doing
+  // it since at least the logging changes. Should we change this?
   const context = new Headers(middlewareResponseInitializer.request.headers);
   headerDefinitions.forEach((headerDefinition) => {
     if (Array.isArray(headerDefinition)) {
