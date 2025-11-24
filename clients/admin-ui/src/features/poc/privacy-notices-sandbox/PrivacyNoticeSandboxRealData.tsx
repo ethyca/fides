@@ -15,7 +15,7 @@ import {
 } from "~/features/common/v3-api.slice";
 import type { PrivacyNoticeResponse } from "~/types/api";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
-import type { OverrideMode } from "~/types/api/models/OverrideMode";
+import type { PropagationPolicyKey } from "~/types/api/models/PropagationPolicyKey";
 import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 
 import {
@@ -27,8 +27,9 @@ import { EXPERIENCE_DEFAULTS } from "./constants";
 
 const PrivacyNoticeSandboxRealData = () => {
   const [region, setRegion] = useState<string>(EXPERIENCE_DEFAULTS.REGION);
+  const [propertyId, setPropertyId] = useState<string>("");
   const [email, setEmail] = useState("");
-  const [overrideMode, setOverrideMode] = useState<OverrideMode | null>(null);
+  const [policy, setPolicy] = useState<PropagationPolicyKey | null>(null);
   const [checkedKeys, setCheckedKeys] = useState<Key[]>([]);
   const [fetchedCheckedKeys, setFetchedCheckedKeys] = useState<Key[]>([]);
   const [explicitlyChangedKeys, setExplicitlyChangedKeys] = useState<Key[]>([]);
@@ -63,44 +64,39 @@ const PrivacyNoticeSandboxRealData = () => {
   ] = useLazyGetCurrentPreferencesQuery();
 
   // Build maps and extract data from privacy notices in a single traversal
-  const { noticeKeyToHistoryMap, childToParentMap, parentNoticeKeys } =
-    useMemo(() => {
-      const historyMap = new Map<string, string>();
-      const parentMap = new Map<string, string>();
-      const parentKeys: Array<{ label: string; value: string }> = [];
+  const { noticeKeyToHistoryMap, parentNoticeKeys } = useMemo(() => {
+    const historyMap = new Map<string, string>();
+    const parentMap = new Map<string, string>();
+    const parentKeys: Array<{ label: string; value: string }> = [];
 
-      const traverse = (
-        notices: PrivacyNoticeResponse[],
-        parentKey?: string,
-      ) => {
-        notices.forEach((notice) => {
-          const historyId =
-            notice.translations?.[0]?.privacy_notice_history_id || notice.id;
-          historyMap.set(notice.notice_key, historyId);
+    const traverse = (notices: PrivacyNoticeResponse[], parentKey?: string) => {
+      notices.forEach((notice) => {
+        const historyId =
+          notice.translations?.[0]?.privacy_notice_history_id || notice.id;
+        historyMap.set(notice.notice_key, historyId);
 
-          if (parentKey) {
-            parentMap.set(notice.notice_key, parentKey);
-          } else {
-            // Top-level notices are parents for the dropdown
-            parentKeys.push({
-              label: notice.name,
-              value: notice.notice_key,
-            });
-          }
+        if (parentKey) {
+          parentMap.set(notice.notice_key, parentKey);
+        } else {
+          // Top-level notices are parents for the dropdown
+          parentKeys.push({
+            label: notice.name,
+            value: notice.notice_key,
+          });
+        }
 
-          if (notice.children?.length) {
-            traverse(notice.children, notice.notice_key);
-          }
-        });
-      };
+        if (notice.children?.length) {
+          traverse(notice.children, notice.notice_key);
+        }
+      });
+    };
 
-      traverse(privacyNotices);
-      return {
-        noticeKeyToHistoryMap: historyMap,
-        childToParentMap: parentMap,
-        parentNoticeKeys: parentKeys,
-      };
-    }, [privacyNotices]);
+    traverse(privacyNotices);
+    return {
+      noticeKeyToHistoryMap: historyMap,
+      parentNoticeKeys: parentKeys,
+    };
+  }, [privacyNotices]);
 
   // Handle fetching privacy experience
   const handleFetchExperience = useCallback(async () => {
@@ -113,6 +109,7 @@ const PrivacyNoticeSandboxRealData = () => {
       const result = await fetchExperience({
         region,
         show_disabled: EXPERIENCE_DEFAULTS.SHOW_DISABLED,
+        ...(propertyId && { property_id: propertyId }),
       }).unwrap();
 
       // Get the first experience from the paginated response
@@ -140,48 +137,7 @@ const PrivacyNoticeSandboxRealData = () => {
     } catch (error) {
       setExperienceErrorMessage("Failed to fetch privacy experience");
     }
-  }, [fetchExperience, region]);
-
-  // Helper to merge new preferences with existing checked keys
-  // Preserves child states when parent is opted out
-  const mergePreferencesWithExisting = useCallback(
-    (
-      newOptInKeys: string[],
-      response: ConsentPreferenceResponse[],
-    ): string[] => {
-      // No existing preferences, just return new ones
-      if (checkedKeys.length === 0) {
-        return newOptInKeys;
-      }
-
-      // Find parents that are opted out
-      const optedOutParents = new Set(
-        response
-          .filter((pref) => pref.value === UserConsentPreference.OPT_OUT)
-          .map((pref) => pref.notice_key),
-      );
-
-      // Start with new opt-in keys
-      const updatedKeys = [...newOptInKeys];
-
-      // Preserve child states when parent is opted out
-      checkedKeys.forEach((key) => {
-        const keyStr = key.toString();
-        const parentKey = childToParentMap.get(keyStr);
-
-        if (
-          parentKey &&
-          optedOutParents.has(parentKey) &&
-          !updatedKeys.includes(keyStr)
-        ) {
-          updatedKeys.push(keyStr);
-        }
-      });
-
-      return updatedKeys;
-    },
-    [checkedKeys, childToParentMap],
-  );
+  }, [fetchExperience, region, propertyId]);
 
   // Handle fetching current preferences
   const handleFetchCurrentPreferences = useCallback(async () => {
@@ -205,21 +161,14 @@ const PrivacyNoticeSandboxRealData = () => {
         .filter((pref) => pref.value === UserConsentPreference.OPT_IN)
         .map((pref) => pref.notice_key);
 
-      // Merge with existing preferences (preserves child states when parent is opted out)
-      const finalKeys = mergePreferencesWithExisting(optInKeys, response);
-      setCheckedKeys(finalKeys);
-      setFetchedCheckedKeys(finalKeys);
+      setCheckedKeys(optInKeys);
+      setFetchedCheckedKeys(optInKeys);
       // Clear explicitly changed keys when fetching new preferences
       setExplicitlyChangedKeys([]);
     } catch (error) {
       // Error handling is done by RTK Query (isError, error props)
     }
-  }, [
-    email,
-    selectedNoticeKeys,
-    getCurrentPreferences,
-    mergePreferencesWithExisting,
-  ]);
+  }, [email, selectedNoticeKeys, getCurrentPreferences]);
 
   return (
     <div className="mt-5 space-y-8">
@@ -258,6 +207,8 @@ const PrivacyNoticeSandboxRealData = () => {
       <ExperienceConfigSection
         region={region}
         onRegionChange={setRegion}
+        propertyId={propertyId}
+        onPropertyIdChange={setPropertyId}
         onFetchExperience={handleFetchExperience}
         isLoading={isLoadingExperience}
         errorMessage={experienceErrorMessage}
@@ -292,8 +243,8 @@ const PrivacyNoticeSandboxRealData = () => {
 
             {/* Row 2: Save Preferences Section */}
             <SavePreferencesSection
-              overrideMode={overrideMode}
-              onOverrideModeChange={setOverrideMode}
+              policy={policy}
+              onPolicyChange={setPolicy}
               privacyNotices={privacyNotices}
               preferenceState={{
                 checkedKeys,

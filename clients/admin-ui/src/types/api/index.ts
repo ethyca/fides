@@ -488,6 +488,7 @@ export type { PrivacyRequestTaskSchema } from "./models/PrivacyRequestTaskSchema
 export type { PrivacyRequestVerboseResponse } from "./models/PrivacyRequestVerboseResponse";
 export type { PrivacyRule } from "./models/PrivacyRule";
 export type { PromoteResourcesResponse } from "./models/PromoteResourcesResponse";
+export type { PropagationPolicyKey } from "./models/PropagationPolicyKey";
 export type { Property } from "./models/Property";
 export type { PropertyCreate } from "./models/PropertyCreate";
 export { PropertyType } from "./models/PropertyType";
