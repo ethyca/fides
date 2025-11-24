@@ -20,7 +20,6 @@ const mockApps: (StagedResourceAPIResponse & {
 ];
 
 describe("Okta App Filters — predicates", () => {
-
   const cases = [
     {
       label: "new",
