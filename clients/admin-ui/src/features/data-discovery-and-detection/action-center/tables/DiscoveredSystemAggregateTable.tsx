@@ -63,7 +63,7 @@ export const DiscoveredSystemAggregateTable = ({
         }))}
         selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
-          await handleTabChange(menuInfo.key as string | ActionCenterTabHash);
+          await handleTabChange(menuInfo.key as ActionCenterTabHash);
         }}
         className="mb-4"
         data-testid="asset-state-filter"
@@ -93,14 +93,14 @@ export const DiscoveredSystemAggregateTable = ({
                   disabled: uncategorizedIsSelected,
                 },
                 "diff_status" in activeParams &&
-                !(
-                  activeParams as { diff_status: DiffStatus[] }
-                ).diff_status.includes(DiffStatus.MUTED)
+                  !(
+                    activeParams as { diff_status: DiffStatus[] }
+                  ).diff_status.includes(DiffStatus.MUTED)
                   ? {
-                      key: "ignore",
-                      label: "Ignore",
-                      onClick: handleBulkIgnore,
-                    }
+                    key: "ignore",
+                    label: "Ignore",
+                    onClick: handleBulkIgnore,
+                  }
                   : null,
               ],
             }}
