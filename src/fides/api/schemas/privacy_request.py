@@ -379,10 +379,15 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     model_config = ConfigDict(populate_by_name=True)
 
 
+# Batch size for bulk privacy request operations. Used for request validation and
+# automatic batching to avoid memory issues with large request lists.
+BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
+
+
 class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
-    request_ids: List[str] = Field(..., max_length=50)
+    request_ids: List[str] = Field(..., max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
