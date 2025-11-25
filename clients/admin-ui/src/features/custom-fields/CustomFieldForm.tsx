@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -35,7 +36,6 @@ import {
 import {
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
-  ResourceTypes,
   ScopeRegistryEnum,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -53,8 +53,8 @@ export const SkeletonCustomFieldForm = () => {
 };
 
 const parseResourceType = (resourceType: string): string => {
-  if (RESOURCE_TYPE_MAP.has(resourceType as ResourceTypes)) {
-    return RESOURCE_TYPE_MAP.get(resourceType as ResourceTypes) as string;
+  if (RESOURCE_TYPE_MAP.has(resourceType as LegacyResourceTypes)) {
+    return RESOURCE_TYPE_MAP.get(resourceType as LegacyResourceTypes) as string;
   }
   if (
     resourceType.startsWith("taxonomy:") ||
