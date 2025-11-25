@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.1..main)
+
+### Added
+- Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
+
+## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
 ### Added
 - Added convenience fields for creating Manual Task conditional dependencies on policies [#6995](https://github.com/ethyca/fides/pull/6995)
@@ -31,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
 - Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
+- Updates to the privacy notice sandbox to match the new versions of the consent v3 APIs [#7023](https://github.com/ethyca/fides/pull/7023)
 
 
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
