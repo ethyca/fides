@@ -1,9 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`recommended security headers templates and flattens privacy center csp header 1`] = `"default-src 'self'; script-src 'self' 'nonce-random-nonce-string' 'strict-dynamic' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' fides.example.com geolocation.example.com; img-src 'self' blob: data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"`;
-
-exports[`recommended security headers templates and flattens privacy center csp header 2`] = `"default-src 'self'; script-src 'self' 'nonce-random-nonce-string' 'strict-dynamic' ; style-src 'self' 'nonce-random-nonce-string'; connect-src 'self' fides.example.com geolocation.example.com; img-src 'self' blob: data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"`;
-
 exports[`recommended security headers templates and flattens privacy center csp header when isDev is false 1`] = `"default-src 'self'; script-src 'self' 'nonce-random-nonce-string' 'strict-dynamic' ; style-src 'self' 'nonce-random-nonce-string'; connect-src 'self' fides.example.com geolocation.example.com; img-src 'self' blob: data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"`;
 
 exports[`recommended security headers templates and flattens privacy center csp header when isDev is true 1`] = `"default-src 'self'; script-src 'self' 'nonce-random-nonce-string' 'strict-dynamic' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' fides.example.com geolocation.example.com; img-src 'self' blob: data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"`;
