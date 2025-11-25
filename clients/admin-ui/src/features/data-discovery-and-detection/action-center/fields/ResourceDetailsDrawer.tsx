@@ -13,14 +13,15 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
+import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 
 import { DetailsDrawer } from "./DetailsDrawer";
 import { DetailsDrawerProps } from "./DetailsDrawer/types";
 import { ACTION_ALLOWED_STATUSES } from "./FieldActions.const";
 import { MonitorResource } from "./types";
 import { useFieldActions } from "./useFieldActions";
+import { mapConfidenceBucketToSeverity } from "./utils";
 
 interface ResourceDetailsDrawerProps extends DetailsDrawerProps {
   resource?: MonitorResource;
@@ -130,30 +131,39 @@ export const ResourceDetailsDrawer = ({
                     <List
                       data-testid="classifications-reasoning-list"
                       dataSource={filteredClassifications}
-                      renderItem={(item) => (
-                        <List.Item>
-                          <List.Item.Meta
-                            avatar={
-                              <Avatar
-                                /* Ant only provides style prop for altering the background color */
-                                style={{
-                                  backgroundColor: palette?.FIDESUI_BG_DEFAULT,
-                                }}
-                                icon={<SparkleIcon color="black" />}
-                              />
-                            }
-                            title={
-                              <Flex align="center" gap="middle">
-                                <div>{item.label}</div>
-                                <ClassifierProgress
-                                  percent={item.score * 100}
+                      renderItem={(item) => {
+                        const severity = item.confidence_bucket
+                          ? mapConfidenceBucketToSeverity(
+                              item.confidence_bucket,
+                            )
+                          : undefined;
+
+                        return (
+                          <List.Item>
+                            <List.Item.Meta
+                              avatar={
+                                <Avatar
+                                  /* Ant only provides style prop for altering the background color */
+                                  style={{
+                                    backgroundColor:
+                                      palette?.FIDESUI_BG_DEFAULT,
+                                  }}
+                                  icon={<SparkleIcon color="black" />}
                                 />
-                              </Flex>
-                            }
-                            description={item.rationale}
-                          />
-                        </List.Item>
-                      )}
+                              }
+                              title={
+                                <Flex align="center" gap="middle">
+                                  <div>{item.label}</div>
+                                  {severity && (
+                                    <SeverityGauge severity={severity} />
+                                  )}
+                                </Flex>
+                              }
+                              description={item.rationale}
+                            />
+                          </List.Item>
+                        );
+                      }}
                     />
                   )}
                 </Flex>

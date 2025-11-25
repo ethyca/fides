@@ -12,10 +12,10 @@ import {
   AntTooltip as Tooltip,
   SparkleIcon,
 } from "fidesui";
+import _ from "lodash";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
+import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import {
@@ -25,6 +25,7 @@ import {
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { getMaxSeverity, mapConfidenceBucketToSeverity } from "./utils";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -113,21 +114,23 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     }
   };
 
+  const confidenceBucketSeverity = _(
+    classifications?.flatMap(({ confidence_bucket }) => {
+      const severity = confidence_bucket
+        ? mapConfidenceBucketToSeverity(confidence_bucket)
+        : undefined;
+      return severity ? [severity] : [];
+    }),
+  )
+    .thru(getMaxSeverity)
+    .value();
+
   return (
     <List.Item
       key={urn}
       actions={[
-        classifications && classifications.length > 0 && (
-          <ClassifierProgress
-            percent={
-              classifications.find(
-                (classification) =>
-                  classification.confidence_score === ConfidenceScoreRange.HIGH,
-              )
-                ? 100
-                : 25
-            }
-          />
+        confidenceBucketSeverity && (
+          <SeverityGauge severity={confidenceBucketSeverity} />
         ),
         ...(actions ?? []),
       ]}
