@@ -12,6 +12,9 @@ from fides.api.task.conditional_dependencies.privacy_request.convenience_fields 
     get_location_convenience_fields,
     get_policy_convenience_fields,
 )
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestLocationConvenienceFields,
+)
 from fides.api.task.conditional_dependencies.util import (
     extract_nested_field_value,
     set_nested_value,
@@ -77,12 +80,10 @@ class PrivacyRequestDataTransformer:
 
         # Handle location convenience fields - these are derived fields, not direct attributes
         # Check if we're accessing a location convenience field before trying to extract from privacy_request
-        location_convenience_field_names = [
-            "location_country",
-            "location_groups",
-            "location_regulations",
-        ]
-        if len(parts) == 1 and parts[0] in location_convenience_field_names:
+
+        if len(parts) == 1 and parts[0] in [
+            e.value for e in PrivacyRequestLocationConvenienceFields
+        ]:
             return self.location_convenience_fields.get(parts[0])
 
         # Track the identity object if we're extracting from identity
