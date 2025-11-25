@@ -132,9 +132,11 @@ export const ResourceDetailsDrawer = ({
                               title={
                                 <Flex align="center" gap="middle">
                                   <div>{item.label}</div>
-                                  <ClassifierProgress
-                                    percent={item.score * 100}
-                                  />
+                                  {item.confidence_bucket && (
+                                    <ClassifierProgress
+                                      confidenceBucket={item.confidence_bucket}
+                                    />
+                                  )}
                                 </Flex>
                               }
                               description={item.rationale}
