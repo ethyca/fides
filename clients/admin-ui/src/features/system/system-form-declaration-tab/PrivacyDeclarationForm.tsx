@@ -13,6 +13,7 @@ import {
   CustomFieldValues,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -27,7 +28,6 @@ import {
   DataUse,
   PrivacyDeclarationResponse,
 } from "~/types/api";
-import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())

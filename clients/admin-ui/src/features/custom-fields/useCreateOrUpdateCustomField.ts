@@ -1,5 +1,6 @@
 import { isEqual } from "lodash";
 
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/features/common/helpers";
 import { FieldTypes } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
@@ -8,12 +9,8 @@ import {
   useUpdateCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
 } from "~/features/plus/plus.slice";
-import {
-  AllowList,
-  CustomFieldDefinitionWithId,
-} from "~/types/api";
+import { AllowList, CustomFieldDefinitionWithId } from "~/types/api";
 import { RTKResult } from "~/types/errors";
-import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 
 const generateNewAllowListName = () =>
   Date.now().toString() + Math.random().toString();

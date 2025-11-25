@@ -2,6 +2,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useToast } from "fidesui";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
@@ -13,7 +14,6 @@ import {
   PrivacyDeclarationResponse,
   SystemResponse,
 } from "~/types/api";
-import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/types/errors";
 
 interface HandleResultParams {

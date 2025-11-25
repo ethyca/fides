@@ -7,9 +7,9 @@ import {
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
-import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 
 interface TaxonomyCustomFieldsFormProps {
   customFields: ReturnType<typeof useCustomFields>;

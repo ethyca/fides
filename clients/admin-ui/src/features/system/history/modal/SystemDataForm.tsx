@@ -2,9 +2,9 @@ import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import React, { Fragment } from "react";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { PrivacyDeclaration } from "~/types/api";
-import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";

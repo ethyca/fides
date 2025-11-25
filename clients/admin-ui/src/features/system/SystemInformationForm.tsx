@@ -17,6 +17,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
@@ -62,7 +63,6 @@ import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slic
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { SystemResponse } from "~/types/api";
-import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";

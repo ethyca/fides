@@ -1,9 +1,9 @@
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import {
   FIELD_TYPE_LABEL_MAP,
   FieldTypes,
 } from "~/features/custom-fields/constants";
 import { CustomFieldDefinitionWithId } from "~/types/api";
-import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 
 export const getCustomFieldType = (
   value: CustomFieldDefinitionWithId,
