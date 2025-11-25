@@ -220,7 +220,15 @@ class DuplicateDetectionService:
         """
         request.update(self.db, data={"status": PrivacyRequestStatus.duplicate})
         logger.debug(message)
-        self.add_error_execution_log(request, message)
+        request.add_skipped_execution_log(
+            self.db,
+            connection_key=None,
+            dataset_name="Duplicate Request Detection",
+            collection_name=None,
+            message=message,
+            action_type=(request.policy.get_action_type() if request.policy else None)
+            or ActionType.access,
+        )
 
     def add_error_execution_log(self, request: PrivacyRequest, message: str) -> None:
         request.add_error_execution_log(
