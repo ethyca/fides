@@ -11,7 +11,7 @@ import loadEnvironmentVariables from "./app/server-utils/loadEnvironmentVariable
 import { createLogger } from "./app/server-utils/logger";
 import { PrivacyCenterSettings } from "./app/server-utils/PrivacyCenterSettings";
 import { recommendedSecurityHeaders } from "./app/server-utils/recommendedSecurityHeaders";
-import { safelyGetHost } from "./app/server-utils/safelyGetUrl";
+import { safelyGetHost } from "./app/server-utils/safelyGetHost";
 
 let cachedSettings: boolean = false;
 let settings: PrivacyCenterSettings;
