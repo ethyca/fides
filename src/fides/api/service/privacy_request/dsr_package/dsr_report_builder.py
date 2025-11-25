@@ -415,7 +415,6 @@ class DSRReportBuilder:
             ),
         )
 
-
     def _get_all_attachments_for_clickme(self) -> dict[str, dict[str, str]]:
         """
         Collects all attachments from all datasets and top-level attachments,
