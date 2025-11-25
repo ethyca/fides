@@ -7,11 +7,12 @@ import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalRe
 import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
-import type { OverrideMode } from "~/types/api/models/OverrideMode";
+import type { PropagationPolicyKey } from "~/types/api/models/PropagationPolicyKey";
 
 export interface PrivacyExperienceQueryParams {
   region: string;
   show_disabled: boolean;
+  property_id?: string;
 }
 
 export interface CurrentPreferencesQueryParams {
@@ -58,13 +59,13 @@ export const privacyNoticesSandboxV3Api = v3Api.injectEndpoints({
   endpoints: (build) => ({
     savePrivacyPreferences: build.mutation<
       ConsentResponse,
-      { body: ConsentCreate; override_mode?: OverrideMode | null }
+      { body: ConsentCreate; policy?: PropagationPolicyKey | null }
     >({
-      query: ({ body, override_mode }) => ({
+      query: ({ body, policy }) => ({
         url: "privacy-preferences",
         method: "POST",
         body,
-        params: override_mode ? { override_mode } : undefined,
+        params: policy ? { policy } : undefined,
       }),
     }),
     getCurrentPreferences: build.query<
