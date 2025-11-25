@@ -5,10 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
-import {
-  CustomFieldDefinition,
-  ReportType,
-} from "~/types/api";
+import { CustomFieldDefinition, ReportType } from "~/types/api";
 import {
   LegacyAllowedTypes,
   LegacyResourceTypes,
