@@ -53,8 +53,6 @@ export const useMonitorConfigTable = ({
 
   const { pageIndex, pageSize } = tableState;
 
-  console.log("integration", integration);
-
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
 
   // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
@@ -73,6 +71,7 @@ export const useMonitorConfigTable = ({
     {
       page: pageIndex,
       size: pageSize,
+      connection_config_key: integration.key,
     },
     {
       skip: !isOktaIntegration,
@@ -96,8 +95,6 @@ export const useMonitorConfigTable = ({
     }),
     [isLoading, isFetching, response?.items, response?.total],
   );
-
-  console.log("response monitors table", response);
 
   const antTable = useAntTable<MonitorConfig, MonitorConfigColumnKeys>(
     tableState,

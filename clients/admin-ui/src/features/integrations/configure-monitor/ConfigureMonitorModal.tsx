@@ -9,6 +9,7 @@ import {
   useCreateIdentityProviderMonitorMutation,
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
+  usePutIdentityProviderMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
@@ -57,12 +58,20 @@ const ConfigureMonitorModal = ({
 
   const [
     createIdentityProviderMonitorTrigger,
-    { isLoading: isSubmittingOkta },
+    { isLoading: isSubmittingOktaCreate },
   ] = useCreateIdentityProviderMonitorMutation();
 
-  const isSubmitting = isOktaIntegration
-    ? isSubmittingOkta
-    : isSubmittingRegular;
+  const [
+    putIdentityProviderMonitorTrigger,
+    { isLoading: isSubmittingOktaUpdate },
+  ] = usePutIdentityProviderMonitorMutation();
+
+  let isSubmitting: boolean;
+  if (isOktaIntegration) {
+    isSubmitting = isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate;
+  } else {
+    isSubmitting = isSubmittingRegular;
+  }
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -102,7 +111,12 @@ const ConfigureMonitorModal = ({
         execution_frequency: values.execution_frequency ?? undefined,
         classify_params: values.classify_params ?? {},
       };
-      result = await createIdentityProviderMonitorTrigger(oktaPayload);
+      // Use PUT for editing, POST for creating
+      if (isEditing) {
+        result = await putIdentityProviderMonitorTrigger(oktaPayload);
+      } else {
+        result = await createIdentityProviderMonitorTrigger(oktaPayload);
+      }
     } else {
       result = await putMonitorMutationTrigger(values);
     }
