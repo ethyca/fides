@@ -17,6 +17,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
@@ -61,7 +62,7 @@ import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
-import { ResourceTypes, SystemResponse } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
@@ -102,7 +103,7 @@ const SystemInformationForm = ({
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
+    resourceType: LegacyResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
   });
 
@@ -633,7 +634,7 @@ const SystemInformationForm = ({
                   </SystemFormInputGroup>
                   {values.fides_key ? (
                     <CustomFieldsList
-                      resourceType={ResourceTypes.SYSTEM}
+                      resourceType={LegacyResourceTypes.SYSTEM}
                       resourceFidesKey={values.fides_key}
                     />
                   ) : null}
