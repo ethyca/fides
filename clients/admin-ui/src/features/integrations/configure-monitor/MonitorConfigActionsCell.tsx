@@ -11,6 +11,7 @@ import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
   useDeleteDiscoveryMonitorMutation,
   useExecuteDiscoveryMonitorMutation,
+  useExecuteIdentityProviderMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
 const WEBSITE_SCAN_SUCCESS_MESSAGE =
@@ -19,10 +20,12 @@ const WEBSITE_SCAN_SUCCESS_MESSAGE =
 const MonitorConfigActionsCell = ({
   monitorId,
   isWebsiteMonitor,
+  isOktaMonitor,
   onEditClick,
 }: {
   monitorId?: string | null;
   isWebsiteMonitor?: boolean;
+  isOktaMonitor?: boolean;
   onEditClick: () => void;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -33,8 +36,17 @@ const MonitorConfigActionsCell = ({
     defaultSuccessMsg: "Monitor deleted successfully",
   });
 
-  const [executeMonitor, { isLoading: executeIsLoading }] =
+  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+  const [executeRegularMonitor, { isLoading: executeRegularIsLoading }] =
     useExecuteDiscoveryMonitorMutation();
+
+  const [executeOktaMonitor, { isLoading: executeOktaIsLoading }] =
+    useExecuteIdentityProviderMonitorMutation();
+
+  const executeIsLoading = isOktaMonitor
+    ? executeOktaIsLoading
+    : executeRegularIsLoading;
+
   const { toastResult: toastExecuteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred initiating monitor execution",
     defaultSuccessMsg: isWebsiteMonitor
@@ -54,10 +66,18 @@ const MonitorConfigActionsCell = ({
   };
 
   const handleExecute = async () => {
-    const result = await executeMonitor({
-      monitor_config_id: monitorId,
-    });
-    toastExecuteResult(result);
+    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+    if (isOktaMonitor) {
+      const result = await executeOktaMonitor({
+        monitor_config_key: monitorId,
+      });
+      toastExecuteResult(result);
+    } else {
+      const result = await executeRegularMonitor({
+        monitor_config_id: monitorId,
+      });
+      toastExecuteResult(result);
+    }
   };
 
   return (
