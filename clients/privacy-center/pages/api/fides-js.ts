@@ -29,10 +29,10 @@ import { safeLookupPropertyId } from "~/common/property-id";
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
 // File paths for static fides-js bundles
-const FIDES_JS_PATH = "public/lib/fides.js";
-const FIDES_TCF_JS_PATH = "public/lib/fides-tcf.js";
-const FIDES_HEADLESS_JS_PATH = "public/lib/fides-headless.js";
-const FIDES_GPP_JS_PATH = "public/lib/fides-ext-gpp.js";
+const FIDES_JS_PATH = "/public/lib/fides.js";
+const FIDES_TCF_JS_PATH = "/public/lib/fides-tcf.js";
+const FIDES_HEADLESS_JS_PATH = "/public/lib/fides-headless.js";
+const FIDES_GPP_JS_PATH = "/public/lib/fides-ext-gpp.js";
 
 // a cache of the custom stylesheet retrieved from the /custom-asset endpoint
 let cachedCustomFidesCss: string = "";
@@ -85,10 +85,10 @@ async function loadStaticBundles(): Promise<void> {
       fidesHeadlessJsBuffer,
       fidesGppJsBuffer,
     ] = await Promise.all([
-      fsPromises.readFile(FIDES_JS_PATH),
-      fsPromises.readFile(FIDES_TCF_JS_PATH),
-      fsPromises.readFile(FIDES_HEADLESS_JS_PATH),
-      fsPromises.readFile(FIDES_GPP_JS_PATH),
+      fsPromises.readFile(process.cwd() + FIDES_JS_PATH),
+      fsPromises.readFile(process.cwd() + FIDES_TCF_JS_PATH),
+      fsPromises.readFile(process.cwd() + FIDES_HEADLESS_JS_PATH),
+      fsPromises.readFile(process.cwd() + FIDES_GPP_JS_PATH),
     ]);
 
     cachedFidesJs = fidesJsBuffer.toString();
