@@ -14,7 +14,7 @@ describe("recommended security headers", () => {
   });
 
   it.each([true, false])(
-    "templates and flattens privacy center csp header when isDev is %s,"
+    "templates and flattens privacy center csp header when isDev is %s",
     (isDev) => {
       expect(
         privacyCenterPagesCspHeader({

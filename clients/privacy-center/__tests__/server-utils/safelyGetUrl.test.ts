@@ -1,4 +1,4 @@
-import { safelyGetHost } from "~/app/server-utils/safelyGetUrl";
+import { safelyGetHost } from "~/app/server-utils/safelyGetHost";
 
 describe(safelyGetHost, () => {
   it("returns a string when a malformed URL is provided", () => {
