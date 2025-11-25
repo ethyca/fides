@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from fides.api.models.location_regulation_selections import locations_by_id
+from fides.api.models.location_regulation_selections import get_location_by_id
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.privacy_request.schemas import (
@@ -129,10 +129,7 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
     if not location:
         return extra_fields
 
-    # Normalize location to match locations.yml format (lowercase with underscores)
-    # ISO 3166: "US-CA" -> locations.yml: "us_ca"
-    location_normalized = location.lower().replace("-", "_")
-    location_data = locations_by_id.get(location_normalized)
+    location_data = get_location_by_id(location)
 
     if not location_data:
         return extra_fields
