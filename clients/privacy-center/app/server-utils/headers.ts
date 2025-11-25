@@ -34,6 +34,7 @@ export interface HeaderRule {
   headers: HeaderDefinition[];
 }
 
+export const X_NONCE_HEADER = "x-nonce";
 export const CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
 
 export function getApplicableHeaderRules(
