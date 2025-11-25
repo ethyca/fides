@@ -118,11 +118,11 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // For regular infrastructure, use standard tabs
   const filterTabs = isOktaApp
     ? [
-      {
-        label: "All apps",
-        hash: "all",
-      },
-    ]
+        {
+          label: "All apps",
+          hash: "all",
+        },
+      ]
     : regularTabs.filterTabs;
   const activeTab: string = isOktaApp ? "all" : (regularTabs.activeTab ?? "");
   const activeParams = isOktaApp ? {} : regularTabs.activeParams;
