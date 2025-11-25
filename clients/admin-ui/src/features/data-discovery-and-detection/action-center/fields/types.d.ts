@@ -48,7 +48,7 @@ export interface MonitorFieldParameters {
 
 export type TreeNodeAction = {
   label: string;
-  callback: (key: Key) => void;
   /** TODO: should be generically typed * */
+  callback: (key: Key, node: CustomTreeDataNode) => void;
   disabled?: (node: CustomTreeDataNode) => boolean;
 };

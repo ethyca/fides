@@ -94,7 +94,8 @@ export const MonitorTreeDataTitle = ({
     : null;
 
   return (
-    <Flex gap={4} align="center">
+    /** TODO: migrate group class to semantic dom after upgrading ant */
+    <Flex gap={4} align="center" className="group">
       {statusInfo && (
         <Tooltip title={statusInfo.tooltip}>
           <Icons.CircleSolid
@@ -121,13 +122,16 @@ export const MonitorTreeDataTitle = ({
                 )
               : [],
             onClick: ({ key }) => {
-              actions.get(key)?.callback(node.key);
+              actions.get(key)?.callback(node.key, node);
             },
           }}
+          className="group"
         >
           <Button
             aria-label="Show More Resource Actions"
-            icon={<Icons.OverflowMenuVertical />}
+            icon={
+              <Icons.OverflowMenuVertical className=" opacity-0 group-hover:opacity-100 group-[.ant-dropdown-open]:opacity-100" />
+            }
             type="text"
             size="small"
             className="self-end"
