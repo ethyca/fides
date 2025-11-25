@@ -130,7 +130,6 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
         return extra_fields
 
     location_data = get_location_by_id(location)
-
     if not location_data:
         return extra_fields
 
