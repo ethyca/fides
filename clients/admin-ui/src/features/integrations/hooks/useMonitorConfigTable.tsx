@@ -163,8 +163,8 @@ export const useMonitorConfigTable = ({
       render: (_: unknown, record: MonitorConfig) => {
         const locations =
           record.datasource_params &&
-            "locations" in record.datasource_params &&
-            Array.isArray(record.datasource_params.locations)
+          "locations" in record.datasource_params &&
+          Array.isArray(record.datasource_params.locations)
             ? record.datasource_params.locations
             : [];
 
@@ -193,7 +193,7 @@ export const useMonitorConfigTable = ({
             const regionRecord =
               regionCode &&
               PRIVACY_NOTICE_REGION_RECORD[
-              regionCode[1]
+                regionCode[1]
               ]; /* regionCode[1] refers to enum value that is the key for the region records enum (enum-ception) */
 
             return regionRecord;
