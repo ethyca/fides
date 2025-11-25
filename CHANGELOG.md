@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
 - Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
+- Updates to the privacy notice sandbox to match the new versions of the consent v3 APIs [#7023](https://github.com/ethyca/fides/pull/7023)
 
 
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
