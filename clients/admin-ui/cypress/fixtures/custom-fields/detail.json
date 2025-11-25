@@ -3,7 +3,7 @@
   "name": "Test Custom Field",
   "description": "A test custom field for cypress testing",
   "resource_type": "system",
-  "field_type": "singleSelect",
+  "field_type": "string",
   "allow_list_id": "al_test_123",
   "active": true,
   "created_at": "2025-09-23T10:00:00Z",

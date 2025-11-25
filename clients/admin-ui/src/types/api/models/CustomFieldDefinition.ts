@@ -8,9 +8,9 @@ import type { ResourceTypes } from "./ResourceTypes";
 export type CustomFieldDefinition = {
   name: string;
   description?: string | null;
-  field_type: AllowedTypes;
+  field_type: AllowedTypes | string;
   allow_list_id?: string | null;
-  resource_type: ResourceTypes;
+  resource_type: ResourceTypes | string;
   field_definition?: string | null;
   active?: boolean;
 };
