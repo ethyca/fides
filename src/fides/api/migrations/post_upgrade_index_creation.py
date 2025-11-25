@@ -93,6 +93,13 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "type": "index",
         },
     ],
+    "providedidentity": [
+        {
+            "name": "ix_providedidentity_privacy_request_id",
+            "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_privacy_request_id ON providedidentity (privacy_request_id)",
+            "type": "index",
+        },
+    ],
     "servednoticehistory": [
         {
             "name": "ix_servednoticehistory_hashed_external_id",
