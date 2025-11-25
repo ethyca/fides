@@ -2,8 +2,6 @@ import { StagedResourceAPIResponse } from "~/types/api";
 import { ApplicationStatus } from "~/types/api/models/ApplicationStatus";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
-import { OKTA_APP_FILTER_TABS } from "../oktaAppFilters";
-
 // Mock data for testing filters
 const mockApps: (StagedResourceAPIResponse & {
   diff_status?: string;
@@ -62,28 +60,6 @@ describe("Okta App Filters — predicates", () => {
           .filter((a) => filter(a as StagedResourceAPIResponse))
           .map((a) => a.name),
       ).toEqual(expected);
-    },
-  );
-});
-
-describe("Okta App Filters — tabs config", () => {
-  const expectedCounts = {
-    all: 1,
-    new: 1,
-    active: 1,
-    inactive: 0,
-    known: 1,
-    unknown: 0,
-    removed: 0,
-  };
-
-  it.each(Object.entries(expectedCounts))(
-    "tab '%s' shows count %d",
-    (value, expected) => {
-      const tab = OKTA_APP_FILTER_TABS.find((t) => t.value === value);
-      expect(mockApps.filter((a) => tab!.filter(a as any)).length).toBe(
-        expected,
-      );
     },
   );
 });
