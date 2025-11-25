@@ -7,6 +7,8 @@ from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     ConditionalDependencyFieldInfo,
     ConditionalDependencyFieldType,
     PrivacyRequestConvenienceFields,
+    PrivacyRequestLocationConvenienceFields,
+    PrivacyRequestPolicyConvenienceFields,
 )
 
 
@@ -96,16 +98,20 @@ def get_policy_convenience_fields(
     action_types = policy.get_all_action_types()
 
     # Add convenience fields for rules
-    extra_fields["rule_action_types"] = [
+    extra_fields[PrivacyRequestPolicyConvenienceFields.rule_action_types.value] = [
         action_type.value for action_type in action_types if action_type
     ]
     for action_type in ActionType:
         extra_fields[f"has_{action_type.value}_rule"] = action_type in action_types
-    extra_fields["rule_count"] = len(rules) if rules else 0
-    extra_fields["rule_names"] = [
+    extra_fields[PrivacyRequestPolicyConvenienceFields.rule_count.value] = (
+        len(rules) if rules else 0
+    )
+    extra_fields[PrivacyRequestPolicyConvenienceFields.rule_names.value] = [
         rule.name for rule in rules if hasattr(rule, "name") and rule.name
     ]
-    extra_fields["has_storage_destination"] = any(
+    extra_fields[
+        PrivacyRequestPolicyConvenienceFields.has_storage_destination.value
+    ] = any(
         hasattr(rule, "storage_destination") and rule.storage_destination is not None
         for rule in rules
     )
@@ -115,9 +121,9 @@ def get_policy_convenience_fields(
 def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
     """Gets convenience fields for a location to support hierarchy-based conditions."""
     extra_fields: dict[str, Any] = {
-        "location_country": None,
-        "location_groups": [],
-        "location_regulations": [],
+        PrivacyRequestLocationConvenienceFields.location_country.value: None,
+        PrivacyRequestLocationConvenienceFields.location_groups.value: [],
+        PrivacyRequestLocationConvenienceFields.location_regulations.value: [],
     }
 
     if not location:
@@ -133,16 +139,21 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
 
     # If location has parent groups, the first one is typically the country
     # (e.g., us_ca belongs to [us])
-    # For countries themselves (e.g., fr belongs to [eea]), location_country stays None
     belongs_to = location_data.belongs_to or []
-    extra_fields["location_groups"] = belongs_to
+    extra_fields[PrivacyRequestLocationConvenienceFields.location_groups.value] = (
+        belongs_to
+    )
 
     # Set location_country to the first parent if the location is a subdivision
     # This helps with conditions like "is this a US state?"
     if belongs_to and not location_data.is_country:
-        extra_fields["location_country"] = belongs_to[0]
+        extra_fields[PrivacyRequestLocationConvenienceFields.location_country.value] = (
+            belongs_to[0]
+        )
 
     # Add regulations applicable to this location
-    extra_fields["location_regulations"] = location_data.regulation or []
+    extra_fields[PrivacyRequestLocationConvenienceFields.location_regulations.value] = (
+        location_data.regulation or []
+    )
 
     return extra_fields
