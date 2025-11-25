@@ -115,8 +115,12 @@ class TestPrivacyRequestPerformance:
             ("include_custom_privacy_request_fields", "custom_privacy_request_fields"),
         ],
     )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
     def test_list_view_eager_loading(
         self,
+        mock_run_privacy_request,
         db,
         api_client: TestClient,
         generate_auth_header,
