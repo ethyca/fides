@@ -69,12 +69,12 @@ const MonitorConfigActionsCell = ({
     // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
     if (isOktaMonitor) {
       const result = await executeOktaMonitor({
-        monitor_config_key: monitorId!,
+        monitor_config_key: monitorId,
       });
       toastExecuteResult(result);
     } else {
       const result = await executeRegularMonitor({
-        monitor_config_id: monitorId!,
+        monitor_config_id: monitorId,
       });
       toastExecuteResult(result);
     }
