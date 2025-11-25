@@ -1,4 +1,8 @@
-import { CONTENT_SECURITY_POLICY_HEADER, HeaderRule } from "./headers";
+import {
+  CONTENT_SECURITY_POLICY_HEADER,
+  HeaderRule,
+  X_NONCE_HEADER,
+} from "./headers";
 
 const flattenHeader = (header: string) => header.replace(/\s{2,}/g, " ").trim();
 
@@ -96,20 +100,21 @@ export const recommendedSecurityHeaders = (
       ],
     },
     {
+      // Matcher derived from: https://nextjs.org/docs/15/pages/guides/content-security-policy#adding-a-nonce-with-middleware
       matcher: /\/((?!api|_next\/static|_next\/image|favicon\.ico).*)/,
       headers: [
         {
           name: CONTENT_SECURITY_POLICY_HEADER,
           context: (initializer) => {
-            if (initializer.hasContext("x-nonce")) {
+            if (initializer.hasContext(X_NONCE_HEADER)) {
               return;
             }
 
             const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-            initializer.setContext("x-nonce", nonce);
+            initializer.setContext(X_NONCE_HEADER, nonce);
           },
           value: (context) => {
-            const nonce = context.get("x-nonce") ?? "";
+            const nonce = context.get(X_NONCE_HEADER) ?? "";
             return privacyCenterPagesCspHeader({
               isDev,
               fidesApiHost,
