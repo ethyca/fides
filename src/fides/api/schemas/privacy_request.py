@@ -414,11 +414,24 @@ class PrivacyRequestBulkSelection(FidesSchema):
 
     @model_validator(mode="after")
     def validate_selection_provided(self) -> "PrivacyRequestBulkSelection":
-        """Validate that at least one of request_ids or filters is provided."""
-        if self.request_ids is None and self.filters is None:
+        """
+        Validate selection rules:
+        1. At least one of request_ids or filters must be provided (and not empty)
+        2. exclude_ids can only be used with filters, not with request_ids
+        """
+        # Check if both are None or if request_ids is an empty list
+        if (
+            self.request_ids is None or len(self.request_ids) == 0
+        ) and self.filters is None:
             raise ValueError(
-                "At least one of 'request_ids' or 'filters' must be provided"
+                "At least one of 'request_ids' or 'filters' must be provided. 'request_ids' cannot be empty."
             )
+
+        if self.request_ids is not None and self.exclude_ids is not None:
+            raise ValueError(
+                "'exclude_ids' can only be used with 'filters', not with 'request_ids'"
+            )
+
         return self
 
 
