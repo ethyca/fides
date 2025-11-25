@@ -5927,6 +5927,42 @@ class TestBulkRestartFromFailure:
             },
         )
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_restart_from_failure_with_bulk_selection_format(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        """Test that the endpoint works with the new PrivacyRequestBulkSelection format"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = {"request_ids": [privacy_requests[0].id]}
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.access,
+        )
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+
+        assert privacy_requests[0].id in succeeded_ids
+
+        submit_mock.assert_called_with(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
+        )
+
 
 class TestRestartFromFailure:
     @pytest.fixture(scope="function")

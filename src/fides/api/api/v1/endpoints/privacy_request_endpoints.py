@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Request, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -475,6 +475,25 @@ def execution_and_audit_logs_by_dataset_name(
             continue
         all_logs[dataset_name].append(log)
     return all_logs
+
+
+async def _normalize_bulk_selection_dependency(
+    request: Request,
+) -> "PrivacyRequestBulkSelection":
+    """
+    Normalize input to PrivacyRequestBulkSelection for backwards compatibility.
+
+    If a plain list is provided, convert it to PrivacyRequestBulkSelection with request_ids.
+    Otherwise, parse as PrivacyRequestBulkSelection.
+    """
+    body = await request.json()
+
+    # If it's a plain list, convert to PrivacyRequestBulkSelection
+    if isinstance(body, list):
+        return PrivacyRequestBulkSelection(request_ids=body)
+
+    # Otherwise, parse as PrivacyRequestBulkSelection
+    return PrivacyRequestBulkSelection(**body)
 
 
 def _resolve_request_ids_from_filters(
@@ -1389,7 +1408,9 @@ def validate_manual_input(
     ],
 )
 def bulk_restart_privacy_request_from_failure(
-    privacy_requests: PrivacyRequestBulkSelection,
+    privacy_requests: PrivacyRequestBulkSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
@@ -1398,6 +1419,8 @@ def bulk_restart_privacy_request_from_failure(
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
     """
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
