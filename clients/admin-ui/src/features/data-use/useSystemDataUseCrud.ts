@@ -11,9 +11,9 @@ import {
   CustomFieldWithId,
   PrivacyDeclaration,
   PrivacyDeclarationResponse,
-  ResourceTypes,
   SystemResponse,
 } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/types/errors";
 
 interface HandleResultParams {
@@ -47,7 +47,7 @@ const buildCustomFieldsPayload = (
   return {
     upsert: payloadUpsert,
     delete: payloadDelete,
-    resource_type: ResourceTypes.PRIVACY_DECLARATION,
+    resource_type: LegacyResourceTypes.PRIVACY_DECLARATION,
     resource_id: resourceId,
   };
 };

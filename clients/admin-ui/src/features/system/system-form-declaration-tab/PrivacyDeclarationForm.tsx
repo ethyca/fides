@@ -26,8 +26,8 @@ import {
   DataSubject,
   DataUse,
   PrivacyDeclarationResponse,
-  ResourceTypes,
 } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -287,7 +287,7 @@ export const PrivacyDeclarationFormComponents = ({
       </SystemFormInputGroup>
       {includeCustomFields ? (
         <CustomFieldsList
-          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceType={LegacyResourceTypes.PRIVACY_DECLARATION}
           resourceFidesKey={privacyDeclarationId}
         />
       ) : null}
@@ -317,7 +317,7 @@ export const usePrivacyDeclarationForm = ({
   privacyDeclarationId,
 }: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
   const { customFieldValues, upsertCustomFields } = useCustomFields({
-    resourceType: ResourceTypes.PRIVACY_DECLARATION,
+    resourceType: LegacyResourceTypes.PRIVACY_DECLARATION,
     resourceFidesKey: privacyDeclarationId,
   });
 

@@ -9,7 +9,7 @@ import { isEmpty } from "lodash";
 import { useCustomFields } from "~/features/common/custom-fields";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
-import { AllowedTypes } from "~/types/api";
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 
 interface TaxonomyCustomFieldsFormProps {
   customFields: ReturnType<typeof useCustomFields>;
@@ -72,7 +72,7 @@ const TaxonomyCustomFieldsForm = ({
                       label={name}
                       tooltip={description}
                     >
-                      {fieldType === AllowedTypes.STRING ? (
+                      {fieldType === LegacyAllowedTypes.STRING ? (
                         <Input />
                       ) : (
                         <CustomTaxonomySelect
