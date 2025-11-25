@@ -4,7 +4,14 @@ from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
@@ -404,6 +411,15 @@ class PrivacyRequestBulkSelection(FidesSchema):
         None,
         description="List of privacy request IDs to exclude from the action (only used with filters)",
     )
+
+    @model_validator(mode="after")
+    def validate_selection_provided(self) -> "PrivacyRequestBulkSelection":
+        """Validate that at least one of request_ids or filters is provided."""
+        if self.request_ids is None and self.filters is None:
+            raise ValueError(
+                "At least one of 'request_ids' or 'filters' must be provided"
+            )
+        return self
 
 
 class DenyPrivacyRequestSelection(PrivacyRequestBulkSelection):

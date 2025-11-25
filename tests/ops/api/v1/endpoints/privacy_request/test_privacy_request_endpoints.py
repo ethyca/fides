@@ -125,6 +125,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, generate_role_header_for_user
+from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_performance import (
+    QueryCounter,
+)
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
@@ -4368,10 +4371,10 @@ class TestFilteredBulkActions:
         privacy_requests,
     ):
         """Test that filters and exclusions work correctly for bulk approve"""
-        # Set 3 to pending, 1 to complete
-        for pr in privacy_requests[:3]:
+        # Set 2 to pending, 1 to complete (fixture has 3 privacy requests)
+        for pr in privacy_requests[:2]:
             pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
-        privacy_requests[3].update(
+        privacy_requests[2].update(
             db=db, data={"status": PrivacyRequestStatus.complete}
         )
 
@@ -4395,13 +4398,12 @@ class TestFilteredBulkActions:
         assert response.status_code == 200
         response_body = response.json()
 
-        # Should approve 2 of 3 pending requests (one excluded)
-        assert len(response_body["succeeded"]) == 2
+        # Should approve 1 of 2 pending requests (one excluded)
+        assert len(response_body["succeeded"]) == 1
         succeeded_ids = [r["id"] for r in response_body["succeeded"]]
         assert privacy_requests[0].id in succeeded_ids
         assert privacy_requests[1].id not in succeeded_ids  # Excluded
-        assert privacy_requests[2].id in succeeded_ids
-        assert privacy_requests[3].id not in succeeded_ids  # Wrong status
+        assert privacy_requests[2].id not in succeeded_ids  # Wrong status
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
@@ -4420,10 +4422,9 @@ class TestFilteredBulkActions:
         privacy_requests,
     ):
         """Verify filtered bulk operations don't introduce N+1 queries"""
-        from tests.conftest import QueryCounter
 
-        # Set 5 requests to pending
-        for pr in privacy_requests[:5]:
+        # Set all 3 requests to pending (fixture has 3 privacy requests)
+        for pr in privacy_requests:
             pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
@@ -4433,10 +4434,11 @@ class TestFilteredBulkActions:
             response = api_client.patch(url_approve, headers=auth_header, json=body)
 
         assert response.status_code == 200
-        assert len(response.json()["succeeded"]) == 5
+        assert len(response.json()["succeeded"]) == 3
 
-        # Should use ~2 queries to resolve IDs + fetch requests, not N queries
-        assert counter.count < 600, f"Too many queries: {counter.count}"
+        # Should use a reasonable number of queries to resolve IDs + fetch requests, not N queries
+        # With 3 privacy requests, we expect significantly fewer than 100 queries
+        assert counter.count < 100, f"Too many queries: {counter.count}"
 
 
 class TestMarkPrivacyRequestPreApproveEligible:

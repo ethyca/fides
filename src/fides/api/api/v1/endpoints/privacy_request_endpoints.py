@@ -487,25 +487,23 @@ def _resolve_request_ids_from_filters(
     If request_ids is provided, use it directly.
     Otherwise, use filters to query for matching privacy requests and apply exclusions.
 
+    Note: Pydantic validation ensures at least one of request_ids or filters is provided.
+
     Returns:
         List of privacy request IDs to act on
 
     Raises:
-        HTTPException: If neither request_ids nor filters are provided, or if too many results
+        HTTPException: If too many results or no results are returned from filters
     """
     # If explicit request_ids are provided, use them directly
     if privacy_requests.request_ids:
         return privacy_requests.request_ids
 
-    # Otherwise, filters must be provided
-    if not privacy_requests.filters:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Either request_ids or filters must be provided.",
-        )
-
     # Use filters to query for privacy requests
+    # Note: Pydantic validator ensures filters is not None at this point
     filters = privacy_requests.filters
+    assert filters is not None, "Filters must be provided when request_ids is not"
+
     query = PrivacyRequest.query_without_large_columns(db)
     query = _filter_privacy_request_queryset(
         db=db,
@@ -1391,25 +1389,31 @@ def validate_manual_input(
     ],
 )
 def bulk_restart_privacy_request_from_failure(
-    privacy_request_ids: Annotated[
-        List[str], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
-    ],
+    privacy_requests: PrivacyRequestBulkSelection,
     *,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
-    """Bulk restart privacy requests from failure."""
+    """
+    Bulk restart privacy requests from failure.
+
+    You can either provide explicit request_ids OR use filters to select privacy requests.
+    When using filters, you can optionally exclude specific IDs via exclude_ids.
+    """
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
+
+    # Resolve request IDs from either explicit list or filters
+    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
         pr.id: pr
         for pr in PrivacyRequest.query_without_large_columns(db)
-        .filter(PrivacyRequest.id.in_(privacy_request_ids))
+        .filter(PrivacyRequest.id.in_(request_ids))
         .all()
     }
 
-    for privacy_request_id in privacy_request_ids:
+    for privacy_request_id in request_ids:
         privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
