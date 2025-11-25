@@ -11,26 +11,12 @@ interface UseDiscoveredInfrastructureSystemsColumnsProps {
 }
 
 export const useDiscoveredInfrastructureSystemsColumns = ({
-  isOktaApp = false,
   rowClickUrl,
 }: UseDiscoveredInfrastructureSystemsColumnsProps = {}) => {
   const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
     useMemo(() => {
-      if (isOktaApp) {
-        // Use identity provider columns for Okta apps
-        return isIdentityProviderColumns({ rowClickUrl });
-      }
-
-      // Default infrastructure columns for non-Okta monitors
-      return [
-        {
-          key: "name",
-          dataIndex: "name",
-          title: "System",
-          sorter: true,
-        },
-      ];
-    }, [isOktaApp, rowClickUrl]);
+      return isIdentityProviderColumns({ rowClickUrl });
+    }, [rowClickUrl]);
 
   return { columns };
 };
