@@ -121,7 +121,9 @@ export const MonitorTreeDataTitle = ({
                   }),
                 )
               : [],
-            onClick: ({ key }) => {
+            onClick: ({ key, domEvent }) => {
+              domEvent.preventDefault();
+              domEvent.stopPropagation();
               actions.get(key)?.callback(node.key, node);
             },
           }}
