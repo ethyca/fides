@@ -12,7 +12,6 @@ import {
 } from "~/types/api";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
-import { useGetDiscoveredSystemAggregateQuery } from "../action-center.slice";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -26,9 +25,6 @@ interface UseDiscoveredInfrastructureSystemsTableConfig {
 export const useDiscoveredInfrastructureSystemsTable = ({
   monitorId,
 }: UseDiscoveredInfrastructureSystemsTableConfig) => {
-  // Check if this is an Okta app monitor
-  const isOktaApp = monitorId.toLowerCase().includes("okta");
-
   const tableState = useTableState<"name">({
     sorting: {
       validColumns: ["name"],
@@ -38,48 +34,21 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   const { pageIndex, pageSize, searchQuery, updateSearch, resetState } =
     tableState;
 
-  // Get regular tabs for non-Okta monitors
-  const regularTabs = useActionCenterTabs();
+  const tabs = useActionCenterTabs();
 
-  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
-  const regularDataQuery = useGetDiscoveredSystemAggregateQuery(
-    {
-      key: monitorId,
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery,
-      ...(isOktaApp ? {} : regularTabs.activeParams),
-    },
-    {
-      skip: isOktaApp,
-    },
-  );
+  const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery({
+    monitor_config_key: monitorId,
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+  });
 
-  const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery(
-    {
-      monitor_config_key: monitorId,
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery,
-    },
-    {
-      skip: !isOktaApp,
-    },
-  );
-
-  const {
-    data: regularData,
-    isLoading: regularIsLoading,
-    isFetching: regularIsFetching,
-  } = regularDataQuery;
   const {
     data: oktaData,
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
   } = oktaDataQuery;
 
-  // Transform Okta data (StagedResourceAPIResponse[]) to SystemStagedResourcesAggregateRecord[]
-  // This is a temporary transformation until the BE provides the correct format
   const transformedOktaData = useMemo(() => {
     if (!oktaData?.items) {
       return undefined;
@@ -110,24 +79,19 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     };
   }, [oktaData]);
 
-  const data = isOktaApp ? transformedOktaData : regularData;
-  const isLoading = isOktaApp ? oktaIsLoading : regularIsLoading;
-  const isFetching = isOktaApp ? oktaIsFetching : regularIsFetching;
+  const data = transformedOktaData;
+  const isLoading = oktaIsLoading;
+  const isFetching = oktaIsFetching;
 
-  // For Okta, use simplified tabs (filters should be handled by BE in the future)
-  // For regular infrastructure, use standard tabs
-  const filterTabs = isOktaApp
-    ? [
-        {
-          label: "All Apps",
-          hash: "all",
-        },
-      ]
-    : regularTabs.filterTabs;
-  const activeTab: string = isOktaApp ? "all" : (regularTabs.activeTab ?? "");
-  const activeParams = isOktaApp ? {} : regularTabs.activeParams;
+  const filterTabs = [
+    {
+      label: "All apps",
+      hash: "all",
+    },
+  ];
+  const activeTab: string = "all";
+  const activeParams = {};
 
-  // Helper function to generate consistent row keys
   const getRecordKey = useCallback(
     (record: SystemStagedResourcesAggregateRecord) =>
       record.id ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT,
@@ -165,16 +129,11 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
-      if (isOktaApp) {
-        // For Okta, tab changes will be handled by BE filters in the future
-        // For now, we just reset state
-      } else {
-        await regularTabs.onTabChange(tab as ActionCenterTabHash);
-      }
+      await tabs.onTabChange(tab as ActionCenterTabHash);
       resetState();
       resetSelections();
     },
-    [isOktaApp, regularTabs, resetState, resetSelections],
+    [tabs, resetState, resetSelections],
   );
 
   const rowClickUrl = useCallback(
@@ -187,7 +146,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   );
 
   const { columns } = useDiscoveredInfrastructureSystemsColumns({
-    isOktaApp,
+    isOktaApp: true,
     rowClickUrl,
   });
 
@@ -201,17 +160,14 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     updateSearch,
     resetState,
 
-    // Ant Design table integration
     tableProps: antTable.tableProps,
     selectionProps: antTable.selectionProps,
 
-    // Tab management
     filterTabs,
     activeTab,
     handleTabChange,
     activeParams,
 
-    // Selection
     selectedRows,
     hasSelectedRows: antTable.hasSelectedRows,
     resetSelections,
