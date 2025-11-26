@@ -38,14 +38,8 @@ def okta_connection_config(db: Session) -> Generator:
         "OKTA_PRIVATE_KEY"
     )
 
-    if not org_url:
-        raise RuntimeError("Missing org_url for Okta")
-
-    if not client_id:
-        raise RuntimeError("Missing client_id for Okta")
-
-    if not private_key:
-        raise RuntimeError("Missing private_key for Okta")
+    if not all([org_url, client_id, private_key]):
+        pytest.skip("Okta OAuth2 credentials not configured")
 
     schema = OktaSchema(
         org_url=org_url,
