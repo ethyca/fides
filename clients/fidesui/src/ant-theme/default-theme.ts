@@ -42,6 +42,9 @@ export const defaultAntTheme: ThemeConfig = {
     zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
   components: {
+    Avatar: {
+      colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
+    },
     Alert: {
       colorInfoBg: palette.FIDESUI_FULL_WHITE,
       colorInfo: palette.FIDESUI_NEUTRAL_500,
