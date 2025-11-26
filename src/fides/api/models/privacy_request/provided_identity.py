@@ -51,8 +51,13 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     def __table_args__(cls) -> tuple:  # type: ignore[override]
         """Define table-level constructs including indexes."""
         return (
+            # Index on foreign key for better join performance and N+1 prevention
+            # Created via migration 3ff6449c099e
+            Index(
+                "ix_providedidentity_privacy_request_id",
+                "privacy_request_id",
+            ),
             # Hash migration tracking index from HashMigrationMixin
-            # Note: privacy_request_id index is created via migration 3ff6449c099e
             Index(
                 "idx_providedidentity_unmigrated",
                 "is_hash_migrated",
