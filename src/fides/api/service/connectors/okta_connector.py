@@ -106,4 +106,3 @@ class OktaConnector(BaseConnector):
 
     def close(self) -> None:
         """Close any held resources. No-op for Okta client."""
-        pass
