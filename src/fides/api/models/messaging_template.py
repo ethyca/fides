@@ -65,6 +65,13 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
             "body": "This is your weekly summary of open data subject requests tasks from __ORGANIZATION_NAME__ that require your attention. Please review the tasks in our Privacy Center to ensure timely completion.",
         },
     },
+    MessagingActionType.EXTERNAL_USER_WELCOME.value: {
+        "label": "External user welcome",
+        "content": {
+            "subject": "Welcome to our Privacy Center",
+            "body": "An account has been created for you by the privacy team at __ORG_NAME__ so that you can assist them in responding to data subject requests, as required by the GDPR and many US state laws, for users that have data in your systems. A portal is available to view and take action on these requests at: __PORTAL_LINK__. Through this portal you can upload or provide user data for users who have requested a copy of their information and attest that users have been removed from your system in the case of an erasure request. The provided link is valid for 30 days and you will be asked to verify your email address each time you access the portal. If you have any questions, please reach out first to your contacts at: __ORG_NAME__",
+        },
+    },
 }
 
 
