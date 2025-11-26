@@ -299,7 +299,7 @@ const ActionCenterFields: NextPage = () => {
                     label: FIELD_ACTION_LABEL[action],
                     disabled: (node) => {
                       if (action === FieldActionType.CLASSIFY) {
-                        return !!node.classifyable;
+                        return !node.classifyable;
                       }
 
                       return !ALLOWED_RESOURCE_ACTIONS[action].some(
