@@ -20,6 +20,7 @@ from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
     OAuth2ClientCredentialsConfiguration,
+    OAuth2PrivateKeyJWTConfiguration,
 )
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -996,6 +997,106 @@ def saas_consent_request_override_connection_config(
             "access": AccessLevel.write,
             "secrets": saas_consent_request_override_secrets,
             "saas_config": saas_consent_request_override_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+SAMPLE_PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAw5Lv4GvKFO0N6lmNF5yvxP6GqDblXVjWfP5P9vGv7X+D8Sqm
+wTYEQJQQgFzNjvPQC5XN9wGLv7LoJEOkE0QkFwLOYbJZOQn7v8zGqmZQZt7vB9Vx
+P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3
+j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6
+V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3
+E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQIDAQABAoIBAAkB5P0N9P0OQVZ8
+wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wG
+Q5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5
+N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5
+P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3
+j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZkCgYEA8wGQ
+5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N
+5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P
+3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQsCgYEAzP0OQVZ8wGQ5N5P3
+j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6
+V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3
+E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQsCgYBN9P0OQVZ8wGQ5N5P3j6V3
+E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5
+Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7
+GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQKBgDj6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5
+N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5
+P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3
+j6V3E5Z7GQ5VJ5N9P0OQVZAoGBAKE5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ
+5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5V
+J5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ5VJ5
+N9P0OQVZ8wGQ5N5P3j6V3E5Z7GQ
+-----END RSA PRIVATE KEY-----"""
+
+
+@pytest.fixture(scope="function")
+def oauth2_private_key_jwt_configuration() -> OAuth2PrivateKeyJWTConfiguration:
+    return {
+        "provider": "okta",
+        "jwt_algorithm": "RS256",
+        "jwt_expiration_seconds": 300,
+        "token_request": {
+            "method": "POST",
+            "path": "/oauth2/v1/token",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                }
+            ],
+            "query_params": [
+                {"name": "grant_type", "value": "client_credentials"},
+                {"name": "scope", "value": "okta.apps.read"},
+                {"name": "client_assertion_type", "value": "<client_assertion_type>"},
+                {"name": "client_assertion", "value": "<client_assertion>"},
+            ],
+        },
+    }
+
+
+@pytest.fixture(scope="function")
+def oauth2_private_key_jwt_connection_config(
+    db: Session, oauth2_private_key_jwt_configuration
+) -> Generator:
+    secrets = {
+        "domain": "localhost",
+        "client_id": "test_client_id",
+        "private_key": SAMPLE_PRIVATE_KEY,
+        "access_token": "access",
+    }
+    saas_config = {
+        "fides_key": "oauth2_private_key_jwt_connector",
+        "name": "OAuth2 PrivateKey JWT Connector",
+        "type": "custom",
+        "description": "OAuth2 PrivateKey JWT connector for testing",
+        "version": "0.0.1",
+        "connector_params": [{"name": item} for item in secrets.keys()],
+        "client_config": {
+            "protocol": "https",
+            "host": secrets["domain"],
+            "authentication": {
+                "strategy": "oauth2_private_key_jwt",
+                "configuration": oauth2_private_key_jwt_configuration,
+            },
+        },
+        "endpoints": [],
+        "test_request": {"method": "GET", "path": "/test"},
+    }
+
+    fides_key = saas_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": secrets,
+            "saas_config": saas_config,
         },
     )
     yield connection_config

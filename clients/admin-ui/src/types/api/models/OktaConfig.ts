@@ -7,5 +7,7 @@
  */
 export type OktaConfig = {
   orgUrl: string;
-  token: string;
+  clientId: string;
+  privateKey: string;
+  scopes?: Array<string>;
 };

@@ -7,7 +7,7 @@ import {
 } from "~/features/connection-type/types";
 
 import { ControlledSelect } from "./ControlledSelect";
-import { CustomTextInput } from "./inputs";
+import { CustomTextArea, CustomTextInput } from "./inputs";
 
 export type FormFieldProps = {
   name: string;
@@ -87,6 +87,26 @@ export const FormFieldFromSchema = ({
                 { label: "False", value: "false" },
                 { label: "True", value: "true" },
               ]}
+            />
+          );
+        }
+
+        // Check if this is a multiline field (like private_key)
+        const isMultiline = field.name.includes("private_key");
+
+        if (isMultiline) {
+          return (
+            <CustomTextArea
+              {...field}
+              label={fieldSchema.title}
+              tooltip={fieldSchema.description}
+              isRequired={isRequired}
+              placeholder={getPlaceholder()}
+              variant={layout}
+              textAreaProps={{
+                rows: 8,
+                style: { fontFamily: "monospace", fontSize: "12px" },
+              }}
             />
           );
         }
