@@ -6,6 +6,7 @@ from enum import Enum as EnumType
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -46,12 +47,21 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     creation time.
     """
 
-    __table_args__ = (  # type: ignore[assignment]
-        Index(
-            "ix_providedidentity_privacy_request_id",
-            "privacy_request_id",
-        ),
-    )
+    @declared_attr
+    def __table_args__(cls):  # type: ignore[override]
+        """Combine HashMigrationMixin's index with our own."""
+        return (
+            Index(
+                "ix_providedidentity_privacy_request_id",
+                "privacy_request_id",
+            ),
+            # Hash migration tracking index from HashMigrationMixin
+            Index(
+                "idx_providedidentity_unmigrated",
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(False),
+            ),
+        )
 
     privacy_request_id = Column(
         String,
