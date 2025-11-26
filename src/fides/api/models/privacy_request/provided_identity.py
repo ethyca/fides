@@ -48,18 +48,17 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     """
 
     @declared_attr
-    def __table_args__(cls):  # type: ignore[override]
-        """Combine HashMigrationMixin's index with our own."""
+    def __table_args__(cls) -> tuple:  # type: ignore[override]
+        """Define table-level constructs including indexes."""
         return (
-            Index(
-                "ix_providedidentity_privacy_request_id",
-                "privacy_request_id",
-            ),
             # Hash migration tracking index from HashMigrationMixin
+            # Note: privacy_request_id index is created via migration 3ff6449c099e
             Index(
                 "idx_providedidentity_unmigrated",
                 "is_hash_migrated",
-                postgresql_where=cls.is_hash_migrated.is_(False),
+                postgresql_where=cls.is_hash_migrated.is_(  # type: ignore[attr-defined]  # pylint: disable=no-member
+                    False
+                ),
             ),
         )
 
