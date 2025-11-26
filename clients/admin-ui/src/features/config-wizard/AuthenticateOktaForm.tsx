@@ -153,9 +153,9 @@ const AuthenticateOktaForm = () => {
                   />
                   <Text>
                     To use the scanner to inventory systems in Okta, you must
-                    first authenticate using OAuth2 Client Credentials.
-                    You&apos;ll need to create an API Services application in
-                    Okta and generate an RSA key pair.
+                    first authenticate using OAuth2 Client Credentials. You'll
+                    need to create an API Services application in Okta and
+                    generate an RSA key pair.
                   </Text>
                 </Box>
                 <Stack>
