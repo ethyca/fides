@@ -408,6 +408,28 @@ privacy_notice_regions_by_id: Dict[str, Union[Location, LocationGroup]] = (
 )  # should only be accessed for read-only access
 
 
+def get_location_by_id(location: str) -> Optional[Location]:
+    """
+    Get a Location object by ID, with automatic format normalization.
+
+    Handles various location formats (e.g., "US-CA", "us-ca", "us_ca") by
+    normalizing to the internal format (lowercase with underscores) used in locations.yml.
+
+    Args:
+        location: Location string in any format
+
+    Returns:
+        Location object if found, None otherwise
+
+    Examples:
+        >>> get_location_by_id("US-CA")  # ISO 3166 format
+        >>> get_location_by_id("us_ca")  # Internal format
+        >>> get_location_by_id("us-ca")  # Mixed format
+    """
+    normalized = location.lower().replace("-", "_")
+    return locations_by_id.get(normalized)
+
+
 # dynamically create an enum based on definitions loaded from YAML
 # This is a combination of "locations" and "location groups" for use on Privacy Experiences
 PrivacyNoticeRegion = Enum(  # type: ignore[misc]

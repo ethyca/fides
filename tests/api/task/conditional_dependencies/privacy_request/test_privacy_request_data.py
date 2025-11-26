@@ -374,3 +374,92 @@ class TestPrivacyRequestToEvaluationDataEdgeCases:
         assert "privacy_request" in data
         # Since policy is None, policy.key will be None
         assert data["privacy_request"]["policy"]["key"] is None
+
+
+class TestPrivacyRequestToEvaluationDataLocation:
+    """Test location and location hierarchy convenience fields transformation."""
+
+    def test_location_convenience_fields_us_state(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test convenience fields for US state (US-CA) - subdivision with country parent."""
+        privacy_request.update(db=db, data={"location": "US-CA"})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {
+            "privacy_request.location",
+            "privacy_request.location_country",
+            "privacy_request.location_groups",
+            "privacy_request.location_regulations",
+        }
+        data = transformer.to_evaluation_data(field_addresses)
+
+        assert data["privacy_request"]["location"] == "US-CA"
+        assert data["privacy_request"]["location_country"] == "us"
+        assert data["privacy_request"]["location_groups"] == ["us"]
+        assert data["privacy_request"]["location_regulations"] == ["ccpa"]
+
+    def test_location_convenience_fields_another_us_state(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test convenience fields for another US state (US-CO)."""
+        privacy_request.update(db=db, data={"location": "US-CO"})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {
+            "privacy_request.location_country",
+            "privacy_request.location_regulations",
+        }
+        data = transformer.to_evaluation_data(field_addresses)
+
+        assert data["privacy_request"]["location_country"] == "us"
+        assert data["privacy_request"]["location_regulations"] == ["cpa"]
+
+    def test_location_convenience_fields_eea_country(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test convenience fields for EEA country (FR) - country with regional group."""
+        privacy_request.update(db=db, data={"location": "FR"})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {
+            "privacy_request.location_country",
+            "privacy_request.location_groups",
+            "privacy_request.location_regulations",
+        }
+        data = transformer.to_evaluation_data(field_addresses)
+
+        # France is a country itself, not a subdivision
+        assert data["privacy_request"]["location_country"] is None
+        assert data["privacy_request"]["location_groups"] == ["eea"]
+        assert data["privacy_request"]["location_regulations"] == ["gdpr"]
+
+    def test_location_convenience_fields_none_location(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test convenience fields when location is None."""
+        privacy_request.update(db=db, data={"location": None})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {
+            "privacy_request.location_country",
+            "privacy_request.location_groups",
+            "privacy_request.location_regulations",
+        }
+        data = transformer.to_evaluation_data(field_addresses)
+
+        assert data["privacy_request"]["location_country"] is None
+        assert data["privacy_request"]["location_groups"] == []
+        assert data["privacy_request"]["location_regulations"] == []
+
+    def test_location_convenience_fields_invalid_location(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test convenience fields with invalid/unknown location code."""
+        privacy_request.update(db=db, data={"location": "INVALID"})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {"privacy_request.location_country"}
+        data = transformer.to_evaluation_data(field_addresses)
+
+        assert data["privacy_request"]["location_country"] is None
