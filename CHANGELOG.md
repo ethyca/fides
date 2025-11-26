@@ -20,13 +20,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.75.1..main)
-### Added
-- Added OAuth2 Client Credentials with `private_key_jwt` authentication strategy for secure API integrations [#XXXX](https://github.com/ethyca/fides/pull/XXXX)
-- Added JWT client adapter pattern supporting Okta, Azure AD, Auth0, and generic RFC 7523 compliant providers [#XXXX](https://github.com/ethyca/fides/pull/XXXX)
-- Added private key validation for PEM and JWK formats in connection secrets schema [#XXXX](https://github.com/ethyca/fides/pull/XXXX)
 
-### Removed
-- **BREAKING**: Removed API token authentication for Okta connections. All Okta integrations must migrate to OAuth2 Client Credentials with `private_key_jwt`. See migration guide: `docs/guides/okta_api_token_migration.md` [#XXXX](https://github.com/ethyca/fides/pull/XXXX) https://github.com/ethyca/fides/labels/high-risk
 
 
 ### Changed
