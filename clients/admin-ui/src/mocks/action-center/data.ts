@@ -26,7 +26,8 @@ export const mockOktaMonitor = {
 };
 
 /**
- * Mock Okta app asset for system aggregate results
+ * Mock Okta app asset for Identity Provider Monitor results
+ * This matches StagedResourceAPIResponse structure
  */
 export const mockOktaApp = {
   urn: "urn:okta:app:12345678-1234-1234-1234-123456789012",
@@ -35,7 +36,7 @@ export const mockOktaApp = {
   resource_type: "okta_app",
   diff_status: "addition",
   updated_at: "2024-01-15T10:30:00Z",
-  monitor_config_id: "okta_monitor_001",
+  monitor_config_id: "okta_identity_provider",
   system: "Okta Identity Provider",
   metadata: {
     app_type: "SAML_2_0",
@@ -47,4 +48,9 @@ export const mockOktaApp = {
   },
   vendor_id: "fds.1234",
   system_id: "okta_system_001",
+  system_key: null,
+  data_uses: [],
+  user_assigned_data_categories: null,
+  user_assigned_data_uses: null,
+  user_assigned_system_key: null,
 };

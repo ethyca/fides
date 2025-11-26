@@ -18,7 +18,7 @@ export type ConsentPreferenceResponse = {
    */
   notice_history_id: string;
   /**
-   * Key identifying the notice/category
+   * Key identifying the privacy notice
    */
   notice_key: string;
   /**

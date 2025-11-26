@@ -13,5 +13,9 @@ export type OktaDocsSchema = {
   /**
    * The API token used to authenticate with Okta
    */
-  api_token: string;
+  api_token?: string;
+  /**
+   * The API token used to authenticate with Okta
+   */
+  access_token: string;
 };

@@ -1,5 +1,6 @@
 import { isEqual } from "lodash";
 
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/features/common/helpers";
 import { FieldTypes } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
@@ -8,11 +9,7 @@ import {
   useUpdateCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
 } from "~/features/plus/plus.slice";
-import {
-  AllowedTypes,
-  AllowList,
-  CustomFieldDefinitionWithId,
-} from "~/types/api";
+import { AllowList, CustomFieldDefinitionWithId } from "~/types/api";
 import { RTKResult } from "~/types/errors";
 
 const generateNewAllowListName = () =>
@@ -53,7 +50,7 @@ const useCreateOrUpdateCustomField = () => {
     if (values.field_type === FieldTypes.OPEN_TEXT) {
       const payload = {
         ...values,
-        field_type: AllowedTypes.STRING,
+        field_type: LegacyAllowedTypes.STRING,
         id: initialField ? initialField.id : undefined,
         resource_type: normalizedResourceType,
       };
@@ -85,9 +82,8 @@ const useCreateOrUpdateCustomField = () => {
           ...rest,
           field_type:
             values.field_type === FieldTypes.SINGLE_SELECT
-              ? AllowedTypes.STRING
-              : // eslint-disable-next-line no-underscore-dangle
-                AllowedTypes.STRING_,
+              ? LegacyAllowedTypes.STRING
+              : LegacyAllowedTypes.STRING_ARRAY,
           allow_list_id: allowListResult.data?.id,
           resource_type: normalizedResourceType,
         };
@@ -120,9 +116,8 @@ const useCreateOrUpdateCustomField = () => {
         resource_type: normalizedResourceType,
         field_type:
           values.field_type === FieldTypes.SINGLE_SELECT
-            ? AllowedTypes.STRING
-            : // eslint-disable-next-line no-underscore-dangle
-              AllowedTypes.STRING_,
+            ? LegacyAllowedTypes.STRING
+            : LegacyAllowedTypes.STRING_ARRAY,
       };
       const result = await updateCustomFieldDefinition(fieldPayload);
       return result;

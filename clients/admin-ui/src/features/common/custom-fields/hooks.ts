@@ -8,14 +8,18 @@ import {
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
 } from "~/features/plus/plus.slice";
-import { CustomFieldWithId, ResourceTypes } from "~/types/api";
+import { CustomFieldWithId } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import { CustomFieldsFormValues, CustomFieldValues } from "./types";
+import {
+  CustomFieldsFormValues,
+  CustomFieldValues,
+  LegacyResourceTypes,
+} from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
-  resourceType: ResourceTypes | string;
+  resourceType: LegacyResourceTypes | string;
 };
 
 export const useCustomFields = ({

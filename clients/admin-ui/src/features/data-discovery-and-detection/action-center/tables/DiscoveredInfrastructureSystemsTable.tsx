@@ -49,7 +49,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
         }))}
         selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
-          await handleTabChange(menuInfo.key as ActionCenterTabHash);
+          await handleTabChange(menuInfo.key as string | ActionCenterTabHash);
         }}
         className="mb-4"
         data-testid="asset-state-filter"

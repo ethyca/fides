@@ -123,7 +123,6 @@ describe("Custom Fields V2", () => {
 
       // Verify form is populated
       cy.getByTestId("input-name").should("have.value", "Test Custom Field");
-      cy.getByTestId("select-type").should("exist");
       cy.getByTestId("select-resource-type").should("exist");
       cy.getByTestId("select-field-type").should("exist");
     });

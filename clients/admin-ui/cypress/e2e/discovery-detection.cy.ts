@@ -100,8 +100,10 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-000000.test_dataset_1-col-action",
         ).within(() => {
           cy.getByTestId("action-Ignore")
+            .should("not.be.disabled")
             .scrollIntoView()
-            .click({ force: true });
+            .should("be.visible");
+          cy.getByTestId("action-Ignore").click({ force: true });
           cy.wait("@ignoreResource");
         });
       });
@@ -139,8 +141,10 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
           cy.getByTestId("action-Ignore")
+            .should("not.be.disabled")
             .scrollIntoView()
-            .click({ force: true });
+            .should("be.visible");
+          cy.getByTestId("action-Ignore").click({ force: true });
           cy.wait("@ignoreResource");
         });
       });
@@ -171,6 +175,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Confirm").should("not.exist");
           cy.getByTestId("action-Monitor").should("not.exist");
+          cy.getByTestId("action-Ignore")
+            .should("not.be.disabled")
+            .scrollIntoView()
+            .should("be.visible");
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -206,6 +214,10 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
         ).within(() => {
+          cy.getByTestId("action-Ignore")
+            .should("not.be.disabled")
+            .scrollIntoView()
+            .should("be.visible");
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -316,9 +328,14 @@ describe("discovery and detection", () => {
 
         it("should allow monitored tables to be muted", () => {
           cy.getAntTab("Monitored").click({ force: true });
+          cy.wait("@getAllMonitoredTables");
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-actions",
           ).within(() => {
+            cy.getByTestId("action-Ignore")
+              .should("not.be.disabled")
+              .scrollIntoView()
+              .should("be.visible");
             cy.getByTestId("action-Ignore").click();
             cy.wait("@ignoreResource");
           });
@@ -335,10 +352,15 @@ describe("discovery and detection", () => {
 
         it("should allow muted tables to be monitored", () => {
           cy.getAntTab("Unmonitored").click({ force: true });
+          cy.wait("@getAllMutedTables");
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-21-col-actions",
           ).within(() => {
-            cy.getByTestId("action-Monitor").click();
+            cy.getByTestId("action-Monitor")
+              .scrollIntoView()
+              .should("be.visible")
+              .should("not.be.disabled")
+              .click();
             cy.wait("@confirmResource");
           });
         });

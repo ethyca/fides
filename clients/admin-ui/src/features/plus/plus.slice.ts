@@ -642,7 +642,7 @@ export const selectClassifyInstanceFieldMap = createSelector(
 );
 /**
  * Note that this selects the field that is currently active in the editor. Fields that are shown in
- * the table are looked up by their name using selectClassifyInstanceFieldMap.
+ * the table are looked up by their name using selectClas sifyInstanceFieldMap.
  */
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],

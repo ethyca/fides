@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -33,10 +34,8 @@ import {
   useGetCustomFieldLocationsQuery,
 } from "~/features/plus/plus.slice";
 import {
-  AllowedTypes,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
-  ResourceTypes,
   ScopeRegistryEnum,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -53,17 +52,9 @@ export const SkeletonCustomFieldForm = () => {
   );
 };
 
-const parseValueType = (fieldType: string): string => {
-  // eslint-disable-next-line no-underscore-dangle
-  if (fieldType === AllowedTypes.STRING_ || fieldType === AllowedTypes.STRING) {
-    return "custom";
-  }
-  return fieldType;
-};
-
 const parseResourceType = (resourceType: string): string => {
-  if (RESOURCE_TYPE_MAP.has(resourceType as ResourceTypes)) {
-    return RESOURCE_TYPE_MAP.get(resourceType as ResourceTypes) as string;
+  if (RESOURCE_TYPE_MAP.has(resourceType as LegacyResourceTypes)) {
+    return RESOURCE_TYPE_MAP.get(resourceType as LegacyResourceTypes) as string;
   }
   if (
     resourceType.startsWith("taxonomy:") ||
@@ -145,7 +136,7 @@ const CustomFieldForm = ({
     }
     return {
       ...field,
-      value_type: parseValueType(field.field_type),
+      value_type: field.field_type,
       field_type: getCustomFieldType(field),
       resource_type: parseResourceType(field.resource_type),
       options: allowList?.allowed_values ?? [],
@@ -231,7 +222,7 @@ const CustomFieldForm = ({
           </Form.Item>
 
           <Form.Item
-            label="Field Type"
+            label="Field type"
             name="field_type"
             rules={[{ required: true, message: "Please select a field type" }]}
           >
@@ -360,7 +351,7 @@ const CustomFieldForm = ({
         tooltip="Choose where this field applies, including taxonomies"
       >
         <Select
-          options={(locationOptions || []).map((loc: string) => {
+          options={(locationOptions ?? []).map((loc: string) => {
             // Display the key-form label as-is; convert to resource_type value on submit
             return { label: loc, value: loc };
           })}

@@ -6,4 +6,5 @@ export enum CustomizableMessagingTemplatesEnum {
   PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion",
   SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification",
   MANUAL_TASK_DIGEST = "manual_task_digest",
+  EXTERNAL_USER_WELCOME = "external_user_welcome",
 }

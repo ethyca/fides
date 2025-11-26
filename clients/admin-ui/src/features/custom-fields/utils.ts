@@ -1,20 +1,21 @@
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import {
   FIELD_TYPE_LABEL_MAP,
   FieldTypes,
 } from "~/features/custom-fields/constants";
-import { AllowedTypes, CustomFieldDefinitionWithId } from "~/types/api";
+import { CustomFieldDefinitionWithId } from "~/types/api";
 
 export const getCustomFieldType = (
   value: CustomFieldDefinitionWithId,
 ): FieldTypes | string => {
   // eslint-disable-next-line no-underscore-dangle
-  if (value.field_type === AllowedTypes.STRING_) {
+  if (value.field_type === LegacyAllowedTypes.STRING_ARRAY) {
     return FieldTypes.MULTIPLE_SELECT;
   }
   if (value.allow_list_id) {
     return FieldTypes.SINGLE_SELECT;
   }
-  if (value.field_type === AllowedTypes.STRING) {
+  if (value.field_type === LegacyAllowedTypes.STRING) {
     return FieldTypes.OPEN_TEXT;
   }
   return value.field_type;
