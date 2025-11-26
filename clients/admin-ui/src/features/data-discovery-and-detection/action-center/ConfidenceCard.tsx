@@ -15,6 +15,8 @@ import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { mapConfidenceBucketToSeverity } from "./fields/utils";
 
+import { ConfidenceLevelLabel } from "./constants";
+
 interface ConfidenceCardItem {
   label: string;
   count: number;
@@ -25,6 +27,36 @@ interface ConfidenceCardProps {
   item: ConfidenceCardItem;
   reviewHref: string;
 }
+
+const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
+  // TODO: [ENG-2000] update query params to include the confidence level
+  const actions = [
+    <NextLink href={reviewHref} passHref key={item.label}>
+      <Button
+        type="text"
+        size="small"
+        icon={<Icons.ListBoxes />}
+        aria-label={`Review ${item.label} fields`}
+      >
+        Review
+      </Button>
+    </NextLink>,
+  ];
+  if (item.label === ConfidenceLevelLabel.HIGH) {
+    // TODO: [ENG-2000] add classify action
+    actions.push(
+      <Button
+        type="text"
+        size="small"
+        icon={<Icons.CheckmarkOutline />}
+        aria-label={`Classify ${item.label} fields`}
+      >
+        Classify
+      </Button>,
+    );
+  }
+  return actions;
+};
 
 export const ConfidenceCard = ({ item, reviewHref }: ConfidenceCardProps) => {
   const severity = mapConfidenceBucketToSeverity(item.severity);
@@ -43,18 +75,7 @@ export const ConfidenceCard = ({ item, reviewHref }: ConfidenceCardProps) => {
           {severity && <SeverityGauge severity={severity} />}
         </Space>
       }
-      actions={[
-        <NextLink href={reviewHref} passHref key={item.label}>
-          <Button
-            type="text"
-            size="small"
-            icon={<Icons.ListBoxes />}
-            aria-label={`Review ${item.label} fields`}
-          >
-            Review
-          </Button>
-        </NextLink>,
-      ]}
+      actions={getActions(item, reviewHref)}
     />
   );
 };
