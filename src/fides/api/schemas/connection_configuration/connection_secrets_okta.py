@@ -49,11 +49,19 @@ class OktaSchema(ConnectionConfigSecretsSchema):
                 f"Okta organization URL must be from okta.com domain (got: {parsed.netloc})"
             )
 
-        if parsed.hostname and parsed.hostname.endswith("-admin.okta.com"):
-            raise ValueError(
-                "Admin organization URLs (-admin.okta.com) are not supported. "
-                "Use your main organization URL (e.g., https://your-org.okta.com)"
-            )
+        if parsed.hostname:
+            # Split hostname into labels and check for exact subdomain matching
+            # This avoids substring matching vulnerabilities flagged by CodeQL
+            labels = parsed.hostname.split(".")
+            if (
+                len(labels) >= 3
+                and labels[-3].endswith("-admin")
+                and labels[-2:] == ["okta", "com"]
+            ):
+                raise ValueError(
+                    "Admin organization URLs (-admin.okta.com) are not supported. "
+                    "Use your main organization URL (e.g., https://your-org.okta.com)"
+                )
 
         if parsed.path and parsed.path != "/":
             raise ValueError(
