@@ -66,12 +66,9 @@ const ConfigureMonitorModal = ({
     { isLoading: isSubmittingOktaUpdate },
   ] = usePutIdentityProviderMonitorMutation();
 
-  let isSubmitting: boolean;
-  if (isOktaIntegration) {
-    isSubmitting = isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate;
-  } else {
-    isSubmitting = isSubmittingRegular;
-  }
+  const isSubmitting = isOktaIntegration
+    ? (isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate)
+    : isSubmittingRegular;
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,

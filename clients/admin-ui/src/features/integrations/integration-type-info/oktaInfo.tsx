@@ -21,19 +21,16 @@ export const OKTA_DESCRIPTION = (
   </>
 );
 
+/** Full authentication description for Okta OAuth2 setup */
+export const OKTA_AUTH_DESCRIPTION =
+  "Okta integration uses OAuth2 Client Credentials with private_key_jwt for secure authentication. You will need to generate an RSA key in Okta and copy the JSON key to use in Fides.";
+
 const OktaIntegrationOverview = () => (
   <>
     <InfoHeading text="Overview" />
+    <InfoText>{OKTA_DESCRIPTION}</InfoText>
     <InfoText>
-      SSO providers manage user authentication and can help identify systems
-      within your infrastructure. Adding an SSO provider as a data source allows
-      you to detect connected systems, monitor access patterns, and enhance your
-      data map for better visibility and control.
-    </InfoText>
-    <InfoText>
-      <strong>Authentication:</strong> Okta integration uses OAuth2 Client
-      Credentials with private_key_jwt for secure authentication. You will need to
-      create an API Services application in Okta and generate an RSA key pair.
+      <strong>Authentication:</strong> {OKTA_AUTH_DESCRIPTION}
     </InfoText>
   </>
 );

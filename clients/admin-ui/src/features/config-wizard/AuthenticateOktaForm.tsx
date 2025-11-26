@@ -5,6 +5,7 @@ import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
+import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   isErrorResult,
   ParsedError,
@@ -29,6 +30,9 @@ import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
+
+const PRIVATE_KEY_TOOLTIP =
+  "Private key in JWK (JSON) format. Generate a key in Okta and download the JSON.";
 
 const initialValues = {
   orgUrl: "",
@@ -163,12 +167,7 @@ const AuthenticateOktaForm = () => {
                       { title: "Authenticate Okta Scanner" },
                     ]}
                   />
-                  <Text>
-                    To use the scanner to inventory systems in Okta, you must
-                    first authenticate using OAuth2 Client Credentials. You
-                    will need to create an API Services application in Okta and
-                    generate an RSA key pair.
-                  </Text>
+                  <Text>{OKTA_AUTH_DESCRIPTION}</Text>
                 </Box>
                 <Stack>
                   <CustomTextInput
@@ -186,7 +185,7 @@ const AuthenticateOktaForm = () => {
                   <CustomTextArea
                     name="privateKey"
                     label="Private key"
-                    tooltip="Private key in JWK (JSON) format. Download from Okta: Applications > Your App > Sign On > Client Credentials > Edit > Generate new key"
+                    tooltip={PRIVATE_KEY_TOOLTIP}
                     placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
                     textAreaProps={{
                       rows: 8,
