@@ -400,6 +400,7 @@ def _build_request_task(
             if (
                 dependency.condition_type == ConditionalDependencyType.leaf
                 and dependency.field_address
+                and not dependency.field_address.startswith("privacy_request.")
             ):
                 field_addresses.append(dependency.field_address)
 
