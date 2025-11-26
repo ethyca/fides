@@ -1,14 +1,49 @@
 import json
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from requests.auth import AuthBase
+from typing_extensions import TypedDict
 
 from fides.api.common_exceptions import ConnectionException
 
 if TYPE_CHECKING:
     from requests_oauth2client import DPoPKey, OAuth2Client
+
+
+class _JwkBase(TypedDict, total=False):
+    """Base JWK fields (all optional)."""
+
+    kty: str  # Key type: "RSA" or "EC"
+    alg: str  # Algorithm: RS256, ES256, etc.
+    # EC-specific
+    crv: str  # Curve: P-256, P-384, P-521
+    x: str
+    y: str
+    # RSA-specific
+    n: str  # Modulus
+    e: str  # Public exponent
+
+
+class PrivateJwk(_JwkBase):
+    """JWK private key structure per RFC 7517. The 'd' parameter is required."""
+
+    d: str  # Private key component (required for private keys)
+
+
+class OktaApplication(TypedDict, total=False):
+    """Okta Application object from the API. All fields optional for flexibility."""
+
+    id: str
+    name: str
+    label: str
+    status: str  # ACTIVE, INACTIVE, DELETED
+    created: str
+    lastUpdated: str
+    signOnMode: str
+    # Note: settings, _links, and other fields vary by app type
 
 
 # --- Constants ---
@@ -33,7 +68,7 @@ class OktaHttpClient:
 
     Deliberately scoped: This client lives in connectors/, not in the SaaS framework.
     If we later need a generic private_key_jwt + DPoP auth strategy for SaaS connectors,
-    we will extract it from this iplementation with a clear product decision and 2-3 use
+    we will extract it from this implementation with a clear product decision and 2-3 use
     cases validating the abstraction.
     """
 
@@ -41,7 +76,7 @@ class OktaHttpClient:
         self,
         org_url: str,
         client_id: str,
-        private_key: str,
+        private_key: Union[str, PrivateJwk],
         scopes: Optional[List[str]] = None,
         *,
         oauth_client: "Optional[OAuth2Client]" = None,  # For test injection
@@ -53,7 +88,7 @@ class OktaHttpClient:
         Args:
             org_url: Okta organization URL (e.g., https://your-org.okta.com)
             client_id: OAuth2 client ID
-            private_key: Private key in JWK (JSON) format for client authentication (provided by Okta)
+            private_key: Private key in JWK format - either a JSON string or dict (provided by Okta)
             scopes: OAuth2 scopes
             oauth_client: For test injection - pre-configured OAuth2Client
             dpop_key: For test injection - pre-configured DPoP key
@@ -90,15 +125,34 @@ class OktaHttpClient:
                 "Please install it with: pip install requests-oauth2client"
             ) from e
         except (ValueError, TypeError) as e:
-            raise ConnectionException(f"Invalid key format: {str(e)}") from e
+            # Use generic message to avoid leaking key content in error details
+            raise ConnectionException(
+                "Invalid private key format. Ensure the key is a valid JWK with 'd' parameter."
+            ) from e
 
     @staticmethod
-    def _parse_jwk(private_key: str) -> Dict[str, Any]:
-        """Parse and validate a private key in JWK format."""
-        try:
-            jwk_dict = json.loads(private_key.strip())
-        except json.JSONDecodeError as exc:
-            raise ValueError("Private key must be in JWK (JSON) format.") from exc
+    def _parse_jwk(private_key: Union[str, PrivateJwk]) -> PrivateJwk:
+        """Parse and validate a private key in JWK format.
+
+        Args:
+            private_key: JWK as either a JSON string or dict
+
+        Returns:
+            Parsed JWK dictionary
+
+        Raises:
+            ValueError: If key is not valid JSON or missing 'd' parameter
+        """
+        jwk_dict: PrivateJwk
+        if isinstance(private_key, dict):
+            jwk_dict = private_key
+        else:
+            try:
+                jwk_dict = json.loads(private_key.strip())
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    "Private key must be valid JSON or a dictionary."
+                ) from exc
 
         if "d" not in jwk_dict:
             raise ValueError("JWK is not a private key (missing 'd' parameter).")
@@ -106,7 +160,7 @@ class OktaHttpClient:
         return jwk_dict
 
     @staticmethod
-    def _determine_alg_from_jwk(jwk: Dict[str, Any]) -> str:
+    def _determine_alg_from_jwk(jwk: PrivateJwk) -> str:
         """Determine the signing algorithm from the JWK."""
         if "alg" in jwk:
             return jwk["alg"]
@@ -140,7 +194,7 @@ class OktaHttpClient:
 
     def list_applications(
         self, limit: int = DEFAULT_API_LIMIT, after: Optional[str] = None
-    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    ) -> Tuple[List[OktaApplication], Optional[str]]:
         """
         List Okta applications with cursor-based pagination.
 
@@ -152,7 +206,7 @@ class OktaHttpClient:
             Tuple of (apps_list, next_cursor). next_cursor is None if no more pages.
         """
         token = self._get_token()
-        params: Dict[str, Any] = {"limit": limit}
+        params: Dict[str, Union[int, str]] = {"limit": limit}
         if after:
             params["after"] = after
 
@@ -172,7 +226,7 @@ class OktaHttpClient:
 
     def list_all_applications(
         self, page_size: int = DEFAULT_API_LIMIT, max_pages: int = DEFAULT_MAX_PAGES
-    ) -> List[Dict[str, Any]]:
+    ) -> List[OktaApplication]:
         """
         Fetch all Okta applications with automatic pagination.
 
@@ -183,26 +237,45 @@ class OktaHttpClient:
         Returns:
             List of all applications
         """
-        all_apps: List[Dict[str, Any]] = []
+        all_apps: List[OktaApplication] = []
         cursor: Optional[str] = None
+        seen_cursors: set = set()
+
         for _ in range(max_pages):
             apps, next_cursor = self.list_applications(limit=page_size, after=cursor)
             all_apps.extend(apps)
 
             if not next_cursor:
                 break
+            if next_cursor in seen_cursors:
+                # Prevent infinite loop if Okta returns duplicate cursor
+                break
+            seen_cursors.add(next_cursor)
             cursor = next_cursor
 
         return all_apps
 
     @staticmethod
     def _extract_next_cursor(link_header: Optional[str]) -> Optional[str]:
-        """Extract 'after' cursor from Okta Link header."""
+        """Extract 'after' cursor from Okta Link header using urllib.parse.
+
+        Args:
+            link_header: The Link header from Okta API response
+
+        Returns:
+            The 'after' cursor value, or None if no next page
+        """
         if not link_header:
             return None
         for link in link_header.split(","):
             if 'rel="next"' in link:
-                match = re.search(r"after=([^&>]+)", link)
-                if match:
-                    return match.group(1)
+                # Extract URL from angle brackets: <url>; rel="next"
+                url_match = re.search(r"<([^>]+)>", link)
+                if url_match:
+                    url = url_match.group(1)
+                    parsed = urlparse(url)
+                    query_params = parse_qs(parsed.query)
+                    after_values = query_params.get("after", [])
+                    if after_values:
+                        return after_values[0]
         return None
