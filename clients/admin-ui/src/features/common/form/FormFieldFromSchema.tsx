@@ -91,10 +91,7 @@ export const FormFieldFromSchema = ({
           );
         }
 
-        // Check if this is a multiline field (like private_key)
-        const isMultiline = field.name.includes("private_key");
-
-        if (isMultiline) {
+        if (fieldSchema.multiline) {
           return (
             <CustomTextArea
               {...field}

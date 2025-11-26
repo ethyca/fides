@@ -29,7 +29,7 @@ class OktaSchema(ConnectionConfigSecretsSchema):
             "Download from Okta: Applications > Your App > Sign On > "
             "Client Credentials > Edit > Generate new key."
         ),
-        json_schema_extra={"sensitive": True},
+        json_schema_extra={"sensitive": True, "multiline": True},
     )
     scopes: Optional[List[str]] = Field(
         default=["okta.apps.read"],
