@@ -19,7 +19,6 @@ EXPECTED_FILES = [
     "data/manualtask/manual_data/index.html",
     "data/manualtask2/index.html",
     "data/manualtask2/manual_data/index.html",
-    "attachments/index.html",
 ]
 
 
@@ -46,25 +45,18 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify that the attachments index file exists
-            self.assert_file_in_zip(
-                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
-
-            # Read and verify the content of the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read and verify the attachments in clickme.html
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify both attachment links are present with their details
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"]["download_url"],
                 "1.0 KB",  # Assuming the file size is formatted as 1.0 KB
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"]["download_url"],
                 "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
@@ -91,14 +83,12 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report_streaming = builder_streaming.generate()
 
         with zipfile.ZipFile(io.BytesIO(report_streaming.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that links point to local attachments directory
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"][
                     "file_name"
@@ -106,7 +96,7 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
                 "1.0 KB",
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"][
                     "file_name"
@@ -116,7 +106,7 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
 
             # Verify that original download URLs are NOT present
             self.assert_html_not_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["download_url"],
                 common_attachment_config["binary"]["download_url"],
             )
@@ -128,20 +118,18 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report_default = builder_default.generate()
 
         with zipfile.ZipFile(io.BytesIO(report_default.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that links point to original download URLs
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"]["download_url"],
                 "1.0 KB",
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"]["download_url"],
                 "2.0 KB",
@@ -164,20 +152,16 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that the TTL is displayed (should be 5 days by default)
             # The exact number will depend on the CONFIG.security.subject_request_download_link_ttl_seconds value
-            self.assert_html_contains(
-                attachments_content, "download links will expire in"
-            )
-            self.assert_html_contains(attachments_content, "days")
+            self.assert_html_contains(clickme_content, "download links will expire in")
+            self.assert_html_contains(clickme_content, "days")
 
             # Verify that the hardcoded "7 days" is not present
-            self.assert_html_not_contains(attachments_content, "7 days")
+            self.assert_html_not_contains(clickme_content, "7 days")
 
     def test_ttl_display_in_collection_templates(
         self,
@@ -308,24 +292,9 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
                 manual_data, webhook_variants[webhook_type]["email"]
             )
 
-            # Verify that attachments directory exists but contains no actual attachment files
-            # (only the index.html file should be present)
-            attachment_files = [
-                name
-                for name in zip_file.namelist()
-                if name.startswith(f"{common_assertions['paths']['attachments_dir']}/")
-            ]
-            # Should only have the index.html file, no actual attachment files
-            assert len(attachment_files) == 1
-            assert (
-                attachment_files[0]
-                == f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
-
-            # Verify that the attachments index page exists and is accessible
-            self.assert_file_in_zip(
-                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
+            # Verify that attachments are shown in clickme.html when present
+            # When there are no attachments, the attachments section should not appear
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
 
 class TestDSRReportBuilderAttachmentHandling:
@@ -396,13 +365,8 @@ class TestDSRReportBuilderAttachmentHandling:
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
-            # Check that attachments index was created
-            TestDSRReportBuilderBase.assert_file_in_zip(
-                zip_file_obj, "attachments/index.html"
-            )
-
-            # Check that the HTML contains the attachment links
-            html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
+            # Check that the HTML contains the attachment links in clickme.html
+            html_content = zip_file_obj.read("clickme.html").decode("utf-8")
             TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test1.txt",
@@ -632,9 +596,9 @@ class TestDSRReportBuilderDuplicateFileNames:
         """Test that collection-specific and global attachment indexes correctly handle files with same names but different URLs
 
         Expected DSR Report Structure:
+        ├── clickme.html (main index with attachments section: all 4 attachments)
         ├── data/manualtask/manual_data/index.html (collection-specific: 1 text file)
-        ├── data/manualtask2/manual_data/index.html (collection-specific: 1 PDF + 2 text files)
-        └── attachments/index.html (global index: all 4 attachments)
+        └── data/manualtask2/manual_data/index.html (collection-specific: 1 PDF + 2 text files)
 
         Note: Each attachment appears twice in HTML (filename display + URL), so filename counts are doubled.
         """
@@ -703,10 +667,10 @@ class TestDSRReportBuilderDuplicateFileNames:
                 manualtask2_pdf_count >= 1
             ), f"manualtask2 should show at least 1 test_file_pdf.pdf, found {manualtask2_pdf_count}"
 
-            # 2. Verify global attachments index shows all attachments with dataset paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with dataset paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
-            # Verify all expected filenames are present in the global attachments index
+            # Verify all expected filenames are present in the attachments section of clickme.html
             expected_filenames = [
                 "test_file_text.txt",  # From manualtask (1 occurrence)
                 "test_file_text.txt",  # From manualtask2 (2 occurrences, same name different URLs)
@@ -716,9 +680,9 @@ class TestDSRReportBuilderDuplicateFileNames:
             for expected_filename in expected_filenames:
                 assert (
                     expected_filename in attachments_html
-                ), f"Expected filename {expected_filename} not found in global attachments index"
+                ), f"Expected filename {expected_filename} not found in attachments section of clickme.html"
 
-            # Verify total counts in global attachments index
+            # Verify total counts in attachments section
             # Each attachment appears twice in the HTML (filename display + URL), so we need to count table rows
             # Count the number of attachment table rows (each row represents one attachment)
             attachment_rows = attachments_html.count(
@@ -730,7 +694,7 @@ class TestDSRReportBuilderDuplicateFileNames:
 
             # Verify that test_file_text.txt appears in the expected number of attachment entries
             if enable_streaming:
-                # Incremented filename appears in global attachments index
+                # Incremented filename appears in attachments section
                 # test_file_text.txt appears 2 times (2 occurrences each) = 4 occurrences
                 # test_file_text_1.txt appears 1 times (2 occurrences each) = 2 occurrences
                 total_text_occurrences = attachments_html.count("test_file_text.txt")
@@ -879,8 +843,8 @@ class TestDSRReportBuilderRedactionHandling:
                 "test_file_text.txt" in non_redacted_collection_html
             ), "Non-redacted dataset should have test_file_text.txt"
 
-            # Verify global attachments index shows all attachments with correct dataset paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # Verify attachments section in clickme.html shows all attachments with correct dataset paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
@@ -894,7 +858,7 @@ class TestDSRReportBuilderRedactionHandling:
                 # (it can appear as part of "manualtask2" which should not be redacted)
                 assert (
                     "manualtask/manual_data:" not in attachments_html
-                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
+                ), "Original dataset name should not appear as standalone dataset in attachments section in streaming mode"
                 self.assert_streaming_patterns(attachments_html)
             else:
                 self.assert_not_streaming_patterns(attachments_html)
@@ -955,8 +919,8 @@ class TestDSRReportBuilderRedactionHandling:
                 "test_file_text_1.txt" in redacted_collection2_html
             ), "Redacted collection should have test_file_text_1.txt"
 
-            # 2. Verify global attachments index shows all attachments with correct collection paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with correct collection paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
@@ -966,7 +930,7 @@ class TestDSRReportBuilderRedactionHandling:
                 # Verify that the original collection name "manual_data" does NOT appear in the global index
                 assert (
                     "manual_data:" not in attachments_html
-                ), "Original collection name should not appear in global attachments index in streaming mode"
+                ), "Original collection name should not appear in attachments section in streaming mode"
                 self.assert_streaming_patterns(attachments_html)
 
             else:
@@ -1033,8 +997,8 @@ class TestDSRReportBuilderRedactionHandling:
                 "test_file_text.txt" in redacted_collection_only_html
             ), "Non-redacted dataset with redacted collection should have test_file_text.txt"
 
-            # 2. Verify global attachments index shows all attachments with correct paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with correct paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
@@ -1050,10 +1014,10 @@ class TestDSRReportBuilderRedactionHandling:
                 # Verify that the original names do NOT appear in the global index
                 assert (
                     "manualtask/manual_data:" not in attachments_html
-                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
+                ), "Original dataset name should not appear as standalone dataset in attachments section in streaming mode"
                 assert (
                     "manual_data:" not in attachments_html
-                ), "Original collection name should not appear in global attachments index in streaming mode"
+                ), "Original collection name should not appear in attachments section in streaming mode"
                 self.assert_streaming_patterns(attachments_html)
             else:
                 self.assert_not_streaming_patterns(attachments_html)
