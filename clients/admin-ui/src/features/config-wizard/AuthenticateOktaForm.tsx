@@ -5,13 +5,13 @@ import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
-import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   isErrorResult,
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   GenerateResponse,
   GenerateTypes,
@@ -113,7 +113,10 @@ const AuthenticateOktaForm = () => {
     const config = {
       ...values,
       scopes: values.scopes
-        ? values.scopes.split(",").map((s) => s.trim()).filter(Boolean)
+        ? values.scopes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
         : ["okta.apps.read"],
     };
 

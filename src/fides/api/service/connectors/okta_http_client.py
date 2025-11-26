@@ -137,7 +137,6 @@ class OktaHttpClient:
     ):
         self.org_url = org_url.rstrip("/")
         self.scopes = tuple(scopes) if scopes is not None else DEFAULT_OKTA_SCOPES
-        self._client_id = client_id  # Used for rate limit key
 
         # Token caching state
         self._cached_token: "Optional[BearerToken]" = None
@@ -287,7 +286,7 @@ class OktaHttpClient:
 
         return [
             RateLimiterRequest(
-                key=f"okta:{self._client_id}",
+                key=f"okta:{self.org_url}",
                 rate_limit=self._rate_limit_per_minute,
                 period=RateLimiterPeriod.MINUTE,
             )
