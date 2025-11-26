@@ -1,7 +1,7 @@
 import React from "react";
 
 import { useCustomFields } from "~/features/common/custom-fields/hooks";
-import { ResourceTypes } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 import SystemDataGroup from "../SystemDataGroup";
 import SystemDataTags from "./SystemDataTags";
@@ -9,7 +9,7 @@ import SystemDataTextField from "./SystemDataTextField";
 
 interface SystemCustomFieldGroupProps {
   customFields?: Record<string, any>;
-  resourceType: ResourceTypes;
+  resourceType: LegacyResourceTypes;
 }
 
 const SystemCustomFieldGroup = ({
@@ -29,7 +29,7 @@ const SystemCustomFieldGroup = ({
     );
 
   const prefix =
-    resourceType === ResourceTypes.SYSTEM
+    resourceType === LegacyResourceTypes.SYSTEM
       ? "custom_fields"
       : "privacy_declarations[0].custom_fields";
 

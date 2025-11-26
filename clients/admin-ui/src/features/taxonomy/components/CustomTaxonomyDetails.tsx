@@ -71,7 +71,7 @@ const CustomTaxonomyDetails = ({
   };
 
   const handleAddCustomFieldDefinition = async (fieldType: string) => {
-    const taxonomyType = valueTypeOptions!.find((t) => t.value === fieldType);
+    const taxonomyType = valueTypeOptions?.find((t) => t.value === fieldType);
     if (!taxonomyType || !fidesKey) {
       messageApi.error("Taxonomy type not found");
       return;

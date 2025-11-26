@@ -1,11 +1,11 @@
-import { ResourceTypes } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 export const RESOURCE_TYPE_MAP = new Map([
-  [ResourceTypes.SYSTEM, "system:information"],
-  [ResourceTypes.DATA_USE, "taxonomy:data use"],
-  [ResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
-  [ResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
-  [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
+  [LegacyResourceTypes.SYSTEM, "system:information"],
+  [LegacyResourceTypes.DATA_USE, "taxonomy:data use"],
+  [LegacyResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
+  [LegacyResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
+  [LegacyResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
 
 export enum FieldTypes {

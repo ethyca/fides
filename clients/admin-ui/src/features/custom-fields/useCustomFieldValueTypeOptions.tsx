@@ -49,7 +49,7 @@ const useCustomFieldValueTypeOptions = () => {
     );
   }
 
-  return { valueTypeOptions, customTaxonomies };
+  return { valueTypeOptions };
 };
 
 export default useCustomFieldValueTypeOptions;
