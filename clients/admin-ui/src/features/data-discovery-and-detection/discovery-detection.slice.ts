@@ -63,6 +63,7 @@ interface ChangeResourceCategoryQueryParam {
   user_assigned_system_key?: string;
 }
 
+// Identity Provider Monitor interfaces (Okta-specific)
 interface IdentityProviderMonitorConfig {
   name: string;
   key?: string;
@@ -77,6 +78,7 @@ interface IdentityProviderMonitorConfig {
 interface IdentityProviderMonitorListQueryParams {
   page?: number;
   size?: number;
+  connection_config_key?: string;
 }
 
 interface IdentityProviderMonitorResultsQueryParams {
@@ -320,6 +322,17 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
+    putIdentityProviderMonitor: build.mutation<
+      MonitorConfig,
+      IdentityProviderMonitorConfig
+    >({
+      query: (body) => ({
+        method: "PUT",
+        url: `/plus/identity-provider-monitors`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
     getIdentityProviderMonitors: build.query<
       Page_MonitorStatusResponse_,
       IdentityProviderMonitorListQueryParams
@@ -374,6 +387,7 @@ export const {
   useUpdateResourceCategoryMutation,
   useApproveStagedResourcesMutation,
   useCreateIdentityProviderMonitorMutation,
+  usePutIdentityProviderMonitorMutation,
   useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,
   useExecuteIdentityProviderMonitorMutation,
