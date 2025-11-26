@@ -43,15 +43,15 @@ const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
     </NextLink>,
   ];
   if (item.label === ConfidenceLevelLabel.HIGH) {
-    // TODO: [ENG-2000] add classify action
+    // TODO: [ENG-2000] add confirm action
     actions.push(
       <Button
         type="text"
         size="small"
         icon={<Icons.CheckmarkOutline />}
-        aria-label={`Classify ${item.label} fields`}
+        aria-label={`Confirm all ${item.label} fields`}
       >
-        Classify
+        Confirm
       </Button>,
     );
   }
