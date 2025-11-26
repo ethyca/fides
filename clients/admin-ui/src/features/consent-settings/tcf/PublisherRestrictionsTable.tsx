@@ -10,8 +10,8 @@ import NextLink from "next/link";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { selectPurposes } from "~/features/common/purpose.slice";
+import { InfoCell } from "~/features/common/table/cells";
 import { MappedPurpose, TCFConfigurationDetail } from "~/types/api";
 
 import {
@@ -47,10 +47,10 @@ export const PublisherRestrictionsTable = ({
       },
       {
         title: (
-          <span className="flex items-center gap-3">
-            Restrictions
-            <InfoTooltip label="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects." />
-          </span>
+          <InfoCell
+            value="Restrictions"
+            tooltip="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects."
+          />
         ),
         key: "restrictions",
         dataIndex: "id",
@@ -79,10 +79,10 @@ export const PublisherRestrictionsTable = ({
       },
       {
         title: (
-          <span className="flex items-center gap-3">
-            Flexible
-            <InfoTooltip label='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.' />
-          </span>
+          <InfoCell
+            value="Flexible"
+            tooltip='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.'
+          />
         ),
         key: "flexible",
         dataIndex: "id",

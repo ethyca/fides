@@ -10,7 +10,7 @@ import {
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
-import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { InfoCell } from "~/features/common/table/cells";
 import {
   RangeEntry,
   TCFRestrictionType,
@@ -115,10 +115,10 @@ export const PurposeRestrictionsTable = () => {
       },
       {
         title: (
-          <span className="flex items-center gap-3">
-            Vendors
-            <InfoTooltip label="Specify which vendors the restriction applies to. You can apply restrictions to all vendors, specific vendors by their IDs, or allow only certain vendors while restricting the rest." />
-          </span>
+          <InfoCell
+            value="Vendors"
+            tooltip="Specify which vendors the restriction applies to. You can apply restrictions to all vendors, specific vendors by their IDs, or allow only certain vendors while restricting the rest."
+          />
         ),
         key: "vendor_ids",
         dataIndex: "vendor_ids",
