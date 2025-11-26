@@ -337,17 +337,13 @@ class TestStaticHelperMethods:
         parsed = OktaHttpClient._parse_jwk(RSA_JWK)
         assert parsed["kid"] == RSA_JWK["kid"]
 
-    def test_parse_jwk_validates_dict_missing_d(self):
+    def test_parse_jwk_accepts_dict_without_d(self):
+        # _parse_jwk no longer validates 'd' - that's done by OktaSchema
+        # This tests that dict passthrough works regardless of content
         public_jwk = RSA_JWK.copy()
         del public_jwk["d"]
-        with pytest.raises(ValueError, match="not a private key"):
-            OktaHttpClient._parse_jwk(public_jwk)
-
-    def test_parse_jwk_validates_private_key(self):
-        public_jwk = RSA_JWK.copy()
-        del public_jwk["d"]
-        with pytest.raises(ValueError):
-            OktaHttpClient._parse_jwk(json.dumps(public_jwk))
+        parsed = OktaHttpClient._parse_jwk(public_jwk)
+        assert parsed["kid"] == RSA_JWK["kid"]
 
     def test_parse_jwk_round_trip(self):
         parsed = OktaHttpClient._parse_jwk(json.dumps(RSA_JWK))

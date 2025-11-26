@@ -165,17 +165,6 @@ const AuthenticateOktaForm = () => {
                     need to create an API Services application in Okta and
                     generate an RSA key pair.
                   </Text>
-                  <Text fontSize="sm" color="gray.600">
-                    Need help setting up?{" "}
-                    <a
-                      href="https://ethyca.com/docs/guides/okta_privatekey_setup"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: "underline" }}
-                    >
-                      View setup guide
-                    </a>
-                  </Text>
                 </Box>
                 <Stack>
                   <CustomTextInput

@@ -112,7 +112,10 @@ class OktaHttpClient:
 
     @staticmethod
     def _parse_jwk(private_key: Union[str, PrivateJwk]) -> PrivateJwk:
-        """Parse and validate a private key in JWK format.
+        """Parse private key from string or dict.
+
+        Note: Full validation (kty, 'd' param) is done by OktaSchema.
+        This method handles string→dict conversion for already-validated secrets.
 
         Args:
             private_key: JWK as either a JSON string or dict
@@ -121,23 +124,15 @@ class OktaHttpClient:
             Parsed JWK dictionary
 
         Raises:
-            ValueError: If key is not valid JSON or missing 'd' parameter
+            ValueError: If key is not valid JSON
         """
-        jwk_dict: PrivateJwk
         if isinstance(private_key, dict):
-            jwk_dict = private_key
-        else:
-            try:
-                jwk_dict = json.loads(private_key.strip())
-            except json.JSONDecodeError as exc:
-                raise ValueError(
-                    "Private key must be valid JSON or a dictionary."
-                ) from exc
+            return private_key
 
-        if "d" not in jwk_dict:
-            raise ValueError("JWK is not a private key (missing 'd' parameter).")
-
-        return jwk_dict
+        try:
+            return json.loads(private_key.strip())
+        except json.JSONDecodeError as exc:
+            raise ValueError("Private key must be valid JSON.") from exc
 
     @staticmethod
     def _determine_alg_from_jwk(jwk: PrivateJwk) -> str:
