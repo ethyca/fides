@@ -1,6 +1,5 @@
 """Module that adds functionality for generating or scanning systems."""
 
-import asyncio
 from collections import defaultdict
 from typing import Dict, List, Optional
 
@@ -177,7 +176,7 @@ def generate_system_aws(
     return file_name
 
 
-async def generate_okta_systems(
+def generate_okta_systems(
     organization: Organization, okta_config: Optional[OktaConfig]
 ) -> List[System]:
     """
@@ -186,11 +185,9 @@ async def generate_okta_systems(
 
     Uses OAuth2 authentication via OktaHttpClient.
     """
-
     import fides.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
-    # list_okta_applications is now sync (uses OktaHttpClient)
     okta_applications = okta_connector.list_okta_applications(okta_client=okta_client)
     okta_systems = okta_connector.create_okta_systems(
         okta_applications=okta_applications, organization_key=organization.fides_key
@@ -218,8 +215,8 @@ def generate_system_okta(
     )
     assert organization
 
-    okta_systems = asyncio.run(
-        generate_okta_systems(organization=organization, okta_config=okta_config)
+    okta_systems = generate_okta_systems(
+        organization=organization, okta_config=okta_config
     )
 
     write_system_manifest(
@@ -448,8 +445,8 @@ def scan_system_okta(
     )
     assert organization
 
-    okta_systems = asyncio.run(
-        generate_okta_systems(organization=organization, okta_config=okta_config)
+    okta_systems = generate_okta_systems(
+        organization=organization, okta_config=okta_config
     )
 
     if len(okta_systems) < 1:

@@ -1,5 +1,4 @@
 import json
-import re
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
@@ -92,7 +91,11 @@ class OktaHttpClient:
             private_jwk = self._parse_jwk(private_key)
             alg = self._determine_alg_from_jwk(private_jwk)
 
-            # Okta requires DPoP key to be separate from client auth key
+            # DPoP (RFC 9449) requires a separate key from client authentication.
+            # ES256 is used regardless of the client auth key type because:
+            # 1. It's explicitly recommended by RFC 9449 for DPoP proofs
+            # 2. It provides strong security with compact signatures
+            # 3. Okta supports ES256 for DPoP across all configurations
             self._dpop_key = DPoPKey.generate(alg="ES256")
 
             self._oauth_client = OAuth2Client(
@@ -229,8 +232,24 @@ class OktaHttpClient:
         return all_apps
 
     @staticmethod
+    def _extract_bracketed_url(text: str) -> Optional[str]:
+        """Extract URL from angle brackets in RFC 8288 Link header format.
+
+        Args:
+            text: A link entry like '<https://example.com>; rel="next"'
+
+        Returns:
+            The URL string, or None if no bracketed URL found
+        """
+        start = text.find("<")
+        end = text.find(">", start + 1) if start != -1 else -1
+        if start != -1 and end != -1:
+            return text[start + 1 : end]
+        return None
+
+    @staticmethod
     def _extract_next_cursor(link_header: Optional[str]) -> Optional[str]:
-        """Extract 'after' cursor from Okta Link header using urllib.parse.
+        """Extract 'after' cursor from Okta Link header.
 
         Args:
             link_header: The Link header from Okta API response
@@ -242,9 +261,8 @@ class OktaHttpClient:
             return None
         for link in link_header.split(","):
             if 'rel="next"' in link:
-                url_match = re.search(r"<([^>]+)>", link)
-                if url_match:
-                    url = url_match.group(1)
+                url = OktaHttpClient._extract_bracketed_url(link)
+                if url:
                     parsed = urlparse(url)
                     query_params = parse_qs(parsed.query)
                     after_values = query_params.get("after", [])

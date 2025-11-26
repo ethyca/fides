@@ -51,14 +51,14 @@ const ValidationSchema = Yup.object().shape({
     .trim()
     .test(
       "is-valid-json",
-      "Private key must be in JWK (JSON) format. Download from Okta Admin Console.",
+      "Private key must be valid JSON. Paste the JWK downloaded from Okta.",
       (value) => {
         if (!value) {
           return true;
         }
         try {
-          const parsed = JSON.parse(value);
-          return typeof parsed === "object" && "d" in parsed;
+          JSON.parse(value);
+          return true;
         } catch {
           return false;
         }
