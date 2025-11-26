@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -178,3 +178,41 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
     """
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
+
+
+class OAuth2PrivateKeyJWTConfiguration(OAuth2BaseConfiguration):
+    """
+    OAuth2 Client Credentials with private_key_jwt client authentication (RFC 7523).
+
+    Uses asymmetric cryptography for client authentication instead of client_secret.
+    The client signs a JWT assertion with a private key, while the OAuth2 provider
+    verifies the signature using the corresponding public key.
+
+    This method is more secure than client_secret because:
+    - Private key never transmitted to the provider
+    - Reduces credential leakage risk
+    - Easier key rotation
+    - Meets enterprise security compliance requirements
+
+    Supported providers: Okta, Azure AD, Auth0, and any RFC 7523 compliant provider.
+    """
+
+    provider: Literal["okta", "azure_ad", "auth0", "generic"] = Field(
+        description="OAuth2 provider type for JWT client selection"
+    )
+    jwt_algorithm: str = Field(
+        default="RS256", description="JWT signing algorithm (default: RS256)"
+    )
+    jwt_expiration_seconds: int = Field(
+        default=300,
+        description="JWT expiration time in seconds (default: 300)",
+    )
+    jwt_audience: Optional[str] = Field(
+        default=None,
+        description="Custom JWT audience claim (defaults to token_endpoint)",
+    )
+    refresh_request: Optional[SaaSRequest] = Field(
+        default=None,
+        exclude=True,
+        description="Not used for private_key_jwt flow",
+    )
