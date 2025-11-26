@@ -1,6 +1,5 @@
 import { isEqual } from "lodash";
 
-import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import { isErrorResult } from "~/features/common/helpers";
 import { FieldTypes } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
@@ -9,28 +8,15 @@ import {
   useUpdateCustomFieldDefinitionMutation,
   useUpsertAllowListMutation,
 } from "~/features/plus/plus.slice";
-import { AllowList, CustomFieldDefinitionWithId } from "~/types/api";
+import {
+  AllowedTypes,
+  AllowList,
+  CustomFieldDefinitionWithId,
+} from "~/types/api";
 import { RTKResult } from "~/types/errors";
 
 const generateNewAllowListName = () =>
   Date.now().toString() + Math.random().toString();
-
-// Normalize resource_type from key-form selection
-// taxonomy:data_category -> data_category (custom metadata endpoint will map as needed)
-// system:information -> system
-// system:data use -> privacy declaration
-const normalizeResourceType = (rt: string): string => {
-  if (rt.startsWith("taxonomy:")) {
-    return rt.split(":", 2)[1];
-  }
-  if (rt === "system:information") {
-    return "system";
-  }
-  if (rt === "system:data use") {
-    return "privacy declaration";
-  }
-  return rt;
-};
 
 const useCreateOrUpdateCustomField = () => {
   const [addCustomFieldDefinition, { isLoading: addIsLoading }] =
@@ -41,18 +27,14 @@ const useCreateOrUpdateCustomField = () => {
 
   const createOrUpdate = async (
     values: CustomFieldsFormValues,
-    initialField: CustomFieldDefinitionWithId | undefined = undefined,
-    initialAllowList: AllowList | undefined = undefined,
+    initialField: CustomFieldDefinitionWithId | undefined,
+    initialAllowList: AllowList | undefined,
   ) => {
-    const normalizedResourceType = normalizeResourceType(
-      values.resource_type as string,
-    );
     if (values.field_type === FieldTypes.OPEN_TEXT) {
       const payload = {
         ...values,
-        field_type: LegacyAllowedTypes.STRING,
+        field_type: AllowedTypes.STRING,
         id: initialField ? initialField.id : undefined,
-        resource_type: normalizedResourceType,
       };
       let result: RTKResult | undefined;
       if (!initialField) {
@@ -82,10 +64,10 @@ const useCreateOrUpdateCustomField = () => {
           ...rest,
           field_type:
             values.field_type === FieldTypes.SINGLE_SELECT
-              ? LegacyAllowedTypes.STRING
-              : LegacyAllowedTypes.STRING_ARRAY,
+              ? AllowedTypes.STRING
+              : // eslint-disable-next-line no-underscore-dangle
+                AllowedTypes.STRING_,
           allow_list_id: allowListResult.data?.id,
-          resource_type: normalizedResourceType,
         };
         const result = await addCustomFieldDefinition(fieldPayload);
         return result;
@@ -113,30 +95,16 @@ const useCreateOrUpdateCustomField = () => {
           allowListResult && !isErrorResult(allowListResult)
             ? (allowListResult.data as AllowList).id
             : initialField.allow_list_id,
-        resource_type: normalizedResourceType,
         field_type:
           values.field_type === FieldTypes.SINGLE_SELECT
-            ? LegacyAllowedTypes.STRING
-            : LegacyAllowedTypes.STRING_ARRAY,
+            ? AllowedTypes.STRING
+            : // eslint-disable-next-line no-underscore-dangle
+              AllowedTypes.STRING_,
       };
       const result = await updateCustomFieldDefinition(fieldPayload);
       return result;
     }
-    // field type is a taxonomy
-    const { value_type: valueType, ...rest } = values;
-    const payload = {
-      ...rest,
-      id: initialField ? initialField.id : undefined,
-      field_type: valueType,
-      resource_type: normalizedResourceType,
-    };
-    let result: RTKResult | undefined;
-    if (!initialField) {
-      result = await addCustomFieldDefinition(payload);
-    } else {
-      result = await updateCustomFieldDefinition(payload);
-    }
-    return result;
+    return undefined;
   };
 
   return {

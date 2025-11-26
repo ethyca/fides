@@ -5,11 +5,12 @@ import {
 } from "cypress/support/stubs";
 
 import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
-import { CustomFieldDefinition, ReportType } from "~/types/api";
 import {
-  LegacyAllowedTypes,
-  LegacyResourceTypes,
-} from "~/features/common/custom-fields/types";
+  AllowedTypes,
+  CustomFieldDefinition,
+  ReportType,
+  ResourceTypes,
+} from "~/types/api";
 
 const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   const base = {
@@ -45,11 +46,12 @@ describe("Data map report table", () => {
           mockCustomField({ name: "Starter pokemon" }),
           mockCustomField({
             name: "Pokemon party",
-            field_type: LegacyAllowedTypes.STRING_ARRAY,
+            // eslint-disable-next-line no-underscore-dangle
+            field_type: AllowedTypes.STRING_,
           }),
           mockCustomField({
             name: "color",
-            resource_type: LegacyResourceTypes.DATA_USE,
+            resource_type: ResourceTypes.DATA_USE,
           }),
         ],
       },
