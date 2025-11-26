@@ -49,7 +49,7 @@ class OktaSchema(ConnectionConfigSecretsSchema):
                 f"Okta organization URL must be from okta.com domain (got: {parsed.netloc})"
             )
 
-        if "-admin.okta.com" in parsed.netloc:
+        if parsed.hostname and parsed.hostname.endswith("-admin.okta.com"):
             raise ValueError(
                 "Admin organization URLs (-admin.okta.com) are not supported. "
                 "Use your main organization URL (e.g., https://your-org.okta.com)"
