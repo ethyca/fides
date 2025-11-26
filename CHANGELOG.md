@@ -33,6 +33,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
 
+### Added
+- Added confidence level summary cards to Action Center home [#7036](https://github.com/ethyca/fides/pull/7036)
+
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
 ### Added
