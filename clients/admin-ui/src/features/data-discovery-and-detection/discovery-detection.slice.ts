@@ -6,10 +6,12 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
+  MonitorFrequency,
   Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
+import { MonitorClassifyParams } from "~/types/api/models/MonitorClassifyParams";
 
 interface State {
   page?: number;
@@ -59,6 +61,35 @@ interface ChangeResourceCategoryQueryParam {
   staged_resource_urn: string;
   user_assigned_data_categories?: string[];
   user_assigned_system_key?: string;
+}
+
+// Identity Provider Monitor interfaces (Okta-specific)
+interface IdentityProviderMonitorConfig {
+  name: string;
+  key?: string;
+  provider: "okta";
+  connection_config_key: string;
+  enabled: boolean;
+  execution_start_date?: string;
+  execution_frequency?: MonitorFrequency;
+  classify_params?: MonitorClassifyParams;
+}
+
+interface IdentityProviderMonitorListQueryParams {
+  page?: number;
+  size?: number;
+  connection_config_key?: string;
+}
+
+interface IdentityProviderMonitorResultsQueryParams {
+  monitor_config_key: string;
+  page?: number;
+  size?: number;
+  search?: string;
+}
+
+interface IdentityProviderMonitorExecuteParams {
+  monitor_config_key: string;
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -279,6 +310,61 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Monitor Field Details",
       ],
     }),
+    // Identity Provider Monitor endpoints (Okta-specific)
+    createIdentityProviderMonitor: build.mutation<
+      MonitorConfig,
+      IdentityProviderMonitorConfig
+    >({
+      query: (body) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    putIdentityProviderMonitor: build.mutation<
+      MonitorConfig,
+      IdentityProviderMonitorConfig
+    >({
+      query: (body) => ({
+        method: "PUT",
+        url: `/plus/identity-provider-monitors`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    getIdentityProviderMonitors: build.query<
+      Page_MonitorStatusResponse_,
+      IdentityProviderMonitorListQueryParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/identity-provider-monitors`,
+        params,
+      }),
+      providesTags: ["Discovery Monitor Configs"],
+    }),
+    getIdentityProviderMonitorResults: build.query<
+      Page_StagedResourceAPIResponse_,
+      IdentityProviderMonitorResultsQueryParams
+    >({
+      query: ({ monitor_config_key, ...params }) => ({
+        method: "GET",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
+        params,
+      }),
+      providesTags: () => ["Discovery Monitor Results"],
+    }),
+    executeIdentityProviderMonitor: build.mutation<
+      { monitor_execution_id: string; task_id: string | null },
+      IdentityProviderMonitorExecuteParams
+    >({
+      query: ({ monitor_config_key }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/execute`,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
   }),
 });
 
@@ -300,6 +386,11 @@ export const {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
   useApproveStagedResourcesMutation,
+  useCreateIdentityProviderMonitorMutation,
+  usePutIdentityProviderMonitorMutation,
+  useGetIdentityProviderMonitorsQuery,
+  useGetIdentityProviderMonitorResultsQuery,
+  useExecuteIdentityProviderMonitorMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({
