@@ -1,10 +1,10 @@
 import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
+  AntSkeleton as Skeleton,
   AntTable as Table,
   AntTag as Tag,
-  Skeleton,
-  Text,
+  AntTypography as Typography,
 } from "fidesui";
 import NextLink from "next/link";
 import React, { useMemo } from "react";
@@ -18,6 +18,8 @@ import {
   FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
   RESTRICTION_TYPE_LABELS,
 } from "./constants";
+
+const { Text } = Typography;
 
 interface PublisherRestrictionsTableProps {
   className?: string;
@@ -56,7 +58,7 @@ export const PublisherRestrictionsTable = ({
         dataIndex: "id",
         render: (purposeId: number) => {
           if (isLoading) {
-            return <Skeleton height="16px" width="100%" />;
+            return <Skeleton active />;
           }
           const types =
             config?.restriction_types_per_purpose?.[purposeId] ?? [];
@@ -65,12 +67,16 @@ export const PublisherRestrictionsTable = ({
           }
           if (types.length === 1) {
             return (
-              <Text size="sm" whiteSpace="nowrap">
+              <Text className="whitespace-nowrap">
                 {RESTRICTION_TYPE_LABELS[types[0]]}
               </Text>
             );
           }
-          return <Text>{types.length} restrictions</Text>;
+          return (
+            <Text className="whitespace-nowrap">
+              {types.length} restrictions
+            </Text>
+          );
         },
         onCell: (record) =>
           ({

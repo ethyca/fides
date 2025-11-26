@@ -11,11 +11,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { InfoCell } from "~/features/common/table/cells";
-import {
-  RangeEntry,
-  TCFRestrictionType,
-  TCFVendorRestriction,
-} from "~/types/api";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
 import {
   RESTRICTION_TYPE_LABELS,
@@ -79,7 +75,7 @@ export const PurposeRestrictionsTable = () => {
         restriction_type: item.restriction_type,
         vendor_restriction: item.vendor_restriction,
         vendor_ids:
-          item.range_entries?.map((range: RangeEntry) =>
+          item.range_entries?.map((range) =>
             range.end_vendor_id
               ? `${range.start_vendor_id}-${range.end_vendor_id}`
               : range.start_vendor_id.toString(),
