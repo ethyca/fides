@@ -33,6 +33,9 @@ This means that after the constraint is created, the index will have the same na
 """
 
 POST_UPGRADE_INDEX_CREATION = "post_upgrade_index_creation"
+# This is the threshold for the number of rows in a table to create the index during application startup
+# The value follows the pattern established in migrations for the tables in the TABLE_OBJECT_MAP
+INDEX_ROW_COUNT_THRESHOLD = 1000000
 
 TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
     "currentprivacypreferencev2": [

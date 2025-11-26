@@ -10,6 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 from loguru import logger
 
+from fides.api.migrations.post_upgrade_index_creation import INDEX_ROW_COUNT_THRESHOLD
+
 # revision identifiers, used by Alembic.
 revision = "3ff6449c099e"
 down_revision = "56fe6fad2d89"
@@ -25,7 +27,7 @@ def upgrade():
         sa.text("SELECT COUNT(*) FROM providedidentity")
     ).scalar()
 
-    if providedidentity_count < 1000000:
+    if providedidentity_count < INDEX_ROW_COUNT_THRESHOLD:
         op.create_index(
             op.f("ix_providedidentity_privacy_request_id"),
             "providedidentity",
