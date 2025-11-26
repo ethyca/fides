@@ -5,19 +5,6 @@ import {
   CustomFieldWithId,
 } from "~/types/api";
 
-export enum LegacyAllowedTypes {
-  STRING = "string",
-  STRING_ARRAY = "string[]",
-}
-
-export enum LegacyResourceTypes {
-  SYSTEM = "system",
-  DATA_USE = "data use",
-  DATA_CATEGORY = "data category",
-  DATA_SUBJECT = "data subject",
-  PRIVACY_DECLARATION = "privacy declaration",
-}
-
 export interface CustomFieldWithIdExtended extends CustomFieldWithId {
   allow_list_id?: string;
 }

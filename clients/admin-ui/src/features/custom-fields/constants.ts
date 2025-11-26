@@ -1,11 +1,11 @@
-import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
+import { ResourceTypes } from "~/types/api";
 
 export const RESOURCE_TYPE_MAP = new Map([
-  [LegacyResourceTypes.SYSTEM, "system:information"],
-  [LegacyResourceTypes.DATA_USE, "taxonomy:data use"],
-  [LegacyResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
-  [LegacyResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
-  [LegacyResourceTypes.PRIVACY_DECLARATION, "system:data use"],
+  [ResourceTypes.SYSTEM, "system:information"],
+  [ResourceTypes.DATA_USE, "taxonomy:data use"],
+  [ResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
+  [ResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
+  [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
 
 export enum FieldTypes {
@@ -13,6 +13,29 @@ export enum FieldTypes {
   MULTIPLE_SELECT = "multipleSelect",
   OPEN_TEXT = "openText",
 }
+
+export const RESOURCE_TYPE_OPTIONS = [
+  {
+    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
+    value: ResourceTypes.DATA_CATEGORY,
+  },
+  {
+    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
+    value: ResourceTypes.DATA_SUBJECT,
+  },
+  {
+    label: `taxonomy:${ResourceTypes.DATA_USE}`,
+    value: ResourceTypes.DATA_USE,
+  },
+  {
+    label: `${ResourceTypes.SYSTEM}:information`,
+    value: ResourceTypes.SYSTEM,
+  },
+  {
+    label: "system:data use",
+    value: ResourceTypes.PRIVACY_DECLARATION,
+  },
+];
 
 export const FIELD_TYPE_OPTIONS = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
