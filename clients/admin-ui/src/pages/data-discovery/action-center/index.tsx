@@ -77,25 +77,8 @@ const ActionCenterPage = () => {
       }))
     : [];
 
-  // TODO: [HJ-337] Add button functionality
-
-  // const handleAdd = (monitorId: string) => {
-  //   console.log("Add report", monitorId);
-  // };
-
-  const getWebsiteMonitorActions = useCallback(
+  const getMonitorActions = useCallback(
     (monitorKey: string, link?: string) => [
-      // <Button
-      //   key="add"
-      //   type="link"
-      //   className="p-0"
-      //   onClick={() => {
-      //     handleAdd(monitorKey);
-      //   }}
-      //   data-testid={`add-button-${monitorKey}`}
-      // >
-      //   Add
-      // </Button>,
       <NextLink key="review" href={link ?? ""} passHref legacyBehavior>
         <Button
           type="link"
@@ -176,7 +159,7 @@ const ActionCenterPage = () => {
                     key={summary.key}
                     monitorSummary={summary}
                     href={link}
-                    actions={getWebsiteMonitorActions(summary.key, link)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+                    actions={getMonitorActions(summary.key, link)}
                   />
                 )
               );
