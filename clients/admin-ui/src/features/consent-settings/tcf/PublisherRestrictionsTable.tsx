@@ -58,7 +58,7 @@ export const PublisherRestrictionsTable = ({
         dataIndex: "id",
         render: (purposeId: number) => {
           if (isLoading) {
-            return <Skeleton active />;
+            return <Skeleton paragraph={false} active />;
           }
           const types =
             config?.restriction_types_per_purpose?.[purposeId] ?? [];
