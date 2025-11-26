@@ -94,7 +94,7 @@ def custom_field_definition_data_use(db):
     custom_field_definition_data = {
         "name": "custom_field_def_string_data_use_1",
         "field_type": "string[]",
-        "resource_type": "data_use",
+        "resource_type": "data use",
         "field_definition": "string",
     }
     custom_field_definition = sql_models.CustomFieldDefinition.create(

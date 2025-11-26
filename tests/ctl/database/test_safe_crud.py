@@ -538,7 +538,7 @@ class TestSafeCrudCustomFields:
         data_category_field_def_data = {
             "name": f"test_data_cat_field_{uuid4().hex[:8]}",
             "field_type": "string",
-            "resource_type": "data_category",
+            "resource_type": "data category",
             "field_definition": "string",
             "active": True,
         }
@@ -547,7 +547,7 @@ class TestSafeCrudCustomFields:
         )
 
         data_category_field_data = {
-            "resource_type": "data_category",
+            "resource_type": "data category",
             "resource_id": created_test_data_category.fides_key,
             "custom_field_definition_id": data_category_field_def.id,
             "value": ["Data category custom value"],
