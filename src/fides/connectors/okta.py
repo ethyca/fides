@@ -59,8 +59,6 @@ def validate_credentials(okta_config: Optional[OktaConfig]) -> None:
     try:
         client = get_okta_client(okta_config=okta_config)
         client.list_applications(limit=1)
-    except ConnectorAuthFailureException:
-        raise
     except ConnectionException as e:
         error_str = str(e).lower()
         if "invalid_client" in error_str or "unauthorized" in error_str:
