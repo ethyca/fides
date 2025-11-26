@@ -15,7 +15,7 @@ import {
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import {
@@ -113,21 +113,30 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
     }
   };
 
+  const confidenceBucket: ConfidenceBucket | undefined = classifications
+    ?.flatMap(({ confidence_bucket }) =>
+      confidence_bucket ? [confidence_bucket] : [],
+    )
+    .reduce(
+      (agg, current) => {
+        switch (agg) {
+          case ConfidenceBucket.HIGH:
+            return agg;
+          case ConfidenceBucket.MEDIUM:
+            return current === ConfidenceBucket.HIGH ? current : agg;
+          default:
+            return current !== ConfidenceBucket.MANUAL ? current : agg;
+        }
+      },
+      undefined as ConfidenceBucket | undefined,
+    );
+
   return (
     <List.Item
       key={urn}
       actions={[
-        classifications && classifications.length > 0 && (
-          <ClassifierProgress
-            percent={
-              classifications.find(
-                (classification) =>
-                  classification.confidence_score === ConfidenceScoreRange.HIGH,
-              )
-                ? 100
-                : 25
-            }
-          />
+        confidenceBucket && (
+          <ClassifierProgress confidenceBucket={confidenceBucket} />
         ),
         ...(actions ?? []),
       ]}
