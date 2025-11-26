@@ -64,6 +64,7 @@ export enum ConsentBreakdownColumnKeys {
 
 export const MONITOR_UPDATES_TO_IGNORE = [
   "classified_low_confidence",
+  "classified_medium_confidence",
   "classified_high_confidence",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
@@ -105,3 +106,9 @@ export const MONITOR_UPDATE_ORDER = [
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
 )[];
+
+export enum ConfidenceLevelLabel {
+  HIGH = "High confidence",
+  MEDIUM = "Medium confidence",
+  LOW = "Low confidence",
+}

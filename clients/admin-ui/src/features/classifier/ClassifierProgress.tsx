@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AntFlex as Flex,
   AntProgress as Progress,
