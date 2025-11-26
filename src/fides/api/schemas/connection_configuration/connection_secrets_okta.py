@@ -1,4 +1,5 @@
 import json
+import re
 from typing import ClassVar, List, Optional
 from urllib.parse import urlparse
 
@@ -8,6 +9,21 @@ from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
+)
+
+# Okta domain validation patterns
+# Supports: org.okta.com, org.oktapreview.com, org.okta-emea.com
+OKTA_DOMAIN_PATTERN = re.compile(
+    r"^[a-zA-Z0-9][a-zA-Z0-9\-]*"  # Org name (alphanumeric, can contain hyphens)
+    r"(\.[a-zA-Z0-9][a-zA-Z0-9\-]*)*"  # Optional subdomains
+    r"\.(okta\.com|oktapreview\.com|okta-emea\.com)$"  # Okta domains
+)
+
+# Custom domains must be valid hostnames
+CUSTOM_DOMAIN_PATTERN = re.compile(
+    r"^[a-zA-Z0-9]"  # Must start with alphanumeric
+    r"[a-zA-Z0-9\-\.]*"  # Can contain alphanumeric, hyphens, dots
+    r"[a-zA-Z0-9]$"  # Must end with alphanumeric
 )
 
 
@@ -42,22 +58,36 @@ class OktaSchema(ConnectionConfigSecretsSchema):
     @field_validator("org_url")
     @classmethod
     def validate_okta_org_url(cls, value: str) -> str:
+        """Validate Okta organization URL.
+
+        Supports standard Okta domains and custom domains:
+        - org.okta.com (production)
+        - org.oktapreview.com (sandbox/preview)
+        - org.okta-emea.com (European instances)
+        - Custom domains (enterprise feature)
+        """
         parsed = urlparse(str(value))
+        hostname = parsed.hostname or parsed.netloc
 
-        if not parsed.netloc.endswith(".okta.com"):
-            raise ValueError(
-                f"Okta organization URL must be from okta.com domain (got: {parsed.netloc})"
-            )
+        if not hostname:
+            raise ValueError("Invalid URL: no hostname found")
 
-        if parsed.hostname:
-            # Split hostname into labels and check for exact subdomain matching
-            # This avoids substring matching vulnerabilities flagged by CodeQL
-            labels = parsed.hostname.split(".")
-            if (
-                len(labels) >= 3
-                and labels[-3].endswith("-admin")
-                and labels[-2:] == ["okta", "com"]
-            ):
+        # Check if it's a standard Okta domain
+        is_okta_domain = OKTA_DOMAIN_PATTERN.match(hostname) is not None
+
+        # If not a standard Okta domain, validate as custom domain
+        if not is_okta_domain:
+            if not CUSTOM_DOMAIN_PATTERN.match(hostname):
+                raise ValueError(
+                    f"Invalid Okta domain: {hostname}. "
+                    "Expected format: org.okta.com, org.oktapreview.com, "
+                    "org.okta-emea.com, or a valid custom domain."
+                )
+
+        # Reject admin URLs for standard Okta domains
+        if is_okta_domain:
+            labels = hostname.split(".")
+            if len(labels) >= 3 and labels[-3].endswith("-admin"):
                 raise ValueError(
                     "Admin organization URLs (-admin.okta.com) are not supported. "
                     "Use your main organization URL (e.g., https://your-org.okta.com)"
