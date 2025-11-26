@@ -28,13 +28,13 @@ class _JwkBase(TypedDict, total=False):
 
 
 class PrivateJwk(_JwkBase):
-    """JWK private key structure per RFC 7517. The 'd' parameter is required."""
+    """JWK private key structure per RFC 7517."""
 
-    d: str  # Private key component (required for private keys)
+    d: str
 
 
 class OktaApplication(TypedDict, total=False):
-    """Okta Application object from the API. All fields optional for flexibility."""
+    """Okta Application object from the API."""
 
     id: str
     name: str
@@ -43,16 +43,13 @@ class OktaApplication(TypedDict, total=False):
     created: str
     lastUpdated: str
     signOnMode: str
-    # Note: settings, _links, and other fields vary by app type
 
 
-# --- Constants ---
 DEFAULT_OKTA_SCOPES = ("okta.apps.read",)
 DEFAULT_API_LIMIT = 200
 DEFAULT_MAX_PAGES = 100
 DEFAULT_REQUEST_TIMEOUT = 30
 
-# Mapping from EC curve to JWT signing algorithm
 EC_CURVE_ALG_MAP = {
     "P-256": "ES256",
     "P-384": "ES384",
@@ -62,14 +59,9 @@ EC_CURVE_ALG_MAP = {
 
 class OktaHttpClient:
     """
-    Minimal HTTP client for Okta API with OAuth2 private_key_jwt + DPoP.
+    HTTP client for Okta API with OAuth2 private_key_jwt + DPoP.
 
-    Why not Okta SDK? SDK lacks DPoP support (affects 30-50% of Okta orgs).
-
-    Deliberately scoped: This client lives in connectors/, not in the SaaS framework.
-    If we later need a generic private_key_jwt + DPoP auth strategy for SaaS connectors,
-    we will extract it from this implementation with a clear product decision and 2-3 use
-    cases validating the abstraction.
+    Uses custom implementation instead of Okta SDK because the SDK lacks DPoP support.
     """
 
     def __init__(
@@ -82,17 +74,6 @@ class OktaHttpClient:
         oauth_client: "Optional[OAuth2Client]" = None,  # For test injection
         dpop_key: "Optional[DPoPKey]" = None,  # For test injection
     ):
-        """
-        Initialize OktaHttpClient.
-
-        Args:
-            org_url: Okta organization URL (e.g., https://your-org.okta.com)
-            client_id: OAuth2 client ID
-            private_key: Private key in JWK format - either a JSON string or dict (provided by Okta)
-            scopes: OAuth2 scopes
-            oauth_client: For test injection - pre-configured OAuth2Client
-            dpop_key: For test injection - pre-configured DPoP key
-        """
         self.org_url = org_url.rstrip("/")
         self.scopes = tuple(scopes) if scopes is not None else DEFAULT_OKTA_SCOPES
 
@@ -111,8 +92,7 @@ class OktaHttpClient:
             private_jwk = self._parse_jwk(private_key)
             alg = self._determine_alg_from_jwk(private_jwk)
 
-            # Auto-generate DPoP key (EC P-256 for performance)
-            # Okta requires DPoP key to be SEPARATE from client auth key
+            # Okta requires DPoP key to be separate from client auth key
             self._dpop_key = DPoPKey.generate(alg="ES256")
 
             self._oauth_client = OAuth2Client(
@@ -125,7 +105,7 @@ class OktaHttpClient:
                 "Please install it with: pip install requests-oauth2client"
             ) from e
         except (ValueError, TypeError) as e:
-            # Use generic message to avoid leaking key content in error details
+            # Generic message avoids leaking key content
             raise ConnectionException(
                 "Invalid private key format. Ensure the key is a valid JWK with 'd' parameter."
             ) from e
@@ -161,7 +141,6 @@ class OktaHttpClient:
 
     @staticmethod
     def _determine_alg_from_jwk(jwk: PrivateJwk) -> str:
-        """Determine the signing algorithm from the JWK."""
         if "alg" in jwk:
             return jwk["alg"]
 
@@ -172,10 +151,9 @@ class OktaHttpClient:
             crv = jwk.get("crv", "P-256")
             return EC_CURVE_ALG_MAP.get(crv, "ES256")
 
-        return "RS256"  # Default fallback
+        return "RS256"
 
     def _get_token(self) -> AuthBase:
-        """Get DPoP-bound access token."""
         try:
             from requests_oauth2client.exceptions import OAuth2Error
 
@@ -248,8 +226,8 @@ class OktaHttpClient:
             if not next_cursor:
                 break
             if next_cursor in seen_cursors:
-                # Prevent infinite loop if Okta returns duplicate cursor
                 break
+
             seen_cursors.add(next_cursor)
             cursor = next_cursor
 
@@ -269,7 +247,6 @@ class OktaHttpClient:
             return None
         for link in link_header.split(","):
             if 'rel="next"' in link:
-                # Extract URL from angle brackets: <url>; rel="next"
                 url_match = re.search(r"<([^>]+)>", link)
                 if url_match:
                     url = url_match.group(1)

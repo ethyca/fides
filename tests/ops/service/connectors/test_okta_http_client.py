@@ -1,9 +1,3 @@
-"""
-Unit tests for OktaHttpClient.
-
-All tests use mocks - no external Okta API calls.
-"""
-
 import json
 import sys
 from types import ModuleType
@@ -22,7 +16,6 @@ from fides.api.service.connectors.okta_http_client import (
     OktaHttpClient,
 )
 
-# Test JWKs (fake keys for testing only)
 RSA_JWK = {
     "kty": "RSA",
     "kid": "test-kid-rsa",
@@ -46,13 +39,11 @@ TEST_PRIVATE_KEY_STR = "not-used-when-injected"
 
 @pytest.fixture
 def mock_oauth_client_and_dpop_key():
-    """Fixture for mocked OAuth2Client and DPoPKey."""
     return MagicMock(), MagicMock()
 
 
 @pytest.fixture
 def client_with_injection(mock_oauth_client_and_dpop_key):
-    """Fixture for an OktaHttpClient with injected dependencies."""
     mock_oauth_client, mock_dpop_key = mock_oauth_client_and_dpop_key
     return OktaHttpClient(
         org_url=TEST_ORG_URL,
@@ -64,8 +55,6 @@ def client_with_injection(mock_oauth_client_and_dpop_key):
 
 
 class TestOktaHttpClientInit:
-    """Tests for OktaHttpClient initialization."""
-
     def test_injected_dependencies_set(
         self, client_with_injection, mock_oauth_client_and_dpop_key
     ):
@@ -176,7 +165,6 @@ class TestOktaHttpClientInit:
                 client_id=TEST_CLIENT_ID,
                 private_key=json.dumps(public_jwk),
             )
-        # Generic error message used to avoid leaking key details
         assert "Invalid private key format" in str(exc_info.value)
 
     def test_import_error_raises_connection_exception(self):
@@ -191,8 +179,6 @@ class TestOktaHttpClientInit:
 
 
 class TestOktaHttpClientMethods:
-    """Tests for OktaHttpClient methods, using an injected client."""
-
     @pytest.fixture
     def mock_token(self, client_with_injection):
         mock_token = MagicMock(spec=AuthBase)
@@ -266,8 +252,6 @@ class TestOktaHttpClientMethods:
         assert "Okta API request failed" in str(exc_info.value)
 
     def test_get_token_import_error(self, client_with_injection):
-        """Test that ImportError in _get_token raises ConnectionException."""
-        # Simulate requests_oauth2client.exceptions not being available
         with patch.dict(sys.modules, {"requests_oauth2client.exceptions": None}):
             with pytest.raises(ConnectionException) as exc_info:
                 client_with_injection._get_token()
@@ -286,11 +270,10 @@ class TestOktaHttpClientMethods:
 
     def test_list_all_applications_respects_max_pages(self, client_with_injection):
         with patch.object(client_with_injection, "list_applications") as mock_list:
-            # Use different cursors each time to avoid duplicate detection
             mock_list.side_effect = [
                 ([{"id": "app"}], "cursor1"),
                 ([{"id": "app"}], "cursor2"),
-                ([{"id": "app"}], "cursor3"),  # Would continue but max_pages=3
+                ([{"id": "app"}], "cursor3"),
             ]
             apps = client_with_injection.list_all_applications(page_size=1, max_pages=3)
         assert len(apps) == 3
@@ -299,17 +282,15 @@ class TestOktaHttpClientMethods:
     def test_list_all_applications_stops_on_duplicate_cursor(
         self, client_with_injection
     ):
-        """Test that duplicate cursor detection prevents infinite loop."""
         with patch.object(client_with_injection, "list_applications") as mock_list:
-            # Okta returns same cursor repeatedly (bug scenario)
             mock_list.side_effect = [
                 ([{"id": "app1"}], "same_cursor"),
-                ([{"id": "app2"}], "same_cursor"),  # Same cursor - should stop
+                ([{"id": "app2"}], "same_cursor"),
             ]
             apps = client_with_injection.list_all_applications(page_size=1)
 
-        assert len(apps) == 2  # Got both pages
-        assert mock_list.call_count == 2  # But stopped after detecting duplicate
+        assert len(apps) == 2
+        assert mock_list.call_count == 2
 
 
 class TestStaticHelperMethods:
@@ -331,38 +312,32 @@ class TestStaticHelperMethods:
         assert OktaHttpClient._extract_next_cursor(None) is None
 
     def test_extract_cursor_no_angle_brackets(self):
-        """Test returns None when Link header has rel=next but malformed URL (no angle brackets)."""
         link_header = 'https://test.okta.com/api/v1/apps?after=abc123; rel="next"'
         cursor = OktaHttpClient._extract_next_cursor(link_header)
         assert cursor is None
 
     def test_extract_cursor_no_after_param(self):
-        """Test returns None when Link header has rel=next but no after param."""
         link_header = f'<{TEST_ORG_URL}/api/v1/apps?limit=200>; rel="next"'
         cursor = OktaHttpClient._extract_next_cursor(link_header)
         assert cursor is None
 
     def test_extract_cursor_url_encoded(self):
-        """Test cursor extraction with URL-encoded values."""
         link_header = (
             f'<{TEST_ORG_URL}/api/v1/apps?after=abc%3D123&limit=200>; rel="next"'
         )
         cursor = OktaHttpClient._extract_next_cursor(link_header)
-        assert cursor == "abc=123"  # URL-decoded by parse_qs
+        assert cursor == "abc=123"
 
     def test_extract_cursor_multiple_params(self):
-        """Test cursor extraction when after is not first param."""
         link_header = f'<{TEST_ORG_URL}/api/v1/apps?limit=200&after=xyz789&filter=active>; rel="next"'
         cursor = OktaHttpClient._extract_next_cursor(link_header)
         assert cursor == "xyz789"
 
     def test_parse_jwk_accepts_dict(self):
-        """Test that _parse_jwk accepts a dict directly."""
         parsed = OktaHttpClient._parse_jwk(RSA_JWK)
         assert parsed["kid"] == RSA_JWK["kid"]
 
     def test_parse_jwk_validates_dict_missing_d(self):
-        """Test that dict input is validated for private key."""
         public_jwk = RSA_JWK.copy()
         del public_jwk["d"]
         with pytest.raises(ValueError, match="not a private key"):

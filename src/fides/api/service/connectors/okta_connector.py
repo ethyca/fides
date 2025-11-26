@@ -12,27 +12,13 @@ from fides.api.util.collection_util import Row
 
 
 class OktaConnector(BaseConnector):
-    """
-    Okta connector for integrating with Okta's API using OAuth2 authentication.
-
-    Uses OAuth2 Client Credentials with private_key_jwt client authentication
-    for secure API access. The private key is never transmitted to Okta.
-    """
+    """Okta connector using OAuth2 private_key_jwt authentication."""
 
     @property
     def dsr_supported(self) -> bool:
         return False
 
     def create_client(self) -> OktaHttpClient:
-        """
-        Creates and returns an Okta HTTP client using OAuth2 private_key_jwt + DPoP.
-
-        Uses custom OktaHttpClient instead of Okta SDK because the SDK lacks DPoP
-        support, which is required by 30-50% of Okta organizations.
-
-        Raises:
-            ConnectionException: If client creation fails or required secrets are missing
-        """
         secrets = self.configuration.secrets
 
         required_fields = ["org_url", "client_id", "private_key"]
@@ -59,7 +45,6 @@ class OktaConnector(BaseConnector):
                 f"Missing required OAuth2 credential: {str(e)}"
             ) from e
         except ConnectionException:
-            # Re-raise ConnectionException as-is (includes key format errors)
             raise
         except Exception as e:
             raise ConnectionException(
@@ -67,19 +52,13 @@ class OktaConnector(BaseConnector):
             ) from e
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
-        """Return the query config that corresponds to this connector type"""
         raise NotImplementedError("Query config not implemented for Okta")
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
-        """
-        Validates the connection to Okta by attempting to list applications.
-        """
         try:
-            # Fetch a single application to verify connection works
             self._list_applications(limit=1)
             return ConnectionTestStatus.succeeded
         except ConnectionException:
-            # Re-raise ConnectionException as-is
             raise
         except Exception as e:
             raise ConnectionException(
@@ -89,16 +68,6 @@ class OktaConnector(BaseConnector):
     def _list_applications(
         self, limit: int = 200, after: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """
-        List applications in Okta.
-
-        Args:
-            limit: Maximum number of applications to return (default: 200)
-            after: Cursor for pagination (optional)
-
-        Returns:
-            List of application dictionaries
-        """
         client = self.client()
         apps, _ = client.list_applications(limit=limit, after=after)
         return apps
@@ -111,7 +80,6 @@ class OktaConnector(BaseConnector):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """DSR execution not supported for Okta connector"""
         return []
 
     def mask_data(
@@ -123,9 +91,7 @@ class OktaConnector(BaseConnector):
         rows: List[Row],
         input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
-        """DSR execution not supported for Okta connector"""
         return 0
 
     def close(self) -> None:
-        """Close any held resources"""
-        # No resources to close for Okta client
+        pass
