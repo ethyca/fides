@@ -46,7 +46,7 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     creation time.
     """
 
-    __table_args__ = (
+    __table_args__ = (  # type: ignore[assignment]
         Index(
             "ix_providedidentity_privacy_request_id",
             "privacy_request_id",
