@@ -38,6 +38,9 @@ def upgrade():
         postgresql_using="field_type::text",
         nullable=False,
     )
+
+    # Drop the unused enum type after the column has been converted
+    op.execute(f'DROP TYPE IF EXISTS "{PG_ENUM_NAME}"')
     # ### end Alembic commands ###
 
 

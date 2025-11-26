@@ -82,6 +82,9 @@ def upgrade():
         ["resource_type", sa.text("lower(name)")],
         unique=True,
     )
+
+    # Drop the unused enum type after all columns have been converted
+    op.execute(f'DROP TYPE IF EXISTS "{PG_ENUM_NAME}"')
     # ### end Alembic commands ###
 
 
