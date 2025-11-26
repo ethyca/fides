@@ -7,7 +7,6 @@ import {
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
-import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
@@ -15,7 +14,11 @@ import { RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldCell";
 import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
-import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+import {
+  CustomFieldDefinitionWithId,
+  ResourceTypes,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 const useCustomFieldsTable = () => {
   const tableState = useTableState({
@@ -74,8 +77,7 @@ const useCustomFieldsTable = () => {
         title: "Applies to",
         dataIndex: "resource_type",
         key: "resource_type",
-        render: (value: LegacyResourceTypes) =>
-          RESOURCE_TYPE_MAP.get(value) || value,
+        render: (value: ResourceTypes) => RESOURCE_TYPE_MAP.get(value) || value,
       },
       {
         title: "Enabled",

@@ -37,40 +37,20 @@ describe("Custom Fields V2", () => {
     it("displays all required form fields", () => {
       cy.get("form").within(() => {
         cy.getByTestId("input-name").should("exist");
-        cy.getByTestId("select-value-type").should("exist").should("be.hidden");
+        cy.getByTestId("input-description").should("exist");
         cy.getByTestId("select-resource-type").should("exist");
+        cy.getByTestId("select-field-type").should("exist");
       });
-    });
-
-    it("allows selecting a taxonomy type", () => {
-      cy.getByTestId("input-name").type("Data c");
-      cy.getByTestId("input-name-autocomplete").antSelect("Data categories");
-      cy.getByTestId("input-name")
-        .should("have.value", "Data categories")
-        .should("be.disabled");
-      cy.getByTestId("select-value-type")
-        .should("be.hidden")
-        .should("contain", "Data categories");
-      cy.getByTestId("input-description").should("not.exist");
     });
 
     it("validates required fields", () => {
       cy.getByTestId("save-btn").click();
       cy.contains("Please enter a name").should("be.visible");
-      cy.contains("Please select a location").should("be.visible");
-
-      cy.getByTestId("input-name").type("custom name");
-      cy.getByTestId("save-btn").click();
+      cy.contains("Please select a resource type").should("be.visible");
       cy.contains("Please select a field type").should("be.visible");
-      cy.getByTestId("select-field-type").antSelect("Single select");
-      cy.getByTestId("save-btn").click();
-      cy.contains("At least one option is required for selects").should(
-        "be.visible",
-      );
     });
 
     it("shows options field for select types", () => {
-      cy.getByTestId("input-name").type("custom name");
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add and validate options
@@ -84,7 +64,7 @@ describe("Custom Fields V2", () => {
     });
 
     it("validates unique options for select types", () => {
-      cy.getByTestId("input-name").type("custom name");
+      // Select single select type
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add duplicate options
@@ -101,12 +81,12 @@ describe("Custom Fields V2", () => {
       const fieldName = "Test Field";
       const fieldDesc = "Test Description";
 
-      cy.getByTestId("input-name").type(fieldName).blur();
+      cy.getByTestId("input-name").type(fieldName);
       cy.getByTestId("input-description").type(fieldDesc);
+      cy.getByTestId("select-resource-type").antSelect("system:information");
       cy.getByTestId("select-field-type").antSelect("Single select");
       cy.getByTestId("add-option-btn").click();
       cy.getByTestId("input-option-0").type("Option 1");
-      cy.getByTestId("select-resource-type").antSelect("system:information");
       cy.getByTestId("save-btn").click();
       cy.wait("@createCustomFieldDefinition")
         .its("response.statusCode")
@@ -118,6 +98,7 @@ describe("Custom Fields V2", () => {
 
   describe("Custom Field Edit", () => {
     it("loads existing field data for editing", () => {
+      // Assuming we have a custom field with ID "test-id"
       cy.visit("/settings/custom-fields");
       cy.getByTestId("edit-btn").first().click();
 

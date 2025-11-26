@@ -121,7 +121,6 @@ const taxonomyApi = baseApi.injectEndpoints({
 
 export const {
   useGetCustomTaxonomiesQuery,
-  useGetTaxonomyQuery,
   useLazyGetTaxonomyQuery,
   useCreateTaxonomyMutation,
   useUpdateTaxonomyMutation,
