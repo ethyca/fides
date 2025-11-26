@@ -45,12 +45,14 @@ class BigQueryConfig(BaseModel):
 
 class OktaConfig(BaseModel):
     """
-    The model for the connection config for Okta
+    The model for the connection config for Okta using OAuth2.
     """
 
-    # camel case matches okta client config model
+    # camelCase for frontend compatibility
     orgUrl: str
-    token: str
+    clientId: str
+    privateKey: str
+    scopes: Optional[List[str]] = ["okta.apps.read"]
 
 
 class DatabaseConfig(BaseModel):

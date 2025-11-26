@@ -1,14 +1,14 @@
-"""Module that adds interactions with okta"""
+"""Module that adds interactions with okta using OAuth2."""
 
-import ast
-from functools import update_wrapper
-from typing import Any, Callable, List, Optional
+from typing import List, Optional
 
 from fideslang.models import System, SystemMetadata
-from okta.client import Client as OktaClient
-from okta.exceptions import OktaAPIException
-from okta.models import Application as OktaApplication
 
+from fides.api.common_exceptions import ConnectionException
+from fides.api.service.connectors.okta_http_client import (
+    OktaApplication,
+    OktaHttpClient,
+)
 from fides.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
@@ -16,87 +16,107 @@ from fides.connectors.models import (
 )
 
 
-def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaClient:
+def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaHttpClient:
     """
-    Returns an Okta client for the given okta config. Authentication can
-    also be handled through environment variables that the okta python sdk support.
+    Returns an OktaHttpClient for the given okta config using OAuth2 authentication.
 
-    Enabled raiseException config to facilitate exception handling
+    Args:
+        okta_config: Configuration with OAuth2 credentials (orgUrl, clientId, privateKey)
+
+    Returns:
+        OktaHttpClient instance configured for OAuth2
+
+    Raises:
+        ConnectorAuthFailureException: If credentials are missing or invalid
     """
-    config_dict = okta_config.model_dump(mode="json") if okta_config else {}
-    config_dict["raiseException"] = True
-    okta_client = OktaClient(config_dict)
-    return okta_client
+    if not okta_config:
+        raise ConnectorAuthFailureException(
+            "Okta configuration is required. Please provide orgUrl, clientId, and privateKey."
+        )
+
+    try:
+        return OktaHttpClient(
+            org_url=okta_config.orgUrl,
+            client_id=okta_config.clientId,
+            private_key=okta_config.privateKey,
+            scopes=okta_config.scopes,
+        )
+    except ConnectionException as e:
+        raise ConnectorAuthFailureException(str(e)) from e
 
 
-def handle_common_okta_errors(func: Callable) -> Callable:
+def validate_credentials(okta_config: Optional[OktaConfig]) -> None:
     """
-    Function decorator which handles common errors for okta calls.
-    Classifies exceptions based on error codes returned by the client.
-    For a full list of error codes see https://developer.okta.com/docs/reference/error-codes/
+    Validates okta credentials by attempting to list applications with limit of 1.
+
+    Args:
+        okta_config: Configuration with OAuth2 credentials
+
+    Raises:
+        ConnectorAuthFailureException: If authentication fails
+        ConnectorFailureException: If the API request fails for other reasons
     """
+    try:
+        client = get_okta_client(okta_config=okta_config)
+        client.list_applications(limit=1)
+    except ConnectorAuthFailureException:
+        raise
+    except ConnectionException as e:
+        error_str = str(e).lower()
+        if "invalid_client" in error_str or "unauthorized" in error_str:
+            raise ConnectorAuthFailureException(
+                "Authentication failed. Please verify your OAuth2 credentials."
+            ) from e
+        raise ConnectorFailureException(f"Okta API error: {e}") from e
 
-    async def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
-        try:
-            return await func(*args, **kwargs)
-        except OktaAPIException as error:
-            error_json = ast.literal_eval(str(error))
-            # E0000004 - Authentication exception
-            # E0000011 - Invalid token exception
-            if error_json["errorCode"] in ["E0000004", "E0000011"]:
-                raise ConnectorAuthFailureException(error_json["errorSummary"])
-            raise ConnectorFailureException(error_json["errorSummary"])
 
-    return update_wrapper(wrapper_func, func)
-
-
-@handle_common_okta_errors
-async def validate_credentials(okta_config: Optional[OktaConfig]) -> None:
+def list_okta_applications(okta_client: OktaHttpClient) -> List[OktaApplication]:
     """
-    Calls the list_applications api with a page limit of 1 to validate
-    okta credentials.
-    """
-    client = get_okta_client(okta_config=okta_config)
-    query_parameters = {"limit": "1"}
-    await client.list_applications(query_parameters)
+    Returns a list of Okta applications using pagination.
 
+    Args:
+        okta_client: Configured OktaHttpClient instance
 
-@handle_common_okta_errors
-async def list_okta_applications(okta_client: OktaClient) -> List[OktaApplication]:
+    Returns:
+        List of OktaApplication objects from Okta API
+
+    Raises:
+        ConnectorFailureException: If the API request fails
     """
-    Returns a list of Okta applications. Iterates through each page returned by
-    the client.
-    """
-    applications = []
-    current_applications, resp, _ = await okta_client.list_applications()
-    while True:
-        applications.extend(current_applications)
-        if resp.has_next():
-            current_applications, _ = await resp.next()
-        else:
-            break
-    return applications
+    try:
+        return okta_client.list_all_applications()
+    except ConnectionException as e:
+        raise ConnectorFailureException(f"Failed to list Okta applications: {e}") from e
 
 
 def create_okta_systems(
     okta_applications: List[OktaApplication], organization_key: str
 ) -> List[System]:
     """
-    Returns a list of system objects given a list of Okta applications
+    Returns a list of system objects given a list of Okta applications.
+
+    Only includes ACTIVE applications.
+
+    Args:
+        okta_applications: List of OktaApplication objects from Okta API
+        organization_key: The organization fides_key to associate with systems
+
+    Returns:
+        List of System objects for active Okta applications
     """
     systems = [
         System(
-            fides_key=application.id,
-            name=application.name,
+            fides_key=app.get("id", ""),
+            name=app.get("name", ""),
             fidesctl_meta=SystemMetadata(
-                resource_id=application.id,
+                resource_id=app.get("id", ""),
             ),
-            description=f"Fides Generated Description for Okta Application: {application.label}",
+            description=f"Fides Generated Description for Okta Application: {app.get('label', app.get('name', 'Unknown'))}",
             system_type="okta_application",
             organization_fides_key=organization_key,
             privacy_declarations=[],
         )
-        for application in okta_applications
-        if application.status and application.status == "ACTIVE"
+        for app in okta_applications
+        if app.get("status") == "ACTIVE"
     ]
     return systems

@@ -183,14 +183,15 @@ async def generate_okta_systems(
     """
     Given an okta configuration, calls okta for a list of
     applications and returns the corresponding systems.
+
+    Uses OAuth2 authentication via OktaHttpClient.
     """
 
     import fides.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
-    okta_applications = await okta_connector.list_okta_applications(
-        okta_client=okta_client
-    )
+    # list_okta_applications is now sync (uses OktaHttpClient)
+    okta_applications = okta_connector.list_okta_applications(okta_client=okta_client)
     okta_systems = okta_connector.create_okta_systems(
         okta_applications=okta_applications, organization_key=organization.fides_key
     )
