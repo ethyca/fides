@@ -53,7 +53,9 @@ const ValidationSchema = Yup.object().shape({
       "is-valid-json",
       "Private key must be in JWK (JSON) format. Download from Okta Admin Console.",
       (value) => {
-        if (!value) return true;
+        if (!value) {
+          return true;
+        }
         try {
           const parsed = JSON.parse(value);
           return typeof parsed === "object" && "d" in parsed;
@@ -103,10 +105,12 @@ const AuthenticateOktaForm = () => {
   const handleSubmit = async (values: FormValues) => {
     setScannerError(undefined);
 
-    // Convert scopes string to array for API
+    // Convert scopes string to array for API (split on comma if multiple)
     const config = {
       ...values,
-      scopes: values.scopes ? [values.scopes] : ["okta.apps.read"],
+      scopes: values.scopes
+        ? values.scopes.split(",").map((s) => s.trim()).filter(Boolean)
+        : ["okta.apps.read"],
     };
 
     const result = await generate({
@@ -161,8 +165,8 @@ const AuthenticateOktaForm = () => {
                   />
                   <Text>
                     To use the scanner to inventory systems in Okta, you must
-                    first authenticate using OAuth2 Client Credentials. You'll
-                    need to create an API Services application in Okta and
+                    first authenticate using OAuth2 Client Credentials. You
+                    will need to create an API Services application in Okta and
                     generate an RSA key pair.
                   </Text>
                 </Box>
