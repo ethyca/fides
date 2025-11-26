@@ -265,6 +265,14 @@ class TestOktaHttpClientMethods:
                 client_with_injection.list_applications()
         assert "Okta API request failed" in str(exc_info.value)
 
+    def test_get_token_import_error(self, client_with_injection):
+        """Test that ImportError in _get_token raises ConnectionException."""
+        # Simulate requests_oauth2client.exceptions not being available
+        with patch.dict(sys.modules, {"requests_oauth2client.exceptions": None}):
+            with pytest.raises(ConnectionException) as exc_info:
+                client_with_injection._get_token()
+        assert "requests-oauth2client' library is required" in str(exc_info.value)
+
     def test_list_all_applications_multiple_pages(self, client_with_injection):
         with patch.object(client_with_injection, "list_applications") as mock_list:
             mock_list.side_effect = [
@@ -321,6 +329,18 @@ class TestStaticHelperMethods:
 
     def test_extract_cursor_none_header(self):
         assert OktaHttpClient._extract_next_cursor(None) is None
+
+    def test_extract_cursor_no_angle_brackets(self):
+        """Test returns None when Link header has rel=next but malformed URL (no angle brackets)."""
+        link_header = 'https://test.okta.com/api/v1/apps?after=abc123; rel="next"'
+        cursor = OktaHttpClient._extract_next_cursor(link_header)
+        assert cursor is None
+
+    def test_extract_cursor_no_after_param(self):
+        """Test returns None when Link header has rel=next but no after param."""
+        link_header = f'<{TEST_ORG_URL}/api/v1/apps?limit=200>; rel="next"'
+        cursor = OktaHttpClient._extract_next_cursor(link_header)
+        assert cursor is None
 
     def test_extract_cursor_url_encoded(self):
         """Test cursor extraction with URL-encoded values."""
