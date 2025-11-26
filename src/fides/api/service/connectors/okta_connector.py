@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, NoReturn, Optional
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
@@ -6,8 +6,10 @@ from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.okta_http_client import OktaHttpClient
-from fides.api.service.connectors.query_configs.query_config import QueryConfig
+from fides.api.service.connectors.okta_http_client import (
+    OktaApplication,
+    OktaHttpClient,
+)
 from fides.api.util.collection_util import Row
 
 
@@ -49,7 +51,7 @@ class OktaConnector(BaseConnector):
         except Exception as e:
             raise ConnectionException(f"Failed to create Okta client: {str(e)}") from e
 
-    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> NoReturn:
         """Return the query config for this connector type. Not implemented for Okta."""
         raise NotImplementedError("Query config not implemented for Okta")
 
@@ -75,7 +77,7 @@ class OktaConnector(BaseConnector):
 
     def _list_applications(
         self, limit: int = 200, after: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> List[OktaApplication]:
         """List Okta applications with optional pagination."""
         client = self.client()
         apps, _ = client.list_applications(limit=limit, after=after)

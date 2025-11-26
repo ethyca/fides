@@ -26,8 +26,9 @@ EXTERNAL_CONFIG_BODY = {
         "connection_string": "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
     },
     "okta": {
-        "orgUrl": "https://dev-78908748.okta.com",
-        "token": getenv("OKTA_CLIENT_TOKEN", ""),
+        "orgUrl": getenv("OKTA_ORG_URL", "https://dev-78908748.okta.com"),
+        "clientId": getenv("OKTA_CLIENT_ID", ""),
+        "privateKey": getenv("OKTA_PRIVATE_KEY", ""),
     },
     "dynamodb": {
         "region_name": getenv("DYNAMODB_REGION", ""),
@@ -53,7 +54,8 @@ EXTERNAL_FAILURE_CONFIG_BODY = {
     },
     "okta": {
         "orgUrl": "https://dev-78908748.okta.com",
-        "token": "INVALID_TOKEN",
+        "clientId": "INVALID_CLIENT_ID",
+        "privateKey": '{"kty":"RSA","d":"invalid","n":"invalid","e":"AQAB"}',
     },
     "dynamodb": {
         "region_name": getenv("DYNAMODB_REGION", ""),
@@ -67,7 +69,7 @@ EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
 
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "The security token included in the request is invalid.",
-    "okta": "Invalid token provided",
+    "okta": "OAuth2 token acquisition failed",  # OAuth2 error
     "db": 'FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
     "bigquery": "Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
     "dynamodb": "The security token included in the request is invalid.",

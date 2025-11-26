@@ -1,9 +1,8 @@
 import json
 import time
 from datetime import datetime, timedelta
-from functools import wraps
 from time import sleep
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests

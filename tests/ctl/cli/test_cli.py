@@ -755,7 +755,8 @@ class TestScan:
     def test_scan_system_okta_input_credential_options(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        token = os.environ["OKTA_CLIENT_TOKEN"]
+        client_id = os.environ["OKTA_CLIENT_ID"]
+        private_key = os.environ["OKTA_PRIVATE_KEY"]
         result = test_cli_runner.invoke(
             cli,
             [
@@ -766,8 +767,10 @@ class TestScan:
                 "okta",
                 "--org-url",
                 OKTA_URL,
-                "--token",
-                token,
+                "--client-id",
+                client_id,
+                "--private-key",
+                private_key,
                 "--coverage-threshold",
                 "0",
             ],
@@ -781,8 +784,11 @@ class TestScan:
         test_config_path: str,
         test_cli_runner: CliRunner,
     ) -> None:
-        os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ[
-            "OKTA_CLIENT_TOKEN"
+        os.environ["FIDES__CREDENTIALS__OKTA_1__CLIENT_ID"] = os.environ[
+            "OKTA_CLIENT_ID"
+        ]
+        os.environ["FIDES__CREDENTIALS__OKTA_1__PRIVATE_KEY"] = os.environ[
+            "OKTA_PRIVATE_KEY"
         ]
         result = test_cli_runner.invoke(
             cli,
@@ -961,7 +967,8 @@ class TestGenerate:
         tmpdir: LocalPath,
     ) -> None:
         tmp_file = tmpdir.join("system.yml")
-        token = os.environ["OKTA_CLIENT_TOKEN"]
+        client_id = os.environ["OKTA_CLIENT_ID"]
+        private_key = os.environ["OKTA_PRIVATE_KEY"]
         result = test_cli_runner.invoke(
             cli,
             [
@@ -973,8 +980,10 @@ class TestGenerate:
                 f"{tmp_file}",
                 "--org-url",
                 OKTA_URL,
-                "--token",
-                token,
+                "--client-id",
+                client_id,
+                "--private-key",
+                private_key,
             ],
         )
         print(result.output)
@@ -1003,8 +1012,11 @@ class TestGenerate:
         tmpdir: LocalPath,
     ) -> None:
         tmp_file = tmpdir.join("system.yml")
-        os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ[
-            "OKTA_CLIENT_TOKEN"
+        os.environ["FIDES__CREDENTIALS__OKTA_1__CLIENT_ID"] = os.environ[
+            "OKTA_CLIENT_ID"
+        ]
+        os.environ["FIDES__CREDENTIALS__OKTA_1__PRIVATE_KEY"] = os.environ[
+            "OKTA_PRIVATE_KEY"
         ]
         result = test_cli_runner.invoke(
             cli,

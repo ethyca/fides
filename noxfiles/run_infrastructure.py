@@ -75,7 +75,8 @@ EXTERNAL_DATASTORE_CONFIG = {
     ],
     "okta": [
         "OKTA_ORG_URL",
-        "OKTA_API_TOKEN",
+        "OKTA_CLIENT_ID",
+        "OKTA_PRIVATE_KEY",
     ],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
