@@ -37,7 +37,6 @@ pg8000==1.31.2
 nh3==0.2.15
 numpy==1.24.4
 oauthlib==3.3.1
-okta==2.7.0
 openpyxl==3.0.9
 networkx==3.1
 packaging==23.0
