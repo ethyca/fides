@@ -34,6 +34,16 @@ import ScannerLoading from "./ScannerLoading";
 const PRIVATE_KEY_TOOLTIP =
   "Private key in JWK (JSON) format. Generate a key in Okta and download the JSON.";
 
+const DEFAULT_SCOPES = ["okta.apps.read"];
+
+const parseScopesFromCsv = (scopes: string | undefined): string[] =>
+  scopes
+    ? scopes
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : DEFAULT_SCOPES;
+
 const initialValues = {
   orgUrl: "",
   clientId: "",
@@ -121,15 +131,9 @@ const AuthenticateOktaForm = () => {
   const handleSubmit = async (values: FormValues) => {
     setScannerError(undefined);
 
-    // Convert scopes string to array for API (split on comma if multiple)
     const config = {
       ...values,
-      scopes: values.scopes
-        ? values.scopes
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : ["okta.apps.read"],
+      scopes: parseScopesFromCsv(values.scopes),
     };
 
     const result = await generate({

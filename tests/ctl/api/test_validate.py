@@ -79,7 +79,7 @@ EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
 
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "Authentication failed validating config. The security token included in the request is invalid.",
-    "okta": "Authentication failed validating config.",  # OAuth2 error varies
+    "okta": "Authentication failed validating config.",
     "bigquery": "Unexpected failure validating config. Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
 }
 

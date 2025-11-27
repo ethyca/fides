@@ -231,7 +231,11 @@ class TestOktaHttpClientMethods:
             yield mock
 
     def test_list_applications_single_page(
-        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
+        self,
+        client_with_injection,
+        mock_token,
+        mock_rate_limiter,
+        mock_oauth2_exceptions,
     ):
         mock_apps = [{"id": "app1"}, {"id": "app2"}]
         with patch("requests.request") as mock_request:
@@ -253,7 +257,11 @@ class TestOktaHttpClientMethods:
             )
 
     def test_list_applications_with_pagination(
-        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
+        self,
+        client_with_injection,
+        mock_token,
+        mock_rate_limiter,
+        mock_oauth2_exceptions,
     ):
         link_header = f'<{TEST_ORG_URL}/api/v1/apps?after=cursor123>; rel="next"'
         with patch("requests.request") as mock_request:
@@ -285,7 +293,11 @@ class TestOktaHttpClientMethods:
         assert "OAuth2 token acquisition failed" in str(exc_info.value)
 
     def test_list_applications_http_error(
-        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
+        self,
+        client_with_injection,
+        mock_token,
+        mock_rate_limiter,
+        mock_oauth2_exceptions,
     ):
         with patch("requests.request") as mock_request:
             mock_request.side_effect = requests.RequestException("Network error")
@@ -554,7 +566,9 @@ class TestRetryLogic:
         # Should only try once (no retries)
         assert mock_request.call_count == 1
 
-    def test_respects_retry_after_header(self, client_with_injection, mock_oauth2_exceptions):
+    def test_respects_retry_after_header(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Should respect Retry-After header when present."""
         mock_response_429 = MagicMock()
         mock_response_429.ok = False
