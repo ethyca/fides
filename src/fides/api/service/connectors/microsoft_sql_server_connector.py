@@ -25,7 +25,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
     def build_uri(self) -> URL:
         """
         Build URI of format
-        mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]
+        mssql+pymssql://[username]:[password]@[host]:[port]/[dbname]?read_only=[read_only_connection]
         Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
         """
 
@@ -38,6 +38,11 @@ class MicrosoftSQLServerConnector(SQLConnector):
             host=config.host,
             port=config.port,
             database=config.dbname,
+            query=(
+                f"read_only={config.read_only_connection}"
+                if config.read_only_connection
+                else None
+            ),
         )
 
         return url
