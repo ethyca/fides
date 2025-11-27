@@ -36,13 +36,30 @@ def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaHttpClient:
 
     try:
         return OktaHttpClient(
-            org_url=okta_config.orgUrl,
-            client_id=okta_config.clientId,
-            private_key=okta_config.privateKey,
+            org_url=okta_config.org_url,
+            client_id=okta_config.client_id,
+            private_key=okta_config.private_key,
             scopes=okta_config.scopes,
         )
     except ConnectionException as e:
         raise ConnectorAuthFailureException(str(e)) from e
+
+
+def _is_oauth2_auth_error(exc: BaseException) -> bool:
+    """Check if the exception chain contains an OAuth2 authentication error."""
+    try:
+        from requests_oauth2client.exceptions import InvalidClient, UnauthorizedClient
+
+        cause = exc.__cause__
+        while cause is not None:
+            if isinstance(cause, (InvalidClient, UnauthorizedClient)):
+                return True
+            cause = cause.__cause__
+        return False
+    except ImportError:
+        # Fallback to string matching if library not available
+        error_str = str(exc).lower()
+        return "invalid_client" in error_str or "unauthorized" in error_str
 
 
 def validate_credentials(okta_config: Optional[OktaConfig]) -> None:
@@ -60,8 +77,7 @@ def validate_credentials(okta_config: Optional[OktaConfig]) -> None:
         client = get_okta_client(okta_config=okta_config)
         client.list_applications(limit=1)
     except ConnectionException as e:
-        error_str = str(e).lower()
-        if "invalid_client" in error_str or "unauthorized" in error_str:
+        if _is_oauth2_auth_error(e):
             raise ConnectorAuthFailureException(
                 "Authentication failed. Please verify your OAuth2 credentials."
             ) from e
@@ -96,7 +112,9 @@ def create_okta_systems(
     Only includes ACTIVE applications.
 
     Args:
-        okta_applications: List of OktaApplication objects from Okta API
+        okta_applications: List of OktaApplication dicts from Okta API.
+            Note: OktaApplication is a TypedDict (dict at runtime with type hints),
+            not a Pydantic model, so dict-style access with .get() is used.
         organization_key: The organization fides_key to associate with systems
 
     Returns:

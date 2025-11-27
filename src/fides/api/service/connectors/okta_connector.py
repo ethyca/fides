@@ -49,7 +49,9 @@ class OktaConnector(BaseConnector):
         except ConnectionException:
             raise
         except Exception as e:
-            raise ConnectionException(f"Failed to create Okta client: {str(e)}") from e
+            raise ConnectionException(
+                "Failed to create Okta client. Please verify your credentials."
+            ) from e
 
     def query_config(self, node: ExecutionNode) -> NoReturn:
         """Return the query config for this connector type. Not implemented for Okta."""

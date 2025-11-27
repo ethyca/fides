@@ -1,6 +1,6 @@
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import sleep
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
@@ -186,9 +186,6 @@ class OktaHttpClient:
     def _parse_jwk(private_key: Union[str, PrivateJwk]) -> PrivateJwk:
         """Parse private key from string or dict.
 
-        Note: Full validation (kty, 'd' param) is done by OktaSchema.
-        This method handles string→dict conversion for already-validated secrets.
-
         Args:
             private_key: JWK as either a JSON string or dict
 
@@ -196,15 +193,21 @@ class OktaHttpClient:
             Parsed JWK dictionary
 
         Raises:
-            ValueError: If key is not valid JSON
+            ValueError: If key is not valid JSON or missing required 'd' parameter
         """
         if isinstance(private_key, dict):
+            if "d" not in private_key:
+                raise ValueError("Private key required (missing 'd' parameter)")
             return private_key
 
         try:
-            return json.loads(private_key.strip())
+            parsed = json.loads(private_key.strip())
         except json.JSONDecodeError as exc:
             raise ValueError("Private key must be valid JSON.") from exc
+
+        if "d" not in parsed:
+            raise ValueError("Private key required (missing 'd' parameter)")
+        return parsed
 
     @staticmethod
     def _determine_alg_from_jwk(jwk: PrivateJwk) -> str:
@@ -229,7 +232,9 @@ class OktaHttpClient:
         if self._token_expires_at is None:
             return True
         buffer = timedelta(minutes=TOKEN_EXPIRY_BUFFER_MINUTES)
-        return self._token_expires_at < (datetime.utcnow() + buffer).timestamp()
+        return (
+            self._token_expires_at < (datetime.now(timezone.utc) + buffer).timestamp()
+        )
 
     def _get_token(self) -> AuthBase:
         """
@@ -244,7 +249,11 @@ class OktaHttpClient:
             return self._cached_token
 
         try:
-            from requests_oauth2client.exceptions import OAuth2Error
+            from requests_oauth2client.exceptions import (
+                InvalidClient,
+                OAuth2Error,
+                UnauthorizedClient,
+            )
 
             logger.info("Acquiring new OAuth2 token for Okta")
             token = self._oauth_client.client_credentials(
@@ -258,11 +267,11 @@ class OktaHttpClient:
                 self._token_expires_at = token.expires_at.timestamp()
             elif hasattr(token, "expires_in") and token.expires_in:
                 self._token_expires_at = (
-                    datetime.utcnow().timestamp() + token.expires_in
+                    datetime.now(timezone.utc).timestamp() + token.expires_in
                 )
             else:
                 # Default to 1 hour if no expiration info (Okta default)
-                self._token_expires_at = datetime.utcnow().timestamp() + 3600
+                self._token_expires_at = datetime.now(timezone.utc).timestamp() + 3600
 
             return token
         except ImportError as e:
@@ -270,6 +279,9 @@ class OktaHttpClient:
                 "The 'requests-oauth2client' library is required for Okta connector. "
                 "Please install it with: pip install requests-oauth2client"
             ) from e
+        except (InvalidClient, UnauthorizedClient) as e:
+            # Specific OAuth2 authentication errors - preserve type for caller to detect
+            raise ConnectionException(f"OAuth2 authentication failed: {str(e)}") from e
         except OAuth2Error as e:
             raise ConnectionException(
                 f"OAuth2 token acquisition failed: {str(e)}"
@@ -432,7 +444,7 @@ class OktaHttpClient:
         """
         all_apps: List[OktaApplication] = []
         cursor: Optional[str] = None
-        seen_cursors: set = set()
+        seen_cursors: set[str] = set()
 
         for _ in range(max_pages):
             apps, next_cursor = self.list_applications(limit=page_size, after=cursor)
