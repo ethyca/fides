@@ -1,4 +1,4 @@
-import { ResourceTypes } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 import { TaxonomyTypeEnum } from "./constants";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
@@ -44,13 +44,14 @@ export const parentKeyFromFidesKey = (fidesKey: string) => {
 export const taxonomyTypeToResourceType = (taxonomyType: string) => {
   switch (taxonomyType) {
     case TaxonomyTypeEnum.DATA_CATEGORY:
-      return ResourceTypes.DATA_CATEGORY;
+      return LegacyResourceTypes.DATA_CATEGORY;
     case TaxonomyTypeEnum.DATA_SUBJECT:
-      return ResourceTypes.DATA_SUBJECT;
+      return LegacyResourceTypes.DATA_SUBJECT;
     case TaxonomyTypeEnum.DATA_USE:
-      return ResourceTypes.DATA_USE;
+      return LegacyResourceTypes.DATA_USE;
 
     default:
-      return undefined;
+      // Non-legacy taxonomy types can be any string
+      return taxonomyType;
   }
 };

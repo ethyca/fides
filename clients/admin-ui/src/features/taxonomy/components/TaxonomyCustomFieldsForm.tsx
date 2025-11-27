@@ -3,13 +3,13 @@ import {
   AntFormInstance as FormInstance,
   AntInput as Input,
   AntSelect as Select,
-  AntTypography as Typography,
 } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
 import FidesSpinner from "~/features/common/FidesSpinner";
-import { AllowedTypes } from "~/types/api";
+import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
 
 interface TaxonomyCustomFieldsFormProps {
   customFields: ReturnType<typeof useCustomFields>;
@@ -42,10 +42,6 @@ const TaxonomyCustomFieldsForm = ({
       layout="vertical"
       data-testid="custom-fields-form"
     >
-      <div className="mb-2">
-        <Typography.Title level={3}>Custom fields</Typography.Title>
-      </div>
-
       {isLoading ? (
         <FidesSpinner />
       ) : (
@@ -68,7 +64,7 @@ const TaxonomyCustomFieldsForm = ({
                   field_type: fieldType,
                 } = customFieldDefinition;
 
-                if (!allowListId && fieldType === AllowedTypes.STRING) {
+                if (!allowListId) {
                   return (
                     <Form.Item
                       key={definitionId}
@@ -76,7 +72,14 @@ const TaxonomyCustomFieldsForm = ({
                       label={name}
                       tooltip={description}
                     >
-                      <Input />
+                      {fieldType === LegacyAllowedTypes.STRING ? (
+                        <Input />
+                      ) : (
+                        <CustomTaxonomySelect
+                          taxonomyKey={fieldType}
+                          defaultValue={customFields.customFieldValues[id]}
+                        />
+                      )}
                     </Form.Item>
                   );
                 }
