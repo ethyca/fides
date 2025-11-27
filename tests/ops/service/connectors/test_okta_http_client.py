@@ -49,6 +49,37 @@ def mock_oauth_client_and_dpop_key():
 
 
 @pytest.fixture
+def mock_oauth2_exceptions():
+    """Mock requests_oauth2client.exceptions module for tests that call _get_token()."""
+
+    class StubInvalidClient(Exception):
+        pass
+
+    class StubUnauthorizedClient(Exception):
+        pass
+
+    class StubOAuth2Error(Exception):
+        pass
+
+    exceptions_module = ModuleType("requests_oauth2client.exceptions")
+    exceptions_module.InvalidClient = StubInvalidClient
+    exceptions_module.UnauthorizedClient = StubUnauthorizedClient
+    exceptions_module.OAuth2Error = StubOAuth2Error
+
+    package_module = ModuleType("requests_oauth2client")
+    package_module.exceptions = exceptions_module
+
+    with patch.dict(
+        sys.modules,
+        {
+            "requests_oauth2client": package_module,
+            "requests_oauth2client.exceptions": exceptions_module,
+        },
+    ):
+        yield exceptions_module
+
+
+@pytest.fixture
 def client_with_injection(mock_oauth_client_and_dpop_key):
     mock_oauth_client, mock_dpop_key = mock_oauth_client_and_dpop_key
     return OktaHttpClient(
@@ -200,7 +231,7 @@ class TestOktaHttpClientMethods:
             yield mock
 
     def test_list_applications_single_page(
-        self, client_with_injection, mock_token, mock_rate_limiter
+        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
     ):
         mock_apps = [{"id": "app1"}, {"id": "app2"}]
         with patch("requests.request") as mock_request:
@@ -222,7 +253,7 @@ class TestOktaHttpClientMethods:
             )
 
     def test_list_applications_with_pagination(
-        self, client_with_injection, mock_token, mock_rate_limiter
+        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
     ):
         link_header = f'<{TEST_ORG_URL}/api/v1/apps?after=cursor123>; rel="next"'
         with patch("requests.request") as mock_request:
@@ -244,32 +275,17 @@ class TestOktaHttpClientMethods:
             )
 
     def test_list_applications_oauth_error(
-        self, client_with_injection, mock_rate_limiter
+        self, client_with_injection, mock_rate_limiter, mock_oauth2_exceptions
     ):
-        class StubOAuth2Error(Exception):
-            pass
-
-        exceptions_module = ModuleType("requests_oauth2client.exceptions")
-        exceptions_module.OAuth2Error = StubOAuth2Error
-        package_module = ModuleType("requests_oauth2client")
-        package_module.exceptions = exceptions_module
-
-        with patch.dict(
-            sys.modules,
-            {
-                "requests_oauth2client": package_module,
-                "requests_oauth2client.exceptions": exceptions_module,
-            },
-        ):
-            client_with_injection._oauth_client.client_credentials.side_effect = (
-                StubOAuth2Error("invalid_client")
-            )
-            with pytest.raises(ConnectionException) as exc_info:
-                client_with_injection.list_applications()
+        client_with_injection._oauth_client.client_credentials.side_effect = (
+            mock_oauth2_exceptions.OAuth2Error("invalid_client")
+        )
+        with pytest.raises(ConnectionException) as exc_info:
+            client_with_injection.list_applications()
         assert "OAuth2 token acquisition failed" in str(exc_info.value)
 
     def test_list_applications_http_error(
-        self, client_with_injection, mock_token, mock_rate_limiter
+        self, client_with_injection, mock_token, mock_rate_limiter, mock_oauth2_exceptions
     ):
         with patch("requests.request") as mock_request:
             mock_request.side_effect = requests.RequestException("Network error")
@@ -333,7 +349,9 @@ class TestTokenCaching:
             dpop_key=mock_dpop_key,
         )
 
-    def test_token_cached_on_first_call(self, client_with_injection):
+    def test_token_cached_on_first_call(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Token should be cached after first acquisition."""
         mock_token = MagicMock(spec=AuthBase)
         mock_token.expires_at = datetime.utcnow().timestamp() + 3600
@@ -345,7 +363,7 @@ class TestTokenCaching:
         assert client_with_injection._cached_token is mock_token
         assert client_with_injection._oauth_client.client_credentials.call_count == 1
 
-    def test_cached_token_reused(self, client_with_injection):
+    def test_cached_token_reused(self, client_with_injection, mock_oauth2_exceptions):
         """Cached token should be reused on subsequent calls."""
         mock_token = MagicMock(spec=AuthBase)
         mock_token.expires_at = datetime.utcnow().timestamp() + 3600
@@ -360,7 +378,9 @@ class TestTokenCaching:
         # Should only call client_credentials once
         assert client_with_injection._oauth_client.client_credentials.call_count == 1
 
-    def test_token_refreshed_when_close_to_expiry(self, client_with_injection):
+    def test_token_refreshed_when_close_to_expiry(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Token should be refreshed when close to expiry (within 10 min buffer)."""
         # First token expires in 5 minutes (within buffer)
         mock_token1 = MagicMock(spec=AuthBase)
@@ -382,7 +402,9 @@ class TestTokenCaching:
         assert token2 is mock_token2
         assert client_with_injection._oauth_client.client_credentials.call_count == 2
 
-    def test_token_not_refreshed_when_valid(self, client_with_injection):
+    def test_token_not_refreshed_when_valid(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Token should not be refreshed when still valid (outside buffer)."""
         # Token expires in 20 minutes (outside 10 min buffer)
         mock_token = MagicMock(spec=AuthBase)
@@ -396,7 +418,7 @@ class TestTokenCaching:
         # Should only call client_credentials once
         assert client_with_injection._oauth_client.client_credentials.call_count == 1
 
-    def test_clear_token_cache(self, client_with_injection):
+    def test_clear_token_cache(self, client_with_injection, mock_oauth2_exceptions):
         """clear_token_cache should reset cached state."""
         mock_token = MagicMock(spec=AuthBase)
         mock_token.expires_at = datetime.utcnow().timestamp() + 3600
@@ -415,7 +437,9 @@ class TestTokenCaching:
         client_with_injection._get_token()
         assert client_with_injection._oauth_client.client_credentials.call_count == 2
 
-    def test_token_expiry_from_expires_in(self, client_with_injection):
+    def test_token_expiry_from_expires_in(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Token expiry should be calculated from expires_in if expires_at not available."""
         mock_token = MagicMock(spec=AuthBase)
         mock_token.expires_at = None
@@ -429,7 +453,9 @@ class TestTokenCaching:
         expected_max = datetime.utcnow().timestamp() + 3700
         assert expected_min < client_with_injection._token_expires_at < expected_max
 
-    def test_token_default_expiry_when_no_expiration_info(self, client_with_injection):
+    def test_token_default_expiry_when_no_expiration_info(
+        self, client_with_injection, mock_oauth2_exceptions
+    ):
         """Token should default to 1 hour expiry if no expiration info."""
         mock_token = MagicMock(spec=AuthBase)
         mock_token.expires_at = None
@@ -464,7 +490,7 @@ class TestRetryLogic:
         mock_oauth_client.client_credentials.return_value = mock_token
         return client
 
-    def test_retry_on_429(self, client_with_injection):
+    def test_retry_on_429(self, client_with_injection, mock_oauth2_exceptions):
         """Should retry on 429 (rate limit) response."""
         mock_response_429 = MagicMock()
         mock_response_429.ok = False
@@ -488,7 +514,7 @@ class TestRetryLogic:
         assert mock_request.call_count == 2
         mock_sleep.assert_called_once()
 
-    def test_retry_on_503(self, client_with_injection):
+    def test_retry_on_503(self, client_with_injection, mock_oauth2_exceptions):
         """Should retry on 503 (service unavailable) response."""
         mock_response_503 = MagicMock()
         mock_response_503.ok = False
@@ -511,7 +537,7 @@ class TestRetryLogic:
         assert apps == []
         assert mock_request.call_count == 2
 
-    def test_no_retry_on_400(self, client_with_injection):
+    def test_no_retry_on_400(self, client_with_injection, mock_oauth2_exceptions):
         """Should not retry on 400 (bad request) response."""
         mock_response_400 = MagicMock()
         mock_response_400.ok = False
@@ -528,7 +554,7 @@ class TestRetryLogic:
         # Should only try once (no retries)
         assert mock_request.call_count == 1
 
-    def test_respects_retry_after_header(self, client_with_injection):
+    def test_respects_retry_after_header(self, client_with_injection, mock_oauth2_exceptions):
         """Should respect Retry-After header when present."""
         mock_response_429 = MagicMock()
         mock_response_429.ok = False
@@ -551,7 +577,7 @@ class TestRetryLogic:
         # Should use Retry-After value (5 seconds)
         mock_sleep.assert_called_once_with(5.0)
 
-    def test_max_retries_exceeded(self, client_with_injection):
+    def test_max_retries_exceeded(self, client_with_injection, mock_oauth2_exceptions):
         """Should fail after max retries."""
         mock_response_503 = MagicMock()
         mock_response_503.ok = False
@@ -572,7 +598,9 @@ class TestRetryLogic:
 class TestRateLimiting:
     """Tests for rate limiting functionality."""
 
-    def test_rate_limiter_called(self, mock_oauth_client_and_dpop_key):
+    def test_rate_limiter_called(
+        self, mock_oauth_client_and_dpop_key, mock_oauth2_exceptions
+    ):
         """Rate limiter should be called before requests."""
         mock_oauth_client, mock_dpop_key = mock_oauth_client_and_dpop_key
         client = OktaHttpClient(
@@ -606,10 +634,12 @@ class TestRateLimiting:
         # Verify rate limit request was built correctly
         rate_limit_requests = mock_limiter.limit.call_args[0][0]
         assert len(rate_limit_requests) == 1
-        assert rate_limit_requests[0].key == f"okta:{TEST_CLIENT_ID}"
+        assert rate_limit_requests[0].key == f"okta:{TEST_ORG_URL}"
         assert rate_limit_requests[0].rate_limit == 100
 
-    def test_rate_limiting_disabled_when_none(self, mock_oauth_client_and_dpop_key):
+    def test_rate_limiting_disabled_when_none(
+        self, mock_oauth_client_and_dpop_key, mock_oauth2_exceptions
+    ):
         """Rate limiter should not be called when rate_limit_per_minute is None."""
         mock_oauth_client, mock_dpop_key = mock_oauth_client_and_dpop_key
         client = OktaHttpClient(
@@ -654,7 +684,7 @@ class TestRateLimiting:
 
         requests = client._build_rate_limit_requests()
         assert len(requests) == 1
-        assert requests[0].key == f"okta:{TEST_CLIENT_ID}"
+        assert requests[0].key == f"okta:{TEST_ORG_URL}"
         assert requests[0].rate_limit == 250
 
 
