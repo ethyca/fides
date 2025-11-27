@@ -21,7 +21,6 @@ export const OKTA_DESCRIPTION = (
   </>
 );
 
-/** Full authentication description for Okta OAuth2 setup */
 export const OKTA_AUTH_DESCRIPTION =
   "Okta integration uses OAuth2 Client Credentials with private_key_jwt for secure authentication. You will need to generate an RSA key in Okta and copy the JSON key to use in Fides.";
 

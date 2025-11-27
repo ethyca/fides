@@ -327,7 +327,7 @@ def handle_okta_credentials_options(
                 "Illegal usage: org-url/client-id/private-key and credentials-id cannot be used together"
             )
         okta_config = OktaConfig(
-            orgUrl=org_url, clientId=client_id, privateKey=private_key
+            org_url=org_url, client_id=client_id, private_key=private_key
         )
     if credentials_id:
         okta_config = get_config_okta_credentials(

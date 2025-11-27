@@ -73,7 +73,21 @@ const ValidationSchema = Yup.object().shape({
     .required()
     .trim()
     .label("Scopes")
-    .default("okta.apps.read"),
+    .default("okta.apps.read")
+    .test(
+      "valid-scopes",
+      "Scopes must be a single scope or comma-separated list (e.g., 'okta.apps.read' or 'okta.apps.read, okta.users.read')",
+      (value) => {
+        if (!value) {
+          return true;
+        }
+        // Split on comma and check each scope is non-empty and has no internal whitespace
+        const scopes = value.split(",").map((s) => s.trim());
+        return scopes.every(
+          (scope) => scope.length > 0 && !/\s/.test(scope),
+        );
+      },
+    ),
 });
 
 const AuthenticateOktaForm = () => {
