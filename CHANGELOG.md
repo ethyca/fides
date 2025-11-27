@@ -19,19 +19,34 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.75.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.1..main)
+
+### Added
+- Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
+
+### Changed
+- Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
+- Duplicate DSRs now log with skipped instead of error [#7034](https://github.com/ethyca/fides/pull/7034)
+
+## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
+
+### Added
+- Added convenience fields for creating Manual Task conditional dependencies on policies [#6995](https://github.com/ethyca/fides/pull/6995)
 
 ### Changed
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
+- Set max width for Action center classification dropdown [#7015](https://github.com/ethyca/fides/pull/7015)
 
 ### Developer Experience
+- Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
 - Upgrade client projects to Typescript 5 [#6986](https://github.com/ethyca/fides/pull/6986)
+- Updates to the privacy notice sandbox to match the new versions of the consent v3 APIs [#7023](https://github.com/ethyca/fides/pull/7023)
 
 
 ## [2.75.0](https://github.com/ethyca/fides/compare/2.74.3..2.75.0)
 
 ### Added
-- Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
+- Added disclosed vendors segment support to align with the TCF Technical Specifications 2.3 [#7006](https://github.com/ethyca/fides/pull/7006)
 - Added Adobe Experience Platform integration for FidesJS consent syncing [#6970](https://github.com/ethyca/fides/pull/6970)
 - Added Google Consent Mode v2 integration for FidesJS [#6982](https://github.com/ethyca/fides/pull/6982)
 - Added a setting to enable duplicate detection of privacy requests [#6936](https://github.com/ethyca/fides/pull/6936)

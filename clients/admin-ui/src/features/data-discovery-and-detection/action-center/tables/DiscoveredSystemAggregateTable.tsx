@@ -92,7 +92,10 @@ export const DiscoveredSystemAggregateTable = ({
                   onClick: handleBulkAdd,
                   disabled: uncategorizedIsSelected,
                 },
-                !activeParams.diff_status.includes(DiffStatus.MUTED)
+                "diff_status" in activeParams &&
+                !(
+                  activeParams as { diff_status: DiffStatus[] }
+                ).diff_status.includes(DiffStatus.MUTED)
                   ? {
                       key: "ignore",
                       label: "Ignore",

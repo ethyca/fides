@@ -39,7 +39,7 @@ const TaxonomyOption = ({
         <strong>{primaryName || name}</strong>
         {primaryName && `: ${name}`}
       </div>
-      <em>{description}</em>
+      <em className="overflow-hidden text-ellipsis">{description}</em>
     </Flex>
   );
 };

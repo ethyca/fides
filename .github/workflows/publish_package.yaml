@@ -2,8 +2,6 @@ name: Publish Fides
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "*"
 
