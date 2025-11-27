@@ -83,9 +83,7 @@ const ValidationSchema = Yup.object().shape({
         }
         // Split on comma and check each scope is non-empty and has no internal whitespace
         const scopes = value.split(",").map((s) => s.trim());
-        return scopes.every(
-          (scope) => scope.length > 0 && !/\s/.test(scope),
-        );
+        return scopes.every((scope) => scope.length > 0 && !/\s/.test(scope));
       },
     ),
 });
