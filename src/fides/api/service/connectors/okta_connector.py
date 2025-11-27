@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from okta.client import Client as OktaClient
 from okta.exceptions import OktaAPIException
 
@@ -26,16 +27,42 @@ class OktaConnector(BaseConnector):
 
     def create_client(self) -> OktaClient:
         """Creates and returns an Okta client instance"""
+        org_url = self.configuration.secrets.get("org_url")
+        if not org_url:
+            raise ConnectionException(
+                "Okta connection configuration is missing 'org_url'."
+            )
+
+        if self.configuration.secrets.get("api_token"):
+            logger.warning(
+                "Deprecated Okta API token detected in secrets. This value is ignored; "
+                "configure OAuth2 Client Credentials instead."
+            )
+
+        access_token = self._get_oauth_access_token()
+
         try:
             return OktaClient(
                 {
-                    "orgUrl": self.configuration.secrets["org_url"],
-                    "token": self.configuration.secrets["api_token"],
+                    "orgUrl": org_url,
+                    "token": access_token,
                     "raiseException": True,
                 }
             )
-        except Exception as e:
-            raise ConnectionException(f"Failed to create Okta client: {str(e)}")
+        except Exception as exc:
+            raise ConnectionException(
+                f"Failed to create Okta client using OAuth2 credentials: {exc}"
+            ) from exc
+
+    def _get_oauth_access_token(self) -> str:
+        """Retrieve the OAuth2 access token for the Okta client."""
+
+        access_token = self.configuration.secrets.get("access_token")
+        if not access_token:
+            raise ConnectionException(
+                "Okta access_token is not configured. Provide a valid OAuth2 access token in the connection secrets."
+            )
+        return access_token
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
