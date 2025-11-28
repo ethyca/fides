@@ -4,7 +4,14 @@ from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
@@ -384,20 +391,58 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
 BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
 
 
-class ReviewPrivacyRequestIds(FidesSchema):
-    """Pass in a list of privacy request ids"""
+class PrivacyRequestBulkSelection(FidesSchema):
+    """
+    Select privacy requests for bulk actions using either explicit IDs or filters.
 
-    request_ids: List[str] = Field(..., max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    If request_ids is provided, it will be used directly.
+    If filters is provided (without request_ids), filters will be used to select privacy requests,
+    with optional exclusions via exclude_ids.
+    """
+
+    request_ids: Optional[List[str]] = Field(
+        None, max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE
+    )
+    filters: Optional["PrivacyRequestFilter"] = Field(
+        None,
+        description="Filters to select privacy requests (only used when request_ids is not provided)",
+    )
+    exclude_ids: Optional[List[str]] = Field(
+        None,
+        description="List of privacy request IDs to exclude from the action (only used with filters)",
+    )
+
+    @model_validator(mode="after")
+    def validate_selection_provided(self) -> "PrivacyRequestBulkSelection":
+        """
+        Validate selection rules:
+        1. At least one of request_ids or filters must be provided (and not empty)
+        2. exclude_ids can only be used with filters, not with request_ids
+        """
+        # Check if both are None or if request_ids is an empty list
+        if (
+            self.request_ids is None or len(self.request_ids) == 0
+        ) and self.filters is None:
+            raise ValueError(
+                "At least one of 'request_ids' or 'filters' must be provided. 'request_ids' cannot be empty."
+            )
+
+        if self.request_ids is not None and self.exclude_ids is not None:
+            raise ValueError(
+                "'exclude_ids' can only be used with 'filters', not with 'request_ids'"
+            )
+
+        return self
 
 
-class DenyPrivacyRequests(ReviewPrivacyRequestIds):
-    """Pass in a list of privacy request ids and rejection reason"""
+class DenyPrivacyRequestSelection(PrivacyRequestBulkSelection):
+    """Select privacy requests to deny with optional reason"""
 
     reason: Optional[SafeStr] = None
 
 
-class CancelPrivacyRequests(ReviewPrivacyRequestIds):
-    """Pass in a list of privacy request ids and cancellation reason"""
+class CancelPrivacyRequestSelection(PrivacyRequestBulkSelection):
+    """Select privacy requests to cancel with optional reason"""
 
     reason: Optional[SafeStr] = None
 

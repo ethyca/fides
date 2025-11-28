@@ -14,11 +14,12 @@ from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from freezegun import freeze_time
-from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
+    _resolve_request_ids_from_filters,
     validate_manual_input,
 )
 from fides.api.cryptography.schemas.jwt import (
@@ -57,7 +58,10 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     IdentityValue,
+    PrivacyRequestBulkSelection,
+    PrivacyRequestFilter,
     PrivacyRequestResponse,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -98,6 +102,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -125,6 +130,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, generate_role_header_for_user
+from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_performance import (
+    QueryCounter,
+)
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
@@ -159,6 +167,104 @@ page_size = Params().size
 
 def stringify_date(log_date: datetime) -> str:
     return log_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+class TestResolveRequestIdsFromFilters:
+    """Test the _resolve_request_ids_from_filters helper function"""
+
+    @pytest.mark.parametrize(
+        "scenario,selection_data,setup_requests,expected_count,should_raise,error_message",
+        [
+            (
+                "explicit_request_ids",
+                {"request_ids": ["req-1", "req-2", "req-3"]},
+                0,
+                3,
+                False,
+                None,
+            ),
+            (
+                "filters_with_status",
+                {"filters": {"status": [PrivacyRequestStatus.pending.value]}},
+                2,
+                2,
+                False,
+                None,
+            ),
+            (
+                "filters_with_exclusions",
+                {
+                    "filters": {"status": [PrivacyRequestStatus.pending.value]},
+                    "exclude_ids": [],  # Will be populated in test
+                },
+                3,
+                2,
+                False,
+                None,
+            ),
+            (
+                "no_results_from_filters",
+                {"filters": {"status": [PrivacyRequestStatus.canceled.value]}},
+                2,
+                0,
+                True,
+                "No privacy requests found matching the provided filters.",
+            ),
+        ],
+    )
+    def test_resolve_request_ids_from_filters(
+        self,
+        db,
+        policy,
+        scenario,
+        selection_data,
+        setup_requests,
+        expected_count,
+        should_raise,
+        error_message,
+    ):
+        """Test resolving privacy request IDs from various selection scenarios"""
+        # Setup: Create privacy requests if needed
+        created_requests = []
+        if setup_requests > 0:
+            for i in range(setup_requests):
+                pr = PrivacyRequest.create(
+                    db=db,
+                    data={
+                        "external_id": f"test-ext-id-{i}",
+                        "requested_at": datetime.utcnow(),
+                        "policy_id": policy.id,
+                        "status": PrivacyRequestStatus.pending,
+                    },
+                )
+                created_requests.append(pr)
+
+        # For exclusion test, exclude the first request
+        if scenario == "filters_with_exclusions" and created_requests:
+            selection_data["exclude_ids"] = [created_requests[0].id]
+
+        # Create selection object
+        selection = PrivacyRequestBulkSelection(**selection_data)
+
+        # Execute and assert
+        if should_raise:
+            with pytest.raises(HTTPException) as exc_info:
+                _resolve_request_ids_from_filters(db, selection)
+            assert exc_info.value.status_code == HTTP_400_BAD_REQUEST
+            assert error_message in str(exc_info.value.detail)
+        else:
+            result_ids = _resolve_request_ids_from_filters(db, selection)
+            assert len(result_ids) == expected_count
+
+            # For explicit request_ids, verify they match
+            if scenario == "explicit_request_ids":
+                assert result_ids == selection_data["request_ids"]
+
+            # For filters with exclusions, verify excluded ID is not present
+            if scenario == "filters_with_exclusions":
+                assert created_requests[0].id not in result_ids
+                assert created_requests[1].id in result_ids
+                assert created_requests[2].id in result_ids
 
 
 class TestCreatePrivacyRequest:
@@ -4343,6 +4449,295 @@ class TestApprovePrivacyRequest:
         assert queue == MESSAGING_QUEUE_NAME
 
 
+class TestFilteredBulkActions:
+    """Test bulk actions with filters and exclusions - reuses existing test logic"""
+
+    @pytest.fixture(scope="function")
+    def url_approve(self):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_approve_with_filters_and_exclusions(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url_approve,
+        api_client,
+        generate_auth_header,
+        user,
+        privacy_requests,
+    ):
+        """Test that filters and exclusions work correctly for bulk approve"""
+        # Set 2 to pending, 1 to complete (fixture has 3 privacy requests)
+        for pr in privacy_requests[:2]:
+            pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
+        privacy_requests[2].update(
+            db=db, data={"status": PrivacyRequestStatus.complete}
+        )
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        # Approve pending requests, but exclude one
+        body = {
+            "filters": {"status": ["pending"]},
+            "exclude_ids": [privacy_requests[1].id],
+        }
+        response = api_client.patch(url_approve, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+
+        # Should approve 1 of 2 pending requests (one excluded)
+        assert len(response_body["succeeded"]) == 1
+        succeeded_ids = [r["id"] for r in response_body["succeeded"]]
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id not in succeeded_ids  # Excluded
+        assert privacy_requests[2].id not in succeeded_ids  # Wrong status
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_actions_prevent_n_plus_1_queries(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        url_approve,
+        api_client,
+        generate_auth_header,
+        privacy_requests,
+    ):
+        """Verify filtered bulk operations don't introduce N+1 queries"""
+
+        # Set all 3 requests to pending (fixture has 3 privacy requests)
+        for pr in privacy_requests:
+            pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        with QueryCounter() as counter:
+            body = {"filters": {"status": ["pending"]}}
+            response = api_client.patch(url_approve, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        assert len(response.json()["succeeded"]) == 3
+
+        # Should use a reasonable number of queries to resolve IDs + fetch requests, not N queries
+        # With 3 privacy requests, we expect significantly fewer than 100 queries
+        assert counter.count < 100, f"Too many queries: {counter.count}"
+
+
+class TestBulkOperationsBatching:
+    """Test that bulk operations correctly handle batching for large request lists."""
+
+    @pytest.fixture(scope="function")
+    def large_privacy_requests(self, db, policy):
+        """Create more than BULK_PRIVACY_REQUEST_BATCH_SIZE privacy requests to test batching."""
+        privacy_requests = []
+        # Create 75 requests (more than the batch size of 50)
+        request_count = 75
+        for i in range(request_count):
+            pr = PrivacyRequest.create(
+                db=db,
+                data={
+                    "external_id": f"bulk_test_{i}",
+                    "status": PrivacyRequestStatus.pending,
+                    "policy_id": policy.id,
+                    "client_id": policy.client_id,
+                },
+            )
+            privacy_requests.append(pr)
+        yield privacy_requests
+        for pr in privacy_requests:
+            pr.delete(db)
+
+    @pytest.mark.parametrize(
+        "operation,endpoint,method,scope,initial_status,expected_status,reason_required",
+        [
+            (
+                "approve",
+                PRIVACY_REQUEST_APPROVE,
+                "patch",
+                PRIVACY_REQUEST_REVIEW,
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.approved,
+                False,
+            ),
+            (
+                "deny",
+                PRIVACY_REQUEST_DENY,
+                "patch",
+                PRIVACY_REQUEST_REVIEW,
+                PrivacyRequestStatus.pending,
+                PrivacyRequestStatus.denied,
+                True,
+            ),
+            (
+                "cancel",
+                PRIVACY_REQUEST_CANCEL,
+                "patch",
+                PRIVACY_REQUEST_REVIEW,
+                PrivacyRequestStatus.in_processing,
+                PrivacyRequestStatus.canceled,
+                False,
+            ),
+            (
+                "soft_delete",
+                PRIVACY_REQUEST_BULK_SOFT_DELETE,
+                "post",
+                PRIVACY_REQUEST_DELETE,
+                PrivacyRequestStatus.pending,
+                None,  # Soft delete doesn't change status, just sets deleted_at
+                False,
+            ),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_operations_with_batching(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        api_client,
+        generate_auth_header,
+        user,
+        large_privacy_requests,
+        operation,
+        endpoint,
+        method,
+        scope,
+        initial_status,
+        expected_status,
+        reason_required,
+    ):
+        """Test that bulk operations correctly process all requests across multiple batches."""
+        # Set all requests to the initial status required for the operation
+        for pr in large_privacy_requests:
+            pr.update(db=db, data={"status": initial_status})
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[scope])
+        request_ids = [pr.id for pr in large_privacy_requests]
+
+        # Prepare request body
+        body = {"request_ids": request_ids}
+        if reason_required:
+            body["reason"] = f"Bulk {operation} test reason"
+
+        # Make the request
+        url = V1_URL_PREFIX + endpoint
+        if method == "patch":
+            response = api_client.patch(url, headers=auth_header, json=body)
+        else:  # post
+            response = api_client.post(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+
+        # Verify all requests were processed successfully
+        assert len(response_body["succeeded"]) == len(large_privacy_requests)
+        assert len(response_body["failed"]) == 0
+
+        # Verify all requests have the expected status (or are soft deleted)
+        db.expire_all()
+        for pr in large_privacy_requests:
+            db.refresh(pr)
+            if operation == "soft_delete":
+                assert pr.deleted_at is not None
+                assert pr.deleted_by == user.id
+            else:
+                assert pr.status == expected_status
+
+        # Verify all request IDs are in the succeeded list
+        succeeded_ids = [r["id"] for r in response_body["succeeded"]]
+        for pr in large_privacy_requests:
+            assert pr.id in succeeded_ids
+
+    @pytest.mark.parametrize(
+        "operation,endpoint,method,scope,initial_status",
+        [
+            (
+                "finalize",
+                PRIVACY_REQUEST_BULK_FINALIZE,
+                "post",
+                PRIVACY_REQUEST_REVIEW,
+                PrivacyRequestStatus.requires_manual_finalization,
+            ),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_bulk_finalize_with_batching(
+        self,
+        submit_mock,
+        db,
+        api_client,
+        generate_auth_header,
+        user,
+        large_privacy_requests,
+        operation,
+        endpoint,
+        method,
+        scope,
+        initial_status,
+    ):
+        """Test that bulk finalize correctly processes all requests across multiple batches."""
+        # Set all requests to requires_manual_finalization
+        for pr in large_privacy_requests:
+            pr.update(db=db, data={"status": initial_status})
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[scope])
+        request_ids = [pr.id for pr in large_privacy_requests]
+
+        # Make the request
+        url = V1_URL_PREFIX + endpoint
+        body = {"request_ids": request_ids}
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+
+        # Verify all requests were processed successfully
+        assert len(response_body["succeeded"]) == len(large_privacy_requests)
+        assert len(response_body["failed"]) == 0
+
+        # Verify all requests have finalized_at and finalized_by set
+        db.expire_all()
+        for pr in large_privacy_requests:
+            db.refresh(pr)
+            assert pr.finalized_at is not None
+            assert pr.finalized_by == user.id
+
+        # Verify all request IDs are in the succeeded list
+        succeeded_ids = [r["id"] for r in response_body["succeeded"]]
+        for pr in large_privacy_requests:
+            assert pr.id in succeeded_ids
+
+
 class TestMarkPrivacyRequestPreApproveEligible:
     @pytest.fixture(scope="function")
     def url(self, db, privacy_request_status_pending):
@@ -5819,6 +6214,42 @@ class TestBulkRestartFromFailure:
 
         assert privacy_requests[0].id in succeeded_ids
         assert bad_test_id in failed_ids
+
+        submit_mock.assert_called_with(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
+        )
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_restart_from_failure_with_bulk_selection_format(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        """Test that the endpoint works with the new PrivacyRequestBulkSelection format"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = {"request_ids": [privacy_requests[0].id]}
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.access,
+        )
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+
+        assert privacy_requests[0].id in succeeded_ids
 
         submit_mock.assert_called_with(
             queue=DSR_QUEUE_NAME,
