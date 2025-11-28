@@ -38,6 +38,7 @@ export interface UsersListParams {
   size: number;
   username?: string;
   include_external?: boolean;
+  exclude_approvers?: boolean;
 }
 
 export interface UserPasswordResetParams extends UserPasswordReset {
