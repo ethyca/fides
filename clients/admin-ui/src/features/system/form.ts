@@ -62,9 +62,8 @@ export const transformSystemToFormValues = (
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
   const systemWithDataStewards = system as SystemWithDataStewards;
-  const dataStewards = systemWithDataStewards.data_stewards
-    ?.map((user) => user.username)
-    .join(", ");
+  const dataStewards =
+    systemWithDataStewards.data_stewards?.map((user) => user.username) || [];
 
   return {
     ...system,
