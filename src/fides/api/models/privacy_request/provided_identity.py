@@ -5,7 +5,8 @@ from __future__ import annotations
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -45,6 +46,26 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     A table for storing identity fields and values provided at privacy request
     creation time.
     """
+
+    @declared_attr
+    def __table_args__(cls) -> tuple:  # type: ignore[override]
+        """Define table-level constructs including indexes."""
+        return (
+            # Index on foreign key for better join performance and N+1 prevention
+            # Created via migration 3ff6449c099e
+            Index(
+                "ix_providedidentity_privacy_request_id",
+                "privacy_request_id",
+            ),
+            # Hash migration tracking index from HashMigrationMixin
+            Index(
+                "idx_providedidentity_unmigrated",
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(  # type: ignore[attr-defined]  # pylint: disable=no-member
+                    False
+                ),
+            ),
+        )
 
     privacy_request_id = Column(
         String,

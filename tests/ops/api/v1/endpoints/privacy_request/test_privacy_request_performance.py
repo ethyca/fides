@@ -163,8 +163,12 @@ class TestPrivacyRequestPerformance:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service.dispatch_message_task.apply_async"
+    )
     def test_bulk_operations_query_count(
         self,
+        mock_dispatch_message,
         mock_run_privacy_request,
         db,
         api_client: TestClient,
