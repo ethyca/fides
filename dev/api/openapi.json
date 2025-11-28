@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3a1.post0.dev53"
+    "version": "2.74.3a1.post0.dev54"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13248,6 +13248,16 @@
               "type": "boolean",
               "default": true,
               "title": "Include External"
+            }
+          },
+          {
+            "name": "exclude_approvers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Exclude Approvers"
             }
           },
           {
