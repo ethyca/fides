@@ -24,6 +24,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   items?: { $ref: string };
   sensitive?: boolean;
   multiselect?: boolean;
+  multiline?: boolean;
   options?: string[];
 };
 
