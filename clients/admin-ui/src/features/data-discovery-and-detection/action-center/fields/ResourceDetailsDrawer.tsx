@@ -11,6 +11,7 @@ import {
   SparkleIcon,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import { useMemo } from "react";
 
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -36,6 +37,19 @@ export const ResourceDetailsDrawer = ({
   fieldActions,
   ...drawerProps
 }: ResourceDetailsDrawerProps) => {
+  const filteredClassifications = useMemo(() => {
+    if (!resource?.classifications) {
+      return [];
+    }
+    const preferredDataCategories =
+      "preferred_data_categories" in resource
+        ? (resource.preferred_data_categories ?? [])
+        : [];
+    return resource.classifications.filter((classification) =>
+      preferredDataCategories.includes(classification.label),
+    );
+  }, [resource]);
+
   return (
     <DetailsDrawer
       {...drawerProps}
@@ -112,37 +126,36 @@ export const ResourceDetailsDrawer = ({
                       />
                     </Form.Item>
                   </Form>
-                  {resource.classifications &&
-                    resource.classifications.length > 0 && (
-                      <List
-                        dataSource={resource.classifications}
-                        renderItem={(item) => (
-                          <List.Item>
-                            <List.Item.Meta
-                              avatar={
-                                <Avatar
-                                  /* Ant only provides style prop for altering the background color */
-                                  style={{
-                                    backgroundColor:
-                                      palette?.FIDESUI_BG_DEFAULT,
-                                  }}
-                                  icon={<SparkleIcon color="black" />}
+                  {filteredClassifications.length > 0 && (
+                    <List
+                      data-testid="classifications-reasoning-list"
+                      dataSource={filteredClassifications}
+                      renderItem={(item) => (
+                        <List.Item>
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar
+                                /* Ant only provides style prop for altering the background color */
+                                style={{
+                                  backgroundColor: palette?.FIDESUI_BG_DEFAULT,
+                                }}
+                                icon={<SparkleIcon color="black" />}
+                              />
+                            }
+                            title={
+                              <Flex align="center" gap="middle">
+                                <div>{item.label}</div>
+                                <ClassifierProgress
+                                  percent={item.score * 100}
                                 />
-                              }
-                              title={
-                                <Flex align="center" gap="middle">
-                                  <div>{item.label}</div>
-                                  <ClassifierProgress
-                                    percent={item.score * 100}
-                                  />
-                                </Flex>
-                              }
-                              description={item.rationale}
-                            />
-                          </List.Item>
-                        )}
-                      />
-                    )}
+                              </Flex>
+                            }
+                            description={item.rationale}
+                          />
+                        </List.Item>
+                      )}
+                    />
+                  )}
                 </Flex>
               ),
             },
