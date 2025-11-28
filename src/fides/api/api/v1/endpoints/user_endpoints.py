@@ -637,9 +637,7 @@ def get_users(
                     ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
                 )
             if exclude_approvers:
-                query = query.filter(
-                    ~FidesUserPermissions.roles.op("@>")([APPROVER])
-                )
+                query = query.filter(~FidesUserPermissions.roles.op("@>")([APPROVER]))
     else:
         # User has USER_READ_OWN scope, only show their own data
         query = query.filter(FidesUser.id == client.user_id)
