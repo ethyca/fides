@@ -1,0 +1,1 @@
+type ResourceAction = "Remove" | "Classify";

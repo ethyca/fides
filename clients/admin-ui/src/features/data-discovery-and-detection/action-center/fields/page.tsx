@@ -35,6 +35,7 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
   ACTION_ALLOWED_STATUSES,
@@ -45,6 +46,7 @@ import {
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
+  RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
@@ -60,6 +62,7 @@ import {
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { ALLOWED_RESOURCE_ACTIONS } from "./resource-actions.const";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { useBulkActions } from "./useBulkActions";
 import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
@@ -287,13 +290,27 @@ const ActionCenterFields: NextPage = () => {
         >
           <MonitorTree
             ref={monitorTreeRef}
-            selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={() => {
-              fieldActions.classify(
-                selectedNodeKeys.map((key) => key.toString()),
-              );
-            }}
+            nodeActions={
+              new Map(
+                RESOURCE_ACTIONS.map((action) => [
+                  action,
+                  {
+                    label: FIELD_ACTION_LABEL[action],
+                    disabled: (node) => {
+                      if (action === FieldActionType.CLASSIFY) {
+                        return !node.classifyable;
+                      }
+
+                      return !ALLOWED_RESOURCE_ACTIONS[action].some(
+                        (status) => status === node.status,
+                      );
+                    },
+                    callback: (key) => fieldActions[action]([key]),
+                  },
+                ]),
+              )
+            }
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -372,6 +389,7 @@ const ActionCenterFields: NextPage = () => {
                               selectedListItems.map(({ itemKey }) =>
                                 itemKey.toString(),
                               ),
+                              "Field",
                             );
                           }
 
@@ -494,7 +512,7 @@ const ActionCenterFields: NextPage = () => {
                   onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], {
+                    fieldActions["assign-categories"]([urn], "Field", {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
@@ -511,7 +529,9 @@ const ActionCenterFields: NextPage = () => {
                           <Button
                             aria-label={FIELD_ACTION_LABEL[action]}
                             icon={FIELD_ACTION_ICON[action]}
-                            onClick={() => fieldActions[action]([props.urn])}
+                            onClick={() =>
+                              fieldActions[action]([props.urn], "Field")
+                            }
                             disabled={
                               props?.diff_status
                                 ? !ACTION_ALLOWED_STATUSES[action].some(
@@ -568,7 +588,7 @@ const ActionCenterFields: NextPage = () => {
           : DEFAULT_DRAWER_ACTIONS
         ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
-          callback: (value) => fieldActions[action]([value]),
+          callback: (key) => fieldActions[action]([key], "Field"),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
                 (status) => status === resource.diff_status,

@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTitle as Title,
-  AntTree as Tree,
-  SparkleIcon,
-} from "fidesui";
+import { AntFlex as Flex, AntTitle as Title, AntTree as Tree } from "fidesui";
 import { useRouter } from "next/router";
 import {
   forwardRef,
@@ -42,7 +36,7 @@ import {
   removeChildrenFromNode,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -205,13 +199,12 @@ export interface MonitorTreeRef {
 }
 
 interface MonitorTreeProps {
-  selectedNodeKeys: Key[];
   setSelectedNodeKeys: (keys: Key[]) => void;
-  onClickClassifyButton: () => void;
+  nodeActions: Map<Key, TreeNodeAction>;
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
-  ({ selectedNodeKeys, setSelectedNodeKeys, onClickClassifyButton }, ref) => {
+  ({ setSelectedNodeKeys, nodeActions }, ref) => {
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -528,14 +521,8 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       [onLoadData],
     );
 
-    const handleSelect = (
-      _: Key[],
-      info: { selectedNodes: CustomTreeDataNode[] },
-    ) => {
-      const classifyableKeys = info.selectedNodes
-        .filter((node) => node.classifyable)
-        .map((node) => node.key);
-      setSelectedNodeKeys(classifyableKeys);
+    const handleSelect = (keys: Key[]) => {
+      setSelectedNodeKeys(keys);
     };
 
     // Expose the function through the ref
@@ -586,20 +573,23 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               node={node}
               treeData={treeData}
               onLoadMore={onLoadMore}
+              actions={new Map([...nodeActions.entries()])}
             />
           )}
         />
-        {selectedNodeKeys.length > 0 && (
-          <Flex justify="space-between" align="center">
-            <span>{selectedNodeKeys.length} selected</span>
-            <Button
-              aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
-              icon={<SparkleIcon size={12} />}
-              size="small"
-              onClick={onClickClassifyButton}
-            />
-          </Flex>
-        )}
+        {
+          // Enable when multi select is supported
+          // {selectedNodeKeys.length > 0 && (
+          //   <Flex justify="space-between" align="center">
+          //     <Button
+          //       aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
+          //       icon={<SparkleIcon size={12} />}
+          //       size="small"
+          //       onClick={onClickClassifyButton}
+          //     />
+          //   </Flex>
+          // )}
+        }
       </Flex>
     );
   },

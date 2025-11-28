@@ -1,18 +1,20 @@
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
   AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
+import { Key } from "react";
 
 import {
   MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
@@ -43,15 +45,19 @@ const recFindNodeParent = (
   );
 };
 
+export type TreeNodeProps = {
+  node: CustomTreeDataNode;
+  treeData: CustomTreeDataNode[];
+  onLoadMore: (key: string) => void;
+  actions: Map<Key, TreeNodeAction>;
+};
+
 export const MonitorTreeDataTitle = ({
   node,
   treeData,
   onLoadMore,
-}: {
-  node: CustomTreeDataNode;
-  treeData: CustomTreeDataNode[];
-  onLoadMore: (key: string) => void;
-}) => {
+  actions,
+}: TreeNodeProps) => {
   if (!node.title) {
     return null;
   }
@@ -88,16 +94,52 @@ export const MonitorTreeDataTitle = ({
     : null;
 
   return (
-    <Flex gap={4} align="center" className="inline-flex">
+    /** TODO: migrate group class to semantic dom after upgrading ant */
+    <Flex gap={4} align="center" className="group">
       {statusInfo && (
         <Tooltip title={statusInfo.tooltip}>
           <Icons.CircleSolid
-            className="size-2"
+            className="size-2 min-w-min"
             style={{ color: statusInfo.color }}
           />
         </Tooltip>
       )}
-      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
+      <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
+        {node.title}
+      </Text>
+      {[...actions.values()].some(
+        ({ disabled = () => true }) => !disabled(node),
+      ) && (
+        <Dropdown
+          menu={{
+            items: actions
+              ? [...actions.entries()].map(
+                  ([key, { label, disabled = () => false }]) => ({
+                    key,
+                    label,
+                    disabled: disabled(node),
+                  }),
+                )
+              : [],
+            onClick: ({ key, domEvent }) => {
+              domEvent.preventDefault();
+              domEvent.stopPropagation();
+              actions.get(key)?.callback(node.key, node);
+            },
+          }}
+          className="group"
+        >
+          <Button
+            aria-label="Show More Resource Actions"
+            icon={
+              <Icons.OverflowMenuVertical className=" opacity-0 group-hover:opacity-100 group-[.ant-dropdown-open]:opacity-100" />
+            }
+            type="text"
+            size="small"
+            className="self-end"
+          />
+        </Dropdown>
+      )}
     </Flex>
   );
 };
