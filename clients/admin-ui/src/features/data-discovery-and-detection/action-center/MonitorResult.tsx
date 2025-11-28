@@ -16,7 +16,9 @@ import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { DatastoreMonitorUpdates } from "~/types/api/models/DatastoreMonitorUpdates";
 
+import { ConfidenceRow } from "./ConfidenceRow";
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
@@ -41,6 +43,7 @@ export const MonitorResult = ({
   monitorSummary,
   showSkeleton,
   href,
+  actions,
   ...props
 }: MonitorResultProps) => {
   const {
@@ -76,60 +79,82 @@ export const MonitorResult = ({
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
-          <Col span={18} className="align-middle">
-            <List.Item.Meta
-              avatar={
-                <ConnectionTypeLogo
-                  data={{
-                    kind: ConnectionLogoKind.CONNECTION,
-                    connectionType,
-                    name,
-                    key,
-                    saasType: saasConfig?.type,
-                    websiteUrl: secrets?.url,
-                  }}
-                />
-              }
-              title={
-                <Flex
-                  align="center"
-                  gap={4}
-                  className={styles["monitor-result__title"]}
-                >
-                  <NextLink href={href} data-testid="monitor-link">
-                    {name}
-                  </NextLink>
-                  <Text type="secondary">
-                    {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
-                  </Text>
-                  {consentStatus && (
-                    <DiscoveryStatusIcon consentStatus={consentStatus} />
-                  )}
-                  {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
-                </Flex>
-              }
-              description={
-                !!updates && (
-                  <MonitorResultDescription
-                    updates={updates}
-                    isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+        <Flex vertical gap="large" className="grow">
+          <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
+            <Col span={16}>
+              <List.Item.Meta
+                avatar={
+                  <ConnectionTypeLogo
+                    data={{
+                      kind: ConnectionLogoKind.CONNECTION,
+                      connectionType,
+                      name,
+                      key,
+                      saasType: saasConfig?.type,
+                      websiteUrl: secrets?.url,
+                    }}
                   />
-                )
+                }
+                title={
+                  <Flex
+                    align="center"
+                    gap={4}
+                    className={styles["monitor-result__title"]}
+                  >
+                    <NextLink href={href} data-testid="monitor-link">
+                      {name}
+                    </NextLink>
+                    <Text type="secondary">
+                      {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
+                    </Text>
+                    {consentStatus && (
+                      <DiscoveryStatusIcon consentStatus={consentStatus} />
+                    )}
+                    {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
+                  </Flex>
+                }
+                description={
+                  !!updates && (
+                    <MonitorResultDescription
+                      updates={updates}
+                      isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+                    />
+                  )
+                }
+              />
+            </Col>
+            <Col span={6} className="flex justify-end">
+              {!!lastMonitoredDistance && (
+                <Tooltip title={formattedLastMonitored}>
+                  <Text type="secondary" data-testid="monitor-date">
+                    <span className="hidden lg:inline">Last scan: </span>
+                    {lastMonitoredDistance}
+                  </Text>
+                </Tooltip>
+              )}
+            </Col>
+            <Col span={2} className="flex justify-end">
+              {actions}
+            </Col>
+          </Row>
+          {monitorType === MONITOR_TYPES.DATASTORE && !!updates && (
+            <ConfidenceRow
+              highConfidenceCount={
+                (updates as DatastoreMonitorUpdates)
+                  .classified_high_confidence ?? 0
               }
+              mediumConfidenceCount={
+                (updates as DatastoreMonitorUpdates)
+                  .classified_medium_confidence ?? 0
+              }
+              lowConfidenceCount={
+                (updates as DatastoreMonitorUpdates)
+                  .classified_low_confidence ?? 0
+              }
+              reviewHref={href}
             />
-          </Col>
-          <Col span={6} className="flex items-center justify-end">
-            {!!lastMonitoredDistance && (
-              <Tooltip title={formattedLastMonitored}>
-                <Text type="secondary" data-testid="monitor-date">
-                  <span className="hidden lg:inline">Last scan: </span>
-                  {lastMonitoredDistance}
-                </Text>
-              </Tooltip>
-            )}
-          </Col>
-        </Row>
+          )}
+        </Flex>
       </Skeleton>
     </List.Item>
   );

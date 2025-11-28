@@ -12,5 +12,6 @@ export type DatastoreMonitorUpdates = {
   removals: number;
   approved: number;
   classified_low_confidence?: number | null;
+  classified_medium_confidence?: number | null;
   classified_high_confidence?: number | null;
 };

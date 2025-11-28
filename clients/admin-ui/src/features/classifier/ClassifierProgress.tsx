@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   AntFlex as Flex,
   AntProgress as Progress,
@@ -14,7 +13,7 @@ export const CLASSIFIER_PROGRESS_PROPS: Readonly<ProgressProps> = {
     align: "start",
     type: "outer",
   },
-  steps: 2,
+  steps: 3,
   showInfo: false,
   strokeLinecap: "round",
   size: {
@@ -25,56 +24,55 @@ export const CLASSIFIER_PROGRESS_PROPS: Readonly<ProgressProps> = {
 
 type DynamicProgressProps = Pick<ProgressProps, "percent" | "strokeColor">;
 
+const getStrokeColor = (percent: number): string => {
+  if (percent > 66) {
+    return "var(--fidesui-success)";
+  }
+  if (percent > 33) {
+    return "var(--fidesui-warning)";
+  }
+  return "var(--fidesui-error)";
+};
+
 export const classifierDynamicProps = (
   percent: number,
 ): Readonly<DynamicProgressProps> => ({
   percent,
-  strokeColor:
-    (percent ?? 0) > 50
-      ? "var(--ant-color-success-text)"
-      : "var(--ant-color-warning-text)",
+  strokeColor: getStrokeColor(percent ?? 0),
 });
 
-export const percentToConfidenceScore = (percent: number) => {
-  return percent > 50 ? ConfidenceScoreRange.HIGH : ConfidenceScoreRange.LOW;
+type ConfidenceLevel = ConfidenceScoreRange | "medium";
+
+export const percentToConfidenceScore = (percent: number): ConfidenceLevel => {
+  if (percent > 66) {
+    return ConfidenceScoreRange.HIGH;
+  }
+  if (percent > 33) {
+    return "medium";
+  }
+  return ConfidenceScoreRange.LOW;
 };
 
-/**
- * Placeholder for the classifier progress component.
- * TODO: Remove this when we have a proper confidence score from the backend and rename
- * the component below to ClassifierProgress.
- */
 export const ClassifierProgress = ({
   percent,
   confidenceScore,
 }: {
   percent: number;
-  confidenceScore?: ConfidenceScoreRange;
-}) => {
-  return null;
-};
-
-/**
- * Future classifier progress component.
- * TODO: Rename this to ClassifierProgress when we have a proper confidence score from
- * the backend and remove the placeholder component above.
- */
-export const FutureClassifierProgress = ({
-  percent,
-  confidenceScore,
-}: {
-  percent: number;
-  confidenceScore?: ConfidenceScoreRange;
+  confidenceScore?: ConfidenceScoreRange | null;
 }) => {
   return (
-    <Flex gap="small" align="center">
-      <Progress
-        {...CLASSIFIER_PROGRESS_PROPS}
-        {...classifierDynamicProps(percent)}
-      />
-      <Text size="sm" type="secondary" className="font-normal">
-        {capitalize(confidenceScore ?? percentToConfidenceScore(percent))}
-      </Text>
-    </Flex>
+    percent > 0 && (
+      <Flex gap="small" align="center">
+        <Progress
+          {...CLASSIFIER_PROGRESS_PROPS}
+          {...classifierDynamicProps(percent)}
+        />
+        {confidenceScore !== null && (
+          <Text size="sm" type="secondary" className="font-normal">
+            {capitalize(confidenceScore ?? percentToConfidenceScore(percent))}
+          </Text>
+        )}
+      </Flex>
+    )
   );
 };

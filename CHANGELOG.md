@@ -28,6 +28,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
 - Duplicate DSRs now log with skipped instead of error [#7034](https://github.com/ethyca/fides/pull/7034)
 
+### Added
+- Added confidence level summary cards to Action Center home [#7036](https://github.com/ethyca/fides/pull/7036)
+
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
 ### Added
