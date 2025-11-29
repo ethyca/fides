@@ -9,8 +9,8 @@ import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 
 const HomeContainer = () => {
-  const { flags } = useFeatures();
-  const showDashboardInsights = flags.alphaDashboardInsights;
+  const { flags, plus } = useFeatures();
+  const showDashboardInsights = flags.alphaDashboardInsights && plus;
 
   return (
   <Layout title="Home" padded={false}>
