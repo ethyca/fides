@@ -16,7 +16,6 @@ import {
 import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import { DiffStatus } from "~/types/api";
 import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import {
   parseResourceBreadcrumbs,
@@ -25,6 +24,7 @@ import {
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { MonitorResource } from "./types";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -60,9 +60,7 @@ export const tagRender: TagRender = (props) => {
   );
 };
 
-type ListRenderItem = ListProps<
-  Page_DatastoreStagedResourceAPIResponse_["items"][number]
->["renderItem"];
+type ListRenderItem = ListProps<MonitorResource>["renderItem"];
 
 type MonitorFieldListItemRenderParams = Parameters<
   NonNullable<ListRenderItem>
@@ -96,7 +94,6 @@ const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
 
 const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
-  classifications,
   name,
   diff_status,
   selected,
@@ -104,12 +101,26 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   onSetDataCategories,
   dataCategoriesDisabled,
   onNavigate,
-  preferred_data_categories,
   actions,
+  ...restProps
 }) => {
+  const preferredDataCategories =
+    "preferred_data_categories" in restProps
+      ? restProps.preferred_data_categories
+      : [];
+  const classifications = restProps.classifications
+    ? restProps.classifications.map(({ score, label, ...rest }) => ({
+        score,
+        label,
+        confidence_score:
+          "confidence_score" in rest && rest.confidence_score
+            ? rest.confidence_score
+            : undefined,
+      }))
+    : [];
   const onSelectDataCategory = (value: string) => {
-    if (!preferred_data_categories?.includes(value)) {
-      onSetDataCategories(urn, [...(preferred_data_categories ?? []), value]);
+    if (!preferredDataCategories?.includes(value)) {
+      onSetDataCategories(urn, [...(preferredDataCategories ?? []), value]);
     }
   };
 
@@ -181,7 +192,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         description={
           <ClassificationSelect
             mode="multiple"
-            value={preferred_data_categories ?? []}
+            value={preferredDataCategories ?? []}
             urn={urn}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
@@ -190,7 +201,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
 
               const handleClose = () => {
                 const newDataCategories =
-                  preferred_data_categories?.filter(
+                  preferredDataCategories?.filter(
                     (category) => category !== props.value,
                   ) ?? [];
                 onSetDataCategories(urn, newDataCategories);
