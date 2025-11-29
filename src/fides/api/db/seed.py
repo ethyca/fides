@@ -388,7 +388,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                     )  # not supported by this API!
                     instantiate_connection_from_template(
                         db=db_session,
-                        saas_connector_type=connection.saas_connector_type,
+                        connector_template_type=connection.saas_connector_type,
                         template_values=SaasConnectionTemplateValues.model_validate(
                             saas_template_data
                         ),
