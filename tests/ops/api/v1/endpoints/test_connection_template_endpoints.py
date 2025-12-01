@@ -1052,6 +1052,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "read_only_connection": {
+                    "default": False,
                     "title": "Read Only Connection",
                     "description": "Whether to connect to the database in read-only mode.",
                     "type": "boolean",
