@@ -92,6 +92,9 @@ class TestConnectionService:
             "description": "Dataset from template",
             "data_categories": None,
             "fides_meta": None,
+            "organization_fides_key": "default_organization",
+            "tags": None,
+            "meta": None,
             "collections": [
                 {
                     "name": "products",
@@ -783,48 +786,29 @@ class TestConnectionService:
                 fields:
                 - name: product_id
                   data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: integer
+                  fides_meta:
+                    data_type: string
                     primary_key: True
                 - name: customer_id
                   data_categories: [system.operations]
-                  fidesops_meta:
+                  fides_meta:
                     data_type: integer
                 - name: email
                   data_categories: [user.contact.email]
-                  fidesops_meta:
+                  fides_meta:
                     data_type: string
                 - name: address
-                  fidesops_meta:
+                  fides_meta:
                     data_type: object
                   fields:
                     - name: street
                       data_categories: [user.contact.address.street]
-                      fidesops_meta:
+                      fides_meta:
                         data_type: string
                     - name: city
                       data_categories: [user.contact.address.city]
-                      fidesops_meta:
+                      fides_meta:
                         data_type: string
-              - name: orders
-                fields:
-                - name: order_id
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: integer
-                    primary_key: True
-                - name: customer_id
-                  data_categories: [user.unique_id]
-                  fidesops_meta:
-                    data_type: integer
-                - name: email
-                  data_categories: [user.contact.email]
-                  fidesops_meta:
-                    data_type: string
-                - name: name
-                  fidesops_meta:
-                    data_type: string
-                  data_categories: [user.name]
         """
         ).strip()
 
@@ -840,42 +824,42 @@ class TestConnectionService:
                         {
                             "name": "product_id",
                             "data_categories": ["system.operations"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "primary_key": True,
-                                "data_type": "string",
+                                "data_type": "integer",
                             },
                         },
                         {
                             "name": "customer_id",
                             "data_categories": ["user.unique_id"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "data_type": "string",
                             },
                         },
                         {
                             "name": "email",
                             "data_categories": ["user.contact.email"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "data_type": "string",
                             },
                         },
                         {
                             "name": "address",
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "data_type": "object",
                             },
                             "fields": [
                                 {
                                     "name": "street",
                                     "data_categories": ["user.contact.address.street"],
-                                    "fidesops_meta": {
+                                    "fides_meta": {
                                         "data_type": "string",
                                     },
                                 },
                                 {
                                     "name": "city",
                                     "data_categories": ["user.contact.address"],
-                                    "fidesops_meta": {
+                                    "fides_meta": {
                                         "data_type": "string",
                                     },
                                 },
@@ -898,7 +882,7 @@ class TestConnectionService:
                         {
                             "name": "product_id",
                             "data_categories": ["system.operations"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "primary_key": True,
                                 "data_type": "integer",
                             },
@@ -906,14 +890,14 @@ class TestConnectionService:
                         {
                             "name": "customer_id",
                             "data_categories": ["system.operations"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "data_type": "integer",
                             },
                         },
                         {
                             "name": "email",
                             "data_categories": ["user.contact.email"],
-                            "fidesops_meta": {
+                            "fides_meta": {
                                 "data_type": "string",
                             },
                         },
@@ -1020,13 +1004,12 @@ class TestConnectionService:
         }
 
         # Expected result after merging:
-        # CUSTOMER CHANGES (preserved):
+        # INTEGRATION UPDATE CHANGES (preserved):
         # - products.product_id: data_type changed from integer to string
+
+        # CUSTOMER CHANGES (preserved):
         # - products.customer_id: data_categories changed from [system.operations] to [user.unique_id]
         # - products.address.city: data_categories changed from [user.contact.address.city] to [user.contact.address]
-        #
-        # UPCOMING DATASET CHANGES (preserved):
-        # - orders collection: completely new collection added
         expected_dataset = {
             "fides_key": "test_instance_key",
             "name": "Template Dataset",
@@ -1034,86 +1017,6 @@ class TestConnectionService:
             "data_categories": None,
             "fides_meta": None,
             "collections": [
-                {
-                    "name": "orders",
-                    "data_categories": None,
-                    "description": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "order_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "email",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "name",
-                            "data_categories": ["user.name"],
-                            "description": None,
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                    ],
-                },
                 {
                     "name": "products",
                     "description": None,
@@ -1318,6 +1221,9 @@ class TestConnectionService:
             "description": "Dataset from template",
             "data_categories": None,
             "fides_meta": None,
+            "organization_fides_key": "default_organization",
+            "meta": None,
+            "tags": None,
             "collections": [
                 {
                     "name": "products",
@@ -1468,7 +1374,7 @@ class TestConnectionService:
 
         # test that the customer can delete a field they added but not fields that exist in the official dataset
         customer_dataset_no_fields = copy.deepcopy(customer_dataset)
-        customer_dataset_no_fields["collections"][0]["fields"] = None
+        customer_dataset_no_fields["collections"][0]["fields"] = []
 
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
@@ -1486,7 +1392,7 @@ class TestConnectionService:
 
         # test that an integration update deletes all fields except the ones that were added by the customer
         upcoming_dataset_no_fields = copy.deepcopy(upcoming_dataset)
-        upcoming_dataset_no_fields["collections"][0]["fields"] = None
+        upcoming_dataset_no_fields["collections"][0]["fields"] = []
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
@@ -1501,6 +1407,9 @@ class TestConnectionService:
             "description": "Dataset from template",
             "data_categories": None,
             "fides_meta": None,
+            "organization_fides_key": "default_organization",
+            "tags": None,
+            "meta": None,
             "collections": [
                 {
                     "name": "products",
@@ -1538,7 +1447,7 @@ class TestConnectionService:
 
         customer_dataset_no_fields = copy.deepcopy(normalized_expected)
         # Test that once we delete the customer field the collection has no remaining fields
-        customer_dataset_no_fields["collections"][0]["fields"] = None
+        customer_dataset_no_fields["collections"][0]["fields"] = []
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset_no_fields,

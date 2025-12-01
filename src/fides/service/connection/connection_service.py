@@ -1,7 +1,9 @@
 import copy
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import yaml
 from deepdiff import DeepDiff
+from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -771,7 +773,7 @@ class ConnectionService:
         merged_fields = self._merge_fields(
             base_fields_by_name, customer_fields_by_name, original_fields_by_name
         )
-        merged_collection["fields"] = merged_fields if merged_fields else None
+        merged_collection["fields"] = merged_fields
 
         return merged_collection
 
@@ -788,9 +790,27 @@ class ConnectionService:
         stored_dataset_copy = copy.deepcopy(stored_dataset)
         base_dataset = copy.deepcopy(upcoming_dataset)
 
+        # Normalize stored and base datasets to have the same complete structure as customer dataset
+        # This ensures consistent field comparison by using the same Pydantic model serialization
+        try:
+            normalized_stored = FideslangDataset(**stored_dataset_copy).model_dump(
+                mode="json"
+            )
+            stored_dataset_copy = normalized_stored
+
+            normalized_base = FideslangDataset(**base_dataset).model_dump(mode="json")
+            base_dataset = normalized_base
+        except Exception as e:
+            # If stored dataset normalization fails, we can't do a proper comparison
+            # Fall back to using the upcoming dataset as the final result
+            logger.warning(
+                f"Using upcoming dataset as fallback due to stored dataset or upcoming dataset normalization failure: {e}"
+            )
+            return upcoming_dataset
+
         # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
-        if isinstance(base_dataset.get("fides_key"), str):
-            base_dataset["fides_key"] = base_dataset["fides_key"].replace(
+        if isinstance(stored_dataset_copy.get("fides_key"), str):
+            stored_dataset_copy["fides_key"] = stored_dataset_copy["fides_key"].replace(
                 "<instance_fides_key>", instance_key
             )
 
@@ -862,6 +882,20 @@ class ConnectionService:
             ),
         ).first()
 
+        connector_type = (
+            connection_config.saas_config.get("type")
+            if connection_config.saas_config
+            and isinstance(connection_config.saas_config, dict)
+            else None
+        )
+        stored_dataset_template = (
+            SaasTemplateDataset.get_by(
+                self.db, field="connection_type", value=connector_type
+            )
+            if connector_type
+            else None
+        )
+
         final_dataset = upcoming_dataset
         if customer_dataset_config and customer_dataset_config.ctl_dataset:
             # Get the existing dataset structure
@@ -875,21 +909,7 @@ class ConnectionService:
                 "collections": ctl_dataset.collections,
                 "fides_meta": ctl_dataset.fides_meta,
             }
-            # Get connector type from saas_config (e.g., "test_connector")
-            # SaasTemplateDataset.connection_type stores the connector type string, not the ConnectionType enum
-            connector_type = (
-                connection_config.saas_config.get("type")
-                if connection_config.saas_config
-                and isinstance(connection_config.saas_config, dict)
-                else None
-            )
-            stored_dataset_template = (
-                SaasTemplateDataset.get_by(
-                    self.db, field="connection_type", value=connector_type
-                )
-                if connector_type
-                else None
-            )
+
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict
             ):
@@ -900,8 +920,13 @@ class ConnectionService:
                     upcoming_dataset,
                     template_values.instance_key,
                 )
-                stored_dataset_template.dataset_json = upcoming_dataset
-                stored_dataset_template.save(db=self.db)
+
+        # we save the upcoming dataset as the new stored dataset
+        if stored_dataset_template:
+            stored_dataset_template.dataset_json = yaml.safe_load(template.dataset)[
+                "dataset"
+            ][0]
+            stored_dataset_template.save(db=self.db)
 
         data = {
             "connection_config_id": connection_config.id,
