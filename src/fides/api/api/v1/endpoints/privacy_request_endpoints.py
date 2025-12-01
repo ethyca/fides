@@ -89,6 +89,7 @@ from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
+    MAX_BULK_FILTER_RESULTS,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
@@ -297,6 +298,13 @@ def _resolve_request_ids_from_filters(
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="No privacy requests found matching the provided filters.",
+        )
+
+    # Prevent accidentally matching too many requests which could cause memory/performance issues
+    if len(request_ids) > MAX_BULK_FILTER_RESULTS:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Filter query returned {len(request_ids)} privacy requests, which exceeds the maximum of {MAX_BULK_FILTER_RESULTS}. Please narrow your filters to select fewer requests.",
         )
 
     return request_ids
@@ -1581,6 +1589,9 @@ def verify_identification_code(
     response_model=BulkReviewResponse,
 )
 def approve_privacy_request(
+    privacy_requests: PrivacyRequestBulkSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1590,13 +1601,14 @@ def approve_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """
     Approve and dispatch a list of privacy requests and/or report failure.
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
 
     Example with request_ids:
         {"request_ids": ["pri_123", "pri_456"]}
@@ -1618,6 +1630,9 @@ def approve_privacy_request(
     response_model=BulkReviewResponse,
 )
 def deny_privacy_request(
+    privacy_requests: DenyPrivacyRequestSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1627,13 +1642,14 @@ def deny_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: DenyPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """
     Deny a list of privacy requests and/or report failure.
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
     request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
@@ -1649,6 +1665,9 @@ def deny_privacy_request(
     response_model=BulkReviewResponse,
 )
 def cancel_privacy_request(
+    privacy_requests: CancelPrivacyRequestSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1658,13 +1677,14 @@ def cancel_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: CancelPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """
     Cancel a list of privacy requests and/or report failure.
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
     request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
@@ -2179,6 +2199,9 @@ def resume_privacy_request_from_requires_input(
     response_model=BulkReviewResponse,
 )
 def bulk_finalize_privacy_requests(
+    privacy_requests: PrivacyRequestBulkSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -2188,7 +2211,6 @@ def bulk_finalize_privacy_requests(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """
     Each request will be moved from the 'requires_finalization' state to 'complete'.
@@ -2196,6 +2218,8 @@ def bulk_finalize_privacy_requests(
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
     request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
@@ -2371,13 +2395,15 @@ def request_task_async_callback(
     response_model=BulkSoftDeletePrivacyRequests,
 )
 def bulk_soft_delete_privacy_requests(
+    privacy_requests: PrivacyRequestBulkSelection = Depends(
+        _normalize_bulk_selection_dependency
+    ),
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_DELETE],
     ),
-    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkSoftDeletePrivacyRequests:
     """
     Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
@@ -2386,6 +2412,8 @@ def bulk_soft_delete_privacy_requests(
 
     You can either provide explicit request_ids OR use filters to select privacy requests.
     When using filters, you can optionally exclude specific IDs via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted.
     """
     succeeded: List[str] = []
     failed: List[Dict[str, Any]] = []
