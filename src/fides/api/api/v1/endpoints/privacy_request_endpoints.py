@@ -2275,8 +2275,12 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     request_ids = privacy_requests.request_ids
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
