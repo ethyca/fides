@@ -1578,8 +1578,12 @@ def approve_privacy_request(
 ) -> BulkReviewResponse:
     """Approve and dispatch a list of privacy requests and/or report failure"""
 
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert privacy_requests.request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.approve_privacy_requests(
         privacy_requests.request_ids, reviewed_by=client.user_id
     )
@@ -1603,8 +1607,12 @@ def deny_privacy_request(
 ) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
 
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert privacy_requests.request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.deny_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
@@ -1628,8 +1636,12 @@ def cancel_privacy_request(
 ) -> BulkReviewResponse:
     """Cancel a list of privacy requests and/or report failure"""
 
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert privacy_requests.request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.cancel_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
@@ -2150,8 +2162,12 @@ def bulk_finalize_privacy_requests(
     ),
     privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
-    """
-    Bulk finalize privacy requests that are in requires_manual_finalization status.
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     Each request will be moved from the 'requires_finalization' state to 'complete'.
     Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
     """
@@ -2349,8 +2365,12 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     request_ids = privacy_requests.request_ids
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
