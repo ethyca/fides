@@ -95,6 +95,16 @@ interface IdentityProviderMonitorExecuteParams {
   monitor_config_key: string;
 }
 
+interface IdentityProviderMonitorPromoteParams {
+  monitor_config_key: string;
+  urn: string;
+}
+
+interface IdentityProviderMonitorBulkPromoteParams {
+  monitor_config_key: string;
+  urns: string[];
+}
+
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMonitorsByIntegration: build.query<Page_MonitorStatusResponse_, any>({
@@ -368,6 +378,27 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
+    promoteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderMonitorPromoteParams
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/${urn}/promote`,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    bulkPromoteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderMonitorBulkPromoteParams
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
+        body: urns,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -394,6 +425,8 @@ export const {
   useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,
   useExecuteIdentityProviderMonitorMutation,
+  usePromoteIdentityProviderMonitorResultMutation,
+  useBulkPromoteIdentityProviderMonitorResultsMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

@@ -193,6 +193,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     data: transformedData,
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
+    refetch: refetchOktaData,
 
     // Search
     searchQuery: search.searchQuery,
