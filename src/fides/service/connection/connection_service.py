@@ -668,8 +668,12 @@ class ConnectionService:
 
         # fields can be an empty list or None, we handle both cases by converting to an empty list
         base_nested_fields = base_field.get("fields", []) if base_field else []
-        customer_nested_fields = customer_field.get("fields", []) if customer_field else []
-        original_nested_fields = original_field.get("fields", []) if original_field else []
+        customer_nested_fields = (
+            customer_field.get("fields", []) if customer_field else []
+        )
+        original_nested_fields = (
+            original_field.get("fields", []) if original_field else []
+        )
 
         if base_nested_fields or customer_nested_fields:
             nested_base_fields_by_name = {
