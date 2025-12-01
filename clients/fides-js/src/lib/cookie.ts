@@ -312,9 +312,9 @@ export const updateExperienceFromCookieConsentNotices = ({
 
       const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
-            Boolean(cookie.consent[notice.notice_key]),
-            notice.consent_mechanism,
-          )
+          Boolean(cookie.consent[notice.notice_key]),
+          notice.consent_mechanism,
+        )
         : undefined;
       return { ...notice, current_preference: preference };
     });
@@ -384,6 +384,16 @@ export const makeConsentDefaultsLegacy = (
 };
 
 /**
+ * Determine if the provided cookie is a wildcard cookie, i.e., the name contains `[id]`.
+ * These are used to represent sets of cookies that have some sort of a unique identifier
+ * in their name. For example, a site might set multiple cookies like `_ga_12345` and
+ * `_ga_67890` and both of these will match a wildcard cookie with the name `_ga_[id]`.
+ */
+export const isWildcardCookie = (cookie: CookiesType): boolean => {
+  return cookie.name.includes("[id]");
+};
+
+/**
  * Given a list of cookies, deletes them from the browser
  * Optionally removes subdomain cookies as well
  */
@@ -393,7 +403,14 @@ export const removeCookiesFromBrowser = (
   removeSubdomainCookies: boolean = true,
 ) => {
   const { hostname } = window.location;
+  const wildcardCookies: CookiesType[] = [];
+
   cookiesToRemove.forEach((cookie) => {
+    if (isWildcardCookie(cookie)) {
+      wildcardCookies.push(cookie);
+      return;
+    }
+
     const domainToUse = cookieDeletionBasedOnHostDomain
       ? hostname
       : cookie.domain;
@@ -405,6 +422,24 @@ export const removeCookiesFromBrowser = (
       cookies.remove(cookie.name, { domain: `.${hostname}` });
     }
   });
+
+  if (wildcardCookies.length > 0) {
+    const pattern = new RegExp(
+      `^${wildcardCookies
+        .map(
+          (cookie) =>
+            cookie.name
+              .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
+              .replace(/\\\[id\\\]/g, ".*?"), // Replace \[id\] with non-greedy wildcard
+        )
+        .join("|")}$`,
+    );
+    Object.keys(cookies.get()).forEach((name) => {
+      if (pattern.test(name)) {
+        cookies.remove(name);
+      }
+    });
+  }
 };
 
 export const buildCookieConsentFromConsentPreferences = (

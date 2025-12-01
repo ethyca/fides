@@ -17,6 +17,7 @@ import {
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
+  isWildcardCookie,
   makeConsentDefaultsLegacy,
   makeFidesCookie,
   removeCookiesFromBrowser,
@@ -73,7 +74,7 @@ jest.mock("js-cookie", () => ({
 
 describe("cookies", () => {
   beforeAll(() => {
-    window.fidesDebugger = () => {};
+    window.fidesDebugger = () => { };
   });
   afterEach(() => {
     mockGetCookie.mockClear();
@@ -435,6 +436,22 @@ describe("cookies", () => {
     });
   });
 
+  describe("isWildcardCookie", () => {
+    it("returns false for non-wildcard cookies", () => {
+      const cookie: CookiesType = { name: "regular_cookie" };
+      expect(isWildcardCookie(cookie)).toBeFalsy();
+    });
+
+    it("returns true for wildcard cookies", () => {
+      expect(isWildcardCookie({ name: "_ga[id]" })).toBeTruthy();
+      expect(
+        isWildcardCookie({
+          name: "_ga_[id]_[id]",
+        }),
+      ).toBeTruthy();
+    });
+  });
+
   describe("removeCookiesFromBrowser", () => {
     afterEach(() => mockRemoveCookie.mockClear());
 
@@ -526,9 +543,9 @@ describe("cookies", () => {
         cookies.forEach((cookie, cookieIdx) => {
           const calls = removeSubdomainCookies
             ? mockRemoveCookie.mock.calls.slice(
-                cookieIdx * 2,
-                cookieIdx * 2 + 2,
-              )
+              cookieIdx * 2,
+              cookieIdx * 2 + 2,
+            )
             : mockRemoveCookie.mock.calls.slice(cookieIdx, cookieIdx + 1);
           calls.forEach((call, i) => {
             const [name, attributes] = call;
@@ -538,6 +555,54 @@ describe("cookies", () => {
         });
       },
     );
+
+    describe("wildcard cookie removal", () => {
+      it("should remove cookies matching the wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          _ga456: "test_value_2",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: "_ga[id]" }]);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", undefined],
+          ["_ga456", undefined],
+        ]);
+      });
+      it("should remove cookies matching multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          foo_abc: "test_value_2",
+        } as any);
+        removeCookiesFromBrowser([{ name: "_ga[id]" }, { name: "foo_[id]" }]);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", undefined],
+          ["foo_abc", undefined],
+        ]);
+      });
+      it("should handle wildcard cookies with special characters", () => {
+        const prefix = "^$[](){}\\|.*?-";
+        mockGetCookie.mockReturnValue({
+          [`${prefix}123`]: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: `${prefix}[id]` }]);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          [`${prefix}123`, undefined],
+        ]);
+      });
+      it("should handle cookies with multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga_123_456: "test_value",
+          "_ga_789.101": "test_value_2",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }]);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga_123_456", undefined],
+        ]);
+      });
+    });
   });
 
   describe("transformTcfPreferencesToCookieKeys", () => {
