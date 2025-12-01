@@ -1607,8 +1607,6 @@ def approve_privacy_request(
     # Resolve request IDs from either explicit list or filters
     request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
 
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert privacy_requests.request_ids is not None
     return privacy_request_service.approve_privacy_requests(
         request_ids, reviewed_by=client.user_id
     )
