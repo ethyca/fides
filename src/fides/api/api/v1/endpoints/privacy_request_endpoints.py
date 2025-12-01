@@ -1550,8 +1550,12 @@ def cancel_privacy_request(
 ) -> BulkReviewResponse:
     """Cancel a list of privacy requests and/or report failure"""
 
-    # Type narrowing: validator ensures request_ids is not None when provided
-    assert privacy_requests.request_ids is not None
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.cancel_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
