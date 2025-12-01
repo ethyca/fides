@@ -401,7 +401,8 @@ class PrivacyRequestBulkSelection(FidesSchema):
     """
 
     request_ids: Optional[List[str]] = Field(
-        None, max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE
+        None,
+        description="List of privacy request IDs to act on. The service layer will automatically batch requests if the list is large.",
     )
     filters: Optional["PrivacyRequestFilter"] = Field(
         None,

@@ -552,7 +552,7 @@ def _resolve_request_ids_from_filters(
 
     # Only select IDs to avoid loading full objects
     # The service layer will handle batching if needed
-    request_ids = list(query.with_entities(PrivacyRequest.id).scalars().all())
+    request_ids = [row[0] for row in query.with_entities(PrivacyRequest.id).all()]
 
     if not request_ids:
         raise HTTPException(
