@@ -1,8 +1,5 @@
-from datetime import datetime
 from typing import Any, Optional
-from uuid import UUID
 
-from pydantic import BaseModel
 from pydantic.v1.utils import deep_update
 
 from fides.api.models.policy import Policy
@@ -14,6 +11,7 @@ from fides.api.task.conditional_dependencies.privacy_request.convenience_fields 
 from fides.api.task.conditional_dependencies.util import (
     extract_nested_field_value,
     set_nested_value,
+    transform_value_for_evaluation,
 )
 
 
@@ -21,8 +19,12 @@ class PrivacyRequestDataTransformer:
     """
     Transforms a PrivacyRequest ORM object into a dictionary structure for condition evaluation.
 
-    This class extracts the fields referenced in conditions and builds a minimal nested structure
+    - This class extracts the fields referenced in conditions and builds a minimal nested structure
     for evaluation. Privacy request fields must be prefixed with the "privacy_request" namespace.
+    - This class is used to get the privacy request data for condition evaluation.
+        - The task.conditional_dependencies.evaluator expects the data to be in a nested dictionary structure
+        and uses the operators defined in the task.conditional_dependencies.operators.py which have defined
+        data type compatibility.
 
     Note: Privacy request relationships are eager loaded in the execute_request_tasks.py file.
     """
@@ -90,7 +92,7 @@ class PrivacyRequestDataTransformer:
         if current is self.identity_data:
             return None
 
-        return self._transform_value(current)
+        return transform_value_for_evaluation(current)
 
     def _transform_policy_object(self, policy: Policy) -> dict[str, Any]:
         """
@@ -108,17 +110,3 @@ class PrivacyRequestDataTransformer:
         policy_dict = PolicySchema.model_validate(policy).model_dump()
         policy_dict.update(extra_fields)
         return policy_dict
-
-    def _transform_value(self, value: Any) -> Any:
-        """Transforms a value to its evaluation-ready form."""
-        if value is None:
-            return None
-        if isinstance(value, BaseModel):
-            return value.model_dump(mode="json")
-        if hasattr(value, "value") and not isinstance(value, BaseModel):
-            return value.value
-        if isinstance(value, datetime):
-            return value.isoformat()
-        if isinstance(value, UUID):
-            return str(value)
-        return value
