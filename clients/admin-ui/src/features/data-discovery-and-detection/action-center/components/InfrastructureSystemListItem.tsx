@@ -16,8 +16,8 @@ import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
 
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
-import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
+import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -76,6 +76,7 @@ interface InfrastructureSystemListItemProps {
   onSetDataCategories?: (urn: string, dataCategories: string[]) => void;
   onSelectDataCategory?: (value: string) => void;
   dataCategoriesDisabled?: boolean;
+  onPromoteSuccess?: () => void;
 }
 
 export const InfrastructureSystemListItem = ({
@@ -90,6 +91,7 @@ export const InfrastructureSystemListItem = ({
   onSetDataCategories,
   onSelectDataCategory,
   dataCategoriesDisabled,
+  onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
   const itemKey = item.urn ?? item.id ?? "";
   const url = rowClickUrl?.(item);
@@ -149,12 +151,13 @@ export const InfrastructureSystemListItem = ({
     <List.Item
       key={itemKey}
       actions={[
-        <DiscoveredSystemActionsCell
+        <InfrastructureSystemActionsCell
           key="actions"
           monitorId={monitorId}
-          system={item as any}
+          system={item}
           allowIgnore={allowIgnore}
           onTabChange={onTabChange}
+          onPromoteSuccess={onPromoteSuccess}
         />,
       ]}
     >
