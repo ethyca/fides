@@ -181,13 +181,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
             />
           </Flex>
           <Flex gap="small">
-            <InfrastructureSystemsFilters
-              {...infrastructureSystemsFilters}
-              monitorId={monitorId}
-              stagedResourceUrn={
-                data?.items.map((item) => item.urn ?? "") ?? []
-              }
-            />
+            <InfrastructureSystemsFilters {...infrastructureSystemsFilters} />
             <Dropdown
               menu={{
                 items: [

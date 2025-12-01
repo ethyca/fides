@@ -8,7 +8,7 @@ import {
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-const ClassificationSelect = ({
+const InfrastructureClassificationSelect = ({
   onSelectDataCategory,
   urn,
   ...props
@@ -16,13 +16,12 @@ const ClassificationSelect = ({
   onSelectDataCategory: (value: string) => void;
   urn?: string;
 } & TaxonomySelectProps) => {
-  const { getDataCategoryDisplayNameProps, getDataCategories } =
-    useTaxonomies();
-  const dataCategories = getDataCategories().filter((c) => c.active);
+  const { getDataUseDisplayNameProps, getDataUses } = useTaxonomies();
+  const dataUses = getDataUses().filter((use) => use.active);
   const [open, setOpen] = useState(false);
 
-  const options: TaxonomySelectOption[] = dataCategories.map((dataCategory) => {
-    const { name, primaryName } = getDataCategoryDisplayNameProps(
+  const options: TaxonomySelectOption[] = dataUses.map((dataCategory) => {
+    const { name, primaryName } = getDataUseDisplayNameProps(
       dataCategory.fides_key,
     );
 
@@ -77,4 +76,4 @@ const ClassificationSelect = ({
   );
 };
 
-export default ClassificationSelect;
+export default InfrastructureClassificationSelect;

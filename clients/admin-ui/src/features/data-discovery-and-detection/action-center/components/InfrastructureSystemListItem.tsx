@@ -15,9 +15,9 @@ import { useMemo } from "react";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
 
-import ClassificationSelect from "../fields/ClassificationSelect";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
+import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -185,7 +185,7 @@ export const InfrastructureSystemListItem = ({
           </Flex>
         }
         description={
-          <ClassificationSelect
+          <InfrastructureClassificationSelect
             mode="multiple"
             value={item.preferred_data_categories ?? []}
             urn={itemKey}
