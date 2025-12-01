@@ -47,7 +47,7 @@ class QueryCounter:
         self.count += 1
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def celery_use_virtual_worker():
     """
     Override the session-scoped autouse fixture to prevent
