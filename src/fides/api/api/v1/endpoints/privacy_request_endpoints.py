@@ -2279,7 +2279,7 @@ def bulk_soft_delete_privacy_requests(
 
     request_ids = privacy_requests.request_ids
     # For now, only request_ids are supported (filters will be added in subsequent PRs)
-    if privacy_requests.request_ids is None:
+    if request_ids is None:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="request_ids must be provided",
