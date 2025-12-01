@@ -47,6 +47,16 @@ class QueryCounter:
         self.count += 1
 
 
+@pytest.fixture(scope="module")
+def celery_use_virtual_worker():
+    """
+    Override the session-scoped autouse fixture to prevent
+    celery worker from being started for these performance tests.
+    All celery tasks are mocked, so no worker is needed.
+    """
+    yield None
+
+
 @pytest.fixture
 def multiple_privacy_requests(db, policy):
     """Create 10 privacy requests with identities and custom fields."""
