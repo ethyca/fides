@@ -39,7 +39,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
             port=config.port,
             database=config.dbname,
             query=(
-                f"read_only={config.read_only_connection}"
+                {"read_only": str(config.read_only_connection)}
                 if config.read_only_connection
                 else None
             ),
