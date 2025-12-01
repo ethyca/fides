@@ -90,7 +90,7 @@ const CustomFieldForm = ({
 
   const [deleteCustomField, { isLoading: deleteIsLoading }] =
     useDeleteCustomFieldDefinitionMutation();
-  const { data: locationOptions, isLoading: isLocationsLoading } =
+  const { data: locations, isLoading: isLocationsLoading } =
     useGetCustomFieldLocationsQuery();
 
   const { valueTypeOptions } = useCustomFieldValueTypeOptions();
@@ -351,10 +351,12 @@ const CustomFieldForm = ({
         tooltip="Choose where this field applies, including taxonomies"
       >
         <Select
-          options={(locationOptions ?? []).map((loc: string) => {
-            // Display the key-form label as-is; convert to resource_type value on submit
-            return { label: loc, value: loc };
-          })}
+          options={
+            locations?.map((loc: string) => ({
+              label: loc,
+              value: loc,
+            })) ?? []
+          }
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }

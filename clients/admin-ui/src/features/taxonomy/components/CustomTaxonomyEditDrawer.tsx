@@ -43,7 +43,7 @@ const CustomTaxonomyEditDrawer = ({
     .sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
-    if (!taxonomy?.fides_key) {
+    if (!taxonomy.fides_key) {
       messageApi.error("Taxonomy not found");
       return;
     }

@@ -38,7 +38,7 @@ export const useCustomFields = ({
     skip: !isEnabled,
   });
   const customFieldDefinitionsQuery =
-    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType!, {
+    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType, {
       skip: !isEnabled,
     });
   const {
