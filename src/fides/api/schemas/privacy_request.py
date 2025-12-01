@@ -417,17 +417,31 @@ class PrivacyRequestBulkSelection(FidesSchema):
         """
         Validate selection rules:
         1. At least one of request_ids or filters must be provided (and not empty)
-        2. exclude_ids can only be used with filters, not with request_ids
+        2. request_ids and filters are mutually exclusive
+        3. exclude_ids can only be used with filters, not with request_ids
         """
-        # Check if both are None or if request_ids is an empty list
-        if (
-            self.request_ids is None or len(self.request_ids) == 0
-        ) and self.filters is None:
+        request_ids_passed: bool = (
+            self.request_ids is not None and len(self.request_ids) > 0
+        )
+        filters_passed: bool = self.filters is not None
+        exclude_ids_passed: bool = (
+            self.exclude_ids is not None and len(self.exclude_ids) > 0
+        )
+
+        # Check if at least one of request_ids or filters is provided
+        if not request_ids_passed and not filters_passed:
             raise ValueError(
                 "At least one of 'request_ids' or 'filters' must be provided. 'request_ids' cannot be empty."
             )
 
-        if self.request_ids is not None and self.exclude_ids is not None:
+        # Check if request_ids and filters are mutually exclusive
+        if request_ids_passed and filters_passed:
+            raise ValueError(
+                "'request_ids' and 'filters' are mutually exclusive. Please provide only one."
+            )
+
+        # Check if exclude_ids is provided with filters
+        if exclude_ids_passed and not filters_passed:
             raise ValueError(
                 "'exclude_ids' can only be used with 'filters', not with 'request_ids'"
             )
