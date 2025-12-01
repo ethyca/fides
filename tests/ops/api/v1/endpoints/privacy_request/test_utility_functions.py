@@ -18,6 +18,16 @@ from fides.api.schemas.privacy_request import (
 )
 
 
+@pytest.fixture(scope="module")
+def celery_use_virtual_worker():
+    """
+    Override the session-scoped autouse fixture to prevent
+    celery worker from being started for these unit tests.
+    These tests only mock functions and don't need a worker.
+    """
+    yield None
+
+
 class TestResolveRequestIdsFromFilters:
     """Test the _resolve_request_ids_from_filters utility function"""
 
