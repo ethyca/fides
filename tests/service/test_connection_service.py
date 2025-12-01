@@ -83,6 +83,137 @@ def normalize_dataset_for_comparison(dataset: Dict[str, Any]) -> Dict[str, Any]:
 class TestConnectionService:
     """Tests for ConnectionService functionality."""
 
+    @pytest.fixture
+    def stored_dataset(self) -> Dict[str, Any]:
+        """Fixture for the stored dataset."""
+        stored_dataset = {
+            "fides_key": "test_instance_key",
+            "name": "Template Dataset",
+            "description": "Dataset from template",
+            "data_categories": None,
+            "fides_meta": None,
+            "collections": [
+                {
+                    "name": "products",
+                    "description": None,
+                    "data_categories": None,
+                    "fides_meta": None,
+                    "fields": [
+                        {
+                            "name": "product_id",
+                            "description": None,
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "string",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": True,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "customer_id",
+                            "description": None,
+                            "data_categories": ["user.unique_id"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "string",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "email",
+                            "description": None,
+                            "data_categories": ["user.contact.email"],
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "string",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": None,
+                        },
+                        {
+                            "name": "address",
+                            "description": None,
+                            "data_categories": None,
+                            "fides_meta": {
+                                "custom_request_field": None,
+                                "data_type": "object",
+                                "identity": None,
+                                "length": None,
+                                "masking_strategy_override": None,
+                                "primary_key": None,
+                                "read_only": None,
+                                "redact": None,
+                                "references": None,
+                                "return_all_elements": None,
+                            },
+                            "fields": [
+                                {
+                                    "name": "city",
+                                    "description": None,
+                                    "data_categories": ["user.contact.address"],
+                                    "fides_meta": {
+                                        "custom_request_field": None,
+                                        "data_type": "string",
+                                        "identity": None,
+                                        "length": None,
+                                        "masking_strategy_override": None,
+                                        "primary_key": None,
+                                        "read_only": None,
+                                        "redact": None,
+                                        "references": None,
+                                        "return_all_elements": None,
+                                    },
+                                    "fields": None,
+                                },
+                                {
+                                    "name": "street",
+                                    "description": None,
+                                    "data_categories": ["user.contact.address.street"],
+                                    "fides_meta": {
+                                        "custom_request_field": None,
+                                        "data_type": "string",
+                                        "identity": None,
+                                        "length": None,
+                                        "masking_strategy_override": None,
+                                        "primary_key": None,
+                                        "read_only": None,
+                                        "redact": None,
+                                        "references": None,
+                                        "return_all_elements": None,
+                                    },
+                                    "fields": None,
+                                },
+                            ],
+                        },
+                    ],
+                }
+            ],
+        }
+        return stored_dataset
+
     def test_get_connection_config_success(
         self, connection_service, db, connection_config
     ):
@@ -888,7 +1019,14 @@ class TestConnectionService:
             "fides_meta": ctl_dataset.fides_meta,
         }
 
-        # Expected result: merged dataset from all three sources
+        # Expected result after merging:
+        # CUSTOMER CHANGES (preserved):
+        # - products.product_id: data_type changed from integer to string
+        # - products.customer_id: data_categories changed from [system.operations] to [user.unique_id]
+        # - products.address.city: data_categories changed from [user.contact.address.city] to [user.contact.address]
+        #
+        # UPCOMING DATASET CHANGES (preserved):
+        # - orders collection: completely new collection added
         expected_dataset = {
             "fides_key": "test_instance_key",
             "name": "Template Dataset",
@@ -1107,226 +1245,19 @@ class TestConnectionService:
 
         assert normalized_result == normalized_expected
 
-    def test_merge_datasets(
+    def test_merge_dataset_fields(
         self,
         connection_service: ConnectionService,
         db: Session,
+        stored_dataset: Dict[str, Any],
     ):
-        """Test merge datasets function"""
+        """Test merge datasets function for fields changes"""
 
         # Expected result: merged dataset from all three sources
-        stored_dataset = {
-            "fides_key": "test_instance_key",
-            "name": "Template Dataset",
-            "description": "Dataset from template",
-            "data_categories": None,
-            "fides_meta": None,
-            "collections": [
-                {
-                    "name": "products",
-                    "description": None,
-                    "data_categories": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "product_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "email",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "address",
-                            "description": None,
-                            "data_categories": None,
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "object",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": [
-                                {
-                                    "name": "city",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                                {
-                                    "name": "street",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address.street"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                            ],
-                        },
-                    ],
-                }
-            ],
-        }
 
-        new_collection = {
-            "name": "orders",
-            "data_categories": None,
-            "description": None,
-            "fides_meta": None,
-            "fields": [
-                {
-                    "name": "order_id",
-                    "description": None,
-                    "data_categories": ["system.operations"],
-                    "fides_meta": {
-                        "custom_request_field": None,
-                        "data_type": "integer",
-                        "identity": None,
-                        "length": None,
-                        "masking_strategy_override": None,
-                        "primary_key": True,
-                        "read_only": None,
-                        "redact": None,
-                        "references": None,
-                        "return_all_elements": None,
-                    },
-                    "fields": None,
-                },
-                {
-                    "name": "customer_id",
-                    "description": None,
-                    "data_categories": ["user.unique_id"],
-                    "fides_meta": {
-                        "custom_request_field": None,
-                        "data_type": "integer",
-                        "identity": None,
-                        "length": None,
-                        "masking_strategy_override": None,
-                        "primary_key": None,
-                        "read_only": None,
-                        "redact": None,
-                        "references": None,
-                        "return_all_elements": None,
-                    },
-                    "fields": None,
-                },
-                {
-                    "name": "email",
-                    "description": None,
-                    "data_categories": ["user.contact.email"],
-                    "fides_meta": {
-                        "custom_request_field": None,
-                        "data_type": "string",
-                        "identity": None,
-                        "length": None,
-                        "masking_strategy_override": None,
-                        "primary_key": None,
-                        "read_only": None,
-                        "redact": None,
-                        "references": None,
-                        "return_all_elements": None,
-                    },
-                    "fields": None,
-                },
-                {
-                    "name": "name",
-                    "data_categories": ["user.name"],
-                    "description": None,
-                    "fides_meta": {
-                        "custom_request_field": None,
-                        "data_type": "string",
-                        "identity": None,
-                        "length": None,
-                        "masking_strategy_override": None,
-                        "primary_key": None,
-                        "read_only": None,
-                        "redact": None,
-                        "references": None,
-                        "return_all_elements": None,
-                    },
-                    "fields": None,
-                },
-            ],
-        }
-
-        # integration update changes
+        # INTEGRATION UPDATE CHANGES
         upcoming_dataset = copy.deepcopy(stored_dataset)
         del upcoming_dataset["collections"][0]["fields"][2]  # delete email field
-        upcoming_dataset["collections"].append(new_collection)  # add orders collection
         # change data type of product_id field
         upcoming_dataset["collections"][0]["fields"][0]["fides_meta"][
             "data_type"
@@ -1336,7 +1267,7 @@ class TestConnectionService:
             "user.contact.email"
         ]
 
-        # customer changes
+        # CUSTOMER CHANGES
         # customer changed the data categories of the customer_id field
         customer_dataset = copy.deepcopy(stored_dataset)
         customer_dataset["collections"][0]["fields"][1]["data_categories"] = [
@@ -1376,7 +1307,6 @@ class TestConnectionService:
         )
 
         # Expected result:
-        # - orders collection: added (upcoming dataset change)
         # - products collection: email field deleted (upcoming dataset change)
         # - products collection: customer_id field data categories changed (customer dataset change)
         # - products collection: product_id field data type changed from integer to object (customer dataset change took priority over upcoming dataset change)
@@ -1389,86 +1319,6 @@ class TestConnectionService:
             "data_categories": None,
             "fides_meta": None,
             "collections": [
-                {
-                    "name": "orders",
-                    "data_categories": None,
-                    "description": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "order_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "email",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "name",
-                            "data_categories": ["user.name"],
-                            "description": None,
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                    ],
-                },
                 {
                     "name": "products",
                     "description": None,
@@ -1653,86 +1503,6 @@ class TestConnectionService:
             "fides_meta": None,
             "collections": [
                 {
-                    "name": "orders",
-                    "data_categories": None,
-                    "description": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "order_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "integer",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "email",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "name",
-                            "data_categories": ["user.name"],
-                            "description": None,
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                    ],
-                },
-                {
                     "name": "products",
                     "description": None,
                     "data_categories": None,
@@ -1767,7 +1537,8 @@ class TestConnectionService:
         assert normalized_result == normalized_expected
 
         customer_dataset_no_fields = copy.deepcopy(normalized_expected)
-        customer_dataset_no_fields["collections"][1]["fields"] = None
+        # Test that once we delete the customer field the collection has no remaining fields
+        customer_dataset_no_fields["collections"][0]["fields"] = None
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset_no_fields,
@@ -1781,3 +1552,99 @@ class TestConnectionService:
         )
 
         assert normalized_result == normalized_expected
+
+    def test_merge_collections(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """Test that integration update added collections are preserved whereas customer added collections are not"""
+
+        # INTEGRATION UPDATE - add a new collection called "orders"
+        upcoming_dataset = copy.deepcopy(stored_dataset)
+        integration_added_collection = {
+            "name": "orders",
+            "data_categories": None,
+            "description": None,
+            "fides_meta": None,
+            "fields": [
+                {
+                    "name": "order_id",
+                    "description": None,
+                    "data_categories": ["system.operations"],
+                    "fides_meta": {
+                        "custom_request_field": None,
+                        "data_type": "integer",
+                        "identity": None,
+                        "length": None,
+                        "masking_strategy_override": None,
+                        "primary_key": True,
+                        "read_only": None,
+                        "redact": None,
+                        "references": None,
+                        "return_all_elements": None,
+                    },
+                    "fields": None,
+                },
+            ],
+        }
+        upcoming_dataset["collections"].append(integration_added_collection)
+
+        # CUSTOMER CHANGES - add a new collection called "custom_data"
+        customer_dataset = copy.deepcopy(stored_dataset)
+        customer_added_collection = {
+            "name": "custom_data",
+            "data_categories": None,
+            "description": None,
+            "fides_meta": None,
+            "fields": [
+                {
+                    "name": "custom_id",
+                    "description": None,
+                    "data_categories": ["user.unique_id"],
+                    "fides_meta": {
+                        "custom_request_field": None,
+                        "data_type": "string",
+                        "identity": None,
+                        "length": None,
+                        "masking_strategy_override": None,
+                        "primary_key": True,
+                        "read_only": None,
+                        "redact": None,
+                        "references": None,
+                        "return_all_elements": None,
+                    },
+                    "fields": None,
+                }
+            ],
+        }
+        customer_dataset["collections"].append(customer_added_collection)
+
+        # Merge the datasets
+        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+            stored_dataset=stored_dataset,
+            customer_dataset=customer_dataset,
+            upcoming_dataset=upcoming_dataset,
+            instance_key="test_instance_key",
+        )
+
+        # Expected result:
+        # - products collection: preserved (original collection)
+        # - orders collection: added (integration update added collection - should be preserved)
+        # - custom_data collection: NOT added (customer added collection - should NOT be preserved)
+        expected_dataset = copy.deepcopy(stored_dataset)
+        expected_dataset["collections"].append(integration_added_collection)
+
+        # Normalize both datasets for comparison (ignoring order of collections and fields)
+        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
+        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
+
+        assert normalized_result == normalized_expected
+
+        # Verify that the result contains exactly 2 collections (products + orders, but NOT custom_data)
+        assert len(result_dataset_dict["collections"]) == 2
+        collection_names = [col["name"] for col in result_dataset_dict["collections"]]
+        assert "products" in collection_names
+        assert "orders" in collection_names
+        assert "custom_data" not in collection_names
