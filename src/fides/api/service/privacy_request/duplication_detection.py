@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from fides.api.models.privacy_request.duplicate_group import (
     DuplicateGroup,
@@ -165,6 +165,12 @@ class DuplicateDetectionService:
         query = query.filter(PrivacyRequest.id != current_request.id).filter(
             PrivacyRequest.deleted_at.is_(None)
         )
+        # Apply defer options to prevent loading large columns when checking for duplicates
+        # pylint: disable=protected-access
+        query = query.options(
+            defer(PrivacyRequest._filtered_final_upload),
+            defer(PrivacyRequest.access_result_urls),
+        )
         return query.all()
 
     def generate_dedup_key(self, request: PrivacyRequest) -> str:
@@ -214,20 +220,14 @@ class DuplicateDetectionService:
         """
         request.update(self.db, data={"status": PrivacyRequestStatus.duplicate})
         logger.debug(message)
-        self.add_error_execution_log(request, message)
-
-    def add_error_execution_log(self, request: PrivacyRequest, message: str) -> None:
-        request.add_error_execution_log(
-            db=self.db,
+        request.add_skipped_execution_log(
+            self.db,
             connection_key=None,
             dataset_name="Duplicate Request Detection",
             collection_name=None,
             message=message,
-            action_type=(
-                request.policy.get_action_type()  # type: ignore [arg-type]
-                if request.policy
-                else ActionType.access
-            ),
+            action_type=(request.policy.get_action_type() if request.policy else None)
+            or ActionType.access,
         )
 
     def add_success_execution_log(self, request: PrivacyRequest, message: str) -> None:
@@ -363,7 +363,18 @@ class DuplicateDetectionService:
         if duplicate_group is None:
             message = f"Failed to create duplicate group for request {request.id} with dedup key {dedup_key}"
             logger.error(message)
-            self.add_error_execution_log(request, message)
+            request.add_error_execution_log(
+                db=self.db,
+                connection_key=None,
+                dataset_name="Duplicate Request Detection",
+                collection_name=None,
+                message=message,
+                action_type=(
+                    request.policy.get_action_type()  # type: ignore [arg-type]
+                    if request.policy
+                    else ActionType.access
+                ),
+            )
             return False
 
         self.update_duplicate_group_ids(request, duplicates, duplicate_group.id)  # type: ignore [arg-type]
@@ -391,7 +402,11 @@ class DuplicateDetectionService:
             duplicate
             for duplicate in duplicates
             if duplicate.status
-            not in [PrivacyRequestStatus.duplicate, PrivacyRequestStatus.complete]
+            not in [
+                PrivacyRequestStatus.duplicate,
+                PrivacyRequestStatus.complete,
+                PrivacyRequestStatus.denied,
+            ]
         ]
         # If no non-duplicate requests are found, this request is not a duplicate.
         if len(canonical_requests) == 0:

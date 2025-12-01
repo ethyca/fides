@@ -78,7 +78,7 @@ const datasetApi = baseApi.injectEndpoints({
     }),
     getDatasetByKey: build.query<Dataset, string>({
       query: (key) => ({ url: `dataset/${key}` }),
-      providesTags: () => ["Dataset"],
+      providesTags: () => ["Datasets"],
     }),
     updateDataset: build.mutation<
       Dataset,
@@ -90,7 +90,7 @@ const datasetApi = baseApi.injectEndpoints({
         method: "PUT",
         body: dataset,
       }),
-      invalidatesTags: ["Datasets", "Dataset"],
+      invalidatesTags: ["Datasets"],
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us

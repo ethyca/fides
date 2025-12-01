@@ -26,7 +26,7 @@ While working in this `clients` directory, you are a Senior Front-End Developer 
 Follow these rules when you write code:
 - Always prefer `try/catch` over `.then/.catch`.
 - Generally prefer TS `interface` over `type` when it makes sense to do so.
-- Try to fix typing, wherever you find a `// @ts-ignore`, especially when it's related to the current task.
+- Avoid `any` types and `@ts-expect-error`, especially when it's related to the current task. Suggest ways to get the typing correct instead.
 - Never omit curly braces around blocks.
 - Only use tailwindcss for layout classes, no colors, fonts, borders, etc.
 - FidesDebugger is a global that never needs to be imported; It should never be used for error handling.

@@ -65,7 +65,7 @@ describe("Messaging", () => {
   });
 
   it("should display message type selector after clicking on the add button", () => {
-    const customizableMessagesCount = 7;
+    const customizableMessagesCount = 8;
 
     cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");

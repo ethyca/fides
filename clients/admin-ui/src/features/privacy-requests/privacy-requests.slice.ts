@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import dayjs, { Dayjs } from "dayjs";
 import { isEmpty, isNil, pickBy } from "lodash";
 
@@ -17,6 +17,7 @@ import {
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
+import { SubjectRequestStatusMap } from "./constants";
 import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
@@ -137,29 +138,33 @@ const processFilterParams = ({ from, to, ...filters }: SearchFilterParams) => ({
   created_lt: to ? dayjs(to).endOf("day").utc().toISOString() : undefined,
 });
 
-export const selectPrivacyRequestFilters = (
-  state: RootState,
-): PrivacyRequestParams => ({
-  action_type: state.subjectRequests.action_type,
-  from: state.subjectRequests.from,
-  id: state.subjectRequests.id,
-  fuzzy_search_str: state.subjectRequests.fuzzy_search_str,
-  page: state.subjectRequests.page,
-  size: state.subjectRequests.size,
-  sort_direction: state.subjectRequests.sort_direction,
-  sort_field: state.subjectRequests.sort_field,
-  status: state.subjectRequests.status,
-  to: state.subjectRequests.to,
-  verbose: state.subjectRequests.verbose,
-});
+export const selectPrivacyRequestFilters = createSelector(
+  [(state: RootState) => state.subjectRequests],
+  (subjectRequests): PrivacyRequestParams => ({
+    action_type: subjectRequests.action_type,
+    from: subjectRequests.from,
+    id: subjectRequests.id,
+    fuzzy_search_str: subjectRequests.fuzzy_search_str,
+    page: subjectRequests.page,
+    size: subjectRequests.size,
+    sort_direction: subjectRequests.sort_direction,
+    sort_field: subjectRequests.sort_field,
+    status: subjectRequests.status,
+    to: subjectRequests.to,
+    verbose: subjectRequests.verbose,
+  }),
+);
 
 export const selectRequestStatus = (state: RootState) =>
   state.subjectRequests.status;
 
-export const selectRetryRequests = (state: RootState): RetryRequests => ({
-  checkAll: state.subjectRequests.checkAll,
-  errorRequests: state.subjectRequests.errorRequests,
-});
+export const selectRetryRequests = createSelector(
+  [(state: RootState) => state.subjectRequests],
+  (subjectRequests): RetryRequests => ({
+    checkAll: subjectRequests.checkAll,
+    errorRequests: subjectRequests.errorRequests,
+  }),
+);
 
 // Subject requests state (filters, etc.)
 type SubjectRequestsState = {
@@ -178,7 +183,24 @@ type SubjectRequestsState = {
   verbose?: boolean;
 };
 
+// Default status filter: all statuses except DUPLICATE
+const defaultStatusFilter = [...SubjectRequestStatusMap.keys()].filter(
+  (status) => status !== PrivacyRequestStatus.DUPLICATE,
+);
+
 const initialState: SubjectRequestsState = {
+  checkAll: false,
+  errorRequests: [],
+  from: "",
+  id: "",
+  page: 1,
+  size: 25,
+  to: "",
+  status: defaultStatusFilter,
+};
+
+// State to return when clearing all filters (no default status filter)
+const clearedState: SubjectRequestsState = {
   checkAll: false,
   errorRequests: [],
   from: "",
@@ -193,7 +215,7 @@ export const subjectRequestsSlice = createSlice({
   initialState,
   reducers: {
     clearAllFilters: () => ({
-      ...initialState,
+      ...clearedState,
     }),
     clearSortKeys: (state) => ({
       ...state,

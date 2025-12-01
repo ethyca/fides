@@ -162,7 +162,7 @@ Defaults to `undefined`.
 
 > **fides\_string**: `string`
 
-Override the current user's `fides_string` consent preferences (see [Fides.fides_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
+Override the current user's `fides_string` consent preferences (see [Fides.fides\_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
 registered user from a custom backend, where the `fides_string` could be
 provided by the server across multiple devices, etc.
 
