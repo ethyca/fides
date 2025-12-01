@@ -17,6 +17,7 @@ from fides.api.schemas.privacy_request import (
     CustomPrivacyRequestField,
     PrivacyRequestStatus,
 )
+from fides.api.tasks import celery_app
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_READ,
@@ -45,6 +46,19 @@ class QueryCounter:
 
     def receive_query(self, conn, cursor, statement, params, context, executemany):
         self.count += 1
+
+
+@pytest.fixture(scope="module", autouse=True)
+def disable_celery_worker_for_performance_tests():
+    """
+    Disable the celery worker for performance tests.
+    These tests mock all celery task calls and don't need an actual worker.
+    This prevents worker thread timeout errors during test teardown.
+    """
+    original_value = celery_app.conf.get("task_always_eager", False)
+    celery_app.conf["task_always_eager"] = True
+    yield
+    celery_app.conf["task_always_eager"] = original_value
 
 
 @pytest.fixture
