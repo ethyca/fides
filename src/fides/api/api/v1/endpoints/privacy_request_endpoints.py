@@ -216,25 +216,6 @@ def get_privacy_request_or_error(
     return privacy_request
 
 
-async def _normalize_bulk_selection_dependency(
-    request: Request,
-) -> "PrivacyRequestBulkSelection":
-    """
-    Normalize input to PrivacyRequestBulkSelection for backwards compatibility.
-
-    If a plain list is provided, convert it to PrivacyRequestBulkSelection with request_ids.
-    Otherwise, parse as PrivacyRequestBulkSelection.
-    """
-    body = await request.json()
-
-    # If it's a plain list, convert to PrivacyRequestBulkSelection
-    if isinstance(body, list):
-        return PrivacyRequestBulkSelection(request_ids=body)
-
-    # Otherwise, parse as PrivacyRequestBulkSelection
-    return PrivacyRequestBulkSelection(**body)
-
-
 def _resolve_request_ids_from_filters(
     db: Session,
     privacy_requests: PrivacyRequestBulkSelection,
