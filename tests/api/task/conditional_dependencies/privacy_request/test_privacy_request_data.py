@@ -11,13 +11,13 @@ from fides.api.models.privacy_request.duplicate_group import DuplicateGroup
 from fides.api.schemas.policy import DrpAction
 from fides.api.schemas.privacy_request import (
     CustomPrivacyRequestField,
-    PrivacyRequestSource,
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
     PrivacyRequestDataTransformer,
 )
+from fides.api.task.conditional_dependencies.util import transform_value_for_evaluation
 
 
 @pytest.fixture
@@ -107,7 +107,7 @@ class TestPrivacyRequestToEvaluationDataBasicFields:
         data = transformer.to_evaluation_data(field_addresses)
 
         for col in cols:
-            assert data["privacy_request"][col] == transformer._transform_value(
+            assert data["privacy_request"][col] == transform_value_for_evaluation(
                 getattr(privacy_request, col)
             )
 
@@ -170,7 +170,7 @@ class TestPrivacyRequestToEvaluationDataPolicy:
 
         for col in cols:
             data_col = data["privacy_request"]["policy"][col]
-            assert data_col == transformer._transform_value(getattr(policy, col))
+            assert data_col == transform_value_for_evaluation(getattr(policy, col))
 
     @pytest.mark.usefixtures("access_rule", "erasure_rule", "consent_rule")
     def test_policy_rules_with_all_action_types(
@@ -281,7 +281,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         for col in cols:
             assert data["privacy_request"]["identity"][
                 col
-            ] == transformer._transform_value(
+            ] == transform_value_for_evaluation(
                 getattr(privacy_request.get_persisted_identity(), col)
             )
 
@@ -308,7 +308,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         for col in cols:
             assert data["privacy_request"]["identity"][
                 col
-            ] == transformer._transform_value(
+            ] == transform_value_for_evaluation(
                 getattr(privacy_request.get_persisted_identity(), col)
             )
 
@@ -353,7 +353,7 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
         for col in cols:
             assert data["privacy_request"]["custom_privacy_request_fields"][
                 col
-            ] == transformer._transform_value(
+            ] == transform_value_for_evaluation(
                 privacy_request.get_persisted_custom_privacy_request_fields().get(col)
             )
 
