@@ -726,6 +726,7 @@ class TestConnectionService:
         self,
         connection_service: ConnectionService,
         db: Session,
+        stored_dataset: Dict[str, Any],
     ):
         """Test upsert_dataset_config_from_template with datasets from template, connection config, and SaasTemplateDataset table."""
         # Dataset 1: From template (passed to function) (upcoming dataset)
@@ -739,12 +740,12 @@ class TestConnectionService:
               - name: products
                 fields:
                 - name: product_id
-                  data_categories: [system.operations]
+                  data_categories: [user.unique_id]
                   fides_meta:
                     data_type: string
                     primary_key: True
                 - name: customer_id
-                  data_categories: [system.operations]
+                  data_categories: [user.preferences]
                   fides_meta:
                     data_type: integer
                 - name: email
@@ -760,105 +761,26 @@ class TestConnectionService:
                       fides_meta:
                         data_type: string
                     - name: city
-                      data_categories: [user.contact.address.city]
+                      data_categories: [user.contact.address]
                       fides_meta:
                         data_type: string
         """
         ).strip()
 
         # Dataset 2: From connection config (existing DatasetConfig) (customer dataset)
-        customer_dataset = {
-            "fides_key": "test_instance_key",
-            "name": "SaaS Template Dataset",
-            "description": "Dataset from connection config",
-            "collections": [
-                {
-                    "name": "products",
-                    "fields": [
-                        {
-                            "name": "product_id",
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "primary_key": True,
-                                "data_type": "integer",
-                            },
-                        },
-                        {
-                            "name": "customer_id",
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "data_type": "string",
-                            },
-                        },
-                        {
-                            "name": "email",
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "data_type": "string",
-                            },
-                        },
-                        {
-                            "name": "address",
-                            "fides_meta": {
-                                "data_type": "object",
-                            },
-                            "fields": [
-                                {
-                                    "name": "street",
-                                    "data_categories": ["user.contact.address.street"],
-                                    "fides_meta": {
-                                        "data_type": "string",
-                                    },
-                                },
-                                {
-                                    "name": "city",
-                                    "data_categories": ["user.contact.address"],
-                                    "fides_meta": {
-                                        "data_type": "string",
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                }
-            ],
+        customer_dataset = copy.deepcopy(stored_dataset)
+        customer_dataset["fides_key"] = "test_instance_key"
+        customer_dataset["name"] = "SaaS Template Dataset"
+        customer_dataset["description"] = "Dataset from connection config"
+        products_collection = customer_dataset["collections"][0]
+        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+        products_fields_map["customer_id"]["data_categories"] = ["system.operations"]
+        address_fields_map = {
+            f["name"]: f for f in products_fields_map["address"]["fields"]
         }
+        address_fields_map["city"]["data_categories"] = ["user.contact.address.city"]
 
-        # Dataset 3: From SaasTemplateDataset table (stored dataset)
-        stored_dataset = {
-            "fides_key": "<instance_fides_key>",
-            "name": "SaaS Template Dataset",
-            "description": "Dataset from SaasTemplateDataset table",
-            "collections": [
-                {
-                    "name": "products",
-                    "fields": [
-                        {
-                            "name": "product_id",
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "primary_key": True,
-                                "data_type": "integer",
-                            },
-                        },
-                        {
-                            "name": "customer_id",
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "integer",
-                            },
-                        },
-                        {
-                            "name": "email",
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "data_type": "string",
-                            },
-                        },
-                    ],
-                }
-            ],
-        }
+        # Dataset 3: From SaasTemplateDataset table (stored dataset) - using fixture
 
         # Create connection config
         connection_config = ConnectionConfig.create(
@@ -971,16 +893,18 @@ class TestConnectionService:
         assert products_fields_map["product_id"]["fides_meta"]["data_type"] == "string"
 
         # CUSTOMER CHANGES (preserved):
-        # - products.customer_id: data_categories changed from [system.operations] to [user.unique_id]
-        # - products.address.city: data_categories changed from [user.contact.address.city] to [user.contact.address]
+        # - products.customer_id: data_categories changed from [user.unique_id] to [system.operations]. (takes priority over integration update change [user.preferences])
+        # - products.address.city: data_categories changed from [user.contact.address] to [user.contact.address.city]
         assert products_fields_map["customer_id"]["data_categories"] == [
-            "user.unique_id"
+            "system.operations"
         ]
         address_fields_map = {
             f["name"]: f for f in products_fields_map["address"]["fields"]
         }
         assert len(address_fields_map) == 2
-        assert address_fields_map["city"]["data_categories"] == ["user.contact.address"]
+        assert address_fields_map["city"]["data_categories"] == [
+            "user.contact.address.city"
+        ]
         assert address_fields_map["street"]["data_categories"] == [
             "user.contact.address.street"
         ]
