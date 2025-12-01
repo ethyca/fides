@@ -127,10 +127,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.conftest import (
-    access_runner_tester,
-    generate_role_header_for_user,
-)
+from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
