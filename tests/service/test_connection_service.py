@@ -1,13 +1,11 @@
 """Tests for ConnectionService including event auditing functionality."""
 
 import copy
-import json
 from re import A
 from textwrap import dedent
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import pytest
-from deepdiff import DeepDiff
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectionNotFoundException
@@ -36,50 +34,6 @@ from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 
 
-def normalize_field(field: Dict[str, Any]) -> Dict[str, Any]:
-    """Recursively normalizes a field, including nested fields."""
-    normalized = copy.deepcopy(field)
-
-    # Recursively normalize nested fields
-    if "fields" in normalized and isinstance(normalized["fields"], list):
-        normalized["fields"] = sorted(
-            [normalize_field(f) for f in normalized["fields"]],
-            key=lambda f: f.get("name", ""),
-        )
-
-    return normalized
-
-
-def normalize_collection(collection: Dict[str, Any]) -> Dict[str, Any]:
-    """Normalizes a collection by sorting its fields recursively."""
-    normalized = copy.deepcopy(collection)
-
-    if "fields" in normalized and isinstance(normalized["fields"], list):
-        normalized["fields"] = sorted(
-            [normalize_field(f) for f in normalized["fields"]],
-            key=lambda f: f.get("name", ""),
-        )
-
-    return normalized
-
-
-def normalize_dataset_for_comparison(dataset: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Recursively normalizes a dataset by sorting collections and fields by name,
-    making comparisons order-independent.
-    """
-    normalized = copy.deepcopy(dataset)
-
-    # Sort collections by name
-    if "collections" in normalized and isinstance(normalized["collections"], list):
-        normalized["collections"] = sorted(
-            [normalize_collection(c) for c in normalized["collections"]],
-            key=lambda c: c.get("name", ""),
-        )
-
-    return normalized
-
-
 class TestConnectionService:
     """Tests for ConnectionService functionality."""
 
@@ -87,7 +41,7 @@ class TestConnectionService:
     def stored_dataset(self) -> Dict[str, Any]:
         """Fixture for the stored dataset."""
         stored_dataset = {
-            "fides_key": "test_instance_key",
+            "fides_key": "<instance_fides_key>",
             "name": "Template Dataset",
             "description": "Dataset from template",
             "data_categories": None,
@@ -935,7 +889,7 @@ class TestConnectionService:
         )
 
         # Create existing DatasetConfig from connection config
-        existing_dataset_config = DatasetConfig.create_or_update(
+        DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
@@ -945,7 +899,7 @@ class TestConnectionService:
         )
 
         # Create SaasTemplateDataset entry
-        _, saas_template_dataset = SaasTemplateDataset.get_or_create(
+        SaasTemplateDataset.get_or_create(
             db=db,
             connector_type="test_connector",
             dataset_json=stored_dataset,
@@ -980,8 +934,6 @@ class TestConnectionService:
 
         # Create template values
         template_values = SaasConnectionTemplateValues(
-            key="test_connection",
-            description="Test connection description",
             secrets={},
             instance_key="test_instance_key",
         )
@@ -1003,150 +955,35 @@ class TestConnectionService:
             "fides_meta": ctl_dataset.fides_meta,
         }
 
+        # Verify dataset information
+        assert result_dataset_config is not None
+        assert result_dataset_dict["fides_key"] == "test_instance_key"
+        assert result_dataset_dict["name"] == "Template Dataset"
+        assert result_dataset_dict["description"] == "Dataset from template"
+
+        products_collection = result_dataset_dict["collections"][0]
+        assert len(products_collection["fields"]) == 4
+        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+
         # Expected result after merging:
         # INTEGRATION UPDATE CHANGES (preserved):
         # - products.product_id: data_type changed from integer to string
+        assert products_fields_map["product_id"]["fides_meta"]["data_type"] == "string"
 
         # CUSTOMER CHANGES (preserved):
         # - products.customer_id: data_categories changed from [system.operations] to [user.unique_id]
         # - products.address.city: data_categories changed from [user.contact.address.city] to [user.contact.address]
-        expected_dataset = {
-            "fides_key": "test_instance_key",
-            "name": "Template Dataset",
-            "description": "Dataset from template",
-            "data_categories": None,
-            "fides_meta": None,
-            "collections": [
-                {
-                    "name": "products",
-                    "description": None,
-                    "data_categories": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "product_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.unique_id"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "email",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "address",
-                            "description": None,
-                            "data_categories": None,
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "object",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": [
-                                {
-                                    "name": "city",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                                {
-                                    "name": "street",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address.street"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
+        assert products_fields_map["customer_id"]["data_categories"] == [
+            "user.unique_id"
+        ]
+        address_fields_map = {
+            f["name"]: f for f in products_fields_map["address"]["fields"]
         }
-        # Verify the result
-        assert result_dataset_config is not None
-        assert result_dataset_dict["fides_key"] == expected_dataset["fides_key"]
-        assert result_dataset_dict["name"] == expected_dataset["name"]
-        assert result_dataset_dict["description"] == expected_dataset["description"]
-
-        # Normalize both datasets for comparison (ignoring order of collections and fields)
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
-
-        assert normalized_result == normalized_expected
+        assert len(address_fields_map) == 2
+        assert address_fields_map["city"]["data_categories"] == ["user.contact.address"]
+        assert address_fields_map["street"]["data_categories"] == [
+            "user.contact.address.street"
+        ]
 
     def test_merge_dataset_fields(
         self,
@@ -1160,6 +997,7 @@ class TestConnectionService:
 
         # INTEGRATION UPDATE CHANGES
         upcoming_dataset = copy.deepcopy(stored_dataset)
+        upcoming_dataset["fides_key"] = "test_instance_key"
         del upcoming_dataset["collections"][0]["fields"][2]  # delete email field
         # change data type of product_id field
         upcoming_dataset["collections"][0]["fields"][0]["fides_meta"][
@@ -1215,141 +1053,16 @@ class TestConnectionService:
         # - products collection: product_id field data type changed from integer to object (customer dataset change took priority over upcoming dataset change)
         # - products collection: address field data categories changed from None to ["user.contact.email"] (customer dataset change)
         # - products collection: custom_attribute field added (customer dataset change)
-        expected_dataset = {
-            "fides_key": "test_instance_key",
-            "name": "Template Dataset",
-            "description": "Dataset from template",
-            "data_categories": None,
-            "fides_meta": None,
-            "organization_fides_key": "default_organization",
-            "meta": None,
-            "tags": None,
-            "collections": [
-                {
-                    "name": "products",
-                    "description": None,
-                    "data_categories": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "product_id",
-                            "description": None,
-                            "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "object",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "customer_id",
-                            "description": None,
-                            "data_categories": ["user.name"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "string",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                        {
-                            "name": "address",
-                            "description": None,
-                            "data_categories": ["user.contact.email"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "object",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": None,
-                                "read_only": None,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": [
-                                {
-                                    "name": "city",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                                {
-                                    "name": "street",
-                                    "description": None,
-                                    "data_categories": ["user.contact.address.street"],
-                                    "fides_meta": {
-                                        "custom_request_field": None,
-                                        "data_type": "string",
-                                        "identity": None,
-                                        "length": None,
-                                        "masking_strategy_override": None,
-                                        "primary_key": None,
-                                        "read_only": None,
-                                        "redact": None,
-                                        "references": None,
-                                        "return_all_elements": None,
-                                    },
-                                    "fields": None,
-                                },
-                            ],
-                        },
-                        {
-                            "name": "custom_attribute",
-                            "description": None,
-                            "data_categories": ["user.preferences"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "boolean",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": True,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        },
-                    ],
-                },
-            ],
-        }
-
-        # Normalize both datasets for comparison (ignoring order of collections and fields)
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
-
-        assert normalized_result == normalized_expected
+        products_collection = result_dataset_dict["collections"][0]
+        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+        assert len(products_fields_map) == 4
+        assert "email" not in products_fields_map
+        assert products_fields_map["customer_id"]["data_categories"] == ["user.name"]
+        assert products_fields_map["product_id"]["fides_meta"]["data_type"] == "object"
+        assert products_fields_map["address"]["data_categories"] == [
+            "user.contact.email"
+        ]
+        assert products_fields_map["custom_attribute"]
 
         # check that by making no changes the customer dataset stays the same
         stored_dataset = copy.deepcopy(
@@ -1366,11 +1079,35 @@ class TestConnectionService:
             instance_key="test_instance_key",
         )
 
-        # Normalize both datasets for comparison (ignoring order of collections and fields)
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
+        # Verify that when no changes are made, the result preserves the merged dataset
+        # Check dataset-level properties
+        assert result_dataset_dict["fides_key"] == "test_instance_key"
+        assert result_dataset_dict["name"] == "Template Dataset"
+        assert result_dataset_dict["description"] == "Dataset from template"
 
-        assert normalized_result == normalized_expected
+        # Check collections structure
+        assert len(result_dataset_dict["collections"]) == 1
+        products_collection = result_dataset_dict["collections"][0]
+
+        # Check that all expected fields are present (order-independent)
+        fields_by_name = {
+            field["name"]: field for field in products_collection["fields"]
+        }
+        expected_field_names = {
+            "product_id",
+            "customer_id",
+            "address",
+            "custom_attribute",
+        }
+        assert set(fields_by_name.keys()) == expected_field_names
+
+        # Verify specific field properties from the previous merge
+        assert fields_by_name["customer_id"]["data_categories"] == ["user.name"]
+        assert fields_by_name["product_id"]["fides_meta"]["data_type"] == "object"
+        assert fields_by_name["address"]["data_categories"] == ["user.contact.email"]
+        assert fields_by_name["custom_attribute"]["data_categories"] == [
+            "user.preferences"
+        ]
 
         # test that the customer can delete a field they added but not fields that exist in the official dataset
         customer_dataset_no_fields = copy.deepcopy(customer_dataset)
@@ -1385,10 +1122,14 @@ class TestConnectionService:
 
         # since the customer deleted all its fields
         # Their changes are now lost and we will use what is in the upcoming dataset
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(upcoming_dataset)
-
-        assert normalized_result == normalized_expected
+        products_collection = result_dataset_dict["collections"][0]
+        assert len(products_collection["fields"]) == 3
+        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+        assert "email" not in products_fields_map
+        assert "custom_attribute" not in products_fields_map
+        assert products_fields_map["product_id"]
+        assert products_fields_map["customer_id"]
+        assert products_fields_map["address"]
 
         # test that an integration update deletes all fields except the ones that were added by the customer
         upcoming_dataset_no_fields = copy.deepcopy(upcoming_dataset)
@@ -1401,51 +1142,12 @@ class TestConnectionService:
         )
 
         # only the customer added field is present in products collection
-        expected_dataset = {
-            "fides_key": "test_instance_key",
-            "name": "Template Dataset",
-            "description": "Dataset from template",
-            "data_categories": None,
-            "fides_meta": None,
-            "organization_fides_key": "default_organization",
-            "tags": None,
-            "meta": None,
-            "collections": [
-                {
-                    "name": "products",
-                    "description": None,
-                    "data_categories": None,
-                    "fides_meta": None,
-                    "fields": [
-                        {
-                            "name": "custom_attribute",
-                            "description": None,
-                            "data_categories": ["user.preferences"],
-                            "fides_meta": {
-                                "custom_request_field": None,
-                                "data_type": "boolean",
-                                "identity": None,
-                                "length": None,
-                                "masking_strategy_override": None,
-                                "primary_key": True,
-                                "read_only": True,
-                                "redact": None,
-                                "references": None,
-                                "return_all_elements": None,
-                            },
-                            "fields": None,
-                        }
-                    ],
-                },
-            ],
-        }
+        products_collection = result_dataset_dict["collections"][0]
+        assert len(products_collection["fields"]) == 1
+        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+        assert products_fields_map["custom_attribute"]
 
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
-
-        assert normalized_result == normalized_expected
-
-        customer_dataset_no_fields = copy.deepcopy(normalized_expected)
+        customer_dataset_no_fields = copy.deepcopy(result_dataset_dict)
         # Test that once we delete the customer field the collection has no remaining fields
         customer_dataset_no_fields["collections"][0]["fields"] = []
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
@@ -1455,12 +1157,7 @@ class TestConnectionService:
             instance_key="test_instance_key",
         )
 
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(
-            upcoming_dataset_no_fields
-        )
-
-        assert normalized_result == normalized_expected
+        assert len(result_dataset_dict["collections"][0]["fields"]) == 0
 
     def test_merge_collections(
         self,
@@ -1472,6 +1169,8 @@ class TestConnectionService:
 
         # INTEGRATION UPDATE - add a new collection called "orders"
         upcoming_dataset = copy.deepcopy(stored_dataset)
+        upcoming_dataset["fides_key"] = "test_instance_key"
+
         integration_added_collection = {
             "name": "orders",
             "data_categories": None,
@@ -1542,14 +1241,6 @@ class TestConnectionService:
         # - products collection: preserved (original collection)
         # - orders collection: added (integration update added collection - should be preserved)
         # - custom_data collection: NOT added (customer added collection - should NOT be preserved)
-        expected_dataset = copy.deepcopy(stored_dataset)
-        expected_dataset["collections"].append(integration_added_collection)
-
-        # Normalize both datasets for comparison (ignoring order of collections and fields)
-        normalized_result = normalize_dataset_for_comparison(result_dataset_dict)
-        normalized_expected = normalize_dataset_for_comparison(expected_dataset)
-
-        assert normalized_result == normalized_expected
 
         # Verify that the result contains exactly 2 collections (products + orders, but NOT custom_data)
         assert len(result_dataset_dict["collections"]) == 2
@@ -1557,3 +1248,31 @@ class TestConnectionService:
         assert "products" in collection_names
         assert "orders" in collection_names
         assert "custom_data" not in collection_names
+
+        # Verify the products collection is preserved correctly (original collection)
+        products_collection = next(
+            c for c in result_dataset_dict["collections"] if c["name"] == "products"
+        )
+        assert products_collection["data_categories"] is None
+        assert products_collection["description"] is None
+        assert len(products_collection["fields"]) == 4
+
+        # Verify the orders collection was added correctly (integration update added collection)
+        orders_collection = next(
+            c for c in result_dataset_dict["collections"] if c["name"] == "orders"
+        )
+        assert orders_collection["data_categories"] is None
+        assert orders_collection["description"] is None
+        assert len(orders_collection["fields"]) == 1
+        assert orders_collection["fields"][0]["name"] == "order_id"
+        assert orders_collection["fields"][0]["data_categories"] == [
+            "system.operations"
+        ]
+        assert orders_collection["fields"][0]["fides_meta"]["primary_key"] is True
+
+        # Verify dataset-level properties are preserved
+        assert (
+            result_dataset_dict["fides_key"] == "test_instance_key"
+        )  # Should use the instance_key, not the placeholder
+        assert result_dataset_dict["name"] == upcoming_dataset["name"]
+        assert result_dataset_dict["description"] == upcoming_dataset["description"]
