@@ -2072,8 +2072,12 @@ def bulk_finalize_privacy_requests(
     ),
     privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
-    """
-    Bulk finalize privacy requests that are in requires_manual_finalization status.
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     Each request will be moved from the 'requires_finalization' state to 'complete'.
     Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
     """
