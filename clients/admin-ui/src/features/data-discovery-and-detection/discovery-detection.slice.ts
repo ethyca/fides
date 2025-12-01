@@ -86,6 +86,9 @@ interface IdentityProviderMonitorResultsQueryParams {
   page?: number;
   size?: number;
   search?: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  status?: string | string[];
+  vendor_id?: string | string[];
 }
 
 interface IdentityProviderMonitorExecuteParams {

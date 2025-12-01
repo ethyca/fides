@@ -19,6 +19,8 @@ import { DiffStatus } from "~/types/api";
 
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
+import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
+import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
 
@@ -31,6 +33,8 @@ export const DiscoveredInfrastructureSystemsTable = ({
 }: DiscoveredInfrastructureSystemsTableProps) => {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
+  const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
+
   const {
     data,
     isLoading,
@@ -42,7 +46,11 @@ export const DiscoveredInfrastructureSystemsTable = ({
     activeParams,
     rowClickUrl,
     getRecordKey,
-  } = useDiscoveredInfrastructureSystemsTable({ monitorId });
+  } = useDiscoveredInfrastructureSystemsTable({
+    monitorId,
+    statusFilters: infrastructureSystemsFilters.statusFilters,
+    vendorFilters: infrastructureSystemsFilters.vendorFilters,
+  });
 
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
@@ -128,8 +136,9 @@ export const DiscoveredInfrastructureSystemsTable = ({
   // TODO: Implement bulk actions
   const handleBulkAction = useCallback(
     (action: "add" | "ignore") => {
-      console.log(`Bulk ${action} for`, selectedItems);
       // Implement bulk actions here
+      // eslint-disable-next-line no-console
+      console.log(`Bulk ${action} for`, selectedItems);
     },
     [selectedItems],
   );
@@ -172,22 +181,24 @@ export const DiscoveredInfrastructureSystemsTable = ({
             />
           </Flex>
           <Flex gap="small">
-            <Tooltip title="Filter">
-              <Button icon={<Icons.ChevronDown />} iconPosition="end">
-                Filter
-              </Button>
-            </Tooltip>
+            <InfrastructureSystemsFilters
+              {...infrastructureSystemsFilters}
+              monitorId={monitorId}
+              stagedResourceUrn={
+                data?.items.map((item) => item.urn ?? "") ?? []
+              }
+            />
             <Dropdown
               menu={{
                 items: [
                   ...(allowIgnore
                     ? [
-                      {
-                        key: "ignore",
-                        label: "Ignore",
-                        onClick: () => handleBulkAction("ignore"),
-                      },
-                    ]
+                        {
+                          key: "ignore",
+                          label: "Ignore",
+                          onClick: () => handleBulkAction("ignore"),
+                        },
+                      ]
                     : []),
                   {
                     key: "add",
