@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Request, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -214,6 +214,92 @@ def get_privacy_request_or_error(
         )
 
     return privacy_request
+
+
+async def _normalize_bulk_selection_dependency(
+    request: Request,
+) -> "PrivacyRequestBulkSelection":
+    """
+    Normalize input to PrivacyRequestBulkSelection for backwards compatibility.
+
+    If a plain list is provided, convert it to PrivacyRequestBulkSelection with request_ids.
+    Otherwise, parse as PrivacyRequestBulkSelection.
+    """
+    body = await request.json()
+
+    # If it's a plain list, convert to PrivacyRequestBulkSelection
+    if isinstance(body, list):
+        return PrivacyRequestBulkSelection(request_ids=body)
+
+    # Otherwise, parse as PrivacyRequestBulkSelection
+    return PrivacyRequestBulkSelection(**body)
+
+
+def _resolve_request_ids_from_filters(
+    db: Session,
+    privacy_requests: PrivacyRequestBulkSelection,
+) -> list[str]:
+    """
+    Resolve privacy request IDs from either explicit request_ids or filters.
+
+    If request_ids is provided, use it directly.
+    Otherwise, use filters to query for matching privacy requests and apply exclusions.
+
+    Note: Pydantic validation ensures at least one of request_ids or filters is provided.
+
+    Returns:
+        List of privacy request IDs to act on
+
+    Raises:
+        HTTPException: If too many results or no results are returned from filters
+    """
+    # If explicit request_ids are provided, use them directly
+    if privacy_requests.request_ids:
+        return privacy_requests.request_ids
+
+    # Use filters to query for privacy requests
+    # Note: Pydantic validator ensures filters is not None at this point
+    filters = privacy_requests.filters
+    assert filters is not None, "Filters must be provided when request_ids is not"
+
+    query = PrivacyRequest.query_without_large_columns(db)
+    query = _filter_privacy_request_queryset(
+        db=db,
+        query=query,
+        request_id=filters.request_id,
+        fuzzy_search_str=filters.fuzzy_search_str,
+        identities=filters.identities,
+        custom_privacy_request_fields=filters.custom_privacy_request_fields,
+        status=filters.status,  # type: ignore
+        created_lt=filters.created_lt,
+        created_gt=filters.created_gt,
+        started_lt=filters.started_lt,
+        started_gt=filters.started_gt,
+        completed_lt=filters.completed_lt,
+        completed_gt=filters.completed_gt,
+        errored_lt=filters.errored_lt,
+        errored_gt=filters.errored_gt,
+        external_id=filters.external_id,
+        location=filters.location,
+        action_type=filters.action_type,
+        include_deleted_requests=filters.include_deleted_requests,
+    )
+
+    # Apply exclusions if provided
+    if privacy_requests.exclude_ids:
+        query = query.filter(~PrivacyRequest.id.in_(privacy_requests.exclude_ids))
+
+    # Only select IDs to avoid loading full objects
+    # The service layer will handle batching if needed
+    request_ids = [row[0] for row in query.with_entities(PrivacyRequest.id).all()]
+
+    if not request_ids:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="No privacy requests found matching the provided filters.",
+        )
+
+    return request_ids
 
 
 @router.post(
