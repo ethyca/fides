@@ -1,18 +1,23 @@
-import { AntEmpty as Empty } from "fidesui";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
+import { useSearch } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { useSearch } from "~/features/common/hooks";
 import {
   StagedResourceAPIResponse,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
+import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
+import {
+  InfrastructureSystemFilterLabel,
+  mapStatusFilterToDiffStatus,
+  mapStatusFilterToMetadataStatus,
+} from "../constants/InfrastructureSystemsFilters.const";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -20,6 +25,8 @@ import useActionCenterTabs, {
 
 interface UseDiscoveredInfrastructureSystemsTableConfig {
   monitorId: string;
+  statusFilters?: InfrastructureSystemFilterLabel[] | null;
+  vendorFilters?: string[] | null;
 }
 
 // Extended type to include diff_status for list items
@@ -30,6 +37,8 @@ type InfrastructureSystemListItem = SystemStagedResourcesAggregateRecord & {
 
 export const useDiscoveredInfrastructureSystemsTable = ({
   monitorId,
+  statusFilters,
+  vendorFilters,
 }: UseDiscoveredInfrastructureSystemsTableConfig) => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -40,20 +49,79 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   const tabs = useActionCenterTabs();
   const { activeTab, filterTabs, activeParams, onTabChange } = tabs;
 
-  const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery({
-    monitor_config_key: monitorId,
-    page: pageIndex,
-    size: pageSize,
-    search: search.searchQuery,
-    diff_status: activeParams.diff_status,
-  });
+  // Map status filters to diff_status and status parameters
+  const diffStatusFilters = useMemo(() => {
+    if (!statusFilters || statusFilters.length === 0) {
+      return activeParams.diff_status;
+    }
+
+    const diffStatuses: DiffStatus[] = [];
+    statusFilters.forEach((filter) => {
+      const diffStatus = mapStatusFilterToDiffStatus(filter);
+      if (diffStatus) {
+        diffStatuses.push(diffStatus);
+      }
+    });
+
+    // If we have filters from statusFilters, use them; otherwise fall back to activeParams
+    // Convert single-element array to string for API compatibility
+    if (diffStatuses.length === 1) {
+      return diffStatuses[0];
+    }
+    return diffStatuses.length > 0 ? diffStatuses : activeParams.diff_status;
+  }, [statusFilters, activeParams.diff_status]);
+
+  // Map status filters to metadata status
+  const metadataStatusFilters = useMemo(() => {
+    if (!statusFilters || statusFilters.length === 0) {
+      return undefined;
+    }
+
+    const statuses: string[] = [];
+    statusFilters.forEach((filter) => {
+      const status = mapStatusFilterToMetadataStatus(filter);
+      if (status) {
+        statuses.push(status);
+      }
+    });
+
+    return statuses.length > 0 ? statuses : undefined;
+  }, [statusFilters]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    resetPagination();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilters, vendorFilters]);
+
+  const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery(
+    {
+      monitor_config_key: monitorId,
+      page: pageIndex,
+      size: pageSize,
+      search: search.searchQuery,
+      diff_status: diffStatusFilters,
+      status: metadataStatusFilters,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const {
     data: oktaData,
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
+    refetch: refetchOktaData,
   } = oktaDataQuery;
 
+  // Force refetch when activeTab changes to ensure fresh data
+  useEffect(() => {
+    refetchOktaData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Filter data by vendor filters (known/unknown) on the client side
   const transformedData = useMemo((): {
     items: InfrastructureSystemListItem[];
     total: number;
@@ -62,7 +130,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
       return { items: [], total: 0 };
     }
 
-    const items: InfrastructureSystemListItem[] = oktaData.items.map(
+    let items: InfrastructureSystemListItem[] = oktaData.items.map(
       (item: StagedResourceAPIResponse): InfrastructureSystemListItem => {
         return {
           id: item.urn,
@@ -81,18 +149,34 @@ export const useDiscoveredInfrastructureSystemsTable = ({
       },
     );
 
+    // Apply vendor filters on client side if needed
+    if (vendorFilters && vendorFilters.length > 0) {
+      items = items.filter((item) => {
+        const hasVendorId = !!item.vendor_id;
+        if (vendorFilters.includes("known")) {
+          return hasVendorId;
+        }
+        if (vendorFilters.includes("unknown")) {
+          return !hasVendorId;
+        }
+        return true;
+      });
+    }
+
     return {
       items,
-      total: oktaData.total ?? items.length,
+      total: items.length,
     };
-  }, [oktaData]);
+  }, [oktaData, vendorFilters]);
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
       await onTabChange(tab as ActionCenterTabHash);
       resetPagination();
+      // Force refetch when tab changes to ensure fresh data
+      refetchOktaData();
     },
-    [onTabChange, resetPagination],
+    [onTabChange, resetPagination, refetchOktaData],
   );
 
   const rowClickUrl = useCallback(
