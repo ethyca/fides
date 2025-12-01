@@ -8,7 +8,6 @@ import { CustomFieldDefinitionWithId } from "~/types/api";
 export const getCustomFieldType = (
   value: CustomFieldDefinitionWithId,
 ): FieldTypes | string => {
-  // eslint-disable-next-line no-underscore-dangle
   if (value.field_type === LegacyAllowedTypes.STRING_ARRAY) {
     return FieldTypes.MULTIPLE_SELECT;
   }
