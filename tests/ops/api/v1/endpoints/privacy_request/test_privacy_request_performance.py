@@ -5,6 +5,7 @@ Performance tests for privacy request endpoints to verify N+1 query fixes.
 import csv
 import io
 from datetime import datetime
+from unittest import mock
 
 import pytest
 from sqlalchemy import event
@@ -81,8 +82,12 @@ def multiple_privacy_requests(db, policy):
 class TestPrivacyRequestPerformance:
     """Test N+1 query fixes with eager loading."""
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
     def test_csv_download_query_count(
         self,
+        mock_run_privacy_request,
         db,
         api_client: TestClient,
         generate_auth_header,
@@ -114,8 +119,12 @@ class TestPrivacyRequestPerformance:
             ("include_custom_privacy_request_fields", "custom_privacy_request_fields"),
         ],
     )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
     def test_list_view_eager_loading(
         self,
+        mock_run_privacy_request,
         db,
         api_client: TestClient,
         generate_auth_header,
@@ -148,11 +157,19 @@ class TestPrivacyRequestPerformance:
         "endpoint,scope,request_count,max_queries",
         [
             (PRIVACY_REQUEST_BULK_SOFT_DELETE, PRIVACY_REQUEST_DELETE, 5, 25),
-            (PRIVACY_REQUEST_APPROVE, PRIVACY_REQUEST_REVIEW, 3, 600),
+            (PRIVACY_REQUEST_APPROVE, PRIVACY_REQUEST_REVIEW, 3, 50),
         ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service.dispatch_message_task.apply_async"
     )
     def test_bulk_operations_query_count(
         self,
+        mock_dispatch_message,
+        mock_run_privacy_request,
         db,
         api_client: TestClient,
         generate_auth_header,
