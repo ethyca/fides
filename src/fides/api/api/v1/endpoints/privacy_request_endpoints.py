@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Body, Depends, HTTPException, Request, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
