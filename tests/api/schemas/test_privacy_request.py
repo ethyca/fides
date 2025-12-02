@@ -43,6 +43,15 @@ class TestPrivacyRequestBulkSelection:
                 PrivacyRequestFilter(status=PrivacyRequestStatus.pending),
                 ["req-1", "req-2"],
             ),
+            # Valid: empty filters with exclusions (select all except excluded)
+            (
+                None,
+                PrivacyRequestFilter(),
+                ["req-1", "req-2"],
+                None,
+                PrivacyRequestFilter(),
+                ["req-1", "req-2"],
+            ),
             # Valid: request_ids with exclude_ids=None
             (
                 ["req-1"],
