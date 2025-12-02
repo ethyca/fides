@@ -41,14 +41,12 @@ export const ConfidenceRow = ({
           count: lowConfidenceCount,
           severity: ConfidenceBucket.LOW,
         },
-      ]}
-      renderItem={(item) =>
-        item.count > 0 && (
-          <List.Item>
-            <ConfidenceCard item={item} reviewHref={reviewHref} />
-          </List.Item>
-        )
-      }
+      ].filter((item) => item.count > 0)}
+      renderItem={(item) => (
+        <List.Item>
+          <ConfidenceCard item={item} reviewHref={reviewHref} />
+        </List.Item>
+      )}
     />
   );
 };
