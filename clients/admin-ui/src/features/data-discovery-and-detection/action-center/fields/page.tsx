@@ -88,7 +88,7 @@ const ActionCenterFields: NextPage = () => {
   const search = useSearch();
   const {
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     dataCategory,
     ...restMonitorFieldsFilters
   } = useMonitorFieldsFilters();
@@ -106,7 +106,7 @@ const ActionCenterFields: NextPage = () => {
       diff_status: resourceStatus
         ? resourceStatus.flatMap(intoDiffStatus)
         : undefined,
-      confidence_score: confidenceScore || undefined,
+      confidence_bucket: confidenceBucket || undefined,
       data_category: dataCategory || undefined,
     },
   };
@@ -249,7 +249,7 @@ const ActionCenterFields: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     selectedNodeKeys,
     search.searchQuery,
     dataCategory,
@@ -330,7 +330,7 @@ const ActionCenterFields: NextPage = () => {
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
-                  confidenceScore={confidenceScore}
+                  confidenceBucket={confidenceBucket}
                   dataCategory={dataCategory}
                   {...restMonitorFieldsFilters}
                   monitorId={monitorId}

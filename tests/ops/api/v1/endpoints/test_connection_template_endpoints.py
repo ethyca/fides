@@ -1051,6 +1051,12 @@ class TestGetConnectionSecretSchema:
                     "description": "The name of the specific database within the database server that you want to connect to.",
                     "type": "string",
                 },
+                "read_only_connection": {
+                    "default": False,
+                    "title": "Read Only Connection",
+                    "description": "Whether to connect to the database in read-only mode.",
+                    "type": "boolean",
+                },
             },
             "required": ["host", "username", "password"],
         }

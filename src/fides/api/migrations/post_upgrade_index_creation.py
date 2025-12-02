@@ -33,6 +33,9 @@ This means that after the constraint is created, the index will have the same na
 """
 
 POST_UPGRADE_INDEX_CREATION = "post_upgrade_index_creation"
+# This is the threshold for the number of rows in a table to create the index during application startup
+# The value follows the pattern established in migrations for the tables in the TABLE_OBJECT_MAP
+INDEX_ROW_COUNT_THRESHOLD = 1000000
 
 TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
     "currentprivacypreferencev2": [
@@ -90,6 +93,13 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         {
             "name": "ix_privacypreferencehistory_hashed_external_id",
             "statement": "CREATE INDEX CONCURRENTLY ix_privacypreferencehistory_hashed_external_id ON privacypreferencehistory (hashed_external_id)",
+            "type": "index",
+        },
+    ],
+    "providedidentity": [
+        {
+            "name": "ix_providedidentity_privacy_request_id",
+            "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_privacy_request_id ON providedidentity (privacy_request_id)",
             "type": "index",
         },
     ],
