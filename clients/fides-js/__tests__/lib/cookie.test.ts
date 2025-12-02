@@ -556,7 +556,7 @@ describe("cookies", () => {
       },
     );
 
-    describe("wildcard cookie removal", () => {
+    describe("wildcard cookies", () => {
       it("should remove cookies matching the wildcards", () => {
         mockGetCookie.mockReturnValue({
           _ga123: "test_value",
@@ -579,6 +579,18 @@ describe("cookies", () => {
           ["_ga123", undefined],
           ["foo_abc", undefined],
         ]);
+      });
+      it("should handle the wildcard anchors correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab123: "",
+          cab123: "",
+        } as any);
+        removeCookiesFromBrowser([
+          { name: "x[id]" },
+          { name: "ab[id]" },
+          { name: "y[id]" },
+        ]);
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", undefined]]);
       });
       it("should handle wildcard cookies with special characters", () => {
         const prefix = "^$[](){}\\|.*?-";

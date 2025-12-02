@@ -425,14 +425,14 @@ export const removeCookiesFromBrowser = (
 
   if (wildcardCookies.length > 0) {
     const pattern = new RegExp(
-      `^${wildcardCookies
+      `^(${wildcardCookies
         .map(
           (cookie) =>
             cookie.name
               .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
               .replace(/\\\[id\\\]/g, ".*?"), // Replace \[id\] with non-greedy wildcard
         )
-        .join("|")}$`,
+        .join("|")})$`,
     );
     Object.keys(cookies.get()).forEach((name) => {
       if (pattern.test(name)) {
