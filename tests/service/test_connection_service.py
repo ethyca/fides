@@ -1,7 +1,6 @@
 """Tests for ConnectionService including event auditing functionality."""
 
 import copy
-from re import A
 from textwrap import dedent
 from typing import Any, Dict
 
