@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3a1.post0.dev61"
+    "version": "2.74.3a1.post0.dev62"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20663,6 +20663,19 @@
             ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
+          },
+          "read_only_connection": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read Only Connection",
+            "description": "Whether to connect to the database in read-only mode.",
+            "default": false
           }
         },
         "type": "object",
