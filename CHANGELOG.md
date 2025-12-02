@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
 - Support for confidence level visual and filtering in action center [#7040](https://github.com/ethyca/fides/pull/7040)
+- Endpoints to pull SaaS integration configurations [#6868](https://github.com/ethyca/fides/pull/6868)
 
 ### Changed
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
