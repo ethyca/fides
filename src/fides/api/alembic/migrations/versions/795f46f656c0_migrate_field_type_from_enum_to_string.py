@@ -39,6 +39,15 @@ def upgrade():
         nullable=False,
     )
 
+    # Data migration: Convert old enum value 'string_list' to 'string[]'
+    op.execute(
+        """
+        UPDATE plus_custom_field_definition
+        SET field_type = 'string[]'
+        WHERE field_type = 'string_list'
+        """
+    )
+
     # Drop the unused enum type after the column has been converted
     op.execute(f'DROP TYPE IF EXISTS "{PG_ENUM_NAME}"')
     # ### end Alembic commands ###
