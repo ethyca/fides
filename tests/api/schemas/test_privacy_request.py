@@ -14,22 +14,22 @@ class TestPrivacyRequestBulkSelection:
     """Test the PrivacyRequestBulkSelection schema validation"""
 
     @pytest.mark.parametrize(
-        "request_ids,filters,exclude_ids,expected_request_ids,expected_filters,expected_exclude_ids",
+        "request_ids,filters,exclude_ids",
         [
             # Valid: explicit request_ids only
             (
                 ["req-1", "req-2", "req-3"],
                 None,
                 None,
-                ["req-1", "req-2", "req-3"],
+            ),
+            # Valid: request_ids with empty exclude_ids list (not considered as passed)
+            (
+                ["req-1"],
                 None,
-                None,
+                [],
             ),
             # Valid: filters only
             (
-                None,
-                PrivacyRequestFilter(status=PrivacyRequestStatus.pending),
-                None,
                 None,
                 PrivacyRequestFilter(status=PrivacyRequestStatus.pending),
                 None,
@@ -39,45 +39,12 @@ class TestPrivacyRequestBulkSelection:
                 None,
                 PrivacyRequestFilter(status=PrivacyRequestStatus.pending),
                 ["req-1", "req-2"],
-                None,
-                PrivacyRequestFilter(status=PrivacyRequestStatus.pending),
-                ["req-1", "req-2"],
             ),
             # Valid: empty filters with exclusions (select all except excluded)
             (
                 None,
                 PrivacyRequestFilter(),
                 ["req-1", "req-2"],
-                None,
-                PrivacyRequestFilter(),
-                ["req-1", "req-2"],
-            ),
-            # Valid: request_ids with exclude_ids=None
-            (
-                ["req-1"],
-                None,
-                None,
-                ["req-1"],
-                None,
-                None,
-            ),
-            # Valid: request_ids with empty exclude_ids list (not considered as passed)
-            (
-                ["req-1"],
-                None,
-                [],
-                ["req-1"],
-                None,
-                [],
-            ),
-            # Valid: request_ids with filters=None
-            (
-                ["req-1"],
-                None,
-                None,
-                ["req-1"],
-                None,
-                None,
             ),
         ],
     )
@@ -86,17 +53,14 @@ class TestPrivacyRequestBulkSelection:
         request_ids,
         filters,
         exclude_ids,
-        expected_request_ids,
-        expected_filters,
-        expected_exclude_ids,
     ):
         """Test valid PrivacyRequestBulkSelection configurations"""
         selection = PrivacyRequestBulkSelection(
             request_ids=request_ids, filters=filters, exclude_ids=exclude_ids
         )
-        assert selection.request_ids == expected_request_ids
-        assert selection.filters == expected_filters
-        assert selection.exclude_ids == expected_exclude_ids
+        assert selection.request_ids == request_ids
+        assert selection.filters == filters
+        assert selection.exclude_ids == exclude_ids
 
     @pytest.mark.parametrize(
         "request_ids,filters,exclude_ids,expected_error_msg",
