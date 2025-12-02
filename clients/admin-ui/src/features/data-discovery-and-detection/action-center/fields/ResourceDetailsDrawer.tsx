@@ -11,15 +11,17 @@ import {
   SparkleIcon,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import { useMemo } from "react";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
+import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 
 import { DetailsDrawer } from "./DetailsDrawer";
 import { DetailsDrawerProps } from "./DetailsDrawer/types";
 import { ACTION_ALLOWED_STATUSES } from "./FieldActions.const";
 import { MonitorResource } from "./types";
 import { useFieldActions } from "./useFieldActions";
+import { mapConfidenceBucketToSeverity } from "./utils";
 
 interface ResourceDetailsDrawerProps extends DetailsDrawerProps {
   resource?: MonitorResource;
@@ -36,6 +38,19 @@ export const ResourceDetailsDrawer = ({
   fieldActions,
   ...drawerProps
 }: ResourceDetailsDrawerProps) => {
+  const filteredClassifications = useMemo(() => {
+    if (!resource?.classifications) {
+      return [];
+    }
+    const preferredDataCategories =
+      "preferred_data_categories" in resource
+        ? (resource.preferred_data_categories ?? [])
+        : [];
+    return resource.classifications.filter((classification) =>
+      preferredDataCategories.includes(classification.label),
+    );
+  }, [resource]);
+
   return (
     <DetailsDrawer
       {...drawerProps}
@@ -112,11 +127,18 @@ export const ResourceDetailsDrawer = ({
                       />
                     </Form.Item>
                   </Form>
-                  {resource.classifications &&
-                    resource.classifications.length > 0 && (
-                      <List
-                        dataSource={resource.classifications}
-                        renderItem={(item) => (
+                  {filteredClassifications.length > 0 && (
+                    <List
+                      data-testid="classifications-reasoning-list"
+                      dataSource={filteredClassifications}
+                      renderItem={(item) => {
+                        const severity = item.confidence_bucket
+                          ? mapConfidenceBucketToSeverity(
+                              item.confidence_bucket,
+                            )
+                          : undefined;
+
+                        return (
                           <List.Item>
                             <List.Item.Meta
                               avatar={
@@ -132,17 +154,18 @@ export const ResourceDetailsDrawer = ({
                               title={
                                 <Flex align="center" gap="middle">
                                   <div>{item.label}</div>
-                                  <ClassifierProgress
-                                    percent={item.score * 100}
-                                  />
+                                  {severity && (
+                                    <SeverityGauge severity={severity} />
+                                  )}
                                 </Flex>
                               }
                               description={item.rationale}
                             />
                           </List.Item>
-                        )}
-                      />
-                    )}
+                        );
+                      }}
+                    />
+                  )}
                 </Flex>
               ),
             },

@@ -4,52 +4,92 @@ from typing import Optional, Union
 from pydantic import BaseModel, Field, field_validator
 
 
+class PrivacyRequestTopLevelFields(Enum):
+    """Top level fields for privacy request."""
+
+    privacy_request = "privacy_request"
+    policy = "privacy_request.policy"
+    identity = "privacy_request.identity"
+
+
+class PrivacyRequestPolicyConvenienceFields(Enum):
+    """Convenience fields for privacy request policy."""
+
+    rule_action_types = "rule_action_types"
+    has_access_rule = "has_access_rule"
+    has_erasure_rule = "has_erasure_rule"
+    has_consent_rule = "has_consent_rule"
+    has_update_rule = "has_update_rule"
+    rule_count = "rule_count"
+    rule_names = "rule_names"
+    has_storage_destination = "has_storage_destination"
+
+
+class PrivacyRequestLocationConvenienceFields(Enum):
+    """Convenience fields for privacy request location."""
+
+    location_country = "location_country"
+    location_groups = "location_groups"
+    location_regulations = "location_regulations"
+
+
 class PrivacyRequestConvenienceFields(Enum):
     """Convenience fields for privacy request."""
 
-    rule_action_types = "privacy_request.policy.rule_action_types"
-    has_access_rule = "privacy_request.policy.has_access_rule"
-    has_erasure_rule = "privacy_request.policy.has_erasure_rule"
-    has_consent_rule = "privacy_request.policy.has_consent_rule"
-    has_update_rule = "privacy_request.policy.has_update_rule"
-    rule_count = "privacy_request.policy.rule_count"
-    rule_names = "privacy_request.policy.rule_names"
-    has_storage_destination = "privacy_request.policy.has_storage_destination"
+    # Policy convenience fields
+    rule_action_types = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_action_types.value}"
+    has_access_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_access_rule.value}"
+    has_erasure_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_erasure_rule.value}"
+    has_consent_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_consent_rule.value}"
+    has_update_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_update_rule.value}"
+    rule_count = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_count.value}"
+    rule_names = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_names.value}"
+    has_storage_destination = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_storage_destination.value}"
+    # Location hierarchy convenience fields
+    location_country = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_country.value}"
+    location_groups = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_groups.value}"
+    location_regulations = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_regulations.value}"
 
 
 class PrivacyRequestFields(Enum):
     """Fields for privacy request."""
 
-    created_at = "privacy_request.created_at"
-    due_date = "privacy_request.due_date"
-    identity_verified_at = "privacy_request.identity_verified_at"
-    location = "privacy_request.location"
-    origin = "privacy_request.origin"
-    requested_at = "privacy_request.requested_at"
-    source = "privacy_request.source"
-    submitted_by = "privacy_request.submitted_by"
+    created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
+    due_date = f"{PrivacyRequestTopLevelFields.privacy_request.value}.due_date"
+    identity_verified_at = (
+        f"{PrivacyRequestTopLevelFields.privacy_request.value}.identity_verified_at"
+    )
+    location = f"{PrivacyRequestTopLevelFields.privacy_request.value}.location"
+    origin = f"{PrivacyRequestTopLevelFields.privacy_request.value}.origin"
+    requested_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.requested_at"
+    source = f"{PrivacyRequestTopLevelFields.privacy_request.value}.source"
+    submitted_by = f"{PrivacyRequestTopLevelFields.privacy_request.value}.submitted_by"
 
 
 class PolicyFields(Enum):
     """Fields for policy."""
 
     id = "privacy_request.policy.id"
-    name = "privacy_request.policy.name"
-    key = "privacy_request.policy.key"
-    description = "privacy_request.policy.description"
-    execution_timeframe = "privacy_request.policy.execution_timeframe"
-    rules = "privacy_request.policy.rules"
+    name = f"{PrivacyRequestTopLevelFields.policy.value}.name"
+    key = f"{PrivacyRequestTopLevelFields.policy.value}.key"
+    description = f"{PrivacyRequestTopLevelFields.policy.value}.description"
+    execution_timeframe = (
+        f"{PrivacyRequestTopLevelFields.policy.value}.execution_timeframe"
+    )
+    rules = f"{PrivacyRequestTopLevelFields.policy.value}.rules"
 
 
 class IdentityFields(Enum):
     """Fields for identity."""
 
-    email = "privacy_request.identity.email"
-    phone_number = "privacy_request.identity.phone_number"
-    external_id = "privacy_request.identity.external_id"
-    fides_user_device_id = "privacy_request.identity.fides_user_device_id"
-    ljt_readerID = "privacy_request.identity.ljt_readerID"
-    ga_client_id = "privacy_request.identity.ga_client_id"
+    email = f"{PrivacyRequestTopLevelFields.identity.value}.email"
+    phone_number = f"{PrivacyRequestTopLevelFields.identity.value}.phone_number"
+    external_id = f"{PrivacyRequestTopLevelFields.identity.value}.external_id"
+    fides_user_device_id = (
+        f"{PrivacyRequestTopLevelFields.identity.value}.fides_user_device_id"
+    )
+    ljt_readerID = f"{PrivacyRequestTopLevelFields.identity.value}.ljt_readerID"
+    ga_client_id = f"{PrivacyRequestTopLevelFields.identity.value}.ga_client_id"
 
 
 class ConditionalDependencyFieldType(Enum):

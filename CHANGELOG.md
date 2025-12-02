@@ -23,11 +23,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
+- Support for confidence level visual and filtering in action center [#7040](https://github.com/ethyca/fides/pull/7040)
 
 ### Changed
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
 - Duplicate DSRs now log with skipped instead of error [#7034](https://github.com/ethyca/fides/pull/7034)
 - Added an index on providedidentity.privacy_request_id to reduce table scans [#7035](https://github.com/ethyca/fides/pull/7035) https://github.com/ethyca/fides/labels/db-migration
+- Updated tree status indicator component [#7048](https://github.com/ethyca/fides/pull/7048)
+- Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
+- Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
 
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
@@ -37,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated promote endpoints to return MonitorActionResponse type [#7004](https://github.com/ethyca/fides/pull/7004)
 - Set max width for Action center classification dropdown [#7015](https://github.com/ethyca/fides/pull/7015)
+- Hide LLM reasoning for data categories removed from resources [#7028](https://github.com/ethyca/fides/pull/7028)
 
 ### Developer Experience
 - Migrated User Management table from Chakra to Ant Design [#7013](https://github.com/ethyca/fides/pull/7013)
