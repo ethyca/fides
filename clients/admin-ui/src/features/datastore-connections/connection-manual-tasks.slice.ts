@@ -48,7 +48,7 @@ export const connectionManualTasksApi = baseApi.injectEndpoints({
         url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-task/dependency-conditions/privacy-request-fields`,
         method: "GET",
       }),
-      providesTags: () => ["Manual Tasks"],
+      providesTags: () => ["Allowed Conditions Fields"],
     }),
   }),
 });
