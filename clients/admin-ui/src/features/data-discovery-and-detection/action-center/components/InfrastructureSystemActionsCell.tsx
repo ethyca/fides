@@ -14,7 +14,7 @@ import {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   usePromoteIdentityProviderMonitorResultMutation,
 } from "../../discovery-detection.slice";
-import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
+import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 
 interface InfrastructureSystemActionsCellProps {
   monitorId: string;
