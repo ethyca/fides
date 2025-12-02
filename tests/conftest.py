@@ -784,6 +784,15 @@ def celery_use_virtual_worker(celery_session_worker):
     """
     yield celery_session_worker
 
+    # Explicitly terminate the worker to prevent shutdown hangs in CI.
+    # We use terminate() which is more aggressive than stop() and helps
+    # ensure the worker thread exits even if tasks are stuck.
+    if celery_session_worker is not None:
+        try:
+            celery_session_worker.terminate()
+        except Exception:
+            pass  # Worker may already be stopping
+
 
 @pytest.fixture(scope="session")
 def run_privacy_request_task(celery_session_app):
