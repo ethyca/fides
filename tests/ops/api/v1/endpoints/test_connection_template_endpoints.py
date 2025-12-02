@@ -18,11 +18,15 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.common.api.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
+    CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
+    CONNECTOR_TEMPLATES,
+    CONNECTOR_TEMPLATES_CONFIG,
+    CONNECTOR_TEMPLATES_DATASET,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
@@ -1711,7 +1715,7 @@ class TestInstantiateConnectionFromTemplate:
 
     def test_instantiate_connection_not_authenticated(self, api_client, base_url):
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers={}
+            base_url.format(connector_template_type="mailchimp"), headers={}
         )
         assert resp.status_code == 401
 
@@ -1720,7 +1724,7 @@ class TestInstantiateConnectionFromTemplate:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers=auth_header
+            base_url.format(connector_template_type="mailchimp"), headers=auth_header
         )
         assert resp.status_code == 403
 
@@ -1736,7 +1740,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "unsupported_connector",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="does_not_exist"),
+            base_url.format(connector_template_type="does_not_exist"),
             headers=auth_header,
             json=request_body,
         )
@@ -1762,7 +1766,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1789,7 +1793,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1823,7 +1827,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": connection_config.key,
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1849,7 +1853,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "brand_new_key",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1872,7 +1876,7 @@ class TestInstantiateConnectionFromTemplate:
             "description": "Mailchimp ConnectionConfig description",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1907,7 +1911,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1939,7 +1943,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1987,7 +1991,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -2029,3 +2033,81 @@ class TestInstantiateConnectionFromTemplate:
         dataset_config.delete(db)
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
+
+
+class TestConnectorTemplateEndpoints:
+    """Tests for the new plural connector-templates endpoints"""
+
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES
+
+    def test_get_all_connector_templates_not_authenticated(self, api_client, url):
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_all_connector_templates_wrong_scope(
+        self, api_client, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_all_connector_templates(self, api_client, url, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert isinstance(data, list)
+        assert len(data) == len(ConnectorRegistry.connector_types())
+
+        # Verify structure of responses
+        for item in data:
+            assert "type" in item
+            assert "name" in item
+            assert "supported_actions" in item
+            assert "category" in item
+            assert "custom" in item
+            assert isinstance(item["custom"], bool)
+            assert isinstance(item["supported_actions"], list)
+
+        # Find a specific connector template to verify data
+        mailchimp_template = next(
+            (item for item in data if item["type"] == MAILCHIMP), None
+        )
+        assert mailchimp_template is not None
+        assert mailchimp_template["custom"] is False  # Built-in connector
+        assert len(mailchimp_template["supported_actions"]) > 0
+
+    def test_config_endpoint(self, api_client, generate_auth_header):
+        """Test config endpoint returns YAML"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
+            connector_template_type=HUBSPOT
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "text/yaml; charset=utf-8"
+        assert len(resp.content) > 0
+
+    def test_dataset_endpoint(self, api_client, generate_auth_header):
+        """Test dataset endpoint returns YAML"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_DATASET.format(
+            connector_template_type=HUBSPOT
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "text/yaml; charset=utf-8"
+        assert len(resp.content) > 0
+
+    def test_connector_template_not_found(self, api_client, generate_auth_header):
+        """Test that requesting a non-existent template returns 404"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
+            connector_template_type="nonexistent_connector"
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 404
+        assert "No connector template found" in resp.json()["detail"]
