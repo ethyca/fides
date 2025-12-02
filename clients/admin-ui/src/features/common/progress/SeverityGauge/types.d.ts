@@ -15,7 +15,7 @@ export type Severity = "low" | "medium" | "high";
 export type SeverityGaugeProps = {
   severity: Severity;
   labels?: Record<Severity, string>;
-  flexProps?: FlexProps;
+  flexProps?: Omit<FlexProps, "children">;
   textProps?: ComponentProps<Text>;
   progressProps?: ProgressProps;
 };
