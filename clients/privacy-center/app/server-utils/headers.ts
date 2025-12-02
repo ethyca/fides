@@ -89,8 +89,11 @@ export function applyResponseHeaders(
   headerDefinitions: HeaderDefinition[],
   response: NextResponse,
 ): void {
-  // Docs say that we shouldn't do this, but we have historically been doing
-  // it since at least the logging changes. Should we change this?
+  // We use request headers as a context-passing mechanism between the context
+  // handler and value handler. While Next.js docs caution about forwarding headers
+  // upstream (they may be forwarded to external services), we're only setting
+  // internally-generated headers that are safe to forward.
+  // See: https://nextjs.org/docs/pages/api-reference/functions/next-response#next
   const context = new Headers(middlewareResponseInitializer.request.headers);
   headerDefinitions.forEach((headerDefinition) => {
     if (Array.isArray(headerDefinition)) {
