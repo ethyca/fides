@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
 - Duplicate DSRs now log with skipped instead of error [#7034](https://github.com/ethyca/fides/pull/7034)
 - Added an index on providedidentity.privacy_request_id to reduce table scans [#7035](https://github.com/ethyca/fides/pull/7035) https://github.com/ethyca/fides/labels/db-migration
+- Updated tree status indicator component [#7048](https://github.com/ethyca/fides/pull/7048)
 - Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
 
