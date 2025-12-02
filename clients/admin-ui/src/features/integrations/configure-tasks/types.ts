@@ -15,4 +15,7 @@ export interface PrivacyRequestFieldsResponse {
   };
 }
 
-export type FieldSource = "dataset" | "privacy_request";
+export enum FieldSource {
+  DATASET = "dataset",
+  PRIVACY_REQUEST = "privacy_request",
+}

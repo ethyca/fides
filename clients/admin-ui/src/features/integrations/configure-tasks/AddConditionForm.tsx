@@ -15,6 +15,7 @@ import { ConditionLeaf, Operator } from "~/types/api";
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
 import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicker";
 import { FieldSource } from "./types";
+import { getInitialFieldSource } from "./utils";
 
 interface FormValues {
   fieldAddress: string;
@@ -71,20 +72,8 @@ const AddConditionForm = ({
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
 
-  // Determine initial field source based on editing condition
-  const getInitialFieldSource = (): FieldSource => {
-    if (editingCondition?.field_address) {
-      // Privacy request fields start with "privacy_request."
-      // Dataset fields contain ":"
-      return editingCondition.field_address.startsWith("privacy_request.")
-        ? "privacy_request"
-        : "dataset";
-    }
-    return "dataset";
-  };
-
   const [fieldSource, setFieldSource] = useState<FieldSource>(
-    getInitialFieldSource(),
+    getInitialFieldSource(editingCondition),
   );
 
   // Operator options for the select dropdown
@@ -106,13 +95,13 @@ const AddConditionForm = ({
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
-        fieldSource: getInitialFieldSource(),
+        fieldSource: getInitialFieldSource(editingCondition),
         fieldAddress: editingCondition.field_address,
         operator: editingCondition.operator,
         value: editingCondition.value?.toString() || "",
       }
     : {
-        fieldSource: "dataset" as FieldSource,
+        fieldSource: FieldSource.DATASET,
       };
 
   const handleSubmit = useCallback(
@@ -131,7 +120,7 @@ const AddConditionForm = ({
 
   const handleCancel = useCallback(() => {
     form.resetFields();
-    setFieldSource("dataset");
+    setFieldSource(FieldSource.DATASET);
     onCancel();
   }, [form, onCancel]);
 
@@ -177,12 +166,12 @@ const AddConditionForm = ({
       >
         <Radio.Group onChange={handleFieldSourceChange}>
           <Radio
-            value="privacy_request"
+            value={FieldSource.PRIVACY_REQUEST}
             data-testid="field-source-privacy-request"
           >
             Privacy request field
           </Radio>
-          <Radio value="dataset" data-testid="field-source-dataset">
+          <Radio value={FieldSource.DATASET} data-testid="field-source-dataset">
             Dataset field
           </Radio>
         </Radio.Group>
@@ -193,13 +182,13 @@ const AddConditionForm = ({
         label="Field"
         rules={[{ required: true, message: "Field is required" }]}
         tooltip={
-          fieldSource === "dataset"
+          fieldSource === FieldSource.DATASET
             ? "Select a field from your datasets to use in the condition"
             : "Select a privacy request field to use in the condition"
         }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        {fieldSource === "dataset" ? (
+        {fieldSource === FieldSource.DATASET ? (
           <DatasetReferencePicker />
         ) : (
           <PrivacyRequestFieldPicker connectionKey={connectionKey} />

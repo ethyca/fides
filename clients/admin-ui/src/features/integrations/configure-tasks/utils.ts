@@ -1,4 +1,20 @@
-import { PrivacyRequestFieldDefinition } from "./types";
+import { ConditionLeaf } from "~/types/api";
+
+import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
+
+// Determine field source based on editing condition
+export const getInitialFieldSource = (
+  editingCondition?: ConditionLeaf | null,
+): FieldSource => {
+  if (editingCondition?.field_address) {
+    // Privacy request fields start with "privacy_request."
+    // Dataset fields contain ":"
+    return editingCondition.field_address.startsWith("privacy_request.")
+      ? FieldSource.PRIVACY_REQUEST
+      : FieldSource.DATASET;
+  }
+  return FieldSource.DATASET;
+};
 
 // Allowlist of fields to expose in the UI
 // The backend supports many more fields, but that would overwhelm the user with too many options
