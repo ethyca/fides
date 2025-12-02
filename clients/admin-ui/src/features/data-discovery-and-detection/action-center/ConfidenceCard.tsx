@@ -28,9 +28,15 @@ interface ConfidenceCardProps {
 }
 
 const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
-  // TODO: [ENG-2000] update query params to include the confidence level
   const actions = [
-    <NextLink href={reviewHref} passHref key={item.label}>
+    <NextLink
+      href={{
+        pathname: reviewHref,
+        query: { confidenceBucket: item.severity },
+      }}
+      passHref
+      key={item.label}
+    >
       <Button
         type="text"
         size="small"
