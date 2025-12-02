@@ -36,6 +36,7 @@ import {
   TREE_NODE_SKELETON_KEY_PREFIX,
   TREE_PAGE_SIZE,
 } from "./MonitorFields.const";
+import styles from "./MonitorTree.module.scss";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
 import {
   collectAllDescendantUrns,
@@ -590,7 +591,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           showIcon
           showLine
           blockNode
-          rootClassName="h-full overflow-x-hidden"
+          rootClassName={`h-full overflow-x-hidden ${styles["monitor-tree"]}`}
           // eslint-disable-next-line react/no-unstable-nested-components
           titleRender={(node) => (
             <MonitorTreeDataTitle

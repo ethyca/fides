@@ -126,7 +126,7 @@ export const MonitorTreeDataTitle = ({
         }}
         onOpenChange={asyncGetActions}
         destroyOnHidden
-        className="group flex-none"
+        className="group mr-1 flex-none"
       >
         <Button
           aria-label="Show More Resource Actions"
