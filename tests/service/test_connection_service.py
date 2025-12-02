@@ -895,25 +895,25 @@ class TestConnectionService:
         assert ctl_dataset.fides_key == "test_instance_key"
 
         # Verify fields
-        products = next(c for c in ctl_dataset.collections if c.name == "products")
-        fields_map = {f.name: f for f in products.fields}
+        products = next(c for c in ctl_dataset.collections if c["name"] == "products")
+        fields_map = {f["name"]: f for f in products["fields"]}
 
         assert (
-            fields_map["product_id"].fides_meta.data_type
+            fields_map["product_id"]["fides_meta"]["data_type"]
             == expected_attributes["product_id_type"]
         )
         assert (
-            fields_map["customer_id"].data_categories
+            fields_map["customer_id"]["data_categories"]
             == expected_attributes["customer_id_category"]
         )
 
-        address_fields = {f.name: f for f in fields_map["address"].fields}
+        address_fields = {f["name"]: f for f in fields_map["address"]["fields"]}
         assert (
-            address_fields["city"].data_categories
+            address_fields["city"]["data_categories"]
             == expected_attributes["city_category"]
         )
         assert (
-            address_fields["street"].data_categories
+            address_fields["street"]["data_categories"]
             == expected_attributes["street_category"]
         )
 
