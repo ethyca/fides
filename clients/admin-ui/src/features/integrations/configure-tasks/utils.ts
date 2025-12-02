@@ -76,18 +76,12 @@ export const formatFieldDisplay = (fieldAddress: string): string => {
     if (parts.length >= 3) {
       const category = parts[1]; // "policy", "identity", etc.
       const field = parts.slice(2).join("."); // "name", "has_access_rule", etc.
-      const formattedField = field
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+      const formattedField = formatFieldLabel(`privacy_request.${field}`);
       return `${category.charAt(0).toUpperCase() + category.slice(1)}: ${formattedField}`;
     }
     // Top-level fields like "created_at"
     const field = parts.slice(1).join(".");
-    return field
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+    return formatFieldLabel(`privacy_request.${field}`);
   }
   return fieldAddress;
 };
