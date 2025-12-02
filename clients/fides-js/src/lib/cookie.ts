@@ -430,7 +430,7 @@ export const removeCookiesFromBrowser = (
           (cookie) =>
             cookie.name
               .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
-              .replace(/\\\[id\\\]/g, ".*?"), // Replace \[id\] with non-greedy wildcard
+              .replace(/\\\[id\\\]/g, ".+?"), // Replace \[id\] with non-greedy wildcard
         )
         .join("|")})$`,
     );

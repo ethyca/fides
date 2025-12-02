@@ -592,6 +592,14 @@ describe("cookies", () => {
         ]);
         expect(mockRemoveCookie.mock.calls).toEqual([["ab123", undefined]]);
       });
+      it("should handle prefix-only cookies correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab: "",
+          ab123: "",
+        } as any);
+        removeCookiesFromBrowser([{ name: "ab[id]" }]);
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", undefined]]);
+      });
       it("should handle wildcard cookies with special characters", () => {
         const prefix = "^$[](){}\\|.*?-";
         mockGetCookie.mockReturnValue({
