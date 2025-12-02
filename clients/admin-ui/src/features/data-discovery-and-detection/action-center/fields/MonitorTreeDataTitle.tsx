@@ -105,8 +105,8 @@ export const MonitorTreeDataTitle = ({
 
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
-    <Flex gap={4} align="center" className="group ml-1 inline-flex">
-      <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
+    <Flex gap={4} align="center" className="group ml-1 flex grow">
+      <Text ellipsis={{ tooltip: node.title }} className="grow">
         {node.title}
       </Text>
       <Dropdown
@@ -126,7 +126,7 @@ export const MonitorTreeDataTitle = ({
         }}
         onOpenChange={asyncGetActions}
         destroyOnHidden
-        className="group"
+        className="group flex-none"
       >
         <Button
           aria-label="Show More Resource Actions"
