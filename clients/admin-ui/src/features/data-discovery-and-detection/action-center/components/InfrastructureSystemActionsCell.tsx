@@ -30,7 +30,6 @@ export const InfrastructureSystemActionsCell = ({
   monitorId,
   system,
   allowIgnore,
-  onTabChange: _onTabChange,
   addIcon = <Icons.Checkmark />,
   ignoreIcon = <Icons.ViewOff />,
   onPromoteSuccess,
