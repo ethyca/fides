@@ -72,7 +72,11 @@ const monitorFieldApi = baseApi.injectEndpoints({
           body,
         };
       },
-      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+      invalidatesTags: [
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Discovery Monitor Results",
+      ],
     }),
     getAllowedActions: build.query<
       AllowedActionsResponse,

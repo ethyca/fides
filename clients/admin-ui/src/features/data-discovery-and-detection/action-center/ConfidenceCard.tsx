@@ -8,12 +8,14 @@ import {
   SparkleIcon,
 } from "fidesui";
 import NextLink from "next/link";
+import { ReactNode } from "react";
 
 import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { nFormatter, pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { ConfidenceLevelLabel } from "./constants";
+import { useConfirmAllFields } from "./fields/useConfirmAllFields";
 import { mapConfidenceBucketToSeverity } from "./fields/utils";
 
 interface ConfidenceCardItem {
@@ -25,10 +27,21 @@ interface ConfidenceCardItem {
 interface ConfidenceCardProps {
   item: ConfidenceCardItem;
   reviewHref: string;
+  monitorId: string;
 }
 
-const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
-  const actions = [
+interface GetActionsParams {
+  item: ConfidenceCardItem;
+  reviewHref: string;
+  onConfirmAll?: () => void;
+}
+
+const getActions = ({
+  item,
+  reviewHref,
+  onConfirmAll,
+}: GetActionsParams): ReactNode[] => {
+  const actions: ReactNode[] = [
     <NextLink
       href={{
         pathname: reviewHref,
@@ -47,14 +60,15 @@ const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
       </Button>
     </NextLink>,
   ];
-  if (item.label === ConfidenceLevelLabel.HIGH) {
-    // TODO: [ENG-2000] add confirm action
+  if (item.label === ConfidenceLevelLabel.HIGH && onConfirmAll) {
     actions.push(
       <Button
+        key="confirm"
         type="text"
         size="small"
         icon={<Icons.CheckmarkOutline />}
         aria-label={`Confirm all ${item.label} fields`}
+        onClick={onConfirmAll}
       >
         Confirm
       </Button>,
@@ -63,26 +77,43 @@ const getActions = (item: ConfidenceCardItem, reviewHref: string) => {
   return actions;
 };
 
-export const ConfidenceCard = ({ item, reviewHref }: ConfidenceCardProps) => {
+export const ConfidenceCard = ({
+  item,
+  reviewHref,
+  monitorId,
+}: ConfidenceCardProps) => {
   const severity = mapConfidenceBucketToSeverity(item.severity);
+  const { confirmAll, contextHolder } = useConfirmAllFields(monitorId);
+
+  const handleConfirmAll = () => {
+    confirmAll(item.severity, item.count);
+  };
 
   return (
-    <Card
-      size="small"
-      styles={{ body: { display: "none" } }}
-      title={
-        <Space>
-          <Avatar size={24} icon={<SparkleIcon color="black" />} />
-          <Text type="secondary" className="font-normal">
-            {nFormatter(item.count)} {pluralize(item.count, "field", "fields")}
-          </Text>
-          <Text>{item.label}</Text>
-          {severity && (
-            <SeverityGauge severity={severity} format={() => null} />
-          )}
-        </Space>
-      }
-      actions={getActions(item, reviewHref)}
-    />
+    <>
+      {contextHolder}
+      <Card
+        size="small"
+        styles={{ body: { display: "none" } }}
+        title={
+          <Space>
+            <Avatar size={24} icon={<SparkleIcon color="black" />} />
+            <Text type="secondary" className="font-normal">
+              {nFormatter(item.count)}{" "}
+              {pluralize(item.count, "field", "fields")}
+            </Text>
+            <Text>{item.label}</Text>
+            {severity && (
+              <SeverityGauge severity={severity} format={() => null} />
+            )}
+          </Space>
+        }
+        actions={getActions({
+          item,
+          reviewHref,
+          onConfirmAll: handleConfirmAll,
+        })}
+      />
+    </>
   );
 };

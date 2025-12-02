@@ -137,7 +137,7 @@ export const MonitorResult = ({
               {actions}
             </Col>
           </Row>
-          {monitorType === MONITOR_TYPES.DATASTORE && !!updates && (
+          {monitorType === MONITOR_TYPES.DATASTORE && !!updates && !!key && (
             <ConfidenceRow
               highConfidenceCount={
                 (updates as DatastoreMonitorUpdates)
@@ -152,6 +152,7 @@ export const MonitorResult = ({
                   .classified_low_confidence ?? 0
               }
               reviewHref={href}
+              monitorId={key}
             />
           )}
         </Flex>
