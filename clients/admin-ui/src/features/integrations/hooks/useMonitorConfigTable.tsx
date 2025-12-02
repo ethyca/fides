@@ -256,7 +256,7 @@ export const useMonitorConfigTable = ({
       statusColumn,
       actionsColumn,
     ];
-  }, [integration.secrets, isWebsiteMonitor, onEditMonitor]);
+  }, [integration.secrets, isWebsiteMonitor, onEditMonitor, isOktaIntegration]);
 
   return {
     // Table state and data
