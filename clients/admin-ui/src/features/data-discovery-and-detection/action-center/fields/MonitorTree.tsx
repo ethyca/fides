@@ -1,7 +1,9 @@
 import {
+  AntBadge as Badge,
   AntButton as Button,
   AntFlex as Flex,
   AntTitle as Title,
+  AntTooltip as Tooltip,
   AntTree as Tree,
   SparkleIcon,
 } from "fidesui";
@@ -30,6 +32,7 @@ import {
 
 import {
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
+  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_LOAD_MORE_TEXT,
   TREE_NODE_SKELETON_KEY_PREFIX,
@@ -54,12 +57,29 @@ const mapResponseToTreeData = (
           treeNode.resource_type as StagedResourceTypeValue
         ]
       : undefined;
+    const statusInfo = treeNode.update_status
+      ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[
+          treeNode.update_status
+        ]
+      : undefined;
+
     return {
       title: treeNode.name,
       key: treeNode.urn,
       selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
       icon: IconComponent
-        ? () => <IconComponent className="h-full" />
+        ? () => (
+            <Tooltip title={statusInfo?.tooltip}>
+              <Badge
+                className="h-full"
+                offset={[0, 5]}
+                color={statusInfo?.color}
+                dot={!!treeNode.update_status}
+              >
+                <IconComponent className="h-full" />
+              </Badge>
+            </Tooltip>
+          )
         : undefined,
       status: treeNode.update_status,
       isLeaf:
