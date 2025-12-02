@@ -6,7 +6,11 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import Policy as PolicySchema
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
+    get_location_convenience_fields,
     get_policy_convenience_fields,
+)
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestLocationConvenienceFields,
 )
 from fides.api.task.conditional_dependencies.util import (
     extract_nested_field_value,
@@ -35,6 +39,9 @@ class PrivacyRequestDataTransformer:
         self.identity_data = self.privacy_request.get_persisted_identity()
         self.custom_privacy_request_fields_data = (
             self.privacy_request.get_persisted_custom_privacy_request_fields()
+        )
+        self.location_convenience_fields = get_location_convenience_fields(
+            privacy_request.location
         )
 
     def to_evaluation_data(self, field_addresses: set[str]) -> dict[str, Any]:
@@ -72,6 +79,14 @@ class PrivacyRequestDataTransformer:
         # first part will always be privacy_request
         parts: list[str] = field_address.split(".")[1:]
         current: Any = self.privacy_request
+
+        # Handle location convenience fields - these are derived fields, not direct attributes
+        # Check if we're accessing a location convenience field before trying to extract from privacy_request
+
+        if len(parts) == 1 and parts[0] in [
+            e.value for e in PrivacyRequestLocationConvenienceFields
+        ]:
+            return self.location_convenience_fields.get(parts[0])
 
         # Track the identity object if we're extracting from identity
         if parts[0] == "policy":
