@@ -13,7 +13,7 @@ import {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { DiffStatus, Field, StagedResourceTypeValue } from "~/types/api";
+import { DiffStatus, Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
@@ -68,14 +68,10 @@ export const useFieldActions = (
         field?: Partial<Field>,
       ) => Promise<RTKResult>,
     ) =>
-    async (
-      urns: string[],
-      type?: `${StagedResourceTypeValue}`,
-      field?: Partial<Field>,
-    ) => {
+    async (urns: string[], primitive = true, field?: Partial<Field>) => {
       const key = Date.now();
       const confirmed =
-        (urns.length === 1 && type === StagedResourceTypeValue.FIELD) ||
+        (urns.length === 1 && !primitive) ||
         (await modalApi.confirm(
           getActionModalProps(
             FIELD_ACTION_LABEL[actionType],
@@ -194,7 +190,7 @@ export const useFieldActions = (
     FieldActionType,
     (
       urns: string[],
-      type?: `${StagedResourceTypeValue}`,
+      primitive?: boolean,
       field?: Partial<Field>,
     ) => Promise<void> | void
   >;

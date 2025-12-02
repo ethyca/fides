@@ -310,7 +310,7 @@ const ActionCenterFields: NextPage = () => {
 
                       return !result.data?.allowed_actions.includes(action);
                     },
-                    callback: (key) => fieldActions[action]([key]),
+                    callback: (key) => fieldActions[action]([key], false),
                   },
                 ]),
               )
@@ -393,7 +393,6 @@ const ActionCenterFields: NextPage = () => {
                               selectedListItems.map(({ itemKey }) =>
                                 itemKey.toString(),
                               ),
-                              "Field",
                             );
                           }
 
@@ -516,7 +515,7 @@ const ActionCenterFields: NextPage = () => {
                   onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], "Field", {
+                    fieldActions["assign-categories"]([urn], true, {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
@@ -533,9 +532,7 @@ const ActionCenterFields: NextPage = () => {
                           <Button
                             aria-label={FIELD_ACTION_LABEL[action]}
                             icon={FIELD_ACTION_ICON[action]}
-                            onClick={() =>
-                              fieldActions[action]([props.urn], "Field")
-                            }
+                            onClick={() => fieldActions[action]([props.urn])}
                             disabled={
                               props?.diff_status
                                 ? !ACTION_ALLOWED_STATUSES[action].some(
@@ -592,7 +589,7 @@ const ActionCenterFields: NextPage = () => {
           : DEFAULT_DRAWER_ACTIONS
         ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
-          callback: (key) => fieldActions[action]([key], "Field"),
+          callback: (key) => fieldActions[action]([key]),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
                 (status) => status === resource.diff_status,
