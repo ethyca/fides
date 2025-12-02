@@ -1,9 +1,4 @@
-import {
-  AntFlexProps as FlexProps,
-  AntProgressProps as ProgressProps,
-  AntText as Text,
-} from "fidesui";
-import { ComponentProps } from "react";
+import { AntProgressProps as ProgressProps } from "fidesui";
 
 export type DynamicProgressProps = Pick<
   ProgressProps,
@@ -12,10 +7,7 @@ export type DynamicProgressProps = Pick<
 
 export type Severity = "low" | "medium" | "high";
 
-export type SeverityGaugeProps = {
+export interface SeverityGaugeProps extends ProgressProps {
   severity: Severity;
   labels?: Record<Severity, string>;
-  flexProps?: Omit<FlexProps, "children">;
-  textProps?: ComponentProps<Text>;
-  progressProps?: ProgressProps;
-};
+}
