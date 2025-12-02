@@ -3,12 +3,9 @@ import {
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
-  AntTooltip as Tooltip,
-  Icons,
 } from "fidesui";
 
 import {
-  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
@@ -83,21 +80,11 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
-  const statusInfo = node.status
-    ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[node.status]
-    : null;
-
   return (
     <Flex gap={4} align="center" className="inline-flex">
-      {statusInfo && (
-        <Tooltip title={statusInfo.tooltip}>
-          <Icons.CircleSolid
-            className="size-2"
-            style={{ color: statusInfo.color }}
-          />
-        </Tooltip>
-      )}
-      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
+      <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
+        {node.title}
+      </Text>
     </Flex>
   );
 };
