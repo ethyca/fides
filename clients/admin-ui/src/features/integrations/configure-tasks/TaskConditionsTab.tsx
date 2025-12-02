@@ -21,6 +21,7 @@ import { ConditionLeaf } from "~/types/api";
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
 import { useSaveConditions } from "./hooks/useSaveConditions";
+import { formatFieldDisplay } from "./utils";
 
 const { Paragraph, Text } = Typography;
 
@@ -261,7 +262,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 <Flex gap={8} align="center" className="font-normal">
                   <div className="max-w-[300px]">
                     <Tooltip title={condition.field_address}>
-                      <Text>{condition.field_address.split(":").pop()}</Text>
+                      <Text>{formatFieldDisplay(condition.field_address)}</Text>
                     </Tooltip>
                   </div>
                   <Tag color="sandstone">
@@ -288,6 +289,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
+        connectionKey={connectionKey}
       />
 
       <ConfirmationModal
