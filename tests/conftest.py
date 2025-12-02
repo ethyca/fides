@@ -765,6 +765,16 @@ def celery_enable_logging():
     return True
 
 
+@pytest.fixture(scope="session")
+def celery_worker_parameters():
+    """Configure celery worker parameters for testing.
+
+    Increase shutdown_timeout to avoid flaky test failures when the worker
+    takes longer to shut down, especially during parallel test runs with pytest-xdist.
+    """
+    return {"shutdown_timeout": 30.0}
+
+
 @pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
