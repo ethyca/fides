@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset as FideslangDataset
@@ -16,7 +16,7 @@ from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -28,12 +28,17 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.connectors.saas.connector_registry_service import ConnectorRegistry
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
+
+if TYPE_CHECKING:
+    from fides.service.connection.connection_service import ConnectionService
 
 
 class DatasetFilter(NodeFilter):
@@ -52,8 +57,9 @@ class DatasetFilter(NodeFilter):
 
 
 class DatasetConfigService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, connection_service: Optional["ConnectionService"] = None):
         self.db = db
+        self.connection_service = connection_service
 
     def create_or_update_dataset_config(
         self,
@@ -135,10 +141,16 @@ class DatasetConfigService:
             if error:
                 failed.append(error)
 
-        return BulkPutDataset(
+        result = BulkPutDataset(
             succeeded=created_or_updated,
             failed=failed,
         )
+
+        # Trigger SaaS instance update if we have successful updates and this is a SaaS connection
+        if created_or_updated and self.connection_service and self._should_trigger_saas_update(connection_config):
+            self._trigger_saas_instance_update(connection_config)
+
+        return result
 
     def validate_dataset_config(
         self, connection_config: ConnectionConfig, dataset: FideslangDataset
@@ -281,6 +293,48 @@ class DatasetConfigService:
                 logger.error(f"Error running test access request: {exc}")
 
         return privacy_request
+
+    def _should_trigger_saas_update(self, connection_config: ConnectionConfig) -> bool:
+        """
+        Determine if we should trigger a SaaS instance update for this connection.
+        Only trigger for SaaS connections that have a valid connector template.
+        """
+        if connection_config.connection_type != ConnectionType.saas:
+            return False
+
+        if not connection_config.saas_config:
+            return False
+
+        try:
+            saas_config = SaaSConfig.model_validate(connection_config.saas_config)
+            connector_template = ConnectorRegistry.get_connector_template(saas_config.type)
+            return connector_template is not None
+        except Exception as e:
+            logger.warning(f"Could not validate SaaS config for connection {connection_config.key}: {e}")
+            return False
+
+    def _trigger_saas_instance_update(self, connection_config: ConnectionConfig) -> None:
+        """
+        Trigger the SaaS instance update for the given connection config.
+        This will update both the SaaS config and dataset configurations based on the latest template.
+        """
+        try:
+            saas_config = SaaSConfig.model_validate(connection_config.saas_config)
+            connector_template = ConnectorRegistry.get_connector_template(saas_config.type)
+
+            if connector_template:
+                logger.info(f"Triggering SaaS instance update for connection {connection_config.key}")
+                self.connection_service.update_saas_instance(  # type: ignore[union-attr]
+                    connection_config=connection_config,
+                    template=connector_template,
+                    saas_config_instance=saas_config,
+                )
+                logger.info(f"Successfully updated SaaS instance for connection {connection_config.key}")
+            else:
+                logger.warning(f"No connector template found for SaaS type {saas_config.type}")
+
+        except Exception as e:
+            logger.error(f"Error triggering SaaS instance update for connection {connection_config.key}: {e}")
 
 
 def replace_references_with_identities(

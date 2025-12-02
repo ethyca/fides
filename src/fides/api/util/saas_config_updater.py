@@ -45,8 +45,6 @@ def update_saas_configs(db: Session) -> None:
             dataset_json=template_dataset_json,
         )
 
-        saas_config = SaaSConfig(**load_config_from_string(template.config))
-        template_version: Version = parse_version(saas_config.version)
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
             conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
@@ -55,22 +53,14 @@ def update_saas_configs(db: Session) -> None:
             saas_config_instance = SaaSConfig.model_validate(
                 connection_config.saas_config
             )
-            if parse_version(saas_config_instance.version) < template_version:
-                logger.info(
-                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
-                    saas_config_instance.fides_key,
-                    connector_type,
-                    saas_config_instance.version,
-                    template_version,
+            try:
+                saas_connection_service.update_saas_instance(
+                    connection_config,
+                    template,
+                    saas_config_instance,
                 )
-                try:
-                    saas_connection_service.update_saas_instance(
-                        connection_config,
-                        template,
-                        saas_config_instance,
-                    )
-                except Exception:
-                    logger.exception(
-                        "Encountered error attempting to update SaaS config instance {}",
-                        saas_config_instance.fides_key,
-                    )
+            except Exception:
+                logger.exception(
+                    "Encountered error attempting to update SaaS config instance {}",
+                    saas_config_instance.fides_key,
+                )
