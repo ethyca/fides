@@ -771,8 +771,9 @@ def celery_worker_parameters():
 
     Increase shutdown_timeout to avoid flaky test failures when the worker
     takes longer to shut down, especially during parallel test runs with pytest-xdist.
+    The CI environment can be slow, so we use a generous timeout.
     """
-    return {"shutdown_timeout": 30.0}
+    return {"shutdown_timeout": 120.0}
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -783,15 +784,6 @@ def celery_use_virtual_worker(celery_session_worker):
     task is executed within the scope of the test.
     """
     yield celery_session_worker
-
-    # Explicitly terminate the worker to prevent shutdown hangs in CI.
-    # We use terminate() which is more aggressive than stop() and helps
-    # ensure the worker thread exits even if tasks are stuck.
-    if celery_session_worker is not None:
-        try:
-            celery_session_worker.terminate()
-        except Exception:
-            pass  # Worker may already be stopping
 
 
 @pytest.fixture(scope="session")
