@@ -1,16 +1,22 @@
 import { formatDistanceStrict } from "date-fns";
 import {
+  AntButton as Button,
   AntCol as Col,
+  AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
   AntListItemProps as ListItemProps,
   AntRow as Row,
   AntSkeleton as Skeleton,
+  AntSpace as Space,
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
+  Icons,
+  SparkleIcon,
 } from "fidesui";
 import NextLink from "next/link";
+import { useState } from "react";
 
 import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
@@ -43,7 +49,6 @@ export const MonitorResult = ({
   monitorSummary,
   showSkeleton,
   href,
-  actions,
   ...props
 }: MonitorResultProps) => {
   const {
@@ -59,6 +64,27 @@ export const MonitorResult = ({
     monitorType,
     isTestMonitor,
   } = monitorSummary;
+
+  let confidenceCounts;
+  if (monitorType === MONITOR_TYPES.DATASTORE) {
+    const datastoreUpdates = updates as DatastoreMonitorUpdates | undefined;
+    confidenceCounts = {
+      highConfidenceCount: datastoreUpdates?.classified_high_confidence ?? 0,
+      mediumConfidenceCount:
+        datastoreUpdates?.classified_medium_confidence ?? 0,
+      lowConfidenceCount: datastoreUpdates?.classified_low_confidence ?? 0,
+    };
+  }
+  const [isConfidenceRowExpanded, setIsConfidenceRowExpanded] = useState(false);
+
+  const hasConfidenceCounts =
+    !!confidenceCounts &&
+    (confidenceCounts.highConfidenceCount > 0 ||
+      confidenceCounts.mediumConfidenceCount > 0 ||
+      confidenceCounts.lowConfidenceCount > 0);
+
+  const showConfidenceRow =
+    monitorType === MONITOR_TYPES.DATASTORE && hasConfidenceCounts && !!key;
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -81,7 +107,7 @@ export const MonitorResult = ({
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Flex vertical gap="large" className="grow">
           <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
-            <Col span={16}>
+            <Col span={14}>
               <List.Item.Meta
                 avatar={
                   <ConnectionTypeLogo
@@ -123,7 +149,7 @@ export const MonitorResult = ({
                 }
               />
             </Col>
-            <Col span={6} className="flex justify-end">
+            <Col span={5} className="flex justify-end">
               {!!lastMonitoredDistance && (
                 <Tooltip title={formattedLastMonitored}>
                   <Text type="secondary" data-testid="monitor-date">
@@ -133,24 +159,46 @@ export const MonitorResult = ({
                 </Tooltip>
               )}
             </Col>
-            <Col span={2} className="flex justify-end">
-              {actions}
+            <Col span={5} className="flex items-center justify-end">
+              {showConfidenceRow && (
+                <>
+                  <Button
+                    type="link"
+                    className="p-0"
+                    icon={
+                      isConfidenceRowExpanded ? (
+                        <Icons.ChevronUp />
+                      ) : (
+                        <Icons.ChevronDown />
+                      )
+                    }
+                    iconPosition="end"
+                    onClick={() =>
+                      setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
+                    }
+                  >
+                    <Space>
+                      <SparkleIcon />
+                      Findings
+                    </Space>
+                  </Button>
+                  <Divider type="vertical" orientationMargin={0} />
+                </>
+              )}
+              <NextLink key="review" href={href} passHref legacyBehavior>
+                <Button
+                  type="link"
+                  className="p-0"
+                  data-testid={`review-button-${monitorSummary.key}`}
+                >
+                  Review
+                </Button>
+              </NextLink>
             </Col>
           </Row>
-          {monitorType === MONITOR_TYPES.DATASTORE && !!updates && !!key && (
+          {showConfidenceRow && isConfidenceRowExpanded && confidenceCounts && (
             <ConfidenceRow
-              highConfidenceCount={
-                (updates as DatastoreMonitorUpdates)
-                  .classified_high_confidence ?? 0
-              }
-              mediumConfidenceCount={
-                (updates as DatastoreMonitorUpdates)
-                  .classified_medium_confidence ?? 0
-              }
-              lowConfidenceCount={
-                (updates as DatastoreMonitorUpdates)
-                  .classified_low_confidence ?? 0
-              }
+              confidenceCounts={confidenceCounts}
               reviewHref={href}
               monitorId={key}
             />

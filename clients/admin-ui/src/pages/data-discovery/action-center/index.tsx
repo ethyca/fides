@@ -1,5 +1,4 @@
 import {
-  AntButton as Button,
   AntFlex as Flex,
   AntList as List,
   AntMenu as Menu,
@@ -7,8 +6,7 @@ import {
   Icons,
   useToast,
 } from "fidesui";
-import NextLink from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features";
@@ -77,21 +75,6 @@ const ActionCenterPage = () => {
       }))
     : [];
 
-  const getMonitorActions = useCallback(
-    (monitorKey: string, link?: string) => [
-      <NextLink key="review" href={link ?? ""} passHref legacyBehavior>
-        <Button
-          type="link"
-          className="p-0"
-          data-testid={`review-button-${monitorKey}`}
-        >
-          Review
-        </Button>
-      </NextLink>,
-    ],
-    [],
-  );
-
   if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
   }
@@ -159,7 +142,6 @@ const ActionCenterPage = () => {
                     key={summary.key}
                     monitorSummary={summary}
                     href={link}
-                    actions={getMonitorActions(summary.key, link)}
                   />
                 )
               );
