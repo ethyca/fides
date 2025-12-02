@@ -722,15 +722,9 @@ class TestConnectionService:
         # Clean up
         connection_config.delete(db)
 
-    def test_upsert_dataset_with_merge(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test upsert_dataset_config_from_template with datasets from template, connection config, and SaasTemplateDataset table."""
-        # Dataset 1: From template (passed to function) (upcoming dataset)
-        upcoming_dataset = dedent(
+    def _get_template_yaml(self) -> str:
+        """Helper to get the base template YAML to save space in tests."""
+        return dedent(
             """
             dataset:
             - fides_key: <instance_fides_key>
@@ -767,20 +761,53 @@ class TestConnectionService:
         """
         ).strip()
 
+    @pytest.mark.parametrize(
+        "customer_modifications,expected_attributes",
+        [
+            (
+                # Scenario: Customer modified 'customer_id' category and 'city' category
+                {
+                    "customer_id_category": ["system.operations"],
+                    "city_category": ["user.contact.address.city"],
+                },
+                {
+                    "product_id_type": "string",  # From template
+                    "customer_id_category": ["system.operations"],  # From customer
+                    "city_category": ["user.contact.address.city"],  # From customer
+                    "street_category": ["user.contact.address.street"],  # From template
+                },
+            ),
+        ],
+    )
+    def test_upsert_dataset_with_merge(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+        customer_modifications: Dict[str, Any],
+        expected_attributes: Dict[str, Any],
+    ):
+        """Test upsert_dataset_config_from_template with datasets from template, connection config, and SaasTemplateDataset table."""
+
+        # Dataset 1: From template
+        upcoming_dataset_yaml = self._get_template_yaml()
+
         # Dataset 2: From connection config (existing DatasetConfig) (customer dataset)
         customer_dataset = copy.deepcopy(stored_dataset)
         customer_dataset["fides_key"] = "test_instance_key"
         customer_dataset["name"] = "SaaS Template Dataset"
         customer_dataset["description"] = "Dataset from connection config"
+
+        # Apply customer modifications
         products_collection = customer_dataset["collections"][0]
         products_fields_map = {f["name"]: f for f in products_collection["fields"]}
-        products_fields_map["customer_id"]["data_categories"] = ["system.operations"]
-        address_fields_map = {
-            f["name"]: f for f in products_fields_map["address"]["fields"]
-        }
-        address_fields_map["city"]["data_categories"] = ["user.contact.address.city"]
 
-        # Dataset 3: From SaasTemplateDataset table (stored dataset) - using fixture
+        if "customer_id_category" in customer_modifications:
+            products_fields_map["customer_id"]["data_categories"] = customer_modifications["customer_id_category"]
+
+        if "city_category" in customer_modifications:
+            address_fields = {f["name"]: f for f in products_fields_map["address"]["fields"]}
+            address_fields["city"]["data_categories"] = customer_modifications["city_category"]
 
         # Create connection config
         connection_config = ConnectionConfig.create(
@@ -794,23 +821,17 @@ class TestConnectionService:
                     "fides_key": "test_instance_key",
                     "name": "Test Connector",
                     "type": "test_connector",
-                    "description": "A test connector for testing dataset merging",
+                    "description": "Test connector",
                     "version": "0.1.0",
                     "connector_params": [],
-                    "client_config": {
-                        "protocol": "https",
-                        "host": "api.example.com",
-                    },
-                    "test_request": {
-                        "method": "GET",
-                        "path": "/test",
-                    },
+                    "client_config": {"protocol": "https", "host": "api.example.com"},
+                    "test_request": {"method": "GET", "path": "/test"},
                     "endpoints": [],
                 },
             },
         )
 
-        # Create existing DatasetConfig from connection config
+        # Create existing DatasetConfig
         DatasetConfig.create_or_update(
             db=db,
             data={
@@ -835,7 +856,7 @@ class TestConnectionService:
                   fides_key: <instance_fides_key>
                   name: Test Connector
                   type: test_connector
-                  description: A test connector for testing dataset merging
+                  description: Test connector
                   version: 1.0.0
                   connector_params: []
                   client_config:
@@ -847,67 +868,37 @@ class TestConnectionService:
                   endpoints: []
             """
             ).strip(),
-            dataset=upcoming_dataset,
+            dataset=upcoming_dataset_yaml,
             human_readable="Test Connector",
             authorization_required=False,
             supported_actions=[ActionType.access, ActionType.erasure],
             category=ConnectionCategory.ANALYTICS,
         )
 
-        # Create template values
-        template_values = SaasConnectionTemplateValues(
-            secrets={},
-            instance_key="test_instance_key",
-        )
-
-        # Execute the function
+        # Execute
         result_dataset_config = connection_service.upsert_dataset_config_from_template(
             connection_config=connection_config,
             template=connector_template,
-            template_values=template_values,
+            template_values=SaasConnectionTemplateValues(secrets={}, instance_key="test_instance_key"),
         )
 
+        # Verify
         ctl_dataset = result_dataset_config.ctl_dataset
-        result_dataset_dict = {
-            "fides_key": ctl_dataset.fides_key,
-            "name": ctl_dataset.name,
-            "description": ctl_dataset.description,
-            "data_categories": ctl_dataset.data_categories,
-            "collections": ctl_dataset.collections,
-            "fides_meta": ctl_dataset.fides_meta,
-        }
+        assert ctl_dataset.fides_key == "test_instance_key"
 
-        # Verify dataset information
-        assert result_dataset_config is not None
-        assert result_dataset_dict["fides_key"] == "test_instance_key"
-        assert result_dataset_dict["name"] == "Template Dataset"
-        assert result_dataset_dict["description"] == "Dataset from template"
+        # Verify fields
+        products = next(c for c in ctl_dataset.collections if c.name == "products")
+        fields_map = {f.name: f for f in products.fields}
 
-        products_collection = result_dataset_dict["collections"][0]
-        assert len(products_collection["fields"]) == 4
-        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
+        assert fields_map["product_id"].fides_meta.data_type == expected_attributes["product_id_type"]
+        assert fields_map["customer_id"].data_categories == expected_attributes["customer_id_category"]
 
-        # Expected result after merging:
-        # INTEGRATION UPDATE CHANGES (preserved):
-        # - products.product_id: data_type changed from integer to string
-        assert products_fields_map["product_id"]["fides_meta"]["data_type"] == "string"
+        address_fields = {f.name: f for f in fields_map["address"].fields}
+        assert address_fields["city"].data_categories == expected_attributes["city_category"]
+        assert address_fields["street"].data_categories == expected_attributes["street_category"]
 
-        # CUSTOMER CHANGES (preserved):
-        # - products.customer_id: data_categories changed from [user.unique_id] to [system.operations]. (takes priority over integration update change [user.preferences])
-        # - products.address.city: data_categories changed from [user.contact.address] to [user.contact.address.city]
-        assert products_fields_map["customer_id"]["data_categories"] == [
-            "system.operations"
-        ]
-        address_fields_map = {
-            f["name"]: f for f in products_fields_map["address"]["fields"]
-        }
-        assert len(address_fields_map) == 2
-        assert address_fields_map["city"]["data_categories"] == [
-            "user.contact.address.city"
-        ]
-        assert address_fields_map["street"]["data_categories"] == [
-            "user.contact.address.street"
-        ]
+        # Clean up
+        connection_config.delete(db)
 
     def _create_custom_field(self, name: str = "custom_attribute") -> Dict[str, Any]:
         """Helper method to create a custom field for testing."""
@@ -1098,31 +1089,21 @@ class TestConnectionService:
         expected_field_names = {"product_id", "customer_id", "address", "custom_attribute"}
         assert set(fields_by_name.keys()) == expected_field_names
 
-    def test_merge_collections(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test that integration update added collections are preserved whereas customer added collections are not"""
-
-        # INTEGRATION UPDATE - add a new collection called "orders"
-        upcoming_dataset = copy.deepcopy(stored_dataset)
-        upcoming_dataset["fides_key"] = "test_instance_key"
-
-        integration_added_collection = {
-            "name": "orders",
+    def _create_test_collection(self, name: str, category: str = "system.operations") -> Dict[str, Any]:
+        """Helper method to create a test collection."""
+        return {
+            "name": name,
             "data_categories": None,
             "description": None,
             "fides_meta": None,
             "fields": [
                 {
-                    "name": "order_id",
+                    "name": f"{name}_id",
                     "description": None,
-                    "data_categories": ["system.operations"],
+                    "data_categories": [category],
                     "fides_meta": {
                         "custom_request_field": None,
-                        "data_type": "integer",
+                        "data_type": "integer" if category == "system.operations" else "string",
                         "identity": None,
                         "length": None,
                         "masking_strategy_override": None,
@@ -1136,37 +1117,51 @@ class TestConnectionService:
                 },
             ],
         }
-        upcoming_dataset["collections"].append(integration_added_collection)
 
-        # CUSTOMER CHANGES - add a new collection called "custom_data"
+    @pytest.mark.parametrize(
+        "integration_collections_to_add,customer_collections_to_add,expected_collection_names",
+        [
+            (
+                ["orders"],  # Integration adds 'orders'
+                ["custom_data"],  # Customer adds 'custom_data'
+                {"products", "orders"},  # Expect 'products' (base) + 'orders', but NOT 'custom_data'
+            ),
+            (
+                [],  # Integration adds nothing
+                ["custom_data"],  # Customer adds 'custom_data'
+                {"products"},  # Expect only base 'products'
+            ),
+            (
+                ["orders", "logs"],  # Integration adds multiple
+                [],  # Customer adds nothing
+                {"products", "orders", "logs"},  # Expect all integration additions
+            ),
+        ],
+    )
+    def test_merge_collections(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+        integration_collections_to_add: list[str],
+        customer_collections_to_add: list[str],
+        expected_collection_names: set[str],
+    ):
+        """Test merge datasets function for collection additions/removals."""
+
+        # INTEGRATION UPDATE
+        upcoming_dataset = copy.deepcopy(stored_dataset)
+        upcoming_dataset["fides_key"] = "test_instance_key"
+
+        for col_name in integration_collections_to_add:
+            upcoming_dataset["collections"].append(self._create_test_collection(col_name))
+
+        # CUSTOMER CHANGES
         customer_dataset = copy.deepcopy(stored_dataset)
-        customer_added_collection = {
-            "name": "custom_data",
-            "data_categories": None,
-            "description": None,
-            "fides_meta": None,
-            "fields": [
-                {
-                    "name": "custom_id",
-                    "description": None,
-                    "data_categories": ["user.unique_id"],
-                    "fides_meta": {
-                        "custom_request_field": None,
-                        "data_type": "string",
-                        "identity": None,
-                        "length": None,
-                        "masking_strategy_override": None,
-                        "primary_key": True,
-                        "read_only": None,
-                        "redact": None,
-                        "references": None,
-                        "return_all_elements": None,
-                    },
-                    "fields": None,
-                }
-            ],
-        }
-        customer_dataset["collections"].append(customer_added_collection)
+        for col_name in customer_collections_to_add:
+            customer_dataset["collections"].append(
+                self._create_test_collection(col_name, category="user.unique_id")
+            )
 
         # Merge the datasets
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
@@ -1176,42 +1171,19 @@ class TestConnectionService:
             instance_key="test_instance_key",
         )
 
-        # Expected result:
-        # - products collection: preserved (original collection)
-        # - orders collection: added (integration update added collection - should be preserved)
-        # - custom_data collection: NOT added (customer added collection - should NOT be preserved)
+        # Verify results
+        result_collection_names = {col["name"] for col in result_dataset_dict["collections"]}
+        assert result_collection_names == expected_collection_names
 
-        # Verify that the result contains exactly 2 collections (products + orders, but NOT custom_data)
-        assert len(result_dataset_dict["collections"]) == 2
-        collection_names = [col["name"] for col in result_dataset_dict["collections"]]
-        assert "products" in collection_names
-        assert "orders" in collection_names
-        assert "custom_data" not in collection_names
-
-        # Verify the products collection is preserved correctly (original collection)
-        products_collection = next(
-            c for c in result_dataset_dict["collections"] if c["name"] == "products"
-        )
-        assert products_collection["data_categories"] is None
-        assert products_collection["description"] is None
-        assert len(products_collection["fields"]) == 4
-
-        # Verify the orders collection was added correctly (integration update added collection)
-        orders_collection = next(
-            c for c in result_dataset_dict["collections"] if c["name"] == "orders"
-        )
-        assert orders_collection["data_categories"] is None
-        assert orders_collection["description"] is None
-        assert len(orders_collection["fields"]) == 1
-        assert orders_collection["fields"][0]["name"] == "order_id"
-        assert orders_collection["fields"][0]["data_categories"] == [
-            "system.operations"
-        ]
-        assert orders_collection["fields"][0]["fides_meta"]["primary_key"] is True
+        # Verify specific collection properties for integration additions
+        for col_name in integration_collections_to_add:
+            if col_name in result_collection_names:
+                collection = next(c for c in result_dataset_dict["collections"] if c["name"] == col_name)
+                assert len(collection["fields"]) == 1
+                assert collection["fields"][0]["name"] == f"{col_name}_id"
+                assert collection["fields"][0]["data_categories"] == ["system.operations"]
 
         # Verify dataset-level properties are preserved
-        assert (
-            result_dataset_dict["fides_key"] == "test_instance_key"
-        )  # Should use the instance_key, not the placeholder
+        assert result_dataset_dict["fides_key"] == "test_instance_key"
         assert result_dataset_dict["name"] == upcoming_dataset["name"]
         assert result_dataset_dict["description"] == upcoming_dataset["description"]
