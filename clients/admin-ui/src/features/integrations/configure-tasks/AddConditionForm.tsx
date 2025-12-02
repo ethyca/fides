@@ -5,6 +5,7 @@ import {
   AntRadio as Radio,
   AntSelect as Select,
   Flex,
+  RadioChangeEvent,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
@@ -136,7 +137,7 @@ const AddConditionForm = ({
 
   // Handle field source change
   const handleFieldSourceChange = useCallback(
-    (e: any) => {
+    (e: RadioChangeEvent) => {
       const newSource = e.target.value as FieldSource;
       setFieldSource(newSource);
       // Clear field address, operator, and value when switching sources
