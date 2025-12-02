@@ -10,10 +10,7 @@ import React from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
-import {
-  useBulkPromoteIdentityProviderMonitorResultsMutation,
-  usePromoteIdentityProviderMonitorResultMutation,
-} from "../../discovery-detection.slice";
+import { usePromoteIdentityProviderMonitorResultMutation } from "../../discovery-detection.slice";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 
 interface InfrastructureSystemActionsCellProps {
@@ -33,7 +30,7 @@ export const InfrastructureSystemActionsCell = ({
   monitorId,
   system,
   allowIgnore,
-  onTabChange,
+  onTabChange: _onTabChange,
   addIcon = <Icons.Checkmark />,
   ignoreIcon = <Icons.ViewOff />,
   onPromoteSuccess,
