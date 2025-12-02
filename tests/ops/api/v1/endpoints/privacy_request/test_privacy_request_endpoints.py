@@ -4049,21 +4049,25 @@ class TestApprovePrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_approve_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     def test_approve_privacy_request_viewer_role(
         self, url, api_client, generate_role_header
     ):
         auth_header = generate_role_header(roles=[VIEWER])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(
@@ -5010,14 +5014,16 @@ class TestDenyPrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_deny_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(
@@ -5317,14 +5323,16 @@ class TestCancelPrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_CANCEL
 
     def test_cancel_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_cancel_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(

@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from typing import (
     Annotated,
     Any,
+    Awaitable,
+    Callable,
     DefaultDict,
     Dict,
     List,
@@ -217,23 +219,35 @@ def get_privacy_request_or_error(
     return privacy_request
 
 
-async def _normalize_bulk_selection_dependency(
-    request: Request,
-) -> "PrivacyRequestBulkSelection":
+def _create_bulk_selection_dependency(
+    schema_class: type[PrivacyRequestBulkSelection] = PrivacyRequestBulkSelection,
+) -> Callable[[Request], Awaitable[PrivacyRequestBulkSelection]]:
     """
-    Normalize input to PrivacyRequestBulkSelection for backwards compatibility.
+    Factory to create a dependency that normalizes input to the specified schema type.
 
-    If a plain list is provided, convert it to PrivacyRequestBulkSelection with request_ids.
-    Otherwise, parse as PrivacyRequestBulkSelection.
+    If a plain list is provided, convert it to the schema with request_ids.
+    Otherwise, parse as the schema type directly.
     """
-    body = await request.json()
 
-    # If it's a plain list, convert to PrivacyRequestBulkSelection
-    if isinstance(body, list):
-        return PrivacyRequestBulkSelection(request_ids=body)
+    async def _normalize_bulk_selection(
+        request: Request,
+    ) -> PrivacyRequestBulkSelection:
+        try:
+            body = await request.json()
+        except json.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Request body is required and must be valid JSON",
+            ) from exc
 
-    # Otherwise, parse as PrivacyRequestBulkSelection
-    return PrivacyRequestBulkSelection(**body)
+        # If it's a plain list, convert to the schema with request_ids
+        if isinstance(body, list):
+            return schema_class(request_ids=body)
+
+        # Otherwise, parse as the schema type
+        return schema_class(**body)
+
+    return _normalize_bulk_selection
 
 
 def _resolve_request_ids_from_filters(
@@ -1410,7 +1424,7 @@ def validate_manual_input(
 )
 def bulk_restart_privacy_request_from_failure(
     privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency()
     ),
     *,
     db: Session = Depends(deps.get_db),
@@ -1590,7 +1604,7 @@ def verify_identification_code(
 )
 def approve_privacy_request(
     privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency()
     ),
     *,
     db: Session = Depends(deps.get_db),
@@ -1631,7 +1645,7 @@ def approve_privacy_request(
 )
 def deny_privacy_request(
     privacy_requests: DenyPrivacyRequestSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency(DenyPrivacyRequestSelection)
     ),
     *,
     db: Session = Depends(deps.get_db),
@@ -1666,7 +1680,7 @@ def deny_privacy_request(
 )
 def cancel_privacy_request(
     privacy_requests: CancelPrivacyRequestSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency(CancelPrivacyRequestSelection)
     ),
     *,
     db: Session = Depends(deps.get_db),
@@ -2200,7 +2214,7 @@ def resume_privacy_request_from_requires_input(
 )
 def bulk_finalize_privacy_requests(
     privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency()
     ),
     *,
     db: Session = Depends(deps.get_db),
@@ -2396,7 +2410,7 @@ def request_task_async_callback(
 )
 def bulk_soft_delete_privacy_requests(
     privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _normalize_bulk_selection_dependency
+        _create_bulk_selection_dependency()
     ),
     *,
     db: Session = Depends(deps.get_db),
