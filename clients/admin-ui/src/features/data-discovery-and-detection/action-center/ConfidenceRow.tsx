@@ -10,6 +10,7 @@ interface ConfidenceRowProps {
   mediumConfidenceCount: number;
   lowConfidenceCount: number;
   reviewHref: string;
+  monitorId: string;
 }
 
 export const ConfidenceRow = ({
@@ -17,6 +18,7 @@ export const ConfidenceRow = ({
   mediumConfidenceCount = 0,
   lowConfidenceCount = 0,
   reviewHref,
+  monitorId,
 }: ConfidenceRowProps) => {
   if (!highConfidenceCount && !mediumConfidenceCount && !lowConfidenceCount) {
     return null;
@@ -44,7 +46,7 @@ export const ConfidenceRow = ({
       ].filter((item) => item.count > 0)}
       renderItem={(item) => (
         <List.Item>
-          <ConfidenceCard item={item} reviewHref={reviewHref} />
+          <ConfidenceCard item={item} reviewHref={reviewHref} monitorId={monitorId} />
         </List.Item>
       )}
     />
