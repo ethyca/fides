@@ -803,11 +803,17 @@ class TestConnectionService:
         products_fields_map = {f["name"]: f for f in products_collection["fields"]}
 
         if "customer_id_category" in customer_modifications:
-            products_fields_map["customer_id"]["data_categories"] = customer_modifications["customer_id_category"]
+            products_fields_map["customer_id"]["data_categories"] = (
+                customer_modifications["customer_id_category"]
+            )
 
         if "city_category" in customer_modifications:
-            address_fields = {f["name"]: f for f in products_fields_map["address"]["fields"]}
-            address_fields["city"]["data_categories"] = customer_modifications["city_category"]
+            address_fields = {
+                f["name"]: f for f in products_fields_map["address"]["fields"]
+            }
+            address_fields["city"]["data_categories"] = customer_modifications[
+                "city_category"
+            ]
 
         # Create connection config
         connection_config = ConnectionConfig.create(
@@ -879,7 +885,9 @@ class TestConnectionService:
         result_dataset_config = connection_service.upsert_dataset_config_from_template(
             connection_config=connection_config,
             template=connector_template,
-            template_values=SaasConnectionTemplateValues(secrets={}, instance_key="test_instance_key"),
+            template_values=SaasConnectionTemplateValues(
+                secrets={}, instance_key="test_instance_key"
+            ),
         )
 
         # Verify
@@ -890,12 +898,24 @@ class TestConnectionService:
         products = next(c for c in ctl_dataset.collections if c.name == "products")
         fields_map = {f.name: f for f in products.fields}
 
-        assert fields_map["product_id"].fides_meta.data_type == expected_attributes["product_id_type"]
-        assert fields_map["customer_id"].data_categories == expected_attributes["customer_id_category"]
+        assert (
+            fields_map["product_id"].fides_meta.data_type
+            == expected_attributes["product_id_type"]
+        )
+        assert (
+            fields_map["customer_id"].data_categories
+            == expected_attributes["customer_id_category"]
+        )
 
         address_fields = {f.name: f for f in fields_map["address"].fields}
-        assert address_fields["city"].data_categories == expected_attributes["city_category"]
-        assert address_fields["street"].data_categories == expected_attributes["street_category"]
+        assert (
+            address_fields["city"].data_categories
+            == expected_attributes["city_category"]
+        )
+        assert (
+            address_fields["street"].data_categories
+            == expected_attributes["street_category"]
+        )
 
         # Clean up
         connection_config.delete(db)
@@ -921,7 +941,9 @@ class TestConnectionService:
             "fields": None,
         }
 
-    def _apply_dataset_changes(self, dataset: Dict[str, Any], changes: Dict[str, Any]) -> Dict[str, Any]:
+    def _apply_dataset_changes(
+        self, dataset: Dict[str, Any], changes: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Helper method to apply changes to a dataset."""
         modified_dataset = copy.deepcopy(dataset)
         modified_dataset["fides_key"] = "test_instance_key"
@@ -932,7 +954,11 @@ class TestConnectionService:
 
         if "field_changes" in changes:
             for field_name, field_changes in changes["field_changes"].items():
-                field = next(f for f in modified_dataset["collections"][0]["fields"] if f["name"] == field_name)
+                field = next(
+                    f
+                    for f in modified_dataset["collections"][0]["fields"]
+                    if f["name"] == field_name
+                )
                 if "data_type" in field_changes:
                     field["fides_meta"]["data_type"] = field_changes["data_type"]
                 if "data_categories" in field_changes:
@@ -962,7 +988,9 @@ class TestConnectionService:
                 {
                     "field_changes": {
                         "customer_id": {"data_categories": ["user.name"]},
-                        "product_id": {"data_type": "object"},  # should override upcoming change
+                        "product_id": {
+                            "data_type": "object"
+                        },  # should override upcoming change
                     },
                     "add_fields": ["custom_field"],
                 },
@@ -1015,7 +1043,10 @@ class TestConnectionService:
         upcoming_dataset = self._apply_dataset_changes(stored_dataset, upcoming_changes)
 
         # Handle custom field addition for customer changes
-        if "add_fields" in customer_changes and "custom_field" in customer_changes["add_fields"]:
+        if (
+            "add_fields" in customer_changes
+            and "custom_field" in customer_changes["add_fields"]
+        ):
             customer_changes = copy.deepcopy(customer_changes)
             customer_changes["add_fields"] = [self._create_custom_field()]
 
@@ -1033,12 +1064,16 @@ class TestConnectionService:
         products_collection = result_dataset_dict["collections"][0]
         products_fields_map = {f["name"]: f for f in products_collection["fields"]}
 
-        assert len(products_fields_map) == expected_field_count, f"Expected {expected_field_count} fields, got {len(products_fields_map)}"
+        assert (
+            len(products_fields_map) == expected_field_count
+        ), f"Expected {expected_field_count} fields, got {len(products_fields_map)}"
 
         # Check specific field expectations
         for field_name, expectations in expected_fields.items():
             if expectations.get("exists", True):
-                assert field_name in products_fields_map, f"Field {field_name} should exist"
+                assert (
+                    field_name in products_fields_map
+                ), f"Field {field_name} should exist"
                 field = products_fields_map[field_name]
 
                 if "data_categories" in expectations:
@@ -1046,7 +1081,9 @@ class TestConnectionService:
                 if "data_type" in expectations:
                     assert field["fides_meta"]["data_type"] == expectations["data_type"]
             else:
-                assert field_name not in products_fields_map, f"Field {field_name} should not exist"
+                assert (
+                    field_name not in products_fields_map
+                ), f"Field {field_name} should not exist"
 
     def test_merge_dataset_fields_no_changes_preserves_state(
         self,
@@ -1056,13 +1093,21 @@ class TestConnectionService:
     ):
         """Test that when no changes are made, the merged dataset state is preserved."""
         # First create a merged dataset with changes
-        upcoming_changes = {"delete_fields": [2], "field_changes": {"product_id": {"data_type": "string"}}}
-        customer_changes = {"field_changes": {"customer_id": {"data_categories": ["user.name"]}}, "add_fields": ["custom_field"]}
+        upcoming_changes = {
+            "delete_fields": [2],
+            "field_changes": {"product_id": {"data_type": "string"}},
+        }
+        customer_changes = {
+            "field_changes": {"customer_id": {"data_categories": ["user.name"]}},
+            "add_fields": ["custom_field"],
+        }
 
         upcoming_dataset = self._apply_dataset_changes(stored_dataset, upcoming_changes)
         customer_changes_with_field = copy.deepcopy(customer_changes)
         customer_changes_with_field["add_fields"] = [self._create_custom_field()]
-        customer_dataset = self._apply_dataset_changes(stored_dataset, customer_changes_with_field)
+        customer_dataset = self._apply_dataset_changes(
+            stored_dataset, customer_changes_with_field
+        )
 
         # Get initial merged result
         initial_result = connection_service.merge_datasets(
@@ -1085,11 +1130,21 @@ class TestConnectionService:
         assert no_change_result["name"] == "Template Dataset"
         assert no_change_result["description"] == "Dataset from template"
 
-        fields_by_name = {field["name"]: field for field in no_change_result["collections"][0]["fields"]}
-        expected_field_names = {"product_id", "customer_id", "address", "custom_attribute"}
+        fields_by_name = {
+            field["name"]: field
+            for field in no_change_result["collections"][0]["fields"]
+        }
+        expected_field_names = {
+            "product_id",
+            "customer_id",
+            "address",
+            "custom_attribute",
+        }
         assert set(fields_by_name.keys()) == expected_field_names
 
-    def _create_test_collection(self, name: str, category: str = "system.operations") -> Dict[str, Any]:
+    def _create_test_collection(
+        self, name: str, category: str = "system.operations"
+    ) -> Dict[str, Any]:
         """Helper method to create a test collection."""
         return {
             "name": name,
@@ -1103,7 +1158,9 @@ class TestConnectionService:
                     "data_categories": [category],
                     "fides_meta": {
                         "custom_request_field": None,
-                        "data_type": "integer" if category == "system.operations" else "string",
+                        "data_type": (
+                            "integer" if category == "system.operations" else "string"
+                        ),
                         "identity": None,
                         "length": None,
                         "masking_strategy_override": None,
@@ -1124,7 +1181,10 @@ class TestConnectionService:
             (
                 ["orders"],  # Integration adds 'orders'
                 ["custom_data"],  # Customer adds 'custom_data'
-                {"products", "orders"},  # Expect 'products' (base) + 'orders', but NOT 'custom_data'
+                {
+                    "products",
+                    "orders",
+                },  # Expect 'products' (base) + 'orders', but NOT 'custom_data'
             ),
             (
                 [],  # Integration adds nothing
@@ -1154,7 +1214,9 @@ class TestConnectionService:
         upcoming_dataset["fides_key"] = "test_instance_key"
 
         for col_name in integration_collections_to_add:
-            upcoming_dataset["collections"].append(self._create_test_collection(col_name))
+            upcoming_dataset["collections"].append(
+                self._create_test_collection(col_name)
+            )
 
         # CUSTOMER CHANGES
         customer_dataset = copy.deepcopy(stored_dataset)
@@ -1172,16 +1234,24 @@ class TestConnectionService:
         )
 
         # Verify results
-        result_collection_names = {col["name"] for col in result_dataset_dict["collections"]}
+        result_collection_names = {
+            col["name"] for col in result_dataset_dict["collections"]
+        }
         assert result_collection_names == expected_collection_names
 
         # Verify specific collection properties for integration additions
         for col_name in integration_collections_to_add:
             if col_name in result_collection_names:
-                collection = next(c for c in result_dataset_dict["collections"] if c["name"] == col_name)
+                collection = next(
+                    c
+                    for c in result_dataset_dict["collections"]
+                    if c["name"] == col_name
+                )
                 assert len(collection["fields"]) == 1
                 assert collection["fields"][0]["name"] == f"{col_name}_id"
-                assert collection["fields"][0]["data_categories"] == ["system.operations"]
+                assert collection["fields"][0]["data_categories"] == [
+                    "system.operations"
+                ]
 
         # Verify dataset-level properties are preserved
         assert result_dataset_dict["fides_key"] == "test_instance_key"
