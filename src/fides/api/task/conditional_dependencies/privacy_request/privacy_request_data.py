@@ -89,20 +89,8 @@ class PrivacyRequestDataTransformer:
         ]:
             return self.location_convenience_fields.get(parts[0])
 
-        # Check for custom privacy request fields path:
-        # privacy_request.policy.custom_privacy_request_fields.{field_name}
-        # or privacy_request.custom_privacy_request_fields.{field_name}
-        if (
-            len(parts) >= 2
-            and parts[0] == "policy"
-            and parts[1] == "custom_privacy_request_fields"
-        ):
-            # Extract custom field directly from custom_privacy_request_fields_data
-            current = self.custom_privacy_request_fields_data
-            is_custom_field = True
-            # Remove "policy" and "custom_privacy_request_fields" from parts
-            parts = parts[2:]
-        elif parts[0] == "policy":
+        # Route to the appropriate data source based on the first path component
+        if parts[0] == "policy":
             current = self.policy_data
             parts.pop(0)
         elif parts[0] == "identity":

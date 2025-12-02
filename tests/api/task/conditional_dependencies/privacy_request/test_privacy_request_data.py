@@ -392,42 +392,6 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
             "data_categories"
         ] == ["User Preferences", "Profile Information", "Activity History"]
 
-    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
-    def test_custom_privacy_request_fields_via_policy_path(
-        self,
-        db: Session,
-        privacy_request: PrivacyRequest,
-    ):
-        """Test transformation of custom privacy request fields using the policy path format.
-
-        The official path format is: privacy_request.policy.custom_privacy_request_fields.{field_name}
-        """
-        field_addresses = [
-            "privacy_request.policy.custom_privacy_request_fields.data_categories"
-        ]
-
-        # Persist custom field with array value
-        privacy_request.persist_custom_privacy_request_fields(
-            db=db,
-            custom_privacy_request_fields={
-                "data_categories": CustomPrivacyRequestField(
-                    label="Data Categories",
-                    value=[
-                        "User Preferences",
-                        "Profile Information",
-                        "Activity History",
-                    ],
-                ),
-            },
-        )
-        transformer = PrivacyRequestDataTransformer(privacy_request)
-
-        # Verify that the custom field returns just the array value using the policy path
-        data = transformer.to_evaluation_data(set(field_addresses))
-        assert data["privacy_request"]["policy"]["custom_privacy_request_fields"][
-            "data_categories"
-        ] == ["User Preferences", "Profile Information", "Activity History"]
-
 
 class TestPrivacyRequestToEvaluationDataEdgeCases:
     """Test edge cases and error handling."""
