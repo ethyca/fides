@@ -29,11 +29,6 @@ export const useInfrastructureSystemsFilters = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const resetToInitialState = () => {
-    setStatusFilters([]);
-    setVendorFilters([]);
-  };
-
   const reset = () => {
     setStatusFilters([]);
     setVendorFilters([]);
@@ -45,6 +40,5 @@ export const useInfrastructureSystemsFilters = () => {
     vendorFilters,
     setVendorFilters,
     reset,
-    resetToInitialState,
   };
 };

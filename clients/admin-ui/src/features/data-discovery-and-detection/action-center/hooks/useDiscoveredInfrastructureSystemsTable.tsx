@@ -88,6 +88,30 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     return statuses.length > 0 ? statuses : undefined;
   }, [statusFilters]);
 
+  // Map vendor filters to vendor_id parameter
+  // "known" = has vendor_id, "unknown" = no vendor_id
+  // The backend API uses "null" to filter for items without vendor_id
+  const vendorIdFilters = useMemo(() => {
+    if (!vendorFilters || vendorFilters.length === 0) {
+      return undefined;
+    }
+
+    const vendorIds: string[] = [];
+    if (vendorFilters.includes("unknown")) {
+      vendorIds.push("null");
+    }
+    // Note: "known" filter would require getting all possible vendor IDs,
+    // which isn't practical. If both filters are selected or only "known" is selected,
+    // we don't apply any vendor filter (show all).
+    if (vendorFilters.includes("known") && !vendorFilters.includes("unknown")) {
+      // Backend should support filtering for items WITH vendor_id
+      // Using "not_null" as a special indicator (backend implementation required)
+      return "not_null";
+    }
+
+    return vendorIds.length > 0 ? vendorIds : undefined;
+  }, [vendorFilters]);
+
   // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
@@ -102,6 +126,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
       search: search.searchQuery,
       diff_status: diffStatusFilters,
       status: metadataStatusFilters,
+      vendor_id: vendorIdFilters,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -121,7 +146,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // Filter data by vendor filters (known/unknown) on the client side
+  // Transform API data to table format
+  // Vendor filters are now applied server-side via the vendor_id query parameter
   const transformedData = useMemo((): {
     items: InfrastructureSystemListItem[];
     total: number;
@@ -130,7 +156,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
       return { items: [], total: 0 };
     }
 
-    let items: InfrastructureSystemListItem[] = oktaData.items.map(
+    const items: InfrastructureSystemListItem[] = oktaData.items.map(
       (item: StagedResourceAPIResponse): InfrastructureSystemListItem => {
         return {
           id: item.urn,
@@ -149,25 +175,11 @@ export const useDiscoveredInfrastructureSystemsTable = ({
       },
     );
 
-    // Apply vendor filters on client side if needed
-    if (vendorFilters && vendorFilters.length > 0) {
-      items = items.filter((item) => {
-        const hasVendorId = !!item.vendor_id;
-        if (vendorFilters.includes("known")) {
-          return hasVendorId;
-        }
-        if (vendorFilters.includes("unknown")) {
-          return !hasVendorId;
-        }
-        return true;
-      });
-    }
-
     return {
       items,
-      total: items.length,
+      total: oktaData.total ?? 0,
     };
-  }, [oktaData, vendorFilters]);
+  }, [oktaData]);
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
