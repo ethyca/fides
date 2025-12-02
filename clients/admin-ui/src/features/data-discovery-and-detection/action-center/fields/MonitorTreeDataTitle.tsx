@@ -105,7 +105,7 @@ export const MonitorTreeDataTitle = ({
 
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
-    <Flex gap={4} align="center" className="group">
+    <Flex gap={4} align="center" className="group inline-flex">
       <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
         {node.title}
       </Text>
