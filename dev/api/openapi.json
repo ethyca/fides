@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.74.3a1.post0.dev62"
+    "version": "2.74.3a1.post0.dev63"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2118,14 +2118,14 @@
         ]
       }
     },
-    "/api/v1/system/{fides_key}/connection/instantiate/{saas_connector_type}": {
+    "/api/v1/system/{fides_key}/connection/instantiate/{connector_template_type}": {
       "post": {
         "tags": [
           "System"
         ],
         "summary": "Instantiate Connection From Template",
         "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.",
-        "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__saas_connector_type__post",
+        "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__connector_template_type__post",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2144,12 +2144,12 @@
             }
           },
           {
-            "name": "saas_connector_type",
+            "name": "connector_template_type",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Saas Connector Type"
+              "title": "Connector Template Type"
             }
           }
         ],
@@ -4447,6 +4447,234 @@
                 "schema": {
                   "$ref": "#/components/schemas/TestStatusMessage"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Get All Connector Templates",
+        "description": "Returns a list of all available connector templates with summary information.\n\nEach template includes:\n- **type**: The unique identifier for the connector (used in other endpoints)\n- **name**: Human-readable name of the connector\n- **supported_actions**: List of actions this connector supports (e.g., access, erasure)\n- **category**: Optional category classification for the connector\n- **custom**: Whether this is a custom connector (true) or built-in (false)",
+        "operationId": "get_all_connector_templates_api_v1_connector_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectorTemplateListResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get All Connector Templates Api V1 Connector Templates Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connector-templates/register": {
+      "post": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Register Connector Template",
+        "description": "Registers a custom connector template from a zip file uploaded by the user.\n\nThe endpoint performs the following steps:\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
+        "operationId": "register_connector_template_api_v1_connector_templates_register_post",
+        "requestBody": {
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "title": "File"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:register"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connector_template/register": {
+      "post": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Register Custom Connector Template Deprecated",
+        "description": "**DEPRECATED**: Use `POST /connector-templates/register` instead.\n\nRegisters a custom connector template from a zip file uploaded by the user.\nThis endpoint is maintained for backward compatibility only.",
+        "operationId": "register_custom_connector_template_deprecated_api_v1_connector_template_register_post",
+        "requestBody": {
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "title": "File"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:register"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}/config": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Get Connector Template Config",
+        "description": "Retrieves the SaaS config YAML for a connector template by its type.\n\nThe `connector_template_type` parameter comes from the `type` field\nreturned by the `GET /connector-templates` endpoint.\n\nReturns the raw YAML configuration that can be used to understand\nor customize the connector template.",
+        "operationId": "get_connector_template_config_api_v1_connector_templates__connector_template_type__config_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}/dataset": {
+      "get": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Get Connector Template Dataset",
+        "description": "Retrieves the dataset YAML for a connector template by its type.\n\nThe `connector_template_type` parameter comes from the `type` field\nreturned by the `GET /connector-templates` endpoint.\n\nReturns the raw dataset YAML configuration that defines the data structure\nfor the connector template.",
+        "operationId": "get_connector_template_dataset_api_v1_connector_templates__connector_template_type__dataset_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -12436,13 +12664,13 @@
         }
       }
     },
-    "/api/v1/connection/instantiate/{saas_connector_type}": {
+    "/api/v1/connection/instantiate/{connector_template_type}": {
       "post": {
         "tags": [
           "SaaS Configs"
         ],
         "summary": "Instantiate Connection From Template",
-        "operationId": "instantiate_connection_from_template_api_v1_connection_instantiate__saas_connector_type__post",
+        "operationId": "instantiate_connection_from_template_api_v1_connection_instantiate__connector_template_type__post",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -12452,12 +12680,12 @@
         ],
         "parameters": [
           {
-            "name": "saas_connector_type",
+            "name": "connector_template_type",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Saas Connector Type"
+              "title": "Connector Template Type"
             }
           }
         ],
@@ -12493,55 +12721,6 @@
             }
           }
         }
-      }
-    },
-    "/api/v1/connector_template/register": {
-      "post": {
-        "tags": [
-          "SaaS Configs"
-        ],
-        "summary": "Register Custom Connector Template",
-        "description": "Registers a custom connector template from a zip file uploaded by the user.\nThe endpoint performs the following steps:\n\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
-        "operationId": "register_custom_connector_template_api_v1_connector_template_register_post",
-        "requestBody": {
-          "content": {
-            "application/zip": {
-              "schema": {
-                "type": "string",
-                "format": "binary",
-                "title": "File"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "connector_template:register"
-            ]
-          }
-        ]
       }
     },
     "/api/v1/dataset/partitions/verify": {
@@ -16817,6 +16996,48 @@
         ],
         "title": "ConnectorParam",
         "description": "Used to define the required parameters for the connector (user and constants)"
+      },
+      "ConnectorTemplateListResponse": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "supported_actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionType"
+            },
+            "type": "array",
+            "title": "Supported Actions"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "custom": {
+            "type": "boolean",
+            "title": "Custom"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "name",
+          "supported_actions",
+          "custom"
+        ],
+        "title": "ConnectorTemplateListResponse",
+        "description": "Response schema for listing connector templates.\nProvides summary information about available connector templates."
       },
       "Consent": {
         "properties": {
@@ -27187,6 +27408,7 @@
           "connection:authorize",
           "connection_type:read",
           "connector_template:register",
+          "connector_template:read",
           "consent:read",
           "consent_settings:read",
           "consent_settings:update",
