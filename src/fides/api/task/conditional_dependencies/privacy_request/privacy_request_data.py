@@ -79,6 +79,7 @@ class PrivacyRequestDataTransformer:
         # first part will always be privacy_request
         parts: list[str] = field_address.split(".")[1:]
         current: Any = self.privacy_request
+        is_custom_field = False
 
         # Handle location convenience fields - these are derived fields, not direct attributes
         # Check if we're accessing a location convenience field before trying to extract from privacy_request
@@ -88,15 +89,28 @@ class PrivacyRequestDataTransformer:
         ]:
             return self.location_convenience_fields.get(parts[0])
 
-        # Track the identity object if we're extracting from identity
-        if parts[0] == "policy":
+        # Check for custom privacy request fields path:
+        # privacy_request.policy.custom_privacy_request_fields.{field_name}
+        # or privacy_request.custom_privacy_request_fields.{field_name}
+        if (
+            len(parts) >= 2
+            and parts[0] == "policy"
+            and parts[1] == "custom_privacy_request_fields"
+        ):
+            # Extract custom field directly from custom_privacy_request_fields_data
+            current = self.custom_privacy_request_fields_data
+            is_custom_field = True
+            # Remove "policy" and "custom_privacy_request_fields" from parts
+            parts = parts[2:]
+        elif parts[0] == "policy":
             current = self.policy_data
+            parts.pop(0)
         elif parts[0] == "identity":
             current = self.identity_data
+            parts.pop(0)
         elif parts[0] == "custom_privacy_request_fields":
             current = self.custom_privacy_request_fields_data
-
-        if current != self.privacy_request:
+            is_custom_field = True
             parts.pop(0)
 
         current = extract_nested_field_value(current, parts)
@@ -106,6 +120,11 @@ class PrivacyRequestDataTransformer:
         # Otherwise, transform the value (which could be a BaseModel like LabeledIdentity)
         if current is self.identity_data:
             return None
+
+        # Custom privacy request fields are stored as {"label": ..., "value": ...}
+        # Extract just the value for evaluation
+        if is_custom_field and isinstance(current, dict) and "value" in current:
+            current = current["value"]
 
         return transform_value_for_evaluation(current)
 
