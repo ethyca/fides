@@ -788,7 +788,7 @@ class ConnectionService:
         upcoming_dataset: Dict,
         instance_key: str,
     ) -> Dict:
-        """Merges the datasets into a single dataset."""
+        """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
         # Deep copy stored_dataset to avoid mutating the SQLAlchemy model's JSONB column
         # This prevents SQLAlchemy from tracking changes and potentially corrupting the template dataset
         stored_dataset_copy = copy.deepcopy(stored_dataset)
@@ -828,18 +828,13 @@ class ConnectionService:
             collection["name"]: collection
             for collection in stored_dataset_copy.get("collections", [])
         }
-
-        # Merge customer collections with integration collections
-        # Collections can't be edited by customers, so we only process collections
-        # that exist in the base dataset. Any new collections from customer are ignored.
-        # If a field was changed in the most recent integration update, use that version.
-        # Otherwise, use the customer's version.
         customer_collections_by_name = {
             collection["name"]: collection
             for collection in customer_dataset.get("collections", [])
         }
 
-        # Only process collections that exist in upcoming_collections
+        # Collections can't be edited by customers, so we only process collections
+        # that exist in the base dataset. Any new collections from customer are ignored.
         for collection_name, upcoming_collection in upcoming_collections.items():
             if collection_name in original_collections:
                 # Collection exists in original, merge with customer version if available
@@ -847,15 +842,13 @@ class ConnectionService:
                 customer_collection = customer_collections_by_name.get(collection_name)
 
                 if customer_collection:
-                    # Merge the collection (which will recursively merge fields)
+                    # Merge the collection (recursively merges fields)
                     merged_collection = self._merge_collection(
                         upcoming_collection, customer_collection, original_collection
                     )
                     upcoming_collections[collection_name] = merged_collection
 
-        # Update upcoming_dataset with merged collections
-        # upcoming_collections already includes all collections from upcoming_dataset,
-        # including any new collections, so we just need to convert it back to a list
+        # overwrite upcoming_dataset with merged collections + new official collections
         upcoming_dataset_copy["collections"] = list(upcoming_collections.values())
 
         merged_dataset = upcoming_dataset_copy
