@@ -13,9 +13,8 @@ import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { nFormatter, pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
-import { mapConfidenceBucketToSeverity } from "./fields/utils";
-
 import { ConfidenceLevelLabel } from "./constants";
+import { mapConfidenceBucketToSeverity } from "./fields/utils";
 
 interface ConfidenceCardItem {
   label: string;
@@ -72,7 +71,9 @@ export const ConfidenceCard = ({ item, reviewHref }: ConfidenceCardProps) => {
             {nFormatter(item.count)} {pluralize(item.count, "field", "fields")}
           </Text>
           <Text>{item.label}</Text>
-          {severity && <SeverityGauge severity={severity} />}
+          {severity && (
+            <SeverityGauge severity={severity} format={() => null} />
+          )}
         </Space>
       }
       actions={getActions(item, reviewHref)}
