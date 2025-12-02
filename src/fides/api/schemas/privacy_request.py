@@ -390,6 +390,11 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
 # automatic batching to avoid memory issues with large request lists.
 BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
 
+# Maximum number of privacy requests that can be returned from filter queries
+# for bulk operations. This prevents accidentally matching thousands of requests
+# which could cause memory/performance issues.
+MAX_BULK_FILTER_RESULTS = 10000
+
 
 class PrivacyRequestBulkSelection(FidesSchema):
     """
