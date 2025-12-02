@@ -909,42 +909,10 @@ class TestConnectionService:
             "user.contact.address.street"
         ]
 
-    def test_merge_dataset_fields(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test merge datasets function for fields changes"""
-
-        # Expected result: merged dataset from all three sources
-
-        # INTEGRATION UPDATE CHANGES
-        upcoming_dataset = copy.deepcopy(stored_dataset)
-        upcoming_dataset["fides_key"] = "test_instance_key"
-        del upcoming_dataset["collections"][0]["fields"][2]  # delete email field
-        # change data type of product_id field
-        upcoming_dataset["collections"][0]["fields"][0]["fides_meta"][
-            "data_type"
-        ] = "string"
-        # change data category of address field
-        upcoming_dataset["collections"][0]["fields"][2]["data_categories"] = [
-            "user.contact.email"
-        ]
-
-        # CUSTOMER CHANGES
-        # customer changed the data categories of the customer_id field
-        customer_dataset = copy.deepcopy(stored_dataset)
-        customer_dataset["collections"][0]["fields"][1]["data_categories"] = [
-            "user.name"
-        ]
-        # changed data type of product_id field
-        customer_dataset["collections"][0]["fields"][0]["fides_meta"][
-            "data_type"
-        ] = "object"
-
-        new_field = {
-            "name": "custom_attribute",
+    def _create_custom_field(self, name: str = "custom_attribute") -> Dict[str, Any]:
+        """Helper method to create a custom field for testing."""
+        return {
+            "name": name,
             "description": None,
             "data_categories": ["user.preferences"],
             "fides_meta": {
@@ -961,9 +929,108 @@ class TestConnectionService:
             },
             "fields": None,
         }
-        # add new field to customer dataset
-        customer_dataset["collections"][0]["fields"].append(new_field)
 
+    def _apply_dataset_changes(self, dataset: Dict[str, Any], changes: Dict[str, Any]) -> Dict[str, Any]:
+        """Helper method to apply changes to a dataset."""
+        modified_dataset = copy.deepcopy(dataset)
+        modified_dataset["fides_key"] = "test_instance_key"
+
+        if "delete_fields" in changes:
+            for field_index in sorted(changes["delete_fields"], reverse=True):
+                del modified_dataset["collections"][0]["fields"][field_index]
+
+        if "field_changes" in changes:
+            for field_name, field_changes in changes["field_changes"].items():
+                field = next(f for f in modified_dataset["collections"][0]["fields"] if f["name"] == field_name)
+                if "data_type" in field_changes:
+                    field["fides_meta"]["data_type"] = field_changes["data_type"]
+                if "data_categories" in field_changes:
+                    field["data_categories"] = field_changes["data_categories"]
+
+        if "add_fields" in changes:
+            for field_data in changes["add_fields"]:
+                modified_dataset["collections"][0]["fields"].append(field_data)
+
+        if "clear_fields" in changes and changes["clear_fields"]:
+            modified_dataset["collections"][0]["fields"] = []
+
+        return modified_dataset
+
+    @pytest.mark.parametrize(
+        "scenario_name,upcoming_changes,customer_changes,expected_fields,expected_field_count",
+        [
+            (
+                "basic_merge_with_priority",
+                {
+                    "delete_fields": [2],  # delete email field
+                    "field_changes": {
+                        "product_id": {"data_type": "string"},
+                        "address": {"data_categories": ["user.contact.email"]},
+                    },
+                },
+                {
+                    "field_changes": {
+                        "customer_id": {"data_categories": ["user.name"]},
+                        "product_id": {"data_type": "object"},  # should override upcoming change
+                    },
+                    "add_fields": ["custom_field"],
+                },
+                {
+                    "customer_id": {"data_categories": ["user.name"]},
+                    "product_id": {"data_type": "object"},
+                    "address": {"data_categories": ["user.contact.email"]},
+                    "custom_attribute": {"exists": True},
+                },
+                4,
+            ),
+            (
+                "customer_deletes_all_fields",
+                {"delete_fields": [2]},  # delete email field
+                {"clear_fields": True},
+                {
+                    "email": {"exists": False},
+                    "custom_attribute": {"exists": False},
+                    "product_id": {"exists": True},
+                    "customer_id": {"exists": True},
+                    "address": {"exists": True},
+                },
+                3,
+            ),
+            (
+                "integration_deletes_all_fields",
+                {"clear_fields": True},
+                {"add_fields": ["custom_field"]},
+                {
+                    "custom_attribute": {"exists": True},
+                },
+                1,
+            ),
+        ],
+    )
+    def test_merge_dataset_fields(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+        scenario_name: str,
+        upcoming_changes: Dict[str, Any],
+        customer_changes: Dict[str, Any],
+        expected_fields: Dict[str, Any],
+        expected_field_count: int,
+    ):
+        """Test merge datasets function for various field change scenarios."""
+
+        # Apply changes to create test datasets
+        upcoming_dataset = self._apply_dataset_changes(stored_dataset, upcoming_changes)
+
+        # Handle custom field addition for customer changes
+        if "add_fields" in customer_changes and "custom_field" in customer_changes["add_fields"]:
+            customer_changes = copy.deepcopy(customer_changes)
+            customer_changes["add_fields"] = [self._create_custom_field()]
+
+        customer_dataset = self._apply_dataset_changes(stored_dataset, customer_changes)
+
+        # Execute merge
         result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
@@ -971,117 +1038,65 @@ class TestConnectionService:
             instance_key="test_instance_key",
         )
 
-        # Expected result:
-        # - products collection: email field deleted (upcoming dataset change)
-        # - products collection: customer_id field data categories changed (customer dataset change)
-        # - products collection: product_id field data type changed from integer to object (customer dataset change took priority over upcoming dataset change)
-        # - products collection: address field data categories changed from None to ["user.contact.email"] (customer dataset change)
-        # - products collection: custom_attribute field added (customer dataset change)
+        # Verify results
         products_collection = result_dataset_dict["collections"][0]
         products_fields_map = {f["name"]: f for f in products_collection["fields"]}
-        assert len(products_fields_map) == 4
-        assert "email" not in products_fields_map
-        assert products_fields_map["customer_id"]["data_categories"] == ["user.name"]
-        assert products_fields_map["product_id"]["fides_meta"]["data_type"] == "object"
-        assert products_fields_map["address"]["data_categories"] == [
-            "user.contact.email"
-        ]
-        assert products_fields_map["custom_attribute"]
 
-        # check that by making no changes the customer dataset stays the same
-        stored_dataset = copy.deepcopy(
-            upcoming_dataset
-        )  # upcoming dataset is now the stored dataset
-        upcoming_dataset = copy.deepcopy(stored_dataset)  # no changes were made
-        customer_dataset = copy.deepcopy(result_dataset_dict)
-        expected_dataset = copy.deepcopy(result_dataset_dict)
+        assert len(products_fields_map) == expected_field_count, f"Expected {expected_field_count} fields, got {len(products_fields_map)}"
 
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+        # Check specific field expectations
+        for field_name, expectations in expected_fields.items():
+            if expectations.get("exists", True):
+                assert field_name in products_fields_map, f"Field {field_name} should exist"
+                field = products_fields_map[field_name]
+
+                if "data_categories" in expectations:
+                    assert field["data_categories"] == expectations["data_categories"]
+                if "data_type" in expectations:
+                    assert field["fides_meta"]["data_type"] == expectations["data_type"]
+            else:
+                assert field_name not in products_fields_map, f"Field {field_name} should not exist"
+
+    def test_merge_dataset_fields_no_changes_preserves_state(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """Test that when no changes are made, the merged dataset state is preserved."""
+        # First create a merged dataset with changes
+        upcoming_changes = {"delete_fields": [2], "field_changes": {"product_id": {"data_type": "string"}}}
+        customer_changes = {"field_changes": {"customer_id": {"data_categories": ["user.name"]}}, "add_fields": ["custom_field"]}
+
+        upcoming_dataset = self._apply_dataset_changes(stored_dataset, upcoming_changes)
+        customer_changes_with_field = copy.deepcopy(customer_changes)
+        customer_changes_with_field["add_fields"] = [self._create_custom_field()]
+        customer_dataset = self._apply_dataset_changes(stored_dataset, customer_changes_with_field)
+
+        # Get initial merged result
+        initial_result = connection_service.merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
             instance_key="test_instance_key",
         )
 
-        # Verify that when no changes are made, the result preserves the merged dataset
-        # Check dataset-level properties
-        assert result_dataset_dict["fides_key"] == "test_instance_key"
-        assert result_dataset_dict["name"] == "Template Dataset"
-        assert result_dataset_dict["description"] == "Dataset from template"
+        # Now test with no changes (upcoming dataset becomes stored, no new changes)
+        no_change_result = connection_service.merge_datasets(
+            stored_dataset=upcoming_dataset,
+            customer_dataset=initial_result,
+            upcoming_dataset=upcoming_dataset,
+            instance_key="test_instance_key",
+        )
 
-        # Check collections structure
-        assert len(result_dataset_dict["collections"]) == 1
-        products_collection = result_dataset_dict["collections"][0]
+        # Verify preservation of merged state
+        assert no_change_result["fides_key"] == "test_instance_key"
+        assert no_change_result["name"] == "Template Dataset"
+        assert no_change_result["description"] == "Dataset from template"
 
-        # Check that all expected fields are present (order-independent)
-        fields_by_name = {
-            field["name"]: field for field in products_collection["fields"]
-        }
-        expected_field_names = {
-            "product_id",
-            "customer_id",
-            "address",
-            "custom_attribute",
-        }
+        fields_by_name = {field["name"]: field for field in no_change_result["collections"][0]["fields"]}
+        expected_field_names = {"product_id", "customer_id", "address", "custom_attribute"}
         assert set(fields_by_name.keys()) == expected_field_names
-
-        # Verify specific field properties from the previous merge
-        assert fields_by_name["customer_id"]["data_categories"] == ["user.name"]
-        assert fields_by_name["product_id"]["fides_meta"]["data_type"] == "object"
-        assert fields_by_name["address"]["data_categories"] == ["user.contact.email"]
-        assert fields_by_name["custom_attribute"]["data_categories"] == [
-            "user.preferences"
-        ]
-
-        # test that the customer can delete a field they added but not fields that exist in the official dataset
-        customer_dataset_no_fields = copy.deepcopy(customer_dataset)
-        customer_dataset_no_fields["collections"][0]["fields"] = []
-
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset_no_fields,
-            upcoming_dataset=upcoming_dataset,
-            instance_key="test_instance_key",
-        )
-
-        # since the customer deleted all its fields
-        # Their changes are now lost and we will use what is in the upcoming dataset
-        products_collection = result_dataset_dict["collections"][0]
-        assert len(products_collection["fields"]) == 3
-        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
-        assert "email" not in products_fields_map
-        assert "custom_attribute" not in products_fields_map
-        assert products_fields_map["product_id"]
-        assert products_fields_map["customer_id"]
-        assert products_fields_map["address"]
-
-        # test that an integration update deletes all fields except the ones that were added by the customer
-        upcoming_dataset_no_fields = copy.deepcopy(upcoming_dataset)
-        upcoming_dataset_no_fields["collections"][0]["fields"] = []
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset_no_fields,
-            instance_key="test_instance_key",
-        )
-
-        # only the customer added field is present in products collection
-        products_collection = result_dataset_dict["collections"][0]
-        assert len(products_collection["fields"]) == 1
-        products_fields_map = {f["name"]: f for f in products_collection["fields"]}
-        assert products_fields_map["custom_attribute"]
-
-        customer_dataset_no_fields = copy.deepcopy(result_dataset_dict)
-        # Test that once we delete the customer field the collection has no remaining fields
-        customer_dataset_no_fields["collections"][0]["fields"] = []
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset_no_fields,
-            upcoming_dataset=upcoming_dataset_no_fields,
-            instance_key="test_instance_key",
-        )
-
-        assert len(result_dataset_dict["collections"][0]["fields"]) == 0
 
     def test_merge_collections(
         self,
