@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional, Set, Tuple
 
 import yaml
 from deepdiff import DeepDiff
@@ -7,6 +7,7 @@ from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -67,7 +68,6 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
-from fides.service.dataset.dataset_config_service import PydanticValidationError
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -76,7 +76,7 @@ class ConnectorTemplateNotFound(Exception):
 
 
 def _detect_connection_config_changes(
-    original_config_dict: Dict[str, Any], new_config_dict: Dict[str, Any]
+    original_config_dict: dict[str, Any], new_config_dict: dict[str, Any]
 ) -> Set[str]:
     """
     Detect which fields have changed between two connection configuration dictionaries.
@@ -587,7 +587,7 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
         )
 
@@ -615,7 +615,7 @@ class ConnectionService:
         """Creates a SaaS connection config from a template without saving it."""
         # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
 
@@ -633,10 +633,10 @@ class ConnectionService:
 
     def _merge_field(
         self,
-        upcoming_field: Optional[Dict],
-        customer_field: Optional[Dict],
-        original_field: Optional[Dict],
-    ) -> Optional[Dict]:
+        upcoming_field: Optional[dict[str, Any]],
+        customer_field: Optional[dict[str, Any]],
+        original_field: Optional[dict[str, Any]],
+    ) -> Optional[dict[str, Any]]:
         """
         Recursively merges a single field.
         If the customer made changes to the field (compared to stored dataset), preserve customer's version.
@@ -704,10 +704,10 @@ class ConnectionService:
 
     def _merge_fields(
         self,
-        upcoming_fields_by_name: Dict[str, Dict],
-        customer_fields_by_name: Dict[str, Dict],
-        original_fields_by_name: Dict[str, Dict],
-    ) -> List[Dict]:
+        upcoming_fields_by_name: dict[str, dict[str, Any]],
+        customer_fields_by_name: dict[str, dict[str, Any]],
+        original_fields_by_name: dict[str, dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """
         Merges a list of fields by comparing upcoming, customer, and original versions.
         Returns a list of merged fields.
@@ -752,10 +752,10 @@ class ConnectionService:
 
     def _merge_collection(
         self,
-        upcoming_collection: Dict,
-        customer_collection: Dict,
-        original_collection: Dict,
-    ) -> Dict:
+        upcoming_collection: dict[str, Any],
+        customer_collection: dict[str, Any],
+        original_collection: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Merges a collection by merging its fields.
         Returns the merged collection.
@@ -783,24 +783,24 @@ class ConnectionService:
 
     def merge_datasets(
         self,
-        customer_dataset: Dict,
-        stored_dataset: Dict,
-        upcoming_dataset: Dict,
+        customer_dataset: dict[str, Any],
+        stored_dataset: dict[str, Any],
+        upcoming_dataset: dict[str, Any],
         instance_key: str,
-    ) -> Dict:
+    ) -> dict[str, Any]:
         """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
         stored_dataset_copy = copy.deepcopy(stored_dataset)
         upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
 
         # Normalize stored and upcoming datasets to have the same complete structure as customer dataset
         # This ensures consistent field comparison by using the same Pydantic model serialization
-        def normalize_dataset(dataset: Dict, dataset_name: str) -> Optional[Dict]:
+        def normalize_dataset(
+            dataset: dict[str, Any], dataset_name: str
+        ) -> Optional[dict[str, Any]]:
             try:
                 return FideslangDataset(**dataset).model_dump(mode="json")
             except PydanticValidationError as e:
-                logger.warning(
-                    f"{dataset_name} normalization failed validation: {e}"
-                )
+                logger.warning(f"{dataset_name} normalization failed validation: {e}")
                 return None
             except Exception as e:
                 logger.warning(
@@ -808,10 +808,15 @@ class ConnectionService:
                 )
                 return None
 
-        stored_dataset_copy = normalize_dataset(stored_dataset_copy, "stored")
-        upcoming_dataset_copy = normalize_dataset(upcoming_dataset_copy, "upcoming")
-        if stored_dataset_copy is None or upcoming_dataset_copy is None:
+        normilzed_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
+        normilzed_upcoming_dataset = normalize_dataset(
+            upcoming_dataset_copy, "upcoming"
+        )
+        if normilzed_stored_dataset is None or normilzed_upcoming_dataset is None:
             return upcoming_dataset
+
+        stored_dataset_copy = normilzed_stored_dataset
+        upcoming_dataset_copy = normilzed_upcoming_dataset
 
         # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
         if isinstance(stored_dataset_copy.get("fides_key"), str):
@@ -867,7 +872,7 @@ class ConnectionService:
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        upcoming_dataset: Dict = replace_dataset_placeholders(
+        upcoming_dataset: dict = replace_dataset_placeholders(
             template.dataset, "<instance_fides_key>", template_values.instance_key
         )
 
