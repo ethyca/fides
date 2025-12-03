@@ -19,7 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.75.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.2..main)
+
+## [2.75.2](https://github.com/ethyca/fides/compare/2.75.1..2.75.2)
+
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix React Server vulnerability [#7061](https://github.com/ethyca/fides/pull/7061)
+
 
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
