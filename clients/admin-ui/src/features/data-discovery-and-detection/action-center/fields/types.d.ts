@@ -45,3 +45,10 @@ export interface MonitorFieldParameters {
   };
   query: MonitorFieldQueryParameters;
 }
+
+export type TreeNodeAction = {
+  label: string;
+  /** TODO: should be generically typed * */
+  callback: (key: Key, node: CustomTreeDataNode) => void;
+  disabled?: (node: CustomTreeDataNode) => Promise<boolean>;
+};
