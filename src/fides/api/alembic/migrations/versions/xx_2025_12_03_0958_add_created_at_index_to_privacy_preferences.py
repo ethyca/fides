@@ -17,8 +17,15 @@ depends_on = None
 
 
 def upgrade():
-    op.create_index(op.f('ix_privacy_preferences_created_at'), 'privacy_preferences', ['created_at'], unique=False)
+    op.create_index(
+        op.f("ix_privacy_preferences_created_at"),
+        "privacy_preferences",
+        ["created_at"],
+        unique=False,
+    )
 
 
 def downgrade():
-    op.drop_index(op.f('ix_privacy_preferences_created_at'), table_name='privacy_preferences')
+    op.drop_index(
+        op.f("ix_privacy_preferences_created_at"), table_name="privacy_preferences"
+    )
