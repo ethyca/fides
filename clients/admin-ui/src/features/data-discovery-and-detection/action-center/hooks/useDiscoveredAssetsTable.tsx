@@ -211,6 +211,7 @@ export const useDiscoveredAssetsTable = ({
           </Text>
         ),
         fixed: "left",
+        width: 200,
       },
       {
         title: "Type",
@@ -241,6 +242,7 @@ export const useDiscoveredAssetsTable = ({
               }}
             />
           ),
+        width: 200,
       },
       {
         title: "Categories of consent",
@@ -277,6 +279,7 @@ export const useDiscoveredAssetsTable = ({
             }}
           />
         ),
+        width: 200,
       },
       {
         title: "Locations",
@@ -395,6 +398,7 @@ export const useDiscoveredAssetsTable = ({
             stagedResource={record}
           />
         ),
+        width: 160,
       });
     }
 
