@@ -1,6 +1,6 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
 import { uniq } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -180,10 +180,15 @@ export const MonitorFieldFilters = ({
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
 
-  // Reset filters to default state when stagedResourceUrn changes
-  // Use JSON.stringify to compare array contents, not reference
+  // Reset filters to default state when stagedResourceUrn changes (but not on initial mount)
+  // Use join to compare array contents, not reference
   const stagedResourceUrnKey = stagedResourceUrn.join(",");
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     resetToInitialState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stagedResourceUrnKey]);
