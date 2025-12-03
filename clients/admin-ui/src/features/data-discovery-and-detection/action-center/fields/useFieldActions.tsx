@@ -111,7 +111,8 @@ export const useFieldActions = (
 
       // Refresh the tree to reflect updated status
       // An indicator may change to empty if there are no child resources that the user is expected to act upon.
-      if (onRefreshTree) {
+      // Note: this does not belong here. Cache invalidation should handle resource refresh
+      if (actionType !== FieldActionType.PROMOTE_REMOVALS && onRefreshTree) {
         await onRefreshTree(urns);
       }
     };
