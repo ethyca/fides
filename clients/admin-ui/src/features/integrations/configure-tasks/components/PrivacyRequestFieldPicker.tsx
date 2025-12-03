@@ -1,4 +1,8 @@
-import { AntSelect as Select, AntTypography as Typography } from "fidesui";
+import {
+  AntSelect as Select,
+  AntTypography as Typography,
+  Flex,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { useGetPrivacyRequestFieldsQuery } from "~/features/datastore-connections/connection-manual-tasks.slice";
@@ -33,7 +37,7 @@ export const PrivacyRequestFieldPicker = ({
     }
 
     const flattenedFields = flattenPrivacyRequestFields(
-      data.privacy_request,
+      data.privacy_request as Record<string, unknown>,
       ALLOWED_PRIVACY_REQUEST_FIELDS,
     );
 
@@ -42,21 +46,21 @@ export const PrivacyRequestFieldPicker = ({
 
   if (error) {
     return (
-      <div className="py-2">
+      <Flex className="py-2">
         <Typography.Text type="danger">
           Failed to load privacy request fields. Please try again.
         </Typography.Text>
-      </div>
+      </Flex>
     );
   }
 
   if (!isLoading && fieldOptions.length === 0) {
     return (
-      <div className="py-2">
+      <Flex className="py-2">
         <Typography.Text type="secondary">
           No privacy request fields available.
         </Typography.Text>
-      </div>
+      </Flex>
     );
   }
 

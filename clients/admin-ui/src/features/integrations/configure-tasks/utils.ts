@@ -102,24 +102,41 @@ export const formatFieldDisplay = (fieldAddress: string): string => {
   return fieldAddress;
 };
 
+// Type guard to validate PrivacyRequestFieldDefinition at runtime
+function isPrivacyRequestFieldDefinition(
+  val: unknown,
+): val is PrivacyRequestFieldDefinition {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "field_path" in val &&
+    "field_type" in val &&
+    "description" in val &&
+    "is_convenience_field" in val
+  );
+}
+
 export const flattenPrivacyRequestFields = (
-  data: any,
+  data: Record<string, unknown>,
   allowedFields: string[],
 ): PrivacyRequestFieldDefinition[] => {
   const flattenedFields: PrivacyRequestFieldDefinition[] = [];
 
-  const flatten = (obj: any, prefix: string = "privacy_request"): void => {
+  const flatten = (
+    obj: Record<string, unknown>,
+    prefix: string = "privacy_request",
+  ): void => {
     Object.entries(obj).forEach(([key, val]) => {
       const fieldPath = `${prefix}.${key}`;
 
-      if (val && typeof val === "object" && "field_path" in val) {
+      if (isPrivacyRequestFieldDefinition(val)) {
         // It's a field definition
         if (allowedFields.includes(fieldPath)) {
-          flattenedFields.push(val as PrivacyRequestFieldDefinition);
+          flattenedFields.push(val);
         }
       } else if (val && typeof val === "object") {
         // It's a nested object, recurse
-        flatten(val, fieldPath);
+        flatten(val as Record<string, unknown>, fieldPath);
       }
     });
   };
