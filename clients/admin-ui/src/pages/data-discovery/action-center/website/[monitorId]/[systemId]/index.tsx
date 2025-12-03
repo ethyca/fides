@@ -58,6 +58,7 @@ const MonitorResultAssets: NextPage = () => {
                 : system?.name,
           },
         ]}
+        isSticky={false}
       />
       <DiscoveredAssetsTable
         monitorId={monitorId}
