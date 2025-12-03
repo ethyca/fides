@@ -24,7 +24,6 @@ interface InfrastructureSystemActionsCellProps {
     name?: string | null;
   };
   allowIgnore?: boolean;
-  onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
   activeTab?: ActionCenterTabHash | null;
   addIcon?: React.ReactNode;
   ignoreIcon?: React.ReactNode;
