@@ -65,7 +65,9 @@ class PrivacyPreferences(Base):
 
     # Override base class timestamp columns to match migration
     created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=text("now()")
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()", index=True),
     )
     updated_at = Column(DateTime(timezone=True), nullable=True)
 
