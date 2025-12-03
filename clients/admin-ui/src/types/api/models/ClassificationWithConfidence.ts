@@ -7,8 +7,11 @@ import type { ConfidenceBucket } from "./ConfidenceBucket";
 /**
  * Pydantic Schema used to represent a classification with a confidence bucket.
  *
- * The confidence_bucket is calculated based on the confidence_rating (1-5 integer)
- * compared against high and low thresholds, not the score field.
+ * The confidence_bucket is automatically calculated based on the confidence_rating
+ * (1-5 integer) compared against configurable high/low thresholds, not the score field.
+ * NULL confidence_rating is treated as 0, which maps to the LOW bucket.
+ *
+ * Thresholds are read from config. For testing, set config values via fixtures.
  */
 export type ClassificationWithConfidence = {
   label: string;
