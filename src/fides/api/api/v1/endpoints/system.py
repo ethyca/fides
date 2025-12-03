@@ -557,7 +557,7 @@ async def get(
 )
 def instantiate_connection_from_template(
     fides_key: str,
-    saas_connector_type: str,
+    connector_template_type: str,
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
 ) -> SaasConnectionTemplateResponse:
@@ -567,4 +567,4 @@ def instantiate_connection_from_template(
     """
 
     system = get_system(db, fides_key)
-    return instantiate_connection(db, saas_connector_type, template_values, system)
+    return instantiate_connection(db, connector_template_type, template_values, system)
