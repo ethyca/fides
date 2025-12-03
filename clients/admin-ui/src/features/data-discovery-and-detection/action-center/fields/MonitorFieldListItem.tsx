@@ -130,10 +130,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
       key={urn}
       actions={[
         confidenceBucketSeverity && (
-          <SeverityGauge
-            severity={confidenceBucketSeverity}
-            flexProps={{ className: "mr-2" }}
-          />
+          <SeverityGauge severity={confidenceBucketSeverity} className="mr-2" />
         ),
         ...(actions ?? []),
       ]}
