@@ -14,7 +14,6 @@ import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { nFormatter, pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
-import { ConfidenceLevelLabel } from "./constants";
 import { useConfirmAllFields } from "./fields/useConfirmAllFields";
 import { mapConfidenceBucketToSeverity } from "./fields/utils";
 
@@ -60,7 +59,7 @@ const getActions = ({
       </Button>
     </NextLink>,
   ];
-  if (item.label === ConfidenceLevelLabel.HIGH && onConfirmAll) {
+  if (item.severity === ConfidenceBucket.HIGH && onConfirmAll) {
     actions.push(
       <Button
         key="confirm"

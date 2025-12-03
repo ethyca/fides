@@ -43,7 +43,7 @@ export const useConfirmAllFields = (monitorId: string) => {
     messageApi.open({
       key,
       type: "loading",
-      content: `${FIELD_ACTION_INTERMEDIATE[actionType]} ${count} ${pluralize(count, "resource", "resources")}...`,
+      content: `${FIELD_ACTION_INTERMEDIATE[actionType]} ${count} ${pluralize(count, "field", "fields")}...`,
       duration: 0,
     });
 

@@ -15,6 +15,7 @@ import {
   Icons,
   SparkleIcon,
 } from "fidesui";
+import { AnimatePresence, motion } from "framer-motion";
 import NextLink from "next/link";
 import { useState } from "react";
 
@@ -105,7 +106,7 @@ export const MonitorResult = ({
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Flex vertical gap="large" className="grow">
+        <Flex vertical className="grow">
           <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
             <Col span={14}>
               <List.Item.Meta
@@ -176,6 +177,10 @@ export const MonitorResult = ({
                     onClick={() =>
                       setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
                     }
+                    aria-haspopup="true"
+                    aria-expanded={isConfidenceRowExpanded}
+                    aria-controls={`confidence-row-${key}`}
+                    aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
                   >
                     <Space>
                       <SparkleIcon />
@@ -196,13 +201,29 @@ export const MonitorResult = ({
               </NextLink>
             </Col>
           </Row>
-          {showConfidenceRow && isConfidenceRowExpanded && confidenceCounts && (
-            <ConfidenceRow
-              confidenceCounts={confidenceCounts}
-              reviewHref={href}
-              monitorId={key}
-            />
-          )}
+          <AnimatePresence initial={false}>
+            {showConfidenceRow &&
+              isConfidenceRowExpanded &&
+              confidenceCounts && (
+                // TODO: [ENG-2136] Add a custom Expanded/Collapsed animation component in FidesUI
+                <motion.div
+                  key="confidence-row"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <ConfidenceRow
+                    confidenceCounts={confidenceCounts}
+                    reviewHref={href}
+                    monitorId={key}
+                    className="mt-6"
+                    id={`confidence-row-${key}`}
+                  />
+                </motion.div>
+              )}
+          </AnimatePresence>
         </Flex>
       </Skeleton>
     </List.Item>

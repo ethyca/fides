@@ -30,25 +30,23 @@ export const ConfidenceRow = ({
   return (
     <List
       grid={{ gutter: 16, column: 3 }}
-      dataSource={
-        [
-          {
-            label: ConfidenceLevelLabel.HIGH,
-            count: confidenceCounts.highConfidenceCount,
-            severity: ConfidenceBucket.HIGH,
-          },
-          {
-            label: ConfidenceLevelLabel.MEDIUM,
-            count: confidenceCounts.mediumConfidenceCount,
-            severity: ConfidenceBucket.MEDIUM,
-          },
-          {
-            label: ConfidenceLevelLabel.LOW,
-            count: confidenceCounts.lowConfidenceCount,
-            severity: ConfidenceBucket.LOW,
-          },
-        ].filter((item) => item.count > 0) as ConfidenceCardItem[]
-      }
+      dataSource={[
+        {
+          label: ConfidenceLevelLabel.HIGH,
+          count: confidenceCounts.highConfidenceCount,
+          severity: ConfidenceBucket.HIGH,
+        },
+        {
+          label: ConfidenceLevelLabel.MEDIUM,
+          count: confidenceCounts.mediumConfidenceCount,
+          severity: ConfidenceBucket.MEDIUM,
+        },
+        {
+          label: ConfidenceLevelLabel.LOW,
+          count: confidenceCounts.lowConfidenceCount,
+          severity: ConfidenceBucket.LOW,
+        },
+      ].filter((item) => item.count > 0)}
       renderItem={(item) => (
         <List.Item>
           <ConfidenceCard
