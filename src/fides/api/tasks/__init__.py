@@ -1,5 +1,6 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
+import celery_healthcheck
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
@@ -102,6 +103,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     )
 
     app = Celery(__name__)
+    celery_healthcheck.register(app)
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
@@ -112,6 +114,8 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
         # Ops requires this to route emails to separate queues
         "task_create_missing_queues": True,
         "task_default_queue": "fides",
+        "healthcheck_port": config.celery.healthcheck_port,
+        "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }
 
     celery_config.update(config.celery)

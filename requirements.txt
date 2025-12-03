@@ -7,6 +7,7 @@ asyncpg==0.27.0
 boto3==1.26.1
 certifi==2024.8.30
 celery[pytest]==5.5.3
+celery-healthcheck==0.2.0
 click==8.1.8
 click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
@@ -18,7 +19,7 @@ objgraph==3.6.0
 defusedxml==0.7.1
 types-defusedxml==0.7.0.20240218
 expandvars==0.9.0
-fastapi[all]==0.115.2
+fastapi[all]==0.115.12
 fastapi-pagination[sqlalchemy]==0.12.25
 fideslog==1.2.14
 firebase-admin==5.3.0
