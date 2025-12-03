@@ -2,14 +2,8 @@ import { AntList as List, AntListProps as ListProps } from "fidesui";
 
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
-import { ConfidenceCard } from "./ConfidenceCard";
+import { ConfidenceCard, ConfidenceCardItem } from "./ConfidenceCard";
 import { ConfidenceLevelLabel } from "./constants";
-
-interface ConfidenceCardItem {
-  label: string;
-  count: number;
-  severity: ConfidenceBucket;
-}
 
 interface ConfidenceRowProps extends ListProps<ConfidenceCardItem> {
   confidenceCounts: {

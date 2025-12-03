@@ -17,7 +17,7 @@ import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { useConfirmAllFields } from "./fields/useConfirmAllFields";
 import { mapConfidenceBucketToSeverity } from "./fields/utils";
 
-interface ConfidenceCardItem {
+export interface ConfidenceCardItem {
   label: string;
   count: number;
   severity: ConfidenceBucket;
