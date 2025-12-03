@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { DatasetReferencePicker } from "~/features/common/dataset";
+import { useFlags } from "~/features/common/features/features.slice";
 import { ConditionLeaf, Operator } from "~/types/api";
 
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
@@ -71,6 +72,11 @@ const AddConditionForm = ({
 }: AddConditionFormProps) => {
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
+  const { flags } = useFlags();
+
+  // Check if privacy request field conditions feature is enabled
+  const privacyRequestFieldConditionsEnabled =
+    flags.alphaPrivacyRequestFieldConditions ?? false;
 
   const [fieldSource, setFieldSource] = useState<FieldSource>(
     getInitialFieldSource(editingCondition),
@@ -159,39 +165,46 @@ const AddConditionForm = ({
       layout="vertical"
       initialValues={initialValues}
     >
-      <Form.Item
-        name="fieldSource"
-        label="Field source"
-        rules={[{ required: true, message: "Field source is required" }]}
-      >
-        <Radio.Group onChange={handleFieldSourceChange}>
-          <Radio
-            value={FieldSource.PRIVACY_REQUEST}
-            data-testid="field-source-privacy-request"
-          >
-            Privacy request field
-          </Radio>
-          <Radio value={FieldSource.DATASET} data-testid="field-source-dataset">
-            Dataset field
-          </Radio>
-        </Radio.Group>
-      </Form.Item>
+      {privacyRequestFieldConditionsEnabled && (
+        <Form.Item
+          name="fieldSource"
+          label="Field source"
+          rules={[{ required: true, message: "Field source is required" }]}
+        >
+          <Radio.Group onChange={handleFieldSourceChange}>
+            <Radio
+              value={FieldSource.PRIVACY_REQUEST}
+              data-testid="field-source-privacy-request"
+            >
+              Privacy request field
+            </Radio>
+            <Radio
+              value={FieldSource.DATASET}
+              data-testid="field-source-dataset"
+            >
+              Dataset field
+            </Radio>
+          </Radio.Group>
+        </Form.Item>
+      )}
 
       <Form.Item
         name="fieldAddress"
         label="Field"
         rules={[{ required: true, message: "Field is required" }]}
         tooltip={
+          !privacyRequestFieldConditionsEnabled ||
           fieldSource === FieldSource.DATASET
             ? "Select a field from your datasets to use in the condition"
             : "Select a privacy request field to use in the condition"
         }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        {fieldSource === FieldSource.DATASET ? (
-          <DatasetReferencePicker />
-        ) : (
+        {privacyRequestFieldConditionsEnabled &&
+        fieldSource === FieldSource.PRIVACY_REQUEST ? (
           <PrivacyRequestFieldPicker connectionKey={connectionKey} />
+        ) : (
+          <DatasetReferencePicker />
         )}
       </Form.Item>
 
