@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Support for confidence level visual and filtering in action center [#7040](https://github.com/ethyca/fides/pull/7040)
 - Endpoints to pull SaaS integration configurations [#6868](https://github.com/ethyca/fides/pull/6868)
 - Tree view actions for Remove and Classify in the Action Center [#7021](https://github.com/ethyca/fides/pull/7021)
+- Added expandable confidence level summary cards to the Action Center home page [#7056](https://github.com/ethyca/fides/pull/7056)
 
 ### Changed
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
