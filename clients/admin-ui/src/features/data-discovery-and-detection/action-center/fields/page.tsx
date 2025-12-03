@@ -45,6 +45,7 @@ import {
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
+  RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import {
@@ -88,7 +89,7 @@ const ActionCenterFields: NextPage = () => {
   const search = useSearch();
   const {
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     dataCategory,
     ...restMonitorFieldsFilters
   } = useMonitorFieldsFilters();
@@ -106,7 +107,7 @@ const ActionCenterFields: NextPage = () => {
       diff_status: resourceStatus
         ? resourceStatus.flatMap(intoDiffStatus)
         : undefined,
-      confidence_score: confidenceScore || undefined,
+      confidence_bucket: confidenceBucket || undefined,
       data_category: dataCategory || undefined,
     },
   };
@@ -137,6 +138,8 @@ const ActionCenterFields: NextPage = () => {
     allowedActionsTrigger,
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
+  const [allowedTreeActionsTrigger] = useLazyGetAllowedActionsQuery();
+
   const resource = stagedResourceDetailsResult.data;
   const bulkActions = useBulkActions(
     monitorId,
@@ -249,7 +252,7 @@ const ActionCenterFields: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     selectedNodeKeys,
     search.searchQuery,
     dataCategory,
@@ -287,13 +290,31 @@ const ActionCenterFields: NextPage = () => {
         >
           <MonitorTree
             ref={monitorTreeRef}
-            selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={() => {
-              fieldActions.classify(
-                selectedNodeKeys.map((key) => key.toString()),
-              );
-            }}
+            nodeActions={
+              new Map(
+                RESOURCE_ACTIONS.map((action) => [
+                  action,
+                  {
+                    label: FIELD_ACTION_LABEL[action],
+                    disabled: async (node) => {
+                      const result = await allowedTreeActionsTrigger({
+                        path: baseMonitorFilters.path,
+                        query: {
+                          staged_resource_urn: [node.key.toString()],
+                        },
+                        body: {
+                          excluded_resource_urns: [],
+                        },
+                      });
+
+                      return !result.data?.allowed_actions.includes(action);
+                    },
+                    callback: (key) => fieldActions[action]([key], false),
+                  },
+                ]),
+              )
+            }
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -330,7 +351,7 @@ const ActionCenterFields: NextPage = () => {
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
-                  confidenceScore={confidenceScore}
+                  confidenceBucket={confidenceBucket}
                   dataCategory={dataCategory}
                   {...restMonitorFieldsFilters}
                   monitorId={monitorId}
@@ -494,7 +515,7 @@ const ActionCenterFields: NextPage = () => {
                   onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], {
+                    fieldActions["assign-categories"]([urn], true, {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
@@ -568,7 +589,7 @@ const ActionCenterFields: NextPage = () => {
           : DEFAULT_DRAWER_ACTIONS
         ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
-          callback: (value) => fieldActions[action]([value]),
+          callback: (key) => fieldActions[action]([key]),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
                 (status) => status === resource.diff_status,
