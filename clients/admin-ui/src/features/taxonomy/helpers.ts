@@ -10,7 +10,7 @@ export const transformTaxonomyEntityToNodes = (
   let thisLevel: TaxonomyEntity[];
   // handle the case where there are no parent keys, i.e. should just be a flat list (data subjects)
   if (
-    parentKey == null &&
+    (parentKey === null || parentKey === undefined) &&
     entities.every((entity) => entity.parent_key === undefined)
   ) {
     thisLevel = entities;
@@ -23,10 +23,7 @@ export const transformTaxonomyEntityToNodes = (
     const thisLevelKey = thisLevelEntity.fides_key;
     return {
       value: thisLevelEntity.fides_key,
-      label:
-        thisLevelEntity.name === "" || thisLevelEntity.name == null
-          ? thisLevelEntity.fides_key
-          : thisLevelEntity.name,
+      label: thisLevelEntity.name || thisLevelEntity.fides_key,
       description: thisLevelEntity.description,
       children: transformTaxonomyEntityToNodes(entities, thisLevelKey),
       is_default: thisLevelEntity.is_default ?? false,

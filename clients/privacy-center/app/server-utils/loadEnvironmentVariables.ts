@@ -10,10 +10,20 @@ import type {
 
 /**
  * Default value for how long to cache the /fides.js bundle for, in seconds.
- * This can be overriden via the FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS
+ * This can be overridden via the FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS
  * environment variable.
  */
 export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+
+/**
+ * Default value for how long stale content can be served for the /fides.js bundle, in seconds.
+ * This applies to both stale-while-revalidate (serve stale while fetching fresh) and
+ * stale-if-error (serve stale if origin fails).
+ * This can be overridden via the FIDES_PRIVACY_CENTER__FIDES_JS_SERVE_STALE_SECONDS
+ * environment variable.
+ */
+export const DEFAULT_FIDES_JS_SERVE_STALE_SECONDS =
+  DEFAULT_FIDES_JS_MAX_AGE_SECONDS * 24;
 
 const defaultMissingExperienceBehavior = (
   setting: string | undefined,
@@ -55,6 +65,9 @@ const loadEnvironmentVariables = () => {
     FIDES_JS_MAX_AGE_SECONDS:
       Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
       DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
+    FIDES_JS_SERVE_STALE_SECONDS:
+      Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_SERVE_STALE_SECONDS) ||
+      DEFAULT_FIDES_JS_SERVE_STALE_SECONDS,
     MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
       process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
     ),
@@ -153,6 +166,8 @@ const loadEnvironmentVariables = () => {
         .FIDES_PRIVACY_CENTER__FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING as
         | "enabled_acknowledge_not_supported"
         | "disabled") || "disabled",
+    FIDES_COOKIE_SUFFIX:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_COOKIE_SUFFIX ?? null,
   };
   return settings;
 };

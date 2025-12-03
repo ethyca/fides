@@ -1,10 +1,10 @@
 import {
   AntButton as Button,
   AntDropdown as Dropdown,
-  AntMessage as message,
   AntModal as Modal,
   AntTypography as Typography,
   Icons,
+  useMessage,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
@@ -36,7 +36,7 @@ const SystemActionsMenu = ({
   handleBulkAddToGroup,
   groupMenuItems,
 }: SystemActionsMenuProps) => {
-  const [messageApi, contextHolder] = message.useMessage();
+  const messageApi = useMessage();
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [bulkAssignSteward] = useBulkAssignStewardMutation();
 
@@ -46,6 +46,7 @@ const SystemActionsMenu = ({
     page: 1,
     size: 100,
     include_external: false,
+    exclude_approvers: true,
   });
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();
@@ -155,7 +156,6 @@ const SystemActionsMenu = ({
 
   return (
     <>
-      {contextHolder}
       <Modal
         open={deleteModalIsOpen}
         onCancel={() => setDeleteModalIsOpen(false)}

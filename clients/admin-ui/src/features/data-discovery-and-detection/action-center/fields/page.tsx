@@ -2,49 +2,69 @@ import {
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntDropdown as Dropdown,
+  AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
+  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
   AntTitle as Title,
+  AntTooltip as Tooltip,
   Icons,
-  useToast,
 } from "fidesui";
+import _ from "lodash";
 import { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { Key, useEffect, useState } from "react";
+import { Key, useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FixedLayout from "~/features/common/FixedLayout";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert, useSearch } from "~/features/common/hooks";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
+import { useSearch } from "~/features/common/hooks";
+import {
+  ACTION_CENTER_ROUTE,
+  DATASET_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  useClassifyStagedResourcesMutation,
   useGetMonitorConfigQuery,
-  useIgnoreMonitorResultAssetsMutation,
+  useLazyGetStagedResourceDetailsQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { DiffStatus } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
+import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
 
-import { DROPDOWN_OPTIONS, FIELD_ACTION_LABEL } from "./FieldActions.const";
 import {
-  useFieldActionsMutation,
+  ACTION_ALLOWED_STATUSES,
+  ACTIONS_DISABLED_MESSAGE,
+  DEFAULT_DRAWER_ACTIONS,
+  DRAWER_ACTIONS,
+  DROPDOWN_ACTIONS,
+  FIELD_ACTION_ICON,
+  FIELD_ACTION_LABEL,
+  LIST_ITEM_ACTIONS,
+} from "./FieldActions.const";
+import { HotkeysHelperModal } from "./HotkeysHelperModal";
+import {
   useGetMonitorFieldsQuery,
+  useLazyGetAllowedActionsQuery,
 } from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  EXCLUDED_FILTER_STATUSES,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
 } from "./MonitorFields.const";
-import MonitorTree from "./MonitorTree";
-import { FieldActionTypeValue, ResourceStatusLabel } from "./types";
+import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { useBulkActions } from "./useBulkActions";
+import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
+import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
@@ -58,6 +78,9 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
 const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
+  const monitorTreeRef = useRef<MonitorTreeRef>(null);
+  const [modalApi, modalContext] = modal.useModal();
+  const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
@@ -65,7 +88,7 @@ const ActionCenterFields: NextPage = () => {
   const search = useSearch();
   const {
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     dataCategory,
     ...restMonitorFieldsFilters
   } = useMonitorFieldsFilters();
@@ -73,140 +96,174 @@ const ActionCenterFields: NextPage = () => {
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState<boolean>(false);
-  const { data: fieldsDataResponse } = useGetMonitorFieldsQuery({
+  const baseMonitorFilters = {
     path: {
       monitor_config_id: monitorId,
     },
     query: {
-      size: pageSize,
-      page: pageIndex,
       staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       search: search.searchProps.value,
       diff_status: resourceStatus
         ? resourceStatus.flatMap(intoDiffStatus)
         : undefined,
-      confidence_score: confidenceScore || undefined,
+      confidence_bucket: confidenceBucket || undefined,
       data_category: dataCategory || undefined,
     },
+  };
+
+  const {
+    data: fieldsDataResponse,
+    isFetching,
+    refetch,
+  } = useGetMonitorFieldsQuery({
+    ...baseMonitorFilters,
+    query: {
+      ...baseMonitorFilters.query,
+      size: pageSize,
+      page: pageIndex,
+    },
   });
-  const toast = useToast();
-  const [classifyStagedResourcesMutation] =
-    useClassifyStagedResourcesMutation();
-  const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
-  const [ignoreMonitorResultAssetsMutation] =
-    useIgnoreMonitorResultAssetsMutation();
-  const { errorAlert } = useAlert();
-  const [bulkAction] = useFieldActionsMutation();
+  const [detailsUrn, setDetailsUrn] = useState<string>();
+  const [activeListItem, setActiveListItem] = useState<
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >();
+  const [setActiveListItemIndex, setSetActiveListItemIndex] = useState<
+    ((index: number | null) => void) | null
+  >(null);
+  const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
+    useLazyGetStagedResourceDetailsQuery();
 
-  const handleSetDataCategories = async (
-    dataCategories: string[],
-    urn: string,
-  ) => {
-    const mutationResult = await updateResourceCategoryMutation({
-      monitor_config_id: monitorId,
-      staged_resource_urn: urn,
-      user_assigned_data_categories: dataCategories,
-    });
+  const [
+    allowedActionsTrigger,
+    { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
+  ] = useLazyGetAllowedActionsQuery();
+  const resource = stagedResourceDetailsResult.data;
+  const bulkActions = useBulkActions(
+    monitorId,
+    modalApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const fieldActions = useFieldActions(
+    monitorId,
+    modalApi,
+    async (urns: string[]) => {
+      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+    },
+  );
+  const {
+    excludedListItems,
+    listSelectMode,
+    resetListSelect,
+    selectedListItems,
+    updateListItems,
+    updateSelectedListItem,
+    checkboxProps,
+  } = useBulkListSelect<
+    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+  >({ activeListItem, enableKeyboardShortcuts: true });
 
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
+  const handleNavigate = async (urn: string | undefined) => {
+    if (
+      activeListItem?.urn &&
+      urn &&
+      setActiveListItemIndex &&
+      fieldsDataResponse?.items
+    ) {
+      // When navigating via mouse click after using the keyboard,
+      // update the active item to match the clicked item
+      const itemIndex = fieldsDataResponse.items.findIndex(
+        (item) => item.urn === urn,
+      );
+      if (itemIndex !== -1) {
+        setActiveListItemIndex(itemIndex);
+      }
+    }
+    setDetailsUrn(urn);
+  };
+
+  const onActionDropdownOpenChange = (open: boolean) => {
+    if (open && listSelectMode === "exclusive") {
+      allowedActionsTrigger({
+        ...baseMonitorFilters,
+        query: {
+          ...baseMonitorFilters.query,
+        },
+        body: {
+          excluded_resource_urns: extractListItemKeys(excludedListItems).map(
+            (itemKey) => itemKey.toString(),
+          ),
+        },
+      });
     }
   };
 
-  const handleIgnore = async (urn: string) => {
-    const mutationResult = await ignoreMonitorResultAssetsMutation({
-      urnList: [urn],
-    });
+  useHotkeys(
+    "?",
+    () => setHotkeysHelperModalOpen(!hotkeysHelperModalOpen),
+    { useKey: true },
+    [hotkeysHelperModalOpen],
+  );
 
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
+  const availableActions =
+    listSelectMode === "exclusive"
+      ? allowedActionsResult?.allowed_actions
+      : getAvailableActions(
+          selectedListItems.flatMap(({ diff_status }) =>
+            diff_status ? [diff_status] : [],
+          ),
+        );
+  const responseCount = fieldsDataResponse?.total ?? 0;
+  const selectedListItemCount =
+    listSelectMode === "exclusive" && fieldsDataResponse?.total
+      ? responseCount - excludedListItems.length
+      : selectedListItems.length;
+
+  useEffect(() => {
+    if (fieldsDataResponse) {
+      updateListItems(
+        fieldsDataResponse.items.map(({ urn, ...rest }) => ({
+          itemKey: urn,
+          urn,
+          ...rest,
+        })),
+      );
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldsDataResponse?.items]);
 
-  const handleBulkAction = async (actionType: FieldActionTypeValue) => {
-    const mutationResult = await bulkAction({
-      query: {
-        staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-        search: search.searchProps.value,
-        diff_status: resourceStatus
-          ? resourceStatus.flatMap(intoDiffStatus)
-          : undefined,
-        confidence_score: confidenceScore || undefined,
-        data_category: dataCategory || undefined,
-      },
-      path: {
-        monitor_config_id: monitorId,
-        action_type: actionType,
-      },
-    });
-
-    if (isErrorResult(mutationResult)) {
-      errorAlert(getErrorMessage(mutationResult.error));
-      return;
+  useEffect(() => {
+    if (detailsUrn) {
+      stagedResourceDetailsTrigger({ stagedResourceUrn: detailsUrn });
     }
-
-    const actionItemCount = mutationResult.data.task_ids?.length ?? 0;
-    toast(
-      successToastParams(
-        `Successful ${FIELD_ACTION_LABEL[actionType]} action for ${actionItemCount} item${actionItemCount !== 1 ? "s" : ""}`,
-      ),
-    );
-  };
-
-  const handleClassifyStagedResources = async () => {
-    const result = await classifyStagedResourcesMutation({
-      monitor_config_key: monitorId,
-      staged_resource_urns: selectedNodeKeys.flatMap((key) =>
-        typeof key !== "bigint" ? [key.toString()] : [],
-      ),
-    });
-
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-
-    toast(successToastParams(`Classifying initiated`));
-  };
-
-  const handleOnSelectAll = (nextSelectAll: boolean) => {
-    setSelectAll(nextSelectAll);
-    setSelectedFields(
-      nextSelectAll && fieldsDataResponse
-        ? fieldsDataResponse.items.map((item) => item.urn)
-        : [],
-    );
-  };
-
-  const handleOnSelect = (key: string, selected?: boolean) => {
-    setSelectAll(false);
-    setSelectedFields(
-      selected
-        ? [...selectedFields, key]
-        : selectedFields.filter((val) => val !== key),
-    );
-  };
-
-  const selectedFieldCount =
-    selectAll && fieldsDataResponse?.total
-      ? fieldsDataResponse?.total
-      : selectedFields.length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detailsUrn]);
 
   /**
    * @todo: this should be handled on a form/state action level
    */
   useEffect(() => {
     resetPagination();
+    resetListSelect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     selectedNodeKeys,
     search.searchQuery,
     dataCategory,
   ]);
+
+  // Set up keyboard shortcuts for field actions
+  useFieldActionHotkeys(
+    activeListItem,
+    fieldActions,
+    updateSelectedListItem,
+    handleNavigate,
+    !!detailsUrn,
+    () => refetch(),
+  );
 
   return (
     <FixedLayout
@@ -229,14 +286,19 @@ const ActionCenterFields: NextPage = () => {
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
           <MonitorTree
+            ref={monitorTreeRef}
             selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={handleClassifyStagedResources}
+            onClickClassifyButton={() => {
+              fieldActions.classify(
+                selectedNodeKeys.map((key) => key.toString()),
+              );
+            }}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
-          <Flex vertical gap="middle" className="h-full overflow-hidden">
+          <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2}>Monitor results</Title>
               <Flex align="center">
@@ -250,89 +312,281 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-
             <Flex justify="space-between">
-              <DebouncedSearchInput
-                value={search.searchQuery}
-                onChange={search.updateSearch}
-                placeholder="Search"
-              />
               <Flex gap="small">
-                <Dropdown
-                  trigger={["click"]}
-                  /* I don't like disabling linting but this pattern is inherit to ant-d */
-                  /* eslint-disable-next-line react/no-unstable-nested-components */
-                  popupRender={() => (
-                    <MonitorFieldFilters
-                      resourceStatus={resourceStatus}
-                      confidenceScore={confidenceScore}
-                      dataCategory={dataCategory}
-                      {...restMonitorFieldsFilters}
-                      monitorId={monitorId}
-                    />
+                <DebouncedSearchInput
+                  value={search.searchQuery}
+                  onChange={search.updateSearch}
+                  placeholder="Search"
+                />
+                <Tooltip title="Display keyboard shortcuts">
+                  <Button
+                    aria-label="Display keyboard shortcuts"
+                    icon={<Icons.Keyboard />}
+                    onClick={() => setHotkeysHelperModalOpen(true)}
+                  />
+                </Tooltip>
+              </Flex>
+              <Flex gap="small">
+                <MonitorFieldFilters
+                  resourceStatus={resourceStatus}
+                  confidenceBucket={confidenceBucket}
+                  dataCategory={dataCategory}
+                  {...restMonitorFieldsFilters}
+                  monitorId={monitorId}
+                  stagedResourceUrn={selectedNodeKeys.map((key) =>
+                    key.toString(),
                   )}
-                >
-                  <Button icon={<Icons.ChevronDown />} iconPosition="end">
-                    Filter
-                  </Button>
-                </Dropdown>
+                />
                 <Dropdown
+                  onOpenChange={onActionDropdownOpenChange}
                   menu={{
                     items: [
-                      ...DROPDOWN_OPTIONS.map((actionType) => ({
+                      ...DROPDOWN_ACTIONS.map((actionType) => ({
                         key: actionType,
-                        label: FIELD_ACTION_LABEL[actionType],
-                        onClick: () => handleBulkAction(actionType),
+                        label:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType) ? (
+                            <Tooltip
+                              title={ACTIONS_DISABLED_MESSAGE[actionType]}
+                            >
+                              {FIELD_ACTION_LABEL[actionType]}
+                            </Tooltip>
+                          ) : (
+                            FIELD_ACTION_LABEL[actionType]
+                          ),
+                        disabled:
+                          isFetchingAllowedActions ||
+                          !availableActions?.includes(actionType),
+                        onClick: async () => {
+                          if (listSelectMode === "exclusive") {
+                            await bulkActions[actionType](
+                              baseMonitorFilters,
+                              excludedListItems.map((k) =>
+                                k.itemKey.toString(),
+                              ),
+                              selectedListItemCount,
+                            );
+                          } else {
+                            await fieldActions[actionType](
+                              selectedListItems.map(({ itemKey }) =>
+                                itemKey.toString(),
+                              ),
+                            );
+                          }
+
+                          resetListSelect();
+                        },
                       })),
                     ],
                   }}
-                  disabled={selectedFields.length <= 0}
+                  disabled={selectedListItems.length <= 0}
                 >
                   <Button
                     type="primary"
                     icon={<Icons.ChevronDown />}
                     iconPosition="end"
+                    loading={isFetchingAllowedActions}
                   >
                     Actions
                   </Button>
                 </Dropdown>
+                <Tooltip title="Refresh">
+                  <Button
+                    icon={<Icons.Renew />}
+                    onClick={() => refetch()}
+                    aria-label="Refresh"
+                  />
+                </Tooltip>
               </Flex>
             </Flex>
-            <Flex gap="middle">
-              <Checkbox
-                checked={selectAll}
-                onChange={(e) => handleOnSelectAll(e.target.checked)}
-              />
-              <Text>Select all</Text>
-              {!!selectedFieldCount && (
+            <Flex gap="middle" align="center">
+              <Checkbox id="select-all" {...checkboxProps} />
+              <label htmlFor="select-all">Select all</label>
+              {!!selectedListItemCount && (
                 <Text strong>
-                  {selectedFieldCount.toLocaleString()} selected
+                  {selectedListItemCount.toLocaleString()} selected
                 </Text>
               )}
             </Flex>
             <List
               dataSource={fieldsDataResponse?.items}
-              className="overflow-scroll"
+              className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
+              loading={isFetching}
+              enableKeyboardShortcuts
+              locale={
+                !search.searchProps.value &&
+                _(resourceStatus)
+                  .intersection(EXCLUDED_FILTER_STATUSES)
+                  .isEmpty()
+                  ? {
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <>
+                              <div>All resources have been confirmed.</div>
+                              <div>
+                                {`You'll now find this data in Managed Datasets
+                                view.`}
+                              </div>
+                              <div>
+                                {`To see confirmed or ignored resources, adjust
+                                your filters`}
+                              </div>
+                            </>
+                          }
+                        >
+                          <Flex gap="middle" justify="center">
+                            <NextLink
+                              href={DATASET_ROUTE}
+                              passHref
+                              legacyBehavior
+                            >
+                              <Button>Manage datasets view</Button>
+                            </NextLink>
+                            <Button
+                              type="primary"
+                              aria-label="Refresh page"
+                              onClick={() => {
+                                restMonitorFieldsFilters.resetToInitialState();
+                                router.reload();
+                              }}
+                            >
+                              Refresh page
+                            </Button>
+                          </Flex>
+                        </Empty>
+                      ),
+                    }
+                  : undefined
+              }
+              onActiveItemChange={useCallback(
+                // useCallback prevents infinite re-renders
+                (
+                  item: DatastoreStagedResourceAPIResponse | null,
+                  _activeListItemIndex: number | null,
+                  setActiveIndexFn: (index: number | null) => void,
+                ) => {
+                  // Store the setter function so handleNavigate can use it
+                  setSetActiveListItemIndex(() => setActiveIndexFn);
+
+                  if (item?.urn) {
+                    setActiveListItem({
+                      ...item,
+                      itemKey: item.urn,
+                    });
+                    if (detailsUrn && item.urn !== detailsUrn) {
+                      setDetailsUrn(item.urn);
+                    }
+                  } else {
+                    setActiveListItem(undefined);
+                  }
+                },
+                [detailsUrn],
+              )}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: selectedFields.includes(props.urn),
-                  onSelect: handleOnSelect,
-                  onSetDataCategories: handleSetDataCategories,
-                  onIgnore: handleIgnore,
+                  selected: extractListItemKeys(selectedListItems).includes(
+                    props.urn,
+                  ),
+                  onSelect: updateSelectedListItem,
+                  onNavigate: handleNavigate,
+                  onSetDataCategories: (urn, values) =>
+                    fieldActions["assign-categories"]([urn], {
+                      user_assigned_data_categories: values,
+                    }),
+                  dataCategoriesDisabled: props?.diff_status
+                    ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
+                        (status) => status === props.diff_status,
+                      )
+                    : true,
+                  actions: props?.diff_status
+                    ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
+                        <Tooltip
+                          key={action}
+                          title={FIELD_ACTION_LABEL[action]}
+                        >
+                          <Button
+                            aria-label={FIELD_ACTION_LABEL[action]}
+                            icon={FIELD_ACTION_ICON[action]}
+                            onClick={() => fieldActions[action]([props.urn])}
+                            disabled={
+                              props?.diff_status
+                                ? !ACTION_ALLOWED_STATUSES[action].some(
+                                    (status) => status === props.diff_status,
+                                  )
+                                : true
+                            }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
+                          />
+                        </Tooltip>
+                      ))
+                    : [],
                 })
               }
             />
             <Pagination
               {...paginationProps}
-              showSizeChanger={false}
+              showSizeChanger={{
+                suffixIcon: <Icons.ChevronDown />,
+              }}
               total={fieldsDataResponse?.total || 0}
+              hideOnSinglePage={
+                // if we're on the smallest page size, and there's only one page, hide the pagination
+                paginationProps.pageSize?.toString() ===
+                paginationProps.pageSizeOptions?.[0]
+              }
             />
           </Flex>
         </Splitter.Panel>
       </Splitter>
+      <ResourceDetailsDrawer
+        itemKey={resource?.urn ?? ""}
+        title={resource?.name ?? null}
+        titleIcon={<Icons.Column />}
+        titleTag={{
+          bordered: false,
+          color: resource?.diff_status
+            ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
+                .color
+            : undefined,
+          className: "font-normal text-[var(--ant-font-size-sm)]",
+          children: resource?.diff_status
+            ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
+                .label
+            : null,
+        }}
+        actions={(resource?.diff_status
+          ? DRAWER_ACTIONS[resource.diff_status]
+          : DEFAULT_DRAWER_ACTIONS
+        ).map((action) => ({
+          label: FIELD_ACTION_LABEL[action],
+          callback: (value) => fieldActions[action]([value]),
+          disabled: resource?.diff_status
+            ? !ACTION_ALLOWED_STATUSES[action].some(
+                (status) => status === resource.diff_status,
+              )
+            : true,
+        }))}
+        open={!!detailsUrn}
+        onClose={() => setDetailsUrn(undefined)}
+        resource={resource}
+        fieldActions={fieldActions}
+        mask={!activeListItem}
+      />
+      <HotkeysHelperModal
+        open={hotkeysHelperModalOpen}
+        onCancel={() => setHotkeysHelperModalOpen(false)}
+      />
+      {modalContext}
     </FixedLayout>
   );
 };
-
 export default ActionCenterFields;

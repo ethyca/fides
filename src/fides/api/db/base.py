@@ -33,6 +33,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.fides_user_respondent_email_verification import (
     FidesUserRespondentEmailVerification,
 )
+from fides.api.models.identity_definition import IdentityDefinition
 from fides.api.models.identity_salt import IdentitySalt
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_task import (
@@ -79,6 +80,7 @@ from fides.api.models.property import (
     Property,
 )
 from fides.api.models.registration import UserRegistration
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_group import SystemGroup, SystemGroupMember
@@ -95,3 +97,4 @@ from fides.api.models.tcf_publisher_restrictions import (
     TCFPublisherRestriction,
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.models.v3.privacy_preferences import PrivacyPreferences

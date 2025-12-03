@@ -15,6 +15,7 @@ export type DatastoreStagedResourceAPIResponse = {
   description?: string | null;
   updated_at?: string | null;
   classifications?: Array<ClassificationWithConfidence>;
+  preferred_data_categories?: Array<string> | null;
   /**
    * User assigned data categories overriding auto assigned classifications
    */

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import Layout from "~/features/common/Layout";
 import {
   ACTION_CENTER_ROUTE,
+  ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -31,7 +32,12 @@ const MonitorResultAssets: NextPage = () => {
   // if there are no results, redirect to the monitor page
   useEffect(() => {
     if (!!systemResults && systemResults.items.length === 0) {
-      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      router.push({
+        pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
+        query: {
+          monitorId: encodeURIComponent(monitorId),
+        },
+      });
     }
   }, [systemResults, router, monitorId]);
 

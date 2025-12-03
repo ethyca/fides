@@ -16,10 +16,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
-import {
-  TAXONOMY_ROOT_NODE_ID,
-  taxonomyTypeToLabel,
-} from "~/features/taxonomy/constants";
+import { TAXONOMY_ROOT_NODE_ID } from "~/features/taxonomy/constants";
 import { TaxonomyTreeHoverProvider } from "~/features/taxonomy/context/TaxonomyTreeHoverContext";
 import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
@@ -36,12 +33,14 @@ interface TaxonomyInteractiveTreeProps {
   draftNewItem: Partial<TaxonomyEntity> | null;
   lastCreatedItemKey: string | null;
   resetLastCreatedItemKey: () => void;
+  onRootItemClick: (() => void) | null;
   onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
   onCancelDraftItem: () => void;
   onSubmitDraftItem: (label: string) => void;
   userCanAddLabels: boolean;
   isCreating?: boolean;
+  rootNodeLabel?: string;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -50,21 +49,23 @@ const TaxonomyInteractiveTree = ({
   draftNewItem,
   lastCreatedItemKey,
   resetLastCreatedItemKey,
+  onRootItemClick,
   onTaxonomyItemClick,
   onAddButtonClick,
   onCancelDraftItem,
   onSubmitDraftItem,
   userCanAddLabels,
   isCreating = false,
+  rootNodeLabel,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
-  // Reset the zoom level and center the view when the taxonomy type changes
+  // Reset the zoom level and center the view when the taxonomy type changes or items are added/removed
   useEffect(() => {
     // A small delay is needed because fitView doesn't work if it's
     // called before the nodes are rendered
     setTimeout(() => fitView(), 150);
-  }, [fitView, taxonomyType]);
+  }, [fitView, taxonomyType, taxonomyItems.length]);
 
   // Root node (the taxonomy type)
   const rootNode: Node = useMemo(
@@ -72,19 +73,26 @@ const TaxonomyInteractiveTree = ({
       id: TAXONOMY_ROOT_NODE_ID,
       position: { x: 0, y: 0 },
       data: {
-        label: taxonomyTypeToLabel(taxonomyType),
+        label: rootNodeLabel || taxonomyType,
         taxonomyItem: {
           fides_key: TAXONOMY_ROOT_NODE_ID,
         },
         taxonomyType,
-        onTaxonomyItemClick: null,
+        onTaxonomyItemClick: onRootItemClick,
         onAddButtonClick,
         hasChildren: taxonomyItems.length !== 0,
         userCanAddLabels,
       },
       type: "taxonomyTreeNode",
     }),
-    [taxonomyType, taxonomyItems.length, onAddButtonClick, userCanAddLabels],
+    [
+      rootNodeLabel,
+      taxonomyType,
+      onRootItemClick,
+      onAddButtonClick,
+      taxonomyItems.length,
+      userCanAddLabels,
+    ],
   );
 
   const nodes: Node[] = [rootNode];

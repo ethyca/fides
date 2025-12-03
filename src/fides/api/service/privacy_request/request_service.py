@@ -133,8 +133,9 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
         # Privacy Requests that didn't need approval are "In Processing".
         # Privacy Requests in these states should be examined to see if all of its Request Tasks have had a chance
         # to complete.
+        # Use query_without_large_columns to prevent OOM errors when processing many privacy requests
         in_progress_privacy_requests = (
-            db.query(PrivacyRequest)
+            PrivacyRequest.query_without_large_columns(db)
             .filter(
                 PrivacyRequest.status.in_(
                     [
@@ -320,7 +321,7 @@ def initiate_polling_task_requeue() -> None:
         id=ASYNC_TASKS_STATUS_POLLING,
         coalesce=True,
         replace_existing=True,
-        seconds=20,
+        seconds=CONFIG.execution.async_polling_interval_hours * 3600,
     )
 
 
@@ -528,8 +529,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
             logger.debug("Starting check for interrupted tasks to requeue")
 
             # Get all in-progress privacy requests that haven't been updated in the last 5 minutes
+            # Use query_without_large_columns to prevent OOM errors when processing many privacy requests
             in_progress_requests = (
-                db.query(PrivacyRequest)
+                PrivacyRequest.query_without_large_columns(db)
                 .filter(
                     PrivacyRequest.status.in_(
                         [

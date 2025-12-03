@@ -4,6 +4,7 @@ from fideslang.models import Dataset
 from pydantic import BaseModel, field_validator
 
 from fides.api.models.datasetconfig import validate_masking_strategy_override
+from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.enums.connection_category import ConnectionCategory
 from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
@@ -50,3 +51,16 @@ class ConnectorTemplate(BaseModel):
                 "Hard-coded fides_key detected in the dataset, replace all instances of it with <instance_fides_key>"
             )
         return dataset
+
+
+class ConnectorTemplateListResponse(FidesSchema):
+    """
+    Response schema for listing connector templates.
+    Provides summary information about available connector templates.
+    """
+
+    type: str
+    name: str
+    supported_actions: List[ActionType]
+    category: Optional[ConnectionCategory] = None
+    custom: bool

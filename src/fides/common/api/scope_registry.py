@@ -76,6 +76,7 @@ VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
 WORKER_STATS = "worker-stats"
+HEAP_DUMP = "heap_dump"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -146,6 +147,8 @@ DATASET_TEST = f"{DATASET}:{TEST}"
 
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
+HEAP_DUMP_EXEC = f"{HEAP_DUMP}:{EXEC}"
+
 EVALUATION_CREATE = f"{EVALUATION}:{CREATE}"
 EVALUATION_READ = f"{EVALUATION}:{READ}"
 EVALUATION_UPDATE = f"{EVALUATION}:{UPDATE}"
@@ -209,6 +212,7 @@ SAAS_CONFIG_READ = f"{SAAS_CONFIG}:{READ}"
 
 SAAS_CONNECTION_INSTANTIATE = f"{CONNECTION}:{INSTANTIATE}"
 CONNECTOR_TEMPLATE_REGISTER = f"{CONNECTOR_TEMPLATE}:{REGISTER}"
+CONNECTOR_TEMPLATE_READ = f"{CONNECTOR_TEMPLATE}:{READ}"
 
 SCOPE_READ = f"{SCOPE}:{READ}"
 
@@ -225,10 +229,6 @@ SYSTEM_DELETE = f"{SYSTEM}:{DELETE}"
 SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
 SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
 SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
-
-TAXONOMY_CREATE = f"{TAXONOMY}:{CREATE}"
-TAXONOMY_UPDATE = f"{TAXONOMY}:{UPDATE}"
-TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
 
 USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
@@ -267,6 +267,7 @@ SCOPE_DOCS = {
     CONNECTION_AUTHORIZE: "OAuth2 Authorization",
     CONNECTION_TYPE_READ: "View types of connections",
     CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
+    CONNECTOR_TEMPLATE_READ: "View connector template configurations",
     CONSENT_READ: "Read consent preferences",
     CONSENT_SETTINGS_READ: "Read org-wide consent settings",
     CONSENT_SETTINGS_UPDATE: "Update org-wide consent settings",
@@ -299,6 +300,7 @@ SCOPE_DOCS = {
     DATASET_READ: "View datasets",
     DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
+    HEAP_DUMP_EXEC: "Execute a heap dump for memory diagnostics",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",
@@ -357,9 +359,6 @@ SCOPE_DOCS = {
     SYSTEM_MANAGER_READ: "Read systems users can manage",
     SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
     SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
-    TAXONOMY_CREATE: "Create local taxonomy",
-    TAXONOMY_DELETE: "Delete local taxonomy",
-    TAXONOMY_UPDATE: "Update local taxonomy",
     USER_CREATE: "Create users",
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",

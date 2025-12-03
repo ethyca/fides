@@ -27,6 +27,12 @@ import { safeLookupPropertyId } from "~/common/property-id";
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
+// File paths for static fides-js bundles
+const FIDES_JS_PATH = "public/lib/fides.js";
+const FIDES_TCF_JS_PATH = "public/lib/fides-tcf.js";
+const FIDES_HEADLESS_JS_PATH = "public/lib/fides-headless.js";
+const FIDES_GPP_JS_PATH = "public/lib/fides-ext-gpp.js";
+
 // a cache of the custom stylesheet retrieved from the /custom-asset endpoint
 let cachedCustomFidesCss: string = "";
 // millisecond timestamp of when the custom stylesheet was last retrieved
@@ -34,6 +40,13 @@ let cachedCustomFidesCss: string = "";
 let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
 let autoRefresh: boolean = process.env.NODE_ENV === "production";
+
+// In-memory cache for static fides-js bundles to avoid repeated file I/O
+let cachedFidesJs: string = "";
+let cachedFidesTcfJs: string = "";
+let cachedFidesHeadlessJs: string = "";
+let cachedFidesGppJs: string = "";
+let bundlesLoaded: boolean = false;
 
 const missingExperienceBehaviors: Record<
   MissingExperienceBehaviors,
@@ -53,6 +66,40 @@ const PREFETCH_BACKOFF_FACTOR = 1.125;
 const CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS = 100;
 const CUSTOM_CSS_MAX_RETRIES = 10;
 const CUSTOM_CSS_BACKOFF_FACTOR = 1.125;
+
+/**
+ * Load static fides-js bundles into memory cache to avoid repeated file I/O.
+ * This is called on the first request and caches the bundles for the lifetime
+ * of the server process.
+ */
+async function loadStaticBundles(): Promise<void> {
+  if (bundlesLoaded) {
+    return;
+  }
+
+  try {
+    const [
+      fidesJsBuffer,
+      fidesTcfJsBuffer,
+      fidesHeadlessJsBuffer,
+      fidesGppJsBuffer,
+    ] = await Promise.all([
+      fsPromises.readFile(FIDES_JS_PATH),
+      fsPromises.readFile(FIDES_TCF_JS_PATH),
+      fsPromises.readFile(FIDES_HEADLESS_JS_PATH),
+      fsPromises.readFile(FIDES_GPP_JS_PATH),
+    ]);
+
+    cachedFidesJs = fidesJsBuffer.toString();
+    cachedFidesTcfJs = fidesTcfJsBuffer.toString();
+    cachedFidesHeadlessJs = fidesHeadlessJsBuffer.toString();
+    cachedFidesGppJs = fidesGppJsBuffer.toString();
+
+    bundlesLoaded = true;
+  } catch (error) {
+    throw new Error(`Failed to load static fides-js bundles: ${error}`);
+  }
+}
 
 /**
  * @swagger
@@ -130,6 +177,9 @@ export default async function handler(
 ) {
   const log = createRequestLogger(req);
   const serverSettings = loadServerSettings();
+
+  // Load static bundles into memory on first request to avoid file I/O
+  await loadStaticBundles();
 
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
@@ -354,6 +404,7 @@ export default async function handler(
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
       fidesUnsupportedRepeatedScriptLoading:
         environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
+      fidesCookieSuffix: environment.settings.FIDES_COOKIE_SUFFIX,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -367,19 +418,23 @@ export default async function handler(
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS ||
     forcedHeadless;
-  let fidesJsFile = "public/lib/fides.js";
+
+  // Select the appropriate cached bundle based on experience type
+  let fidesJS: string;
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
-    fidesJsFile = "public/lib/fides-tcf.js";
+    fidesJS = cachedFidesTcfJs;
   } else if (isHeadlessExperience) {
     log.debug("Headless experience detected, bundling fides-headless.js...");
-    fidesJsFile = "public/lib/fides-headless.js";
+    fidesJS = cachedFidesHeadlessJs;
+  } else {
+    fidesJS = cachedFidesJs;
   }
-  const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
-  const fidesJS: string = fidesJSBuffer.toString();
+
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+
   let fidesGPP: string = "";
   if (gppEnabled) {
     log.debug(
@@ -387,10 +442,7 @@ export default async function handler(
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
     );
-    const fidesGPPBuffer = await fsPromises.readFile(
-      "public/lib/fides-ext-gpp.js",
-    );
-    fidesGPP = fidesGPPBuffer.toString();
+    fidesGPP = cachedFidesGppJs;
     if (!fidesGPP || fidesGPP === "") {
       throw new Error("Unable to load latest gpp extension from server!");
     }
@@ -441,6 +493,11 @@ export default async function handler(
   // Instruct any caches to store this response, since these bundles do not change often
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
+    // Only set stale serving directives if greater than 0
+    ...(serverSettings.FIDES_JS_SERVE_STALE_SECONDS > 0 && {
+      "stale-while-revalidate": serverSettings.FIDES_JS_SERVE_STALE_SECONDS,
+      "stale-if-error": serverSettings.FIDES_JS_SERVE_STALE_SECONDS,
+    }),
     public: true,
   };
 
@@ -494,10 +551,12 @@ async function fetchCustomFidesCss(
           }
           if (!assetResponse.ok) {
             log.debug(
-              "Error fetching custom-fides.css:",
-              assetResponse.status,
-              assetResponse.statusText,
-              data,
+              {
+                status: assetResponse.status,
+                statusText: assetResponse.statusText,
+                data,
+              },
+              "Error fetching custom-fides.css",
             );
             throw new Error(
               `HTTP error occurred. Status: ${assetResponse.status}`,

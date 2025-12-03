@@ -104,7 +104,6 @@ export const ConnectorParametersForm = ({
         connectionConfig.enabled_actions || []
       ).map((action) => action.toString());
 
-      // @ts-ignore
       initialValues.secrets = connectionConfig.secrets
         ? _.cloneDeep(connectionConfig.secrets)
         : {};

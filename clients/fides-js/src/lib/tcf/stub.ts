@@ -121,8 +121,7 @@ export const makeStub = ({
           if (event && event.source && event.source.postMessage) {
             event.source.postMessage(
               msgIsString ? JSON.stringify(returnMsg) : returnMsg,
-              //   @ts-ignore
-              "*",
+              "*" as never,
             );
           }
         },

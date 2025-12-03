@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
+from uuid import UUID
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
@@ -13,7 +14,11 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    MultiValue,
+)
 from fides.api.schemas.user import PrivacyRequestUser
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
@@ -306,6 +311,23 @@ class PrivacyRequestStatus(str, EnumType):
     requires_manual_finalization = "requires_manual_finalization"
     canceled = "canceled"
     error = "error"
+    duplicate = "duplicate"  # Request identified as duplicate of another request
+
+
+class IdentityValue(BaseModel):
+    """Represents an identity value with a label in API responses.
+
+    The value field accepts MultiValue types which match what LabeledIdentity supports:
+    - int
+    - str
+    - List[Union[int, str]]
+
+    This allows the schema to accept list values that were previously causing
+    validation errors.
+    """
+
+    label: str
+    value: Optional[MultiValue] = None
 
 
 class PrivacyRequestResponse(FidesSchema):
@@ -328,7 +350,7 @@ class PrivacyRequestResponse(FidesSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]] = None
+    identity: Optional[Dict[str, Union[Optional[str], IdentityValue]]] = None
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
@@ -342,6 +364,7 @@ class PrivacyRequestResponse(FidesSchema):
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
     finalized_by: Optional[str] = None
+    duplicate_request_group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
@@ -356,14 +379,25 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     model_config = ConfigDict(populate_by_name=True)
 
 
+# Batch size for bulk privacy request operations. Used for request validation and
+# automatic batching to avoid memory issues with large request lists.
+BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
+
+
 class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
-    request_ids: List[str] = Field(..., max_length=50)
+    request_ids: List[str] = Field(..., max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
+
+    reason: Optional[SafeStr] = None
+
+
+class CancelPrivacyRequests(ReviewPrivacyRequestIds):
+    """Pass in a list of privacy request ids and cancellation reason"""
 
     reason: Optional[SafeStr] = None
 
@@ -456,7 +490,7 @@ class PrivacyRequestFilter(FidesSchema):
     errored_gt: Optional[datetime] = None
     external_id: Optional[str] = None
     location: Optional[str] = None
-    action_type: Optional[ActionType] = None
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False

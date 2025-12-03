@@ -88,6 +88,22 @@ class TestMessagingTemplates:
         assert "__ORGANIZATION_NAME__" in template.content["subject"]
         assert "__ORGANIZATION_NAME__" in template.content["body"]
 
+    def test_get_basic_messaging_template_external_user_welcome_default(
+        self, db: Session
+    ):
+        """Test that External User Welcome has a default template."""
+        template_type = MessagingActionType.EXTERNAL_USER_WELCOME.value
+        content = DEFAULT_MESSAGING_TEMPLATES[template_type]["content"]
+
+        template = get_basic_messaging_template_by_type_or_default(
+            db=db, template_type=template_type
+        )
+        assert template.type == template_type
+        assert template.content == content
+        assert "Welcome to our Privacy Center" in template.content["subject"]
+        assert "__ORG_NAME__" in template.content["body"]
+        assert "__PORTAL_LINK__" in template.content["body"]
+
     def test_create_or_update_basic_templates_existing_type(
         self, db: Session, messaging_template_no_property
     ):
@@ -754,7 +770,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 7
+        assert len(all_templates) == 8
 
     def test_save_defaults_for_all_messaging_template_types_some_db_templates(
         self,
@@ -764,7 +780,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 7
+        assert len(all_templates) == 8
 
     def test_save_defaults_for_all_messaging_template_types_all_db_templates(
         self, db: Session, property_a
@@ -786,4 +802,4 @@ class TestMessagingTemplates:
             )
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 7
+        assert len(all_templates) == 8

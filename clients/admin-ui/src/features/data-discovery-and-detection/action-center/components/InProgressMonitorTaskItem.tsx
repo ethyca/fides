@@ -13,7 +13,8 @@ import {
   useToast,
 } from "fidesui";
 
-import { capitalize } from "~/features/common/utils";
+import ClipboardButton from "~/features/common/ClipboardButton";
+import { capitalize, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -29,7 +30,7 @@ import {
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
 
-const { Text, Title } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
@@ -113,7 +114,7 @@ export const InProgressMonitorTaskItem = ({
       task.action_type === MonitorTaskType.LLM_CLASSIFICATION
     ) {
       const verb = task.status === "complete" ? "Classified" : "Classifying";
-      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
+      return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     if (task.action_type === MonitorTaskType.DETECTION) {
       return task.status === "complete"
@@ -122,7 +123,7 @@ export const InProgressMonitorTaskItem = ({
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
       const verb = task.status === "complete" ? "Confirmed" : "Confirming";
-      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
+      return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
   })();
@@ -208,10 +209,26 @@ export const InProgressMonitorTaskItem = ({
               )}
             </Space>
             {task.status === "error" && (
-              <Space className="pl-1">
-                <Text type="secondary" size="sm">
+              <Space>
+                <Paragraph
+                  type="secondary"
+                  size="sm"
+                  ellipsis={{
+                    rows: 1,
+                    expandable: true,
+                    symbol: "more",
+                    tooltip: true,
+                  }}
+                >
                   {task.message || "Unknown error"}
-                </Text>
+                </Paragraph>
+                {task.message && (
+                  <ClipboardButton
+                    copyText={task.message}
+                    size="small"
+                    className="ml-1"
+                  />
+                )}
               </Space>
             )}
           </Space>

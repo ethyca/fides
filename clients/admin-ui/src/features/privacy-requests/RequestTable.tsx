@@ -38,7 +38,9 @@ import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTabl
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 import { useAntPagination } from "../common/pagination/useAntPagination";
+import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
 import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
+import { useRequestFilters } from "./hooks/useRequestFilters";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
@@ -52,6 +54,9 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
 
   const pagination = useAntPagination();
   const { pageIndex, pageSize, resetPagination } = pagination;
+
+  const { anyFiltersApplied, handleClearAllFilters } =
+    useRequestFilters(resetPagination);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -131,6 +136,15 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={2}>
+          <DuplicateRequestsButton
+            className="-mr-2"
+            onFilterChange={resetPagination}
+          />
+          {anyFiltersApplied && (
+            <Button type="text" onClick={handleClearAllFilters}>
+              Clear filters
+            </Button>
+          )}
           <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>

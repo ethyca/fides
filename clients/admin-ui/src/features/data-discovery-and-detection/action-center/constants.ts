@@ -65,7 +65,6 @@ export enum ConsentBreakdownColumnKeys {
 export const MONITOR_UPDATES_TO_IGNORE = [
   "classified_low_confidence",
   "classified_high_confidence",
-  "classified_manually",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
@@ -77,18 +76,18 @@ export const MONITOR_UPDATE_NAMES = new Map<
       DatastoreMonitorUpdates,
       (typeof MONITOR_UPDATES_TO_IGNORE)[number]
     >,
-  string
+  [string, string]
 >([
-  ["cookie", "Cookie"],
-  ["browser_request", "Browser request"],
-  ["image", "Image"],
-  ["iframe", "iFrame"],
-  ["javascript_tag", "JavaScript tag"],
-  ["unlabeled", "Unlabeled"],
-  ["in_review", "In review"],
-  ["classifying", "Classifying"],
-  ["removals", "Removals"],
-  ["approved", "Approved"],
+  ["cookie", ["Cookie", "Cookies"]],
+  ["browser_request", ["Browser request", "Browser requests"]],
+  ["image", ["Image", "Images"]],
+  ["iframe", ["iFrame", "iFrames"]],
+  ["javascript_tag", ["JavaScript tag", "JavaScript tags"]],
+  ["unlabeled", ["Unlabeled", "Unlabeled"]],
+  ["in_review", ["In review", "In review"]],
+  ["classifying", ["Classifying", "Classifying"]],
+  ["removals", ["Removal", "Removals"]],
+  ["approved", ["Approved", "Approved"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [

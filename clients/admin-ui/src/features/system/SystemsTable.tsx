@@ -32,18 +32,13 @@ const SystemsTable = () => {
     handleBulkAddToGroup,
 
     // utils
-    messageContext,
     groupMenuItems,
     selectedSystemForDelete,
   } = useSystemsTable();
 
   return (
     <>
-      {messageContext}
-      <Flex
-        justify="space-between"
-        className="sticky -top-6 z-10 -mt-6 bg-white py-4"
-      >
+      <Flex justify="space-between" className="mb-4">
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}

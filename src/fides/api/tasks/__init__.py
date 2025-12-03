@@ -1,6 +1,7 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
+from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -18,6 +19,8 @@ from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
+PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME = "fides.privacy_request_exports"
+PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME = "fides.privacy_request_ingestion"
 DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
 CONSENT_WEBHOOK_QUEUE_NAME = "fidesplus.consent_webhooks"  # This queue is used for processing consent webhooks from 3rd-party APIs
 DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detection"  # This queue is used for running discovery monitors detection tasks
@@ -121,6 +124,17 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
 
 celery_app = _create_celery(CONFIG)
+
+
+@celery_setup_logging.connect
+def configure_celery_logging(**kwargs: Any) -> None:
+    """
+    Prevent Celery from configuring logging on worker startup.
+
+    By connecting to the setup_logging signal and doing nothing, we prevent Celery
+    from overriding our Loguru logging configuration. Our logging setup in _create_celery
+    has already configured logging with InterceptHandler to capture all stdlib logs.
+    """
 
 
 def get_worker_ids() -> List[Optional[str]]:

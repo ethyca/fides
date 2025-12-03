@@ -22,22 +22,20 @@ export const DaysLeft = ({
   timeframe = 45,
 }: {
   status: PrivacyRequestStatus;
-  daysLeft: number | undefined;
-  timeframe: number | undefined;
+  daysLeft: number | undefined | null;
+  timeframe: number | undefined | null;
 }) => {
   const showBadge =
-    !DAY_IRRELEVANT_STATUSES.includes(status) && daysLeft !== undefined;
+    daysLeft !== undefined &&
+    daysLeft !== null &&
+    timeframe !== undefined &&
+    timeframe !== null &&
+    !DAY_IRRELEVANT_STATUSES.includes(status);
 
   if (showBadge) {
     const percentage = (100 * daysLeft) / timeframe;
-    let color = CUSTOM_TAG_COLOR.ERROR;
-    if (percentage < 25) {
-      color = CUSTOM_TAG_COLOR.ERROR;
-    } else if (percentage >= 75) {
-      color = CUSTOM_TAG_COLOR.SUCCESS;
-    } else {
-      color = CUSTOM_TAG_COLOR.WARNING;
-    }
+    const color =
+      percentage < 25 ? CUSTOM_TAG_COLOR.ERROR : CUSTOM_TAG_COLOR.DEFAULT;
     return (
       <div>
         <Tag color={color} bordered={false}>

@@ -3,12 +3,7 @@ import {
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
-  Icons,
 } from "fidesui";
-// TODO: fix this export to be better encapsulated in fidesui
-import palette from "fidesui/src/palette/palette.module.scss";
-
-import { TreeResourceChangeIndicator } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -19,6 +14,7 @@ import { CustomTreeDataNode } from "./types";
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
     const { children } = node;
+
     return children && !!children.find((child) => child.key.toString() === key);
   });
 };
@@ -27,17 +23,20 @@ const recFindNodeParent = (
   data: CustomTreeDataNode[],
   key: string,
 ): CustomTreeDataNode | null => {
-  return data.reduce(
-    (agg, current) => {
-      if (current.children) {
-        return (
-          findNodeParent(current.children, key) ??
-          recFindNodeParent(current.children, key)
-        );
-      }
-      return agg;
-    },
-    null as null | CustomTreeDataNode,
+  return (
+    findNodeParent(data, key) ??
+    data.reduce(
+      (agg, current) => {
+        if (current.children) {
+          return (
+            findNodeParent(current.children, key) ??
+            recFindNodeParent(current.children, key)
+          );
+        }
+        return agg;
+      },
+      null as null | CustomTreeDataNode,
+    )
   );
 };
 
@@ -56,6 +55,7 @@ export const MonitorTreeDataTitle = ({
 
   if (node.key.toString().startsWith(TREE_NODE_LOAD_MORE_KEY_PREFIX)) {
     const nodeParent = recFindNodeParent(treeData, node.key.toString());
+
     return (
       <Button
         type="link"
@@ -80,28 +80,11 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
-  const statusIconColor = (() => {
-    switch (node.status) {
-      case TreeResourceChangeIndicator.ADDITION:
-        return palette.FIDESUI_SUCCESS;
-      case TreeResourceChangeIndicator.REMOVAL:
-        return palette.FIDESUI_ERROR;
-      case TreeResourceChangeIndicator.CHANGE:
-        return palette.FIDESUI_WARNING;
-      default:
-        return null;
-    }
-  })();
-
   return (
     <Flex gap={4} align="center" className="inline-flex">
-      {statusIconColor && (
-        <Icons.CircleSolid
-          className="size-2"
-          style={{ color: statusIconColor }}
-        />
-      )}
-      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
+      <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
+        {node.title}
+      </Text>
     </Flex>
   );
 };

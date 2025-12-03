@@ -64,9 +64,10 @@ Configure `window.fides_overrides` after loading Fides.js tag
 
 > **fides\_clear\_cookie**: `boolean`
 
-When `true`, deletes the `fides_consent` cookie when FidesJS is
+When `true`, deletes the `fides_consent` or `fides_consent_suffix` cookie when FidesJS is
 initialized, to clear any previously saved consent preferences from the
-user's device.
+user's device. This option will only clear the cookie for the matching cookie name suffix or `fides_consent`
+if no suffix is provided.
 
 Defaults to `false`.
 
@@ -161,7 +162,7 @@ Defaults to `undefined`.
 
 > **fides\_string**: `string`
 
-Override the current user's `fides_string` consent preferences (see [Fides.fides_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
+Override the current user's `fides_string` consent preferences (see [Fides.fides\_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
 registered user from a custom backend, where the `fides_string` could be
 provided by the server across multiple devices, etc.
 
@@ -377,3 +378,17 @@ the behavior.
 See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
 
 Defaults to `"disabled"`.
+
+***
+
+### fides\_cookie\_suffix?
+
+> `optional` **fides\_cookie\_suffix**: `string`
+
+Adds a suffix to the name of the cookie that Fides uses to store consent preferences.
+
+If provided, the cookie name will be `fides_consent_{suffix}`. For example, if set to
+`"mycompany"`, the cookie will be named `fides_consent_mycompany`. This allows multiple
+Fides instances on the same domain to maintain separate consent cookies.
+
+Defaults to `undefined`, which uses the standard `fides_consent` cookie name.

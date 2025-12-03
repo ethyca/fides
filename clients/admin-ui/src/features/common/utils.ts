@@ -66,10 +66,10 @@ export const getFileNameFromContentDisposition = (
  * // returns 'id=1&id=2&id=3'
  */
 export const getQueryParamsFromArray = (
-  valueList: string[],
+  valueList: string[] | undefined,
   queryParam: string,
 ) => {
-  if (valueList.length > 0) {
+  if (valueList && valueList.length > 0) {
     return `${queryParam}=${valueList.join(`&${queryParam}=`)}`;
   }
   return undefined;

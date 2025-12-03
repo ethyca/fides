@@ -7,8 +7,8 @@ export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
-export type { LocationSelectProps } from "./components/select/LocationSelect";
-export { LocationSelect } from "./components/select/LocationSelect";
+export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
+export { LocationSelect } from "./components/data-entry/LocationSelect";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   FilterValue as AntFilterValue,
@@ -18,8 +18,10 @@ export type {
 export type {
   AvatarProps as AntAvatarProps,
   ButtonProps as AntButtonProps,
+  CheckboxProps as AntCheckboxProps,
   CollapseProps as AntCollapseProps,
   DatePickerProps as AntDatePickerProps,
+  DrawerProps as AntDrawerProps,
   DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
@@ -27,6 +29,7 @@ export type {
   InputProps as AntInputProps,
   MenuProps as AntMenuProps,
   ModalProps as AntModalProps,
+  ProgressProps as AntProgressProps,
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
@@ -45,6 +48,7 @@ export type {
 export {
   Alert as AntAlert,
   Avatar as AntAvatar,
+  Badge as AntBadge,
   Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
@@ -53,7 +57,9 @@ export {
   Col as AntCol,
   Collapse as AntCollapse,
   DatePicker as AntDatePicker,
+  Descriptions as AntDescriptions,
   Divider as AntDivider,
+  Drawer as AntDrawer,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
   Flex as AntFlex,
@@ -63,7 +69,6 @@ export {
   InputNumber as AntInputNumber,
   Layout as AntLayout,
   Menu as AntMenu,
-  message as AntMessage,
   Modal as AntModal,
   notification as AntNotification,
   Pagination as AntPagination,
@@ -72,6 +77,7 @@ export {
   Radio as AntRadio,
   Result as AntResult,
   Row as AntRow,
+  Segmented as AntSegmented,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
@@ -94,6 +100,7 @@ export type {
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
+export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
@@ -112,10 +119,16 @@ export type {
 export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
 export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
+export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
 
 // Export utils
+export * from "./components/data-display/filter.utils";
 export * from "./components/data-display/location.utils";
-export { isoCodesToOptions } from "./components/select/LocationSelect";
+export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
+
+// Export data-display components
+export type { FilterProps } from "./components/data-display/Filter";
+export { Filter } from "./components/data-display/Filter";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
@@ -162,16 +175,16 @@ export { theme as antTheme } from "antd";
  * Custom Components
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
-export { CheckboxTree } from "./components/checkbox-tree";
-export type { ColumnMetadata } from "./components/column-dropdown";
-export { ColumnDropdown } from "./components/column-dropdown";
-export { ConfirmationModal } from "./components/confirmation-modal";
-export { DataCategoryDropdown } from "./components/data-category-dropdown";
-export { ExampleComponent } from "./components/example-component";
-export { FloatingMenu } from "./components/floating-menu";
-export { PrimaryLink, SecondaryLink } from "./components/links";
-export { SelectInline } from "./components/select-inline";
-export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
+export type { ColumnMetadata } from "./components/chakra-base/column-dropdown";
+export { ColumnDropdown } from "./components/chakra-base/column-dropdown";
+export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
+export { DataCategoryDropdown } from "./components/chakra-base/data-category-dropdown";
+export { ExampleComponent } from "./components/chakra-base/example-component";
+export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
+export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";
+export { SelectInline } from "./components/data-entry/SelectInline";
+export { FloatingMenu } from "./components/navigation";
 
 /**
  * Custom Hooks

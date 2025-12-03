@@ -16,6 +16,8 @@ export const LOGIN_ROUTE = "/login";
 export const CONNECTION_ROUTE = "/connection";
 export const PLUS_CONNECTION_API_ROUTE = "/plus/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
-export const CONNECTOR_TEMPLATE = "/connector_template";
+export const CONNECTOR_TEMPLATE = "/connector-templates";
 
 export const PREVIEW_CONTAINER_ID = "preview-container";
+
+export const NO_VALUE = "N/A";

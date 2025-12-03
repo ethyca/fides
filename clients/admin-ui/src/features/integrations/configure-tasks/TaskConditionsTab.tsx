@@ -2,11 +2,11 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
   useDisclosure,
+  useMessage,
   WarningIcon,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
@@ -38,6 +38,8 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
     index: number;
     condition: ConditionLeaf;
   } | null>(null);
+
+  const message = useMessage();
 
   const {
     isOpen: isDeleteOpen,
@@ -137,7 +139,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         throw err;
       }
     },
-    [editingIndex, conditions, saveConditions],
+    [conditions, editingIndex, saveConditions, message],
   );
 
   const handleDeleteCondition = useCallback(
@@ -171,7 +173,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
       setConditionToDelete(null);
     }
     onDeleteClose();
-  }, [conditionToDelete, conditions, saveConditions, onDeleteClose]);
+  }, [conditionToDelete, onDeleteClose, conditions, saveConditions, message]);
 
   if (isLoading) {
     return (

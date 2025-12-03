@@ -1484,6 +1484,74 @@ describe("Consent overlay", () => {
         });
       });
 
+      describe("when GPC conditional button option is used", () => {
+        describe("when GPC flag is true", () => {
+          beforeEach(() => {
+            cy.on("window:before:load", (win) => {
+              // eslint-disable-next-line no-param-reassign
+              win.navigator.globalPrivacyControl = true;
+            });
+            cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+            stubConfig({
+              experienceConfig: {
+                layer1_button_options: Layer1ButtonOption.GPC_CONDITIONAL,
+              },
+            });
+          });
+
+          it("renders an acknowledge button in the banner when GPC is true", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get("button").contains("OK");
+              cy.get("button").contains("Opt in to all").should("not.exist");
+              cy.get("button").contains("Opt out of all").should("not.exist");
+            });
+          });
+
+          it("saves consent when acknowledge button is clicked", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get("button").contains("OK").click();
+            });
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              const { body } = interception.request;
+              expect(body.method).to.eql(ConsentMethod.ACKNOWLEDGE);
+            });
+            cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+              cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+                const cookieKeyConsent: FidesCookie = JSON.parse(
+                  decodeURIComponent(cookie!.value),
+                );
+                expect(cookieKeyConsent.fides_meta)
+                  .property("consentMethod")
+                  .is.eql(ConsentMethod.ACKNOWLEDGE);
+              });
+            });
+          });
+        });
+
+        describe("when GPC flag is false", () => {
+          beforeEach(() => {
+            cy.on("window:before:load", (win) => {
+              // eslint-disable-next-line no-param-reassign
+              win.navigator.globalPrivacyControl = false;
+            });
+            cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+            stubConfig({
+              experienceConfig: {
+                layer1_button_options: Layer1ButtonOption.GPC_CONDITIONAL,
+              },
+            });
+          });
+
+          it("renders opt in/opt out buttons in the banner when GPC is false", () => {
+            cy.get("div#fides-banner").within(() => {
+              cy.get("button").contains("Opt in to all");
+              cy.get("button").contains("Opt out of all");
+              cy.get("button").contains("OK").should("not.exist");
+            });
+          });
+        });
+      });
+
       describe("when Fides string with Notice Consent is found", () => {
         const consent = {};
         consent[PRIVACY_NOTICE_KEY_1] = true;
@@ -3371,8 +3439,6 @@ describe("Consent overlay", () => {
 
       // Next, change some Fides options to enable embed and reinitialize()
       cy.window().then((win) => {
-        // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
         win.fides_overrides = {
           fides_embed: true,
           fides_disable_banner: false,
@@ -3390,8 +3456,6 @@ describe("Consent overlay", () => {
 
       // Change the options  and reinitialize() again
       cy.window().then((win) => {
-        // @ts-ignore
-        // eslint-disable-next-line no-param-reassign
         win.fides_overrides = {
           fides_embed: true,
           fides_disable_banner: true,

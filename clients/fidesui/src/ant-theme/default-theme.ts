@@ -28,7 +28,9 @@ export const defaultAntTheme: ThemeConfig = {
     colorError: palette.FIDESUI_ERROR,
     colorLink: palette.FIDESUI_LINK,
     colorBgBase: palette.FIDESUI_FULL_WHITE,
-    borderRadius: 4,
+    borderRadiusSM: 4,
+    borderRadius: 6,
+    borderRadiusLG: 6,
     wireframe: true,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
@@ -49,10 +51,15 @@ export const defaultAntTheme: ThemeConfig = {
       defaultShadow: undefined,
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
+      textHoverBg: undefined,
+      textTextHoverColor: palette.FIDESUI_NEUTRAL_600,
     },
     Card: {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
       borderRadiusLG: 8,
+    },
+    Drawer: {
+      zIndexPopupBase: 1300, // below chakra's modal (so the contents of a drawer can open a modal eg. data map drawer)
     },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,

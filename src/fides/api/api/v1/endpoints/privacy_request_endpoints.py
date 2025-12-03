@@ -29,7 +29,7 @@ from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import cast, column, null, or_, select
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -88,9 +88,11 @@ from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetRe
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
+    CancelPrivacyRequests,
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
@@ -144,8 +146,10 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
+    PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
@@ -222,7 +226,9 @@ def create_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
+    data: Annotated[
+        List[PrivacyRequestCreate], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -248,7 +254,9 @@ def create_privacy_request_authenticated(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_CREATE],
     ),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
+    data: Annotated[
+        List[PrivacyRequestCreate], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -269,7 +277,10 @@ def privacy_request_csv_download(
     f = io.StringIO()
     csv_file = csv.writer(f)
 
-    privacy_request_ids: List[str] = [r.id for r in privacy_request_query]
+    # Execute query once and convert to list to avoid multiple iterations
+    privacy_requests: List[PrivacyRequest] = privacy_request_query.all()
+    privacy_request_ids: List[str] = [r.id for r in privacy_requests]
+
     denial_audit_log_query: Query = db.query(AuditLog).filter(
         AuditLog.action == AuditLogAction.denied,
         AuditLog.privacy_request_id.in_(privacy_request_ids),
@@ -278,7 +289,7 @@ def privacy_request_csv_download(
         r.privacy_request_id: r.message for r in denial_audit_log_query
     }
 
-    identity_columns, custom_field_columns = get_variable_columns(privacy_request_query)
+    identity_columns, custom_field_columns = get_variable_columns(privacy_requests)
 
     csv_file.writerow(
         [
@@ -298,7 +309,7 @@ def privacy_request_csv_download(
     )
 
     pr: PrivacyRequest
-    for pr in privacy_request_query:
+    for pr in privacy_requests:
         denial_reason = (
             denial_audit_logs[pr.id]
             if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
@@ -343,12 +354,12 @@ def privacy_request_csv_download(
 
 
 def get_variable_columns(
-    privacy_request_query: Query,
+    privacy_requests: List[PrivacyRequest],
 ) -> tuple[List[str], Dict[str, str]]:
     identity_columns: Set[str] = set()
     custom_field_columns: Dict[str, str] = {}
 
-    for pr in privacy_request_query:
+    for pr in privacy_requests:
         identity_columns.update(
             extract_identity_column_names(pr.get_persisted_identity().model_dump())
         )
@@ -485,7 +496,7 @@ def _filter_privacy_request_queryset(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     include_consent_webhook_requests: Optional[bool] = False,
     include_deleted_requests: Optional[bool] = False,
 ) -> Query:
@@ -675,9 +686,11 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
     if action_type:
+        if isinstance(action_type, ActionType):
+            action_type = [action_type]
         policy_ids_for_action_type = (
             db.query(Rule)
-            .filter(Rule.action_type == action_type)
+            .filter(Rule.action_type.in_(action_type))
             .with_entities(Rule.policy_id)
             .distinct()
         )
@@ -791,7 +804,7 @@ def _shared_privacy_request_search(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     location: Optional[str] = None,
-    action_type: Optional[ActionType] = None,
+    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
@@ -810,7 +823,8 @@ def _shared_privacy_request_search(
 
     logger.debug("Finding all request statuses with pagination params {}", params)
 
-    query = db.query(PrivacyRequest)
+    # Use query_without_large_columns to prevent OOM errors when loading many privacy requests
+    query = PrivacyRequest.query_without_large_columns(db)
     query = _filter_privacy_request_queryset(
         db,
         query,
@@ -842,9 +856,28 @@ def _shared_privacy_request_search(
 
     if download_csv:
         _validate_result_size(query)
+        # Eager load relationships needed for CSV export to avoid N+1 queries
+        query = query.options(
+            selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),  # type: ignore[attr-defined]
+        )
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
         return privacy_request_csv_download(db, query)
+
+    # Eager load relationships for regular list view to avoid N+1 queries
+    if include_identities or include_custom_privacy_request_fields:
+        eager_load_options = []
+        if include_identities:
+            eager_load_options.append(
+                selectinload(PrivacyRequest.provided_identities)  # type: ignore[attr-defined]
+            )
+        if include_custom_privacy_request_fields:
+            eager_load_options.append(
+                selectinload(PrivacyRequest.custom_fields)  # type: ignore[attr-defined]
+            )
+        query = query.options(*eager_load_options)
 
     # Conditionally embed execution log details in the response.
     if verbose:
@@ -1282,15 +1315,26 @@ def validate_manual_input(
     ],
 )
 def bulk_restart_privacy_request_from_failure(
-    privacy_request_ids: List[str],
+    privacy_request_ids: Annotated[
+        List[str], Field(max_length=BULK_PRIVACY_REQUEST_BATCH_SIZE)
+    ],
     *,
     db: Session = Depends(deps.get_db),
 ) -> BulkPostPrivacyRequests:
-    """Bulk restart a of privacy request from failure."""
+    """Bulk restart privacy requests from failure."""
     succeeded: List[PrivacyRequestResponse] = []
     failed: List[Dict[str, Any]] = []
+
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(privacy_request_ids))
+        .all()
+    }
+
     for privacy_request_id in privacy_request_ids:
-        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
             failed.append(
@@ -1356,10 +1400,10 @@ def restart_privacy_request_from_failure(
     )
 
     # Automatically resubmit the request if the cache has expired
+
     if (
-        not privacy_request.get_cached_identity_data()
-        and privacy_request.status
-        not in [PrivacyRequestStatus.complete, PrivacyRequestStatus.pending]
+        not privacy_request.verify_cache_for_identity_data()
+        and privacy_request.status != PrivacyRequestStatus.complete
     ):
         logger.info(
             f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
@@ -1476,10 +1520,37 @@ def deny_privacy_request(
     )
 
 
+@router.patch(
+    PRIVACY_REQUEST_CANCEL,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def cancel_privacy_request(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: CancelPrivacyRequests,
+) -> BulkReviewResponse:
+    """Cancel a list of privacy requests and/or report failure"""
+
+    return privacy_request_service.cancel_privacy_requests(
+        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
+    )
+
+
 def _validate_privacy_request_pending_or_error(
     db: Session, privacy_request_id: str
 ) -> None:
-    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
     if not privacy_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -1972,6 +2043,32 @@ def resume_privacy_request_from_requires_input(
 
 
 @router.post(
+    PRIVACY_REQUEST_BULK_FINALIZE,
+    status_code=HTTP_200_OK,
+    response_model=BulkReviewResponse,
+)
+def bulk_finalize_privacy_requests(
+    *,
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkReviewResponse:
+    """
+    Bulk finalize privacy requests that are in requires_manual_finalization status.
+    Each request will be moved from the 'requires_finalization' state to 'complete'.
+    Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
+    """
+    return privacy_request_service.finalize_privacy_requests(
+        privacy_requests.request_ids, user_id=client.user_id
+    )
+
+
+@router.post(
     PRIVACY_REQUEST_FINALIZE,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
@@ -2157,8 +2254,18 @@ def bulk_soft_delete_privacy_requests(
     if client.id == CONFIG.security.oauth_root_client_id:
         user_id = "root"
 
-    for privacy_request_id in privacy_requests.request_ids:
-        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    request_ids = privacy_requests.request_ids
+
+    # Fetch all privacy requests in one query to avoid N+1
+    privacy_requests_dict = {
+        pr.id: pr
+        for pr in PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id.in_(request_ids))
+        .all()
+    }
+
+    for privacy_request_id in request_ids:
+        privacy_request = privacy_requests_dict.get(privacy_request_id)
 
         if not privacy_request:
             failed.append(
