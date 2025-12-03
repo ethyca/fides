@@ -20,7 +20,10 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DiffStatus } from "~/types/api";
 
-import { useBulkPromoteIdentityProviderMonitorResultsMutation } from "../../discovery-detection.slice";
+import {
+  useBulkMuteIdentityProviderMonitorResultsMutation,
+  useBulkPromoteIdentityProviderMonitorResultsMutation,
+} from "../../discovery-detection.slice";
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
 import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
@@ -42,6 +45,11 @@ export const DiscoveredInfrastructureSystemsTable = ({
     bulkPromoteIdentityProviderMonitorResultsMutation,
     { isLoading: isBulkPromoting },
   ] = useBulkPromoteIdentityProviderMonitorResultsMutation();
+
+  const [
+    bulkMuteIdentityProviderMonitorResultsMutation,
+    { isLoading: isBulkMuting },
+  ] = useBulkMuteIdentityProviderMonitorResultsMutation();
 
   const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
 
@@ -69,6 +77,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   const hasSelectedRows = selectedKeys.size > 0;
   const selectedRowsCount = selectedKeys.size;
+  const isBulkActionInProgress = isBulkPromoting || isBulkMuting;
 
   // Create tabs with labels based on ActionCenterTabHash
   const tabsWithIcons = useMemo(
@@ -146,21 +155,21 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   const handleBulkAction = useCallback(
     async (action: "add" | "ignore") => {
+      // Extract URNs from selected items
+      const urns = selectedItems
+        .map((item) => item.urn)
+        .filter((urn): urn is string => !!urn);
+
+      if (urns.length === 0) {
+        toast(
+          errorToastParams(
+            "No valid systems selected. Please select systems with URNs.",
+          ),
+        );
+        return;
+      }
+
       if (action === "add") {
-        // Extract URNs from selected items
-        const urns = selectedItems
-          .map((item) => item.urn)
-          .filter((urn): urn is string => !!urn);
-
-        if (urns.length === 0) {
-          toast(
-            errorToastParams(
-              "No valid systems selected. Please select systems with URNs.",
-            ),
-          );
-          return;
-        }
-
         const result = await bulkPromoteIdentityProviderMonitorResultsMutation({
           monitor_config_key: monitorId,
           urns,
@@ -181,19 +190,32 @@ export const DiscoveredInfrastructureSystemsTable = ({
           refetch();
         }
       } else if (action === "ignore") {
-        // TODO: Implement bulk ignore functionality for infrastructure systems
-        // This may require a new endpoint similar to the bulk promote endpoint
-        toast(
-          errorToastParams(
-            "Bulk ignore functionality not yet implemented for infrastructure systems",
-          ),
-        );
+        const result = await bulkMuteIdentityProviderMonitorResultsMutation({
+          monitor_config_key: monitorId,
+          urns,
+        });
+
+        if (isErrorResult(result)) {
+          toast(errorToastParams(getErrorMessage(result.error)));
+        } else {
+          const count = urns.length;
+          toast(
+            successToastParams(
+              `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been ignored.`,
+            ),
+          );
+          // Clear selections after successful mute
+          setSelectedKeys(new Set());
+          // Refetch data to update the list
+          refetch();
+        }
       }
     },
     [
       selectedItems,
       monitorId,
       bulkPromoteIdentityProviderMonitorResultsMutation,
+      bulkMuteIdentityProviderMonitorResultsMutation,
       toast,
       refetch,
     ],
@@ -247,7 +269,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
                           key: "ignore",
                           label: "Ignore",
                           onClick: () => handleBulkAction("ignore"),
-                          disabled: isBulkPromoting,
+                          disabled: isBulkActionInProgress,
                         },
                       ]
                     : []),
@@ -255,18 +277,18 @@ export const DiscoveredInfrastructureSystemsTable = ({
                     key: "add",
                     label: "Add",
                     onClick: () => handleBulkAction("add"),
-                    disabled: isBulkPromoting,
+                    disabled: isBulkActionInProgress,
                   },
                 ],
               }}
-              disabled={!hasSelectedRows || isBulkPromoting}
+              disabled={!hasSelectedRows || isBulkActionInProgress}
             >
               <Button
                 type="primary"
                 icon={<Icons.ChevronDown />}
                 iconPosition="end"
-                disabled={!hasSelectedRows || isBulkPromoting}
-                loading={isBulkPromoting}
+                disabled={!hasSelectedRows || isBulkActionInProgress}
+                loading={isBulkActionInProgress}
               >
                 Actions
               </Button>

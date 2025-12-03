@@ -10,7 +10,10 @@ import React from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
-import { usePromoteIdentityProviderMonitorResultMutation } from "../../discovery-detection.slice";
+import {
+  useMuteIdentityProviderMonitorResultMutation,
+  usePromoteIdentityProviderMonitorResultMutation,
+} from "../../discovery-detection.slice";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 
 interface InfrastructureSystemActionsCellProps {
@@ -38,6 +41,11 @@ export const InfrastructureSystemActionsCell = ({
     promoteIdentityProviderMonitorResultMutation,
     { isLoading: isPromoting },
   ] = usePromoteIdentityProviderMonitorResultMutation();
+
+  const [
+    muteIdentityProviderMonitorResultMutation,
+    { isLoading: isMuting },
+  ] = useMuteIdentityProviderMonitorResultMutation();
 
   const toast = useToast();
 
@@ -67,14 +75,31 @@ export const InfrastructureSystemActionsCell = ({
   };
 
   const handleIgnore = async () => {
-    // TODO: Implement ignore functionality for infrastructure systems
-    // This may require a new endpoint similar to the promote endpoint
-    toast(
-      errorToastParams(
-        "Ignore functionality not yet implemented for infrastructure systems",
-      ),
-    );
+    if (!system.urn) {
+      toast(errorToastParams("Cannot ignore: system URN is missing"));
+      return;
+    }
+
+    const result = await muteIdentityProviderMonitorResultMutation({
+      monitor_config_key: monitorId,
+      urn: system.urn,
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          `${system.name || "System"} has been ignored.`,
+        ),
+      );
+      if (onPromoteSuccess) {
+        onPromoteSuccess();
+      }
+    }
   };
+
+  const isActionInProgress = isPromoting || isMuting;
 
   return (
     <Space>
@@ -84,8 +109,8 @@ export const InfrastructureSystemActionsCell = ({
             data-testid="ignore-btn"
             size="small"
             onClick={handleIgnore}
-            disabled={isPromoting}
-            loading={false}
+            disabled={!system.urn || isActionInProgress}
+            loading={isMuting}
             icon={ignoreIcon}
             aria-label="Ignore"
           >
@@ -104,7 +129,7 @@ export const InfrastructureSystemActionsCell = ({
           data-testid="add-btn"
           size="small"
           onClick={handleAdd}
-          disabled={!system.urn || isPromoting}
+          disabled={!system.urn || isActionInProgress}
           loading={isPromoting}
           icon={addIcon}
           aria-label="Add"
