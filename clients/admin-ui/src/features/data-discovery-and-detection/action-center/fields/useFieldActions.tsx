@@ -68,10 +68,10 @@ export const useFieldActions = (
         field?: Partial<Field>,
       ) => Promise<RTKResult>,
     ) =>
-    async (urns: string[], field?: Partial<Field>) => {
+    async (urns: string[], primitive = true, field?: Partial<Field>) => {
       const key = Date.now();
       const confirmed =
-        urns.length === 1 ||
+        (urns.length === 1 && !primitive) ||
         (await modalApi.confirm(
           getActionModalProps(
             FIELD_ACTION_LABEL[actionType],
@@ -188,6 +188,10 @@ export const useFieldActions = (
     promote: handleAction(FieldActionType.PROMOTE, handlePromote),
   } satisfies Record<
     FieldActionType,
-    (urns: string[], field?: Partial<Field>) => Promise<void> | void
+    (
+      urns: string[],
+      primitive?: boolean,
+      field?: Partial<Field>,
+    ) => Promise<void> | void
   >;
 };
