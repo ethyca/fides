@@ -290,9 +290,15 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         db: Session,
         privacy_request: PrivacyRequest,
     ):
-        """Test transformation of custom identity fields with labels."""
-        cols = ["email", "customer_id"]
-        field_addresses = [f"privacy_request.identity.{col}" for col in cols]
+        """Test transformation of custom identity fields with labels.
+
+        LabeledIdentity fields should return just the value, not the full
+        {"label": ..., "value": ...} structure.
+        """
+        field_addresses = [
+            "privacy_request.identity.email",
+            "privacy_request.identity.customer_id",
+        ]
 
         # Persist custom identity fields
         privacy_request.persist_identity(
@@ -303,14 +309,13 @@ class TestPrivacyRequestToEvaluationDataIdentity:
             },
         )
         transformer = PrivacyRequestDataTransformer(privacy_request)
-        data = transformer.to_evaluation_data(field_addresses)
+        data = transformer.to_evaluation_data(set(field_addresses))
 
-        for col in cols:
-            assert data["privacy_request"]["identity"][
-                col
-            ] == transform_value_for_evaluation(
-                getattr(privacy_request.get_persisted_identity(), col)
-            )
+        # Regular identity field (email) returns the value directly
+        assert data["privacy_request"]["identity"]["email"] == "user@example.com"
+
+        # LabeledIdentity field (customer_id) should return just the value, not the full dict
+        assert data["privacy_request"]["identity"]["customer_id"] == "cust_123"
 
 
 class TestPrivacyRequestToEvaluationDataCustomFields:
@@ -332,14 +337,14 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
         # No custom fields should be present
         data = transformer.to_evaluation_data(field_addresses)
         for col in cols:
-            assert data["privacy_request"]["custom_privacy_request_fields"][col] == None
+            assert data["privacy_request"]["custom_privacy_request_fields"][col] is None
 
         # Persist custom fields
         privacy_request.persist_custom_privacy_request_fields(
             db=db,
             custom_privacy_request_fields={
                 "legal_entity": CustomPrivacyRequestField(
-                    label="Legal Entity", value="Glamour UK"
+                    label="Legal Entity", value="Acme Corp"
                 ),
                 "geolocation": CustomPrivacyRequestField(
                     label="Geolocation", value="France"
@@ -348,14 +353,49 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
         )
         transformer = PrivacyRequestDataTransformer(privacy_request)
 
-        # Verify that the custom fields are present
+        # Verify that the custom fields are present and return just the value (not the full dict)
         data = transformer.to_evaluation_data(field_addresses)
-        for col in cols:
-            assert data["privacy_request"]["custom_privacy_request_fields"][
-                col
-            ] == transform_value_for_evaluation(
-                privacy_request.get_persisted_custom_privacy_request_fields().get(col)
-            )
+        assert (
+            data["privacy_request"]["custom_privacy_request_fields"]["legal_entity"]
+            == "Acme Corp"
+        )
+        assert (
+            data["privacy_request"]["custom_privacy_request_fields"]["geolocation"]
+            == "France"
+        )
+
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
+    def test_custom_privacy_request_fields_with_array_value(
+        self,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test transformation of custom privacy request fields with array values."""
+        field_addresses = [
+            "privacy_request.custom_privacy_request_fields.data_categories"
+        ]
+
+        # Persist custom field with array value
+        privacy_request.persist_custom_privacy_request_fields(
+            db=db,
+            custom_privacy_request_fields={
+                "data_categories": CustomPrivacyRequestField(
+                    label="Data Categories",
+                    value=[
+                        "User Preferences",
+                        "Profile Information",
+                        "Activity History",
+                    ],
+                ),
+            },
+        )
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+
+        # Verify that the custom field returns just the array value, not the full dict
+        data = transformer.to_evaluation_data(set(field_addresses))
+        assert data["privacy_request"]["custom_privacy_request_fields"][
+            "data_categories"
+        ] == ["User Preferences", "Profile Information", "Activity History"]
 
 
 class TestPrivacyRequestToEvaluationDataEdgeCases:
