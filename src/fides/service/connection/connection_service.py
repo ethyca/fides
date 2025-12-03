@@ -815,15 +815,15 @@ class ConnectionService:
                 )
                 return None
 
-        normilzed_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
-        normilzed_upcoming_dataset = normalize_dataset(
+        normalized_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
+        normalized_upcoming_dataset = normalize_dataset(
             upcoming_dataset_copy, "upcoming"
         )
-        if normilzed_stored_dataset is None or normilzed_upcoming_dataset is None:
+        if normalized_stored_dataset is None or normalized_upcoming_dataset is None:
             return upcoming_dataset
 
-        stored_dataset_copy = normilzed_stored_dataset
-        upcoming_dataset_copy = normilzed_upcoming_dataset
+        stored_dataset_copy = normalized_stored_dataset
+        upcoming_dataset_copy = normalized_upcoming_dataset
 
         # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
         if isinstance(stored_dataset_copy.get("fides_key"), str):
