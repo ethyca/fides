@@ -72,6 +72,7 @@ interface InfrastructureSystemListItemProps {
   rowClickUrl?: (item: any) => string;
   monitorId: string;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
   onSetDataCategories?: (urn: string, dataCategories: string[]) => void;
   onSelectDataCategory?: (value: string) => void;
@@ -87,6 +88,7 @@ export const InfrastructureSystemListItem = ({
   rowClickUrl,
   monitorId,
   onTabChange,
+  activeTab,
   allowIgnore,
   onSetDataCategories,
   onSelectDataCategory,
@@ -157,6 +159,7 @@ export const InfrastructureSystemListItem = ({
           system={item}
           allowIgnore={allowIgnore}
           onTabChange={onTabChange}
+          activeTab={activeTab}
           onPromoteSuccess={onPromoteSuccess}
         />,
       ]}
