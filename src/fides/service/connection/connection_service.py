@@ -631,6 +631,13 @@ class ConnectionService:
 
         return connection_config
 
+    def _get_fields(self, field: dict[str, Any]) -> list[dict[str, Any]]:
+        """
+        Returns the fields of a dataset.
+        If the fields attribute does not exist or is None, returns an empty list.
+        """
+        return field.get("fields", []) or []
+
     def _merge_field(
         self,
         upcoming_field: Optional[dict[str, Any]],
@@ -670,13 +677,13 @@ class ConnectionService:
 
         # fields can be an empty list or None, we handle both cases by converting to an empty list
         upcoming_nested_fields = (
-            (upcoming_field.get("fields", []) or []) if upcoming_field else []
+            self._get_fields(upcoming_field) if upcoming_field else []
         )
         customer_nested_fields = (
-            (customer_field.get("fields", []) or []) if customer_field else []
+            self._get_fields(customer_field) if customer_field else []
         )
         original_nested_fields = (
-            (original_field.get("fields", []) or []) if original_field else []
+            self._get_fields(original_field) if original_field else []
         )
 
         if upcoming_nested_fields or customer_nested_fields:
@@ -764,13 +771,13 @@ class ConnectionService:
 
         # Build field maps for easy lookup
         upcoming_fields_by_name = {
-            field["name"]: field for field in (upcoming_collection.get("fields") or [])
+            field["name"]: field for field in self._get_fields(upcoming_collection)
         }
         original_fields_by_name = {
-            field["name"]: field for field in (original_collection.get("fields") or [])
+            field["name"]: field for field in self._get_fields(original_collection)
         }
         customer_fields_by_name = {
-            field["name"]: field for field in (customer_collection.get("fields") or [])
+            field["name"]: field for field in self._get_fields(customer_collection)
         }
 
         # Merge fields recursively
