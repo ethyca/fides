@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated tree status indicator component [#7048](https://github.com/ethyca/fides/pull/7048)
 - Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
+- Update custom fields so custom taxonomies can be used as locations or values [#7042](https://github.com/ethyca/fides/pull/7042)
 
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
