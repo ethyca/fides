@@ -30,7 +30,8 @@ import {
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
   ACTION_ALLOWED_STATUSES,
@@ -119,7 +120,6 @@ const ActionCenterFields: NextPage = () => {
     allowedActionsTrigger,
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
-  const [allowedTreeActionsTrigger] = useLazyGetAllowedActionsQuery();
 
   const bulkActions = useBulkActions(
     monitorId,
@@ -272,18 +272,19 @@ const ActionCenterFields: NextPage = () => {
                   action,
                   {
                     label: FIELD_ACTION_LABEL[action],
-                    disabled: async (node) => {
-                      const result = await allowedTreeActionsTrigger({
-                        path: baseMonitorFilters.path,
-                        query: {
-                          staged_resource_urn: [node.key.toString()],
-                        },
-                        body: {
-                          excluded_resource_urns: [],
-                        },
-                      });
+                    disabled: (node) => {
+                      /** Logic for this should exist on the BE */
+                      if (
+                        (action === FieldActionType.PROMOTE_REMOVALS &&
+                          node.status ===
+                            TreeResourceChangeIndicator.REMOVAL) ||
+                        (action === FieldActionType.CLASSIFY &&
+                          node.classifyable)
+                      ) {
+                        return false;
+                      }
 
-                      return !result.data?.allowed_actions.includes(action);
+                      return true;
                     },
                     callback: (key) => fieldActions[action]([key], false),
                   },
