@@ -67,6 +67,7 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
+from fides.service.dataset.dataset_config_service import PydanticValidationError
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -650,6 +651,7 @@ class ConnectionService:
             customer_made_changes = bool(diff)
 
         # Select the primary field to use
+        primary_field = None
         if customer_made_changes:
             # Customer made changes, preserve customer's version
             primary_field = customer_field
@@ -659,10 +661,8 @@ class ConnectionService:
         elif customer_field:
             # Field only exists in customer dataset, use customer version
             primary_field = customer_field
-        else:
-            return None
 
-        if primary_field is None:  # type check for mypy
+        if primary_field is None:
             return None
 
         # Deep copy to avoid mutating original
@@ -789,29 +789,28 @@ class ConnectionService:
         instance_key: str,
     ) -> Dict:
         """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
-        # Deep copy stored_dataset to avoid mutating the SQLAlchemy model's JSONB column
-        # This prevents SQLAlchemy from tracking changes and potentially corrupting the template dataset
         stored_dataset_copy = copy.deepcopy(stored_dataset)
         upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
 
-        # Normalize stored and base datasets to have the same complete structure as customer dataset
+        # Normalize stored and upcoming datasets to have the same complete structure as customer dataset
         # This ensures consistent field comparison by using the same Pydantic model serialization
-        try:
-            normalized_stored = FideslangDataset(**stored_dataset_copy).model_dump(
-                mode="json"
-            )
-            stored_dataset_copy = normalized_stored
+        def normalize_dataset(dataset: Dict, dataset_name: str) -> Optional[Dict]:
+            try:
+                return FideslangDataset(**dataset).model_dump(mode="json")
+            except PydanticValidationError as e:
+                logger.warning(
+                    f"{dataset_name} normalization failed validation: {e}"
+                )
+                return None
+            except Exception as e:
+                logger.warning(
+                    f"{dataset_name} normalization failed with unknown error: {e}"
+                )
+                return None
 
-            normalized_upcoming = FideslangDataset(**upcoming_dataset_copy).model_dump(
-                mode="json"
-            )
-            upcoming_dataset_copy = normalized_upcoming
-        except Exception as e:
-            # If stored dataset normalization fails, we can't do a proper comparison
-            # Fall back to using the upcoming dataset as the final result
-            logger.warning(
-                f"Using upcoming dataset as fallback due to stored dataset or upcoming dataset normalization failure: {e}"
-            )
+        stored_dataset_copy = normalize_dataset(stored_dataset_copy, "stored")
+        upcoming_dataset_copy = normalize_dataset(upcoming_dataset_copy, "upcoming")
+        if stored_dataset_copy is None or upcoming_dataset_copy is None:
             return upcoming_dataset
 
         # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
