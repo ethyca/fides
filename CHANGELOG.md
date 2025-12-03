@@ -910,7 +910,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue with banner dismisal resulting in resurfaced banner [#5979](https://github.com/ethyca/fides/pull/5979)
 
-## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
+## [2.58.0](https://github.com/ethyca/fides/compare/2.57.2...2.58.0)
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
@@ -949,6 +949,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Removed
 - Removed beta flag for Datahub feature [#5937](https://github.com/ethyca/fides/pull/5937)
+
+## [2.57.2](https://github.com/ethyca/fides/compare/2.57.1...2.57.2)
+
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix React Server vulnerability [#7061](https://github.com/ethyca/fides/pull/7061)
+
 
 ## [2.57.1](https://github.com/ethyca/fides/compare/2.57.0...2.57.1)
 
