@@ -19,13 +19,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.75.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.75.2..main)
 
 ### Added
 - Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
 - Support for confidence level visual and filtering in action center [#7040](https://github.com/ethyca/fides/pull/7040)
 - Endpoints to pull SaaS integration configurations [#6868](https://github.com/ethyca/fides/pull/6868)
 - Tree view actions for Remove and Classify in the Action Center [#7021](https://github.com/ethyca/fides/pull/7021)
+- Added expandable confidence level summary cards to the Action Center home page [#7056](https://github.com/ethyca/fides/pull/7056)
 
 ### Changed
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
@@ -37,6 +38,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed pagination in Integrations page [#7058](https://github.com/ethyca/fides/pull/7058)
+
+
+## [2.75.2](https://github.com/ethyca/fides/compare/2.75.1..2.75.2)
+
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix React Server vulnerability [#7061](https://github.com/ethyca/fides/pull/7061)
+
 
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
@@ -203,6 +211,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added CSV export button to manual tasks tables [#6806](https://github.com/ethyca/fides/pull/6806)
 - Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
 - Added database model for the v3 consent documents [#6790](https://github.com/ethyca/fides/pull/6790) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
 
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
