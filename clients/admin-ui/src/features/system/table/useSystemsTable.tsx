@@ -313,6 +313,7 @@ const useSystemsTable = () => {
             containerProps={{ className: "min-w-36" }}
           />
         ),
+        width: 200,
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
