@@ -208,6 +208,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added "Clear filters" button to privacy request manager [#6815](https://github.com/ethyca/fides/pull/6815)
 - Added database model for the v3 consent documents [#6790](https://github.com/ethyca/fides/pull/6790) https://github.com/ethyca/fides/labels/db-migration
 
+### Changed
+- Added sticky headers and action bars to some tables [#6813](https://github.com/ethyca/fides/pull/6813)
+
 ### Developer Experience
 - Split FidesJS and Privacy Center Cypress test runs [#6733](https://github.com/ethyca/fides/pull/6733)
 - Improved cypress test reliability [#6748](https://github.com/ethyca/fides/pull/6748)
