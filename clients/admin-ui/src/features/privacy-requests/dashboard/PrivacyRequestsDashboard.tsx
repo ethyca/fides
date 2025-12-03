@@ -3,11 +3,11 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
   Icons,
+  useAntModal,
   useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
@@ -35,7 +35,7 @@ export const PrivacyRequestsDashboard = () => {
   });
 
   const messageApi = useMessage();
-  const [modalApi, modalContext] = modal.useModal();
+  const modalApi = useAntModal();
 
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
@@ -180,7 +180,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {modalContext}
     </div>
   );
 };

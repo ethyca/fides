@@ -1,4 +1,4 @@
-import { AntModal as Modal, useMessage } from "fidesui";
+import { useAntModal, useMessage } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
@@ -18,7 +18,7 @@ import {
 } from "./utils";
 
 export const useConfirmAllFields = (monitorId: string) => {
-  const [modalApi, modalContext] = Modal.useModal();
+  const modalApi = useAntModal();
   const [bulkAction] = useFieldActionsMutation();
   const messageApi = useMessage();
 
@@ -79,5 +79,5 @@ export const useConfirmAllFields = (monitorId: string) => {
     });
   };
 
-  return { confirmAll, contextHolder: modalContext };
+  return { confirmAll };
 };

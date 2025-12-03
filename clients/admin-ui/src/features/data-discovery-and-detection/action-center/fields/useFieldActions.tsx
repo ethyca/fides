@@ -1,4 +1,4 @@
-import { AntModal as Modal, useMessage } from "fidesui";
+import { useAntModal, useMessage } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
@@ -46,7 +46,6 @@ export const getAvailableActions = (statusList: DiffStatus[]) => {
 
 export const useFieldActions = (
   monitorId: string,
-  modalApi: ReturnType<typeof Modal.useModal>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
   const [approveStagedResourcesMutation] = useApproveStagedResourcesMutation();
@@ -59,6 +58,7 @@ export const useFieldActions = (
   const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
 
   const messageApi = useMessage();
+  const modalApi = useAntModal();
 
   const handleAction =
     (

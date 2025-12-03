@@ -5,8 +5,8 @@ import {
   AntForm as Form,
   AntFormInstance as FormInstance,
   AntInput as Input,
-  AntModal as modal,
   AntParagraph as Paragraph,
+  useAntModal,
   useFormModal,
 } from "fidesui";
 import React from "react";
@@ -41,7 +41,7 @@ const SampleForm = ({ form }: SampleFormProps) => {
 };
 
 export const ModalMethodsCard = () => {
-  const [modalApi, modalApiContext] = modal.useModal();
+  const modalApi = useAntModal();
 
   const renderFormContent = (form: FormInstance) => <SampleForm form={form} />;
 
@@ -109,20 +109,17 @@ export const ModalMethodsCard = () => {
   };
 
   return (
-    <>
-      {modalApiContext}
-      <Card title="Modal methods" variant="borderless">
-        <Flex gap={8}>
-          <Button onClick={showCustomFormModal}>Show custom form modal</Button>
-          <Button onClick={showInfoModal}>Show info modal</Button>
-          <Button onClick={showSuccessModal}>Show success modal</Button>
-          <Button onClick={showErrorModal}>Show error modal</Button>
-          <Button onClick={showWarningModal}>Show warning modal</Button>
-          <Button onClick={showConfirmModal} type="default">
-            Show confirm modal
-          </Button>
-        </Flex>
-      </Card>
-    </>
+    <Card title="Modal methods" variant="borderless">
+      <Flex gap={8}>
+        <Button onClick={showCustomFormModal}>Show custom form modal</Button>
+        <Button onClick={showInfoModal}>Show info modal</Button>
+        <Button onClick={showSuccessModal}>Show success modal</Button>
+        <Button onClick={showErrorModal}>Show error modal</Button>
+        <Button onClick={showWarningModal}>Show warning modal</Button>
+        <Button onClick={showConfirmModal} type="default">
+          Show confirm modal
+        </Button>
+      </Flex>
+    </Card>
   );
 };

@@ -82,16 +82,14 @@ export const ConfidenceCard = ({
   monitorId,
 }: ConfidenceCardProps) => {
   const severity = mapConfidenceBucketToSeverity(item.severity);
-  const { confirmAll, contextHolder } = useConfirmAllFields(monitorId);
+  const { confirmAll } = useConfirmAllFields(monitorId);
 
   const handleConfirmAll = () => {
     confirmAll(item.severity, item.count);
   };
 
   return (
-    <>
-      {contextHolder}
-      <Card
+    <Card
         size="small"
         styles={{ body: { display: "none" } }}
         title={
@@ -112,7 +110,6 @@ export const ConfidenceCard = ({
           reviewHref,
           onConfirmAll: handleConfirmAll,
         })}
-      />
-    </>
+    />
   );
 };

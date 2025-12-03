@@ -162,7 +162,11 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export * from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useModal as useAntModal,
+  useMessage,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**
