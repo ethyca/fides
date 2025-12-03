@@ -90,10 +90,10 @@ export const formatFieldDisplay = (fieldAddress: string): string => {
   if (fieldAddress.startsWith("privacy_request.")) {
     const parts = fieldAddress.split(".");
     if (parts.length >= 3) {
-      const category = parts[1]; // "policy", "identity", etc.
+      const category = getCategoryFromFieldPath(fieldAddress);
       const field = parts.slice(2).join("."); // "name", "has_access_rule", etc.
       const formattedField = formatFieldLabel(`privacy_request.${field}`);
-      return `${category.charAt(0).toUpperCase() + category.slice(1)}: ${formattedField}`;
+      return `${category}: ${formattedField}`;
     }
     // Top-level fields like "created_at"
     const field = parts.slice(1).join(".");

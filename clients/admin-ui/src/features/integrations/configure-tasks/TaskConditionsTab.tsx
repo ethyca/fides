@@ -236,6 +236,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         renderItem={(condition: ConditionLeaf, index: number) => (
           <List.Item
             key={index}
+            aria-label={`Condition: ${formatFieldDisplay(condition.field_address)} ${operatorLabels[condition.operator]}${condition.value !== null && condition.value !== undefined ? ` ${String(condition.value)}` : ""}`}
             actions={[
               <Button
                 key="edit"
@@ -243,6 +244,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleOpenEditModal(index, condition)}
                 data-testid={`edit-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Edit condition for ${condition.field_address}`}
               >
                 Edit
               </Button>,
@@ -252,6 +254,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleDeleteCondition(index, condition)}
                 data-testid={`delete-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Delete condition for ${condition.field_address}`}
               >
                 Delete
               </Button>,
