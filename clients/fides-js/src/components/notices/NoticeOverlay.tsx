@@ -284,13 +284,20 @@ const NoticeOverlay = () => {
           servingComponent: servingComponentRef.current,
           trigger: triggerRef.current,
         },
-      }).finally(() => {
-        if (window.Fides) {
-          // apply any updates to the fidesGlobal
-          setFidesGlobal(window.Fides as InitializedFidesGlobal);
-        }
-        setTrigger(undefined);
-      });
+      })
+        .catch((error) => {
+          fidesDebugger(
+            "Error updating consent preferences, the UI will remain visible:",
+            error,
+          );
+        })
+        .finally(() => {
+          if (window.Fides) {
+            // apply any updates to the fidesGlobal
+            setFidesGlobal(window.Fides as InitializedFidesGlobal);
+          }
+          setTrigger(undefined);
+        });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },

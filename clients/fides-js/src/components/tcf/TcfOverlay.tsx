@@ -161,14 +161,21 @@ export const TcfOverlay = () => {
   const { gvlTranslations, setGvlTranslations } = useGvl();
   const [isGVLLangLoading, setIsGVLLangLoading] = useState(false);
   const loadGVLTranslations = async (locale: string) => {
-    const gvlTranslationObjects = await fetchGvlTranslations(
-      options.fidesApiUrl,
-      [locale],
-    );
-    if (gvlTranslationObjects) {
-      setGvlTranslations(gvlTranslationObjects[locale]);
-      loadMessagesFromGVLTranslations(i18n, gvlTranslationObjects, [locale]);
-      fidesDebugger(`Fides GVL translations loaded for ${locale}`);
+    try {
+      const gvlTranslationObjects = await fetchGvlTranslations(
+        options.fidesApiUrl,
+        [locale],
+      );
+      if (gvlTranslationObjects) {
+        setGvlTranslations(gvlTranslationObjects[locale]);
+        loadMessagesFromGVLTranslations(i18n, gvlTranslationObjects, [locale]);
+        fidesDebugger(`Fides GVL translations loaded for ${locale}`);
+      }
+    } catch (error) {
+      fidesDebugger(
+        `Failed to load GVL translations for ${locale}, falling back to default locale`,
+        error,
+      );
     }
   };
 
@@ -258,7 +265,7 @@ export const TcfOverlay = () => {
       // If the user's locale is not English, we need to load them from the api.
       // This only affects the modal.
       setIsGVLLangLoading(true);
-      loadGVLTranslations(bestLocale).then(() => {
+      loadGVLTranslations(bestLocale).finally(() => {
         setIsGVLLangLoading(false);
       });
     }
@@ -467,13 +474,20 @@ export const TcfOverlay = () => {
             },
           );
         },
-      }).finally(() => {
-        if (window.Fides) {
-          // apply any updates to the fidesGlobal
-          setFidesGlobal(window.Fides as InitializedFidesGlobal);
-        }
-        setTrigger(undefined);
-      });
+      })
+        .catch((error) => {
+          fidesDebugger(
+            "Error updating consent preferences, the UI will remain visible:",
+            error,
+          );
+        })
+        .finally(() => {
+          if (window.Fides) {
+            // apply any updates to the fidesGlobal
+            setFidesGlobal(window.Fides as InitializedFidesGlobal);
+          }
+          setTrigger(undefined);
+        });
       setDraftIds(enabledIds);
     },
     [
