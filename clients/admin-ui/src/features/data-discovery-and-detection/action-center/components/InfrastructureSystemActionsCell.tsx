@@ -13,6 +13,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useMuteIdentityProviderMonitorResultMutation,
   usePromoteIdentityProviderMonitorResultMutation,
+  useUnmuteIdentityProviderMonitorResultMutation,
 } from "../../discovery-detection.slice";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 
@@ -24,6 +25,7 @@ interface InfrastructureSystemActionsCellProps {
   };
   allowIgnore?: boolean;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  activeTab?: ActionCenterTabHash | null;
   addIcon?: React.ReactNode;
   ignoreIcon?: React.ReactNode;
   onPromoteSuccess?: () => void;
@@ -33,6 +35,7 @@ export const InfrastructureSystemActionsCell = ({
   monitorId,
   system,
   allowIgnore,
+  activeTab,
   addIcon = <Icons.Checkmark />,
   ignoreIcon = <Icons.ViewOff />,
   onPromoteSuccess,
@@ -42,10 +45,13 @@ export const InfrastructureSystemActionsCell = ({
     { isLoading: isPromoting },
   ] = usePromoteIdentityProviderMonitorResultMutation();
 
+  const [muteIdentityProviderMonitorResultMutation, { isLoading: isMuting }] =
+    useMuteIdentityProviderMonitorResultMutation();
+
   const [
-    muteIdentityProviderMonitorResultMutation,
-    { isLoading: isMuting },
-  ] = useMuteIdentityProviderMonitorResultMutation();
+    unmuteIdentityProviderMonitorResultMutation,
+    { isLoading: isUnmuting },
+  ] = useUnmuteIdentityProviderMonitorResultMutation();
 
   const toast = useToast();
 
@@ -88,10 +94,29 @@ export const InfrastructureSystemActionsCell = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
+      toast(successToastParams(`${system.name || "System"} has been ignored.`));
+      if (onPromoteSuccess) {
+        onPromoteSuccess();
+      }
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!system.urn) {
+      toast(errorToastParams("Cannot restore: system URN is missing"));
+      return;
+    }
+
+    const result = await unmuteIdentityProviderMonitorResultMutation({
+      monitor_config_key: monitorId,
+      urn: system.urn,
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
       toast(
-        successToastParams(
-          `${system.name || "System"} has been ignored.`,
-        ),
+        successToastParams(`${system.name || "System"} has been restored.`),
       );
       if (onPromoteSuccess) {
         onPromoteSuccess();
@@ -99,11 +124,12 @@ export const InfrastructureSystemActionsCell = ({
     }
   };
 
-  const isActionInProgress = isPromoting || isMuting;
+  const isActionInProgress = isPromoting || isMuting || isUnmuting;
+  const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
 
   return (
     <Space>
-      {allowIgnore && (
+      {allowIgnore && !isIgnoredTab && (
         <Tooltip title="Ignore">
           <Button
             data-testid="ignore-btn"
@@ -118,25 +144,47 @@ export const InfrastructureSystemActionsCell = ({
           </Button>
         </Tooltip>
       )}
-      <Tooltip
-        title={
-          !system.urn
-            ? `This system cannot be promoted: URN is missing.`
-            : "Add"
-        }
-      >
-        <Button
-          data-testid="add-btn"
-          size="small"
-          onClick={handleAdd}
-          disabled={!system.urn || isActionInProgress}
-          loading={isPromoting}
-          icon={addIcon}
-          aria-label="Add"
+      {isIgnoredTab ? (
+        <Tooltip
+          title={
+            !system.urn
+              ? `This system cannot be restored: URN is missing.`
+              : "Restore"
+          }
         >
-          {!addIcon && "Add"}
-        </Button>
-      </Tooltip>
+          <Button
+            data-testid="restore-btn"
+            size="small"
+            onClick={handleRestore}
+            disabled={!system.urn || isActionInProgress}
+            loading={isUnmuting}
+            icon={<Icons.Renew />}
+            aria-label="Restore"
+          >
+            Restore
+          </Button>
+        </Tooltip>
+      ) : (
+        <Tooltip
+          title={
+            !system.urn
+              ? `This system cannot be promoted: URN is missing.`
+              : "Add"
+          }
+        >
+          <Button
+            data-testid="add-btn"
+            size="small"
+            onClick={handleAdd}
+            disabled={!system.urn || isActionInProgress}
+            loading={isPromoting}
+            icon={addIcon}
+            aria-label="Add"
+          >
+            {!addIcon && "Add"}
+          </Button>
+        </Tooltip>
+      )}
     </Space>
   );
 };

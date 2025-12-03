@@ -23,6 +23,7 @@ import { DiffStatus } from "~/types/api";
 import {
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkPromoteIdentityProviderMonitorResultsMutation,
+  useBulkUnmuteIdentityProviderMonitorResultsMutation,
 } from "../../discovery-detection.slice";
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
@@ -51,6 +52,11 @@ export const DiscoveredInfrastructureSystemsTable = ({
     { isLoading: isBulkMuting },
   ] = useBulkMuteIdentityProviderMonitorResultsMutation();
 
+  const [
+    bulkUnmuteIdentityProviderMonitorResultsMutation,
+    { isLoading: isBulkUnmuting },
+  ] = useBulkUnmuteIdentityProviderMonitorResultsMutation();
+
   const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
 
   const {
@@ -77,7 +83,9 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   const hasSelectedRows = selectedKeys.size > 0;
   const selectedRowsCount = selectedKeys.size;
-  const isBulkActionInProgress = isBulkPromoting || isBulkMuting;
+  const isBulkActionInProgress =
+    isBulkPromoting || isBulkMuting || isBulkUnmuting;
+  const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
 
   // Create tabs with labels based on ActionCenterTabHash
   const tabsWithIcons = useMemo(
@@ -154,7 +162,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
   }, [data?.items, selectedKeys, getRecordKey]);
 
   const handleBulkAction = useCallback(
-    async (action: "add" | "ignore") => {
+    async (action: "add" | "ignore" | "restore") => {
       // Extract URNs from selected items
       const urns = selectedItems
         .map((item) => item.urn)
@@ -209,6 +217,26 @@ export const DiscoveredInfrastructureSystemsTable = ({
           // Refetch data to update the list
           refetch();
         }
+      } else if (action === "restore") {
+        const result = await bulkUnmuteIdentityProviderMonitorResultsMutation({
+          monitor_config_key: monitorId,
+          urns,
+        });
+
+        if (isErrorResult(result)) {
+          toast(errorToastParams(getErrorMessage(result.error)));
+        } else {
+          const count = urns.length;
+          toast(
+            successToastParams(
+              `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been restored.`,
+            ),
+          );
+          // Clear selections after successful unmute
+          setSelectedKeys(new Set());
+          // Refetch data to update the list
+          refetch();
+        }
       }
     },
     [
@@ -216,6 +244,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
       monitorId,
       bulkPromoteIdentityProviderMonitorResultsMutation,
       bulkMuteIdentityProviderMonitorResultsMutation,
+      bulkUnmuteIdentityProviderMonitorResultsMutation,
       toast,
       refetch,
     ],
@@ -262,24 +291,33 @@ export const DiscoveredInfrastructureSystemsTable = ({
             <InfrastructureSystemsFilters {...infrastructureSystemsFilters} />
             <Dropdown
               menu={{
-                items: [
-                  ...(allowIgnore
-                    ? [
-                        {
-                          key: "ignore",
-                          label: "Ignore",
-                          onClick: () => handleBulkAction("ignore"),
-                          disabled: isBulkActionInProgress,
-                        },
-                      ]
-                    : []),
-                  {
-                    key: "add",
-                    label: "Add",
-                    onClick: () => handleBulkAction("add"),
-                    disabled: isBulkActionInProgress,
-                  },
-                ],
+                items: isIgnoredTab
+                  ? [
+                      {
+                        key: "restore",
+                        label: "Restore",
+                        onClick: () => handleBulkAction("restore"),
+                        disabled: isBulkActionInProgress,
+                      },
+                    ]
+                  : [
+                      ...(allowIgnore
+                        ? [
+                            {
+                              key: "ignore",
+                              label: "Ignore",
+                              onClick: () => handleBulkAction("ignore"),
+                              disabled: isBulkActionInProgress,
+                            },
+                          ]
+                        : []),
+                      {
+                        key: "add",
+                        label: "Add",
+                        onClick: () => handleBulkAction("add"),
+                        disabled: isBulkActionInProgress,
+                      },
+                    ],
               }}
               disabled={!hasSelectedRows || isBulkActionInProgress}
             >
@@ -329,6 +367,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
               rowClickUrl={rowClickUrl}
               monitorId={monitorId}
               onTabChange={handleTabChange}
+              activeTab={activeTab as ActionCenterTabHash | null}
               allowIgnore={allowIgnore}
               onPromoteSuccess={refetch}
             />
