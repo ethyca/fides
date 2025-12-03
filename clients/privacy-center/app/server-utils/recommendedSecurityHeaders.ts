@@ -20,7 +20,7 @@ export const staticPageCspHeader = (args: {
     object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-ancestors 'none';
+    frame-ancestors 'self';
     upgrade-insecure-requests;
 `);
 
@@ -57,7 +57,7 @@ export const privacyCenterPagesCspHeader = (args: {
     object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-ancestors 'none';
+    frame-ancestors 'self';
     upgrade-insecure-requests;
 `);
 
@@ -71,13 +71,12 @@ export const recommendedSecurityHeaders = (
       matcher: /\/.*/,
       headers: [
         ["X-Content-Type-Options", "nosniff"],
-        ["Cache-Control", "no-cache, no-store, must-revalidate"],
         ["Strict-Transport-Security", "max-age=31536000"],
       ],
     },
     {
       matcher: /\/((?!embedded-consent\.html).*)/,
-      headers: [["X-Frame-Options", "deny"]],
+      headers: [["X-Frame-Options", "SAMEORIGIN"]],
     },
     {
       matcher: /\/(fides-js-components.demo.html|fides-js-demo.html)/,
