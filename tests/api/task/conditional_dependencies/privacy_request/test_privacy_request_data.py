@@ -290,9 +290,15 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         db: Session,
         privacy_request: PrivacyRequest,
     ):
-        """Test transformation of custom identity fields with labels."""
-        cols = ["email", "customer_id"]
-        field_addresses = [f"privacy_request.identity.{col}" for col in cols]
+        """Test transformation of custom identity fields with labels.
+
+        LabeledIdentity fields should return just the value, not the full
+        {"label": ..., "value": ...} structure.
+        """
+        field_addresses = [
+            "privacy_request.identity.email",
+            "privacy_request.identity.customer_id",
+        ]
 
         # Persist custom identity fields
         privacy_request.persist_identity(
@@ -303,14 +309,13 @@ class TestPrivacyRequestToEvaluationDataIdentity:
             },
         )
         transformer = PrivacyRequestDataTransformer(privacy_request)
-        data = transformer.to_evaluation_data(field_addresses)
+        data = transformer.to_evaluation_data(set(field_addresses))
 
-        for col in cols:
-            assert data["privacy_request"]["identity"][
-                col
-            ] == transform_value_for_evaluation(
-                getattr(privacy_request.get_persisted_identity(), col)
-            )
+        # Regular identity field (email) returns the value directly
+        assert data["privacy_request"]["identity"]["email"] == "user@example.com"
+
+        # LabeledIdentity field (customer_id) should return just the value, not the full dict
+        assert data["privacy_request"]["identity"]["customer_id"] == "cust_123"
 
 
 class TestPrivacyRequestToEvaluationDataCustomFields:
@@ -339,7 +344,7 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
             db=db,
             custom_privacy_request_fields={
                 "legal_entity": CustomPrivacyRequestField(
-                    label="Legal Entity", value="Glamour UK"
+                    label="Legal Entity", value="Acme Corp"
                 ),
                 "geolocation": CustomPrivacyRequestField(
                     label="Geolocation", value="France"
@@ -352,7 +357,7 @@ class TestPrivacyRequestToEvaluationDataCustomFields:
         data = transformer.to_evaluation_data(field_addresses)
         assert (
             data["privacy_request"]["custom_privacy_request_fields"]["legal_entity"]
-            == "Glamour UK"
+            == "Acme Corp"
         )
         assert (
             data["privacy_request"]["custom_privacy_request_fields"]["geolocation"]

@@ -79,7 +79,7 @@ class PrivacyRequestDataTransformer:
         # first part will always be privacy_request
         parts: list[str] = field_address.split(".")[1:]
         current: Any = self.privacy_request
-        is_custom_field = False
+        is_labeled_field = False
 
         # Handle location convenience fields - these are derived fields, not direct attributes
         # Check if we're accessing a location convenience field before trying to extract from privacy_request
@@ -95,10 +95,13 @@ class PrivacyRequestDataTransformer:
             parts.pop(0)
         elif parts[0] == "identity":
             current = self.identity_data
+            # Identity fields may contain LabeledIdentity objects with label/value structure
+            is_labeled_field = True
             parts.pop(0)
         elif parts[0] == "custom_privacy_request_fields":
             current = self.custom_privacy_request_fields_data
-            is_custom_field = True
+            # Custom fields are stored as {"label": ..., "value": ...} dicts
+            is_labeled_field = True
             parts.pop(0)
 
         current = extract_nested_field_value(current, parts)
@@ -109,12 +112,15 @@ class PrivacyRequestDataTransformer:
         if current is self.identity_data:
             return None
 
-        # Custom privacy request fields are stored as {"label": ..., "value": ...}
-        # Extract just the value for evaluation
-        if is_custom_field and isinstance(current, dict) and "value" in current:
+        # Transform the value first (converts LabeledIdentity to dict, handles other types)
+        current = transform_value_for_evaluation(current)
+
+        # For labeled fields (custom privacy request fields and identity fields with labels),
+        # extract just the value from the {"label": ..., "value": ...} structure
+        if is_labeled_field and isinstance(current, dict) and "value" in current:
             current = current["value"]
 
-        return transform_value_for_evaluation(current)
+        return current
 
     def _transform_policy_object(self, policy: Policy) -> dict[str, Any]:
         """
