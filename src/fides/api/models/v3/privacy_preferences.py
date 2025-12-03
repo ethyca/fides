@@ -67,7 +67,8 @@ class PrivacyPreferences(Base):
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=text("now()", index=True),
+        server_default=text("now()"),
+        index=True,
     )
     updated_at = Column(DateTime(timezone=True), nullable=True)
 
