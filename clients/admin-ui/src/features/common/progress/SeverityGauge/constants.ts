@@ -8,7 +8,6 @@ export const SEVERITY_PROPS: Readonly<ProgressProps> = {
     type: "outer",
   },
   steps: 3,
-  showInfo: false,
   strokeLinecap: "round",
   size: {
     width: 24,
