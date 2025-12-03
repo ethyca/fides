@@ -1,18 +1,19 @@
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
+  AntDropdownProps as DropdownProps,
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
-  AntTooltip as Tooltip,
   Icons,
 } from "fidesui";
+import { Key, useState } from "react";
 
 import {
-  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
@@ -43,15 +44,20 @@ const recFindNodeParent = (
   );
 };
 
+export type TreeNodeProps = {
+  node: CustomTreeDataNode;
+  treeData: CustomTreeDataNode[];
+  onLoadMore: (key: string) => void;
+  actions: Map<Key, TreeNodeAction>;
+};
+
 export const MonitorTreeDataTitle = ({
   node,
   treeData,
   onLoadMore,
-}: {
-  node: CustomTreeDataNode;
-  treeData: CustomTreeDataNode[];
-  onLoadMore: (key: string) => void;
-}) => {
+  actions,
+}: TreeNodeProps) => {
+  const [availableActions, setAvailableActions] = useState<Key[]>();
   if (!node.title) {
     return null;
   }
@@ -82,22 +88,56 @@ export const MonitorTreeDataTitle = ({
       </Skeleton>
     );
   }
-
-  const statusInfo = node.status
-    ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[node.status]
-    : null;
+  const asyncGetActions: DropdownProps["onOpenChange"] = async (open) => {
+    if (open && actions) {
+      Promise.all(
+        [...actions.entries()].map(async ([key, { disabled }]) => {
+          const isDisabled = disabled ? await disabled(node) : true;
+          return [key, isDisabled] as const;
+        }),
+      ).then((result) => {
+        setAvailableActions(
+          result.flatMap(([key, disabled]) => (disabled ? [] : [key])),
+        );
+      });
+    }
+  };
 
   return (
-    <Flex gap={4} align="center" className="inline-flex">
-      {statusInfo && (
-        <Tooltip title={statusInfo.tooltip}>
-          <Icons.CircleSolid
-            className="size-2"
-            style={{ color: statusInfo.color }}
-          />
-        </Tooltip>
-      )}
-      <Text ellipsis={{ tooltip: node.title }}>{node.title}</Text>
+    /** TODO: migrate group class to semantic dom after upgrading ant */
+    <Flex gap={4} align="center" className="group ml-1 flex grow">
+      <Text ellipsis={{ tooltip: node.title }} className="grow">
+        {node.title}
+      </Text>
+      <Dropdown
+        menu={{
+          items: actions
+            ? [...actions.entries()].map(([key, { label }]) => ({
+                key,
+                label,
+                disabled: !availableActions?.includes(key),
+              }))
+            : [],
+          onClick: ({ key, domEvent }) => {
+            domEvent.preventDefault();
+            domEvent.stopPropagation();
+            actions.get(key)?.callback(node.key, node);
+          },
+        }}
+        onOpenChange={asyncGetActions}
+        destroyOnHidden
+        className="group mr-1 flex-none"
+      >
+        <Button
+          aria-label="Show More Resource Actions"
+          icon={
+            <Icons.OverflowMenuVertical className="opacity-0 group-hover:opacity-100 group-[.ant-dropdown-open]:opacity-100" />
+          }
+          type="text"
+          size="small"
+          className="self-end"
+        />
+      </Dropdown>
     </Flex>
   );
 };

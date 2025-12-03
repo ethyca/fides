@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional, Set, Tuple
 
 import yaml
 from deepdiff import DeepDiff
@@ -7,6 +7,7 @@ from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -75,7 +76,7 @@ class ConnectorTemplateNotFound(Exception):
 
 
 def _detect_connection_config_changes(
-    original_config_dict: Dict[str, Any], new_config_dict: Dict[str, Any]
+    original_config_dict: dict[str, Any], new_config_dict: dict[str, Any]
 ) -> Set[str]:
     """
     Detect which fields have changed between two connection configuration dictionaries.
@@ -586,7 +587,7 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
         )
 
@@ -614,7 +615,7 @@ class ConnectionService:
         """Creates a SaaS connection config from a template without saving it."""
         # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
 
@@ -630,16 +631,23 @@ class ConnectionService:
 
         return connection_config
 
+    def _get_fields(self, field: dict[str, Any]) -> list[dict[str, Any]]:
+        """
+        Returns the fields of a dataset.
+        If the fields attribute does not exist or is None, returns an empty list.
+        """
+        return field.get("fields", []) or []
+
     def _merge_field(
         self,
-        base_field: Optional[Dict],
-        customer_field: Optional[Dict],
-        original_field: Optional[Dict],
-    ) -> Optional[Dict]:
+        upcoming_field: Optional[dict[str, Any]],
+        customer_field: Optional[dict[str, Any]],
+        original_field: Optional[dict[str, Any]],
+    ) -> Optional[dict[str, Any]]:
         """
         Recursively merges a single field.
         If the customer made changes to the field (compared to stored dataset), preserve customer's version.
-        If no changes were made by the customer, use the most recent integration version (base).
+        If no changes were made by the customer, use the most recent integration version (upcoming).
         Handles nested fields recursively.
         """
         # Check if customer made changes to the field
@@ -650,36 +658,37 @@ class ConnectionService:
             customer_made_changes = bool(diff)
 
         # Select the primary field to use
+        primary_field = None
         if customer_made_changes:
             # Customer made changes, preserve customer's version
             primary_field = customer_field
-        elif base_field:
-            # Customer didn't make changes, use most recent integration version (base)
-            primary_field = base_field
+        elif upcoming_field:
+            # Customer didn't make changes, use most recent integration version (upcoming)
+            primary_field = upcoming_field
         elif customer_field:
             # Field only exists in customer dataset, use customer version
             primary_field = customer_field
-        else:
-            return None
 
-        if primary_field is None:  # type check for mypy
+        if primary_field is None:
             return None
 
         # Deep copy to avoid mutating original
         merged_field = copy.deepcopy(primary_field)
 
         # fields can be an empty list or None, we handle both cases by converting to an empty list
-        base_nested_fields = base_field.get("fields", []) if base_field else []
+        upcoming_nested_fields = (
+            self._get_fields(upcoming_field) if upcoming_field else []
+        )
         customer_nested_fields = (
-            customer_field.get("fields", []) if customer_field else []
+            self._get_fields(customer_field) if customer_field else []
         )
         original_nested_fields = (
-            original_field.get("fields", []) if original_field else []
+            self._get_fields(original_field) if original_field else []
         )
 
-        if base_nested_fields or customer_nested_fields:
-            nested_base_fields_by_name = {
-                field["name"]: field for field in base_nested_fields
+        if upcoming_nested_fields or customer_nested_fields:
+            nested_upcoming_fields_by_name = {
+                field["name"]: field for field in upcoming_nested_fields
             }
             nested_customer_fields_by_name = {
                 field["name"]: field for field in customer_nested_fields
@@ -689,7 +698,7 @@ class ConnectionService:
             }
 
             merged_nested_fields = self._merge_fields(
-                nested_base_fields_by_name,
+                nested_upcoming_fields_by_name,
                 nested_customer_fields_by_name,
                 nested_original_fields_by_name,
             )
@@ -702,45 +711,47 @@ class ConnectionService:
 
     def _merge_fields(
         self,
-        base_fields_by_name: Dict[str, Dict],
-        customer_fields_by_name: Dict[str, Dict],
-        original_fields_by_name: Dict[str, Dict],
-    ) -> List[Dict]:
+        upcoming_fields_by_name: dict[str, dict[str, Any]],
+        customer_fields_by_name: dict[str, dict[str, Any]],
+        original_fields_by_name: dict[str, dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """
-        Merges a list of fields by comparing base, customer, and original versions.
+        Merges a list of fields by comparing upcoming, customer, and original versions.
         Returns a list of merged fields.
 
         Logic:
         - If customer made changes to a field (compared to original), preserve customer's version
-        - If customer didn't make changes, use the most recent integration version (base)
+        - If customer didn't make changes, use the most recent integration version (upcoming)
 
         Handles deleted fields:
-        - If a field exists in original but not in base, it was deleted by integration update
+        - If a field exists in original but not in upcoming, it was deleted by integration update
           and should NOT be preserved from customer dataset
         - If a field exists in customer but not in original, it was added by customer
           and should be preserved
         """
         # Get all unique field names from customer, base, and original
         all_field_names = (
-            set(base_fields_by_name.keys())
+            set(upcoming_fields_by_name.keys())
             | set(customer_fields_by_name.keys())
             | set(original_fields_by_name.keys())
         )
 
         merged_fields = []
         for field_name in all_field_names:
-            base_field = base_fields_by_name.get(field_name)
+            upcoming_field = upcoming_fields_by_name.get(field_name)
             customer_field = customer_fields_by_name.get(field_name)
             original_field = original_fields_by_name.get(field_name)
 
             # Check if field was deleted in integration update
             # If it exists in original but not in base, it was deleted - skip it
-            if original_field and not base_field:
+            if original_field and not upcoming_field:
                 # Field was deleted by integration update, don't preserve from customer
                 continue
 
             # Otherwise, merge the field (handles all other cases including customer-added fields)
-            merged_field = self._merge_field(base_field, customer_field, original_field)
+            merged_field = self._merge_field(
+                upcoming_field, customer_field, original_field
+            )
             if merged_field:
                 merged_fields.append(merged_field)
 
@@ -748,30 +759,30 @@ class ConnectionService:
 
     def _merge_collection(
         self,
-        base_collection: Dict,
-        customer_collection: Dict,
-        original_collection: Dict,
-    ) -> Dict:
+        upcoming_collection: dict[str, Any],
+        customer_collection: dict[str, Any],
+        original_collection: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Merges a collection by merging its fields.
         Returns the merged collection.
         """
-        merged_collection = copy.deepcopy(base_collection)
+        merged_collection = copy.deepcopy(upcoming_collection)
 
         # Build field maps for easy lookup
-        base_fields_by_name = {
-            field["name"]: field for field in (base_collection.get("fields") or [])
+        upcoming_fields_by_name = {
+            field["name"]: field for field in self._get_fields(upcoming_collection)
         }
         original_fields_by_name = {
-            field["name"]: field for field in (original_collection.get("fields") or [])
+            field["name"]: field for field in self._get_fields(original_collection)
         }
         customer_fields_by_name = {
-            field["name"]: field for field in (customer_collection.get("fields") or [])
+            field["name"]: field for field in self._get_fields(customer_collection)
         }
 
         # Merge fields recursively
         merged_fields = self._merge_fields(
-            base_fields_by_name, customer_fields_by_name, original_fields_by_name
+            upcoming_fields_by_name, customer_fields_by_name, original_fields_by_name
         )
         merged_collection["fields"] = merged_fields
 
@@ -779,34 +790,40 @@ class ConnectionService:
 
     def merge_datasets(
         self,
-        customer_dataset: Dict,
-        stored_dataset: Dict,
-        upcoming_dataset: Dict,
+        customer_dataset: dict[str, Any],
+        stored_dataset: dict[str, Any],
+        upcoming_dataset: dict[str, Any],
         instance_key: str,
-    ) -> Dict:
-        """Merges the datasets into a single dataset."""
-        # Deep copy stored_dataset to avoid mutating the SQLAlchemy model's JSONB column
-        # This prevents SQLAlchemy from tracking changes and potentially corrupting the template dataset
+    ) -> dict[str, Any]:
+        """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
         stored_dataset_copy = copy.deepcopy(stored_dataset)
-        base_dataset = copy.deepcopy(upcoming_dataset)
+        upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
 
-        # Normalize stored and base datasets to have the same complete structure as customer dataset
+        # Normalize stored and upcoming datasets to have the same complete structure as customer dataset
         # This ensures consistent field comparison by using the same Pydantic model serialization
-        try:
-            normalized_stored = FideslangDataset(**stored_dataset_copy).model_dump(
-                mode="json"
-            )
-            stored_dataset_copy = normalized_stored
+        def normalize_dataset(
+            dataset: dict[str, Any], dataset_name: str
+        ) -> Optional[dict[str, Any]]:
+            try:
+                return FideslangDataset(**dataset).model_dump(mode="json")
+            except PydanticValidationError as e:
+                logger.warning(f"{dataset_name} normalization failed validation: {e}")
+                return None
+            except Exception as e:
+                logger.warning(
+                    f"{dataset_name} normalization failed with unknown error: {e}"
+                )
+                return None
 
-            normalized_base = FideslangDataset(**base_dataset).model_dump(mode="json")
-            base_dataset = normalized_base
-        except Exception as e:
-            # If stored dataset normalization fails, we can't do a proper comparison
-            # Fall back to using the upcoming dataset as the final result
-            logger.warning(
-                f"Using upcoming dataset as fallback due to stored dataset or upcoming dataset normalization failure: {e}"
-            )
+        normalized_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
+        normalized_upcoming_dataset = normalize_dataset(
+            upcoming_dataset_copy, "upcoming"
+        )
+        if normalized_stored_dataset is None or normalized_upcoming_dataset is None:
             return upcoming_dataset
+
+        stored_dataset_copy = normalized_stored_dataset
+        upcoming_dataset_copy = normalized_upcoming_dataset
 
         # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
         if isinstance(stored_dataset_copy.get("fides_key"), str):
@@ -814,45 +831,38 @@ class ConnectionService:
                 "<instance_fides_key>", instance_key
             )
 
-        base_collections = {
+        upcoming_collections = {
             collection["name"]: collection
-            for collection in base_dataset.get("collections", [])
+            for collection in upcoming_dataset_copy.get("collections", [])
         }
         original_collections = {
             collection["name"]: collection
             for collection in stored_dataset_copy.get("collections", [])
         }
-
-        # Merge customer collections with integration collections
-        # Collections can't be edited by customers, so we only process collections
-        # that exist in the base dataset. Any new collections from customer are ignored.
-        # If a field was changed in the most recent integration update, use that version.
-        # Otherwise, use the customer's version.
         customer_collections_by_name = {
             collection["name"]: collection
             for collection in customer_dataset.get("collections", [])
         }
 
-        # Only process collections that exist in base_collections
-        for collection_name, base_collection in base_collections.items():
+        # Collections can't be edited by customers, so we only process collections
+        # that exist in the base dataset. Any new collections from customer are ignored.
+        for collection_name, upcoming_collection in upcoming_collections.items():
             if collection_name in original_collections:
                 # Collection exists in original, merge with customer version if available
                 original_collection = original_collections[collection_name]
                 customer_collection = customer_collections_by_name.get(collection_name)
 
                 if customer_collection:
-                    # Merge the collection (which will recursively merge fields)
+                    # Merge the collection (recursively merges fields)
                     merged_collection = self._merge_collection(
-                        base_collection, customer_collection, original_collection
+                        upcoming_collection, customer_collection, original_collection
                     )
-                    base_collections[collection_name] = merged_collection
+                    upcoming_collections[collection_name] = merged_collection
 
-        # Update base_dataset with merged collections
-        # base_collections already includes all collections from base_dataset,
-        # including any new collections, so we just need to convert it back to a list
-        base_dataset["collections"] = list(base_collections.values())
+        # overwrite upcoming_dataset with merged collections + new official collections
+        upcoming_dataset_copy["collections"] = list(upcoming_collections.values())
 
-        merged_dataset = base_dataset
+        merged_dataset = upcoming_dataset_copy
         return merged_dataset
 
     def upsert_dataset_config_from_template(
@@ -869,7 +879,7 @@ class ConnectionService:
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        upcoming_dataset: Dict = replace_dataset_placeholders(
+        upcoming_dataset: dict = replace_dataset_placeholders(
             template.dataset, "<instance_fides_key>", template_values.instance_key
         )
 
