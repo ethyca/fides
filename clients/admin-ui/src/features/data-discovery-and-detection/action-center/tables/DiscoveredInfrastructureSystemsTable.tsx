@@ -366,7 +366,6 @@ export const DiscoveredInfrastructureSystemsTable = ({
               onSelect={handleSelectItem}
               rowClickUrl={rowClickUrl}
               monitorId={monitorId}
-              onTabChange={handleTabChange}
               activeTab={activeTab as ActionCenterTabHash | null}
               allowIgnore={allowIgnore}
               onPromoteSuccess={refetch}
