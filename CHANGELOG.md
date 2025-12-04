@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed pagination in Integrations page [#7058](https://github.com/ethyca/fides/pull/7058)
+- Fixed issue where the required `token_type` field was missing from the `api/v1/oauth/token` endpoint response [#7074](https://github.com/ethyca/fides/pull/7074)
 
 
 ## [2.75.2](https://github.com/ethyca/fides/compare/2.75.1..2.75.2)
