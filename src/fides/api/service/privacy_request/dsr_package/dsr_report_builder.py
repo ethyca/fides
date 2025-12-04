@@ -144,7 +144,8 @@ class DSRReportBuilder:
             "request": self.request_data,
         }
         report_data.update(self.template_data)
-        report_data.update(extra_template_data)
+        if extra_template_data:
+            report_data.update(extra_template_data)
         template = self.template_loader.get_template(template_path)
         rendered_template = template.render(report_data)
         return rendered_template
@@ -545,7 +546,9 @@ class DSRReportBuilder:
                     "DSR Report",
                     None,
                     self.main_links,
-                    attachments=all_attachments,
+                    extra_template_data=(
+                        {"attachments": all_attachments} if all_attachments else None
+                    ),
                 ),
             )
         finally:
