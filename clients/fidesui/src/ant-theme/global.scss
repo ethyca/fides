@@ -239,3 +239,16 @@ h6 {
     }
   }
 }
+
+.ant-card {
+  // Ant does some highly specific styling of the actions list items taylored to
+  // using only Ant Icons, and without support for actual buttons. This overrides
+  // that styling to fill the width like they've done for icons while also removing the
+  // cursor from the wrapping element which has no actual functionality.
+  & &-actions > li > span {
+    cursor: unset;
+  }
+  &-actions .ant-btn {
+    width: 100%;
+  }
+}
