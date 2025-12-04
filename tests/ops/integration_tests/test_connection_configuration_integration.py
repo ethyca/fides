@@ -1643,7 +1643,7 @@ class TestOktaConnector:
         db: Session,
         okta_connection_config,
     ) -> None:
-        okta_connection_config.secrets["api_token"] = "bad_key"
+        okta_connection_config.secrets["access_token"] = "bad_key"
         okta_connection_config.save(db)
         connector = get_connector(okta_connection_config)
         with pytest.raises(ConnectionException):

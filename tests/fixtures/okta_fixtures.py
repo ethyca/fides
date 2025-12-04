@@ -31,19 +31,19 @@ def okta_connection_config(db: Session) -> Generator:
     okta_integration_config = integration_config.get("okta", {})
 
     org_url = okta_integration_config.get("org_url") or os.environ.get("OKTA_ORG_URL")
-    api_token = okta_integration_config.get("api_token") or os.environ.get(
-        "OKTA_API_TOKEN"
+    access_token = okta_integration_config.get("access_token") or os.environ.get(
+        "OKTA_ACCESS_TOKEN"
     )
 
     if not org_url:
         raise RuntimeError("Missing org_url for Okta")
 
-    if not api_token:
-        raise RuntimeError("Missing api_token for Okta")
+    if not access_token:
+        raise RuntimeError("Missing access_token for Okta")
 
     schema = OktaSchema(
         org_url=org_url,
-        api_token=api_token,
+        access_token=access_token,
     )
     connection_config.secrets = schema.model_dump()
     connection_config.save(db=db)
