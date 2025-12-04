@@ -36,6 +36,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated tree status indicator component [#7048](https://github.com/ethyca/fides/pull/7048)
 - Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
+- Added custom fields conditions for Manual Task creation [#7055](https://github.com/ethyca/fides/pull/7055)
+- Update custom fields so custom taxonomies can be used as locations or values [#7042](https://github.com/ethyca/fides/pull/7042)
 
 ### Fixed
 - Fixed pagination in Integrations page [#7058](https://github.com/ethyca/fides/pull/7058)
@@ -918,7 +920,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue with banner dismisal resulting in resurfaced banner [#5979](https://github.com/ethyca/fides/pull/5979)
 
-## [2.58.0](https://github.com/ethyca/fides/compare/2.57.2...2.58.0)
+## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
@@ -957,12 +959,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Removed
 - Removed beta flag for Datahub feature [#5937](https://github.com/ethyca/fides/pull/5937)
-
-## [2.57.2](https://github.com/ethyca/fides/compare/2.57.1...2.57.2)
-
-### Security
-- Upgraded NextJS and React dependencies in Privacy Center to fix React Server vulnerability [#7061](https://github.com/ethyca/fides/pull/7061)
-
 
 ## [2.57.1](https://github.com/ethyca/fides/compare/2.57.0...2.57.1)
 
