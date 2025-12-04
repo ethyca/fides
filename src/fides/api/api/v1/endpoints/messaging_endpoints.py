@@ -323,13 +323,9 @@ def get_messaging_status(
             service_type=messaging_config.service_type,  # type: ignore
             secrets=secrets,
         )
-    except ValidationError:
-        return MessagingConfigStatusMessage(
-            config_status=MessagingConfigStatus.not_configured,
-            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
-        )
-    except (ValueError, KeyError) as e:
-        logger.error(f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
+    except (ValidationError, ValueError, KeyError) as e:
+        if isinstance(e, (ValueError, KeyError)):
+            logger.error(f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore

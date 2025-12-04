@@ -122,7 +122,7 @@ class DSRReportBuilder:
         heading: Optional[str] = None,
         description: Optional[str] = None,
         data: Optional[dict[str, Any]] = None,
-        **kwargs: Any,
+        extra_template_data: Optional[dict[str, Any]] = None,
     ) -> str:
         """
         Populates the template with the given data.
@@ -132,7 +132,7 @@ class DSRReportBuilder:
             heading: the heading to display on the template
             description: the description to display on the template
             data: the data to populate the template with
-            **kwargs: additional template variables to pass to the template
+            extra_template_data: additional template variables to pass to the template
 
         Returns:
             The rendered template as a string.
@@ -144,7 +144,7 @@ class DSRReportBuilder:
             "request": self.request_data,
         }
         report_data.update(self.template_data)
-        report_data.update(kwargs)
+        report_data.update(extra_template_data)
         template = self.template_loader.get_template(template_path)
         rendered_template = template.render(report_data)
         return rendered_template
