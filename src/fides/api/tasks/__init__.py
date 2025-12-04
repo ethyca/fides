@@ -103,7 +103,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     )
 
     app = Celery(__name__)
-    celery_healthcheck.register(app) # type: ignore
+    celery_healthcheck.register(app)  # type: ignore
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
