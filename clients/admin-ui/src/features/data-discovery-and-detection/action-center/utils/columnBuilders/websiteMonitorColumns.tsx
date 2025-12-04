@@ -60,6 +60,7 @@ const buildBaseColumns = ({
     title: "Assets",
     dataIndex: "total_updates",
     key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
+    width: 100,
   },
   {
     title: "Categories of consent",

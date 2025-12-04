@@ -7,6 +7,8 @@ import type { ConsentInfo } from "./ConsentInfo";
 import type { ConsentStatus } from "./ConsentStatus";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
+import { IdentityProviderApplicationMetadata } from "./IdentityProviderApplicationMetadata";
+import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
@@ -99,5 +101,6 @@ export type StagedResourceAPIResponse = {
   /** An array of the "preferred" data uses for the asset; this encapsulates backend logic
    * that will use either user_assigned_data_uses or data_uses, depending on their values.
    */
+  metadata?: IdentityProviderApplicationMetadata | null;
   preferred_data_uses?: Array<string> | null;
 };

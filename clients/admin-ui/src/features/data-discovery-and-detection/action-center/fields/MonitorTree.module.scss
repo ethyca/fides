@@ -1,0 +1,11 @@
+.monitor-tree {
+  // hack to work around lack of class support for the tree item component in ant v5
+  :global(.ant-tree-node-content-wrapper) {
+    padding-right: 0px;
+    padding-left: 0px;
+  }
+
+  :global(.ant-tree-icon__customize) {
+    flex: none;
+  }
+}

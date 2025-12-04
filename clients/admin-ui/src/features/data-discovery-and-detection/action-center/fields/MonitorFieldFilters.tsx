@@ -1,12 +1,13 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
 import { uniq } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
 import { useLazyGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import {
   FIELDS_FILTER_SECTION_KEYS,
@@ -15,8 +16,14 @@ import {
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
-// import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-// const ConfidenceScoreRangeValues = Object.values(ConfidenceScoreRange);
+
+// Confidence buckets in display order
+const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
+  ConfidenceBucket.HIGH,
+  ConfidenceBucket.MEDIUM,
+  ConfidenceBucket.LOW,
+  ConfidenceBucket.MANUAL,
+];
 
 /**
  * Build a nested tree structure from flat data category strings.
@@ -142,7 +149,9 @@ export const MonitorFieldFilters = ({
   resourceStatus,
   setResourceStatus,
   dataCategory,
+  confidenceBucket,
   setDataCategory,
+  setConfidenceBucket,
   resetToInitialState,
   monitorId,
   stagedResourceUrn,
@@ -157,6 +166,9 @@ export const MonitorFieldFilters = ({
   const [localDataCategory, setLocalDataCategory] = useState<string[] | null>(
     dataCategory,
   );
+  const [localConfidenceBucket, setLocalConfidenceBucket] = useState<
+    ConfidenceBucket[] | null
+  >(confidenceBucket);
 
   // Initialize with status section expanded by default
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([
@@ -169,8 +181,25 @@ export const MonitorFieldFilters = ({
   }, [resourceStatus]);
 
   useEffect(() => {
+    setLocalConfidenceBucket(confidenceBucket);
+  }, [confidenceBucket]);
+
+  useEffect(() => {
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
+
+  // Reset filters to default state when stagedResourceUrn changes (but not on initial mount)
+  // Use join to compare array contents, not reference
+  const stagedResourceUrnKey = stagedResourceUrn.join(",");
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    resetToInitialState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stagedResourceUrnKey]);
 
   const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
     useGetDatastoreFiltersQuery(
@@ -195,22 +224,9 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  /* TODO: Uncomment this when we have a proper confidence score from the backend */
-  /* const availableConfidenceScores =
-    datastoreFilterResponse?.confidence_score?.reduce(
-      (agg, current) => {
-        const currentConfidenceScore = Object.values(ConfidenceScoreRange).find(
-          (rs) => rs === current,
-        );
-
-        if (currentConfidenceScore) {
-          return [...agg, currentConfidenceScore];
-        }
-
-        return agg;
-      },
-      [] as typeof ConfidenceScoreRangeValues,
-    ); */
+  const availableConfidenceBuckets = CONFIDENCE_BUCKETS.filter((bucket) =>
+    datastoreFilterResponse?.confidence_bucket?.includes(bucket),
+  );
 
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(
@@ -240,56 +256,60 @@ export const MonitorFieldFilters = ({
   }, [datastoreFilterResponse?.data_category, taxonomyNodes]);
 
   // Combine status and data category trees
-  const treeData: DataNode[] = useMemo(() => {
-    const sections: DataNode[] = [];
-
-    if (statusTreeData.length > 0) {
-      sections.push({
-        title: "Status",
-        key: FIELDS_FILTER_SECTION_KEYS.STATUS,
-        checkable: true,
-        selectable: false,
-        isLeaf: false,
-        children: statusTreeData,
-      });
-    }
-
-    /* TODO: Uncomment this when we have a proper confidence score from the backend */
-    /* if (availableConfidenceScores && availableConfidenceScores.length > 0) {
-      sections.push({
-        title: "Confidence",
-        key: FIELDS_FILTER_SECTION_KEYS.CONFIDENCE,
-        checkable: true,
-        selectable: false,
-        isLeaf: false,
-        children: availableConfidenceScores.map((cs) => ({
-          title: capitalize(cs),
-          key: cs,
-          checkable: true,
-          selectable: false,
-          isLeaf: true,
-        })),
-      });
-    } */
-
-    if (dataCategoryTreeData.length > 0) {
-      sections.push({
-        title: "Data category",
-        key: FIELDS_FILTER_SECTION_KEYS.DATA_CATEGORY,
-        checkable: true,
-        selectable: false,
-        isLeaf: false,
-        children: dataCategoryTreeData,
-      });
-    }
-
-    return sections;
-  }, [statusTreeData, dataCategoryTreeData]);
+  const treeData: DataNode[] = [
+    ...(statusTreeData.length > 0
+      ? [
+          {
+            title: "Status",
+            key: FIELDS_FILTER_SECTION_KEYS.STATUS,
+            checkable: true,
+            selectable: false,
+            isLeaf: false,
+            children: statusTreeData,
+          },
+        ]
+      : []),
+    ...(availableConfidenceBuckets.length > 0
+      ? [
+          {
+            title: "Confidence",
+            key: FIELDS_FILTER_SECTION_KEYS.CONFIDENCE,
+            checkable: true,
+            selectable: false,
+            isLeaf: false,
+            children: availableConfidenceBuckets.map((cs) => ({
+              title: capitalize(cs),
+              key: cs,
+              checkable: true,
+              selectable: false,
+              isLeaf: true,
+            })),
+          },
+        ]
+      : []),
+    ...(dataCategoryTreeData.length > 0
+      ? [
+          {
+            title: "Data category",
+            key: FIELDS_FILTER_SECTION_KEYS.DATA_CATEGORY,
+            checkable: true,
+            selectable: false,
+            isLeaf: false,
+            children: dataCategoryTreeData,
+          },
+        ]
+      : []),
+  ];
 
   // Get current checked keys from LOCAL state
   const checkedKeys = useMemo(
-    () => uniq([...(localResourceStatus ?? []), ...(localDataCategory ?? [])]),
-    [localResourceStatus, localDataCategory],
+    () =>
+      uniq([
+        ...(localResourceStatus ?? []),
+        ...(localDataCategory ?? []),
+        ...(localConfidenceBucket ?? []),
+      ]),
+    [localResourceStatus, localDataCategory, localConfidenceBucket],
   );
 
   // Calculate active filters count from APPLIED state (not local)
@@ -303,8 +323,14 @@ export const MonitorFieldFilters = ({
       // Deduplicate to get accurate count
       count += new Set(dataCategory).size;
     }
+
+    if (confidenceBucket) {
+      // Deduplicate to get accurate count
+      count += new Set(confidenceBucket).size;
+    }
+
     return count;
-  }, [resourceStatus, dataCategory]);
+  }, [resourceStatus, dataCategory, confidenceBucket]);
 
   const handleCheck = (
     checked: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] },
@@ -312,6 +338,7 @@ export const MonitorFieldFilters = ({
     const checkedKeysArray = Array.isArray(checked) ? checked : checked.checked;
     // Separate status and data category selections based on their keys
     const statusKeys: ResourceStatusLabel[] = [];
+    const confidenceBucketKeys: ConfidenceBucket[] = [];
     const categoryKeys: string[] = [];
 
     // Section keys that should be excluded from filter values
@@ -336,8 +363,13 @@ export const MonitorFieldFilters = ({
       }
 
       const statusKey = RESOURCE_STATUS.find((rs) => rs === keyStr);
+      const confidenceKey = Object.values(ConfidenceBucket).find(
+        (val) => val === keyStr,
+      );
       if (statusKey) {
         statusKeys.push(statusKey);
+      } else if (confidenceKey) {
+        confidenceBucketKeys.push(confidenceKey);
       } else if (!isParentKey(keyStr, allKeysAsStrings)) {
         // Only include leaf data category keys (not parents)
         categoryKeys.push(keyStr);
@@ -348,18 +380,23 @@ export const MonitorFieldFilters = ({
     // Use empty array for "no filters" instead of null
     setLocalResourceStatus(statusKeys.length > 0 ? statusKeys : []);
     setLocalDataCategory(categoryKeys.length > 0 ? categoryKeys : []);
+    setLocalConfidenceBucket(
+      confidenceBucketKeys.length > 0 ? confidenceBucketKeys : [],
+    );
   };
 
   const handleReset = () => {
     // Reset to initial state (preselect statuses except excluded ones)
     resetToInitialState();
     setLocalResourceStatus(getFilterableStatuses([...RESOURCE_STATUS]));
+    setLocalConfidenceBucket([]);
     setLocalDataCategory([]);
   };
 
   const handleClear = () => {
     // Clear local state immediately - use empty array for "no filters"
     setLocalResourceStatus([]);
+    setLocalConfidenceBucket([]);
     setLocalDataCategory([]);
   };
 
@@ -374,6 +411,11 @@ export const MonitorFieldFilters = ({
       localDataCategory && localDataCategory.length > 0
         ? Array.from(new Set(localDataCategory))
         : localDataCategory,
+    );
+    setConfidenceBucket(
+      localConfidenceBucket && localConfidenceBucket.length > 0
+        ? Array.from(new Set(localConfidenceBucket))
+        : localConfidenceBucket,
     );
   };
 
@@ -390,6 +432,7 @@ export const MonitorFieldFilters = ({
 
     // When popover closes without applying, reset local state to match applied state
     setLocalResourceStatus(resourceStatus);
+    setLocalConfidenceBucket(confidenceBucket);
     setLocalDataCategory(dataCategory);
   };
 

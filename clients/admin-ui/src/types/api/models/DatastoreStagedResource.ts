@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from "./Classification";
+import type { ClassificationWithConfidence } from "./ClassificationWithConfidence";
 import type { DiffStatus } from "./DiffStatus";
-import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 import type { ResourceError } from "./ResourceError";
+import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
  * API model that represents a datastore staged resource, fields common to all types of datastore staged resources
@@ -32,10 +32,10 @@ export type DatastoreStagedResource = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
-  source_modified?: string | null;
-  classifications?: Array<Classification>;
   /**
    * List of errors encountered during processing
    */
-  errors?: Array<ResourceError> | null;
+  errors?: Array<ResourceError>;
+  source_modified?: string | null;
+  classifications?: Array<ClassificationWithConfidence>;
 };

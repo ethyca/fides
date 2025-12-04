@@ -34,8 +34,9 @@ h6 {
 }
 
 /**
-  * Styles for Ant components where tokens are not available
-  */
+ * Styles for Ant components where tokens are not available
+ */
+
 .ant-input-compact-item.ant-input-css-var {
   --ant-color-border: var(--fidesui-neutral-200);
   --ant-input-hover-border-color: var(--fidesui-neutral-200);
@@ -132,9 +133,7 @@ h6 {
   --ant-table-header-icon-color: var(--fidesui-neutral-300);
 }
 
-/*
-  This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
-*/
+// This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
 .ant-table-cell * {
   --ant-font-size: var(--ant-table-cell-font-size-sm);
 }
@@ -181,19 +180,31 @@ h6 {
   }
 }
 
-/**
- * Using rounded edges for Ant Progress Component with steps
- */
-.ant-progress-steps-item {
-  border-radius: calc(var(--ant-progress-line-border-radius) / 40);
+.ant-progress {
+  &-steps-item {
+    // rounded edges for Ant Progress Component with steps
+    border-radius: calc(var(--ant-progress-line-border-radius) / 40);
+  }
+  &-steps &-text {
+    // override Ant's hardcoded 2em width
+    width: auto;
+  }
 }
 
 .ant-tree {
   .ant-tree-node-content-wrapper {
+    display: flex;
+    overflow: hidden;
     white-space: nowrap;
   }
+
   .ant-tree-treenode {
     --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
+  }
+
+  .ant-tree-title {
+    flex: auto;
+    overflow: hidden;
   }
 }
 
@@ -208,9 +219,7 @@ h6 {
   }
 }
 
-/**
- * Used to move the close button for drawers to the right side
- */
+// Used to move the close button for drawers to the right side
 .ant-drawer-header-title {
   flex-direction: row-reverse;
 }
