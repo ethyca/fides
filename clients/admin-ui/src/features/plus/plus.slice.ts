@@ -36,7 +36,6 @@ import {
   HealthCheck,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
-  ResourceTypes,
   SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
@@ -263,26 +262,51 @@ const plusApi = baseApi.injectEndpoints({
       invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
 
-    // Custom Metadata Custom Field Definition By Resource Type
+    // Custom Metadata Custom Field Definition By Resource Type (supports taxonomy:<key>)
     getCustomFieldDefinitionsByResourceType: build.query<
-      CustomFieldDefinitionWithId[],
-      ResourceTypes
+      (CustomFieldDefinitionWithId & { created_at: string })[],
+      string
     >({
-      query: (resource_type: ResourceTypes) => ({
-        url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
+      async queryFn(resource_type, _queryApi, _extraOptions, fetchWithBQ) {
+        const result = await fetchWithBQ({
+          url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
+        });
+
+        // the API will 404 if there are no fields for the given resource
+        // type; we want to return an empty array in this case so that the last
+        // result doesn't remain cached
+        if (
+          result.error &&
+          "status" in result.error &&
+          result.error.status === 404
+        ) {
+          return { data: [] };
+        }
+
+        // any other errors should error as normal
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        const response = result.data as (CustomFieldDefinitionWithId & {
+          created_at: string;
+        })[];
+        return {
+          data: response.sort((a, b) =>
+            (a.name ?? "").localeCompare(b.name ?? ""),
+          ),
+        };
+      },
+      providesTags: ["Custom Field Definition"],
+    }),
+    // Custom Fields: dynamic locations (legacy + custom taxonomies)
+    getCustomFieldLocations: build.query<string[], void>({
+      query: () => ({
+        url: `plus/custom-fields/locations`,
       }),
       providesTags: ["Custom Field Definition"],
-      transformResponse: (
-        response: CustomFieldDefinitionWithId[] | { detail: string },
-      ) => {
-        // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
-        if ("detail" in response) {
-          return [];
-        }
-        return response.sort((a, b) =>
-          (a.name ?? "").localeCompare(b.name ?? ""),
-        );
-      },
+      transformResponse: (data: string[]) =>
+        data.sort((a, b) => a.localeCompare(b)),
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
@@ -522,6 +546,7 @@ export const {
   useGetAllCustomFieldDefinitionsQuery,
   useGetAllowListQuery,
   useGetAllDictionaryEntriesQuery,
+  useGetCustomFieldLocationsQuery,
   useGetFidesCloudConfigQuery,
   useGetDictionaryDataUsesQuery,
   useLazyGetDictionaryDataUsesQuery,
