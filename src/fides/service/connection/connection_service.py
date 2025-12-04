@@ -825,11 +825,12 @@ class ConnectionService:
         stored_dataset_copy = normalized_stored_dataset
         upcoming_dataset_copy = normalized_upcoming_dataset
 
-        # Replace <instance_fides_key> placeholder in stored_dataset with actual instance key
-        if isinstance(stored_dataset_copy.get("fides_key"), str):
-            stored_dataset_copy["fides_key"] = stored_dataset_copy["fides_key"].replace(
-                "<instance_fides_key>", instance_key
-            )
+        # convert dataset to yaml string and then replace the instance key placeholder
+        wrapped_dataset = {"dataset": [stored_dataset_copy]}
+        stored_dataset_yaml = yaml.dump(wrapped_dataset)
+        stored_dataset_copy = replace_dataset_placeholders(
+            stored_dataset_yaml, "<instance_fides_key>", instance_key
+        )
 
         upcoming_collections = {
             collection["name"]: collection
