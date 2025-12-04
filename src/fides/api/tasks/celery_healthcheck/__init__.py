@@ -1,6 +1,8 @@
 # fmt: off
 # type: ignore
 # pylint: skip-file
+# isort:off
+
 
 from .server import HealthCheckServer
 

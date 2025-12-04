@@ -1,6 +1,5 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
-from fides.api.tasks import celery_healthcheck
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
@@ -15,6 +14,7 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
@@ -103,7 +103,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     )
 
     app = Celery(__name__)
-    celery_healthcheck.register(app)
+    celery_healthcheck.register(app) # type: ignore
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config

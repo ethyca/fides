@@ -1,6 +1,7 @@
 # fmt: off
 # type: ignore
 # pylint: skip-file
+# isort:off
 
 import logging
 import threading
