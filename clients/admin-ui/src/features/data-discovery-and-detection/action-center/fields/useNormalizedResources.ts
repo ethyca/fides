@@ -46,16 +46,17 @@ const useNormalizedResources = (
     );
   }
 
-  if (detailsQuery.data) {
-    updateResources(
-      mapNodes([
-        {
-          key: detailsQuery.data.urn,
-          ...detailsQuery.data,
-        },
-      ]),
-    );
-  }
+  /** disablng for now. */
+  // if (detailsQuery.currentData) {
+  //   updateResources(
+  //     mapNodes([
+  //       {
+  //         key: detailsQuery.currentData.urn,
+  //         ...detailsQuery.currentData,
+  //       },
+  //     ]),
+  //   );
+  // }
 
   return {
     listQuery: {
