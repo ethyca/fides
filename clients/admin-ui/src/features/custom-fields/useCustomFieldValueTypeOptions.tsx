@@ -37,7 +37,7 @@ const useCustomFieldValueTypeOptions = () => {
   }
 
   if (isCustomTaxonomiesLoading) {
-    return { valueTypeOptions, customTaxonomies: [] };
+    return { valueTypeOptions };
   }
 
   if (customTaxonomies?.length) {

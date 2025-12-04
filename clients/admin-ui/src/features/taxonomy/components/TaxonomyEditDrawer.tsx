@@ -79,7 +79,6 @@ const TaxonomyItemEditDrawer = ({
 
     if (customFields.isEnabled) {
       const customFieldValues = customFieldsForm.getFieldsValue();
-      console.log("customFieldValues", customFieldValues);
       await customFields.upsertCustomFields({
         fides_key: taxonomyItem?.fides_key!,
         customFieldValues,

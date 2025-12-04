@@ -76,6 +76,7 @@ const CustomTaxonomyDetails = ({
       messageApi.error("Taxonomy type not found");
       return;
     }
+
     const result = await createOrUpdate(
       {
         name: (taxonomyType.label as string) ?? taxonomyType.value,
