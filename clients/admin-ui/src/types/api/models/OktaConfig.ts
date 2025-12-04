@@ -3,9 +3,11 @@
 /* eslint-disable */
 
 /**
- * The model for the connection config for Okta
+ * The model for the connection config for Okta (OAuth2)
  */
 export type OktaConfig = {
   orgUrl: string;
-  token: string;
+  clientId: string;
+  privateKey: string;
+  scopes?: Array<string>;
 };

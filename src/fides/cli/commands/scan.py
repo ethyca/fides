@@ -11,8 +11,9 @@ from fides.cli.options import (
     coverage_threshold_option,
     credentials_id_option,
     manifests_dir_argument,
+    okta_client_id_option,
     okta_org_url_option,
-    okta_token_option,
+    okta_private_key_option,
     organization_fides_key_option,
 )
 from fides.cli.utils import (
@@ -91,7 +92,8 @@ def scan_system(ctx: click.Context) -> None:
 @manifests_dir_argument
 @credentials_id_option
 @okta_org_url_option
-@okta_token_option
+@okta_client_id_option
+@okta_private_key_option
 @organization_fides_key_option
 @coverage_threshold_option
 @with_analytics
@@ -100,7 +102,8 @@ def scan_system_okta(
     manifests_dir: str,
     credentials_id: str,
     org_url: str,
-    token: str,
+    client_id: str,
+    private_key: str,
     org_key: str,
     coverage_threshold: int,
 ) -> None:
@@ -110,7 +113,11 @@ def scan_system_okta(
 
     config = ctx.obj["CONFIG"]
     okta_config = handle_okta_credentials_options(
-        fides_config=config, token=token, org_url=org_url, credentials_id=credentials_id
+        fides_config=config,
+        org_url=org_url,
+        client_id=client_id,
+        private_key=private_key,
+        credentials_id=credentials_id,
     )
 
     _system.scan_system_okta(
