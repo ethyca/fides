@@ -104,7 +104,7 @@ const TaxonomyCustomFieldsForm = ({
                     {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                     <Select
                       mode={
-                        fieldType === LegacyAllowedTypes.STRING_ARRAY
+                        fieldType !== LegacyAllowedTypes.STRING
                           ? "multiple"
                           : undefined
                       }
