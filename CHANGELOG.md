@@ -49,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Manual Tasks can now accept conditions on privacy request data [#6984](https://github.com/ethyca/fides/pull/6984)
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
 - Added custom fields conditions for Manual Task creation [#7055](https://github.com/ethyca/fides/pull/7055)
+- Added an index on privacy_preferences.created_at for filtering [#7063](https://github.com/ethyca/fides/pull/7063) https://github.com/ethyca/fides/labels/db-migration
 - Update custom fields so custom taxonomies can be used as locations or values [#7042](https://github.com/ethyca/fides/pull/7042)
 
 ### Fixed
