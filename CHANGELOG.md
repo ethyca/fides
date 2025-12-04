@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.75.2..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
+
+## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 
 ### Added
 - Enabled data stewards field with searchable multiselect in system information form [#6993](https://github.com/ethyca/fides/pull/6993)
@@ -38,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added location convenience conditions for Manual Task creation [#7024](https://github.com/ethyca/fides/pull/7024)
 - Added custom fields conditions for Manual Task creation [#7055](https://github.com/ethyca/fides/pull/7055)
 - Added an index on privacy_preferences.created_at for filtering [#7063](https://github.com/ethyca/fides/pull/7063) https://github.com/ethyca/fides/labels/db-migration
+- Update custom fields so custom taxonomies can be used as locations or values [#7042](https://github.com/ethyca/fides/pull/7042)
 
 ### Fixed
 - Fixed pagination in Integrations page [#7058](https://github.com/ethyca/fides/pull/7058)
