@@ -1,6 +1,6 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
-import celery_healthcheck
+from fides.api.tasks import celery_healthcheck
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
