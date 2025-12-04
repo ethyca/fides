@@ -10,9 +10,13 @@ const SystemGroupSelect = (props: SelectProps) => {
     label: group.name,
   }));
 
-  // eslint-disable-next-line jsx-a11y/control-has-associated-label
   return (
-    <Select options={options} placeholder="Select a system group" {...props} />
+    <Select
+      options={options}
+      placeholder="Select a system group"
+      aria-label="Select a system group"
+      {...props}
+    />
   );
 };
 
