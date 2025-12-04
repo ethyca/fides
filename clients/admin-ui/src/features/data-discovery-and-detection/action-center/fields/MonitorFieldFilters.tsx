@@ -17,6 +17,14 @@ import {
 } from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
 
+// Confidence buckets in display order
+const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
+  ConfidenceBucket.HIGH,
+  ConfidenceBucket.MEDIUM,
+  ConfidenceBucket.LOW,
+  ConfidenceBucket.MANUAL,
+];
+
 /**
  * Build a nested tree structure from flat data category strings.
  * Uses the full taxonomy to get proper names and structure.
@@ -216,18 +224,9 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  const availableConfidenceBuckets =
-    datastoreFilterResponse?.confidence_bucket?.reduce((agg, current) => {
-      const currentConfidenceBucket = Object.values(ConfidenceBucket).find(
-        (rs) => rs === current,
-      );
-
-      if (currentConfidenceBucket) {
-        return [...agg, currentConfidenceBucket];
-      }
-
-      return agg;
-    }, [] as ConfidenceBucket[]) ?? [];
+  const availableConfidenceBuckets = CONFIDENCE_BUCKETS.filter((bucket) =>
+    datastoreFilterResponse?.confidence_bucket?.includes(bucket),
+  );
 
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(
