@@ -32,12 +32,6 @@ task_default_queue = "fides" # string
 # queue.  If False, tasks are sent to the queue.
 task_always_eager = true # boolean
 
-# The port to use for the health check endpoint
-healthcheck_port = 9000 # integer
-
-# The timeout in seconds for the health check ping
-healthcheck_ping_timeout = 2.0 # number
-
 #---------#
 #-- CLI --#
 #--------------------------------------------------------------------#
@@ -45,7 +39,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "4f5dea5b81683f64c148b60498fc322f" # string
+analytics_id = "c397e52dda54c79ac7bcd1ab22a652d9" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
