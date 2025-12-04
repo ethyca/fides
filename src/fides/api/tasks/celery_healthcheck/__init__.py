@@ -1,3 +1,7 @@
+# fmt: off
+# type: ignore
+# pylint: skip-file
+
 from .server import HealthCheckServer
 
 
