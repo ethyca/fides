@@ -1,7 +1,7 @@
 """migrate resource type from enum to string to account for custom taxonomies
 
 Revision ID: 303287c70600
-Revises: 71f3ded6045a
+Revises: 3ff6449c099e
 Create Date: 2025-10-22 15:31:12.980243
 
 """
@@ -12,7 +12,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "303287c70600"
-down_revision = "71f3ded6045a"
+down_revision = "3ff6449c099e"
 branch_labels = None
 depends_on = None
 
