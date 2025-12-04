@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.75.3b0.post0.dev13"
+    "version": "2.75.3b0.post0.dev14"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15049,6 +15049,15 @@
           "access_token": {
             "type": "string",
             "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ],
+            "const": "Bearer",
+            "title": "Token Type",
+            "default": "Bearer"
           }
         },
         "type": "object",
