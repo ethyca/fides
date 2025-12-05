@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType, AntTable as Table, Box } from "fidesui";
+import { AntColumnsType as ColumnsType, AntTable as Table } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useMemo } from "react";
 
@@ -54,23 +54,21 @@ const DeprecatedPurposeOverrides = () => {
         width: 100,
         align: "center",
         render: (_, record) => (
-          <Box>
-            <CustomSwitch
-              name={`purposeOverrides[${record.index}].is_included`}
-              onChange={(checked) => {
-                if (!checked) {
-                  setFieldValue(
-                    `purposeOverrides[${record.index}].is_consent`,
-                    false,
-                  );
-                  setFieldValue(
-                    `purposeOverrides[${record.index}].is_legitimate_interest`,
-                    false,
-                  );
-                }
-              }}
-            />
-          </Box>
+          <CustomSwitch
+            name={`purposeOverrides[${record.index}].is_included`}
+            onChange={(checked) => {
+              if (!checked) {
+                setFieldValue(
+                  `purposeOverrides[${record.index}].is_consent`,
+                  false,
+                );
+                setFieldValue(
+                  `purposeOverrides[${record.index}].is_legitimate_interest`,
+                  false,
+                );
+              }
+            }}
+          />
         ),
       },
       {
@@ -83,15 +81,13 @@ const DeprecatedPurposeOverrides = () => {
             return null;
           }
           return (
-            <Box>
-              <CustomSwitch
-                isDisabled={
-                  !values.purposeOverrides[record.index].is_included ||
-                  values.purposeOverrides[record.index].is_legitimate_interest
-                }
-                name={`purposeOverrides[${record.index}].is_consent`}
-              />
-            </Box>
+            <CustomSwitch
+              isDisabled={
+                !values.purposeOverrides[record.index].is_included ||
+                values.purposeOverrides[record.index].is_legitimate_interest
+              }
+              name={`purposeOverrides[${record.index}].is_consent`}
+            />
           );
         },
       },
@@ -105,15 +101,13 @@ const DeprecatedPurposeOverrides = () => {
             return null;
           }
           return (
-            <Box>
-              <CustomSwitch
-                isDisabled={
-                  !values.purposeOverrides[record.index].is_included ||
-                  values.purposeOverrides[record.index].is_consent
-                }
-                name={`purposeOverrides[${record.index}].is_legitimate_interest`}
-              />
-            </Box>
+            <CustomSwitch
+              isDisabled={
+                !values.purposeOverrides[record.index].is_included ||
+                values.purposeOverrides[record.index].is_consent
+              }
+              name={`purposeOverrides[${record.index}].is_legitimate_interest`}
+            />
           );
         },
       },
