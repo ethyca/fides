@@ -109,7 +109,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
                 <Input
                   value={privacyCenterHostname}
                   onChange={(e) => setPrivacyCenterHostname(e.target.value)}
-                  placeholder="example.com/privacy-center"
+                  placeholder="e.g.,<your-domain>.fides-cdn.ethyca.com"
                   data-testid="privacy-center-hostname-input"
                 />
               </FormControl>

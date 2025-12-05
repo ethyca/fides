@@ -1,42 +1,64 @@
+export const removePropertyIdFromScript = (script: string, hasPropertyId: boolean) => {
+    if (!hasPropertyId) {
+        script = script.replaceAll('+ "?property_id=" + fidesPropertyId + "&"', "");
+    }
+    return script;
+};
+
 export const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
 export const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
-
 export const FIDES_JS_SCRIPT_TEMPLATE = `<script>
-!(function () {
+(function () {
+    var fidesHost = "${PRIVACY_CENTER_HOSTNAME_TEMPLATE}"; // This should be the CDN url.
+    var fidesPropertyId = "${PROPERTY_UNIQUE_ID_TEMPLATE})"; // Example Property ID
+    var fidesSrc = fidesHost + "/fides.js" + "?property_id=" + fidesPropertyId + "&";
 
-  var hostPrivacyCenter = "${PRIVACY_CENTER_HOSTNAME_TEMPLATE}";
+    function insertFidesScript() {
+        addEventListener("FidesInitializing", function () {
+            // any pre-initialization code can go here
+            // window.Fides.gtm();
+        });
 
-    // Recommended: Fides override settings
-    window.fides_overrides = {
-      fides_consent_non_applicable_flag_mode: "include",
-      fides_consent_flag_type: "boolean",
-    };
+        addEventListener("FidesInitialized", function () {
+            // support custom css hackery
+            // addExperienceIdToBody();
+        });
 
-    // Optional: Initialize integrations like Google Tag Manager or BlueConic
-    addEventListener("FidesInitialized", function () {
-      // Fides.gtm();
-      // Fides.blueconic();
-    });
+        function addExperienceIdToBody() {
+            try {
+                var experience = window.Fides.experience || {};
+                var config = experience.experience_config || {};
+                var id = config.id;
+                if (id) {
+                    window.document.body.classList.add(id);
+                }
+            } catch {
+                console.warn("Couldn't apply Fides experience ID to body.");
+            }
+        }
 
-    // Recommended: wrapper script that allows for dynamic switching of geolocation by adding query params to the window URL
-    // query param prefix is "fides_"
-    // eg, "fides_geolocation=US-CA"
-    var fidesPrefix = "fides_";
-    var searchParams = new URLSearchParams(location.search);
-    var fidesSearchParams = new URLSearchParams();
-    searchParams.forEach(function (value, key) {
-      if (key.startsWith(fidesPrefix)) {
-        fidesSearchParams.set(
-          key.replace(fidesPrefix, ""),
-          key === fidesPrefix + "cache_bust" ? Date.now().toString() : value,
-        );
-      }
-    });
+        var fidesPrefix = "fides_";
+        var searchParams = new URLSearchParams(location.search);
+        var fidesSearchParams = new URLSearchParams();
+        searchParams.forEach(function (value, key) {
+            if (key.startsWith(fidesPrefix)) {
+                fidesSearchParams.set(
+                    key.replace(fidesPrefix, ""),
+                    key === fidesPrefix + "cache_bust" ? Date.now().toString() : value
+                );
+            }
+        });
 
-    // Required: core Fides JS script
-    var src = "https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?property_id=${PROPERTY_UNIQUE_ID_TEMPLATE}" + fidesSearchParams.toString();
-    var script = document.createElement("script");
-    script.setAttribute("src", src);
-    document.head.appendChild(script);
-  })();
+        var src = fidesSrc + fidesSearchParams.toString();
+        var script = document.createElement("script");
+        script.async = false;
+        script.defer = false;
+        script.setAttribute("src", src);
+        script.setAttribute("id", "fides-js");
+        script.setAttribute("type", "text/javascript");
+        document.head.appendChild(script);
+    }
+
+    insertFidesScript();
+})();
 </script>`;

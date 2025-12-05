@@ -21,6 +21,7 @@ import { CopyIcon } from "~/features/common/Icon";
 import {
   FIDES_JS_SCRIPT_TEMPLATE,
   PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+  removePropertyIdFromScript
 } from "./fidesJsScriptTemplate";
 
 const JavaScriptTag = () => {
@@ -32,8 +33,7 @@ const JavaScriptTag = () => {
     () => {
       let script = FIDES_JS_SCRIPT_TEMPLATE;
 
-      // Remove the property_id query parameter for this component
-      script = script.replaceAll("?property_id={property-unique-id}", "?");
+      script = removePropertyIdFromScript(script, false);
       if (privacyCenterHostname) {
         script = script.replaceAll(
           PRIVACY_CENTER_HOSTNAME_TEMPLATE,
@@ -83,7 +83,7 @@ const JavaScriptTag = () => {
                 <Input
                   value={privacyCenterHostname}
                   onChange={(e) => setPrivacyCenterHostname(e.target.value)}
-                  placeholder="example.com/privacy-center"
+                  placeholder="e.g.,<your-domain>.fides-cdn.ethyca.com"
                   data-testid="privacy-center-hostname-input"
                 />
               </FormControl>
