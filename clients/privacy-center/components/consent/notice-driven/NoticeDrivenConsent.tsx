@@ -60,7 +60,17 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
+  const cookie = useMemo(() => {
+    // Read fides_external_id from window.fides_overrides if available
+    const fidesExternalId =
+      typeof window !== "undefined" &&
+      (window as any).fides_overrides?.fides_external_id
+        ? (window as any).fides_overrides.fides_external_id
+        : undefined;
+    return getOrMakeFidesCookie(undefined, {
+      fidesExternalId: fidesExternalId || undefined,
+    });
+  }, []);
   const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
@@ -71,9 +81,12 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
-    const deviceIdentity = { fides_user_device_id: fidesUserDeviceId };
+    const deviceIdentity = {
+      fides_user_device_id: fidesUserDeviceId,
+      ...(cookie.identity.external_id && { external_id: cookie.identity.external_id }),
+    };
     return identities ? { ...deviceIdentity, ...identities } : deviceIdentity;
-  }, [fidesUserDeviceId]);
+  }, [fidesUserDeviceId, cookie.identity]);
 
   // Full list of privacy notices, including children of other notices
   const flatPrivacyNoticesList: PrivacyNoticeResponse[] = useMemo(() => {
