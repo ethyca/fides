@@ -136,17 +136,15 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
 
   // Extract identity from options
   const defaultIdentity: Partial<FidesJSIdentity> | undefined =
-    options.fidesExternalId ? { external_id: options.fidesExternalId } : undefined;
+    options.fidesExternalId
+      ? { external_id: options.fidesExternalId }
+      : undefined;
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(
-    consentDefaults,
-    defaultIdentity,
-    {
-      fidesClearCookie: options.fidesClearCookie,
-      fidesCookieSuffix: options.fidesCookieSuffix,
-    },
-  );
+  return getOrMakeFidesCookie(consentDefaults, defaultIdentity, {
+    fidesClearCookie: options.fidesClearCookie,
+    fidesCookieSuffix: options.fidesCookieSuffix,
+  });
 };
 
 /**
