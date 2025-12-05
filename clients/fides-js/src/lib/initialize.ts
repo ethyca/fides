@@ -9,6 +9,7 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesInitOptions,
+  FidesJSIdentity,
   FidesOverrides,
   FidesWindowOverrides,
   NoticeValues,
@@ -133,8 +134,19 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
+  // Extract identity from options
+  const defaultIdentity: Partial<FidesJSIdentity> | undefined =
+    options.fidesExternalId ? { external_id: options.fidesExternalId } : undefined;
+
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, options);
+  return getOrMakeFidesCookie(
+    consentDefaults,
+    defaultIdentity,
+    {
+      fidesClearCookie: options.fidesClearCookie,
+      fidesCookieSuffix: options.fidesCookieSuffix,
+    },
+  );
 };
 
 /**
