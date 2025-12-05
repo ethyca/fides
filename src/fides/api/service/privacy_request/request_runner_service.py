@@ -731,7 +731,7 @@ def run_privacy_request(
                 )
                 if not proceed:
                     return
-
+            print("DO WE END UP HERE?")
             # Request finalization CHECKPOINT
             if can_run_checkpoint(
                 request_checkpoint=CurrentStep.finalization,
@@ -747,6 +747,25 @@ def run_privacy_request(
                     if (
                         privacy_request.finalized_at is None
                         and erasure_rules
+                        and CONFIG.execution.erasure_request_finalization_required
+                    ):
+                        logger.info(
+                            "Marking privacy request '{}' as requires manual finalization.",
+                            privacy_request.id,
+                        )
+                        privacy_request.status = (
+                            PrivacyRequestStatus.requires_manual_finalization
+                        )
+                        privacy_request.save(db=session)
+                        return
+
+                    consent_rules = policy.get_rules_for_action(
+                        action_type=ActionType.consent
+                    )
+                    print("LOLOLOL")
+                    if (
+                        privacy_request.finalized_at is None
+                        and consent_rules
                         and CONFIG.execution.erasure_request_finalization_required
                     ):
                         logger.info(
