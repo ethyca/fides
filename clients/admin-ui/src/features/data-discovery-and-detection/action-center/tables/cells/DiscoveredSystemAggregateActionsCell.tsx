@@ -2,9 +2,11 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  Icons,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
+import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
@@ -26,6 +28,8 @@ interface DiscoveredSystemActionsCellProps {
   system: SystemStagedResourcesAggregateRecord;
   allowIgnore?: boolean;
   onTabChange: (tab: ActionCenterTabHash) => Promise<void>;
+  addIcon?: React.ReactNode;
+  ignoreIcon?: React.ReactNode;
 }
 
 export const DiscoveredSystemActionsCell = ({
@@ -33,6 +37,8 @@ export const DiscoveredSystemActionsCell = ({
   system,
   allowIgnore,
   onTabChange,
+  addIcon = <Icons.Checkmark />,
+  ignoreIcon = <Icons.ViewOff />,
 }: DiscoveredSystemActionsCellProps) => {
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -98,11 +104,26 @@ export const DiscoveredSystemActionsCell = ({
 
   return (
     <Space>
+      {allowIgnore && (
+        <Tooltip title="Ignore">
+          <Button
+            data-testid="ignore-btn"
+            size="small"
+            onClick={handleIgnore}
+            disabled={anyActionIsLoading}
+            loading={isIgnoringResults}
+            icon={ignoreIcon}
+            aria-label="Ignore"
+          >
+            {!ignoreIcon && "Ignore"}
+          </Button>
+        </Tooltip>
+      )}
       <Tooltip
         title={
           !system.id
             ? `These assets must be categorized before you can add them to the inventory.`
-            : undefined
+            : "Add"
         }
       >
         <Button
@@ -111,21 +132,12 @@ export const DiscoveredSystemActionsCell = ({
           onClick={handleAdd}
           disabled={!system.id || anyActionIsLoading}
           loading={isAddingResults}
+          icon={addIcon}
+          aria-label="Add"
         >
-          Add
+          {!addIcon && "Add"}
         </Button>
       </Tooltip>
-      {allowIgnore && (
-        <Button
-          data-testid="ignore-btn"
-          size="small"
-          onClick={handleIgnore}
-          disabled={anyActionIsLoading}
-          loading={isIgnoringResults}
-        >
-          Ignore
-        </Button>
-      )}
     </Space>
   );
 };
