@@ -127,7 +127,9 @@ const ConfigureMonitorForm = ({
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
-            execution_start_date: values.execution_start_date.toISOString(),
+            execution_start_date: values.execution_start_date.format(
+              "YYYY-MM-DD[T]HH:mm:ss[Z]",
+            ),
           }
         : {
             execution_frequency: MonitorFrequency.NOT_SCHEDULED,
@@ -185,7 +187,7 @@ const ConfigureMonitorForm = ({
   const initialValues = {
     name: monitor?.name,
     shared_config_id: monitor?.shared_config_id,
-    execution_start_date: dayjs(monitor?.execution_start_date),
+    execution_start_date: dayjs(monitor?.execution_start_date ?? undefined),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
     use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
