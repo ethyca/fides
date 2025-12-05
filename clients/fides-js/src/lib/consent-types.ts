@@ -197,6 +197,9 @@ export interface FidesInitOptions {
     | "disabled";
 
   fidesCookieSuffix?: string | null;
+
+  // Custom user ID provided by customer to identify the user across their systems
+  fidesExternalId: string | null;
 }
 
 /**
@@ -879,6 +882,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
   | "fidesCookieSuffix"
+  | "fidesExternalId"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -972,6 +976,7 @@ export type Identity = {
   ga_client_id?: string;
   ljt_readerID?: string;
   fides_user_device_id?: string;
+  external_id?: string;
 };
 
 export enum RequestOrigin {
