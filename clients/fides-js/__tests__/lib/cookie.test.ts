@@ -18,6 +18,7 @@ import {
   isNewFidesCookie,
   isWildcardCookie,
   makeConsentDefaultsLegacy,
+  makeDefaultIdentity,
   makeFidesCookie,
   removeCookiesFromBrowser,
   saveFidesCookie,
@@ -920,6 +921,195 @@ describe("cookies", () => {
         "na_notice_1",
         "na_notice_2",
       ]);
+    });
+
+    it("preserves external_id when updating cookie from notice preferences", async () => {
+      const externalId = "test-external-id-123";
+      const cookie = makeFidesCookie();
+      cookie.identity.external_id = externalId;
+
+      const notices = [
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      ] as PrivacyNoticeWithPreference[];
+      const preferences = notices.map(
+        (n) =>
+          new SaveConsentPreference(
+            n,
+            n.current_preference ?? UserConsentPreference.OPT_OUT,
+            `pri_notice-history-mock-${n.notice_key}`,
+          ),
+      );
+      const updatedCookie = await updateCookieFromNoticePreferences(
+        cookie,
+        preferences,
+      );
+      expect(updatedCookie.identity.external_id).toEqual(externalId);
+    });
+  });
+
+  describe("external_id handling", () => {
+    describe("getOrMakeFidesCookie", () => {
+      beforeEach(() => {
+        mockGetCookie.mockReturnValue(undefined);
+      });
+
+      it("includes external_id in identity when fidesExternalId is provided", async () => {
+        const externalId = "customer-user-id-123";
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: externalId,
+        });
+        expect(cookie.identity.external_id).toEqual(externalId);
+      });
+
+      it("updates external_id when fidesExternalId is provided and cookie exists", async () => {
+        const oldExternalId = "old-external-id";
+        const newExternalId = "new-external-id";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: {
+            fides_user_device_id: MOCK_UUID,
+            external_id: oldExternalId,
+          },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: newExternalId,
+        });
+        expect(cookie.identity.external_id).toEqual(newExternalId);
+      });
+
+      it("handles undefined identity in parsed cookie when fidesExternalId is provided", async () => {
+        // Verifies that if parsedCookie.identity is undefined, the function handles it gracefully
+        // by creating a new default identity with the provided fidesExternalId
+        const externalId = "test-external-id";
+        const savedCookie: Partial<FidesCookie> = {
+          consent: {},
+          // identity is intentionally missing/undefined
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // Should not throw and should handle undefined identity gracefully
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: externalId,
+        });
+        expect(cookie.identity).toBeDefined();
+        expect(cookie.identity.external_id).toEqual(externalId);
+        expect(cookie.identity.fides_user_device_id).toBeDefined();
+      });
+
+      it("handles undefined identity in parsed cookie when fidesExternalId is not provided", async () => {
+        // Verifies that if parsedCookie.identity is undefined and no fidesExternalId is provided,
+        // the function creates a new default identity without external_id
+        const savedCookie: Partial<FidesCookie> = {
+          consent: {},
+          // identity is intentionally missing/undefined
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // Should not throw and should handle undefined identity gracefully
+        const cookie = await getOrMakeFidesCookie(undefined, {});
+        expect(cookie.identity).toBeDefined();
+        expect(cookie.identity.external_id).toBeUndefined();
+        expect(cookie.identity.fides_user_device_id).toBeDefined();
+      });
+
+      it("rejects empty string for external_id", async () => {
+        // Verifies that empty strings are treated as falsy and do not set external_id
+        const emptyString = "";
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: emptyString,
+        });
+        // Empty strings are falsy, so external_id should not be set
+        expect(cookie.identity.external_id).not.toEqual(emptyString);
+        expect(cookie.identity.external_id).toBeUndefined();
+      });
+
+      it("preserves external_id when fidesExternalId is not provided after being previously set", async () => {
+        // Verifies that when fidesExternalId is not provided, the existing external_id from the cookie
+        // is preserved (not removed)
+        const initialExternalId = "initial-external-id";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: {
+            fides_user_device_id: MOCK_UUID,
+            external_id: initialExternalId,
+          },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // When fidesExternalId is not provided, external_id should persist from the cookie
+        const cookie = await getOrMakeFidesCookie();
+        expect(cookie.identity.external_id).toEqual(initialExternalId);
+      });
+    });
+  });
+
+  describe("makeDefaultIdentity", () => {
+    it("generates device ID when no options provided", () => {
+      const identity = makeDefaultIdentity();
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(typeof identity.fides_user_device_id).toBe("string");
+      expect(identity.fides_user_device_id.length).toBeGreaterThan(0);
+    });
+
+    it("uses provided fidesUserDeviceId", () => {
+      const providedDeviceId = "custom-device-id-123";
+      const identity = makeDefaultIdentity({
+        fidesUserDeviceId: providedDeviceId,
+      });
+      expect(identity.fides_user_device_id).toEqual(providedDeviceId);
+    });
+
+    it("sets external_id when fidesExternalId is provided", () => {
+      const externalId = "external-id-789";
+      const identity = makeDefaultIdentity({
+        fidesExternalId: externalId,
+      });
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(identity.external_id).toEqual(externalId);
+    });
+
+    it("handles both fidesUserDeviceId and fidesExternalId together", () => {
+      const deviceId = "custom-device-123";
+      const externalId = "custom-external-456";
+      const identity = makeDefaultIdentity({
+        fidesUserDeviceId: deviceId,
+        fidesExternalId: externalId,
+      });
+      expect(identity.fides_user_device_id).toEqual(deviceId);
+      expect(identity.external_id).toEqual(externalId);
+    });
+
+    it("does not set external_id when fidesExternalId is falsy", () => {
+      const falsyValues = [null, undefined, ""];
+      falsyValues.forEach((falsyValue) => {
+        const identity = makeDefaultIdentity({
+          fidesExternalId: falsyValue as string | null,
+        });
+        expect(identity.fides_user_device_id).toBeDefined();
+        expect(identity.external_id).toBeUndefined();
+      });
     });
   });
 });

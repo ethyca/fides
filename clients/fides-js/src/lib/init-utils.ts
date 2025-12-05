@@ -120,6 +120,7 @@ export const getCoreFides = ({
       fidesConsentFlagType: null,
       fidesInitializedEventMode: "once",
       fidesCookieCompression: "none",
+      fidesExternalId: null,
     },
     fides_meta: {},
     identity: {},

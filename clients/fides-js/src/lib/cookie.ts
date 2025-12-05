@@ -7,6 +7,7 @@ import {
   Cookies as CookiesType,
   FidesCookie,
   FidesInitOptions,
+  FidesJSIdentity,
   LegacyConsentConfig,
   NoticeConsent,
   PrivacyExperience,
@@ -102,6 +103,24 @@ const generateFidesUserDeviceId = (): string => uuidv4();
 const userDeviceId = generateFidesUserDeviceId();
 
 /**
+ * Generate a default identity object with a device ID.
+ * The device ID is always required and will be generated if not provided.
+ */
+export const makeDefaultIdentity = ({
+  fidesUserDeviceId,
+  fidesExternalId,
+}: {
+  fidesUserDeviceId?: string;
+  fidesExternalId?: string | null;
+} = {}): FidesJSIdentity => {
+  return {
+    fides_user_device_id:
+      fidesUserDeviceId || userDeviceId || generateFidesUserDeviceId(),
+    ...(fidesExternalId ? { external_id: fidesExternalId } : {}),
+  };
+};
+
+/**
  * Determine whether or not the given cookie is "new" (ie. has never been saved
  * to the browser).
  */
@@ -113,13 +132,14 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
+export const makeFidesCookie = (
+  defaultConsent?: NoticeConsent,
+  { fidesExternalId }: Partial<Pick<FidesInitOptions, "fidesExternalId">> = {},
+): FidesCookie => {
   const now = new Date();
   return {
-    consent: consent || {},
-    identity: {
-      fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
-    },
+    consent: defaultConsent || {},
+    identity: makeDefaultIdentity({ fidesExternalId }),
     fides_meta: {
       version: "0.9.0",
       createdAt: now.toISOString(),
@@ -284,12 +304,17 @@ export const getOrMakeFidesCookie = async (
   {
     fidesClearCookie = false,
     fidesCookieSuffix,
+    fidesExternalId,
   }: Partial<
-    Pick<FidesInitOptions, "fidesClearCookie" | "fidesCookieSuffix">
+    Pick<
+      FidesInitOptions,
+      "fidesClearCookie" | "fidesCookieSuffix" | "fidesExternalId"
+    >
   > = {},
 ): Promise<FidesCookie> => {
   // Create a default cookie and set the configured consent defaults
-  const defaultCookie = makeFidesCookie(defaults);
+  const defaultCookie = makeFidesCookie(defaults, { fidesExternalId });
+
   if (typeof document === "undefined") {
     return defaultCookie;
   }
@@ -339,6 +364,17 @@ export const getOrMakeFidesCookie = async (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
+
+    // Ensure identity always exists
+    if (!parsedCookie.identity) {
+      parsedCookie.identity = makeDefaultIdentity({ fidesExternalId });
+    }
+
+    // Update external_id if provided
+    if (fidesExternalId !== undefined && fidesExternalId !== null) {
+      parsedCookie.identity.external_id = fidesExternalId;
+    }
+
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
     fidesDebugger(
       `Applied existing consent to data from existing Fides consent cookie.`,
@@ -621,11 +657,13 @@ export const updateCookieFromNoticePreferences = async (
   const nonApplicableNotices =
     currentExperience?.non_applicable_privacy_notices || [];
 
-  return {
+  const updatedCookie: FidesCookie = {
     ...oldCookie,
     consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
     non_applicable_notice_keys: nonApplicableNotices,
   };
+
+  return updatedCookie;
 };
 
 /**

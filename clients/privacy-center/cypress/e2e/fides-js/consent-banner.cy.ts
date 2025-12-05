@@ -419,6 +419,47 @@ describe("Consent overlay", () => {
           });
         });
 
+        describe("external_id support", () => {
+          it("includes external_id in privacy-preferences API when fides_external_id is provided", () => {
+            const externalId = "example-customer-id-789";
+            stubConfig({
+              options: {
+                isOverlayEnabled: true,
+                fidesExternalId: externalId,
+              },
+            });
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+            cy.getByTestId("toggle-Advertising").should("exist");
+            cy.getByTestId("toggle-Advertising").click();
+            cy.getByTestId("Save-btn").click();
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              const { body } = interception.request;
+              expect(body.browser_identity.external_id).to.eql(externalId);
+              expect(body.browser_identity.fides_user_device_id).to.be.a(
+                "string",
+              );
+            });
+          });
+
+          it("includes external_id in notices-served API when fides_external_id is provided", () => {
+            const externalId = "example-customer-id-890";
+            stubConfig({
+              options: {
+                fidesExternalId: externalId,
+              },
+            });
+            cy.get("#fides-modal-link").click();
+            cy.wait("@patchNoticesServed").then((interception) => {
+              const { body } = interception.request;
+              expect(body.browser_identity.external_id).to.eql(externalId);
+              expect(body.browser_identity.fides_user_device_id).to.be.a(
+                "string",
+              );
+            });
+          });
+        });
+
         describe("saving preferences", () => {
           it("skips saving preferences to API when disable save is set", () => {
             stubConfig({

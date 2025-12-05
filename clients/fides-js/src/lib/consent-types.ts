@@ -203,6 +203,9 @@ export interface FidesInitOptions {
 
   // Cookie compression method to reduce cookie size
   fidesCookieCompression: "gzip" | "none";
+
+  // Custom user ID provided by customer to identify the user across their systems
+  fidesExternalId: string | null;
 }
 
 /**
@@ -909,6 +912,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesUnsupportedRepeatedScriptLoading"
   | "fidesCookieSuffix"
   | "fidesCookieCompression"
+  | "fidesExternalId"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -1002,6 +1006,7 @@ export type Identity = {
   ga_client_id?: string;
   ljt_readerID?: string;
   fides_user_device_id?: string;
+  external_id?: string;
 };
 
 export enum RequestOrigin {
