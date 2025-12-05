@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Tree view actions for Remove and Classify in the Action Center [#7021](https://github.com/ethyca/fides/pull/7021)
 - Added expandable confidence level summary cards to the Action Center home page [#7056](https://github.com/ethyca/fides/pull/7056)
 - Adding data normalization to action center fields [#7022](https://github.com/ethyca/fides/pull/7022)
+- Added `SECURITY_HEADERS_MODE` to Privacy Center to set good practice security headers in responses [#6906](https://github.com/ethyca/fides/pull/6906)
 
 ### Changed
 - Updated External User Welcome email to use editable template [#7030](https://github.com/ethyca/fides/pull/7030)
