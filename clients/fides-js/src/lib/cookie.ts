@@ -136,26 +136,6 @@ export const getFidesConsentCookie = (
 };
 
 /**
- * Apply external_id to a cookie's identity if provided.
- * Returns a new cookie object with external_id set in identity.
- */
-const applyExternalIdToCookie = (
-  cookie: FidesCookie,
-  fidesExternalId?: string | null,
-): FidesCookie => {
-  if (!fidesExternalId) {
-    return cookie;
-  }
-  return {
-    ...cookie,
-    identity: {
-      ...cookie.identity,
-      external_id: fidesExternalId,
-    },
-  };
-};
-
-/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -177,72 +157,76 @@ export const getOrMakeFidesCookie = (
   > = {},
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
-  const defaultCookie = makeFidesCookie(defaults);
+  let cookie: FidesCookie = makeFidesCookie(defaults);
 
   if (typeof document === "undefined") {
-    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
-  }
-
-  if (fidesClearCookie) {
+    // SSR: return default cookie with external_id applied
+  } else if (fidesClearCookie) {
     document.cookie = `${getConsentCookieName(fidesCookieSuffix)}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
-  }
+    // Return default cookie with external_id applied
+  } else {
+    // Check for an existing cookie for this device
+    let parsedCookie: FidesCookie | undefined =
+      getFidesConsentCookie(fidesCookieSuffix);
 
-  // Check for an existing cookie for this device
-  let parsedCookie: FidesCookie | undefined =
-    getFidesConsentCookie(fidesCookieSuffix);
-
-  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
-  if (parsedCookie?.consent) {
-    const { consent } = parsedCookie;
-    Object.entries(consent).forEach(([key, value]) => {
-      consent[key] = processExternalConsentValue(value);
-    });
-  }
-
-  if (!parsedCookie) {
-    fidesDebugger(
-      `No existing Fides consent cookie found, returning defaults.`,
-    );
-    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
-  }
-
-  try {
-    // Check format of parsed cookie; if it's structured like we
-    // expect, cast it directly. Otherwise, assume it's a previous version of
-    // the cookie, which was strictly the consent key/value preferences
-    if (!("consent" in parsedCookie && "fides_meta" in parsedCookie)) {
-      // Missing the expected format, so we parse it as strictly consent
-      // preferences and "wrap" it with the default cookie style
-      parsedCookie = {
-        ...defaultCookie,
-        consent: parsedCookie,
-      };
+    // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+    if (parsedCookie?.consent) {
+      const { consent } = parsedCookie;
+      Object.entries(consent).forEach(([key, value]) => {
+        consent[key] = processExternalConsentValue(value);
+      });
     }
 
-    // Re-apply the default consent values to the parsed cookie; they may have
-    // changed, so new defaults should be added. However, ensure that any
-    // existing user preferences override those defaults!
-    const updatedConsent: NoticeConsent = {
-      ...defaults,
-      ...parsedCookie.consent,
-    };
-    parsedCookie.consent = updatedConsent;
+    if (parsedCookie) {
+      try {
+        // Check format of parsed cookie; if it's structured like we
+        // expect, cast it directly. Otherwise, assume it's a previous version of
+        // the cookie, which was strictly the consent key/value preferences
+        if (!("consent" in parsedCookie && "fides_meta" in parsedCookie)) {
+          // Missing the expected format, so we parse it as strictly consent
+          // preferences and "wrap" it with the default cookie style
+          parsedCookie = {
+            ...cookie,
+            consent: parsedCookie,
+          };
+        }
 
-    // Apply external_id if provided (takes precedence over any existing value)
-    const finalCookie = applyExternalIdToCookie(parsedCookie, fidesExternalId);
+        // Re-apply the default consent values to the parsed cookie; they may have
+        // changed, so new defaults should be added. However, ensure that any
+        // existing user preferences override those defaults!
+        const updatedConsent: NoticeConsent = {
+          ...defaults,
+          ...parsedCookie.consent,
+        };
+        parsedCookie.consent = updatedConsent;
+        cookie = parsedCookie;
 
-    // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
-    fidesDebugger(
-      `Applied existing consent to data from existing Fides consent cookie.`,
-      JSON.stringify(finalCookie),
-    );
-    return finalCookie;
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(`Unable to read consent cookie: invalid JSON.`, err);
-    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
+        // since fidesDebugger is synchronous, we stringify to accurately read the cookie obj
+        fidesDebugger(
+          `Applied existing consent to data from existing Fides consent cookie.`,
+          JSON.stringify(cookie),
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Unable to read consent cookie: invalid JSON.`, err);
+        // Fall back to default cookie on error
+        cookie = makeFidesCookie(defaults);
+      }
+    } else {
+      fidesDebugger(
+        `No existing Fides consent cookie found, returning defaults.`,
+      );
+      // Use default cookie
+    }
   }
+
+  // Apply external_id if provided (takes precedence over any existing value)
+  // This is done once at the end, regardless of which path was taken
+  if (fidesExternalId) {
+    cookie.identity.external_id = fidesExternalId;
+  }
+
+  return cookie;
 };
 
 /**
