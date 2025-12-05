@@ -46,7 +46,7 @@ const useNormalizedResources = (
     );
   }
 
-  /** disablng for now. */
+  /** disabling for now. */
   // if (detailsQuery.currentData) {
   //   updateResources(
   //     mapNodes([
