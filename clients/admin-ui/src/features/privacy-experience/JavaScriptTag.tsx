@@ -31,8 +31,8 @@ const JavaScriptTag = () => {
   const fidesJsScriptTag = useMemo(
     () => {
       let script = FIDES_JS_SCRIPT_TEMPLATE;
+
       // Remove the property_id query parameter for this component
-      // The template literal has already interpolated PROPERTY_UNIQUE_ID_TEMPLATE to {property-unique-id}
       script = script.replaceAll("?property_id={property-unique-id}", "?");
       if (privacyCenterHostname) {
         script = script.replaceAll(
