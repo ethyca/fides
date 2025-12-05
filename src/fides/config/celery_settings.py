@@ -27,12 +27,6 @@ class CelerySettings(FidesSettings):
         description="If true, tasks are executed locally instead of being sent to the queue.  "
         "If False, tasks are sent to the queue.",
     )
-    healthcheck_port: int = Field(
-        default=9000, description="The port to use for the health check endpoint"
-    )
-    healthcheck_ping_timeout: float = Field(
-        default=2.0, description="The timeout in seconds for the health check ping"
-    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
 
 
