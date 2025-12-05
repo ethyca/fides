@@ -161,7 +161,6 @@ export const getOrMakeFidesCookie = (
   // Add external_id to identity if provided
   if (fidesExternalId) {
     defaultCookie.identity.external_id = fidesExternalId;
-    defaultCookie.fides_meta.external_id = fidesExternalId;
   }
   if (typeof document === "undefined") {
     return defaultCookie;
@@ -213,18 +212,9 @@ export const getOrMakeFidesCookie = (
     };
     parsedCookie.consent = updatedConsent;
 
-    // Restore external_id from fides_meta if not in identity (for backward compatibility)
-    if (
-      parsedCookie.fides_meta?.external_id &&
-      !parsedCookie.identity.external_id
-    ) {
-      parsedCookie.identity.external_id = parsedCookie.fides_meta.external_id;
-    }
-
     // Update external_id if provided in options (takes precedence)
     if (fidesExternalId) {
       parsedCookie.identity.external_id = fidesExternalId;
-      parsedCookie.fides_meta.external_id = fidesExternalId;
     }
 
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
@@ -460,14 +450,6 @@ export const updateCookieFromNoticePreferences = async (
     consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
     non_applicable_notice_keys: nonApplicableNotices,
   };
-
-  // Ensure external_id is synced between identity and fides_meta
-  if (updatedCookie.identity.external_id) {
-    updatedCookie.fides_meta.external_id = updatedCookie.identity.external_id;
-  } else if (updatedCookie.fides_meta.external_id) {
-    // Restore from meta if not in identity
-    updatedCookie.identity.external_id = updatedCookie.fides_meta.external_id;
-  }
 
   return updatedCookie;
 };
