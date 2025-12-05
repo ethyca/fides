@@ -392,3 +392,15 @@ If provided, the cookie name will be `fides_consent_{suffix}`. For example, if s
 Fides instances on the same domain to maintain separate consent cookies.
 
 Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
+
+***
+
+### fides\_external\_id?
+
+> `optional` **fides\_external\_id**: `string`
+
+A custom user ID provided by the customer to identify the user across their systems.
+This ID will be included in privacy-preferences API calls and stored in the fides_consent
+cookie for persistence.
+
+Defaults to `undefined`.
