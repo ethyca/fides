@@ -313,7 +313,7 @@ def instantiate_connection_from_template(
 
 def instantiate_connection(
     db: Session,
-    saas_connector_type: str,
+    connector_template_type: str,
     template_values: SaasConnectionTemplateValues,
     system: Optional[System] = None,
 ) -> SaasConnectionTemplateResponse:
@@ -327,7 +327,7 @@ def instantiate_connection(
     connection_service = ConnectionService(db, event_audit_service)
     try:
         connection_config, dataset_config = connection_service.instantiate_connection(
-            saas_connector_type, template_values, system
+            connector_template_type, template_values, system
         )
     except ConnectorTemplateNotFound as exc:
         raise HTTPException(
