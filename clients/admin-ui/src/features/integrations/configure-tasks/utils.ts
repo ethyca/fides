@@ -63,6 +63,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   identity: "Identity",
   policy: "Policy",
   location: "Location",
+  custom_privacy_request_fields: "Custom Fields",
 };
 
 export const getCategoryFromFieldPath = (fieldPath: string): string => {
