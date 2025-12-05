@@ -10,10 +10,6 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  */
 export type ConsentPreferenceResponse = {
   /**
-   * Identifier for the experience config history
-   */
-  experience_config_history_id?: string | null;
-  /**
    * Identifier for the notice history
    */
   notice_history_id: string;
@@ -25,6 +21,10 @@ export type ConsentPreferenceResponse = {
    * User preference value
    */
   value: UserConsentPreference;
+  /**
+   * ISO timestamp when the preference was collected (auto-populated if not provided)
+   */
+  collected_at: string;
   /**
    * Metadata for a single preference value (includes backend fields like 'derived', 'override', 'source')
    */

@@ -127,10 +127,10 @@ const SavePreferencesSection = ({
           value: isChecked
             ? UserConsentPreference.OPT_IN
             : UserConsentPreference.OPT_OUT,
-          experience_config_history_id: experienceConfigHistoryId,
+          collected_at: new Date().toISOString(),
           meta: {
             fides: {
-              collected_at: new Date().toISOString().replace("Z", "+00:00"),
+              experience_config_history_id: experienceConfigHistoryId,
             },
           },
         };
