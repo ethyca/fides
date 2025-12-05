@@ -1,5 +1,6 @@
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 
+import { getClientSettings } from "~/app/server-environment";
 import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../../types/api";
 import { API_URL } from "../../support/constants";
 
@@ -182,6 +183,47 @@ describe("Privacy notice driven consent", () => {
             });
           });
         });
+      });
+    });
+
+    it("includes external_id in privacy-preferences API when fides_external_id is provided", () => {
+      const externalId = "example-customer-id-123";
+      cy.visit("/consent?redirect=false", {
+        onBeforeLoad(win) {
+          win.fides_overrides = {
+            fides_external_id: externalId,
+          };
+        },
+      });
+      cy.dispatch({
+        type: "settings/overrideSettings",
+        payload: {
+          ...getClientSettings(),
+          ...SETTINGS,
+        },
+      });
+      cy.fixture("config/config.css").then((config) => {
+        cy.dispatch({ type: "styles/loadStyles", payload: config });
+      });
+      cy.fixture("config/config_consent.json").then((config) => {
+        cy.dispatch({ type: "config/loadConfig", payload: config });
+      });
+
+      cy.wait("@postConsentRequestVerify");
+      cy.wait("@getExperience");
+      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+        cy.wait("@patchNoticesServed");
+
+        // Opt in to the opt in notice
+        cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
+          cy.getToggle().should("not.be.checked").check({ force: true });
+        });
+      });
+
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        expect(body.browser_identity.external_id).to.eql(externalId);
       });
     });
 
