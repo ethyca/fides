@@ -136,6 +136,26 @@ export const getFidesConsentCookie = (
 };
 
 /**
+ * Apply external_id to a cookie's identity if provided.
+ * Returns a new cookie object with external_id set in identity.
+ */
+const applyExternalIdToCookie = (
+  cookie: FidesCookie,
+  fidesExternalId?: string | null,
+): FidesCookie => {
+  if (!fidesExternalId) {
+    return cookie;
+  }
+  return {
+    ...cookie,
+    identity: {
+      ...cookie.identity,
+      external_id: fidesExternalId,
+    },
+  };
+};
+
+/**
  * Attempt to read, parse, and return the current Fides cookie from the browser.
  * If one doesn't exist, make a new default cookie (including generating a new
  * pseudonymous ID) and return the default values.
@@ -158,17 +178,14 @@ export const getOrMakeFidesCookie = (
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
-  // Add external_id to identity if provided
-  if (fidesExternalId) {
-    defaultCookie.identity.external_id = fidesExternalId;
-  }
+
   if (typeof document === "undefined") {
-    return defaultCookie;
+    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
   }
 
   if (fidesClearCookie) {
     document.cookie = `${getConsentCookieName(fidesCookieSuffix)}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-    return defaultCookie;
+    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
   }
 
   // Check for an existing cookie for this device
@@ -187,7 +204,7 @@ export const getOrMakeFidesCookie = (
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
     );
-    return defaultCookie;
+    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
   }
 
   try {
@@ -212,21 +229,19 @@ export const getOrMakeFidesCookie = (
     };
     parsedCookie.consent = updatedConsent;
 
-    // Update external_id if provided in options (takes precedence)
-    if (fidesExternalId) {
-      parsedCookie.identity.external_id = fidesExternalId;
-    }
+    // Apply external_id if provided (takes precedence over any existing value)
+    const finalCookie = applyExternalIdToCookie(parsedCookie, fidesExternalId);
 
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
     fidesDebugger(
       `Applied existing consent to data from existing Fides consent cookie.`,
-      JSON.stringify(parsedCookie),
+      JSON.stringify(finalCookie),
     );
-    return parsedCookie;
+    return finalCookie;
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(`Unable to read consent cookie: invalid JSON.`, err);
-    return defaultCookie;
+    return applyExternalIdToCookie(defaultCookie, fidesExternalId);
   }
 };
 
