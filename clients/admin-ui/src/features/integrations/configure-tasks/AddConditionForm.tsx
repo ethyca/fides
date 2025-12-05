@@ -2,15 +2,21 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntInput as Input,
+  AntRadio as Radio,
   AntSelect as Select,
   Flex,
+  RadioChangeEvent,
 } from "fidesui";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DatasetReferencePicker } from "~/features/common/dataset";
+import { useFlags } from "~/features/common/features/features.slice";
 import { ConditionLeaf, Operator } from "~/types/api";
 
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
+import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicker";
+import { FieldSource } from "./types";
+import { getInitialFieldSource } from "./utils";
 
 interface FormValues {
   fieldAddress: string;
@@ -54,6 +60,7 @@ interface AddConditionFormProps {
   onCancel: () => void;
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
+  connectionKey: string;
 }
 
 const AddConditionForm = ({
@@ -61,9 +68,19 @@ const AddConditionForm = ({
   onCancel,
   editingCondition,
   isSubmitting = false,
+  connectionKey,
 }: AddConditionFormProps) => {
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
+  const { flags } = useFlags();
+
+  // Check if privacy request field conditions feature is enabled
+  const privacyRequestFieldConditionsEnabled =
+    flags.alphaPrivacyRequestFieldConditions ?? false;
+
+  const [fieldSource, setFieldSource] = useState<FieldSource>(
+    getInitialFieldSource(editingCondition),
+  );
 
   // Operator options for the select dropdown
   const operatorOptions = [
@@ -84,11 +101,14 @@ const AddConditionForm = ({
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
+        fieldSource: getInitialFieldSource(editingCondition),
         fieldAddress: editingCondition.field_address,
         operator: editingCondition.operator,
         value: editingCondition.value?.toString() || "",
       }
-    : {};
+    : {
+        fieldSource: FieldSource.DATASET,
+      };
 
   const handleSubmit = useCallback(
     (values: FormValues) => {
@@ -106,8 +126,24 @@ const AddConditionForm = ({
 
   const handleCancel = useCallback(() => {
     form.resetFields();
+    setFieldSource(FieldSource.DATASET);
     onCancel();
   }, [form, onCancel]);
+
+  // Handle field source change
+  const handleFieldSourceChange = useCallback(
+    (e: RadioChangeEvent) => {
+      const newSource = e.target.value as FieldSource;
+      setFieldSource(newSource);
+      // Clear field address, operator, and value when switching sources
+      form.setFieldsValue({
+        fieldAddress: undefined,
+        operator: undefined,
+        value: "",
+      });
+    },
+    [form],
+  );
 
   // Check if value field should be disabled
   const selectedOperator = Form.useWatch("operator", form);
@@ -129,14 +165,47 @@ const AddConditionForm = ({
       layout="vertical"
       initialValues={initialValues}
     >
+      {privacyRequestFieldConditionsEnabled && (
+        <Form.Item
+          name="fieldSource"
+          label="Field source"
+          rules={[{ required: true, message: "Field source is required" }]}
+        >
+          <Radio.Group onChange={handleFieldSourceChange}>
+            <Radio
+              value={FieldSource.PRIVACY_REQUEST}
+              data-testid="field-source-privacy-request"
+            >
+              Privacy request field
+            </Radio>
+            <Radio
+              value={FieldSource.DATASET}
+              data-testid="field-source-dataset"
+            >
+              Dataset field
+            </Radio>
+          </Radio.Group>
+        </Form.Item>
+      )}
+
       <Form.Item
         name="fieldAddress"
-        label="Dataset Field"
-        rules={[{ required: true, message: "Dataset field is required" }]}
-        tooltip="Select a field from your datasets to use in the condition"
+        label="Field"
+        rules={[{ required: true, message: "Field is required" }]}
+        tooltip={
+          !privacyRequestFieldConditionsEnabled ||
+          fieldSource === FieldSource.DATASET
+            ? "Select a field from your datasets to use in the condition"
+            : "Select a privacy request field to use in the condition"
+        }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        <DatasetReferencePicker />
+        {privacyRequestFieldConditionsEnabled &&
+        fieldSource === FieldSource.PRIVACY_REQUEST ? (
+          <PrivacyRequestFieldPicker connectionKey={connectionKey} />
+        ) : (
+          <DatasetReferencePicker />
+        )}
       </Form.Item>
 
       <Form.Item

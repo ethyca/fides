@@ -11,6 +11,7 @@ import {
 } from "fidesui";
 import React, { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";
@@ -20,6 +21,7 @@ type Props = {
   onClose: () => void;
   onConditionSaved: (condition: ConditionLeaf) => Promise<void>;
   editingCondition?: ConditionLeaf | null;
+  connectionKey: string;
 };
 
 const AddEditConditionModal = ({
@@ -27,11 +29,15 @@ const AddEditConditionModal = ({
   onClose,
   onConditionSaved,
   editingCondition,
+  connectionKey,
 }: Props) => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { flags } = useFlags();
 
   const isEditing = !!editingCondition;
+  const privacyRequestFieldConditionsEnabled =
+    flags.alphaPrivacyRequestFieldConditions ?? false;
 
   const handleSubmit = async (condition: ConditionLeaf) => {
     try {
@@ -69,13 +75,14 @@ const AddEditConditionModal = ({
             <Box color="gray.700" fontSize="14px">
               {isEditing
                 ? "Update the condition settings for task creation."
-                : "Configure a new condition that must be met before a task is created. Select a field from your datasets to create the condition."}
+                : `Configure a new condition that must be met before a task is created. Select a field from your datasets${privacyRequestFieldConditionsEnabled ? " or from the privacy request" : ""} to create the condition.`}
             </Box>
             <AddConditionForm
               onAdd={handleSubmit}
               onCancel={handleCancel}
               editingCondition={editingCondition}
               isSubmitting={isSubmitting}
+              connectionKey={connectionKey}
             />
           </VStack>
         </ModalBody>

@@ -21,6 +21,7 @@ import { ConditionLeaf } from "~/types/api";
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
 import { useSaveConditions } from "./hooks/useSaveConditions";
+import { formatFieldDisplay } from "./utils";
 
 const { Paragraph, Text } = Typography;
 
@@ -235,6 +236,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         renderItem={(condition: ConditionLeaf, index: number) => (
           <List.Item
             key={index}
+            aria-label={`Condition: ${formatFieldDisplay(condition.field_address)} ${operatorLabels[condition.operator]}${condition.value !== null && condition.value !== undefined ? ` ${String(condition.value)}` : ""}`}
             actions={[
               <Button
                 key="edit"
@@ -242,6 +244,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleOpenEditModal(index, condition)}
                 data-testid={`edit-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Edit condition for ${condition.field_address}`}
               >
                 Edit
               </Button>,
@@ -251,6 +254,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleDeleteCondition(index, condition)}
                 data-testid={`delete-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Delete condition for ${condition.field_address}`}
               >
                 Delete
               </Button>,
@@ -261,7 +265,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 <Flex gap={8} align="center" className="font-normal">
                   <div className="max-w-[300px]">
                     <Tooltip title={condition.field_address}>
-                      <Text>{condition.field_address.split(":").pop()}</Text>
+                      <Text>{formatFieldDisplay(condition.field_address)}</Text>
                     </Tooltip>
                   </div>
                   <Tag color="sandstone">
@@ -288,6 +292,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
+        connectionKey={connectionKey}
       />
 
       <ConfirmationModal

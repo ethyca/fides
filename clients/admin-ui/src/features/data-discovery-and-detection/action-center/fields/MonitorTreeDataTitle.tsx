@@ -1,13 +1,12 @@
 import {
   AntButton as Button,
   AntDropdown as Dropdown,
-  AntDropdownProps as DropdownProps,
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
   Icons,
 } from "fidesui";
-import { Key, useState } from "react";
+import { Key } from "react";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -57,7 +56,6 @@ export const MonitorTreeDataTitle = ({
   onLoadMore,
   actions,
 }: TreeNodeProps) => {
-  const [availableActions, setAvailableActions] = useState<Key[]>();
   if (!node.title) {
     return null;
   }
@@ -88,20 +86,6 @@ export const MonitorTreeDataTitle = ({
       </Skeleton>
     );
   }
-  const asyncGetActions: DropdownProps["onOpenChange"] = async (open) => {
-    if (open && actions) {
-      Promise.all(
-        [...actions.entries()].map(async ([key, { disabled }]) => {
-          const isDisabled = disabled ? await disabled(node) : true;
-          return [key, isDisabled] as const;
-        }),
-      ).then((result) => {
-        setAvailableActions(
-          result.flatMap(([key, disabled]) => (disabled ? [] : [key])),
-        );
-      });
-    }
-  };
 
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
@@ -112,10 +96,10 @@ export const MonitorTreeDataTitle = ({
       <Dropdown
         menu={{
           items: actions
-            ? [...actions.entries()].map(([key, { label }]) => ({
+            ? [...actions.entries()].map(([key, { disabled, ...rest }]) => ({
                 key,
-                label,
-                disabled: !availableActions?.includes(key),
+                disabled: disabled(node),
+                ...rest,
               }))
             : [],
           onClick: ({ key, domEvent }) => {
@@ -124,7 +108,6 @@ export const MonitorTreeDataTitle = ({
             actions.get(key)?.callback(node.key, node);
           },
         }}
-        onOpenChange={asyncGetActions}
         destroyOnHidden
         className="group mr-1 flex-none"
       >

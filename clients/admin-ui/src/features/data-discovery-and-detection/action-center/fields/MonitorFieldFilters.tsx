@@ -1,6 +1,6 @@
 import { AntTreeDataNode as DataNode, Filter } from "fidesui";
 import { uniq } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -16,6 +16,14 @@ import {
   ResourceStatusLabel,
 } from "./MonitorFields.const";
 import { useMonitorFieldsFilters } from "./useFilters";
+
+// Confidence buckets in display order
+const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
+  ConfidenceBucket.HIGH,
+  ConfidenceBucket.MEDIUM,
+  ConfidenceBucket.LOW,
+  ConfidenceBucket.MANUAL,
+];
 
 /**
  * Build a nested tree structure from flat data category strings.
@@ -180,10 +188,15 @@ export const MonitorFieldFilters = ({
     setLocalDataCategory(dataCategory);
   }, [dataCategory]);
 
-  // Reset filters to default state when stagedResourceUrn changes
-  // Use JSON.stringify to compare array contents, not reference
+  // Reset filters to default state when stagedResourceUrn changes (but not on initial mount)
+  // Use join to compare array contents, not reference
   const stagedResourceUrnKey = stagedResourceUrn.join(",");
+  const isInitialMount = useRef(true);
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     resetToInitialState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stagedResourceUrnKey]);
@@ -211,18 +224,9 @@ export const MonitorFieldFilters = ({
     [dataCategoriesTaxonomy],
   );
 
-  const availableConfidenceBuckets =
-    datastoreFilterResponse?.confidence_bucket?.reduce((agg, current) => {
-      const currentConfidenceBucket = Object.values(ConfidenceBucket).find(
-        (rs) => rs === current,
-      );
-
-      if (currentConfidenceBucket) {
-        return [...agg, currentConfidenceBucket];
-      }
-
-      return agg;
-    }, [] as ConfidenceBucket[]) ?? [];
+  const availableConfidenceBuckets = CONFIDENCE_BUCKETS.filter((bucket) =>
+    datastoreFilterResponse?.confidence_bucket?.includes(bucket),
+  );
 
   // Build tree data for filters
   const statusTreeData: DataNode[] = useMemo(
