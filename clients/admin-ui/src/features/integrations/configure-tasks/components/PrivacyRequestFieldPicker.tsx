@@ -66,7 +66,7 @@ export const PrivacyRequestFieldPicker = ({
       return [
         ...standardFieldOptions,
         {
-          label: "Custom Fields",
+          label: "Custom fields",
           options: customFieldOptions.sort((a, b) =>
             a.label.localeCompare(b.label),
           ),

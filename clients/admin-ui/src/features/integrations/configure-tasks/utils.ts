@@ -59,16 +59,16 @@ export const formatFieldLabel = (fieldPath: string): string => {
 
 // Mapping for category display names
 const CATEGORY_LABELS: Record<string, string> = {
-  privacy_request: "Privacy Request",
+  privacy_request: "Privacy request",
   identity: "Identity",
   policy: "Policy",
   location: "Location",
-  custom_privacy_request_fields: "Custom Fields",
+  custom_privacy_request_fields: "Custom fields",
 };
 
 export const getCategoryFromFieldPath = (fieldPath: string): string => {
   // "privacy_request.identity.email" -> "Identity"
-  // "privacy_request.created_at" -> "Privacy Request"
+  // "privacy_request.created_at" -> "Privacy request"
   const parts = fieldPath.split(".");
 
   if (parts.length === 2) {
