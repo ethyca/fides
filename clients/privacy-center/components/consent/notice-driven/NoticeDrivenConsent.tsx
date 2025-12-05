@@ -83,7 +83,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const identities = inspectForBrowserIdentities();
     const deviceIdentity = {
       fides_user_device_id: fidesUserDeviceId,
-      ...(cookie.identity.external_id && { external_id: cookie.identity.external_id }),
+      ...(cookie.identity.external_id && {
+        external_id: cookie.identity.external_id,
+      }),
     };
     return identities ? { ...deviceIdentity, ...identities } : deviceIdentity;
   }, [fidesUserDeviceId, cookie.identity]);
