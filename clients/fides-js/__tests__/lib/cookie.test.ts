@@ -793,5 +793,113 @@ describe("cookies", () => {
         "na_notice_2",
       ]);
     });
+
+    it("preserves external_id when updating cookie from notice preferences", async () => {
+      const externalId = "test-external-id-123";
+      const cookie = makeFidesCookie();
+      cookie.identity.external_id = externalId;
+      cookie.fides_meta.external_id = externalId;
+
+      const notices = [
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      ] as PrivacyNoticeWithPreference[];
+      const preferences = notices.map(
+        (n) =>
+          new SaveConsentPreference(
+            n,
+            n.current_preference ?? UserConsentPreference.OPT_OUT,
+            `pri_notice-history-mock-${n.notice_key}`,
+          ),
+      );
+      const updatedCookie = await updateCookieFromNoticePreferences(
+        cookie,
+        preferences,
+      );
+      expect(updatedCookie.identity.external_id).toEqual(externalId);
+      expect(updatedCookie.fides_meta.external_id).toEqual(externalId);
+    });
+
+    it("syncs external_id from identity to fides_meta when updating cookie", async () => {
+      const externalId = "test-external-id-456";
+      const cookie = makeFidesCookie();
+      cookie.identity.external_id = externalId;
+      // fides_meta doesn't have external_id yet
+
+      const notices = [
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      ] as PrivacyNoticeWithPreference[];
+      const preferences = notices.map(
+        (n) =>
+          new SaveConsentPreference(
+            n,
+            n.current_preference ?? UserConsentPreference.OPT_OUT,
+            `pri_notice-history-mock-${n.notice_key}`,
+          ),
+      );
+      const updatedCookie = await updateCookieFromNoticePreferences(
+        cookie,
+        preferences,
+      );
+      expect(updatedCookie.identity.external_id).toEqual(externalId);
+      expect(updatedCookie.fides_meta.external_id).toEqual(externalId);
+    });
+  });
+
+  describe("external_id handling", () => {
+    describe("getOrMakeFidesCookie", () => {
+      beforeEach(() => {
+        mockGetCookie.mockReturnValue(undefined);
+      });
+
+      it("includes external_id in identity and fides_meta when fidesExternalId is provided", () => {
+        const externalId = "customer-user-id-123";
+        const cookie = getOrMakeFidesCookie(undefined, {
+          fidesExternalId: externalId,
+        });
+        expect(cookie.identity.external_id).toEqual(externalId);
+        expect(cookie.fides_meta.external_id).toEqual(externalId);
+      });
+
+      it("restores external_id from fides_meta when loading existing cookie", () => {
+        const externalId = "saved-external-id-456";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: { fides_user_device_id: MOCK_UUID },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+            external_id: externalId,
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        const cookie = getOrMakeFidesCookie();
+        expect(cookie.identity.external_id).toEqual(externalId);
+        expect(cookie.fides_meta.external_id).toEqual(externalId);
+      });
+
+      it("updates external_id when fidesExternalId is provided and cookie exists", () => {
+        const oldExternalId = "old-external-id";
+        const newExternalId = "new-external-id";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: { fides_user_device_id: MOCK_UUID },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+            external_id: oldExternalId,
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        const cookie = getOrMakeFidesCookie(undefined, {
+          fidesExternalId: newExternalId,
+        });
+        expect(cookie.identity.external_id).toEqual(newExternalId);
+        expect(cookie.fides_meta.external_id).toEqual(newExternalId);
+      });
+    });
   });
 });
