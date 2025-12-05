@@ -10,9 +10,11 @@ import {
   TreeResourceChangeIndicator,
 } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
+import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 export type MonitorResource =
   | DatastoreStagedResource
+  | Page_DatastoreStagedResourceAPIResponse_["items"][number]
   | Database
   | Schema
   | Table
@@ -50,5 +52,5 @@ export type TreeNodeAction = {
   label: string;
   /** TODO: should be generically typed * */
   callback: (key: Key, node: CustomTreeDataNode) => void;
-  disabled?: (node: CustomTreeDataNode) => Promise<boolean>;
+  disabled: (node: CustomTreeDataNode) => boolean;
 };

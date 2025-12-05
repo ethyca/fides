@@ -10,7 +10,6 @@ import {
   Icons,
   SparkleIcon,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -76,7 +75,8 @@ export const ResourceDetailsDrawer = ({
                       {
                         key: "system",
                         label: "System",
-                        children: resource.system_key,
+                        children:
+                          "system_key" in resource && resource.system_key,
                       },
                       {
                         key: "path",
@@ -146,14 +146,7 @@ export const ResourceDetailsDrawer = ({
                           <List.Item>
                             <List.Item.Meta
                               avatar={
-                                <Avatar
-                                  /* Ant only provides style prop for altering the background color */
-                                  style={{
-                                    backgroundColor:
-                                      palette?.FIDESUI_BG_DEFAULT,
-                                  }}
-                                  icon={<SparkleIcon color="black" />}
-                                />
+                                <Avatar icon={<SparkleIcon color="black" />} />
                               }
                               title={
                                 <Flex align="center" gap="middle">

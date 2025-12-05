@@ -1,8 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntProgress as Progress,
-  AntText as Text,
-} from "fidesui";
+import { AntProgress as Progress, AntText as Text } from "fidesui";
 
 import { SEVERITY_PERCENT, SEVERITY_PROPS, SEVERITY_STYLE } from "./constants";
 import type {
@@ -25,18 +21,17 @@ export const SeverityGauge = ({
     medium: "Medium",
     high: "High",
   },
-  flexProps,
-  textProps,
-  progressProps,
+  ...props
 }: SeverityGaugeProps) => (
-  <Flex gap="small" align="center" {...flexProps}>
-    <Progress
-      {...SEVERITY_PROPS}
-      {...statusDynamicProps(severity)}
-      {...progressProps}
-    />
-    <Text size="sm" type="secondary" className="font-normal" {...textProps}>
-      {labels[severity]}
-    </Text>
-  </Flex>
+  <Progress
+    {...SEVERITY_PROPS}
+    {...statusDynamicProps(severity)}
+    // eslint-disable-next-line react/no-unstable-nested-components
+    format={() => (
+      <Text size="sm" type="secondary" className="font-normal">
+        {labels[severity]}
+      </Text>
+    )}
+    {...props}
+  />
 );
