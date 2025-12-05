@@ -137,7 +137,7 @@ const ActionCenterFields: NextPage = () => {
   );
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
-    detailsQuery: { node: resource },
+    detailsQuery: { data: resource },
     nodes: resourceNodes,
   } = useNormalizedResources(
     {
