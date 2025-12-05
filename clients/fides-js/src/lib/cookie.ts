@@ -7,6 +7,7 @@ import {
   Cookies as CookiesType,
   FidesCookie,
   FidesInitOptions,
+  FidesJSIdentity,
   LegacyConsentConfig,
   NoticeConsent,
   PrivacyExperience,
@@ -89,12 +90,16 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
+export const makeFidesCookie = (
+  defaultConsent?: NoticeConsent,
+  defaultIdentity?: Partial<FidesJSIdentity>,
+): FidesCookie => {
   const now = new Date();
   return {
-    consent: consent || {},
+    consent: defaultConsent || {},
     identity: {
       fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
+      ...defaultIdentity,
     },
     fides_meta: {
       version: "0.9.0",
@@ -156,77 +161,80 @@ export const getOrMakeFidesCookie = (
     >
   > = {},
 ): FidesCookie => {
-  // Create a default cookie and set the configured consent defaults
-  let cookie: FidesCookie = makeFidesCookie(defaults);
+  // Build default identity with external_id if provided
+  const defaultIdentity: Partial<FidesJSIdentity> = fidesExternalId
+    ? { external_id: fidesExternalId }
+    : {};
+
+  // Create a default cookie with consent defaults and identity defaults
+  const defaultCookie = makeFidesCookie(defaults, defaultIdentity);
 
   if (typeof document === "undefined") {
-    // SSR: return default cookie with external_id applied
-  } else if (fidesClearCookie) {
+    return defaultCookie;
+  }
+
+  if (fidesClearCookie) {
     document.cookie = `${getConsentCookieName(fidesCookieSuffix)}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT`;
-    // Return default cookie with external_id applied
-  } else {
-    // Check for an existing cookie for this device
-    let parsedCookie: FidesCookie | undefined =
-      getFidesConsentCookie(fidesCookieSuffix);
-
-    // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
-    if (parsedCookie?.consent) {
-      const { consent } = parsedCookie;
-      Object.entries(consent).forEach(([key, value]) => {
-        consent[key] = processExternalConsentValue(value);
-      });
-    }
-
-    if (parsedCookie) {
-      try {
-        // Check format of parsed cookie; if it's structured like we
-        // expect, cast it directly. Otherwise, assume it's a previous version of
-        // the cookie, which was strictly the consent key/value preferences
-        if (!("consent" in parsedCookie && "fides_meta" in parsedCookie)) {
-          // Missing the expected format, so we parse it as strictly consent
-          // preferences and "wrap" it with the default cookie style
-          parsedCookie = {
-            ...cookie,
-            consent: parsedCookie,
-          };
-        }
-
-        // Re-apply the default consent values to the parsed cookie; they may have
-        // changed, so new defaults should be added. However, ensure that any
-        // existing user preferences override those defaults!
-        const updatedConsent: NoticeConsent = {
-          ...defaults,
-          ...parsedCookie.consent,
-        };
-        parsedCookie.consent = updatedConsent;
-        cookie = parsedCookie;
-
-        // since fidesDebugger is synchronous, we stringify to accurately read the cookie obj
-        fidesDebugger(
-          `Applied existing consent to data from existing Fides consent cookie.`,
-          JSON.stringify(cookie),
-        );
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(`Unable to read consent cookie: invalid JSON.`, err);
-        // Fall back to default cookie on error
-        cookie = makeFidesCookie(defaults);
-      }
-    } else {
-      fidesDebugger(
-        `No existing Fides consent cookie found, returning defaults.`,
-      );
-      // Use default cookie
-    }
+    return defaultCookie;
   }
 
-  // Apply external_id if provided (takes precedence over any existing value)
-  // This is done once at the end, regardless of which path was taken
-  if (fidesExternalId) {
-    cookie.identity.external_id = fidesExternalId;
+  // Check for an existing cookie for this device
+  let parsedCookie: FidesCookie | undefined =
+    getFidesConsentCookie(fidesCookieSuffix);
+
+  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+  if (parsedCookie?.consent) {
+    const { consent } = parsedCookie;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
   }
 
-  return cookie;
+  if (!parsedCookie) {
+    fidesDebugger(
+      `No existing Fides consent cookie found, returning defaults.`,
+    );
+    return defaultCookie;
+  }
+
+  try {
+    // Check format of parsed cookie; if it's structured like we
+    // expect, cast it directly. Otherwise, assume it's a previous version of
+    // the cookie, which was strictly the consent key/value preferences
+    if (!("consent" in parsedCookie && "fides_meta" in parsedCookie)) {
+      // Missing the expected format, so we parse it as strictly consent
+      // preferences and "wrap" it with the default cookie style
+      parsedCookie = {
+        ...defaultCookie,
+        consent: parsedCookie,
+      };
+    }
+
+    // Re-apply the default consent values to the parsed cookie; they may have
+    // changed, so new defaults should be added. However, ensure that any
+    // existing user preferences override those defaults!
+    const updatedConsent: NoticeConsent = {
+      ...defaults,
+      ...parsedCookie.consent,
+    };
+    parsedCookie.consent = updatedConsent;
+
+    // Apply external_id if provided (takes precedence over any existing value)
+    if (fidesExternalId) {
+      parsedCookie.identity.external_id = fidesExternalId;
+    }
+
+    // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
+    fidesDebugger(
+      `Applied existing consent to data from existing Fides consent cookie.`,
+      JSON.stringify(parsedCookie),
+    );
+    return parsedCookie;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`Unable to read consent cookie: invalid JSON.`, err);
+    return defaultCookie;
+  }
 };
 
 /**
