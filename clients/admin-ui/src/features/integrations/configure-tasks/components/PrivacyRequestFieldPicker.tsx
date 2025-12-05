@@ -75,7 +75,6 @@ export const PrivacyRequestFieldPicker = ({
       loading={isLoading}
       allowClear
       showSearch
-      style={{ width: "100%" }}
       data-testid="privacy-request-field-select"
     />
   );
