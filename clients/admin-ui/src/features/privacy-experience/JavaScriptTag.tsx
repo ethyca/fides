@@ -1,6 +1,9 @@
 import {
   AntButton as Button,
   Code,
+  FormControl,
+  FormLabel,
+  Input,
   Link,
   Modal,
   ModalBody,
@@ -11,72 +14,35 @@ import {
   Text,
   useDisclosure,
 } from "fidesui";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
-import { useFeatures } from "~/features/common/features";
 import { CopyIcon } from "~/features/common/Icon";
-import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
-
-const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
-const FIDES_JS_SCRIPT_TEMPLATE = `<script>
-!(function () {
-    // Recommended: Fides override settings
-    window.fides_overrides = {
-      fides_consent_non_applicable_flag_mode: "include",
-      fides_consent_flag_type: "boolean",
-    };
-
-    // Optional: Initialize integrations like Google Tag Manager or BlueConic
-    addEventListener("FidesInitialized", function () {
-      // Fides.gtm();
-      // Fides.blueconic();
-    });
-
-    // Recommended: wrapper script that allows for dynamic switching of geolocation by adding query params to the window URL
-    // query param prefix is "fides_"
-    // eg, "fides_geolocation=US-CA"
-    var fidesPrefix = "fides_";
-    var searchParams = new URLSearchParams(location.search);
-    var fidesSearchParams = new URLSearchParams();
-    searchParams.forEach(function (value, key) {
-      if (key.startsWith(fidesPrefix)) {
-        fidesSearchParams.set(
-          key.replace(fidesPrefix, ""),
-          key === fidesPrefix + "cache_bust" ? Date.now().toString() : value,
-        );
-      }
-    });
-
-    // Required: core Fides JS script
-    var src = "https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?" + fidesSearchParams.toString();
-    var script = document.createElement("script");
-    script.setAttribute("src", src);
-    document.head.appendChild(script);
-  })();
-</script>`;
+import {
+  FIDES_JS_SCRIPT_TEMPLATE,
+  PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+} from "./fidesJsScriptTemplate";
 
 const JavaScriptTag = () => {
   const modal = useDisclosure();
   const initialRef = useRef(null);
-  const { fidesCloud: isFidesCloud } = useFeatures();
-
-  const { data: fidesCloudConfig, isSuccess } = useGetFidesCloudConfigQuery(
-    undefined,
-    {
-      skip: !isFidesCloud,
-    },
-  );
+  const [privacyCenterHostname, setPrivacyCenterHostname] = useState("");
 
   const fidesJsScriptTag = useMemo(
-    () =>
-      isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
-        ? FIDES_JS_SCRIPT_TEMPLATE.replace(
-            PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-            fidesCloudConfig.privacy_center_url,
-          )
-        : FIDES_JS_SCRIPT_TEMPLATE,
-    [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess],
+    () => {
+      let script = FIDES_JS_SCRIPT_TEMPLATE;
+      // Remove the property_id query parameter for this component
+      // The template literal has already interpolated PROPERTY_UNIQUE_ID_TEMPLATE to {property-unique-id}
+      script = script.replaceAll("?property_id={property-unique-id}", "?");
+      if (privacyCenterHostname) {
+        script = script.replaceAll(
+          PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+          privacyCenterHostname,
+        );
+      }
+      return script;
+    },
+    [privacyCenterHostname],
   );
 
   return (
@@ -108,10 +74,19 @@ const JavaScriptTag = () => {
             <Stack spacing={3}>
               <Text>
                 Copy the code below and paste it onto every page of your
-                website, as high up in the &lt;head&gt; as possible. Replace the
-                bracketed component with your privacy center&apos;s hostname and
-                path.
+                website, as high up in the &lt;head&gt; as possible. Enter your
+                privacy center&apos;s hostname and path below to generate the
+                complete script.
               </Text>
+              <FormControl>
+                <FormLabel>Privacy Center Hostname</FormLabel>
+                <Input
+                  value={privacyCenterHostname}
+                  onChange={(e) => setPrivacyCenterHostname(e.target.value)}
+                  placeholder="example.com/privacy-center"
+                  data-testid="privacy-center-hostname-input"
+                />
+              </FormControl>
               <Code
                 display="flex"
                 justifyContent="space-between"
