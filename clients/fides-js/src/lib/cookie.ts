@@ -82,7 +82,7 @@ const userDeviceId = generateFidesUserDeviceId();
  * Generate a default identity object with a device ID.
  * The device ID is always required and will be generated if not provided.
  */
-const makeDefaultIdentity = (
+export const makeDefaultIdentity = (
   providedIdentity?: Partial<FidesJSIdentity>,
 ): FidesJSIdentity => {
   return {

@@ -18,6 +18,7 @@ import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
+  makeDefaultIdentity,
   makeFidesCookie,
   removeCookiesFromBrowser,
   saveFidesCookie,
@@ -867,6 +868,51 @@ describe("cookies", () => {
         });
         expect(cookie.identity.external_id).toEqual(newExternalId);
       });
+    });
+  });
+
+  describe("makeDefaultIdentity", () => {
+    it("returns an identity with generated device ID when called without args", () => {
+      const identity = makeDefaultIdentity();
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(typeof identity.fides_user_device_id).toBe("string");
+      expect(identity.fides_user_device_id.length).toBeGreaterThan(0);
+    });
+
+    it("returns an identity with generated device ID when called with empty object", () => {
+      const identity = makeDefaultIdentity({});
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(typeof identity.fides_user_device_id).toBe("string");
+      expect(identity.fides_user_device_id.length).toBeGreaterThan(0);
+    });
+
+    it("returns the provided device ID when called with identity containing device ID", () => {
+      const providedDeviceId = "custom-device-id-123";
+      const identity = makeDefaultIdentity({
+        fides_user_device_id: providedDeviceId,
+      });
+      expect(identity.fides_user_device_id).toEqual(providedDeviceId);
+    });
+
+    it("allows providing an external_id along with device ID", () => {
+      const providedDeviceId = "custom-device-id-456";
+      const externalId = "external-id-789";
+      const identity = makeDefaultIdentity({
+        fides_user_device_id: providedDeviceId,
+        external_id: externalId,
+      });
+      expect(identity.fides_user_device_id).toEqual(providedDeviceId);
+      expect(identity.external_id).toEqual(externalId);
+    });
+
+    it("allows providing only external_id, generates device ID", () => {
+      const externalId = "external-id-only";
+      const identity = makeDefaultIdentity({
+        external_id: externalId,
+      });
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(typeof identity.fides_user_device_id).toBe("string");
+      expect(identity.external_id).toEqual(externalId);
     });
   });
 });
