@@ -1,14 +1,21 @@
 import {
+  AntButton as Button,
   AntColumnsType as ColumnsType,
+  AntEmpty as Empty,
+  AntFlex as Flex,
   AntTag as Tag,
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui";
-import { useMemo } from "react";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TagExpandableCell } from "~/features/common/table/cells";
+import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { FRAMEWORK_MAP } from "~/features/privacy-notices/constants";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
@@ -22,6 +29,38 @@ import {
   PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
+
+const EmptyTableNoticeV2 = () => {
+  const router = useRouter();
+
+  return (
+    <Empty
+      image={Empty.PRESENTED_IMAGE_SIMPLE}
+      description={
+        <Flex vertical gap="small">
+          <div>No privacy notices found.</div>
+          <div>
+            <Button
+              onClick={() => router.push(`${PRIVACY_NOTICES_ROUTE}/new`)}
+              type="primary"
+              size="small"
+              data-testid="add-privacy-notice-btn"
+            >
+              Add a privacy notice +
+            </Button>
+          </div>
+        </Flex>
+      }
+    />
+  );
+};
+
+// we have to alias this because Ant Table automatically sets the "expandable"
+// prop on table rows if the data type has a "children" property
+interface PrivacyNoticeRowType
+  extends Omit<LimitedPrivacyNoticeResponseSchema, "children"> {
+  noticeChildren?: LimitedPrivacyNoticeResponseSchema["children"];
+}
 
 const usePrivacyNoticesTable = () => {
   const userCanUpdate = useHasPermission([
@@ -43,33 +82,55 @@ const usePrivacyNoticesTable = () => {
     size: pageSize,
   });
 
+  const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
+
   const items = useMemo(() => data?.items ?? [], [data?.items]);
+  const dataSource: PrivacyNoticeRowType[] = useMemo(
+    () =>
+      items.map((item) => {
+        const { children, ...rest } = item;
+        return {
+          ...rest,
+          noticeChildren: children,
+        };
+      }),
+    [items],
+  );
+
   const totalRows = data?.total ?? 0;
 
-  // Ant Table integration
   const antTableConfig = useMemo(
     () => ({
-      dataSource: items,
+      dataSource,
       totalRows,
       isLoading,
       isFetching,
-      getRowKey: (record: LimitedPrivacyNoticeResponseSchema) => record.id,
+      getRowKey: (record: PrivacyNoticeRowType) => record.id,
+      customTableProps: {
+        locale: {
+          emptyText: <EmptyTableNoticeV2 />,
+        },
+      },
     }),
-    [items, totalRows, isLoading, isFetching],
+    [totalRows, isLoading, isFetching, dataSource],
   );
 
   const { tableProps } = useAntTable(tableState, antTableConfig);
 
-  // Columns definition (memoized)
-  const columns: ColumnsType<LimitedPrivacyNoticeResponseSchema> = useMemo(
+  const columns: ColumnsType<PrivacyNoticeRowType> = useMemo(
     () =>
       [
         {
           title: "Title",
           dataIndex: "name",
           key: "name",
-          render: (name: string) => (
-            <span data-testid="notice-name">{name}</span>
+          render: (_: boolean, record: PrivacyNoticeRowType) => (
+            <LinkCell
+              href={`${PRIVACY_NOTICES_ROUTE}/${record.id}`}
+              data-testid="notice-name"
+            >
+              {record.name}
+            </LinkCell>
           ),
         },
         {
@@ -93,14 +154,32 @@ const usePrivacyNoticesTable = () => {
                   key: location,
                 };
               }) ?? [];
-            return <TagExpandableCell values={values} />;
+            return (
+              <TagExpandableCell
+                values={values}
+                columnState={{
+                  isExpanded: isLocationsExpanded,
+                }}
+              />
+            );
+          },
+          menu: {
+            items: expandCollapseAllMenuItems,
+            onClick: (e) => {
+              e.domEvent.stopPropagation();
+              if (e.key === "expand-all") {
+                setIsLocationsExpanded(true);
+              } else if (e.key === "collapse-all") {
+                setIsLocationsExpanded(false);
+              }
+            },
           },
         },
         {
           title: "Status",
           dataIndex: "disabled",
           key: "status",
-          render: (_: boolean, record: LimitedPrivacyNoticeResponseSchema) => (
+          render: (_: boolean, record: PrivacyNoticeRowType) => (
             <StatusCell record={record} />
           ),
         },
@@ -117,8 +196,8 @@ const usePrivacyNoticesTable = () => {
         },
         {
           title: "Children",
-          dataIndex: "children",
-          key: "children",
+          dataIndex: "noticeChildren",
+          key: "noticeChildren",
           render: (noticeChildren?: LimitedPrivacyNoticeResponseSchema[]) => (
             <NoticeChildrenCell value={noticeChildren} />
           ),
@@ -129,18 +208,17 @@ const usePrivacyNoticesTable = () => {
                 title: "Enable",
                 dataIndex: "disabled",
                 key: "enable",
-                render: (
-                  _: boolean,
-                  record: LimitedPrivacyNoticeResponseSchema,
-                ) => <NoticeEnableCell record={record} />,
+                render: (_: boolean, record: PrivacyNoticeRowType) => (
+                  <NoticeEnableCell record={record} />
+                ),
                 onCell: () => ({
                   onClick: (e: React.MouseEvent) => e.stopPropagation(),
                 }),
               },
             ]
           : []),
-      ] as ColumnsType<LimitedPrivacyNoticeResponseSchema>,
-    [userCanUpdate],
+      ] as ColumnsType<PrivacyNoticeRowType>,
+    [userCanUpdate, isLocationsExpanded],
   );
 
   return {

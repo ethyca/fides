@@ -3,8 +3,7 @@ import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import { PrivacyNoticesTable } from "~/features/privacy-notices/PrivacyNoticesTable";
-import { PrivacyNoticesTableV2 } from "~/features/privacy-notices/table/PrivacyNoticesTableV2";
+import { PrivacyNoticesTable } from "~/features/privacy-notices/table/PrivacyNoticesTableV2";
 
 const PrivacyNoticesPage = () => (
   <FixedLayout title="Privacy notices">
@@ -16,8 +15,7 @@ const PrivacyNoticesPage = () => (
       </Text>
     </PageHeader>
     <Box data-testid="privacy-notices-page">
-      <PrivacyNoticesTableV2 />
-      {/* <PrivacyNoticesTable /> */}
+      <PrivacyNoticesTable />
     </Box>
   </FixedLayout>
 );
