@@ -1,8 +1,11 @@
 import { Center, Flex, Spinner } from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
+import {
+  LegacyAllowedTypes,
+  LegacyResourceTypes,
+} from "~/features/common/custom-fields/types";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import { AllowedTypes, ResourceTypes } from "~/types/api";
 
 import { ControlledSelect } from "../form/ControlledSelect";
 import { CustomTextInput } from "../form/inputs";
@@ -10,7 +13,7 @@ import { useCustomFields } from "./hooks";
 
 type CustomFieldsListProps = {
   resourceFidesKey?: string;
-  resourceType: ResourceTypes;
+  resourceType: LegacyResourceTypes;
 };
 
 export const CustomFieldsList = ({
@@ -54,7 +57,8 @@ export const CustomFieldsList = ({
                   const name = `customFieldValues.${customFieldDefinition.id}`;
                   if (
                     !customFieldDefinition.allow_list_id &&
-                    customFieldDefinition.field_type === AllowedTypes.STRING
+                    customFieldDefinition.field_type ===
+                      LegacyAllowedTypes.STRING
                   ) {
                     return (
                       <Field key={definitionId} name={name}>
@@ -87,7 +91,8 @@ export const CustomFieldsList = ({
                       name={name}
                       allowClear
                       mode={
-                        customFieldDefinition.field_type !== AllowedTypes.STRING
+                        customFieldDefinition.field_type !==
+                        LegacyAllowedTypes.STRING
                           ? "multiple"
                           : undefined
                       }

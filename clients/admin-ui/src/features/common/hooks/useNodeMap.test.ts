@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
+import _ from "lodash";
 
-import useNodeMap, { mapNodes, Node, NodeMap } from "./useNodeMap";
+import useNodeMap, { mapNodes, mergeNodes, Node, NodeMap } from "./useNodeMap";
 
 describe("Normalized Data Hook", () => {
   it("returns empty array when no data provided", () => {
@@ -12,14 +13,13 @@ describe("Normalized Data Hook", () => {
   it("adds new data nodes to state when updated", () => {
     const INITIAL_DATA = [{ key: 1, title: "first" }];
     const NEXT_DATA = [{ key: 2, title: "second" }];
-    const { result } = renderHook((props) => useNodeMap(props), {
-      initialProps: mapNodes(INITIAL_DATA),
-    });
-    const { nodes, update } = result.current;
+    const { result } = renderHook(() => useNodeMap());
 
-    expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
+    act(() => result.current.update(mapNodes(INITIAL_DATA)));
 
-    act(() => update(mapNodes(NEXT_DATA)));
+    expect([...result.current.nodes.values()]).toStrictEqual(INITIAL_DATA);
+
+    act(() => result.current.update(mapNodes(NEXT_DATA)));
 
     expect([...result.current.nodes.values()]).toStrictEqual([
       ...INITIAL_DATA,
@@ -36,14 +36,13 @@ describe("Normalized Data Hook", () => {
       { key: 1, title: "changed" },
       { key: 3, title: "third" },
     ];
-    const { result } = renderHook((props) => useNodeMap(props), {
-      initialProps: mapNodes(INITIAL_DATA),
-    });
-    const { nodes, update } = result.current;
+    const { result } = renderHook(() => useNodeMap());
 
-    expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
+    act(() => result.current.update(mapNodes(INITIAL_DATA)));
 
-    act(() => update(mapNodes(NEXT_DATA)));
+    expect([...result.current.nodes.values()]).toStrictEqual(INITIAL_DATA);
+
+    act(() => result.current.update(mapNodes(NEXT_DATA)));
 
     expect([...result.current.nodes.values()]).toStrictEqual([
       { key: 1, title: "changed" },
@@ -58,54 +57,30 @@ describe("Normalized Data Hook", () => {
       subtitle?: string;
       list?: string[];
     }>;
-    const INITIAL_DATA: TestNode[] = [
+    const INITIAL_DATA: NodeMap<TestNode> = mapNodes([
       { key: 1, title: "first", list: [] },
       { key: 2, title: "second", list: ["a", "b"] },
-    ];
+      { key: 3, title: "third", list: ["a", "b", "c"] },
+    ]);
     const NEXT_DATA = mapNodes([
-      { key: 1, subtitle: "changed", list: ["a", "b"] },
+      { key: 1, subtitle: "changed", list: ["a", "b", "c"] },
+      { key: 3, list: ["a", "c"] },
     ]);
-    const { result } = renderHook((props) => useNodeMap(props), {
-      initialProps: mapNodes(INITIAL_DATA),
-    });
-    const { nodes, update } = result.current;
 
-    expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
-
-    act(() => update(NEXT_DATA));
-
-    expect([...result.current.nodes.values()]).toStrictEqual([
-      { key: 1, title: "first", subtitle: "changed", list: ["a", "b"] },
-      { key: 2, title: "second", list: ["a", "b"] },
-    ]);
-  });
-
-  it("partially updates an existing node via update function", () => {
-    type TestNode = Node<{
-      title?: string;
-      subtitle?: string;
-      list?: string[];
-    }>;
-    const INITIAL_DATA: TestNode[] = [
-      { key: 1, title: "first", list: [] },
-      { key: 2, title: "second", list: ["a", "b"] },
-    ];
-    const NEXT_DATA = mapNodes([
-      { key: 1, subtitle: "changed", list: ["a", "b"] },
-    ]);
     const { result } = renderHook(() => useNodeMap());
 
-    const { update } = result.current;
+    act(() => result.current.update(INITIAL_DATA));
 
-    act(() => update(mapNodes(INITIAL_DATA)));
-
-    expect([...result.current.nodes.values()]).toStrictEqual(INITIAL_DATA);
+    expect([...result.current.nodes.values()]).toStrictEqual([
+      ...INITIAL_DATA.values(),
+    ]);
 
     act(() => result.current.update(NEXT_DATA));
 
     expect([...result.current.nodes.values()]).toStrictEqual([
-      { key: 1, title: "first", subtitle: "changed", list: ["a", "b"] },
+      { key: 1, subtitle: "changed", list: ["a", "b", "c"] },
       { key: 2, title: "second", list: ["a", "b"] },
+      { key: 3, list: ["a", "c"] },
     ]);
   });
 
@@ -116,14 +91,13 @@ describe("Normalized Data Hook", () => {
       { key: 2, title: "second" },
     ];
     const NEXT_DATA = mapNodes([{ key: 1, subtitle: "changed" }]);
-    const { result } = renderHook((props) => useNodeMap(props, false), {
-      initialProps: mapNodes(INITIAL_DATA),
-    });
-    const { nodes, update } = result.current;
+    const { result } = renderHook(() => useNodeMap(false));
 
-    expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
+    act(() => result.current.update(mapNodes(INITIAL_DATA)));
 
-    act(() => update(NEXT_DATA));
+    expect([...result.current.nodes.values()]).toStrictEqual(INITIAL_DATA);
+
+    act(() => result.current.update(NEXT_DATA));
 
     expect([...result.current.nodes.values()]).toStrictEqual([
       { key: 1, subtitle: "changed" },
@@ -139,9 +113,7 @@ describe("Normalized Data Hook", () => {
     ]);
     const NEXT_DATA = mapNodes([{ key: 1, subtitle: undefined }]);
 
-    const { result } = renderHook((props) => useNodeMap(props), {
-      initialProps: INITIAL_DATA,
-    });
+    const { result } = renderHook(() => useNodeMap());
     const { nodes, update } = result.current;
 
     expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
@@ -159,15 +131,60 @@ describe("Normalized Data Hook", () => {
       { key: 1, title: "first" },
       { key: 2, title: "second" },
     ];
-    const { result } = renderHook((props) => useNodeMap(props), {
-      initialProps: mapNodes(INITIAL_DATA),
-    });
-    const { nodes, reset } = result.current;
+    const { result } = renderHook(() => useNodeMap());
 
-    expect([...nodes.values()]).toStrictEqual(INITIAL_DATA);
+    act(() => result.current.update(mapNodes(INITIAL_DATA)));
 
-    act(() => reset());
+    expect([...result.current.nodes.values()]).toStrictEqual(INITIAL_DATA);
+
+    act(() => result.current.reset());
 
     expect([...result.current.nodes.values()]).toStrictEqual([]);
+  });
+});
+
+describe("mergeNodes", () => {
+  it("should recursively merge data", () => {
+    const INITIAL_DATA = mapNodes([
+      { key: 1, title: "first" },
+      { key: 2, subtitle: "exists" },
+    ]);
+
+    const NEXT_DATA = mapNodes([
+      { key: 1, subtitle: "changed" },
+      { key: 3, title: "third" },
+    ]);
+
+    const mergedNodes = mergeNodes(INITIAL_DATA, NEXT_DATA);
+
+    expect([...mergedNodes.values()]).toStrictEqual([
+      { key: 1, title: "first", subtitle: "changed" },
+      { key: 2, subtitle: "exists" },
+      { key: 3, title: "third" },
+    ]);
+  });
+
+  it("should not mutate data references", () => {
+    const INITIAL_DATA = mapNodes([
+      { key: 1, title: "first" },
+      { key: 2, title: "second" },
+    ]);
+    const INITIAL_DATA_CLONE = _.cloneDeep(INITIAL_DATA);
+
+    const NEXT_DATA = mapNodes([
+      { key: 1, title: "changed" },
+      { key: 3, title: "third" },
+    ]);
+    const NEXT_DATA_CLONE = _.cloneDeep(NEXT_DATA);
+
+    /* Check values are cloned correctly */
+    expect(INITIAL_DATA).toStrictEqual(INITIAL_DATA_CLONE);
+    expect(NEXT_DATA).toStrictEqual(NEXT_DATA_CLONE);
+
+    mergeNodes(INITIAL_DATA, NEXT_DATA);
+
+    /* re-check that the cloned values match */
+    expect(INITIAL_DATA).toStrictEqual(INITIAL_DATA_CLONE);
+    expect(NEXT_DATA).toStrictEqual(NEXT_DATA_CLONE);
   });
 });

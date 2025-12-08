@@ -2,8 +2,9 @@ import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import React, { Fragment } from "react";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
-import { PrivacyDeclaration, ResourceTypes } from "~/types/api";
+import { PrivacyDeclaration } from "~/types/api";
 
 import SystemCustomFieldGroup from "./fields/SystemCustomFieldGroup";
 import SystemDataSwitch from "./fields/SystemDataSwitch";
@@ -161,7 +162,7 @@ const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
             </SystemDataGroup>
             <SystemCustomFieldGroup
               customFields={initialValues.custom_fields}
-              resourceType={ResourceTypes.SYSTEM}
+              resourceType={LegacyResourceTypes.SYSTEM}
             />
             {/* Data uses */}
             {initialValues.privacy_declarations &&
@@ -253,7 +254,7 @@ const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
                       customFields={
                         initialValues.privacy_declarations[0].custom_fields
                       }
-                      resourceType={ResourceTypes.PRIVACY_DECLARATION}
+                      resourceType={LegacyResourceTypes.PRIVACY_DECLARATION}
                     />
                   </Fragment>
                 ),

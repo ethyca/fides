@@ -1,54 +1,56 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntColumnsType as ColumnsType,
+  AntEmpty as Empty,
   AntFlex as Flex,
+  AntTable as Table,
   AntTooltip as Tooltip,
-  Spacer,
-  Text,
+  AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import { InfoCell } from "~/features/common/table/cells";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
 import {
-  FidesTableV2,
-  TableActionBar,
-  TableSkeletonLoader,
-} from "~/features/common/table/v2";
-import {
-  RangeEntry,
-  TCFRestrictionType,
-  TCFVendorRestriction,
-} from "~/types/api";
-
+  RESTRICTION_TYPE_LABELS,
+  VENDOR_RESTRICTION_LABELS,
+} from "./constants";
+import { PublisherRestrictionActionCell } from "./PublisherRestrictionActionCell";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useGetPublisherRestrictionsQuery } from "./tcf-config.slice";
 import { PurposeRestriction } from "./types";
-import { usePurposeRestrictionTableColumns } from "./usePurposeRestrictionTableColumns";
 
-const EmptyTableNotice = ({ onAdd }: { onAdd: () => void }) => (
-  <Flex
-    vertical
-    align="center"
-    className="mt-6 w-full gap-3 self-center whitespace-normal py-10"
+const { Text, Title } = Typography;
+
+interface EmptyTableNoticeProps {
+  onAdd: () => void;
+}
+
+const EmptyTableNotice = ({ onAdd }: EmptyTableNoticeProps) => (
+  <Empty
+    image={Empty.PRESENTED_IMAGE_SIMPLE}
+    description={
+      <Flex vertical align="center" gap="small">
+        <Title level={5}>Add a restriction</Title>
+        <Text className="max-w-lg" type="secondary">
+          No restrictions have been added. By default, all vendors follow their
+          declared legal basis unless a restriction is applied&mdash;add a
+          restriction to override this behavior.
+        </Text>
+      </Flex>
+    }
     data-testid="empty-table-notice"
   >
-    <Text fontSize="md" fontWeight="semibold">
-      Add a restriction
-    </Text>
-    <Text fontSize="sm" className="max-w-[70%]">
-      No restrictions have been added. By default, all vendors follow their
-      declared legal basis unless a restriction is applied&mdash;add a
-      restriction to override this behavior.
-    </Text>
     <Button type="primary" onClick={onAdd}>
       Add +
     </Button>
-  </Flex>
+  </Empty>
 );
 
 export const PurposeRestrictionsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const columns = usePurposeRestrictionTableColumns();
   const router = useRouter();
 
   const purposeId = router.query.purpose_id
@@ -66,20 +68,22 @@ export const PurposeRestrictionsTable = () => {
       { skip: !configurationId || !purposeId },
     );
 
-  const transformedData: PurposeRestriction[] = (
-    restrictionsData?.items || []
-  ).map((item) => ({
-    id: item.id,
-    restriction_type: item.restriction_type,
-    vendor_restriction: item.vendor_restriction,
-    vendor_ids:
-      item.range_entries?.map((range: RangeEntry) =>
-        range.end_vendor_id
-          ? `${range.start_vendor_id}-${range.end_vendor_id}`
-          : range.start_vendor_id.toString(),
-      ) || [],
-    purpose_id: item.purpose_id,
-  }));
+  const transformedData: PurposeRestriction[] = useMemo(
+    () =>
+      (restrictionsData?.items ?? []).map((item) => ({
+        id: item.id,
+        restriction_type: item.restriction_type,
+        vendor_restriction: item.vendor_restriction,
+        vendor_ids:
+          item.range_entries?.map((range) =>
+            range.end_vendor_id
+              ? `${range.start_vendor_id}-${range.end_vendor_id}`
+              : range.start_vendor_id.toString(),
+          ) ?? [],
+        purpose_id: item.purpose_id,
+      })),
+    [restrictionsData?.items],
+  );
 
   const hasRestrictAllVendors = transformedData.some(
     (item) =>
@@ -90,13 +94,46 @@ export const PurposeRestrictionsTable = () => {
     transformedData.some((item) => item.restriction_type === type),
   );
 
-  const table = useReactTable<PurposeRestriction>({
-    getCoreRowModel: getCoreRowModel(),
-    columns,
-    data: transformedData,
-    columnResizeMode: "onChange",
-    manualPagination: true,
-  });
+  const columns: ColumnsType<PurposeRestriction> = useMemo(
+    () => [
+      {
+        title: "Restriction type",
+        key: "restriction_type",
+        dataIndex: "restriction_type",
+        render: (value: TCFRestrictionType) => RESTRICTION_TYPE_LABELS[value],
+      },
+      {
+        title: "Vendor restriction",
+        key: "vendor_restriction",
+        dataIndex: "vendor_restriction",
+        render: (value: TCFVendorRestriction) =>
+          VENDOR_RESTRICTION_LABELS[value],
+      },
+      {
+        title: (
+          <InfoCell
+            value="Vendors"
+            tooltip="Specify which vendors the restriction applies to. You can apply restrictions to all vendors, specific vendors by their IDs, or allow only certain vendors while restricting the rest."
+          />
+        ),
+        key: "vendor_ids",
+        dataIndex: "vendor_ids",
+        render: (value: string[]) => value.join(", ") || "All vendors",
+      },
+      {
+        title: "Actions",
+        key: "actions",
+        width: 154,
+        render: (_, record) => (
+          <PublisherRestrictionActionCell
+            currentValues={record}
+            existingRestrictions={transformedData}
+          />
+        ),
+      },
+    ],
+    [transformedData],
+  );
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -107,9 +144,8 @@ export const PurposeRestrictionsTable = () => {
   };
 
   return (
-    <Flex vertical className="overflow-auto">
-      <TableActionBar>
-        <Spacer />
+    <Flex vertical gap="middle">
+      <Flex justify="flex-end">
         <Tooltip
           title={
             // eslint-disable-next-line no-nested-ternary
@@ -129,15 +165,20 @@ export const PurposeRestrictionsTable = () => {
             Add restriction +
           </Button>
         </Tooltip>
-      </TableActionBar>
-      {isFetching ? (
-        <TableSkeletonLoader rowHeight={36} numRows={3} />
-      ) : (
-        <FidesTableV2
-          tableInstance={table}
-          emptyTableNotice={<EmptyTableNotice onAdd={handleOpenModal} />}
-        />
-      )}
+      </Flex>
+      <Table
+        dataSource={transformedData}
+        columns={columns}
+        rowKey="id"
+        pagination={false}
+        size="small"
+        bordered
+        loading={isFetching}
+        locale={{
+          emptyText: <EmptyTableNotice onAdd={handleOpenModal} />,
+        }}
+        data-testid="purpose-restrictions-table"
+      />
       <PurposeRestrictionFormModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
