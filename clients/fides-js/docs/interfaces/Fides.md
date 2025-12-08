@@ -297,6 +297,100 @@ With options to include non-applicable notices and use consent mechanism strings
 
 ***
 
+### aep()
+
+> **aep**: (`options`?) => `object`
+
+Enable the Adobe Experience Platform (AEP) integration. This should be called
+immediately after FidesJS is included. Once enabled, FidesJS will automatically
+sync consent to both Adobe Web SDK (Alloy) and Adobe ECID Opt-In Service (AppMeasurement)
+based on the user's consent preferences.
+
+The integration supports custom mappings for both Adobe Web SDK purposes and
+legacy ECID Opt-In categories. If no custom mappings are provided, default
+mappings are used that work for common use cases.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | \{ `purposeMapping`: `Record`\<`string`, `string`[]\>; `ecidMapping`: `Record`\<`string`, `string`[]\>; \} | Optional configuration for the Adobe Experience Platform integration |
+| `options.purposeMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe Web SDK purposes. Default mapping includes: analytics → ['collect', 'measure'], functional → ['personalize'], advertising → ['share', 'personalize'] |
+| `options.ecidMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe ECID Opt-In categories. Default mapping includes: analytics → ['aa'], functional → ['target'], advertising → ['aam'] |
+
+#### Returns
+
+`object`
+
+| Name | Type |
+| ------ | ------ |
+| `consent` | () => `object` |
+
+#### Examples
+
+Basic usage with default mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.aep()</script>
+</head>
+```
+
+With custom Adobe Web SDK purpose mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      }
+    });
+  </script>
+</head>
+```
+
+With custom ECID Opt-In category mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      ecidMapping: {
+        analytics: ['aa', 'mediaaa'],
+        functional: ['target'],
+        advertising: ['aam', 'adcloud']
+      }
+    });
+  </script>
+</head>
+```
+
+With both custom mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    const aep = Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      },
+      ecidMapping: {
+        analytics: ['aa'],
+        marketing: ['target', 'aam']
+      }
+    });
+
+    // Check current Adobe consent state
+    console.log(aep.consent());
+  </script>
+</head>
+```
+
+***
+
 ### gcm()
 
 > **gcm**: (`options`?) => `object`
