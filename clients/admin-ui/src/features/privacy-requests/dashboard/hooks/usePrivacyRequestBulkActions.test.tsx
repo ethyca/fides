@@ -79,7 +79,6 @@ describe("usePrivacyRequestBulkActions", () => {
       usePrivacyRequestBulkActions({
         requests: mockRequests,
         selectedIds: ["1", "3"],
-        modalApi: mockModalApi,
       }),
     );
 
@@ -117,7 +116,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -160,7 +158,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -205,7 +202,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -239,7 +235,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -274,7 +269,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -298,7 +292,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 
