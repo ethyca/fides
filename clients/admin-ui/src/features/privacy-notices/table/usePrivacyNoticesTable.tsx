@@ -23,6 +23,7 @@ import MechanismCell from "~/features/privacy-notices/table/cells/MechanismCell"
 import NoticeChildrenCell from "~/features/privacy-notices/table/cells/NoticeChildrenCell";
 import NoticeEnableCell from "~/features/privacy-notices/table/cells/NoticeEnableCell";
 import StatusCell from "~/features/privacy-notices/table/cells/StatusCell";
+import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
 import {
   ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
@@ -54,13 +55,6 @@ const EmptyTableNotice = () => {
     />
   );
 };
-
-// we have to alias this because Ant Table automatically sets the "expandable"
-// prop on table rows if the data type has a "children" property
-export interface PrivacyNoticeRowType
-  extends Omit<LimitedPrivacyNoticeResponseSchema, "children"> {
-  noticeChildren?: LimitedPrivacyNoticeResponseSchema["children"];
-}
 
 const usePrivacyNoticesTable = () => {
   const userCanUpdate = useHasPermission([

@@ -4,7 +4,7 @@ import {
   CUSTOM_TAG_COLOR,
 } from "fidesui";
 
-import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/usePrivacyNoticesTable";
+import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
 
 enum TagNames {
   AVAILABLE = "available",

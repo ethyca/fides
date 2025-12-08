@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
-import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/usePrivacyNoticesTable";
+import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
 
 const MODAL_COPY = `Are you sure you want to disable this privacy notice? Disabling this
 notice means your users will no longer see this explanation about
