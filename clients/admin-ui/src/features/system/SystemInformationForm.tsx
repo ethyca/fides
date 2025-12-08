@@ -17,6 +17,7 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
@@ -74,7 +75,7 @@ import {
   useGetAllUsersQuery,
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
-import { ResourceTypes, SystemResponse } from "~/types/api";
+import { SystemResponse } from "~/types/api";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -124,7 +125,7 @@ const SystemInformationForm = ({
     }));
   }, [eligibleUsersData]);
   const customFields = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
+    resourceType: LegacyResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
   });
 
@@ -767,7 +768,7 @@ const SystemInformationForm = ({
                   </SystemFormInputGroup>
                   {values.fides_key ? (
                     <CustomFieldsList
-                      resourceType={ResourceTypes.SYSTEM}
+                      resourceType={LegacyResourceTypes.SYSTEM}
                       resourceFidesKey={values.fides_key}
                     />
                   ) : null}

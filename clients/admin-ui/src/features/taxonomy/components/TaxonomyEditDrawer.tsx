@@ -77,7 +77,7 @@ const TaxonomyItemEditDrawer = ({
       return;
     }
 
-    if (customFields.isEnabled && resourceType) {
+    if (customFields.isEnabled) {
       const customFieldValues = customFieldsForm.getFieldsValue();
       await customFields.upsertCustomFields({
         fides_key: taxonomyItem?.fides_key!,
@@ -181,7 +181,7 @@ const TaxonomyItemEditDrawer = ({
             isDisabled={!canUserEditTaxonomy}
           />
         )}
-        {customFields.isEnabled && !customFields.isLoading && resourceType && (
+        {customFields.isEnabled && !customFields.isLoading && (
           <TaxonomyCustomFieldsForm
             form={customFieldsForm}
             formId={CUSTOM_FIELDS_FORM_ID}

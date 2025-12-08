@@ -217,7 +217,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total: tableData.length,
+    total: data?.total,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
       `${range[0]}-${range[1]} of ${totalItems} integrations`,

@@ -106,13 +106,11 @@ class ConditionalDependencyFieldType(Enum):
 class CustomFieldPathPrefix(Enum):
     """Valid path prefixes for custom fields in privacy request conditional dependencies.
 
-    Custom fields are dynamically created based on privacy center configuration and
-    follow these path patterns. Use these prefixes to validate that a custom field
-    path has the correct structure.
+    Custom privacy request fields are dynamically created based on privacy center
+    configuration and are stored on the privacy request itself (not the policy).
     """
 
-    policy_custom_fields = "privacy_request.policy.custom_privacy_request_fields"
-    identity_custom_fields = "privacy_request.identity.custom_identity_fields"
+    custom_privacy_request_fields = "privacy_request.custom_privacy_request_fields"
 
     @classmethod
     def is_valid_custom_field_path(cls, field_path: str) -> bool:
@@ -145,8 +143,7 @@ class CustomFieldPathPrefix(Enum):
 # Union type for all valid field paths
 # Pydantic will validate against enum values for standard fields
 # Custom field paths (dynamically created, validated at runtime) follow the pattern:
-# privacy_request.policy.custom_privacy_request_fields.{field_name}
-# or: privacy_request.identity.custom_identity_fields.{field_name}
+# privacy_request.custom_privacy_request_fields.{field_name}
 ConditionalDependencyFieldPath = Union[
     PrivacyRequestFields,
     PolicyFields,
