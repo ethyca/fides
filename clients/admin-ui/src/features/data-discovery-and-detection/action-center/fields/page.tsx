@@ -17,7 +17,7 @@ import _ from "lodash";
 import { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { Key, useCallback, useEffect, useRef, useState } from "react";
+import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -29,12 +29,9 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import {
-  useGetMonitorConfigQuery,
-  useLazyGetStagedResourceDetailsQuery,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus } from "~/types/api";
-import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
+import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
   ACTION_ALLOWED_STATUSES,
@@ -45,12 +42,10 @@ import {
   FIELD_ACTION_ICON,
   FIELD_ACTION_LABEL,
   LIST_ITEM_ACTIONS,
+  RESOURCE_ACTIONS,
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
-import {
-  useGetMonitorFieldsQuery,
-  useLazyGetAllowedActionsQuery,
-} from "./monitor-fields.slice";
+import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
 import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
@@ -61,11 +56,13 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
-import { extractListItemKeys, useBulkListSelect } from "./useBulkListSelect";
+import { useBulkListSelect } from "./useBulkListSelect";
 import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import { useMonitorFieldsFilters } from "./useFilters";
+import useNormalizedResources from "./useNormalizedResources";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
@@ -88,7 +85,7 @@ const ActionCenterFields: NextPage = () => {
   const search = useSearch();
   const {
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     dataCategory,
     ...restMonitorFieldsFilters
   } = useMonitorFieldsFilters();
@@ -106,38 +103,24 @@ const ActionCenterFields: NextPage = () => {
       diff_status: resourceStatus
         ? resourceStatus.flatMap(intoDiffStatus)
         : undefined,
-      confidence_score: confidenceScore || undefined,
+      confidence_bucket: confidenceBucket || undefined,
       data_category: dataCategory || undefined,
     },
   };
 
-  const {
-    data: fieldsDataResponse,
-    isFetching,
-    refetch,
-  } = useGetMonitorFieldsQuery({
-    ...baseMonitorFilters,
-    query: {
-      ...baseMonitorFilters.query,
-      size: pageSize,
-      page: pageIndex,
-    },
-  });
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
-    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
+    MonitorResource & { key: React.Key }
   >();
   const [setActiveListItemIndex, setSetActiveListItemIndex] = useState<
     ((index: number | null) => void) | null
   >(null);
-  const [stagedResourceDetailsTrigger, stagedResourceDetailsResult] =
-    useLazyGetStagedResourceDetailsQuery();
 
   const [
     allowedActionsTrigger,
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
-  const resource = stagedResourceDetailsResult.data;
+
   const bulkActions = useBulkActions(
     monitorId,
     modalApi,
@@ -153,27 +136,43 @@ const ActionCenterFields: NextPage = () => {
     },
   );
   const {
-    excludedListItems,
+    listQuery: { nodes: listNodes, ...listQueryMeta },
+    detailsQuery: { data: resource },
+    nodes: resourceNodes,
+  } = useNormalizedResources(
+    {
+      ...baseMonitorFilters,
+      query: {
+        ...baseMonitorFilters.query,
+        size: pageSize,
+        page: pageIndex,
+      },
+    },
+    { stagedResourceUrn: detailsUrn },
+  );
+
+  const {
+    excludedKeys,
     listSelectMode,
     resetListSelect,
-    selectedListItems,
-    updateListItems,
+    selectedKeys,
     updateSelectedListItem,
     checkboxProps,
-  } = useBulkListSelect<
-    DatastoreStagedResourceAPIResponse & { itemKey: React.Key }
-  >({ activeListItem, enableKeyboardShortcuts: true });
+  } = useBulkListSelect(Array.from(listNodes.keys()), {
+    activeListItem: activeListItem
+      ? {
+          ...activeListItem,
+          key: activeListItem?.key.toString(),
+        }
+      : undefined,
+    enableKeyboardShortcuts: true,
+  });
 
   const handleNavigate = async (urn: string | undefined) => {
-    if (
-      activeListItem?.urn &&
-      urn &&
-      setActiveListItemIndex &&
-      fieldsDataResponse?.items
-    ) {
+    if (activeListItem?.urn && urn && setActiveListItemIndex) {
       // When navigating via mouse click after using the keyboard,
       // update the active item to match the clicked item
-      const itemIndex = fieldsDataResponse.items.findIndex(
+      const itemIndex = [...listNodes.values()].findIndex(
         (item) => item.urn === urn,
       );
       if (itemIndex !== -1) {
@@ -191,9 +190,7 @@ const ActionCenterFields: NextPage = () => {
           ...baseMonitorFilters.query,
         },
         body: {
-          excluded_resource_urns: extractListItemKeys(excludedListItems).map(
-            (itemKey) => itemKey.toString(),
-          ),
+          excluded_resource_urns: excludedKeys.map((key) => key.toString()),
         },
       });
     }
@@ -210,35 +207,16 @@ const ActionCenterFields: NextPage = () => {
     listSelectMode === "exclusive"
       ? allowedActionsResult?.allowed_actions
       : getAvailableActions(
-          selectedListItems.flatMap(({ diff_status }) =>
-            diff_status ? [diff_status] : [],
-          ),
+          selectedKeys.flatMap((key) => {
+            const node = resourceNodes.get(key);
+            return node?.diff_status ? [node.diff_status] : [];
+          }),
         );
-  const responseCount = fieldsDataResponse?.total ?? 0;
+  const responseCount = listQueryMeta.data?.total ?? 0;
   const selectedListItemCount =
-    listSelectMode === "exclusive" && fieldsDataResponse?.total
-      ? responseCount - excludedListItems.length
-      : selectedListItems.length;
-
-  useEffect(() => {
-    if (fieldsDataResponse) {
-      updateListItems(
-        fieldsDataResponse.items.map(({ urn, ...rest }) => ({
-          itemKey: urn,
-          urn,
-          ...rest,
-        })),
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fieldsDataResponse?.items]);
-
-  useEffect(() => {
-    if (detailsUrn) {
-      stagedResourceDetailsTrigger({ stagedResourceUrn: detailsUrn });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detailsUrn]);
+    listSelectMode === "exclusive" && listQueryMeta.data?.total
+      ? responseCount - excludedKeys.length
+      : selectedKeys.length;
 
   /**
    * @todo: this should be handled on a form/state action level
@@ -249,7 +227,7 @@ const ActionCenterFields: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     resourceStatus,
-    confidenceScore,
+    confidenceBucket,
     selectedNodeKeys,
     search.searchQuery,
     dataCategory,
@@ -262,7 +240,7 @@ const ActionCenterFields: NextPage = () => {
     updateSelectedListItem,
     handleNavigate,
     !!detailsUrn,
-    () => refetch(),
+    () => listQueryMeta.refetch(),
   );
 
   return (
@@ -287,13 +265,32 @@ const ActionCenterFields: NextPage = () => {
         >
           <MonitorTree
             ref={monitorTreeRef}
-            selectedNodeKeys={selectedNodeKeys}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            onClickClassifyButton={() => {
-              fieldActions.classify(
-                selectedNodeKeys.map((key) => key.toString()),
-              );
-            }}
+            nodeActions={
+              new Map(
+                RESOURCE_ACTIONS.map((action) => [
+                  action,
+                  {
+                    label: FIELD_ACTION_LABEL[action],
+                    disabled: (node) => {
+                      /** Logic for this should exist on the BE */
+                      if (
+                        (action === FieldActionType.PROMOTE_REMOVALS &&
+                          node.status ===
+                            TreeResourceChangeIndicator.REMOVAL) ||
+                        (action === FieldActionType.CLASSIFY &&
+                          node.classifyable)
+                      ) {
+                        return false;
+                      }
+
+                      return true;
+                    },
+                    callback: (key) => fieldActions[action]([key], false),
+                  },
+                ]),
+              )
+            }
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
@@ -330,7 +327,7 @@ const ActionCenterFields: NextPage = () => {
               <Flex gap="small">
                 <MonitorFieldFilters
                   resourceStatus={resourceStatus}
-                  confidenceScore={confidenceScore}
+                  confidenceBucket={confidenceBucket}
                   dataCategory={dataCategory}
                   {...restMonitorFieldsFilters}
                   monitorId={monitorId}
@@ -362,16 +359,12 @@ const ActionCenterFields: NextPage = () => {
                           if (listSelectMode === "exclusive") {
                             await bulkActions[actionType](
                               baseMonitorFilters,
-                              excludedListItems.map((k) =>
-                                k.itemKey.toString(),
-                              ),
+                              excludedKeys.map((key) => key.toString()),
                               selectedListItemCount,
                             );
                           } else {
                             await fieldActions[actionType](
-                              selectedListItems.map(({ itemKey }) =>
-                                itemKey.toString(),
-                              ),
+                              selectedKeys.map((key) => key.toString()),
                             );
                           }
 
@@ -380,7 +373,7 @@ const ActionCenterFields: NextPage = () => {
                       })),
                     ],
                   }}
-                  disabled={selectedListItems.length <= 0}
+                  disabled={selectedKeys.length <= 0}
                 >
                   <Button
                     type="primary"
@@ -394,7 +387,7 @@ const ActionCenterFields: NextPage = () => {
                 <Tooltip title="Refresh">
                   <Button
                     icon={<Icons.Renew />}
-                    onClick={() => refetch()}
+                    onClick={() => listQueryMeta.refetch()}
                     aria-label="Refresh"
                   />
                 </Tooltip>
@@ -410,9 +403,9 @@ const ActionCenterFields: NextPage = () => {
               )}
             </Flex>
             <List
-              dataSource={fieldsDataResponse?.items}
+              dataSource={[...listNodes.values()]}
               className="-ml-3 h-full overflow-y-scroll pl-1" // margin and padding to account for active item left bar styling
-              loading={isFetching}
+              loading={listQueryMeta.isFetching}
               enableKeyboardShortcuts
               locale={
                 !search.searchProps.value &&
@@ -461,40 +454,34 @@ const ActionCenterFields: NextPage = () => {
                     }
                   : undefined
               }
-              onActiveItemChange={useCallback(
-                // useCallback prevents infinite re-renders
-                (
-                  item: DatastoreStagedResourceAPIResponse | null,
-                  _activeListItemIndex: number | null,
-                  setActiveIndexFn: (index: number | null) => void,
-                ) => {
-                  // Store the setter function so handleNavigate can use it
-                  setSetActiveListItemIndex(() => setActiveIndexFn);
+              onActiveItemChange={(
+                item,
+                _activeListItemIndex,
+                setActiveIndexFn,
+              ) => {
+                // Store the setter function so handleNavigate can use it
+                setSetActiveListItemIndex(() => setActiveIndexFn);
 
-                  if (item?.urn) {
-                    setActiveListItem({
-                      ...item,
-                      itemKey: item.urn,
-                    });
-                    if (detailsUrn && item.urn !== detailsUrn) {
-                      setDetailsUrn(item.urn);
-                    }
-                  } else {
-                    setActiveListItem(undefined);
+                if (item?.urn) {
+                  setActiveListItem({
+                    ...item,
+                    key: item.urn,
+                  });
+                  if (detailsUrn && item.urn !== detailsUrn) {
+                    setDetailsUrn(item.urn);
                   }
-                },
-                [detailsUrn],
-              )}
+                } else {
+                  setActiveListItem(undefined);
+                }
+              }}
               renderItem={(props) =>
                 renderMonitorFieldListItem({
                   ...props,
-                  selected: extractListItemKeys(selectedListItems).includes(
-                    props.urn,
-                  ),
+                  selected: selectedKeys.includes(props.urn),
                   onSelect: updateSelectedListItem,
                   onNavigate: handleNavigate,
                   onSetDataCategories: (urn, values) =>
-                    fieldActions["assign-categories"]([urn], {
+                    fieldActions["assign-categories"]([urn], true, {
                       user_assigned_data_categories: values,
                     }),
                   dataCategoriesDisabled: props?.diff_status
@@ -537,7 +524,7 @@ const ActionCenterFields: NextPage = () => {
               showSizeChanger={{
                 suffixIcon: <Icons.ChevronDown />,
               }}
-              total={fieldsDataResponse?.total || 0}
+              total={listQueryMeta.data?.total || 0}
               hideOnSinglePage={
                 // if we're on the smallest page size, and there's only one page, hide the pagination
                 paginationProps.pageSize?.toString() ===
@@ -568,7 +555,7 @@ const ActionCenterFields: NextPage = () => {
           : DEFAULT_DRAWER_ACTIONS
         ).map((action) => ({
           label: FIELD_ACTION_LABEL[action],
-          callback: (value) => fieldActions[action]([value]),
+          callback: (key) => fieldActions[action]([key]),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
                 (status) => status === resource.diff_status,
