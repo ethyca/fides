@@ -1,5 +1,6 @@
-import { Box, Flex, Text } from "fidesui";
+import { AntColumnsType as ColumnsType, AntTable as Table } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch } from "~/features/common/form/inputs";
@@ -12,161 +13,121 @@ type FormPurposeOverride = {
   is_legitimate_interest: boolean;
 };
 
-const LegalBasisContainer = ({
-  children,
-  purpose,
-  endCol,
-}: {
-  children: React.ReactNode;
-  purpose: number;
-  endCol?: boolean;
-}) => {
-  const hiddenPurposes = [1, 3, 4, 5, 6];
-
-  return (
-    <Flex
-      flex="1"
-      justifyContent="center"
-      alignItems="center"
-      borderLeft="solid 1px"
-      borderRight={endCol ? "solid 1px" : "unset"}
-      borderColor="gray.200"
-      height="100%"
-      minWidth="36px"
-    >
-      {hiddenPurposes.includes(purpose) ? null : <Box>{children}</Box>}
-    </Flex>
-  );
+type FormPurposeOverrideWithIndex = FormPurposeOverride & {
+  index: number;
 };
 
+const HIDDEN_PURPOSES = [1, 3, 4, 5, 6];
+
+/**
+ * @deprecated
+ */
 const DeprecatedPurposeOverrides = () => {
   const { values, setFieldValue } = useFormikContext<{
     purposeOverrides: FormPurposeOverride[];
   }>();
   const { purposes: purposeMapping } = useAppSelector(selectPurposes);
+
+  const dataSourceWithIndex: FormPurposeOverrideWithIndex[] = useMemo(
+    () =>
+      values.purposeOverrides.map((override, index) => ({
+        ...override,
+        index,
+      })),
+    [values.purposeOverrides],
+  );
+
+  const columns: ColumnsType<FormPurposeOverrideWithIndex> = useMemo(
+    () => [
+      {
+        title: "TCF purpose",
+        key: "purpose",
+        render: (_, record) => (
+          <>
+            Purpose {record.purpose}: {purposeMapping[record.purpose]?.name}
+          </>
+        ),
+      },
+      {
+        title: "Allowed",
+        key: "allowed",
+        width: 100,
+        align: "center",
+        render: (_, record) => (
+          <CustomSwitch
+            name={`purposeOverrides[${record.index}].is_included`}
+            onChange={(checked) => {
+              if (!checked) {
+                setFieldValue(
+                  `purposeOverrides[${record.index}].is_consent`,
+                  false,
+                );
+                setFieldValue(
+                  `purposeOverrides[${record.index}].is_legitimate_interest`,
+                  false,
+                );
+              }
+            }}
+          />
+        ),
+      },
+      {
+        title: "Consent",
+        key: "consent",
+        width: 100,
+        align: "center",
+        render: (_, record) => {
+          if (HIDDEN_PURPOSES.includes(record.purpose)) {
+            return null;
+          }
+          return (
+            <CustomSwitch
+              isDisabled={
+                !values.purposeOverrides[record.index].is_included ||
+                values.purposeOverrides[record.index].is_legitimate_interest
+              }
+              name={`purposeOverrides[${record.index}].is_consent`}
+            />
+          );
+        },
+      },
+      {
+        title: "Legitimate interest",
+        key: "legitimate_interest",
+        width: 150,
+        align: "center",
+        render: (_, record) => {
+          if (HIDDEN_PURPOSES.includes(record.purpose)) {
+            return null;
+          }
+          return (
+            <CustomSwitch
+              isDisabled={
+                !values.purposeOverrides[record.index].is_included ||
+                values.purposeOverrides[record.index].is_consent
+              }
+              name={`purposeOverrides[${record.index}].is_legitimate_interest`}
+            />
+          );
+        },
+      },
+    ],
+    [purposeMapping, values.purposeOverrides, setFieldValue],
+  );
+
   return (
     <FieldArray
       name="purposeOverrides"
       render={() => (
-        <Flex flexDirection="column" minWidth="944px">
-          <Flex
-            width="100%"
-            border="solid 1px"
-            borderColor="gray.200"
-            backgroundColor="gray.50"
-            height="36px"
-          >
-            <Flex
-              width="600px"
-              pl="4"
-              fontSize="xs"
-              fontWeight="medium"
-              lineHeight="4"
-              alignItems="center"
-              borderRight="solid 1px"
-              borderColor="gray.200"
-            >
-              TCF purpose
-            </Flex>
-            <Flex
-              flex="1"
-              alignItems="center"
-              borderRight="solid 1px"
-              borderColor="gray.200"
-              minWidth="36px"
-            >
-              <Text pl="4" fontSize="xs" fontWeight="medium" lineHeight="4">
-                Allowed
-              </Text>
-            </Flex>
-            <Flex
-              flex="1"
-              alignItems="center"
-              borderRight="solid 1px"
-              borderColor="gray.200"
-            >
-              <Text pl="4" fontSize="xs" fontWeight="medium" lineHeight="4">
-                Consent
-              </Text>
-            </Flex>
-            <Flex flex="1" alignItems="center">
-              <Text pl="4" fontSize="xs" fontWeight="medium" lineHeight="4">
-                Legitimate interest
-              </Text>
-            </Flex>
-          </Flex>
-          {values.purposeOverrides.map((po, index) => (
-            <Flex
-              key={po.purpose}
-              width="100%"
-              height="36px"
-              alignItems="center"
-              borderBottom="solid 1px"
-              borderColor="gray.200"
-              backgroundColor="#fff"
-            >
-              <Flex
-                width="600px"
-                borderLeft="solid 1px"
-                borderColor="gray.200"
-                p={0}
-                alignItems="center"
-                height="100%"
-                pl="4"
-                fontSize="xs"
-                fontWeight="normal"
-                lineHeight="4"
-              >
-                Purpose {po.purpose}: {purposeMapping[po.purpose].name}
-              </Flex>
-
-              <Flex
-                flex="1"
-                justifyContent="center"
-                alignItems="center"
-                borderLeft="solid 1px"
-                borderColor="gray.200"
-                height="100%"
-              >
-                <Box>
-                  <CustomSwitch
-                    name={`purposeOverrides[${index}].is_included`}
-                    onChange={(checked) => {
-                      if (!checked) {
-                        setFieldValue(
-                          `purposeOverrides[${index}].is_consent`,
-                          false,
-                        );
-                        setFieldValue(
-                          `purposeOverrides[${index}].is_legitimate_interest`,
-                          false,
-                        );
-                      }
-                    }}
-                  />
-                </Box>
-              </Flex>
-              <LegalBasisContainer purpose={po.purpose}>
-                <CustomSwitch
-                  isDisabled={
-                    !values.purposeOverrides[index].is_included ||
-                    values.purposeOverrides[index].is_legitimate_interest
-                  }
-                  name={`purposeOverrides[${index}].is_consent`}
-                />
-              </LegalBasisContainer>
-              <LegalBasisContainer purpose={po.purpose} endCol>
-                <CustomSwitch
-                  isDisabled={
-                    !values.purposeOverrides[index].is_included ||
-                    values.purposeOverrides[index].is_consent
-                  }
-                  name={`purposeOverrides[${index}].is_legitimate_interest`}
-                />
-              </LegalBasisContainer>
-            </Flex>
-          ))}
-        </Flex>
+        <Table
+          dataSource={dataSourceWithIndex}
+          columns={columns}
+          rowKey="purpose"
+          pagination={false}
+          size="small"
+          bordered
+          data-testid="deprecated-purpose-overrides-table"
+        />
       )}
     />
   );
