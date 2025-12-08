@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-lines, too-many-statements
+# pylint: disable=too-many-lines
 
 import json
 from collections import defaultdict
