@@ -3,7 +3,6 @@ import {
   AntFlex as Flex,
   AntTable as Table,
 } from "fidesui";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
