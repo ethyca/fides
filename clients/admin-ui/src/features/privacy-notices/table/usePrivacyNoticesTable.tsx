@@ -30,7 +30,7 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-const EmptyTableNoticeV2 = () => {
+const EmptyTableNotice = () => {
   const router = useRouter();
 
   return (
@@ -108,7 +108,7 @@ const usePrivacyNoticesTable = () => {
       getRowKey: (record: PrivacyNoticeRowType) => record.id,
       customTableProps: {
         locale: {
-          emptyText: <EmptyTableNoticeV2 />,
+          emptyText: <EmptyTableNotice />,
         },
       },
     }),
