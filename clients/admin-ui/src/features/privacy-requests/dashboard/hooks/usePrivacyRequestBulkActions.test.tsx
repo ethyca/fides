@@ -30,15 +30,6 @@ const mockMessageApi = {
   warning: jest.fn(),
 };
 
-jest.mock("fidesui", () => ({
-  useMessage: jest.fn(() => mockMessageApi),
-  Icons: {
-    Checkmark: () => null,
-    Close: () => null,
-    TrashCan: () => null,
-  },
-}));
-
 const mockModalApi = {
   confirm: jest.fn(),
   info: jest.fn(),
@@ -46,6 +37,16 @@ const mockModalApi = {
   error: jest.fn(),
   warning: jest.fn(),
 } as any;
+
+jest.mock("fidesui", () => ({
+  useMessage: jest.fn(() => mockMessageApi),
+  useAntModal: jest.fn(() => mockModalApi),
+  Icons: {
+    Checkmark: () => null,
+    Close: () => null,
+    TrashCan: () => null,
+  },
+}));
 
 describe("usePrivacyRequestBulkActions", () => {
   // Shared test data
