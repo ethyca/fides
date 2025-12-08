@@ -19,6 +19,7 @@ from typing import (
 import sqlalchemy
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
+from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -117,6 +118,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
+from fides.api.util.enums import ColumnSort
 from fides.api.util.storage_util import StorageJSONEncoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -512,8 +514,30 @@ def get_request_status(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
-    filters: PrivacyRequestFilter = Depends(),
+    request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
+        default=None
+    ),  # type:ignore
+    fuzzy_search_str: Optional[str] = None,
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    location: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    include_custom_privacy_request_fields: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+    include_deleted_requests: Optional[bool] = False,
+    sort_field: str = "created_at",
+    sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """
     **This endpoint is deprecated. Please use `POST /privacy-request/search`,
@@ -524,6 +548,34 @@ def get_request_status(
     To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
+
+    # Build PrivacyRequestFilter from query parameters
+    # Note: identities and custom_privacy_request_fields are only supported in the POST endpoint
+    filters = PrivacyRequestFilter(
+        request_id=request_id,
+        fuzzy_search_str=fuzzy_search_str,
+        identities=None,
+        custom_privacy_request_fields=None,
+        status=status,
+        created_lt=created_lt,
+        created_gt=created_gt,
+        started_lt=started_lt,
+        started_gt=started_gt,
+        completed_lt=completed_lt,
+        completed_gt=completed_gt,
+        errored_lt=errored_lt,
+        errored_gt=errored_gt,
+        external_id=external_id,
+        location=location,
+        action_type=action_type,
+        verbose=verbose,
+        include_identities=include_identities,
+        include_custom_privacy_request_fields=include_custom_privacy_request_fields,
+        include_deleted_requests=include_deleted_requests,
+        download_csv=download_csv,
+        sort_field=sort_field,
+        sort_direction=sort_direction,
+    )
     return _shared_privacy_request_search(
         db=db,
         params=params,
