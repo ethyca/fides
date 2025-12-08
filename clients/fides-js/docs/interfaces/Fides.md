@@ -408,8 +408,6 @@ The integration gracefully handles cases where not all mapped consent keys
 are configured in Fides - it will only process consent for keys that exist
 in both the purposeMapping and the Fides consent object.
 
-See the [Google Consent Mode documentation](https://developers.google.com/tag-platform/security/guides/consent) for more.
-
 #### Parameters
 
 | Parameter | Type | Description |

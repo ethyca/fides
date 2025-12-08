@@ -354,8 +354,6 @@ export interface Fides {
    * are configured in Fides - it will only process consent for keys that exist
    * in both the purposeMapping and the Fides consent object.
    *
-   * See the [Google Consent Mode documentation](https://developers.google.com/tag-platform/security/guides/consent) for more.
-   *
    * @param options - Configuration for the Google Consent Mode integration
    * @param options.purposeMapping - Maps Fides consent keys to Google consent types. Default mapping includes: analytics → analytics_storage, advertising → [ad_storage, ad_personalization, ad_user_data], functional → [functionality_storage, personalization_storage], data_sales_and_sharing → [ad_storage, ad_personalization, ad_user_data], marketing → [ad_storage, ad_personalization, ad_user_data]
    *
