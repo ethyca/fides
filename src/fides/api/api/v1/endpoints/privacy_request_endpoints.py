@@ -173,13 +173,6 @@ from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
 from fides.service.messaging.messaging_service import MessagingService
-from fides.service.privacy_request.privacy_request_csv_download import (
-    privacy_request_csv_download,
-)
-from fides.service.privacy_request.privacy_request_query_utils import (
-    filter_privacy_request_queryset,
-    sort_privacy_request_queryset,
-)
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _process_privacy_request_restart,
@@ -412,6 +405,7 @@ def _shared_privacy_request_search(
     db: Session,
     params: Params,
     filters: PrivacyRequestFilter,
+    privacy_request_service: PrivacyRequestService,
     identity: Optional[str] = None,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """
@@ -426,8 +420,7 @@ def _shared_privacy_request_search(
     validate_filters(filters)
 
     # Use query_without_large_columns to prevent OOM errors when loading many privacy requests
-    query = filter_privacy_request_queryset(
-        db,
+    query = privacy_request_service.filter_privacy_requests(
         PrivacyRequest.query_without_large_columns(db),
         filters=filters,
         identity=identity,
@@ -443,7 +436,7 @@ def _shared_privacy_request_search(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"{filters.sort_field} is not on PrivacyRequest",
         )
-    query = sort_privacy_request_queryset(
+    query = privacy_request_service.sort_privacy_requests(
         query, filters.sort_field, filters.sort_direction
     )
 
@@ -457,7 +450,7 @@ def _shared_privacy_request_search(
         )
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
-        return privacy_request_csv_download(db, query)
+        return privacy_request_service.download_privacy_requests_csv(query)
 
     # Eager load relationships for regular list view to avoid N+1 queries
     if filters.include_identities or filters.include_custom_privacy_request_fields:
@@ -576,10 +569,14 @@ def get_request_status(
         sort_field=sort_field,
         sort_direction=sort_direction,
     )
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
     return _shared_privacy_request_search(
         db=db,
         params=params,
         filters=filters,
+        privacy_request_service=privacy_request_service,
         identity=identity,
     )
 
@@ -610,10 +607,14 @@ def privacy_request_search(
     if privacy_request_filter is None:
         privacy_request_filter = PrivacyRequestFilter()
 
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
     return _shared_privacy_request_search(
         db=db,
         params=params,
         filters=privacy_request_filter,
+        privacy_request_service=privacy_request_service,
     )
 
 
