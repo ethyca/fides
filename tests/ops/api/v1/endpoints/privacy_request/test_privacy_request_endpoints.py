@@ -19,7 +19,6 @@ from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
-    _resolve_request_ids_from_filters,
     validate_manual_input,
 )
 from fides.api.cryptography.schemas.jwt import (
@@ -127,6 +126,9 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from fides.service.privacy_request.privacy_request_query_utils import (
+    resolve_request_ids_from_filters,
+)
 from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
@@ -165,7 +167,7 @@ def stringify_date(log_date: datetime) -> str:
 
 
 class TestResolveRequestIdsFromFilters:
-    """Test the _resolve_request_ids_from_filters helper function"""
+    """Test the resolve_request_ids_from_filters helper function"""
 
     @pytest.mark.parametrize(
         "scenario,selection_data,setup_requests,expected_count,should_raise,error_message",
@@ -244,11 +246,11 @@ class TestResolveRequestIdsFromFilters:
         # Execute and assert
         if should_raise:
             with pytest.raises(HTTPException) as exc_info:
-                _resolve_request_ids_from_filters(db, selection)
+                resolve_request_ids_from_filters(db, selection)
             assert exc_info.value.status_code == HTTP_400_BAD_REQUEST
             assert error_message in str(exc_info.value.detail)
         else:
-            result_ids = _resolve_request_ids_from_filters(db, selection)
+            result_ids = resolve_request_ids_from_filters(db, selection)
             assert len(result_ids) == expected_count
 
             # For explicit request_ids, verify they match
