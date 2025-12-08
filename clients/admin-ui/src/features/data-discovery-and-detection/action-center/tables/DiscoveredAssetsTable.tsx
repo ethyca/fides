@@ -83,12 +83,14 @@ export const DiscoveredAssetsTable = ({
     handleBulkIgnore,
     handleBulkRestore,
     handleAddAll,
+    handleClassifyWithAI,
 
     // Loading states
     anyBulkActionIsLoading,
     isAddingAllResults,
     isBulkUpdatingSystem,
     isBulkAddingDataUses,
+    isClassifyingAssets,
     disableAddAll,
   } = useDiscoveredAssetsTable({
     monitorId,
@@ -186,6 +188,14 @@ export const DiscoveredAssetsTable = ({
                           label: "Ignore",
                           onClick: handleBulkIgnore,
                         },
+                        {
+                          type: "divider" as const,
+                        },
+                        {
+                          key: "classify-ai",
+                          label: "Classify with AI",
+                          onClick: handleClassifyWithAI,
+                        },
                       ]),
                 ],
               }}
@@ -205,6 +215,14 @@ export const DiscoveredAssetsTable = ({
               </Button>
             </Dropdown>
 
+            <Button
+              onClick={handleClassifyWithAI}
+              loading={isClassifyingAssets}
+              disabled={anyBulkActionIsLoading || actionsDisabled}
+              data-testid="classify-ai"
+            >
+              Classify with AI
+            </Button>
             <Tooltip
               title={
                 disableAddAll
