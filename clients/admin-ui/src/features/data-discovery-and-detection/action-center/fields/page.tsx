@@ -11,7 +11,6 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
-  useAntModal,
 } from "fidesui";
 import _ from "lodash";
 import { NextPage } from "next";
@@ -76,7 +75,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const modalApi = useAntModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -124,13 +122,9 @@ const ActionCenterFields: NextPage = () => {
   const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
     await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
   });
-  const fieldActions = useFieldActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },

@@ -47,7 +47,7 @@ export const ModalMethodsCard = () => {
 
   const { openFormModal } = useFormModal<{
     name: string;
-  }>(modalApi as any);
+  }>();
 
   const showInfoModal = () => {
     modalApi.info({
