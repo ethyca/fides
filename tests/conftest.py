@@ -773,7 +773,7 @@ def celery_worker_parameters():
     takes longer to shut down, especially during parallel test runs with pytest-xdist.
     The CI environment can be slow, so we use a generous timeout.
     """
-    return {"shutdown_timeout": 120.0}
+    return {"shutdown_timeout": 180.0}
 
 
 @pytest.fixture(autouse=True, scope="session")

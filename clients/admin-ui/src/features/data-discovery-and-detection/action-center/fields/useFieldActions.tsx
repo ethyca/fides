@@ -68,10 +68,10 @@ export const useFieldActions = (
         field?: Partial<Field>,
       ) => Promise<RTKResult>,
     ) =>
-    async (urns: string[], field?: Partial<Field>) => {
+    async (urns: string[], primitive = true, field?: Partial<Field>) => {
       const key = Date.now();
       const confirmed =
-        urns.length === 1 ||
+        (urns.length === 1 && primitive) ||
         (await modalApi.confirm(
           getActionModalProps(
             FIELD_ACTION_LABEL[actionType],
@@ -111,7 +111,8 @@ export const useFieldActions = (
 
       // Refresh the tree to reflect updated status
       // An indicator may change to empty if there are no child resources that the user is expected to act upon.
-      if (onRefreshTree) {
+      // Note: this does not belong here. Cache invalidation should handle resource refresh
+      if (actionType !== FieldActionType.PROMOTE_REMOVALS && onRefreshTree) {
         await onRefreshTree(urns);
       }
     };
@@ -188,6 +189,10 @@ export const useFieldActions = (
     promote: handleAction(FieldActionType.PROMOTE, handlePromote),
   } satisfies Record<
     FieldActionType,
-    (urns: string[], field?: Partial<Field>) => Promise<void> | void
+    (
+      urns: string[],
+      primitive?: boolean,
+      field?: Partial<Field>,
+    ) => Promise<void> | void
   >;
 };

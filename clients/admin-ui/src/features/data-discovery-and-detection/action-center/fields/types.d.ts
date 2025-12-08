@@ -1,7 +1,7 @@
 import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
 import {
-  ConfidenceScoreRange,
+  ConfidenceBucket,
   Database,
   DatastoreStagedResource,
   Field,
@@ -10,9 +10,11 @@ import {
   TreeResourceChangeIndicator,
 } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
+import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 export type MonitorResource =
   | DatastoreStagedResource
+  | Page_DatastoreStagedResourceAPIResponse_["items"][number]
   | Database
   | Schema
   | Table
@@ -35,7 +37,7 @@ interface MonitorFieldQueryParameters {
   staged_resource_urn?: Array<string>;
   search?: string;
   diff_status?: Array<DiffStatus>;
-  confidence_score?: Array<ConfidenceScoreRange>;
+  confidence_bucket?: Array<ConfidenceBucket>;
   data_category?: Array<string>;
 }
 
@@ -45,3 +47,10 @@ export interface MonitorFieldParameters {
   };
   query: MonitorFieldQueryParameters;
 }
+
+export type TreeNodeAction = {
+  label: string;
+  /** TODO: should be generically typed * */
+  callback: (key: Key, node: CustomTreeDataNode) => void;
+  disabled: (node: CustomTreeDataNode) => boolean;
+};

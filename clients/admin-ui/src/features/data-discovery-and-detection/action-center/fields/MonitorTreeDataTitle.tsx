@@ -1,15 +1,18 @@
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
   AntFlex as Flex,
   AntSkeleton as Skeleton,
   AntText as Text,
+  Icons,
 } from "fidesui";
+import { Key } from "react";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
@@ -40,15 +43,19 @@ const recFindNodeParent = (
   );
 };
 
+export type TreeNodeProps = {
+  node: CustomTreeDataNode;
+  treeData: CustomTreeDataNode[];
+  onLoadMore: (key: string) => void;
+  actions: Map<Key, TreeNodeAction>;
+};
+
 export const MonitorTreeDataTitle = ({
   node,
   treeData,
   onLoadMore,
-}: {
-  node: CustomTreeDataNode;
-  treeData: CustomTreeDataNode[];
-  onLoadMore: (key: string) => void;
-}) => {
+  actions,
+}: TreeNodeProps) => {
   if (!node.title) {
     return null;
   }
@@ -81,10 +88,39 @@ export const MonitorTreeDataTitle = ({
   }
 
   return (
-    <Flex gap={4} align="center" className="inline-flex">
-      <Text ellipsis={{ tooltip: node.title }} className="flex-auto">
+    /** TODO: migrate group class to semantic dom after upgrading ant */
+    <Flex gap={4} align="center" className="group ml-1 flex grow">
+      <Text ellipsis={{ tooltip: node.title }} className="grow">
         {node.title}
       </Text>
+      <Dropdown
+        menu={{
+          items: actions
+            ? [...actions.entries()].map(([key, { disabled, ...rest }]) => ({
+                key,
+                disabled: disabled(node),
+                ...rest,
+              }))
+            : [],
+          onClick: ({ key, domEvent }) => {
+            domEvent.preventDefault();
+            domEvent.stopPropagation();
+            actions.get(key)?.callback(node.key, node);
+          },
+        }}
+        destroyOnHidden
+        className="group mr-1 flex-none"
+      >
+        <Button
+          aria-label="Show More Resource Actions"
+          icon={
+            <Icons.OverflowMenuVertical className="opacity-0 group-hover:opacity-100 group-[.ant-dropdown-open]:opacity-100" />
+          }
+          type="text"
+          size="small"
+          className="self-end"
+        />
+      </Dropdown>
     </Flex>
   );
 };
