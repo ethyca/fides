@@ -568,6 +568,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
+    classifyWebsiteAssets: build.mutation<
+      MonitorActionResponse,
+      { monitor_config_key: string; staged_resource_urns?: string[] }
+    >({
+      query: ({ monitor_config_key, staged_resource_urns }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/classify-assets`,
+        method: "POST",
+        body: staged_resource_urns ? { staged_resource_urns } : {},
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -598,4 +609,5 @@ export const {
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
   usePromoteRemovalStagedResourcesMutation,
+  useClassifyWebsiteAssetsMutation,
 } = actionCenterApi;
