@@ -86,7 +86,6 @@ from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
-    MAX_BULK_FILTER_RESULTS,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
@@ -244,7 +243,7 @@ def _create_bulk_selection_dependency(
 
     return _normalize_bulk_selection
 
-  
+
 def validate_filters(filters: PrivacyRequestFilter) -> None:
     if any([filters.completed_lt, filters.completed_gt]) and any(
         [filters.errored_lt, filters.errored_gt]
@@ -944,7 +943,7 @@ def bulk_restart_privacy_request_from_failure(
     failed: List[Dict[str, Any]] = []
 
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
     batches = privacy_request_service.get_batches_for_bulk_operation(request_ids)
 
     # Fetch all privacy requests in one query to avoid N+1
@@ -1131,7 +1130,7 @@ def approve_privacy_request(
         {"filters": {"status": ["pending"]}, "exclude_ids": ["pri_789"]}
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
 
     return privacy_request_service.approve_privacy_requests(
         request_ids, reviewed_by=client.user_id
@@ -1166,7 +1165,7 @@ def deny_privacy_request(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
 
     return privacy_request_service.deny_privacy_requests(
         request_ids, privacy_requests.reason, user_id=client.user_id
@@ -1201,7 +1200,7 @@ def cancel_privacy_request(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
 
     return privacy_request_service.cancel_privacy_requests(
         request_ids, privacy_requests.reason, user_id=client.user_id
@@ -1736,7 +1735,7 @@ def bulk_finalize_privacy_requests(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
 
     return privacy_request_service.finalize_privacy_requests(
         request_ids, user_id=client.user_id
@@ -1914,6 +1913,9 @@ def bulk_soft_delete_privacy_requests(
     ),
     *,
     db: Session = Depends(deps.get_db),
+    privacy_request_service: PrivacyRequestService = Depends(
+        get_privacy_request_service
+    ),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_DELETE],
@@ -1937,7 +1939,7 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     # Resolve request IDs from either explicit list or filters
-    request_ids = _resolve_request_ids_from_filters(db, privacy_requests)
+    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
     batches = PrivacyRequestService.get_batches_for_bulk_operation(request_ids)
 
     # Process each batch to avoid memory issues with large request lists
