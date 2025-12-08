@@ -2,17 +2,13 @@ import { useState } from "react";
 
 import { EnableCell } from "~/features/common/table/cells/EnableCell";
 import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notices/privacy-notices.slice";
-import { LimitedPrivacyNoticeResponseSchema } from "~/types/api";
+import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/usePrivacyNoticesTable";
 
 const MODAL_COPY = `Are you sure you want to disable this privacy notice? Disabling this
 notice means your users will no longer see this explanation about
 your data uses which is necessary to ensure compliance.`;
 
-const NoticeEnableCell = ({
-  record,
-}: {
-  record: LimitedPrivacyNoticeResponseSchema;
-}) => {
+const NoticeEnableCell = ({ record }: { record: PrivacyNoticeRowType }) => {
   const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
   const [isLoading, setIsLoading] = useState(false);
 

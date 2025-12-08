@@ -4,7 +4,7 @@ import {
   CUSTOM_TAG_COLOR,
 } from "fidesui";
 
-import { LimitedPrivacyNoticeResponseSchema } from "~/types/api";
+import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/usePrivacyNoticesTable";
 
 enum TagNames {
   AVAILABLE = "available",
@@ -36,11 +36,7 @@ const VALUE_TO_TAG_PROPS_MAP: Record<
   },
 };
 
-const StatusCell = ({
-  record,
-}: {
-  record: LimitedPrivacyNoticeResponseSchema;
-}) => {
+const StatusCell = ({ record }: { record: PrivacyNoticeRowType }) => {
   let tagValue: TagNames | undefined;
   const {
     systems_applicable: systemsApplicable,
