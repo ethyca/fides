@@ -43,6 +43,16 @@ const defaultLogLevel = (setting: any): PrivacyCenterSettings["LOG_LEVEL"] => {
   return "info";
 };
 
+const defaultSecurityHeadersMode = (
+  setting: string | undefined,
+): PrivacyCenterSettings["SECURITY_HEADERS_MODE"] => {
+  if (setting === "recommended") {
+    return "recommended";
+  }
+
+  return "none";
+};
+
 const loadEnvironmentVariables = () => {
   // Load environment variables
   const settings: PrivacyCenterSettings = {
@@ -72,6 +82,9 @@ const loadEnvironmentVariables = () => {
       process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
     ),
     LOG_LEVEL: defaultLogLevel(process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL),
+    SECURITY_HEADERS_MODE: defaultSecurityHeadersMode(
+      process.env.FIDES_PRIVACY_CENTER__SECURITY_HEADERS_MODE,
+    ),
     ENABLE_EXTERNAL_TASK_PORTAL:
       process.env.FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL === "true",
 

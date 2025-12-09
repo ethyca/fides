@@ -75,7 +75,8 @@ export const ResourceDetailsDrawer = ({
                       {
                         key: "system",
                         label: "System",
-                        children: resource.system_key,
+                        children:
+                          "system_key" in resource && resource.system_key,
                       },
                       {
                         key: "path",
