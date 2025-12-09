@@ -115,8 +115,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilters, vendorFilters]);
+  }, [statusFilters, vendorFilters, resetPagination]);
 
   const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery(
     {
