@@ -1375,6 +1375,8 @@ dataset:
       data_categories: [system.operations]
     - name: logical_operator
       data_categories: [system.operations]
+    - name: parent_id
+      data_categories: [system.operations]
     - name: sort_order
       data_categories: [system.operations]
     - name: created_at
