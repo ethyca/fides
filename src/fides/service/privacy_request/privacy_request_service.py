@@ -123,7 +123,11 @@ class PrivacyRequestService:
         self,
         privacy_requests: PrivacyRequestBulkSelection,
     ) -> List[str]:
-        """Resolve privacy request IDs from either explicit IDs or filters."""
+        """Resolve privacy request IDs from either explicit IDs or filters.
+
+        Raises:
+            ValueError: If the filter query returns too many results
+        """
         return resolve_request_ids_from_filters(self.db, privacy_requests)
 
     def download_privacy_requests_csv(self, query: Query) -> StreamingResponse:

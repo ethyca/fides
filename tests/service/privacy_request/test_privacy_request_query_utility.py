@@ -7,6 +7,7 @@ import pytest
 
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
+    MAX_BULK_FILTER_RESULTS,
     PrivacyRequestBulkSelection,
     PrivacyRequestFilter,
     PrivacyRequestStatus,
@@ -261,3 +262,37 @@ class TestResolveRequestIdsFromFilters:
 
         # Verify query_without_large_columns was called with db
         mock_privacy_request.query_without_large_columns.assert_called_once_with(db)
+
+    @patch("fides.service.privacy_request.privacy_request_query_utils.PrivacyRequest")
+    @patch(
+        "fides.service.privacy_request.privacy_request_query_utils.filter_privacy_request_queryset"
+    )
+    def test_filters_max_results(
+        self, mock_filter_queryset, mock_privacy_request, db
+    ):
+        """Test that a ValueError is raised when filter results exceed MAX_BULK_FILTER_RESULTS"""
+        # Mock the query chain
+        mock_query = MagicMock()
+        mock_privacy_request.query_without_large_columns.return_value = mock_query
+        mock_filter_queryset.return_value = mock_query
+
+        # Return more results than the maximum allowed
+        too_many_results = [(f"pri_{i}",) for i in range(MAX_BULK_FILTER_RESULTS + 1)]
+        mock_query.with_entities.return_value.all.return_value = too_many_results
+
+        selection = PrivacyRequestBulkSelection(
+            filters=PrivacyRequestFilter(status=PrivacyRequestStatus.pending)
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            resolve_request_ids_from_filters(db, selection)
+
+        assert "exceeds the maximum" in str(exc_info.value)
+        assert str(MAX_BULK_FILTER_RESULTS) in str(exc_info.value)
+
+        # Test that exactly MAX_BULK_FILTER_RESULTS is allowed
+        max_results = [(f"pri_{i}",) for i in range(MAX_BULK_FILTER_RESULTS)]
+        mock_query.with_entities.return_value.all.return_value = max_results
+
+        result = resolve_request_ids_from_filters(db, selection)
+        assert result == [f"pri_{i}" for i in range(MAX_BULK_FILTER_RESULTS)]

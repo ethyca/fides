@@ -14,6 +14,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
+    MAX_BULK_FILTER_RESULTS,
     PrivacyRequestBulkSelection,
     PrivacyRequestFilter,
     PrivacyRequestSource,
@@ -269,10 +270,10 @@ def resolve_request_ids_from_filters(
     Note: Pydantic validation ensures at least one of request_ids or filters is provided.
 
     Returns:
-        List of privacy request IDs to act on
+        List of privacy request IDs to act on (may be empty if no matches found)
 
     Raises:
-        HTTPException: If too many results or no results are returned from filters
+        ValueError: If too many results are returned from filters (exceeds MAX_BULK_FILTER_RESULTS)
     """
     # If explicit request_ids are provided, use them directly
     if privacy_requests.request_ids:
@@ -297,5 +298,11 @@ def resolve_request_ids_from_filters(
     # Only select IDs to avoid loading full objects
     # The service layer will handle batching if needed
     request_ids = [row[0] for row in query.with_entities(PrivacyRequest.id).all()]
+
+    # Enforce the maximum limit for bulk filter results
+    if len(request_ids) > MAX_BULK_FILTER_RESULTS:
+        raise ValueError(
+            f"Filter query returned {len(request_ids)} results, which exceeds the maximum of {MAX_BULK_FILTER_RESULTS}. Please narrow your filters."
+        )
 
     return request_ids

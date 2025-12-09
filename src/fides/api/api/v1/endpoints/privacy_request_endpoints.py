@@ -943,7 +943,10 @@ def bulk_restart_privacy_request_from_failure(
     failed: List[Dict[str, Any]] = []
 
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     batches = privacy_request_service.get_batches_for_bulk_operation(request_ids)
 
     # Fetch all privacy requests in one query to avoid N+1
@@ -1130,7 +1133,10 @@ def approve_privacy_request(
         {"filters": {"status": ["pending"]}, "exclude_ids": ["pri_789"]}
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return privacy_request_service.approve_privacy_requests(
         request_ids, reviewed_by=client.user_id
@@ -1165,7 +1171,10 @@ def deny_privacy_request(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return privacy_request_service.deny_privacy_requests(
         request_ids, privacy_requests.reason, user_id=client.user_id
@@ -1200,7 +1209,10 @@ def cancel_privacy_request(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return privacy_request_service.cancel_privacy_requests(
         request_ids, privacy_requests.reason, user_id=client.user_id
@@ -1735,7 +1747,10 @@ def bulk_finalize_privacy_requests(
     For backwards compatibility, a plain list of request IDs is also accepted.
     """
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return privacy_request_service.finalize_privacy_requests(
         request_ids, user_id=client.user_id
@@ -1939,7 +1954,10 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     # Resolve request IDs from either explicit list or filters
-    request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    try:
+        request_ids = privacy_request_service.resolve_request_ids(privacy_requests)
+    except ValueError as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     batches = PrivacyRequestService.get_batches_for_bulk_operation(request_ids)
 
     # Process each batch to avoid memory issues with large request lists
