@@ -44,7 +44,6 @@ export const ConditionValueSelector = ({
         disabled={disabled}
         data-testid="value-boolean-input"
       >
-        {/* eslint-disable-next-line react/jsx-boolean-value */}
         <Radio value>True</Radio>
         <Radio value={false}>False</Radio>
       </Radio.Group>
