@@ -1,9 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { render, screen } from "@testing-library/react";
-import { Provider } from "react-redux";
-
-import { makeStore } from "~/app/store";
-
+import { render, screen } from "../../../../../../__tests__/utils/test-utils";
 import { PrivacyRequestFieldPicker } from "../PrivacyRequestFieldPicker";
 
 // Mock nuqs before importing utils since it's ESM-only and incompatible with Jest
@@ -67,11 +63,6 @@ const mockUseGetPrivacyRequestFieldsQuery =
 const mockUseGetPrivacyCenterConfigQuery =
   require("~/features/privacy-requests/privacy-requests.slice").useGetPrivacyCenterConfigQuery;
 
-const renderWithProvider = (component: React.ReactElement) => {
-  const store = makeStore();
-  return render(<Provider store={store}>{component}</Provider>);
-};
-
 describe("PrivacyRequestFieldPicker", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -94,7 +85,7 @@ describe("PrivacyRequestFieldPicker", () => {
         data: undefined,
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
@@ -110,7 +101,7 @@ describe("PrivacyRequestFieldPicker", () => {
         data: undefined,
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       expect(
         screen.getByText(
@@ -131,7 +122,7 @@ describe("PrivacyRequestFieldPicker", () => {
         data: undefined,
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       expect(
         screen.getByText("No privacy request fields available."),
@@ -181,7 +172,7 @@ describe("PrivacyRequestFieldPicker", () => {
         data: undefined,
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
@@ -229,7 +220,7 @@ describe("PrivacyRequestFieldPicker", () => {
         },
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
@@ -278,7 +269,7 @@ describe("PrivacyRequestFieldPicker", () => {
         },
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
@@ -315,7 +306,7 @@ describe("PrivacyRequestFieldPicker", () => {
         },
       });
 
-      renderWithProvider(<PrivacyRequestFieldPicker {...defaultProps} />);
+      render(<PrivacyRequestFieldPicker {...defaultProps} />);
 
       const select = screen.getByTestId("privacy-request-field-select");
       expect(select).toBeInTheDocument();
