@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Query, Session, selectinload
+from starlette.responses import StreamingResponse
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -38,7 +39,9 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
+    PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
+    PrivacyRequestFilter,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
     PrivacyRequestSource,
@@ -52,12 +55,21 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
+)
+from fides.service.privacy_request.privacy_request_csv_download import (
+    privacy_request_csv_download,
+)
+from fides.service.privacy_request.privacy_request_query_utils import (
+    filter_privacy_request_queryset,
+    resolve_request_ids_from_filters,
+    sort_privacy_request_queryset,
 )
 
 
@@ -81,6 +93,42 @@ class PrivacyRequestService:
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
+
+    def filter_privacy_requests(
+        self,
+        query: Query,
+        filters: PrivacyRequestFilter,
+        identity: Optional[str] = None,
+        include_consent_webhook_requests: Optional[bool] = False,
+    ) -> Query:
+        """Apply filters to a privacy request query."""
+        return filter_privacy_request_queryset(
+            self.db,
+            query,
+            filters,
+            identity=identity,
+            include_consent_webhook_requests=include_consent_webhook_requests,
+        )
+
+    def sort_privacy_requests(
+        self,
+        query: Query,
+        sort_field: str,
+        sort_direction: ColumnSort,
+    ) -> Query:
+        """Sort a privacy request query by the given field and direction."""
+        return sort_privacy_request_queryset(query, sort_field, sort_direction)
+
+    def resolve_request_ids(
+        self,
+        privacy_requests: PrivacyRequestBulkSelection,
+    ) -> List[str]:
+        """Resolve privacy request IDs from either explicit IDs or filters."""
+        return resolve_request_ids_from_filters(self.db, privacy_requests)
+
+    def download_privacy_requests_csv(self, query: Query) -> StreamingResponse:
+        """Download privacy requests as CSV."""
+        return privacy_request_csv_download(self.db, query)
 
     @classmethod
     def get_batches_for_bulk_operation(cls, request_ids: List[str]) -> List[List[str]]:
