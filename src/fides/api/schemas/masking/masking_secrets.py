@@ -7,6 +7,7 @@ T = TypeVar("T")
 
 from enum import StrEnum
 
+
 class SecretType(StrEnum):
     """Enum that holds all possible types of secrets across all masking strategies"""
 

@@ -15,8 +15,8 @@ from fides.api.db.base_class import Base, FidesBase
 if TYPE_CHECKING:
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
-
 from enum import StrEnum
+
 
 class TCFRestrictionType(StrEnum):
     """Enum for TCF restriction types"""
@@ -27,6 +27,7 @@ class TCFRestrictionType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class TCFVendorRestriction(StrEnum):
     """Enum for TCF vendor restriction types"""

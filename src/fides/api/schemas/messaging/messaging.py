@@ -75,6 +75,7 @@ SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.valu
 
 from enum import StrEnum
 
+
 class MessagingActionType(StrEnum):
     """Enum for messaging action type"""
 

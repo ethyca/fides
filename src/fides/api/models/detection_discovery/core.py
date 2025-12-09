@@ -65,6 +65,7 @@ QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 from enum import StrEnum
 
+
 class StagedResourceType(StrEnum):
     """
     Enum representing the type of staged resource.

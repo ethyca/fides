@@ -2,7 +2,7 @@
 Contains all of the endpoints required to validate credentials.
 """
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Callable, Dict, Union
 
 from fastapi import Response, Security, status
@@ -20,8 +20,6 @@ from fides.connectors.models import (
     OktaConfig,
 )
 
-
-from enum import StrEnum
 
 class ValidationTarget(StrEnum):
     """
@@ -43,6 +41,7 @@ class ValidateRequest(BaseModel):
 
 
 from enum import StrEnum
+
 
 class ValidationStatus(StrEnum):
     """

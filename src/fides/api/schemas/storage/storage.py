@@ -51,6 +51,7 @@ class FileBasedStorageDetails(BaseModel):
 
 from enum import StrEnum
 
+
 class AWSAuthMethod(StrEnum):
     AUTOMATIC = "automatic"
     SECRET_KEYS = "secret_keys"
@@ -68,6 +69,7 @@ class StorageDetailsS3(FileBasedStorageDetails):
 
 
 from enum import StrEnum
+
 
 class GCSAuthMethod(StrEnum):
     ADC = "adc"  # Application Default Credentials

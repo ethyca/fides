@@ -22,8 +22,8 @@ from fides.api.task.conditional_dependencies.schemas import (
 if TYPE_CHECKING:
     from fides.api.models.digest.digest_execution import DigestTaskExecution
 
-
 from enum import StrEnum
+
 
 class DigestType(StrEnum):
     """Types of digests that can be configured."""

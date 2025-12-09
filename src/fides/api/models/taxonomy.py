@@ -34,6 +34,7 @@ MANAGED_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_gr
 
 from enum import StrEnum
 
+
 class TargetType(StrEnum):
     """Enumeration of target types that taxonomies can apply to."""
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Dict, List, Optional
 
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
@@ -10,8 +10,6 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.config.admin_ui_settings import ErrorNotificationMode
 
-
-from enum import StrEnum
 
 class SqlDryRunMode(StrEnum):
     """SQL dry run mode for controlling execution of SQL statements in privacy requests"""

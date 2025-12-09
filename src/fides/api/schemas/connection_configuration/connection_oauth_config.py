@@ -1,12 +1,10 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from fides.api.schemas.base_class import NoValidationSchema
 
-
-from enum import StrEnum
 
 class OAuthGrantType(StrEnum):
     """OAuth2 grant types supported by the system"""

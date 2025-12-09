@@ -52,7 +52,7 @@ def create_csv_from_normalized_dict(data: dict[str, Any]) -> BytesIO:
     string_buffer = StringIO()
 
     # Flatten nested dictionaries with dot notation
-    def flatten_dict(d: dict, parent_key: str = '', sep: str = '.') -> dict:
+    def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
         items = []
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
@@ -99,8 +99,8 @@ def create_attachment_csv(attachments: list[dict[str, Any]]) -> Optional[BytesIO
 
         # Check if the attachment has at least one of the required fields
         if not any(
-                key in a
-                for key in ["file_name", "file_size", "content_type", "download_url"]
+            key in a
+            for key in ["file_name", "file_size", "content_type", "download_url"]
         ):
             continue
 
@@ -121,11 +121,11 @@ def create_attachment_csv(attachments: list[dict[str, Any]]) -> Optional[BytesIO
 
 
 def _write_attachment_csv(
-        zip_file: zipfile.ZipFile,
-        key: str,
-        idx: int,
-        attachments: list[dict[str, Any]],
-        privacy_request_id: str,
+    zip_file: zipfile.ZipFile,
+    key: str,
+    idx: int,
+    attachments: list[dict[str, Any]],
+    privacy_request_id: str,
 ) -> None:
     """Write attachment data to a CSV file in the zip archive.
 
@@ -145,10 +145,10 @@ def _write_attachment_csv(
 
 
 def _write_item_csv(
-        zip_file: zipfile.ZipFile,
-        key: str,
-        items: list[dict[str, Any]],
-        privacy_request_id: str,
+    zip_file: zipfile.ZipFile,
+    key: str,
+    items: list[dict[str, Any]],
+    privacy_request_id: str,
 ) -> None:
     """Write item data to a CSV file in the zip archive.
 
@@ -167,10 +167,10 @@ def _write_item_csv(
 
 
 def _write_simple_csv(
-        zip_file: zipfile.ZipFile,
-        key: str,
-        value: Any,
-        privacy_request_id: str,
+    zip_file: zipfile.ZipFile,
+    key: str,
+    value: Any,
+    privacy_request_id: str,
 ) -> None:
     """Write simple key-value data to a CSV file in the zip archive.
 
@@ -188,7 +188,7 @@ def _write_simple_csv(
 
 
 def write_csv_to_zip(
-        zip_file: zipfile.ZipFile, data: dict[str, Any], privacy_request_id: str
+    zip_file: zipfile.ZipFile, data: dict[str, Any], privacy_request_id: str
 ) -> None:
     """Write data to a zip file in CSV format.
 
@@ -199,9 +199,9 @@ def write_csv_to_zip(
     """
     for key, value in data.items():
         if (
-                isinstance(value, list)
-                and value
-                and all(isinstance(item, dict) for item in value)
+            isinstance(value, list)
+            and value
+            and all(isinstance(item, dict) for item in value)
         ):
             # Handle lists of dictionaries
             items: list[dict[str, Any]] = []

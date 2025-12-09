@@ -1,7 +1,5 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
-
-from enum import StrEnum
 
 class IntegrationFeature(StrEnum):
     """

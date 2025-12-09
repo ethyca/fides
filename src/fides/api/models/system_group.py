@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 from citext import CIText
 from sqlalchemy import ARRAY, Column
@@ -11,8 +11,6 @@ from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
-
-from enum import StrEnum
 
 class CustomTaxonomyColor(StrEnum):
     WHITE = "taxonomy_white"

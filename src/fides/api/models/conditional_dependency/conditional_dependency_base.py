@@ -27,6 +27,7 @@ class ConditionalDependencyError(Exception):
 
 from enum import StrEnum
 
+
 class ConditionalDependencyType(StrEnum):
     """Shared enum for conditional dependency node types.
 

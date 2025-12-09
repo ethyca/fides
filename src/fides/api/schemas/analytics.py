@@ -1,7 +1,5 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
-
-from enum import StrEnum
 
 class Event(StrEnum):
     """Enum to hold analytics event names"""
@@ -11,6 +9,7 @@ class Event(StrEnum):
 
 
 from enum import StrEnum
+
 
 class ExtraData(StrEnum):
     """Enum to hold keys for extra data"""

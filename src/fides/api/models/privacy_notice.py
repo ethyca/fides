@@ -52,7 +52,9 @@ class UserConsentPreference(Enum):
     acknowledge = "acknowledge"  # The user has acknowledged this notice
     tcf = "tcf"  # Overall preference set for TCF where there are numerous preferences under the single notice
 
+
 from enum import StrEnum
+
 
 class ConsentMechanism(StrEnum):
     """

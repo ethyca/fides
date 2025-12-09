@@ -229,15 +229,24 @@ def migrate_current_records(
 
         # Count non-null values for each identity type
         email_count = sum(
-            1 for val in [record.get("encrypted_email"), record.get("hashed_email")]
+            1
+            for val in [record.get("encrypted_email"), record.get("hashed_email")]
             if val is not None
         )
         phone_count = sum(
-            1 for val in [record.get("encrypted_phone"), record.get("hashed_phone_number")]
+            1
+            for val in [
+                record.get("encrypted_phone"),
+                record.get("hashed_phone_number"),
+            ]
             if val is not None
         )
         device_count = sum(
-            1 for val in [record.get("encrypted_device"), record.get("hashed_fides_user_device")]
+            1
+            for val in [
+                record.get("encrypted_device"),
+                record.get("hashed_fides_user_device"),
+            ]
             if val is not None
         )
 
@@ -251,18 +260,22 @@ def migrate_current_records(
 
         # Create paths list of non-null identifiers
         paths = [
-            val for val in [
+            val
+            for val in [
                 record.get("hashed_email"),
                 record.get("hashed_phone_number"),
-                record.get("hashed_fides_user_device")
-            ] if val is not None
+                record.get("hashed_fides_user_device"),
+            ]
+            if val is not None
         ]
 
         record["paths"] = paths
         records.append(record)
 
     if not records:
-        logger.info(f"No valid {migration_type.value} records after filtering. Skipping.")
+        logger.info(
+            f"No valid {migration_type.value} records after filtering. Skipping."
+        )
         return
 
     # Build networkx graph to find connected components
@@ -319,7 +332,9 @@ def migrate_current_records(
             "hashed_fides_user_device": record.get("hashed_fides_user_device"),
             "email": decrypt_extract_encrypt(record.get("encrypted_email")),
             "phone_number": decrypt_extract_encrypt(record.get("encrypted_phone")),
-            "fides_user_device": decrypt_extract_encrypt(record.get("encrypted_device")),
+            "fides_user_device": decrypt_extract_encrypt(
+                record.get("encrypted_device")
+            ),
             "created_at": record["created_at"],
             "updated_at": record["updated_at"],
         }
@@ -344,7 +359,9 @@ def migrate_current_records(
         placeholders = ", ".join([f":{col}" for col in columns])
         columns_str = ", ".join(columns)
 
-        insert_query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
+        insert_query = (
+            f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
+        )
 
         for record in final_records:
             bind.execute(text(insert_query), record)
@@ -377,24 +394,26 @@ def _group_preferences_records(records: List[Dict[str, Any]]) -> List[Dict[str, 
                 # Last one in wins (most recently saved)
                 prefs[notice_history_id] = preference
 
-        preferences_json = json.dumps({
-            "preferences": [
-                {
-                    "privacy_notice_history_id": notice_history,
-                    "preference": preference,
-                }
-                for notice_history, preference in prefs.items()
-            ],
-            "purpose_consent_preferences": [],
-            "purpose_legitimate_interests_preferences": [],
-            "special_purpose_preferences": [],
-            "feature_preferences": [],
-            "special_feature_preferences": [],
-            "vendor_consent_preferences": [],
-            "vendor_legitimate_interests_preferences": [],
-            "system_consent_preferences": [],
-            "system_legitimate_interests_preferences": [],
-        })
+        preferences_json = json.dumps(
+            {
+                "preferences": [
+                    {
+                        "privacy_notice_history_id": notice_history,
+                        "preference": preference,
+                    }
+                    for notice_history, preference in prefs.items()
+                ],
+                "purpose_consent_preferences": [],
+                "purpose_legitimate_interests_preferences": [],
+                "special_purpose_preferences": [],
+                "feature_preferences": [],
+                "special_feature_preferences": [],
+                "vendor_consent_preferences": [],
+                "vendor_legitimate_interests_preferences": [],
+                "system_consent_preferences": [],
+                "system_legitimate_interests_preferences": [],
+            }
+        )
 
         # Get last non-null value for each field
         def get_last_non_null(field_name: str) -> Any:
@@ -404,18 +423,22 @@ def _group_preferences_records(records: List[Dict[str, Any]]) -> List[Dict[str, 
                     return value
             return None
 
-        aggregated.append({
-            "id": get_last_non_null("id"),
-            "hashed_email": get_last_non_null("hashed_email"),
-            "hashed_phone_number": get_last_non_null("hashed_phone_number"),
-            "hashed_fides_user_device": get_last_non_null("hashed_fides_user_device"),
-            "created_at": get_last_non_null("created_at"),
-            "updated_at": get_last_non_null("updated_at"),
-            "encrypted_email": get_last_non_null("encrypted_email"),
-            "encrypted_phone": get_last_non_null("encrypted_phone"),
-            "encrypted_device": get_last_non_null("encrypted_device"),
-            "preferences": preferences_json,
-        })
+        aggregated.append(
+            {
+                "id": get_last_non_null("id"),
+                "hashed_email": get_last_non_null("hashed_email"),
+                "hashed_phone_number": get_last_non_null("hashed_phone_number"),
+                "hashed_fides_user_device": get_last_non_null(
+                    "hashed_fides_user_device"
+                ),
+                "created_at": get_last_non_null("created_at"),
+                "updated_at": get_last_non_null("updated_at"),
+                "encrypted_email": get_last_non_null("encrypted_email"),
+                "encrypted_phone": get_last_non_null("encrypted_phone"),
+                "encrypted_device": get_last_non_null("encrypted_device"),
+                "preferences": preferences_json,
+            }
+        )
 
     return aggregated
 
@@ -444,18 +467,20 @@ def _group_served_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 notice_ids.append(notice_id)
                 seen.add(notice_id)
 
-        served_json = json.dumps({
-            "privacy_notice_history_ids": notice_ids,
-            "tcf_purpose_consents": [],
-            "tcf_purpose_legitimate_interests": [],
-            "tcf_special_purposes": [],
-            "tcf_vendor_consents": [],
-            "tcf_vendor_legitimate_interests": [],
-            "tcf_features": [],
-            "tcf_special_features": [],
-            "tcf_system_consents": [],
-            "tcf_system_legitimate_interests": [],
-        })
+        served_json = json.dumps(
+            {
+                "privacy_notice_history_ids": notice_ids,
+                "tcf_purpose_consents": [],
+                "tcf_purpose_legitimate_interests": [],
+                "tcf_special_purposes": [],
+                "tcf_vendor_consents": [],
+                "tcf_vendor_legitimate_interests": [],
+                "tcf_features": [],
+                "tcf_special_features": [],
+                "tcf_system_consents": [],
+                "tcf_system_legitimate_interests": [],
+            }
+        )
 
         # Get last non-null value for each field
         def get_last_non_null(field_name: str) -> Any:
@@ -465,17 +490,21 @@ def _group_served_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                     return value
             return None
 
-        aggregated.append({
-            "id": get_last_non_null("id"),
-            "hashed_email": get_last_non_null("hashed_email"),
-            "hashed_phone_number": get_last_non_null("hashed_phone_number"),
-            "hashed_fides_user_device": get_last_non_null("hashed_fides_user_device"),
-            "created_at": get_last_non_null("created_at"),
-            "updated_at": get_last_non_null("updated_at"),
-            "encrypted_email": get_last_non_null("encrypted_email"),
-            "encrypted_phone": get_last_non_null("encrypted_phone"),
-            "encrypted_device": get_last_non_null("encrypted_device"),
-            "served": served_json,
-        })
+        aggregated.append(
+            {
+                "id": get_last_non_null("id"),
+                "hashed_email": get_last_non_null("hashed_email"),
+                "hashed_phone_number": get_last_non_null("hashed_phone_number"),
+                "hashed_fides_user_device": get_last_non_null(
+                    "hashed_fides_user_device"
+                ),
+                "created_at": get_last_non_null("created_at"),
+                "updated_at": get_last_non_null("updated_at"),
+                "encrypted_email": get_last_non_null("encrypted_email"),
+                "encrypted_phone": get_last_non_null("encrypted_phone"),
+                "encrypted_device": get_last_non_null("encrypted_device"),
+                "served": served_json,
+            }
+        )
 
     return aggregated

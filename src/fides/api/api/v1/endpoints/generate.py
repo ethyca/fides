@@ -39,6 +39,7 @@ GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 from enum import StrEnum
 
+
 class ValidTargets(StrEnum):
     """
     Validation of targets attempted to generate resources from
@@ -53,6 +54,7 @@ class ValidTargets(StrEnum):
 
 
 from enum import StrEnum
+
 
 class GenerateTypes(StrEnum):
     """

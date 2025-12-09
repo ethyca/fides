@@ -1,12 +1,10 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Dict, Optional, Set
 
 from pydantic import Field
 
 from fides.api.schemas.base_class import FidesSchema
 
-
-from enum import StrEnum
 
 class ReportType(StrEnum):
     """Enum for custom report types."""

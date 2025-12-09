@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 from enum import StrEnum
 
+
 class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
@@ -47,6 +48,7 @@ class ManualTaskExecutionTiming(StrEnum):
 
 from enum import StrEnum
 
+
 class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
@@ -55,6 +57,7 @@ class ManualTaskType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class ManualTaskParentEntityType(StrEnum):
     """Enum for manual task parent entity types."""
@@ -67,6 +70,7 @@ class ManualTaskParentEntityType(StrEnum):
 
 from enum import StrEnum
 
+
 class ManualTaskEntityType(StrEnum):
     """Enum for manual task entity types."""
 
@@ -75,6 +79,7 @@ class ManualTaskEntityType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class ManualTaskReferenceType(StrEnum):
     """Enum for manual task reference types."""
@@ -87,6 +92,7 @@ class ManualTaskReferenceType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class ManualTaskLogStatus(StrEnum):
     """Enum for manual task log status."""
@@ -103,6 +109,7 @@ class ManualTaskLogStatus(StrEnum):
 
 from enum import StrEnum
 
+
 class ManualTaskConfigurationType(StrEnum):
     """Enum for manual task configuration types."""
 
@@ -112,6 +119,7 @@ class ManualTaskConfigurationType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class ManualTaskFieldType(StrEnum):
     """Enum for manual task field types."""
@@ -123,6 +131,7 @@ class ManualTaskFieldType(StrEnum):
 
 
 from enum import StrEnum
+
 
 class StatusType(StrEnum):
     """Enum for manual task status."""

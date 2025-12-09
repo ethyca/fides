@@ -21,6 +21,7 @@ ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 from enum import StrEnum
 
+
 class DBActions(StrEnum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
 
