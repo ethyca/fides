@@ -4,6 +4,7 @@ import {
   AntInput as Input,
   AntRadio as Radio,
   AntSelect as Select,
+  iso31661,
   LocationSelect,
 } from "fidesui";
 import { ChangeEvent } from "react";
@@ -21,7 +22,7 @@ interface ConditionValueSelectorProps {
 
 /**
  * Renders the appropriate input component based on the field type.
- * Handles boolean, date, location, policy, and string field types.
+ * Handles boolean, date, location, location_country, policy, and string field types.
  * This component is designed to work with Ant Design Form.Item.
  */
 export const ConditionValueSelector = ({
@@ -60,8 +61,9 @@ export const ConditionValueSelector = ({
         format="YYYY-MM-DD HH:mm:ss"
         placeholder={disabled ? "Not required" : "Select date and time"}
         disabled={disabled}
-        style={{ width: "100%" }}
+        className="w-full"
         data-testid="value-date-input"
+        aria-label="Select date and time"
       />
     );
   }
@@ -76,6 +78,23 @@ export const ConditionValueSelector = ({
         disabled={disabled}
         data-testid="value-location-input"
         allowClear
+        aria-label="Select a location"
+      />
+    );
+  }
+
+  // Location country input (countries only, no subdivisions)
+  if (fieldType === "location_country") {
+    return (
+      <LocationSelect
+        value={value as string | null}
+        onChange={onChange}
+        placeholder={disabled ? "Not required" : "Select a country"}
+        disabled={disabled}
+        data-testid="value-location-country-input"
+        allowClear
+        aria-label="Select a country"
+        options={{ countries: iso31661, regions: [] }}
       />
     );
   }
@@ -118,6 +137,7 @@ export const ConditionValueSelector = ({
       }
       disabled={disabled}
       data-testid="value-input"
+      aria-label="Enter condition value"
     />
   );
 };

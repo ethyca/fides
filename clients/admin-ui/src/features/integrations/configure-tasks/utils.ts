@@ -5,7 +5,13 @@ import { ConditionLeaf, Operator } from "~/types/api";
 import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
 
 // Field type detection
-export type FieldType = "boolean" | "date" | "location" | "policy" | "string";
+export type FieldType =
+  | "boolean"
+  | "date"
+  | "location"
+  | "location_country"
+  | "policy"
+  | "string";
 
 // Hardcoded list of date fields
 export const DATE_FIELDS = [
@@ -28,6 +34,11 @@ export const getFieldType = (fieldAddress: string): FieldType => {
   // Check location field
   if (fieldAddress === "privacy_request.location") {
     return "location";
+  }
+
+  // Check location_country field (convenience field)
+  if (fieldAddress === "privacy_request.location_country") {
+    return "location_country";
   }
 
   // Check policy ID field
@@ -153,6 +164,7 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.identity.phone_number",
   "privacy_request.identity.external_id",
   "privacy_request.location",
+  "privacy_request.location_country",
   "privacy_request.policy.id",
   "privacy_request.policy.name",
   "privacy_request.policy.key",
@@ -337,6 +349,8 @@ export const getValueTooltip = (
       return "Select a date and time";
     case "location":
       return "Select a location";
+    case "location_country":
+      return "Select a country";
     case "policy":
       return "Select a policy";
     default:
