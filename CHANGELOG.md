@@ -55,6 +55,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Upgraded NextJS and React dependencies in Privacy Center to fix React Server vulnerability [#7061](https://github.com/ethyca/fides/pull/7061)
 
 
+### Developer Experience
+- Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
+
 ## [2.75.1](https://github.com/ethyca/fides/compare/2.75.0..2.75.1)
 
 ### Added

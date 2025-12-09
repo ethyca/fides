@@ -318,7 +318,7 @@ class ConnectionService:
 
     def instantiate_connection(
         self,
-        saas_connector_type: str,
+        connector_template_type: str,
         template_values: SaasConnectionTemplateValues,
         system: Optional[System] = None,
     ) -> Tuple[ConnectionConfig, DatasetConfig]:
@@ -329,11 +329,11 @@ class ConnectionService:
         fields are provided, persists the associated connection config and dataset to the database.
         """
         connector_template: Optional[ConnectorTemplate] = (
-            ConnectorRegistry.get_connector_template(saas_connector_type)
+            ConnectorRegistry.get_connector_template(connector_template_type)
         )
         if not connector_template:
             raise ConnectorTemplateNotFound(
-                f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+                f"SaaS connector type '{connector_template_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
             )
 
         if DatasetConfig.filter(
@@ -366,13 +366,13 @@ class ConnectionService:
         except Exception:
             connection_config.delete(self.db)
             raise Exception(
-                f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time."
+                f"SaaS Connector could not be created from the '{connector_template_type}' template at this time."
             )
 
         logger.info(
             "SaaS Connector and Dataset {} successfully created from '{}' template.",
             template_values.instance_key,
-            saas_connector_type,
+            connector_template_type,
         )
 
         # Create audit events for connection and secrets creation
