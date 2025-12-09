@@ -1,10 +1,8 @@
-# pylint: disable=too-many-branches,too-many-lines, too-many-statements
+# pylint: disable=too-many-lines
 
-import csv
-import io
 import json
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
@@ -28,9 +26,8 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy import cast, column, null, or_, select
+from sqlalchemy import cast, null
 from sqlalchemy.orm import Query, Session, selectinload
-from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -57,7 +54,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -69,11 +66,9 @@ from fides.api.models.pre_approval_webhook import (
 )
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
-    CustomPrivacyRequestField,
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestNotifications,
-    ProvidedIdentity,
     RequestTask,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -92,14 +87,15 @@ from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
-    CancelPrivacyRequests,
+    CancelPrivacyRequestSelection,
     CheckpointActionRequired,
-    DenyPrivacyRequests,
+    DenyPrivacyRequestSelection,
     ExecutionLogDetailResponse,
     FilteredPrivacyRequestResults,
     LogEntry,
     ManualWebhookData,
     PrivacyRequestAccessResults,
+    PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
@@ -109,7 +105,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
-    ReviewPrivacyRequestIds,
     VerificationCode,
 )
 from fides.api.service.deps import get_messaging_service, get_privacy_request_service
@@ -124,9 +119,7 @@ from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
-from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.storage_util import StorageJSONEncoder
-from fides.api.util.text import normalize_location_code
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -198,8 +191,10 @@ def get_privacy_request_or_error(
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
     logger.debug("Finding privacy request with id '{}'", privacy_request_id)
-
-    privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
+    privacy_request = privacy_request_service.get_privacy_request(privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(
@@ -214,6 +209,24 @@ def get_privacy_request_or_error(
         )
 
     return privacy_request
+
+
+def validate_filters(filters: PrivacyRequestFilter) -> None:
+    if any([filters.completed_lt, filters.completed_gt]) and any(
+        [filters.errored_lt, filters.errored_gt]
+    ):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Cannot specify both succeeded and failed query params.",
+        )
+    validate_start_and_end_filters(
+        [
+            (filters.created_lt, filters.created_gt, "created"),
+            (filters.completed_lt, filters.completed_gt, "completed"),
+            (filters.errored_lt, filters.errored_gt, "errored"),
+            (filters.started_lt, filters.started_gt, "started"),
+        ]
+    )
 
 
 @router.post(
@@ -268,147 +281,6 @@ def create_privacy_request_authenticated(
     return privacy_request_service.create_bulk_privacy_requests(
         data, authenticated=True, user_id=client.user_id
     )
-
-
-def privacy_request_csv_download(
-    db: Session, privacy_request_query: Query
-) -> StreamingResponse:
-    """Download privacy requests as CSV for Admin UI"""
-    f = io.StringIO()
-    csv_file = csv.writer(f)
-
-    # Execute query once and convert to list to avoid multiple iterations
-    privacy_requests: List[PrivacyRequest] = privacy_request_query.all()
-    privacy_request_ids: List[str] = [r.id for r in privacy_requests]
-
-    denial_audit_log_query: Query = db.query(AuditLog).filter(
-        AuditLog.action == AuditLogAction.denied,
-        AuditLog.privacy_request_id.in_(privacy_request_ids),
-    )
-    denial_audit_logs: Dict[str, str] = {
-        r.privacy_request_id: r.message for r in denial_audit_log_query
-    }
-
-    identity_columns, custom_field_columns = get_variable_columns(privacy_requests)
-
-    csv_file.writerow(
-        [
-            "Status",
-            "Request Type",
-            "Time Received",
-            "Deadline",
-            "Reviewed By",
-            "Request ID",
-            "Time Approved/Denied",
-            "Denial Reason",
-            "Last Updated",
-            "Completed On",
-        ]
-        + identity_columns
-        + with_prefix("Custom Field", list(custom_field_columns.values()))
-    )
-
-    pr: PrivacyRequest
-    for pr in privacy_requests:
-        denial_reason = (
-            denial_audit_logs[pr.id]
-            if pr.status == PrivacyRequestStatus.denied and pr.id in denial_audit_logs
-            else None
-        )
-
-        action_types: List[str] = []
-        if pr and pr.policy:
-            for rule in pr.policy.rules or []:  # type: ignore
-                action_types.append(rule.action_type)
-
-        deadline: Optional[datetime] = None
-        if pr.days_left and pr.created_at:
-            deadline = pr.created_at + timedelta(days=pr.days_left)
-
-        static_cells = [
-            pr.status.value if pr.status else None,
-            ("+".join(action_types)),
-            pr.created_at,
-            deadline,
-            pr.reviewed_by,
-            pr.id,
-            pr.reviewed_at,
-            denial_reason,
-            pr.updated_at,
-            pr.finalized_at,
-        ]
-
-        identity_cells = extract_identity_cells(identity_columns, pr)
-        custom_field_cells = extract_custom_field_cells(custom_field_columns, pr)
-
-        row = static_cells + identity_cells + custom_field_cells
-
-        csv_file.writerow(row)
-
-    f.seek(0)
-    response = StreamingResponse(f, media_type="text/csv")
-    response.headers["Content-Disposition"] = (
-        f"attachment; filename=privacy_requests_download_{datetime.today().strftime('%Y-%m-%d')}.csv"
-    )
-    return response
-
-
-def get_variable_columns(
-    privacy_requests: List[PrivacyRequest],
-) -> tuple[List[str], Dict[str, str]]:
-    identity_columns: Set[str] = set()
-    custom_field_columns: Dict[str, str] = {}
-
-    for pr in privacy_requests:
-        identity_columns.update(
-            extract_identity_column_names(pr.get_persisted_identity().model_dump())
-        )
-        custom_field_columns.update(
-            extract_custom_field_column_names(
-                pr.get_persisted_custom_privacy_request_fields()
-            )
-        )
-
-    return list(identity_columns), custom_field_columns
-
-
-def extract_identity_column_names(identities: dict[str, Any]) -> Set[str]:
-    """Extract column names from identity data that have non-empty values."""
-    return {key for key, value in identities.items() if value}
-
-
-def extract_custom_field_column_names(custom_fields: dict[str, Any]) -> Dict[str, str]:
-    """Extract column names and labels from custom field data that have non-empty values."""
-    return {
-        key: value["label"]
-        for key, value in custom_fields.items()
-        if value.get("value")
-    }
-
-
-def with_prefix(prefix: str, items: List[str]) -> List[str]:
-    return [f"{prefix} {item}" for item in items]
-
-
-def extract_custom_field_cells(
-    custom_field_columns: Dict[str, str], pr: PrivacyRequest
-) -> List[str]:
-    custom_fields = pr.get_persisted_custom_privacy_request_fields()
-    return [
-        custom_fields.get(custom_field_column, {}).get("value")
-        for custom_field_column in custom_field_columns
-    ]
-
-
-def extract_identity_cells(
-    identity_columns: List[str], pr: PrivacyRequest
-) -> List[str]:
-    identity = pr.get_persisted_identity()
-    identity_dict = identity.model_dump()
-    return [
-        identity_dict.get(identity_column)  # type: ignore
-        for identity_column in identity_columns
-    ]
 
 
 def execution_and_audit_logs_by_dataset_name(
@@ -477,262 +349,6 @@ def execution_and_audit_logs_by_dataset_name(
     return all_logs
 
 
-def _filter_privacy_request_queryset(
-    db: Session,
-    query: Query,
-    request_id: Optional[str] = None,
-    identity: Optional[str] = None,
-    fuzzy_search_str: Optional[str] = None,
-    identities: Optional[Dict[str, Any]] = None,
-    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
-    status: Optional[List[PrivacyRequestStatus]] = None,
-    created_lt: Optional[datetime] = None,
-    created_gt: Optional[datetime] = None,
-    started_lt: Optional[datetime] = None,
-    started_gt: Optional[datetime] = None,
-    completed_lt: Optional[datetime] = None,
-    completed_gt: Optional[datetime] = None,
-    errored_lt: Optional[datetime] = None,
-    errored_gt: Optional[datetime] = None,
-    external_id: Optional[str] = None,
-    location: Optional[str] = None,
-    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
-    include_consent_webhook_requests: Optional[bool] = False,
-    include_deleted_requests: Optional[bool] = False,
-) -> Query:
-    """
-    Utility method to apply filters to our privacy request query.
-
-    Status supports "or" filtering:
-    `status=["approved","pending"]` will be translated into an "or" query.
-
-    The `identities` and `custom_privacy_request_fields` parameters allow
-    searching for privacy requests that match any of the provided identities
-    or custom privacy request fields, respectively. The filtering is performed
-    using an "or" condition, meaning that a privacy request will be included
-    in the results if it matches at least one of the provided identities or
-    custom privacy request fields.
-    """
-
-    if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Cannot specify both succeeded and failed query params.",
-        )
-
-    validate_start_and_end_filters(
-        [
-            (created_lt, created_gt, "created"),
-            (completed_lt, completed_gt, "completed"),
-            (errored_lt, errored_gt, "errored"),
-            (started_lt, started_gt, "started"),
-        ]
-    )
-
-    # Handle fuzzy search string
-    if fuzzy_search_str:
-        if CONFIG.execution.fuzzy_search_enabled:
-            decrypted_identities_automaton = get_decrypted_identities_automaton(db)
-
-            # Set of associated privacy request ids
-            fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
-                x
-                for list in decrypted_identities_automaton.values(fuzzy_search_str)
-                for x in list
-            )
-
-            if not fuzzy_search_identity_privacy_request_ids:
-                query = query.filter(PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"))
-            else:
-                query = query.filter(
-                    or_(
-                        PrivacyRequest.id.in_(
-                            fuzzy_search_identity_privacy_request_ids
-                        ),
-                        PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
-                    )
-                )
-        else:
-            # When fuzzy search is disabled, treat fuzzy_search_str as an
-            # exact match on identity or partial match on privacy request ID
-            identity_hashes = ProvidedIdentity.hash_value_for_search(fuzzy_search_str)
-            identity_set: Set[str] = {
-                identity[0]
-                for identity in ProvidedIdentity.filter(
-                    db=db,
-                    conditions=(
-                        (ProvidedIdentity.hashed_value.in_(identity_hashes))
-                        & (ProvidedIdentity.privacy_request_id.isnot(None))
-                    ),
-                ).values(column("privacy_request_id"))
-            }
-
-            query = query.filter(
-                or_(
-                    PrivacyRequest.id.in_(identity_set),
-                    PrivacyRequest.id.ilike(f"%{fuzzy_search_str}%"),
-                )
-            )
-
-    if identity:
-        identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
-        identity_set: Set[str] = {  # type: ignore[no-redef]
-            identity[0]
-            for identity in ProvidedIdentity.filter(
-                db=db,
-                conditions=(
-                    (ProvidedIdentity.hashed_value.in_(identity_hashes))
-                    & (ProvidedIdentity.privacy_request_id.isnot(None))
-                ),
-            ).values(column("privacy_request_id"))
-        }
-        query = query.filter(PrivacyRequest.id.in_(identity_set))
-
-    if identities:
-        identity_conditions = [
-            (ProvidedIdentity.field_name == field_name)
-            & (
-                ProvidedIdentity.hashed_value.in_(
-                    ProvidedIdentity.hash_value_for_search(value)
-                )
-            )
-            for field_name, value in identities.items()
-        ]
-
-        identities_query = select([ProvidedIdentity.privacy_request_id]).where(
-            or_(*identity_conditions)
-            & (ProvidedIdentity.privacy_request_id.isnot(None))
-        )
-        query = query.filter(PrivacyRequest.id.in_(identities_query))
-
-    if custom_privacy_request_fields:
-        # Note that if Custom Privacy Request Field values were arrays, they are not
-        # indexed for searching and not discoverable here
-        custom_field_conditions = [
-            (CustomPrivacyRequestField.field_name == field_name)
-            & (
-                CustomPrivacyRequestField.hashed_value.in_(
-                    CustomPrivacyRequestField.hash_value_for_search(value)
-                )
-            )
-            for field_name, value in custom_privacy_request_fields.items()
-            if not isinstance(value, list)
-        ]
-
-        custom_fields_query = select(
-            [CustomPrivacyRequestField.privacy_request_id]
-        ).where(
-            or_(*custom_field_conditions)
-            & (CustomPrivacyRequestField.privacy_request_id.isnot(None))
-        )
-        query = query.filter(PrivacyRequest.id.in_(custom_fields_query))
-
-    # Further restrict all PrivacyRequests by additional params
-    if request_id:
-        query = query.filter(PrivacyRequest.id.ilike(f"%{request_id}%"))
-    if external_id:
-        query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
-    if location:
-        # Support filtering by exact location match or country prefix
-        # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.
-        # "US-CA" matches only "US-CA"
-        # Also normalize input to handle underscores and case insensitivity
-
-        try:
-            normalized_location = normalize_location_code(location)
-        except ValueError:
-            # If normalization fails, treat as no results to prevent errors
-            query = query.filter(False)
-        else:
-            if "-" in normalized_location:
-                # Exact match for subdivision codes
-                query = query.filter(PrivacyRequest.location == normalized_location)
-            else:
-                # Country code - match country or any subdivision of that country
-                query = query.filter(
-                    or_(
-                        PrivacyRequest.location == normalized_location,
-                        PrivacyRequest.location.ilike(f"{normalized_location}-%"),
-                    )
-                )
-    if status:
-        query = query.filter(PrivacyRequest.status.in_(status))
-    if created_lt:
-        query = query.filter(PrivacyRequest.created_at < created_lt)
-    if created_gt:
-        query = query.filter(PrivacyRequest.created_at > created_gt)
-    if started_lt:
-        query = query.filter(PrivacyRequest.started_processing_at < started_lt)
-    if started_gt:
-        query = query.filter(PrivacyRequest.started_processing_at > started_gt)
-    if completed_lt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete,
-            PrivacyRequest.finished_processing_at < completed_lt,
-        )
-    if completed_gt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.complete,
-            PrivacyRequest.finished_processing_at > completed_gt,
-        )
-    if errored_lt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error,
-            PrivacyRequest.finished_processing_at < errored_lt,
-        )
-    if errored_gt:
-        query = query.filter(
-            PrivacyRequest.status == PrivacyRequestStatus.error,
-            PrivacyRequest.finished_processing_at > errored_gt,
-        )
-    if action_type:
-        if isinstance(action_type, ActionType):
-            action_type = [action_type]
-        policy_ids_for_action_type = (
-            db.query(Rule)
-            .filter(Rule.action_type.in_(action_type))
-            .with_entities(Rule.policy_id)
-            .distinct()
-        )
-        query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
-
-    if not include_consent_webhook_requests:
-        query = query.filter(
-            or_(
-                PrivacyRequest.source != PrivacyRequestSource.consent_webhook,
-                PrivacyRequest.source.is_(None),
-            )
-        )
-
-    # Filter out test privacy requests
-    query = query.filter(
-        or_(
-            PrivacyRequest.source != PrivacyRequestSource.dataset_test,
-            PrivacyRequest.source.is_(None),
-        )
-    )
-
-    # Filter out deleted requests
-    if not include_deleted_requests:
-        query = query.filter(PrivacyRequest.deleted_at.is_(None))
-
-    return query
-
-
-def _sort_privacy_request_queryset(
-    query: Query, sort_field: str, sort_direction: ColumnSort
-) -> Query:
-    if hasattr(PrivacyRequest, sort_field) is False:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"{sort_field} is not on PrivacyRequest",
-        )
-
-    sort_object_attribute = getattr(PrivacyRequest, sort_field)
-    sort_func = getattr(sort_object_attribute, sort_direction)
-    return query.order_by(nullslast(sort_func()))
-
-
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
     Temporarily update a paused/errored/requires_input privacy request object with instructions from the Redis cache
@@ -788,30 +404,9 @@ def _shared_privacy_request_search(
     *,
     db: Session,
     params: Params,
-    request_id: Optional[str] = None,
+    filters: PrivacyRequestFilter,
+    privacy_request_service: PrivacyRequestService,
     identity: Optional[str] = None,
-    fuzzy_search_str: Optional[str] = None,
-    identities: Optional[Dict[str, str]] = None,
-    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
-    status: Optional[List[PrivacyRequestStatus]] = None,
-    created_lt: Optional[datetime] = None,
-    created_gt: Optional[datetime] = None,
-    started_lt: Optional[datetime] = None,
-    started_gt: Optional[datetime] = None,
-    completed_lt: Optional[datetime] = None,
-    completed_gt: Optional[datetime] = None,
-    errored_lt: Optional[datetime] = None,
-    errored_gt: Optional[datetime] = None,
-    external_id: Optional[str] = None,
-    location: Optional[str] = None,
-    action_type: Optional[Union[ActionType, List[ActionType]]] = None,
-    verbose: Optional[bool] = False,
-    include_identities: Optional[bool] = False,
-    include_custom_privacy_request_fields: Optional[bool] = False,
-    include_deleted_requests: Optional[bool] = False,
-    download_csv: Optional[bool] = False,
-    sort_field: str = "created_at",
-    sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """
     Internal function to handle the logic for retrieving privacy requests.
@@ -822,39 +417,30 @@ def _shared_privacy_request_search(
     """
 
     logger.debug("Finding all request statuses with pagination params {}", params)
+    validate_filters(filters)
 
     # Use query_without_large_columns to prevent OOM errors when loading many privacy requests
-    query = PrivacyRequest.query_without_large_columns(db)
-    query = _filter_privacy_request_queryset(
-        db,
-        query,
-        request_id,
-        identity,
-        fuzzy_search_str,
-        identities,
-        custom_privacy_request_fields,
-        status,
-        created_lt,
-        created_gt,
-        started_lt,
-        started_gt,
-        completed_lt,
-        completed_gt,
-        errored_lt,
-        errored_gt,
-        external_id,
-        location,
-        action_type,
-        None,
-        include_deleted_requests,
+    query = privacy_request_service.filter_privacy_requests(
+        PrivacyRequest.query_without_large_columns(db),
+        filters=filters,
+        identity=identity,
     )
 
     logger.debug(
-        "Sorting requests by field: {} and direction: {}", sort_field, sort_direction
+        "Sorting requests by field: {} and direction: {}",
+        filters.sort_field,
+        filters.sort_direction,
     )
-    query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
+    if hasattr(PrivacyRequest, filters.sort_field) is False:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{filters.sort_field} is not on PrivacyRequest",
+        )
+    query = privacy_request_service.sort_privacy_requests(
+        query, filters.sort_field, filters.sort_direction
+    )
 
-    if download_csv:
+    if filters.download_csv:
         _validate_result_size(query)
         # Eager load relationships needed for CSV export to avoid N+1 queries
         query = query.options(
@@ -864,23 +450,23 @@ def _shared_privacy_request_search(
         )
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
-        return privacy_request_csv_download(db, query)
+        return privacy_request_service.download_privacy_requests_csv(query)
 
     # Eager load relationships for regular list view to avoid N+1 queries
-    if include_identities or include_custom_privacy_request_fields:
+    if filters.include_identities or filters.include_custom_privacy_request_fields:
         eager_load_options = []
-        if include_identities:
+        if filters.include_identities:
             eager_load_options.append(
                 selectinload(PrivacyRequest.provided_identities)  # type: ignore[attr-defined]
             )
-        if include_custom_privacy_request_fields:
+        if filters.include_custom_privacy_request_fields:
             eager_load_options.append(
                 selectinload(PrivacyRequest.custom_fields)  # type: ignore[attr-defined]
             )
         query = query.options(*eager_load_options)
 
     # Conditionally embed execution log details in the response.
-    if verbose:
+    if filters.verbose:
         logger.info("Finding execution and audit log details")
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(
             execution_and_audit_logs_by_dataset_name
@@ -891,12 +477,12 @@ def _shared_privacy_request_search(
     paginated = paginate(query, params)
 
     for item in paginated.items:  # type: ignore
-        if include_identities:
+        if filters.include_identities:
             item.identity = item.get_persisted_identity().labeled_dict(
                 include_default_labels=True
             )
 
-        if include_custom_privacy_request_fields:
+        if filters.include_custom_privacy_request_fields:
             item.custom_privacy_request_fields = (
                 item.get_persisted_custom_privacy_request_fields()
             )
@@ -956,14 +542,10 @@ def get_request_status(
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 
-    # Both the old and new versions of the privacy request search endpoints use this shared function.
-    # The `identities` and `custom_privacy_request_fields` parameters are only supported in the new version
-    # so they are both set to None here.
-    return _shared_privacy_request_search(
-        db=db,
-        params=params,
+    # Build PrivacyRequestFilter from query parameters
+    # Note: identities and custom_privacy_request_fields are only supported in the POST endpoint
+    filters = PrivacyRequestFilter(
         request_id=request_id,
-        identity=identity,
         fuzzy_search_str=fuzzy_search_str,
         identities=None,
         custom_privacy_request_fields=None,
@@ -986,6 +568,16 @@ def get_request_status(
         download_csv=download_csv,
         sort_field=sort_field,
         sort_direction=sort_direction,
+    )
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
+    return _shared_privacy_request_search(
+        db=db,
+        params=params,
+        filters=filters,
+        privacy_request_service=privacy_request_service,
+        identity=identity,
     )
 
 
@@ -1015,32 +607,14 @@ def privacy_request_search(
     if privacy_request_filter is None:
         privacy_request_filter = PrivacyRequestFilter()
 
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
     return _shared_privacy_request_search(
         db=db,
         params=params,
-        request_id=privacy_request_filter.request_id,
-        identities=privacy_request_filter.identities,
-        fuzzy_search_str=privacy_request_filter.fuzzy_search_str,
-        custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
-        status=privacy_request_filter.status,  # type: ignore
-        created_lt=privacy_request_filter.created_lt,
-        created_gt=privacy_request_filter.created_gt,
-        started_lt=privacy_request_filter.started_lt,
-        started_gt=privacy_request_filter.started_gt,
-        completed_lt=privacy_request_filter.completed_lt,
-        completed_gt=privacy_request_filter.completed_gt,
-        errored_lt=privacy_request_filter.errored_lt,
-        errored_gt=privacy_request_filter.errored_gt,
-        external_id=privacy_request_filter.external_id,
-        location=privacy_request_filter.location,
-        action_type=privacy_request_filter.action_type,
-        verbose=privacy_request_filter.verbose,
-        include_identities=privacy_request_filter.include_identities,
-        include_custom_privacy_request_fields=privacy_request_filter.include_custom_privacy_request_fields,
-        include_deleted_requests=privacy_request_filter.include_deleted_requests,
-        download_csv=privacy_request_filter.download_csv,
-        sort_field=privacy_request_filter.sort_field,
-        sort_direction=privacy_request_filter.sort_direction,
+        filters=privacy_request_filter,
+        privacy_request_service=privacy_request_service,
     )
 
 
@@ -1488,10 +1062,16 @@ def approve_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """Approve and dispatch a list of privacy requests and/or report failure"""
 
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.approve_privacy_requests(
         privacy_requests.request_ids, reviewed_by=client.user_id
     )
@@ -1511,10 +1091,16 @@ def deny_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: DenyPrivacyRequests,
+    privacy_requests: DenyPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
 
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.deny_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
@@ -1534,10 +1120,16 @@ def cancel_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: CancelPrivacyRequests,
+    privacy_requests: CancelPrivacyRequestSelection,
 ) -> BulkReviewResponse:
     """Cancel a list of privacy requests and/or report failure"""
 
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.cancel_privacy_requests(
         privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
@@ -2056,13 +1648,18 @@ def bulk_finalize_privacy_requests(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkReviewResponse:
     """
-    Bulk finalize privacy requests that are in requires_manual_finalization status.
     Each request will be moved from the 'requires_finalization' state to 'complete'.
     Returns an object with the list of successfully finalized privacy requests and the list of failed finalizations.
     """
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if privacy_requests.request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
     return privacy_request_service.finalize_privacy_requests(
         privacy_requests.request_ids, user_id=client.user_id
     )
@@ -2240,7 +1837,7 @@ def bulk_soft_delete_privacy_requests(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_DELETE],
     ),
-    privacy_requests: ReviewPrivacyRequestIds,
+    privacy_requests: PrivacyRequestBulkSelection,
 ) -> BulkSoftDeletePrivacyRequests:
     """
     Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
@@ -2255,6 +1852,12 @@ def bulk_soft_delete_privacy_requests(
         user_id = "root"
 
     request_ids = privacy_requests.request_ids
+    # For now, only request_ids are supported (filters will be added in subsequent PRs)
+    if request_ids is None:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="request_ids must be provided",
+        )
 
     # Fetch all privacy requests in one query to avoid N+1
     privacy_requests_dict = {
