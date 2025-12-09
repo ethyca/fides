@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import { ChangeEvent } from "react";
 
+import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
 import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
 
 import { FieldType } from "../utils";
@@ -22,7 +23,7 @@ interface ConditionValueSelectorProps {
 
 /**
  * Renders the appropriate input component based on the field type.
- * Handles boolean, date, location, location_country, policy, and string field types.
+ * Handles boolean, date, location, location_country, location_groups, location_regulations, policy, and string field types.
  * This component is designed to work with Ant Design Form.Item.
  */
 export const ConditionValueSelector = ({
@@ -34,6 +35,12 @@ export const ConditionValueSelector = ({
   // Fetch policies for policy selector (only when needed)
   const { data: policiesData } = useGetPoliciesQuery(undefined, {
     skip: fieldType !== "policy",
+  });
+
+  // Fetch locations and regulations data (only when needed)
+  const { data: locationsData } = useGetLocationsRegulationsQuery(undefined, {
+    skip:
+      fieldType !== "location_groups" && fieldType !== "location_regulations",
   });
 
   // Boolean input
@@ -95,6 +102,58 @@ export const ConditionValueSelector = ({
         allowClear
         aria-label="Select a country"
         options={{ countries: iso31661, regions: [] }}
+      />
+    );
+  }
+
+  // Location groups input (single-select for location groups like 'us', 'eea', etc.)
+  if (fieldType === "location_groups") {
+    const locationGroupOptions =
+      locationsData?.location_groups?.map((group) => ({
+        label: group.name,
+        value: group.id,
+      })) ?? [];
+
+    return (
+      <Select
+        value={value as string}
+        onChange={onChange}
+        options={locationGroupOptions}
+        placeholder={disabled ? "Not required" : "Select a location group"}
+        disabled={disabled}
+        data-testid="value-location-groups-input"
+        allowClear
+        showSearch
+        aria-label="Select a location group"
+        filterOption={(input, option) =>
+          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+        }
+      />
+    );
+  }
+
+  // Location regulations input (single-select for regulations like 'gdpr', 'ccpa', etc.)
+  if (fieldType === "location_regulations") {
+    const regulationOptions =
+      locationsData?.regulations?.map((regulation) => ({
+        label: regulation.name,
+        value: regulation.id,
+      })) ?? [];
+
+    return (
+      <Select
+        value={value as string}
+        onChange={onChange}
+        options={regulationOptions}
+        placeholder={disabled ? "Not required" : "Select a regulation"}
+        disabled={disabled}
+        data-testid="value-location-regulations-input"
+        allowClear
+        showSearch
+        aria-label="Select a regulation"
+        filterOption={(input, option) =>
+          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+        }
       />
     );
   }

@@ -10,6 +10,8 @@ export type FieldType =
   | "date"
   | "location"
   | "location_country"
+  | "location_groups"
+  | "location_regulations"
   | "policy"
   | "string";
 
@@ -39,6 +41,16 @@ export const getFieldType = (fieldAddress: string): FieldType => {
   // Check location_country field (convenience field)
   if (fieldAddress === "privacy_request.location_country") {
     return "location_country";
+  }
+
+  // Check location_groups field (convenience field)
+  if (fieldAddress === "privacy_request.location_groups") {
+    return "location_groups";
+  }
+
+  // Check location_regulations field (convenience field)
+  if (fieldAddress === "privacy_request.location_regulations") {
+    return "location_regulations";
   }
 
   // Check policy ID field
@@ -101,7 +113,7 @@ export const parseConditionValue = (
       return numValue;
     }
 
-    // Date strings and location strings pass through as-is
+    // Date strings, location strings, location_groups, location_regulations pass through as-is
     // Default to string
     return rawValue;
   }
@@ -115,7 +127,13 @@ export const parseConditionValue = (
  */
 export const parseStoredValueForForm = (
   fieldAddress: string,
-  storedValue: string | number | boolean | null | undefined,
+  storedValue:
+    | string
+    | number
+    | boolean
+    | Array<string | number | boolean>
+    | null
+    | undefined,
 ): string | boolean | Dayjs | undefined => {
   if (storedValue === null || storedValue === undefined) {
     return undefined;
@@ -134,7 +152,7 @@ export const parseStoredValueForForm = (
     return parsed.isValid() ? parsed : undefined;
   }
 
-  // For all other types (location, policy, string), return as string
+  // For all other types (location, location_country, location_groups, location_regulations, policy, string), return as string
   return storedValue.toString();
 };
 
@@ -165,6 +183,8 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.identity.external_id",
   "privacy_request.location",
   "privacy_request.location_country",
+  "privacy_request.location_groups",
+  "privacy_request.location_regulations",
   "privacy_request.policy.id",
   "privacy_request.policy.name",
   "privacy_request.policy.key",
@@ -351,6 +371,10 @@ export const getValueTooltip = (
       return "Select a location";
     case "location_country":
       return "Select a country";
+    case "location_groups":
+      return "Select a location group (e.g., us, eea, ca)";
+    case "location_regulations":
+      return "Select a regulation (e.g., gdpr, ccpa, lgpd)";
     case "policy":
       return "Select a policy";
     default:
