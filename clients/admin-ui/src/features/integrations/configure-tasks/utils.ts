@@ -1,5 +1,4 @@
-import { Dayjs } from "dayjs";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 import { ConditionLeaf, Operator } from "~/types/api";
 
