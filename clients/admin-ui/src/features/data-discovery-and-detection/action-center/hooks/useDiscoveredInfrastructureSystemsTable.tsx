@@ -143,8 +143,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // Force refetch when activeTab changes to ensure fresh data
   useEffect(() => {
     refetchOktaData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, refetchOktaData]);
 
   // Transform API data to table format
   // Vendor filters are now applied server-side via the vendor_id query parameter
