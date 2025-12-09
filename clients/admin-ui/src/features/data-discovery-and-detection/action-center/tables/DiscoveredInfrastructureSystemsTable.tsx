@@ -11,26 +11,24 @@ import {
   AntTitle as Title,
   AntTooltip as Tooltip,
   Icons,
-  useToast,
 } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { DiffStatus } from "~/types/api";
 
-import {
-  useBulkMuteIdentityProviderMonitorResultsMutation,
-  useBulkPromoteIdentityProviderMonitorResultsMutation,
-  useBulkUnmuteIdentityProviderMonitorResultsMutation,
-} from "../../discovery-detection.slice";
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
+import { INFRASTRUCTURE_SYSTEMS_TABS } from "../constants";
 import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
+import { useInfrastructureSystemsBulkActions } from "../hooks/useInfrastructureSystemsBulkActions";
+import { useInfrastructureSystemsSelection } from "../hooks/useInfrastructureSystemsSelection";
+import {
+  getBulkActionsMenuItems,
+  shouldAllowIgnore,
+} from "../utils/infrastructureSystemsBulkActionsMenu";
 
 interface DiscoveredInfrastructureSystemsTableProps {
   monitorId: string;
@@ -39,24 +37,6 @@ interface DiscoveredInfrastructureSystemsTableProps {
 export const DiscoveredInfrastructureSystemsTable = ({
   monitorId,
 }: DiscoveredInfrastructureSystemsTableProps) => {
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
-  const toast = useToast();
-
-  const [
-    bulkPromoteIdentityProviderMonitorResultsMutation,
-    { isLoading: isBulkPromoting },
-  ] = useBulkPromoteIdentityProviderMonitorResultsMutation();
-
-  const [
-    bulkMuteIdentityProviderMonitorResultsMutation,
-    { isLoading: isBulkMuting },
-  ] = useBulkMuteIdentityProviderMonitorResultsMutation();
-
-  const [
-    bulkUnmuteIdentityProviderMonitorResultsMutation,
-    { isLoading: isBulkUnmuting },
-  ] = useBulkUnmuteIdentityProviderMonitorResultsMutation();
-
   const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
 
   const {
@@ -81,172 +61,54 @@ export const DiscoveredInfrastructureSystemsTable = ({
     monitor_config_id: monitorId,
   });
 
-  const hasSelectedRows = selectedKeys.size > 0;
-  const selectedRowsCount = selectedKeys.size;
-  const isBulkActionInProgress =
-    isBulkPromoting || isBulkMuting || isBulkUnmuting;
-  const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
+  const {
+    selectedItems,
+    hasSelectedRows,
+    selectedRowsCount,
+    isAllSelected,
+    isIndeterminate,
+    handleSelectAll,
+    handleSelectItem,
+    clearSelection,
+    isItemSelected,
+  } = useInfrastructureSystemsSelection({
+    items: data?.items,
+    getRecordKey,
+  });
 
-  // Create tabs with labels based on ActionCenterTabHash
-  const tabsWithIcons = useMemo(
-    () => [
-      {
-        key: ActionCenterTabHash.ATTENTION_REQUIRED,
-        label: "Attention required",
-      },
-      {
-        key: ActionCenterTabHash.ADDED,
-        label: "Activity",
-      },
-      {
-        key: ActionCenterTabHash.IGNORED,
-        label: "Ignored",
-      },
-    ],
-    [],
-  );
-
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        const allKeys = new Set(
-          data?.items.map((item) => getRecordKey(item)) ?? [],
-        );
-        setSelectedKeys(allKeys);
-      } else {
-        setSelectedKeys(new Set());
-      }
-    },
-    [data?.items, getRecordKey],
-  );
-
-  const handleSelectItem = useCallback((key: string, selected: boolean) => {
-    setSelectedKeys((prev) => {
-      const next = new Set(prev);
-      if (selected) {
-        next.add(key);
-      } else {
-        next.delete(key);
-      }
-      return next;
-    });
-  }, []);
-
-  const isAllSelected = useMemo(() => {
-    if (!data?.items || data.items.length === 0) {
-      return false;
-    }
-    return (
-      selectedKeys.size > 0 &&
-      selectedKeys.size === data.items.length &&
-      data.items.every((item) => selectedKeys.has(getRecordKey(item)))
-    );
-  }, [data?.items, selectedKeys, getRecordKey]);
-
-  const isIndeterminate = useMemo(() => {
-    if (!data?.items || data.items.length === 0) {
-      return false;
-    }
-    return selectedKeys.size > 0 && selectedKeys.size < data.items.length;
-  }, [data?.items, selectedKeys]);
-
-  const allowIgnore =
-    activeParams.diff_status &&
-    !activeParams.diff_status.includes(DiffStatus.MUTED);
-
-  const selectedItems = useMemo(() => {
-    if (!data?.items) {
-      return [];
-    }
-    return data.items.filter((item) => selectedKeys.has(getRecordKey(item)));
-  }, [data?.items, selectedKeys, getRecordKey]);
-
-  const handleBulkAction = useCallback(
-    async (action: "add" | "ignore" | "restore") => {
-      // Extract URNs from selected items
-      const urns = selectedItems
-        .map((item) => item.urn)
-        .filter((urn): urn is string => !!urn);
-
-      if (urns.length === 0) {
-        toast(
-          errorToastParams(
-            "No valid systems selected. Please select systems with URNs.",
-          ),
-        );
-        return;
-      }
-
-      if (action === "add") {
-        const result = await bulkPromoteIdentityProviderMonitorResultsMutation({
-          monitor_config_key: monitorId,
-          urns,
-        });
-
-        if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
-        } else {
-          const count = urns.length;
-          toast(
-            successToastParams(
-              `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been promoted to the system inventory.`,
-            ),
-          );
-          // Clear selections after successful promotion
-          setSelectedKeys(new Set());
-          // Refetch data to update the list
-          refetch();
-        }
-      } else if (action === "ignore") {
-        const result = await bulkMuteIdentityProviderMonitorResultsMutation({
-          monitor_config_key: monitorId,
-          urns,
-        });
-
-        if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
-        } else {
-          const count = urns.length;
-          toast(
-            successToastParams(
-              `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been ignored.`,
-            ),
-          );
-          // Clear selections after successful mute
-          setSelectedKeys(new Set());
-          // Refetch data to update the list
-          refetch();
-        }
-      } else if (action === "restore") {
-        const result = await bulkUnmuteIdentityProviderMonitorResultsMutation({
-          monitor_config_key: monitorId,
-          urns,
-        });
-
-        if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
-        } else {
-          const count = urns.length;
-          toast(
-            successToastParams(
-              `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been restored.`,
-            ),
-          );
-          // Clear selections after successful unmute
-          setSelectedKeys(new Set());
-          // Refetch data to update the list
-          refetch();
-        }
-      }
-    },
-    [
-      selectedItems,
+  const { handleBulkAction, isBulkActionInProgress } =
+    useInfrastructureSystemsBulkActions({
       monitorId,
-      bulkPromoteIdentityProviderMonitorResultsMutation,
-      bulkMuteIdentityProviderMonitorResultsMutation,
-      bulkUnmuteIdentityProviderMonitorResultsMutation,
-      toast,
-      refetch,
+      getRecordKey,
+      onSuccess: () => {
+        clearSelection();
+        refetch();
+      },
+    });
+
+  const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
+  const allowIgnore = shouldAllowIgnore(activeParams);
+
+  const handleBulkActionWithSelectedItems = useCallback(
+    (action: "add" | "ignore" | "restore") => {
+      handleBulkAction(action, selectedItems);
+    },
+    [handleBulkAction, selectedItems],
+  );
+
+  const bulkActionsMenuItems = useMemo(
+    () =>
+      getBulkActionsMenuItems({
+        isIgnoredTab,
+        allowIgnore,
+        isBulkActionInProgress,
+        onBulkAction: handleBulkActionWithSelectedItems,
+      }),
+    [
+      isIgnoredTab,
+      allowIgnore,
+      isBulkActionInProgress,
+      handleBulkActionWithSelectedItems,
     ],
   );
 
@@ -255,14 +117,14 @@ export const DiscoveredInfrastructureSystemsTable = ({
       <Menu
         aria-label="Asset state filter"
         mode="horizontal"
-        items={tabsWithIcons.map((tab) => ({
+        items={INFRASTRUCTURE_SYSTEMS_TABS.map((tab) => ({
           key: tab.key,
           label: tab.label,
         }))}
         selectedKeys={[activeTab]}
         onClick={async (menuInfo) => {
           await handleTabChange(menuInfo.key as ActionCenterTabHash);
-          setSelectedKeys(new Set()); // Clear selections on tab change
+          clearSelection(); // Clear selections on tab change
         }}
         className="mb-4"
         data-testid="asset-state-filter"
@@ -290,35 +152,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
           <Flex gap="small">
             <InfrastructureSystemsFilters {...infrastructureSystemsFilters} />
             <Dropdown
-              menu={{
-                items: isIgnoredTab
-                  ? [
-                      {
-                        key: "restore",
-                        label: "Restore",
-                        onClick: () => handleBulkAction("restore"),
-                        disabled: isBulkActionInProgress,
-                      },
-                    ]
-                  : [
-                      ...(allowIgnore
-                        ? [
-                            {
-                              key: "ignore",
-                              label: "Ignore",
-                              onClick: () => handleBulkAction("ignore"),
-                              disabled: isBulkActionInProgress,
-                            },
-                          ]
-                        : []),
-                      {
-                        key: "add",
-                        label: "Add",
-                        onClick: () => handleBulkAction("add"),
-                        disabled: isBulkActionInProgress,
-                      },
-                    ],
-              }}
+              menu={{ items: bulkActionsMenuItems }}
               disabled={!hasSelectedRows || isBulkActionInProgress}
             >
               <Button
@@ -362,7 +196,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
           renderItem={(item) => (
             <InfrastructureSystemListItem
               item={item}
-              selected={selectedKeys.has(getRecordKey(item))}
+              selected={isItemSelected(item)}
               onSelect={handleSelectItem}
               rowClickUrl={rowClickUrl}
               monitorId={monitorId}

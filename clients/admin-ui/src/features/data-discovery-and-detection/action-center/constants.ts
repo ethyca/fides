@@ -4,6 +4,8 @@ import {
   WebMonitorUpdates,
 } from "~/types/api";
 
+import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
+
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]: "Consent respected",
   [ConsentStatus.WITHOUT_CONSENT]: "Consent ignored",
@@ -112,3 +114,18 @@ export enum ConfidenceLevelLabel {
   MEDIUM = "Medium confidence",
   LOW = "Low confidence",
 }
+
+export const INFRASTRUCTURE_SYSTEMS_TABS = [
+  {
+    key: ActionCenterTabHash.ATTENTION_REQUIRED,
+    label: "Attention required",
+  },
+  {
+    key: ActionCenterTabHash.ADDED,
+    label: "Activity",
+  },
+  {
+    key: ActionCenterTabHash.IGNORED,
+    label: "Ignored",
+  },
+] as const;
