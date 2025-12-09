@@ -447,6 +447,9 @@ class PrivacyRequestService:
                 self.messaging_service,
             )
 
+            if not isinstance(privacy_request_data, PrivacyRequestResubmit):
+                check_for_duplicates(db=self.db, privacy_request=privacy_request)
+
             return privacy_request
 
         except RedisNotConfigured as exc:
