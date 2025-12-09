@@ -14,6 +14,7 @@ import { useAlert } from "~/features/common/hooks";
 import {
   GenerateResponse,
   GenerateTypes,
+  OktaConfig,
   System,
   ValidTargets,
 } from "~/types/api";
@@ -114,7 +115,8 @@ const AuthenticateOktaForm = () => {
     const result = await generate({
       organization_key: organizationKey,
       generate: {
-        config: config as any, // TODO: Remove cast once backend supports OktaOAuth2Config
+        // TODO: Remove cast once backend API types support OktaOAuth2Config
+        config: config as unknown as OktaConfig,
         target: ValidTargets.OKTA,
         type: GenerateTypes.SYSTEMS,
       },

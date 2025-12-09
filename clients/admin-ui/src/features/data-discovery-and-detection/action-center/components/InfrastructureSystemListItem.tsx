@@ -69,7 +69,7 @@ interface InfrastructureSystemListItemProps {
   selected?: boolean;
   onSelect?: (key: string, selected: boolean) => void;
   onNavigate?: (url: string) => void;
-  rowClickUrl?: (item: any) => string;
+  rowClickUrl?: (item: InfrastructureSystemListItemProps["item"]) => string;
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;

@@ -169,7 +169,12 @@ export const DiscoveredInfrastructureSystemsTable = ({
               </Button>
             </Dropdown>
             <Tooltip title="Refresh">
-              <Button icon={<Icons.Renew />} aria-label="Refresh" />
+              <Button
+                icon={<Icons.Renew />}
+                aria-label="Refresh"
+                onClick={refetch}
+                loading={isLoading}
+              />
             </Tooltip>
           </Flex>
         </Flex>
@@ -178,8 +183,9 @@ export const DiscoveredInfrastructureSystemsTable = ({
             checked={isAllSelected}
             indeterminate={isIndeterminate}
             onChange={(e) => handleSelectAll(e.target.checked)}
+            title="Select all"
           />
-          <label htmlFor="select-all">Select all</label>
+          <span className="ml-2">Select all</span>
           {selectedRowsCount > 0 && (
             <Text strong>{selectedRowsCount.toLocaleString()} selected</Text>
           )}
