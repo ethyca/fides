@@ -98,9 +98,9 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL
@@ -141,7 +141,7 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        response = test_client.get(url, headers=root_auth_header, allow_redirects=False)
+        response = test_client.get(url, headers=root_auth_header, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL
@@ -271,7 +271,7 @@ class TestPrivacyCenterDsrPackage:
         db.commit()
 
         # First, verify the endpoint works normally
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert (
             response.status_code == HTTP_302_FOUND
         ), "Endpoint should work normally before rate limiting"
@@ -280,7 +280,7 @@ class TestPrivacyCenterDsrPackage:
         # The exact number depends on the rate limit configuration
         responses = []
         for i in range(20):  # Make more requests to ensure we hit rate limits
-            response = test_client.get(url, allow_redirects=False)
+            response = test_client.get(url, follow_redirects=False)
             responses.append(response.status_code)
 
             # Check if we got any rate limit responses (429 Too Many Requests)
@@ -318,7 +318,7 @@ class TestPrivacyCenterDsrPackage:
         )
 
         # The function should raise an error for GCS
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             "Only S3 storage is supported for this endpoint."
@@ -354,9 +354,9 @@ class TestPrivacyCenterDsrPackage:
         test_content, file_name = mock_s3_with_file
 
         # Test the endpoint
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Verify the presigned URL
@@ -418,9 +418,9 @@ class TestPrivacyCenterDsrPackage:
         test_content, file_name = mock_s3_auto_auth_with_file
 
         # Test the endpoint
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Verify the presigned URL
@@ -486,8 +486,8 @@ class TestPrivacyCenterDsrPackage:
         # mock_s3_with_file now returns test_content, file_name
         _, _ = mock_s3_with_file
 
-        # Test the endpoint with allow_redirects=True to follow the full redirect flow
-        response = test_client.get(url, allow_redirects=True)
+        # Test the endpoint with follow_redirects=True to follow the full redirect flow
+        response = test_client.get(url, follow_redirects=True)
 
         # Note: moto may not handle presigned URLs correctly, so we just verify the redirect happened
         # The important part is that the endpoint generated a valid presigned URL
@@ -617,7 +617,7 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL

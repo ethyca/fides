@@ -24,7 +24,9 @@ from fides.api.db.util import EnumColumn
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
-class ConsentStatus(str, Enum):
+from enum import StrEnum
+
+class ConsentStatus(StrEnum):
     """
     Consent status of the asset
     """

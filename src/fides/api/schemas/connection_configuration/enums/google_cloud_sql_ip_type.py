@@ -1,7 +1,9 @@
 from enum import Enum
 
 
-class GoogleCloudSQLIPType(str, Enum):
+from enum import StrEnum
+
+class GoogleCloudSQLIPType(StrEnum):
     """Enum for Google Cloud SQL IP types"""
 
     public = "public"

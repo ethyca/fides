@@ -23,7 +23,9 @@ if TYPE_CHECKING:
     from fides.api.models.digest.digest_execution import DigestTaskExecution
 
 
-class DigestType(str, Enum):
+from enum import StrEnum
+
+class DigestType(StrEnum):
     """Types of digests that can be configured."""
 
     MANUAL_TASKS = "manual_tasks"

@@ -63,7 +63,9 @@ TIMESTAMP_MONTH_YEAR_OFFSET_REGEX = (
 )
 
 
-class TimeUnit(str, Enum):
+from enum import StrEnum
+
+class TimeUnit(StrEnum):
     """Standardized time units for partitioning."""
 
     DAY = "DAY"

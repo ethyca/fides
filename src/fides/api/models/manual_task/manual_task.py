@@ -35,7 +35,9 @@ if TYPE_CHECKING:
 # ------------------------------------------------------------
 
 
-class ManualTaskExecutionTiming(str, Enum):
+from enum import StrEnum
+
+class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
     pre_execution = "pre_execution"  # Execute before the main DAG
@@ -43,14 +45,18 @@ class ManualTaskExecutionTiming(str, Enum):
     parallel = "parallel"  # Execute in parallel with the main DAG
 
 
-class ManualTaskType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
     # Add more task types as needed
 
 
-class ManualTaskParentEntityType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskParentEntityType(StrEnum):
     """Enum for manual task parent entity types."""
 
     connection_config = (
@@ -59,14 +65,18 @@ class ManualTaskParentEntityType(str, Enum):
     # Add more parent entity types as needed
 
 
-class ManualTaskEntityType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskEntityType(StrEnum):
     """Enum for manual task entity types."""
 
     privacy_request = "privacy_request"
     # Add more entity types as needed
 
 
-class ManualTaskReferenceType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskReferenceType(StrEnum):
     """Enum for manual task reference types."""
 
     privacy_request = "privacy_request"
@@ -76,7 +86,9 @@ class ManualTaskReferenceType(str, Enum):
     # Add more reference types as needed
 
 
-class ManualTaskLogStatus(str, Enum):
+from enum import StrEnum
+
+class ManualTaskLogStatus(StrEnum):
     """Enum for manual task log status."""
 
     created = "created"
@@ -89,7 +101,9 @@ class ManualTaskLogStatus(str, Enum):
     awaiting_input = "awaiting_input"
 
 
-class ManualTaskConfigurationType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskConfigurationType(StrEnum):
     """Enum for manual task configuration types."""
 
     access_privacy_request = "access_privacy_request"
@@ -97,7 +111,9 @@ class ManualTaskConfigurationType(str, Enum):
     # Add more configuration types as needed
 
 
-class ManualTaskFieldType(str, Enum):
+from enum import StrEnum
+
+class ManualTaskFieldType(StrEnum):
     """Enum for manual task field types."""
 
     text = "text"  # Key-value pairs
@@ -106,7 +122,9 @@ class ManualTaskFieldType(str, Enum):
     # Add more field types as needed
 
 
-class StatusType(str, Enum):
+from enum import StrEnum
+
+class StatusType(StrEnum):
     """Enum for manual task status."""
 
     pending = "pending"

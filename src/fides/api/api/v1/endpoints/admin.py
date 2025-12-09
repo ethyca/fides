@@ -19,7 +19,9 @@ from fides.config import CONFIG
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 
-class DBActions(str, Enum):
+from enum import StrEnum
+
+class DBActions(StrEnum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
 
     upgrade = "upgrade"

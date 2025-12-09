@@ -6,7 +6,9 @@ from pydantic import Field
 from fides.api.schemas.base_class import FidesSchema
 
 
-class ReportType(str, Enum):
+from enum import StrEnum
+
+class ReportType(StrEnum):
     """Enum for custom report types."""
 
     datamap = "datamap"

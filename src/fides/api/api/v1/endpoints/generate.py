@@ -37,7 +37,9 @@ from fides.core.utils import validate_db_engine
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 
-class ValidTargets(str, Enum):
+from enum import StrEnum
+
+class ValidTargets(StrEnum):
     """
     Validation of targets attempted to generate resources from
     """
@@ -50,7 +52,9 @@ class ValidTargets(str, Enum):
     SCYLLADB = "scylla"
 
 
-class GenerateTypes(str, Enum):
+from enum import StrEnum
+
+class GenerateTypes(StrEnum):
     """
     Generate Type Enum to capture the discrete possible values
     for a valid type of resource to generate.

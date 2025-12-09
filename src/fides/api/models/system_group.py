@@ -12,7 +12,9 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
-class CustomTaxonomyColor(str, Enum):
+from enum import StrEnum
+
+class CustomTaxonomyColor(StrEnum):
     WHITE = "taxonomy_white"
     RED = "taxonomy_red"
     ORANGE = "taxonomy_orange"

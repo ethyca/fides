@@ -73,7 +73,9 @@ EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
 SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
 
-class MessagingActionType(str, Enum):
+from enum import StrEnum
+
+class MessagingActionType(StrEnum):
     """Enum for messaging action type"""
 
     # verify email upon acct creation

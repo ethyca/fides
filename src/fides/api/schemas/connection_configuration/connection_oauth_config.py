@@ -6,7 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from fides.api.schemas.base_class import NoValidationSchema
 
 
-class OAuthGrantType(str, Enum):
+from enum import StrEnum
+
+class OAuthGrantType(StrEnum):
     """OAuth2 grant types supported by the system"""
 
     client_credentials = "client_credentials"

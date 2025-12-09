@@ -1,7 +1,9 @@
 from enum import Enum
 
 
-class ConnectionCategory(str, Enum):
+from enum import StrEnum
+
+class ConnectionCategory(StrEnum):
     """
     Categories for connection types, matching frontend ConnectionCategory enum
     """

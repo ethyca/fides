@@ -73,13 +73,18 @@ class SaaSSchema(BaseModel, abc.ABC):
 
         return values
 
+    # TODO: See if there's a way to do this that isn't so brittle
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
         if not cls.__private_attributes__:
             # Not sure why this was needed for Pydantic V2.
             # This was to address 'NoneType' object has no attribute 'default'
             return {}
-        return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
+        try:
+            return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
+        except AttributeError:
+            # Default not fetchable
+            return {}
 
     @classmethod
     def external_references(cls) -> List[str]:

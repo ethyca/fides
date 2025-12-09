@@ -11,7 +11,9 @@ from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
-class SqlDryRunMode(str, Enum):
+from enum import StrEnum
+
+class SqlDryRunMode(StrEnum):
     """SQL dry run mode for controlling execution of SQL statements in privacy requests"""
 
     none = "none"

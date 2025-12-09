@@ -7,7 +7,9 @@ from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 
 
-class IdentityDefinitionType(str, Enum):
+from enum import StrEnum
+
+class IdentityDefinitionType(StrEnum):
     """Enum for the type of identity"""
 
     EMAIL = "email"

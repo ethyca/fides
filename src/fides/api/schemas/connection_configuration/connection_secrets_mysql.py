@@ -9,7 +9,9 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
-class MySQLSSLMode(str, Enum):
+from enum import StrEnum
+
+class MySQLSSLMode(StrEnum):
     preferred = "preferred"
     required = "required"
     disabled = "disabled"

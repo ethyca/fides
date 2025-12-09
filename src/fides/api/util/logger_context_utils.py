@@ -17,7 +17,9 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
 from fides.config import CONFIG
 
 
-class LoggerContextKeys(str, Enum):
+from enum import StrEnum
+
+class LoggerContextKeys(StrEnum):
     action_type = "action_type"
     status_code = "status_code"
     body = "body"
@@ -34,7 +36,9 @@ class LoggerContextKeys(str, Enum):
     privacy_request_source = "privacy_request_source"
 
 
-class ErrorGroup(str, Enum):
+from enum import StrEnum
+
+class ErrorGroup(StrEnum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 
     network_error = "NetworkError"

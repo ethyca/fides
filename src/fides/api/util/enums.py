@@ -1,6 +1,8 @@
 from enum import Enum
 
 
-class ColumnSort(str, Enum):
+from enum import StrEnum
+
+class ColumnSort(StrEnum):
     DESC = "desc"
     ASC = "asc"

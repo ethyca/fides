@@ -1,7 +1,9 @@
 from enum import Enum
 
 
-class IntegrationFeature(str, Enum):
+from enum import StrEnum
+
+class IntegrationFeature(StrEnum):
     """
     Features that can be enabled for different integration types.
     These control which tabs and functionality are available in the integration detail view.

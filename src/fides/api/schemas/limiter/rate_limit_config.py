@@ -4,7 +4,9 @@ from typing import List, Optional
 from pydantic import BaseModel, field_validator, model_validator
 
 
-class RateLimitPeriod(str, Enum):
+from enum import StrEnum
+
+class RateLimitPeriod(StrEnum):
     """
     Defines the periods supported by rate limit config
     """

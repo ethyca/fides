@@ -49,7 +49,9 @@ class FileBasedStorageDetails(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class AWSAuthMethod(str, Enum):
+from enum import StrEnum
+
+class AWSAuthMethod(StrEnum):
     AUTOMATIC = "automatic"
     SECRET_KEYS = "secret_keys"
 
@@ -65,7 +67,9 @@ class StorageDetailsS3(FileBasedStorageDetails):
     model_config = ConfigDict(use_enum_values=True)
 
 
-class GCSAuthMethod(str, Enum):
+from enum import StrEnum
+
+class GCSAuthMethod(StrEnum):
     ADC = "adc"  # Application Default Credentials
     SERVICE_ACCOUNT_KEYS = "service_account_keys"
 

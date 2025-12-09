@@ -21,7 +21,9 @@ if TYPE_CHECKING:
     from fides.api.models.digest.digest_config import DigestConfig
 
 
-class DigestConditionType(str, Enum):
+from enum import StrEnum
+
+class DigestConditionType(StrEnum):
     """Types of digest conditions - each can have their own tree.
 
     Types:

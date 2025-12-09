@@ -32,7 +32,9 @@ LEGACY_TAXONOMY_KEYS = {
 MANAGED_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
 
 
-class TargetType(str, Enum):
+from enum import StrEnum
+
+class TargetType(StrEnum):
     """Enumeration of target types that taxonomies can apply to."""
 
     SYSTEM = "system"
