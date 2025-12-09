@@ -152,7 +152,7 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideName: "fidesExternalId",
       overrideType: "string",
       overrideKey: "fides_external_id",
-      validationRegex: /(.*)/,
+      validationRegex: /.+/,
     },
   ];
 
