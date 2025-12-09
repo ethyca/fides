@@ -1,4 +1,3 @@
-import ast
 import csv
 import io
 import json
@@ -14,7 +13,7 @@ from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
 from freezegun import freeze_time
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
@@ -58,7 +57,6 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import (
     IdentityValue,
-    PrivacyRequestBulkSelection,
     PrivacyRequestResponse,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -99,7 +97,6 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
-    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -126,9 +123,6 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from fides.service.privacy_request.privacy_request_query_utils import (
-    resolve_request_ids_from_filters,
-)
 from tests.conftest import access_runner_tester, generate_role_header_for_user
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
@@ -164,104 +158,6 @@ page_size = Params().size
 
 def stringify_date(log_date: datetime) -> str:
     return log_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-
-class TestResolveRequestIdsFromFilters:
-    """Test the resolve_request_ids_from_filters helper function"""
-
-    @pytest.mark.parametrize(
-        "scenario,selection_data,setup_requests,expected_count,should_raise,error_message",
-        [
-            (
-                "explicit_request_ids",
-                {"request_ids": ["req-1", "req-2", "req-3"]},
-                0,
-                3,
-                False,
-                None,
-            ),
-            (
-                "filters_with_status",
-                {"filters": {"status": [PrivacyRequestStatus.pending.value]}},
-                2,
-                2,
-                False,
-                None,
-            ),
-            (
-                "filters_with_exclusions",
-                {
-                    "filters": {"status": [PrivacyRequestStatus.pending.value]},
-                    "exclude_ids": [],  # Will be populated in test
-                },
-                3,
-                2,
-                False,
-                None,
-            ),
-            (
-                "no_results_from_filters",
-                {"filters": {"status": [PrivacyRequestStatus.canceled.value]}},
-                2,
-                0,
-                True,
-                "No privacy requests found matching the provided filters.",
-            ),
-        ],
-    )
-    def test_resolve_request_ids_from_filters(
-        self,
-        db,
-        policy,
-        scenario,
-        selection_data,
-        setup_requests,
-        expected_count,
-        should_raise,
-        error_message,
-    ):
-        """Test resolving privacy request IDs from various selection scenarios"""
-        # Setup: Create privacy requests if needed
-        created_requests = []
-        if setup_requests > 0:
-            for i in range(setup_requests):
-                pr = PrivacyRequest.create(
-                    db=db,
-                    data={
-                        "external_id": f"test-ext-id-{i}",
-                        "requested_at": datetime.utcnow(),
-                        "policy_id": policy.id,
-                        "status": PrivacyRequestStatus.pending,
-                    },
-                )
-                created_requests.append(pr)
-
-        # For exclusion test, exclude the first request
-        if scenario == "filters_with_exclusions" and created_requests:
-            selection_data["exclude_ids"] = [created_requests[0].id]
-
-        # Create selection object
-        selection = PrivacyRequestBulkSelection(**selection_data)
-
-        # Execute and assert
-        if should_raise:
-            with pytest.raises(HTTPException) as exc_info:
-                resolve_request_ids_from_filters(db, selection)
-            assert exc_info.value.status_code == HTTP_400_BAD_REQUEST
-            assert error_message in str(exc_info.value.detail)
-        else:
-            result_ids = resolve_request_ids_from_filters(db, selection)
-            assert len(result_ids) == expected_count
-
-            # For explicit request_ids, verify they match
-            if scenario == "explicit_request_ids":
-                assert result_ids == selection_data["request_ids"]
-
-            # For filters with exclusions, verify excluded ID is not present
-            if scenario == "filters_with_exclusions":
-                assert created_requests[0].id not in result_ids
-                assert created_requests[1].id in result_ids
-                assert created_requests[2].id in result_ids
 
 
 class TestCreatePrivacyRequest:
