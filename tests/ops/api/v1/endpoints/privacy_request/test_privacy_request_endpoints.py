@@ -97,6 +97,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -4355,6 +4356,12 @@ class TestFilteredBulkActions:
             (PRIVACY_REQUEST_APPROVE, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
             (PRIVACY_REQUEST_DENY, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
             (PRIVACY_REQUEST_CANCEL, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (
+                PRIVACY_REQUEST_BULK_FINALIZE,
+                "post",
+                "requires_manual_finalization",
+                [PRIVACY_REQUEST_REVIEW],
+            ),
             (
                 PRIVACY_REQUEST_BULK_RETRY,
                 "post",
