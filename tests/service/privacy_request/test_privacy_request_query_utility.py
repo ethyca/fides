@@ -267,9 +267,7 @@ class TestResolveRequestIdsFromFilters:
     @patch(
         "fides.service.privacy_request.privacy_request_query_utils.filter_privacy_request_queryset"
     )
-    def test_filters_max_results(
-        self, mock_filter_queryset, mock_privacy_request, db
-    ):
+    def test_filters_max_results(self, mock_filter_queryset, mock_privacy_request, db):
         """Test that a ValueError is raised when filter results exceed MAX_BULK_FILTER_RESULTS"""
         # Mock the query chain
         mock_query = MagicMock()

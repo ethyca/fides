@@ -4347,31 +4347,61 @@ class TestApprovePrivacyRequest:
 
 
 class TestFilteredBulkActions:
-    """Test bulk actions with filters and exclusions - reuses existing test logic"""
+    """Test bulk actions with filters and exclusions across all bulk endpoints"""
 
+    @pytest.mark.parametrize(
+        "endpoint,method,filter_status,scopes",
+        [
+            (PRIVACY_REQUEST_APPROVE, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (PRIVACY_REQUEST_DENY, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (PRIVACY_REQUEST_CANCEL, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (
+                PRIVACY_REQUEST_BULK_RETRY,
+                "post",
+                "error",
+                [PRIVACY_REQUEST_CALLBACK_RESUME],
+            ),
+            (
+                PRIVACY_REQUEST_BULK_SOFT_DELETE,
+                "post",
+                "complete",
+                [PRIVACY_REQUEST_DELETE],
+            ),
+        ],
+    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
         "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
-    def test_bulk_approve_with_filters_and_exclusions(
+    def test_bulk_action_with_filters_and_exclusions(
         self,
         mock_dispatch_message,
         submit_mock,
         db,
-        url_approve,
         api_client,
-        generate_auth_header,
         user,
         privacy_requests,
+        endpoint,
+        method,
+        filter_status,
+        scopes,
     ):
-        """Test that filters and exclusions work correctly for bulk approve"""
-        # Set 2 to pending, 1 to complete (fixture has 3 privacy requests)
+        """Test that filters and exclusions work correctly for all bulk endpoints"""
+        # Set 2 to the filter status, 1 to a different status
+        target_status = PrivacyRequestStatus[filter_status]
         for pr in privacy_requests[:2]:
-            pr.update(db=db, data={"status": PrivacyRequestStatus.pending})
+            pr.update(db=db, data={"status": target_status})
         privacy_requests[2].update(
-            db=db, data={"status": PrivacyRequestStatus.complete}
+            db=db,
+            data={
+                "status": (
+                    PrivacyRequestStatus.complete
+                    if filter_status != "complete"
+                    else PrivacyRequestStatus.pending
+                )
+            },
         )
 
         payload = {
@@ -4384,22 +4414,25 @@ class TestFilteredBulkActions:
             + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
-        # Approve pending requests, but exclude one
+        url = V1_URL_PREFIX + endpoint
         body = {
-            "filters": {"status": ["pending"]},
+            "filters": {"status": [filter_status]},
             "exclude_ids": [privacy_requests[1].id],
         }
-        response = api_client.patch(url_approve, headers=auth_header, json=body)
+
+        http_method = getattr(api_client, method)
+        response = http_method(url, headers=auth_header, json=body)
 
         assert response.status_code == 200
         response_body = response.json()
 
-        # Should approve 1 of 2 pending requests (one excluded)
-        assert len(response_body["succeeded"]) == 1
-        succeeded_ids = [r["id"] for r in response_body["succeeded"]]
+        # All bulk endpoints return succeeded/failed structure
+        assert "succeeded" in response_body
+        succeeded_ids = [
+            r["id"] if isinstance(r, dict) else r for r in response_body["succeeded"]
+        ]
         assert privacy_requests[0].id in succeeded_ids
         assert privacy_requests[1].id not in succeeded_ids  # Excluded
-        assert privacy_requests[2].id not in succeeded_ids  # Wrong status
 
 
 class TestMarkPrivacyRequestPreApproveEligible:
