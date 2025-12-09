@@ -80,7 +80,7 @@ const ConfigDrivenConsent = ({
         conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
       };
     });
-    const cookie: FidesCookie = getOrMakeFidesCookie();
+    const cookie: FidesCookie = getOrMakeFidesCookie(undefined);
     cookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
     saveFidesCookie({ ...cookie, consent: newConsent }, { base64Cookie });
 

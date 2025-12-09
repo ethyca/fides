@@ -82,12 +82,17 @@ const userDeviceId = generateFidesUserDeviceId();
  * Generate a default identity object with a device ID.
  * The device ID is always required and will be generated if not provided.
  */
-export const makeDefaultIdentity = (
-  providedIdentity?: Partial<FidesJSIdentity>,
-): FidesJSIdentity => {
+export const makeDefaultIdentity = ({
+  fidesUserDeviceId,
+  fidesExternalId,
+}: {
+  fidesUserDeviceId?: string;
+  fidesExternalId?: string | null;
+} = {}): FidesJSIdentity => {
   return {
-    fides_user_device_id: userDeviceId || generateFidesUserDeviceId(),
-    ...providedIdentity,
+    fides_user_device_id:
+      fidesUserDeviceId || userDeviceId || generateFidesUserDeviceId(),
+    ...(fidesExternalId ? { external_id: fidesExternalId } : {}),
   };
 };
 
@@ -105,12 +110,12 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
  */
 export const makeFidesCookie = (
   defaultConsent?: NoticeConsent,
-  defaultIdentity?: Partial<FidesJSIdentity>,
+  { fidesExternalId }: Partial<Pick<FidesInitOptions, "fidesExternalId">> = {},
 ): FidesCookie => {
   const now = new Date();
   return {
     consent: defaultConsent || {},
-    identity: makeDefaultIdentity(defaultIdentity),
+    identity: makeDefaultIdentity({ fidesExternalId }),
     fides_meta: {
       version: "0.9.0",
       createdAt: now.toISOString(),
@@ -160,16 +165,19 @@ export const getFidesConsentCookie = (
  */
 export const getOrMakeFidesCookie = (
   defaultConsent?: NoticeConsent,
-  defaultIdentity?: Partial<FidesJSIdentity>,
   {
     fidesClearCookie = false,
     fidesCookieSuffix,
+    fidesExternalId,
   }: Partial<
-    Pick<FidesInitOptions, "fidesClearCookie" | "fidesCookieSuffix">
+    Pick<
+      FidesInitOptions,
+      "fidesClearCookie" | "fidesCookieSuffix" | "fidesExternalId"
+    >
   > = {},
 ): FidesCookie => {
   // Create a default cookie with consent defaults and identity defaults
-  const defaultCookie = makeFidesCookie(defaultConsent, defaultIdentity);
+  const defaultCookie = makeFidesCookie(defaultConsent, { fidesExternalId });
 
   if (typeof document === "undefined") {
     return defaultCookie;
@@ -221,17 +229,12 @@ export const getOrMakeFidesCookie = (
     };
     parsedCookie.consent = updatedConsent;
 
-    // Merge default identity into parsed cookie identity (defaultIdentity takes precedence)
-    // Only merge defined values to ensure type safety
-    if (defaultIdentity) {
+    // Merge external_id into parsed cookie identity if provided
+    if (fidesExternalId !== undefined && fidesExternalId !== null) {
       const mergedIdentity: FidesJSIdentity = {
-        ...parsedCookie.identity,
+        ...(parsedCookie.identity || {}),
+        external_id: fidesExternalId,
       };
-      Object.entries(defaultIdentity).forEach(([key, value]) => {
-        if (value !== undefined) {
-          mergedIdentity[key] = value;
-        }
-      });
       parsedCookie.identity = mergedIdentity;
     }
 

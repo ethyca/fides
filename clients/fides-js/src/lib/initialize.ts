@@ -134,16 +134,11 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
-  // Extract identity from options
-  const defaultIdentity: Partial<FidesJSIdentity> | undefined =
-    options.fidesExternalId
-      ? { external_id: options.fidesExternalId }
-      : undefined;
-
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, defaultIdentity, {
+  return getOrMakeFidesCookie(consentDefaults, {
     fidesClearCookie: options.fidesClearCookie,
     fidesCookieSuffix: options.fidesCookieSuffix,
+    fidesExternalId: options.fidesExternalId || undefined,
   });
 };
 
