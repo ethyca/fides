@@ -54,7 +54,6 @@ okta==2.7.0
 onepassword-sdk==0.3.0
 openpyxl==3.0.9
 packaging==23.0
-pandas~=2.3.3
 paramiko==3.4.1
 passlib[bcrypt]==1.7.4
 pg8000==1.31.2

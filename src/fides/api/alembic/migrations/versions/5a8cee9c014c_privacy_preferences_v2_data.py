@@ -7,17 +7,17 @@ Create Date: 2023-12-10 20:41:16.804029
 """
 
 import json
+from collections import defaultdict
+from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 import networkx as nx
-import pandas as pd
 import sqlalchemy_utils
 from alembic import op
 from loguru import logger
 
 # revision identifiers, used by Alembic.
-from pandas import DataFrame, Series
 from sqlalchemy import String, text
 from sqlalchemy.engine import Connection
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
@@ -93,49 +93,49 @@ def downgrade():
 
 PRIVACY_PREFERENCE_HISTORY_UPDATE_QUERY = """
     UPDATE privacypreferencehistory
-    SET 
+    SET
         notice_name = privacynoticehistory.name,
         notice_key = privacynoticehistory.notice_key,
         notice_mechanism = privacynoticehistory.consent_mechanism
     FROM privacynoticehistory
-    WHERE privacypreferencehistory.privacy_notice_history_id = privacynoticehistory.id         
+    WHERE privacypreferencehistory.privacy_notice_history_id = privacynoticehistory.id
 """
 
 PRIVACY_PREFERENCE_HISTORY_UPDATE_DOWNREV_QUERY = """
     UPDATE privacypreferencehistory
-    SET 
+    SET
         notice_name = null,
         notice_key = null,
-        notice_mechanism = null;    
+        notice_mechanism = null;
 """
 
 TCF_PREFERENCES_DELETE_QUERY = """
-    DELETE FROM privacypreferencehistory WHERE privacy_notice_history_id IS NULL;        
+    DELETE FROM privacypreferencehistory WHERE privacy_notice_history_id IS NULL;
 """
 
 
 SERVED_NOTICE_HISTORY_UPDATE_QUERY = """
     UPDATE servednoticehistory
-    SET 
+    SET
         notice_name = privacynoticehistory.name,
         notice_key = privacynoticehistory.notice_key,
         notice_mechanism = privacynoticehistory.consent_mechanism,
         served_notice_history_id = servednoticehistory.id
     FROM privacynoticehistory
-    WHERE servednoticehistory.privacy_notice_history_id = privacynoticehistory.id         
+    WHERE servednoticehistory.privacy_notice_history_id = privacynoticehistory.id
 """
 
 SERVED_NOTICE_HISTORY_UPDATE_DOWNREV_QUERY = """
     UPDATE servednoticehistory
-    SET 
+    SET
         notice_name = null,
         notice_key = null,
         served_notice_history_id = null,
-        notice_mechanism = null;    
+        notice_mechanism = null;
 """
 
 TCF_SERVED_DELETE_QUERY = """
-    DELETE FROM servednoticehistory WHERE privacy_notice_history_id IS NULL;        
+    DELETE FROM servednoticehistory WHERE privacy_notice_history_id IS NULL;
 """
 
 CURRENT_PRIVACY_PREFERENCE_BASE_QUERY = """
@@ -143,10 +143,10 @@ CURRENT_PRIVACY_PREFERENCE_BASE_QUERY = """
         currentprivacypreference.id,
         currentprivacypreference.preference,
         currentprivacypreference.privacy_notice_history_id,
-        email_details.hashed_value as hashed_email, 
+        email_details.hashed_value as hashed_email,
         device_details.hashed_value as hashed_fides_user_device,
         phone_details.hashed_value as hashed_phone_number,
-        email_details.encrypted_value as encrypted_email, 
+        email_details.encrypted_value as encrypted_email,
         device_details.encrypted_value as encrypted_device,
         phone_details.encrypted_value as encrypted_phone,
         currentprivacypreference.created_at,
@@ -164,10 +164,10 @@ LAST_SERVED_NOTICE_BASE_QUERY = """
     SELECT
         lastservednotice.id,
         lastservednotice.privacy_notice_history_id,
-        email_details.hashed_value as hashed_email, 
+        email_details.hashed_value as hashed_email,
         device_details.hashed_value as hashed_fides_user_device,
         phone_details.hashed_value as hashed_phone_number,
-        email_details.encrypted_value as encrypted_email, 
+        email_details.encrypted_value as encrypted_email,
         device_details.encrypted_value as encrypted_device,
         phone_details.encrypted_value as encrypted_phone,
         lastservednotice.created_at,
@@ -214,52 +214,83 @@ def migrate_current_records(
     or device id, and collapsing these records into single rows, retaining the most recently used non-null identifiers
     and recently saved preferences.
     """
-    df: DataFrame = pd.read_sql(starting_query, bind)
+    # Fetch all records using SQLAlchemy
+    result = bind.execute(text(starting_query))
+    rows = result.fetchall()
 
-    if len(df.index) == 0:
+    if len(rows) == 0:
         logger.info(f"No {migration_type.value} records to migrate. Skipping.")
         return
 
-    # Drop invalid rows where we have an encrypted val but not a hashed val and vice versa.
-    # This would be unexpected, but this would mean our ProvidedIdentity record was not populated correctly.
-    df["email_count"] = df[["encrypted_email", "hashed_email"]].count(axis=1)
-    df["phone_count"] = df[["encrypted_phone", "hashed_phone_number"]].count(axis=1)
-    df["device_count"] = df[["encrypted_device", "hashed_fides_user_device"]].count(
-        axis=1
-    )
-    df = df[df["email_count"] != 1]
-    df = df[df["phone_count"] != 1]
-    df = df[df["device_count"] != 1]
+    # Convert rows to list of dicts for easier processing
+    records = []
+    for row in rows:
+        record = dict(row._mapping)
 
-    # Also drop if there are no identifiers at all - our new table needs at least one
-    df = df[df["email_count"] + df["phone_count"] + df["device_count"] >= 2]
+        # Count non-null values for each identity type
+        email_count = sum(
+            1 for val in [record.get("encrypted_email"), record.get("hashed_email")]
+            if val is not None
+        )
+        phone_count = sum(
+            1 for val in [record.get("encrypted_phone"), record.get("hashed_phone_number")]
+            if val is not None
+        )
+        device_count = sum(
+            1 for val in [record.get("encrypted_device"), record.get("hashed_fides_user_device")]
+            if val is not None
+        )
 
-    # Create a "paths" column in the dataframe that is a list of non-null identifiers, so
-    # we only consider actual values as a match.
-    df["paths"] = df[
-        ["hashed_email", "hashed_phone_number", "hashed_fides_user_device"]
-    ].apply(lambda row: [val for val in row if pd.notna(val)], axis=1)
+        # Skip invalid rows where we have an encrypted val but not a hashed val and vice versa
+        if email_count == 1 or phone_count == 1 or device_count == 1:
+            continue
 
+        # Skip if there are no identifiers at all - our new table needs at least one
+        if email_count + phone_count + device_count < 2:
+            continue
+
+        # Create paths list of non-null identifiers
+        paths = [
+            val for val in [
+                record.get("hashed_email"),
+                record.get("hashed_phone_number"),
+                record.get("hashed_fides_user_device")
+            ] if val is not None
+        ]
+
+        record["paths"] = paths
+        records.append(record)
+
+    if not records:
+        logger.info(f"No valid {migration_type.value} records after filtering. Skipping.")
+        return
+
+    # Build networkx graph to find connected components
     network_x_graph: nx.Graph = nx.Graph()
-    # Adds every path to the Graph
-    df["paths"].apply(lambda path: nx.add_path(network_x_graph, path))
+    for record in records:
+        if len(record["paths"]) > 0:
+            nx.add_path(network_x_graph, record["paths"])
 
-    # This is the magic - linking any common records across hashed_email OR hashed_phone OR hashed_device
+    # Find connected components - this links users across shared identifiers
     connected_records: List[Set] = list(nx.connected_components(network_x_graph))
 
-    def add_group_id_based_on_link(identity_path: List[str]) -> int:
+    def get_group_id(identity_path: List[str]) -> Optional[int]:
         """Add a common group id for records that belong to the same connected component"""
         for user_identifier in identity_path:
             for i, linked_nodes in enumerate(connected_records):
                 if user_identifier in linked_nodes:
                     return i + 1
+        return None
 
-    df["group_id"] = df["paths"].apply(add_group_id_based_on_link)
+    # Assign group IDs to all records
+    for record in records:
+        record["group_id"] = get_group_id(record["paths"])
 
-    result_df = (
-        _group_preferences_records(df)
+    # Group and aggregate records
+    aggregated_records = (
+        _group_preferences_records(records)
         if migration_type == CurrentMigrationType.preferences
-        else _group_served_records(df)
+        else _group_served_records(records)
     )
 
     def decrypt_extract_encrypt(
@@ -278,131 +309,173 @@ def migrate_current_records(
 
         return encryptor.process_bind_param(decrypted, dialect="")
 
-    # Encrypted value is stored differently on ProvidedIdentity than this table.  Decrypt, extract the value,
-    # then re-encrypt.
-    result_df["email"] = result_df["encrypted_email"].apply(decrypt_extract_encrypt)
-    result_df["phone_number"] = result_df["encrypted_phone"].apply(
-        decrypt_extract_encrypt
-    )
-    result_df["fides_user_device"] = result_df["encrypted_device"].apply(
-        decrypt_extract_encrypt
-    )
+    # Process encrypted values and prepare final records
+    final_records = []
+    for record in aggregated_records:
+        final_record = {
+            "id": record["id"],
+            "hashed_email": record.get("hashed_email"),
+            "hashed_phone_number": record.get("hashed_phone_number"),
+            "hashed_fides_user_device": record.get("hashed_fides_user_device"),
+            "email": decrypt_extract_encrypt(record.get("encrypted_email")),
+            "phone_number": decrypt_extract_encrypt(record.get("encrypted_phone")),
+            "fides_user_device": decrypt_extract_encrypt(record.get("encrypted_device")),
+            "created_at": record["created_at"],
+            "updated_at": record["updated_at"],
+        }
 
-    # Remove columns from aggregated data frame that are not needed in CurrentPrivacyPreferenceV2 or
-    # LastServedNoticeV2 table before writing new data
-    result_df.drop(columns="group_id", inplace=True)
-    result_df.drop(columns="encrypted_email", inplace=True)
-    result_df.drop(columns="encrypted_phone", inplace=True)
-    result_df.drop(columns="encrypted_device", inplace=True)
+        if migration_type == CurrentMigrationType.preferences:
+            final_record["preferences"] = record["preferences"]
+        else:
+            final_record["served"] = record["served"]
 
-    if migration_type == CurrentMigrationType.preferences:
-        result_df.to_sql(
-            "currentprivacypreferencev2", con=bind, if_exists="append", index=False
+        final_records.append(final_record)
+
+    # Insert records into the new table
+    if final_records:
+        table_name = (
+            "currentprivacypreferencev2"
+            if migration_type == CurrentMigrationType.preferences
+            else "lastservednoticev2"
         )
-    else:
-        result_df.to_sql(
-            "lastservednoticev2", con=bind, if_exists="append", index=False
-        )
+
+        # Build insert statement
+        columns = list(final_records[0].keys())
+        placeholders = ", ".join([f":{col}" for col in columns])
+        columns_str = ", ".join(columns)
+
+        insert_query = f"INSERT INTO {table_name} ({columns_str}) VALUES ({placeholders})"
+
+        for record in final_records:
+            bind.execute(text(insert_query), record)
 
 
-def _group_preferences_records(df: DataFrame) -> DataFrame:
+def _group_preferences_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Combine preferences belonging to the same user under our definition.
 
     Collapse records into rows by group_id, combining identifiers and preferences against privacy notice history ids,
     retaining the most recently saved"""
 
-    # Add a preferences column, combining privacy_notice_history_id and preference
-    df["preferences"] = df.apply(
-        lambda row: (row["privacy_notice_history_id"], row["preference"]), axis=1
-    )
+    # Group records by group_id
+    grouped: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        group_id = record.get("group_id")
+        if group_id is not None:
+            grouped[group_id].append(record)
 
-    def combine_preferences(preferences: Series) -> str:
-        """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
-        sort order"""
+    aggregated = []
+    for group_id, group_records in grouped.items():
+        # Sort by created_at to prioritize most recent (last in list)
+        group_records.sort(key=lambda r: r.get("created_at") or datetime.min)
+
+        # Combine preferences, prioritizing most recently saved
         prefs: Dict = {}
-        for preference in preferences:
-            # Records were sorted ascending by date, so last one in wins (most recently saved)
-            prefs[preference[0]] = preference[1]
+        for record in group_records:
+            notice_history_id = record.get("privacy_notice_history_id")
+            preference = record.get("preference")
+            if notice_history_id is not None:
+                # Last one in wins (most recently saved)
+                prefs[notice_history_id] = preference
 
-        return json.dumps(
-            {
-                "preferences": [
-                    {
-                        "privacy_notice_history_id": notice_history,
-                        "preference": preference,
-                    }
-                    for notice_history, preference in prefs.items()
-                ],
-                "purpose_consent_preferences": [],
-                "purpose_legitimate_interests_preferences": [],
-                "special_purpose_preferences": [],
-                "feature_preferences": [],
-                "special_feature_preferences": [],
-                "vendor_consent_preferences": [],
-                "vendor_legitimate_interests_preferences": [],
-                "system_consent_preferences": [],
-                "system_legitimate_interests_preferences": [],
-            }
-        )
+        preferences_json = json.dumps({
+            "preferences": [
+                {
+                    "privacy_notice_history_id": notice_history,
+                    "preference": preference,
+                }
+                for notice_history, preference in prefs.items()
+            ],
+            "purpose_consent_preferences": [],
+            "purpose_legitimate_interests_preferences": [],
+            "special_purpose_preferences": [],
+            "feature_preferences": [],
+            "special_feature_preferences": [],
+            "vendor_consent_preferences": [],
+            "vendor_legitimate_interests_preferences": [],
+            "system_consent_preferences": [],
+            "system_legitimate_interests_preferences": [],
+        })
 
-    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
-    # preferences.
-    result_df = (
-        df.groupby("group_id")
-        .agg(
-            id=("id", "last"),
-            hashed_email=("hashed_email", "last"),
-            hashed_phone_number=("hashed_phone_number", "last"),
-            hashed_fides_user_device=("hashed_fides_user_device", "last"),
-            created_at=("created_at", "last"),
-            updated_at=("updated_at", "last"),
-            encrypted_email=("encrypted_email", "last"),
-            encrypted_phone=("encrypted_phone", "last"),
-            encrypted_device=("encrypted_device", "last"),
-            preferences=("preferences", combine_preferences),
-        )
-        .reset_index()
-    )
-    return result_df
+        # Get last non-null value for each field
+        def get_last_non_null(field_name: str) -> Any:
+            for record in reversed(group_records):
+                value = record.get(field_name)
+                if value is not None:
+                    return value
+            return None
+
+        aggregated.append({
+            "id": get_last_non_null("id"),
+            "hashed_email": get_last_non_null("hashed_email"),
+            "hashed_phone_number": get_last_non_null("hashed_phone_number"),
+            "hashed_fides_user_device": get_last_non_null("hashed_fides_user_device"),
+            "created_at": get_last_non_null("created_at"),
+            "updated_at": get_last_non_null("updated_at"),
+            "encrypted_email": get_last_non_null("encrypted_email"),
+            "encrypted_phone": get_last_non_null("encrypted_phone"),
+            "encrypted_device": get_last_non_null("encrypted_device"),
+            "preferences": preferences_json,
+        })
+
+    return aggregated
 
 
-def _group_served_records(df: DataFrame):
+def _group_served_records(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Collapse records into rows on group_id, combining identifiers privacy notices served"""
 
-    def combine_served(served: Series) -> str:
-        """Combines the preferences across user records deemed to be linked, prioritizing most recently saved due to
-        sort order"""
-        return json.dumps(
-            {
-                "privacy_notice_history_ids": served.unique().tolist(),
-                "tcf_purpose_consents": [],
-                "tcf_purpose_legitimate_interests": [],
-                "tcf_special_purposes": [],
-                "tcf_vendor_consents": [],
-                "tcf_vendor_legitimate_interests": [],
-                "tcf_features": [],
-                "tcf_special_features": [],
-                "tcf_system_consents": [],
-                "tcf_system_legitimate_interests": [],
-            }
-        )
+    # Group records by group_id
+    grouped: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        group_id = record.get("group_id")
+        if group_id is not None:
+            grouped[group_id].append(record)
 
-    # Groups by group_id, prioritizing latest non-null records for identifiers, and more recently saved privacy
-    # preferences.
-    result_df = (
-        df.groupby("group_id")
-        .agg(
-            id=("id", "last"),
-            hashed_email=("hashed_email", "last"),
-            hashed_phone_number=("hashed_phone_number", "last"),
-            hashed_fides_user_device=("hashed_fides_user_device", "last"),
-            created_at=("created_at", "last"),
-            updated_at=("updated_at", "last"),
-            encrypted_email=("encrypted_email", "last"),
-            encrypted_phone=("encrypted_phone", "last"),
-            encrypted_device=("encrypted_device", "last"),
-            served=("privacy_notice_history_id", combine_served),
-        )
-        .reset_index()
-    )
-    return result_df
+    aggregated = []
+    for group_id, group_records in grouped.items():
+        # Sort by created_at to prioritize most recent (last in list)
+        group_records.sort(key=lambda r: r.get("created_at") or datetime.min)
+
+        # Collect unique privacy notice history IDs
+        notice_ids = []
+        seen = set()
+        for record in group_records:
+            notice_id = record.get("privacy_notice_history_id")
+            if notice_id is not None and notice_id not in seen:
+                notice_ids.append(notice_id)
+                seen.add(notice_id)
+
+        served_json = json.dumps({
+            "privacy_notice_history_ids": notice_ids,
+            "tcf_purpose_consents": [],
+            "tcf_purpose_legitimate_interests": [],
+            "tcf_special_purposes": [],
+            "tcf_vendor_consents": [],
+            "tcf_vendor_legitimate_interests": [],
+            "tcf_features": [],
+            "tcf_special_features": [],
+            "tcf_system_consents": [],
+            "tcf_system_legitimate_interests": [],
+        })
+
+        # Get last non-null value for each field
+        def get_last_non_null(field_name: str) -> Any:
+            for record in reversed(group_records):
+                value = record.get(field_name)
+                if value is not None:
+                    return value
+            return None
+
+        aggregated.append({
+            "id": get_last_non_null("id"),
+            "hashed_email": get_last_non_null("hashed_email"),
+            "hashed_phone_number": get_last_non_null("hashed_phone_number"),
+            "hashed_fides_user_device": get_last_non_null("hashed_fides_user_device"),
+            "created_at": get_last_non_null("created_at"),
+            "updated_at": get_last_non_null("updated_at"),
+            "encrypted_email": get_last_non_null("encrypted_email"),
+            "encrypted_phone": get_last_non_null("encrypted_phone"),
+            "encrypted_device": get_last_non_null("encrypted_device"),
+            "served": served_json,
+        })
+
+    return aggregated
