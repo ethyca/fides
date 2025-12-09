@@ -30,15 +30,6 @@ const mockMessageApi = {
   warning: jest.fn(),
 };
 
-jest.mock("fidesui", () => ({
-  useMessage: jest.fn(() => mockMessageApi),
-  Icons: {
-    Checkmark: () => null,
-    Close: () => null,
-    TrashCan: () => null,
-  },
-}));
-
 const mockModalApi = {
   confirm: jest.fn(),
   info: jest.fn(),
@@ -46,6 +37,16 @@ const mockModalApi = {
   error: jest.fn(),
   warning: jest.fn(),
 } as any;
+
+jest.mock("fidesui", () => ({
+  useMessage: jest.fn(() => mockMessageApi),
+  useAntModal: jest.fn(() => mockModalApi),
+  Icons: {
+    Checkmark: () => null,
+    Close: () => null,
+    TrashCan: () => null,
+  },
+}));
 
 describe("usePrivacyRequestBulkActions", () => {
   // Shared test data
@@ -79,7 +80,6 @@ describe("usePrivacyRequestBulkActions", () => {
       usePrivacyRequestBulkActions({
         requests: mockRequests,
         selectedIds: ["1", "3"],
-        modalApi: mockModalApi,
       }),
     );
 
@@ -117,7 +117,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -160,7 +159,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -205,7 +203,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -239,7 +236,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -274,7 +270,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -298,7 +293,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 

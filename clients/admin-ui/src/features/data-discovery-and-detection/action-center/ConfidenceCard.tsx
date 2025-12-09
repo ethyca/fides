@@ -82,37 +82,33 @@ export const ConfidenceCard = ({
   monitorId,
 }: ConfidenceCardProps) => {
   const severity = mapConfidenceBucketToSeverity(item.severity);
-  const { confirmAll, contextHolder } = useConfirmAllFields(monitorId);
+  const { confirmAll } = useConfirmAllFields(monitorId);
 
   const handleConfirmAll = () => {
     confirmAll(item.severity, item.count);
   };
 
   return (
-    <>
-      {contextHolder}
-      <Card
-        size="small"
-        styles={{ body: { display: "none" } }}
-        title={
-          <Space>
-            <Avatar size={24} icon={<SparkleIcon color="black" />} />
-            <Text type="secondary" className="font-normal">
-              {nFormatter(item.count)}{" "}
-              {pluralize(item.count, "field", "fields")}
-            </Text>
-            <Text>{item.label}</Text>
-            {severity && (
-              <SeverityGauge severity={severity} format={() => null} />
-            )}
-          </Space>
-        }
-        actions={getActions({
-          item,
-          reviewHref,
-          onConfirmAll: handleConfirmAll,
-        })}
-      />
-    </>
+    <Card
+      size="small"
+      styles={{ body: { display: "none" } }}
+      title={
+        <Space>
+          <Avatar size={24} icon={<SparkleIcon color="black" />} />
+          <Text type="secondary" className="font-normal">
+            {nFormatter(item.count)} {pluralize(item.count, "field", "fields")}
+          </Text>
+          <Text>{item.label}</Text>
+          {severity && (
+            <SeverityGauge severity={severity} format={() => null} />
+          )}
+        </Space>
+      }
+      actions={getActions({
+        item,
+        reviewHref,
+        onConfirmAll: handleConfirmAll,
+      })}
+    />
   );
 };

@@ -7,6 +7,7 @@ import {
   AntSpace as Space,
   AntTypography as Typography,
   FloatingMenu,
+  useAntModal,
   useMessage,
 } from "fidesui";
 import { filter } from "lodash";
@@ -88,7 +89,7 @@ const TaxonomyPage: NextPage = () => {
     null,
   );
 
-  const [modal, modalContext] = Modal.useModal();
+  const modal = useAntModal();
 
   const [deleteCustomTaxonomy] = useDeleteCustomTaxonomyMutation();
 
@@ -204,7 +205,6 @@ const TaxonomyPage: NextPage = () => {
 
   return (
     <Layout title="Taxonomy">
-      {modalContext}
       <Flex vertical className="h-full">
         <div>
           <PageHeader heading="Taxonomy" />
