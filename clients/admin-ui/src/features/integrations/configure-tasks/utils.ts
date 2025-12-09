@@ -1,6 +1,102 @@
-import { ConditionLeaf } from "~/types/api";
+import { Dayjs } from "dayjs";
+
+import { ConditionLeaf, Operator } from "~/types/api";
 
 import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
+
+// Field type detection
+export type FieldType = "boolean" | "date" | "location" | "policy" | "string";
+
+// Hardcoded list of date fields
+export const DATE_FIELDS = [
+  "privacy_request.created_at",
+  "privacy_request.requested_at",
+  "privacy_request.due_date",
+  "privacy_request.identity_verified_at",
+];
+
+/**
+ * Determines the field type based on the field address.
+ * This is used to render appropriate input components for different field types.
+ */
+export const getFieldType = (fieldAddress: string): FieldType => {
+  // Check date fields
+  if (DATE_FIELDS.includes(fieldAddress)) {
+    return "date";
+  }
+
+  // Check location field
+  if (fieldAddress === "privacy_request.location") {
+    return "location";
+  }
+
+  // Check policy ID field
+  if (fieldAddress === "privacy_request.policy.id") {
+    return "policy";
+  }
+
+  // Check boolean fields (known boolean fields in privacy request)
+  if (
+    fieldAddress.includes("has_access_rule") ||
+    fieldAddress.includes("has_erasure_rule") ||
+    fieldAddress.includes("has_consent_rule") ||
+    fieldAddress.includes("has_update_rule")
+  ) {
+    return "boolean";
+  }
+
+  return "string";
+};
+
+/**
+ * Parses a form value into the appropriate type for a condition.
+ * Handles Dayjs objects, booleans, numbers, and strings.
+ */
+export const parseConditionValue = (
+  operator: Operator,
+  rawValue?: string | boolean | Dayjs,
+): string | number | boolean | null => {
+  if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
+    return null;
+  }
+
+  // Handle Dayjs objects (from DatePicker)
+  if (rawValue && typeof rawValue === "object" && "toISOString" in rawValue) {
+    return (rawValue as Dayjs).toISOString();
+  }
+
+  // Handle boolean values directly (from Radio.Group)
+  if (typeof rawValue === "boolean") {
+    return rawValue;
+  }
+
+  // Handle string values
+  if (typeof rawValue === "string") {
+    if (!rawValue.trim()) {
+      return null;
+    }
+
+    // Try boolean first
+    if (rawValue.toLowerCase() === "true") {
+      return true;
+    }
+    if (rawValue.toLowerCase() === "false") {
+      return false;
+    }
+
+    // Try number
+    const numValue = Number(rawValue);
+    if (!Number.isNaN(numValue)) {
+      return numValue;
+    }
+
+    // Date strings and location strings pass through as-is
+    // Default to string
+    return rawValue;
+  }
+
+  return null;
+};
 
 // Determine field source based on editing condition
 export const getInitialFieldSource = (
@@ -176,4 +272,45 @@ export const groupFieldsByCategory = (
     label: category,
     options: options.sort((a, b) => a.label.localeCompare(b.label)),
   }));
+};
+
+// Operator options for the condition form
+export const OPERATOR_OPTIONS = [
+  { label: "Equals", value: Operator.EQ },
+  { label: "Not equals", value: Operator.NEQ },
+  { label: "Greater than", value: Operator.GT },
+  { label: "Greater than or equal", value: Operator.GTE },
+  { label: "Less than", value: Operator.LT },
+  { label: "Less than or equal", value: Operator.LTE },
+  { label: "Exists", value: Operator.EXISTS },
+  { label: "Does not exist", value: Operator.NOT_EXISTS },
+  { label: "List contains", value: Operator.LIST_CONTAINS },
+  { label: "Not in list", value: Operator.NOT_IN_LIST },
+  { label: "Starts with", value: Operator.STARTS_WITH },
+  { label: "Contains", value: Operator.CONTAINS },
+];
+
+/**
+ * Gets the appropriate tooltip text for the value field based on the field type.
+ */
+export const getValueTooltip = (
+  fieldType: FieldType,
+  isValueDisabled: boolean,
+): string => {
+  if (isValueDisabled) {
+    return "Value is not required for exists/not exists operators";
+  }
+
+  switch (fieldType) {
+    case "boolean":
+      return "Select true or false";
+    case "date":
+      return "Select a date and time";
+    case "location":
+      return "Select a location";
+    case "policy":
+      return "Select a policy";
+    default:
+      return "Enter the value to compare against. Can be text, number, or true/false";
+  }
 };

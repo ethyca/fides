@@ -1,7 +1,7 @@
+import { Dayjs } from "dayjs";
 import {
   AntButton as Button,
   AntForm as Form,
-  AntInput as Input,
   AntRadio as Radio,
   AntSelect as Select,
   Flex,
@@ -13,47 +13,23 @@ import { DatasetReferencePicker } from "~/features/common/dataset";
 import { useFlags } from "~/features/common/features/features.slice";
 import { ConditionLeaf, Operator } from "~/types/api";
 
+import { ConditionValueSelector } from "./components/ConditionValueSelector";
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
 import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicker";
 import { FieldSource } from "./types";
-import { getInitialFieldSource } from "./utils";
+import {
+  getFieldType,
+  getInitialFieldSource,
+  getValueTooltip,
+  OPERATOR_OPTIONS,
+  parseConditionValue,
+} from "./utils";
 
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string;
+  value?: string | boolean | Dayjs;
 }
-
-// Utility function to parse condition value
-const parseConditionValue = (
-  operator: Operator,
-  rawValue?: string,
-): string | number | boolean | null => {
-  if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
-    return null;
-  }
-
-  if (!rawValue?.trim()) {
-    return null;
-  }
-
-  // Try boolean first
-  if (rawValue.toLowerCase() === "true") {
-    return true;
-  }
-  if (rawValue.toLowerCase() === "false") {
-    return false;
-  }
-
-  // Try number
-  const numValue = Number(rawValue);
-  if (!Number.isNaN(numValue)) {
-    return numValue;
-  }
-
-  // Default to string
-  return rawValue;
-};
 
 interface AddConditionFormProps {
   onAdd: (condition: ConditionLeaf) => void;
@@ -82,21 +58,11 @@ const AddConditionForm = ({
     getInitialFieldSource(editingCondition),
   );
 
-  // Operator options for the select dropdown
-  const operatorOptions = [
-    { label: "Equals", value: Operator.EQ },
-    { label: "Not equals", value: Operator.NEQ },
-    { label: "Greater than", value: Operator.GT },
-    { label: "Greater than or equal", value: Operator.GTE },
-    { label: "Less than", value: Operator.LT },
-    { label: "Less than or equal", value: Operator.LTE },
-    { label: "Exists", value: Operator.EXISTS },
-    { label: "Does not exist", value: Operator.NOT_EXISTS },
-    { label: "List contains", value: Operator.LIST_CONTAINS },
-    { label: "Not in list", value: Operator.NOT_IN_LIST },
-    { label: "Starts with", value: Operator.STARTS_WITH },
-    { label: "Contains", value: Operator.CONTAINS },
-  ];
+  // Watch the selected field to determine its type
+  const selectedFieldAddress = Form.useWatch("fieldAddress", form);
+  const selectedFieldType = selectedFieldAddress
+    ? getFieldType(selectedFieldAddress)
+    : "string";
 
   // Set initial values if editing
   const initialValues = editingCondition
@@ -225,7 +191,7 @@ const AddConditionForm = ({
         <Select
           placeholder="Select operator"
           aria-label="Select operator"
-          options={operatorOptions}
+          options={OPERATOR_OPTIONS}
           data-testid="operator-select"
         />
       </Form.Item>
@@ -239,20 +205,11 @@ const AddConditionForm = ({
             message: "Value is required for this operator",
           },
         ]}
-        tooltip={
-          isValueDisabled
-            ? "Value is not required for exists/not exists operators"
-            : "Enter the value to compare against. Can be text, number, or true/false"
-        }
+        tooltip={getValueTooltip(selectedFieldType, isValueDisabled)}
       >
-        <Input
-          placeholder={
-            isValueDisabled
-              ? "Not required"
-              : "Enter value (text, number, or true/false)"
-          }
+        <ConditionValueSelector
+          fieldType={selectedFieldType}
           disabled={isValueDisabled}
-          data-testid="value-input"
         />
       </Form.Item>
 
