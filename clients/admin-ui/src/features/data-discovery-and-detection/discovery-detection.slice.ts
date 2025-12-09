@@ -95,32 +95,12 @@ interface IdentityProviderMonitorExecuteParams {
   monitor_config_key: string;
 }
 
-interface IdentityProviderMonitorPromoteParams {
+interface IdentityProviderResourceActionParam {
   monitor_config_key: string;
   urn: string;
 }
 
-interface IdentityProviderMonitorMuteParams {
-  monitor_config_key: string;
-  urn: string;
-}
-
-interface IdentityProviderMonitorUnmuteParams {
-  monitor_config_key: string;
-  urn: string;
-}
-
-interface IdentityProviderMonitorBulkPromoteParams {
-  monitor_config_key: string;
-  urns: string[];
-}
-
-interface IdentityProviderMonitorBulkMuteParams {
-  monitor_config_key: string;
-  urns: string[];
-}
-
-interface IdentityProviderMonitorBulkUnmuteParams {
+interface IdentityProviderResourceBulkActionParam {
   monitor_config_key: string;
   urns: string[];
 }
@@ -400,7 +380,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     promoteIdentityProviderMonitorResult: build.mutation<
       any,
-      IdentityProviderMonitorPromoteParams
+      IdentityProviderResourceActionParam
     >({
       query: ({ monitor_config_key, urn }) => ({
         method: "POST",
@@ -410,7 +390,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     muteIdentityProviderMonitorResult: build.mutation<
       any,
-      IdentityProviderMonitorMuteParams
+      IdentityProviderResourceActionParam
     >({
       query: ({ monitor_config_key, urn }) => ({
         method: "POST",
@@ -421,7 +401,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     unmuteIdentityProviderMonitorResult: build.mutation<
       any,
-      IdentityProviderMonitorUnmuteParams
+      IdentityProviderResourceActionParam
     >({
       query: ({ monitor_config_key, urn }) => ({
         method: "POST",
@@ -432,7 +412,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
-      IdentityProviderMonitorBulkPromoteParams
+      IdentityProviderResourceBulkActionParam
     >({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
@@ -443,7 +423,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     bulkMuteIdentityProviderMonitorResults: build.mutation<
       any,
-      IdentityProviderMonitorBulkMuteParams
+      IdentityProviderResourceBulkActionParam
     >({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
@@ -454,7 +434,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     bulkUnmuteIdentityProviderMonitorResults: build.mutation<
       any,
-      IdentityProviderMonitorBulkUnmuteParams
+      IdentityProviderResourceBulkActionParam
     >({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
