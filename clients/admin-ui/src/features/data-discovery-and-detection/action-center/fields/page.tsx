@@ -5,7 +5,6 @@ import {
   AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
-  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -76,7 +75,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -121,20 +119,12 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
 
-  const bulkActions = useBulkActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
-  const fieldActions = useFieldActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
+  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -572,7 +562,6 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-      {modalContext}
     </FixedLayout>
   );
 };
