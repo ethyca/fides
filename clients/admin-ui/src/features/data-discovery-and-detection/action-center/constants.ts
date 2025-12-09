@@ -115,6 +115,12 @@ export enum ConfidenceLevelLabel {
   LOW = "Low confidence",
 }
 
+export enum InfrastructureSystemBulkActionType {
+  ADD = "add",
+  IGNORE = "ignore",
+  RESTORE = "restore",
+}
+
 export const INFRASTRUCTURE_SYSTEMS_TABS = [
   {
     key: ActionCenterTabHash.ATTENTION_REQUIRED,

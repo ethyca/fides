@@ -10,6 +10,7 @@ import {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
 } from "../../discovery-detection.slice";
+import { InfrastructureSystemBulkActionType } from "../constants";
 
 type InfrastructureSystemWithUrn = SystemStagedResourcesAggregateRecord & {
   urn?: string | null;
@@ -20,8 +21,6 @@ interface UseInfrastructureSystemsBulkActionsConfig {
   getRecordKey: (item: SystemStagedResourcesAggregateRecord) => string;
   onSuccess?: () => void;
 }
-
-type BulkActionType = "add" | "ignore" | "restore";
 
 export const useInfrastructureSystemsBulkActions = ({
   monitorId,
@@ -49,7 +48,7 @@ export const useInfrastructureSystemsBulkActions = ({
 
   const handleBulkAction = useCallback(
     async (
-      action: BulkActionType,
+      action: InfrastructureSystemBulkActionType,
       selectedItems: InfrastructureSystemWithUrn[],
     ) => {
       // Extract URNs from selected items
@@ -69,21 +68,21 @@ export const useInfrastructureSystemsBulkActions = ({
       let result;
       let successMessage: string;
 
-      if (action === "add") {
+      if (action === InfrastructureSystemBulkActionType.ADD) {
         result = await bulkPromoteIdentityProviderMonitorResultsMutation({
           monitor_config_key: monitorId,
           urns,
         });
         const count = urns.length;
         successMessage = `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been promoted to the system inventory.`;
-      } else if (action === "ignore") {
+      } else if (action === InfrastructureSystemBulkActionType.IGNORE) {
         result = await bulkMuteIdentityProviderMonitorResultsMutation({
           monitor_config_key: monitorId,
           urns,
         });
         const count = urns.length;
         successMessage = `${count} system${count > 1 ? "s" : ""} ${count > 1 ? "have" : "has"} been ignored.`;
-      } else if (action === "restore") {
+      } else if (action === InfrastructureSystemBulkActionType.RESTORE) {
         result = await bulkUnmuteIdentityProviderMonitorResultsMutation({
           monitor_config_key: monitorId,
           urns,
