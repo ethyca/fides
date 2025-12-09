@@ -106,6 +106,7 @@ CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
     MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
     MessagingActionType.MANUAL_TASK_DIGEST.value,
+    MessagingActionType.EXTERNAL_USER_WELCOME.value,
 )
 
 

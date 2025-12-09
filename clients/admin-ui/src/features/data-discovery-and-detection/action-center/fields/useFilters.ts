@@ -7,7 +7,7 @@ import {
 } from "nuqs";
 import { useEffect } from "react";
 
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import { getFilterableStatuses, RESOURCE_STATUS } from "./MonitorFields.const";
 
@@ -16,12 +16,10 @@ export const useMonitorFieldsFilters = () => {
     "resourceStatus",
     parseAsArrayOf(parseAsStringLiteral(RESOURCE_STATUS)),
   );
-  const [confidenceScore, setConfidenceScore] = useQueryState(
-    "confidenceScore",
+  const [confidenceBucket, setConfidenceBucket] = useQueryState(
+    "confidenceBucket",
     parseAsArrayOf(
-      parseAsStringEnum<ConfidenceScoreRange>(
-        Object.values(ConfidenceScoreRange),
-      ),
+      parseAsStringEnum<ConfidenceBucket>(Object.values(ConfidenceBucket)),
     ),
   );
   const [dataCategory, setDataCategory] = useQueryState(
@@ -44,7 +42,7 @@ export const useMonitorFieldsFilters = () => {
   const resetToInitialState = () => {
     const defaultStatuses = getFilterableStatuses([...RESOURCE_STATUS]);
     setResourceStatus(defaultStatuses);
-    setConfidenceScore(null);
+    setConfidenceBucket(null);
     setDataCategory(null);
   };
 
@@ -52,15 +50,15 @@ export const useMonitorFieldsFilters = () => {
     // Use empty array instead of null to indicate "no filters selected"
     // null is reserved for "not yet initialized"
     setResourceStatus([]);
-    setConfidenceScore([]);
+    setConfidenceBucket([]);
     setDataCategory([]);
   };
 
   return {
     resourceStatus,
     setResourceStatus,
-    confidenceScore,
-    setConfidenceScore,
+    confidenceBucket,
+    setConfidenceBucket,
     dataCategory,
     setDataCategory,
     reset,

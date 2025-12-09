@@ -8,13 +8,21 @@ from fides.api.models.manual_task import ManualTask
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
+from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
+    PrivacyRequestDataTransformer,
+)
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
+from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 from fides.api.util.collection_util import Row
 
 
 def extract_conditional_dependency_data_from_inputs(
-    *inputs: list[Row], manual_task: ManualTask, input_keys: list[CollectionAddress]
+    *inputs: list[Row],
+    manual_task: ManualTask,
+    input_keys: list[CollectionAddress],
+    privacy_request: PrivacyRequest,
 ) -> dict[str, Any]:
     """
     Extract data for conditional dependency field addresses from input data.
@@ -33,14 +41,35 @@ def extract_conditional_dependency_data_from_inputs(
 
     conditional_data: dict[str, Any] = {}
 
-    # Get all conditional dependencies field addresses
+    # Get all task input conditional dependencies field addresses
     field_addresses = [
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
         if dependency.field_address
+        and not dependency.field_address.startswith("privacy_request.")
     ]
 
-    # if no field addresses, return empty conditional data
+    # Get all privacy request conditional dependencies field addresses
+    privacy_request_field_addresses = {
+        dependency.field_address
+        for dependency in manual_task.conditional_dependencies
+        if dependency.field_address
+        and dependency.field_address.startswith("privacy_request.")
+    }
+    # If there are any privacy request conditional dependencies field addresses,
+    # transform the privacy request data into a dictionary structure for evaluation
+    if privacy_request_field_addresses:
+        privacy_request_data_transformer = PrivacyRequestDataTransformer(
+            privacy_request
+        )
+        conditional_privacy_request_data = (
+            privacy_request_data_transformer.to_evaluation_data(
+                privacy_request_field_addresses
+            )
+        )
+        conditional_data = {**conditional_privacy_request_data}
+
+    # if no field addresses, return conditional data which may contain privacy request data or be empty
     # This will allow the manual task to be executed if there are no conditional dependencies
     if not field_addresses:
         return conditional_data
@@ -101,30 +130,6 @@ def parse_field_address(field_address: str) -> tuple[str, list[str]]:
         source_collection_key = str(field_address_obj.collection_address())
         field_path = list(field_address_obj.field_path.levels)
     return source_collection_key, field_path
-
-
-def extract_nested_field_value(data: Any, field_path: list[str]) -> Any:
-    """
-    Extract a nested field value by traversing the field path.
-
-    Args:
-        data: The data to extract from (usually a dict)
-        field_path: List of field names to traverse (e.g., ["profile", "preferences", "theme"])
-
-    Returns:
-        The value at the end of the field path, or None if not found
-    """
-    if not field_path:
-        return data
-
-    current = data
-    for field_name in field_path:
-        if isinstance(current, dict) and field_name in current:
-            current = current[field_name]
-        else:
-            return None
-
-    return current
 
 
 def set_nested_value(field_address: str, value: Any) -> dict[str, Any]:

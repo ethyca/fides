@@ -7,7 +7,11 @@
  */
 export type PreferenceFidesMetaCreate = {
   /**
-   * ISO timestamp when the preference was collected (auto-populated if not provided)
+   * The Fides property id where the preference was collected
    */
-  collected_at?: string | null;
+  property_id?: string | null;
+  /**
+   * Identifier for the experience config history
+   */
+  experience_config_history_id?: string | null;
 };

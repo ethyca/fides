@@ -439,6 +439,9 @@ describe("External Manual Tasks", () => {
         cy.get('[data-testid="complete-modal-cancel-button"]').click();
       });
 
+      // Wait for first modal to fully close before opening second
+      cy.get('[data-testid="complete-task-modal"]').should("not.exist");
+
       // Test second task with different custom fields format
       cy.get('[data-testid="external-tasks-table"] tbody tr')
         .contains("Export Analytics Data")

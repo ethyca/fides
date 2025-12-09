@@ -704,12 +704,12 @@ class TestDuplicateRequestRunnerService:
             db.refresh(duplicate_request)
             assert duplicate_request.status == expected_status
             if expected_status == PrivacyRequestStatus.duplicate:
-                error_log = duplicate_request.execution_logs.filter_by(
-                    status=ExecutionLogStatus.error
+                skipped_log = duplicate_request.execution_logs.filter_by(
+                    status=ExecutionLogStatus.skipped
                 ).first()
-                assert error_log is not None
+                assert skipped_log is not None
                 assert (
-                    error_log.message
+                    skipped_log.message
                     == f"Request {duplicate_request.id} is a duplicate: it is duplicating request(s) ['{privacy_request_with_email_identity.id}']."
                 )
 
@@ -757,12 +757,12 @@ class TestDuplicateRequestRunnerService:
             assert duplicate_request.status == PrivacyRequestStatus.duplicate
             # verify execution log is added
             assert duplicate_request.execution_logs is not None
-            error_log = duplicate_request.execution_logs.filter_by(
-                status=ExecutionLogStatus.error
+            skipped_log = duplicate_request.execution_logs.filter_by(
+                status=ExecutionLogStatus.skipped
             ).first()
-            assert error_log is not None
+            assert skipped_log is not None
             assert (
-                error_log.message
+                skipped_log.message
                 == f"Request {duplicate_request.id} is a duplicate: it is duplicating actioned request(s) ['{privacy_request_with_email_identity.id}']."
             )
 

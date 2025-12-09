@@ -1,7 +1,6 @@
 import { useMessage } from "fidesui";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { DatastoreStagedResourceAPIResponse } from "~/types/api/models/DatastoreStagedResourceAPIResponse";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
@@ -10,6 +9,7 @@ import {
   ACTIONS_DISABLED_MESSAGE,
   FIELD_ACTION_HOTKEYS,
 } from "./FieldActions.const";
+import { MonitorResource } from "./types";
 import { useFieldActions } from "./useFieldActions";
 
 // DOM selectors for category select components
@@ -23,11 +23,7 @@ const SELECTORS = {
   LIST_ITEM_SELECT: "[data-classification-select]",
 } as const;
 
-type ActiveListItem =
-  | (DatastoreStagedResourceAPIResponse & {
-      itemKey: React.Key;
-    })
-  | null;
+type ActiveListItem = MonitorResource | null;
 
 /**
  * Hook to handle keyboard shortcuts for field actions in the Action Center
@@ -41,7 +37,7 @@ type ActiveListItem =
 export const useFieldActionHotkeys = (
   activeListItem: ActiveListItem | undefined,
   fieldActions: ReturnType<typeof useFieldActions>,
-  updateSelectedListItem: (itemKey: React.Key, selected: boolean) => void,
+  updateSelectedListItem: (key: React.Key, selected: boolean) => void,
   onNavigate: (urn: string | undefined) => void,
   isDrawerOpen: boolean,
   onRefresh: () => void,
