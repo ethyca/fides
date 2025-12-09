@@ -58,7 +58,8 @@ recommended_headers: list[HeaderRule] = [
                         upgrade-insecure-requests;
                     """,
                 ),
-            )
+            ),
+            ("X-Frame-Options", "SAMEORIGIN"),
         ],
     ),
 ]
