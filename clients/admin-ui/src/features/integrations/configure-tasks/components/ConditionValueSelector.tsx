@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import {
   AntDatePicker as DatePicker,
   AntInput as Input,
@@ -5,6 +6,7 @@ import {
   AntSelect as Select,
   LocationSelect,
 } from "fidesui";
+import { ChangeEvent } from "react";
 
 import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
 
@@ -13,15 +15,20 @@ import { FieldType } from "../utils";
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
   disabled?: boolean;
+  value?: unknown;
+  onChange?: (value: unknown) => void;
 }
 
 /**
  * Renders the appropriate input component based on the field type.
  * Handles boolean, date, location, policy, and string field types.
+ * This component is designed to work with Ant Design Form.Item.
  */
 export const ConditionValueSelector = ({
   fieldType,
   disabled = false,
+  value,
+  onChange,
 }: ConditionValueSelectorProps) => {
   // Fetch policies for policy selector
   const { data: policiesData } = useGetPoliciesQuery();
@@ -29,7 +36,12 @@ export const ConditionValueSelector = ({
   // Boolean input
   if (fieldType === "boolean") {
     return (
-      <Radio.Group disabled={disabled} data-testid="value-boolean-input">
+      <Radio.Group
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        disabled={disabled}
+        data-testid="value-boolean-input"
+      >
         <Radio value>True</Radio>
         <Radio value={false}>False</Radio>
       </Radio.Group>
@@ -40,6 +52,8 @@ export const ConditionValueSelector = ({
   if (fieldType === "date") {
     return (
       <DatePicker
+        value={value as Dayjs | null}
+        onChange={onChange}
         showTime
         format="YYYY-MM-DD HH:mm:ss"
         placeholder={disabled ? "Not required" : "Select date and time"}
@@ -54,6 +68,8 @@ export const ConditionValueSelector = ({
   if (fieldType === "location") {
     return (
       <LocationSelect
+        value={value as string | null}
+        onChange={onChange}
         placeholder={disabled ? "Not required" : "Select a location"}
         disabled={disabled}
         data-testid="value-location-input"
@@ -72,6 +88,8 @@ export const ConditionValueSelector = ({
 
     return (
       <Select
+        value={value as string}
+        onChange={onChange}
         options={policyOptions}
         placeholder={disabled ? "Not required" : "Select a policy"}
         disabled={disabled}
@@ -89,6 +107,10 @@ export const ConditionValueSelector = ({
   // Default: string input
   return (
     <Input
+      value={value as string}
+      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+        onChange?.(e.target.value)
+      }
       placeholder={
         disabled ? "Not required" : "Enter value (text, number, or true/false)"
       }
