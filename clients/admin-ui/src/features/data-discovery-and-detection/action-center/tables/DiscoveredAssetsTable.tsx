@@ -12,6 +12,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
   ConsentAlertInfo,
@@ -37,6 +38,10 @@ export const DiscoveredAssetsTable = ({
   systemId,
   consentStatus,
 }: DiscoveredAssetsTableProps) => {
+  // Feature flags
+  const { flags } = useFlags();
+  const showLlmClassification = flags.alphaWebMonitorLlmClassification;
+
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
@@ -188,14 +193,18 @@ export const DiscoveredAssetsTable = ({
                           label: "Ignore",
                           onClick: handleBulkIgnore,
                         },
-                        {
-                          type: "divider" as const,
-                        },
-                        {
-                          key: "classify-ai",
-                          label: "Classify with AI",
-                          onClick: handleClassifyWithAI,
-                        },
+                        ...(showLlmClassification
+                          ? [
+                              {
+                                type: "divider" as const,
+                              },
+                              {
+                                key: "classify-ai",
+                                label: "Classify with AI",
+                                onClick: handleClassifyWithAI,
+                              },
+                            ]
+                          : []),
                       ]),
                 ],
               }}
@@ -215,14 +224,16 @@ export const DiscoveredAssetsTable = ({
               </Button>
             </Dropdown>
 
-            <Button
-              onClick={handleClassifyWithAI}
-              loading={isClassifyingAssets}
-              disabled={anyBulkActionIsLoading || actionsDisabled}
-              data-testid="classify-ai"
-            >
-              Classify with AI
-            </Button>
+            {showLlmClassification && (
+              <Button
+                onClick={handleClassifyWithAI}
+                loading={isClassifyingAssets}
+                disabled={anyBulkActionIsLoading || actionsDisabled}
+                data-testid="classify-ai"
+              >
+                Classify with AI
+              </Button>
+            )}
             <Tooltip
               title={
                 disableAddAll
