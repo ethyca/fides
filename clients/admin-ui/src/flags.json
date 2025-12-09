@@ -90,5 +90,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaNewOktaAuth": {
+    "label": "New Okta authentication",
+    "description": "Use OAuth2 authentication and Identity Provider Monitor endpoints for Okta integrations",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
