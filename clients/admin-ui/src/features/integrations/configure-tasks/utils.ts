@@ -1,4 +1,5 @@
 import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 import { ConditionLeaf, Operator } from "~/types/api";
 
@@ -96,6 +97,35 @@ export const parseConditionValue = (
   }
 
   return null;
+};
+
+/**
+ * Parses a stored condition value back to the appropriate form value type.
+ * This is used when editing an existing condition to populate the form correctly.
+ */
+export const parseStoredValueForForm = (
+  fieldAddress: string,
+  storedValue: string | number | boolean | null | undefined,
+): string | boolean | Dayjs | undefined => {
+  if (storedValue === null || storedValue === undefined) {
+    return undefined;
+  }
+
+  const fieldType = getFieldType(fieldAddress);
+
+  // Handle boolean fields
+  if (fieldType === "boolean" && typeof storedValue === "boolean") {
+    return storedValue;
+  }
+
+  // Handle date fields - convert ISO string to Dayjs
+  if (fieldType === "date" && typeof storedValue === "string") {
+    const parsed = dayjs(storedValue);
+    return parsed.isValid() ? parsed : undefined;
+  }
+
+  // For all other types (location, policy, string), return as string
+  return storedValue.toString();
 };
 
 // Determine field source based on editing condition

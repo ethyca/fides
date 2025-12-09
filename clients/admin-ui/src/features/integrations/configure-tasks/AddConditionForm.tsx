@@ -23,6 +23,7 @@ import {
   getValueTooltip,
   OPERATOR_OPTIONS,
   parseConditionValue,
+  parseStoredValueForForm,
 } from "./utils";
 
 interface FormValues {
@@ -70,7 +71,10 @@ const AddConditionForm = ({
         fieldSource: getInitialFieldSource(editingCondition),
         fieldAddress: editingCondition.field_address,
         operator: editingCondition.operator,
-        value: editingCondition.value?.toString() || "",
+        value: parseStoredValueForForm(
+          editingCondition.field_address,
+          editingCondition.value,
+        ),
       }
     : {
         fieldSource: FieldSource.DATASET,

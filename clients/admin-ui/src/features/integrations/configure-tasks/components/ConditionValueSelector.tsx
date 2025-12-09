@@ -15,8 +15,8 @@ import { FieldType } from "../utils";
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
   disabled?: boolean;
-  value?: unknown;
-  onChange?: (value: unknown) => void;
+  value?: string | boolean | Dayjs | null;
+  onChange?: (value: string | boolean | Dayjs | null) => void;
 }
 
 /**
@@ -30,8 +30,10 @@ export const ConditionValueSelector = ({
   value,
   onChange,
 }: ConditionValueSelectorProps) => {
-  // Fetch policies for policy selector
-  const { data: policiesData } = useGetPoliciesQuery();
+  // Fetch policies for policy selector (only when needed)
+  const { data: policiesData } = useGetPoliciesQuery(undefined, {
+    skip: fieldType !== "policy",
+  });
 
   // Boolean input
   if (fieldType === "boolean") {
@@ -42,6 +44,7 @@ export const ConditionValueSelector = ({
         disabled={disabled}
         data-testid="value-boolean-input"
       >
+        {/* eslint-disable-next-line react/jsx-boolean-value */}
         <Radio value>True</Radio>
         <Radio value={false}>False</Radio>
       </Radio.Group>
