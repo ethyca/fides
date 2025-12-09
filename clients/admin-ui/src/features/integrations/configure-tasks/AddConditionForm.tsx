@@ -65,6 +65,18 @@ const AddConditionForm = ({
     ? getFieldType(selectedFieldAddress)
     : "string";
 
+  // Check if operator should be disabled and set to LIST_CONTAINS
+  const isOperatorFixed =
+    selectedFieldType === "location_groups" ||
+    selectedFieldType === "location_regulations";
+
+  // Automatically set operator to LIST_CONTAINS for location_groups and location_regulations
+  useEffect(() => {
+    if (isOperatorFixed) {
+      form.setFieldValue("operator", Operator.LIST_CONTAINS);
+    }
+  }, [isOperatorFixed, form]);
+
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
@@ -197,6 +209,7 @@ const AddConditionForm = ({
           aria-label="Select operator"
           options={OPERATOR_OPTIONS}
           data-testid="operator-select"
+          disabled={isOperatorFixed}
         />
       </Form.Item>
 
