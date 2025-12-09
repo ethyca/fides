@@ -90,5 +90,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaWebMonitorLlmClassification": {
+    "label": "Web monitor LLM classification",
+    "description": "Use LLM to classify website assets that cannot be identified by Compass",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
