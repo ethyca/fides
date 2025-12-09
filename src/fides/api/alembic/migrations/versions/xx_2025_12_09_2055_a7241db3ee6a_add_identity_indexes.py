@@ -22,7 +22,7 @@ down_revision = "71f3ded6045a"
 branch_labels = None
 depends_on = None
 
-INDEX_ROW_COUNT_THRESHOLD = 1000000
+from fides.api.migrations.post_upgrade_index_creation import INDEX_ROW_COUNT_THRESHOLD
 
 
 def upgrade():
