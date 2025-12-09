@@ -386,7 +386,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
         params,
       }),
-      providesTags: () => ["Discovery Monitor Results"],
+      providesTags: () => ["Identity Provider Monitor Results"],
     }),
     executeIdentityProviderMonitor: build.mutation<
       { monitor_execution_id: string; task_id: string | null },
@@ -406,7 +406,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/${urn}/promote`,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     muteIdentityProviderMonitorResult: build.mutation<
       any,
@@ -417,7 +417,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
         body: [urn],
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     unmuteIdentityProviderMonitorResult: build.mutation<
       any,
@@ -428,7 +428,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
         body: [urn],
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
@@ -439,7 +439,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
         body: urns,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkMuteIdentityProviderMonitorResults: build.mutation<
       any,
@@ -450,7 +450,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
         body: urns,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkUnmuteIdentityProviderMonitorResults: build.mutation<
       any,
@@ -461,7 +461,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
         body: urns,
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
   }),
 });
