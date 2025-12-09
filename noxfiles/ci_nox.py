@@ -406,9 +406,10 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
-    install_requirements(session, True)
-    command = ("pytest", "tests/", "--collect-only")
-    session.run(*command)
+    (install_requirements
+     (session, True))
+    command = ("pytest", "--collect-only", "tests/")
+    session.run(*command, env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"})
     validate_test_coverage(session)
 
 
@@ -426,8 +427,14 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
-    coverage_arg = "--cov-report=xml"
-    TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
+    additional_args = [
+        "--cov-report=xml",
+        "--cov=fides",
+        "--cov-branch",
+        "--no-cov-on-fail",
+        "-x"
+    ] if test_group != "nox" else []
+    TEST_MATRIX[test_group](session=session, additional_args=additional_args)
 
 
 @nox.session()
@@ -494,7 +501,7 @@ def check_worker_startup(session: Session) -> None:
 
 
 def _check_test_directory_coverage(
-    test_dir: str,
+        test_dir: str,
 ) -> tuple[list[str], list[str], list[str]]:
     """
     Check coverage for a single test directory.
@@ -558,9 +565,9 @@ def validate_test_coverage(session: nox.Session) -> None:
 
     for item in tests_dir.iterdir():
         if (
-            item.is_dir()
-            and not item.name.startswith("__")
-            and not item.name.startswith(".")
+                item.is_dir()
+                and not item.name.startswith("__")
+                and not item.name.startswith(".")
         ):
             existing_test_dirs.append(f"tests/{item.name}/")
 

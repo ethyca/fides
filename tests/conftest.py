@@ -2046,7 +2046,7 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
 
-
+@pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
     """Pytest hook automatically called for each xdist worker node configuration."""
     if hasattr(node, "workerinput") and node.workerinput:
