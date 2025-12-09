@@ -1,5 +1,6 @@
 import dayjs, { Dayjs } from "dayjs";
 
+import { formatDate } from "~/features/common/utils";
 import { ConditionLeaf, Operator } from "~/types/api";
 
 import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
@@ -350,6 +351,34 @@ export const OPERATOR_OPTIONS = [
   { label: "Starts with", value: Operator.STARTS_WITH },
   { label: "Contains", value: Operator.CONTAINS },
 ];
+
+/**
+ * Formats a condition value for display in the UI.
+ * Handles dates and other value types appropriately.
+ */
+export const formatConditionValue = (
+  condition: ConditionLeaf,
+): string | undefined => {
+  const { value, field_address: fieldAddress } = condition;
+
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  const fieldType = getFieldType(fieldAddress);
+
+  // Format date values
+  if (fieldType === "date" && typeof value === "string") {
+    try {
+      return formatDate(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  // For all other types, convert to string
+  return String(value);
+};
 
 /**
  * Gets the appropriate tooltip text for the value field based on the field type.
