@@ -11,7 +11,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.16"
+  DEFAULT_PYTHON_VERSION: "3.13.11"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -75,10 +75,6 @@ jobs:
   Build:
     needs: [Check-Backend-Changes, Collect-Tests]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
-    strategy:
-      matrix:
-        # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -93,17 +89,17 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          build-args: PYTHON_VERSION=${{ matrix.python_version }}
+          build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
           target: prod
-          outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
+          outputs: type=docker,dest=/tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           push: false
           tags: ${{ env.IMAGE }}
 
       - name: Upload container
         uses: actions/upload-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/python-${{ matrix.python_version }}.tar
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           retention-days: 1
 
   ##################
@@ -290,7 +286,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -307,11 +302,11 @@ jobs:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -350,19 +345,17 @@ jobs:
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -411,19 +404,17 @@ jobs:
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -520,17 +511,15 @@ jobs:
       id-token: write
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
