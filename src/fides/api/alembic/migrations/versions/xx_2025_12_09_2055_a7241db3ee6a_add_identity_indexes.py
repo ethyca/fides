@@ -74,11 +74,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index(
-        "ix_providedidentity_reqid_field_hash",
-        table_name="providedidentity",
-    )
-    op.drop_index(
-        "ix_privacyrequest_policy_created",
-        table_name="privacyrequest",
-    )
+    # Use IF EXISTS since indexes may not exist if creation was deferred
+    # due to large table size (>= 1 million rows)
+    op.execute("DROP INDEX IF EXISTS ix_providedidentity_reqid_field_hash")
+    op.execute("DROP INDEX IF EXISTS ix_privacyrequest_policy_created")
