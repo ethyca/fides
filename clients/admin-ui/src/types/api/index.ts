@@ -458,9 +458,6 @@ export type { PreferenceWithNoticeInformation } from "./models/PreferenceWithNot
 export type { PreVerifiedPrivacyPreferencesRequest } from "./models/PreVerifiedPrivacyPreferencesRequest";
 export type { PrivacyCenterConfig } from "./models/PrivacyCenterConfig";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
-export type { NestedFieldDict } from "./models/NestedFieldDict";
-export type { PrivacyRequestFieldDefinition } from "./models/PrivacyRequestFieldDefinition";
-export type { PrivacyRequestFieldsResponse } from "./models/PrivacyRequestFieldsResponse";
 export type { PrivacyDeclarationResponse } from "./models/PrivacyDeclarationResponse";
 export type { PrivacyExperienceGPPSettings } from "./models/PrivacyExperienceGPPSettings";
 export type { PrivacyExperienceMetaResponse } from "./models/PrivacyExperienceMetaResponse";
