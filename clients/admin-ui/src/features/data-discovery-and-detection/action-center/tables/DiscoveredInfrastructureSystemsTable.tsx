@@ -18,7 +18,10 @@ import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
-import { INFRASTRUCTURE_SYSTEMS_TABS } from "../constants";
+import {
+  INFRASTRUCTURE_SYSTEMS_TABS,
+  InfrastructureSystemBulkActionType,
+} from "../constants";
 import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
@@ -90,7 +93,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
   const allowIgnore = shouldAllowIgnore(activeParams);
 
   const handleBulkActionWithSelectedItems = useCallback(
-    (action: "add" | "ignore" | "restore") => {
+    (action: InfrastructureSystemBulkActionType) => {
       handleBulkAction(action, selectedItems);
     },
     [handleBulkAction, selectedItems],

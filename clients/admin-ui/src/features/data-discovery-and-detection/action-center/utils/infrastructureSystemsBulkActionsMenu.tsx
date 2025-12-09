@@ -2,11 +2,13 @@ import { AntMenuProps as MenuProps } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 
+import { InfrastructureSystemBulkActionType } from "../constants";
+
 interface GetBulkActionsMenuItemsConfig {
   isIgnoredTab: boolean;
   allowIgnore: boolean;
   isBulkActionInProgress: boolean;
-  onBulkAction: (action: "add" | "ignore" | "restore") => void;
+  onBulkAction: (action: InfrastructureSystemBulkActionType) => void;
 }
 
 export const getBulkActionsMenuItems = ({
@@ -18,9 +20,9 @@ export const getBulkActionsMenuItems = ({
   if (isIgnoredTab) {
     return [
       {
-        key: "restore",
+        key: InfrastructureSystemBulkActionType.RESTORE,
         label: "Restore",
-        onClick: () => onBulkAction("restore"),
+        onClick: () => onBulkAction(InfrastructureSystemBulkActionType.RESTORE),
         disabled: isBulkActionInProgress,
       },
     ];
@@ -30,17 +32,18 @@ export const getBulkActionsMenuItems = ({
     ...(allowIgnore
       ? [
           {
-            key: "ignore",
+            key: InfrastructureSystemBulkActionType.IGNORE,
             label: "Ignore",
-            onClick: () => onBulkAction("ignore"),
+            onClick: () =>
+              onBulkAction(InfrastructureSystemBulkActionType.IGNORE),
             disabled: isBulkActionInProgress,
           },
         ]
       : []),
     {
-      key: "add",
+      key: InfrastructureSystemBulkActionType.ADD,
       label: "Add",
-      onClick: () => onBulkAction("add"),
+      onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
       disabled: isBulkActionInProgress,
     },
   ];
