@@ -1,14 +1,14 @@
 import ast
+import csv
 import json
 import zipfile
-from io import BytesIO
+from io import BytesIO, StringIO
 from unittest import mock
 from unittest.mock import MagicMock, create_autospec, patch
 
-import pandas as pd
 import pytest
 from botocore.exceptions import ClientError, ParamValidationError
-from google.cloud.storage import Blob, Bucket, Client
+from google.cloud.storage import Blob
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import (
@@ -30,7 +30,7 @@ from fides.config import CONFIG
 @patch("fides.api.tasks.storage.get_gcs_blob", autospec=True)
 class TestUploadToGCS:
     def test_upload_to_gcs_success(
-        self, mock_get_gcs_blob, mock_write_to_in_memory_buffer
+            self, mock_get_gcs_blob, mock_write_to_in_memory_buffer
     ):
         mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
@@ -66,7 +66,7 @@ class TestUploadToGCS:
 
     @patch("fides.api.tasks.storage.logger", autospec=True)
     def test_upload_to_gcs_exception(
-        self, mock_logger, mock_get_gcs_blob, mock_write_to_in_memory_buffer
+            self, mock_logger, mock_get_gcs_blob, mock_write_to_in_memory_buffer
     ):
         mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
@@ -250,17 +250,21 @@ class TestWriteToInMemoryBuffer:
             assert "attachments.csv" in zip_file.namelist()
             assert "metadata.csv" in zip_file.namelist()
 
-            # Verify attachment data is properly written
-            attachment_data = pd.read_csv(zip_file.open("attachments.csv"))
-            assert "file_name" in attachment_data.columns
-            assert "file_size" in attachment_data.columns
-            assert "content_type" in attachment_data.columns
-            assert "content" not in attachment_data.columns
+            # Verify attachment data is properly written using csv module
+            with zip_file.open("attachments.csv") as csv_file:
+                content = csv_file.read().decode(CONFIG.security.encoding)
+                reader = csv.DictReader(StringIO(content))
+                rows = list(reader)
 
-            assert attachment_data.iloc[0]["file_name"] == "doc1.pdf"
-            assert attachment_data.iloc[0]["file_size"] == 1024
-            assert attachment_data.iloc[1]["file_name"] == "doc2.pdf"
-            assert attachment_data.iloc[1]["file_size"] == 2048
+                assert "file_name" in reader.fieldnames
+                assert "file_size" in reader.fieldnames
+                assert "content_type" in reader.fieldnames
+                assert "content" not in reader.fieldnames
+
+                assert rows[0]["file_name"] == "doc1.pdf"
+                assert rows[0]["file_size"] == "1024"
+                assert rows[1]["file_name"] == "doc2.pdf"
+                assert rows[1]["file_size"] == "2048"
 
     def test_write_to_in_memory_buffer_manual_webhook_attachments_json(self):
         """Test handling of attachments in manual webhook data (JSON format)."""
@@ -459,18 +463,24 @@ class TestWriteToInMemoryBuffer:
         assert isinstance(result, BytesIO)
         with zipfile.ZipFile(result) as zip_file:
             assert "user.csv" in zip_file.namelist()
-            # Verify the orders data is included in the user.csv file
-            user_data = pd.read_csv(zip_file.open("user.csv"))
-            assert "user.name" in user_data.columns
-            assert "user.orders" in user_data.columns
-            assert user_data.iloc[0]["user.name"] == "Test User"
-            # Use ast.literal_eval() to parse Python literal syntax
-            actual_orders = ast.literal_eval(user_data.iloc[0]["user.orders"])
-            expected_orders = [
-                {"id": "order1", "total": 100},
-                {"id": "order2", "total": 200},
-            ]
-            assert actual_orders == expected_orders
+
+            # Verify the orders data is included in the user.csv file using csv module
+            with zip_file.open("user.csv") as csv_file:
+                content = csv_file.read().decode(CONFIG.security.encoding)
+                reader = csv.DictReader(StringIO(content))
+                rows = list(reader)
+
+                assert "user.name" in reader.fieldnames
+                assert "user.orders" in reader.fieldnames
+                assert rows[0]["user.name"] == "Test User"
+
+                # Use ast.literal_eval() to parse Python literal syntax
+                actual_orders = ast.literal_eval(rows[0]["user.orders"])
+                expected_orders = [
+                    {"id": "order1", "total": 100},
+                    {"id": "order2", "total": 200},
+                ]
+                assert actual_orders == expected_orders
 
 
 class TestConvertToEncryptedJSON:
@@ -489,7 +499,7 @@ class TestConvertToEncryptedJSON:
 @patch("fides.api.tasks.storage.write_to_in_memory_buffer")
 class TestUploadToS3:
     def test_upload_to_s3_success(
-        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
+            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
     ):
         def mock_get_s3_client(auth_method, storage_secrets, assume_role_arn=None):
             return s3_client
@@ -520,7 +530,7 @@ class TestUploadToS3:
         )
 
     def test_upload_to_s3_document_only(
-        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
+            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
     ):
         """Test uploading a document directly without a privacy request."""
 
@@ -551,7 +561,7 @@ class TestUploadToS3:
         )
 
     def test_upload_to_s3_missing_privacy_request(
-        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test that ValueError is raised when both privacy_request and document are None."""
 
@@ -579,7 +589,7 @@ class TestUploadToS3:
         mock_write_to_in_memory_buffer.assert_not_called()
 
     def test_upload_to_s3_param_validation_error(
-        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test handling of ParamValidationError during upload."""
 
@@ -619,7 +629,7 @@ class TestUploadToS3:
 
     @patch("fides.api.tasks.storage.logger")
     def test_upload_to_s3_upload_error(
-        self, mock_logger, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+            self, mock_logger, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test handling of general upload errors."""
 
