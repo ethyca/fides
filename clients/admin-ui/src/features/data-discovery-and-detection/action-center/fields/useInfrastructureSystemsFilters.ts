@@ -4,30 +4,20 @@ import {
   parseAsStringLiteral,
   useQueryState,
 } from "nuqs";
-import { useEffect } from "react";
 
 import { INFRASTRUCTURE_SYSTEM_FILTERS } from "../constants/InfrastructureSystemsFilters.const";
 
 export const useInfrastructureSystemsFilters = () => {
   const [statusFilters, setStatusFilters] = useQueryState(
     "statusFilters",
-    parseAsArrayOf(parseAsStringLiteral(INFRASTRUCTURE_SYSTEM_FILTERS)),
+    parseAsArrayOf(
+      parseAsStringLiteral(INFRASTRUCTURE_SYSTEM_FILTERS),
+    ).withDefault([]),
   );
   const [vendorFilters, setVendorFilters] = useQueryState(
     "vendorFilters",
-    parseAsArrayOf(parseAsString),
+    parseAsArrayOf(parseAsString).withDefault([]),
   );
-
-  // Set initial state: no filters selected by default
-  useEffect(() => {
-    if (statusFilters === null) {
-      setStatusFilters([]);
-    }
-    if (vendorFilters === null) {
-      setVendorFilters([]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const reset = () => {
     setStatusFilters([]);
