@@ -229,13 +229,14 @@ export const getOrMakeFidesCookie = (
     };
     parsedCookie.consent = updatedConsent;
 
-    // Merge external_id into parsed cookie identity if provided
+    // Ensure identity always exists
+    if (!parsedCookie.identity) {
+      parsedCookie.identity = makeDefaultIdentity({ fidesExternalId });
+    }
+
+    // Update external_id if provided
     if (fidesExternalId !== undefined && fidesExternalId !== null) {
-      const mergedIdentity: FidesJSIdentity = {
-        ...(parsedCookie.identity || {}),
-        external_id: fidesExternalId,
-      };
-      parsedCookie.identity = mergedIdentity;
+      parsedCookie.identity.external_id = fidesExternalId;
     }
 
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj

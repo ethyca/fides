@@ -9,7 +9,6 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesInitOptions,
-  FidesJSIdentity,
   FidesOverrides,
   FidesWindowOverrides,
   NoticeValues,

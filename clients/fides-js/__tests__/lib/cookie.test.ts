@@ -856,9 +856,9 @@ describe("cookies", () => {
         expect(cookie.identity.external_id).toEqual(newExternalId);
       });
 
-      it("handles undefined identity in parsed cookie when merging defaultIdentity", () => {
+      it("handles undefined identity in parsed cookie when fidesExternalId is provided", () => {
         // Verifies that if parsedCookie.identity is undefined, the function handles it gracefully
-        // by using an empty object fallback
+        // by creating a new default identity with the provided fidesExternalId
         const externalId = "test-external-id";
         const savedCookie: Partial<FidesCookie> = {
           consent: {},
@@ -877,6 +877,27 @@ describe("cookies", () => {
         });
         expect(cookie.identity).toBeDefined();
         expect(cookie.identity.external_id).toEqual(externalId);
+        expect(cookie.identity.fides_user_device_id).toBeDefined();
+      });
+
+      it("handles undefined identity in parsed cookie when fidesExternalId is not provided", () => {
+        // Verifies that if parsedCookie.identity is undefined and no fidesExternalId is provided,
+        // the function creates a new default identity without external_id
+        const savedCookie: Partial<FidesCookie> = {
+          consent: {},
+          // identity is intentionally missing/undefined
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // Should not throw and should handle undefined identity gracefully
+        const cookie = getOrMakeFidesCookie(undefined, {});
+        expect(cookie.identity).toBeDefined();
+        expect(cookie.identity.external_id).toBeUndefined();
         expect(cookie.identity.fides_user_device_id).toBeDefined();
       });
 
