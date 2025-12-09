@@ -59,7 +59,7 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
-from fides.api.tasks import celery_app
+from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
@@ -765,6 +765,49 @@ def celery_enable_logging():
     return True
 
 
+# Register health check for workers
+@pytest.fixture(scope="session")
+def celery_session_app(celery_session_app):
+    celery_healthcheck.register(celery_session_app)
+    return celery_session_app
+
+# This is here because the test suite occasionally fails to teardown the
+# Celery worker if it takes too long to terminate the worker thread. This
+# will prevent that and, instead, log a warning
+@pytest.fixture(scope="session")
+def celery_session_worker(
+    request,
+    celery_session_app,
+    celery_includes,
+    celery_class_tasks,
+    celery_worker_pool,
+    celery_worker_parameters,
+):
+    from celery.contrib.testing import worker
+
+    for module in celery_includes:
+        celery_session_app.loader.import_task_module(module)
+    for class_task in celery_class_tasks:
+        celery_session_app.register_task(class_task)
+
+    try:
+
+        logger.info("Starting safe celery session worker...")
+        with worker.start_worker(
+            celery_session_app,
+            pool=celery_worker_pool,
+            shutdown_timeout=2.0,
+            **celery_worker_parameters,
+        ) as w:
+            try:
+                yield w
+                logger.info("Done with celery worker, trying to dispose of it..")
+            except RuntimeError:
+                logger.warning("Failed to dispose of the celery worker.")
+    except RuntimeError as re:
+        logger.warning("Failed to stop the celery worker: " + str(re))
+
+
 @pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
@@ -869,7 +912,8 @@ def access_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
@@ -927,7 +971,8 @@ def consent_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
