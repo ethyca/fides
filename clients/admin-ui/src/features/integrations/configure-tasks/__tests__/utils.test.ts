@@ -33,10 +33,10 @@ describe("configure-tasks utils", () => {
   describe("getCategoryFromFieldPath", () => {
     it("should return mapped category for top-level fields", () => {
       expect(getCategoryFromFieldPath("privacy_request.created_at")).toBe(
-        "Privacy Request",
+        "Privacy request",
       );
       expect(getCategoryFromFieldPath("privacy_request.source")).toBe(
-        "Privacy Request",
+        "Privacy request",
       );
     });
 
@@ -48,7 +48,7 @@ describe("configure-tasks utils", () => {
         "Policy",
       );
       expect(getCategoryFromFieldPath("privacy_request.location")).toBe(
-        "Privacy Request",
+        "Privacy request",
       );
     });
 
@@ -123,7 +123,7 @@ describe("configure-tasks utils", () => {
       const result = groupFieldsByCategory(mockFields);
 
       expect(result).toHaveLength(3);
-      expect(result.map((g) => g.label)).toContain("Privacy Request");
+      expect(result.map((g) => g.label)).toContain("Privacy request");
       expect(result.map((g) => g.label)).toContain("Identity");
       expect(result.map((g) => g.label)).toContain("Policy");
     });
