@@ -297,7 +297,9 @@ const ActionCenterFields: NextPage = () => {
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
-              <Title level={2}>Monitor results</Title>
+              <Title level={2} ellipsis>
+                Monitor results
+              </Title>
               <Flex align="center">
                 {monitorConfigData?.last_monitored && (
                   <Text type="secondary">
@@ -309,7 +311,7 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between">
+            <Flex justify="space-between" wrap="wrap" gap="small">
               <Flex gap="small">
                 <DebouncedSearchInput
                   value={search.searchQuery}
