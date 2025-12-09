@@ -103,6 +103,39 @@ Defaults to `false`.
 
 ***
 
+### fides\_external\_id?
+
+> `optional` **fides\_external\_id**: `string`
+
+Provide a custom ID for the current user, to include as an `external_id`
+when saving their user consent preferences to the Fides API and the
+fides_consent cookie.
+
+This can be used to link a user's consent preferences to a saved profile on
+your site, such as a CRM ID, etc.
+
+Note that the `fides_user_device_id` is still always generated and included
+in the saved user consent preferences, to ensure that per-device
+preferences are properly stored for reporting.
+
+Defaults to `undefined`.
+
+#### Example
+
+```html
+<head>
+  <script>
+    // Configure FidesJS with an external ID
+    window.fides_overrides = {
+      fides_external_id: "example-crm-id-123",
+    };
+  </script>
+  <script src="path/to/fides.js"></script>
+</head>
+```
+
+***
+
 ### fides\_embed
 
 > **fides\_embed**: `boolean`

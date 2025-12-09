@@ -40,7 +40,7 @@ const useConsentRequestForm = ({
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
-  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
+  const cookie = useMemo(() => getOrMakeFidesCookie(undefined), []);
 
   // Use our custom hook for form field logic
   const { getInitialValues, getValidationSchema } = useCustomFieldsForm({

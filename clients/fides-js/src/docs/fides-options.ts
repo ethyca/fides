@@ -89,6 +89,36 @@ export interface FidesOptions {
   fides_disable_notices_served_api: boolean;
 
   /**
+   * Provide a custom ID for the current user, to include as an `external_id`
+   * when saving their user consent preferences to the Fides API and the
+   * fides_consent cookie.
+   *
+   * This can be used to link a user's consent preferences to a saved profile on
+   * your site, such as a CRM ID, etc.
+   *
+   * Note that the `fides_user_device_id` is still always generated and included
+   * in the saved user consent preferences, to ensure that per-device
+   * preferences are properly stored for reporting.
+   *
+   * Defaults to `undefined`.
+   *
+   * @example
+   * ```html
+   * <head>
+   *   <script>
+   *     // Configure FidesJS with an external ID
+   *     window.fides_overrides = {
+   *       fides_external_id: "example-crm-id-123",
+   *     };
+   *   </script>
+   *   <script src="path/to/fides.js"></script>
+   * </head>
+   * ```
+   *
+   */
+  fides_external_id?: string;
+
+  /**
    * When `true`, require FidesJS to "embed" it's UI into a specific `<div>` on
    * the page, instead of as an overlay over the `<body>` itself. This is useful
    * for creating a dedicated page to manage consent preferences on your site.

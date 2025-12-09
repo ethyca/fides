@@ -181,6 +181,8 @@ const loadEnvironmentVariables = () => {
         | "disabled") || "disabled",
     FIDES_COOKIE_SUFFIX:
       process.env.FIDES_PRIVACY_CENTER__FIDES_COOKIE_SUFFIX ?? null,
+    FIDES_EXTERNAL_ID:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_EXTERNAL_ID ?? null,
   };
   return settings;
 };

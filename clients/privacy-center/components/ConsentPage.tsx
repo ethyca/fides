@@ -116,7 +116,7 @@ const ConsentPage: NextPage = () => {
    * Notice driven consent does not need to set a new consent object
    */
   useEffect(() => {
-    const cookie: FidesCookie = getOrMakeFidesCookie();
+    const cookie: FidesCookie = getOrMakeFidesCookie(undefined);
     if (isNoticeDriven) {
       saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
     }
