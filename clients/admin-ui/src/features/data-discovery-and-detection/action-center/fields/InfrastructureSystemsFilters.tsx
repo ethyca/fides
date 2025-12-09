@@ -7,7 +7,7 @@ import {
   INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS,
   INFRASTRUCTURE_SYSTEM_FILTERS,
   InfrastructureSystemFilterLabel,
-} from "../constants/InfrastructureSystemsFilters.const";
+} from "../constants";
 import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
 
 export const InfrastructureSystemsFilters = ({

@@ -17,7 +17,7 @@ import {
   InfrastructureSystemFilterLabel,
   mapStatusFilterToDiffStatus,
   mapStatusFilterToMetadataStatus,
-} from "../constants/InfrastructureSystemsFilters.const";
+} from "../constants";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,

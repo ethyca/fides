@@ -5,7 +5,7 @@ import {
   useQueryState,
 } from "nuqs";
 
-import { INFRASTRUCTURE_SYSTEM_FILTERS } from "../constants/InfrastructureSystemsFilters.const";
+import { INFRASTRUCTURE_SYSTEM_FILTERS } from "../constants";
 
 export const useInfrastructureSystemsFilters = () => {
   const [statusFilters, setStatusFilters] = useQueryState(
