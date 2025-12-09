@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
 import dayjs from "dayjs";
 import {
+  AntTooltip as Tooltip,
   Button,
   ChakraText as Text,
   Flex,
@@ -12,6 +13,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import * as Yup from "yup";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { FormikDateTimeInput } from "~/features/common/form/FormikDateTimeInput";
 import { FormikLocationSelect } from "~/features/common/form/FormikLocationSelect";
 import { FormikSelect } from "~/features/common/form/FormikSelect";
@@ -19,6 +21,7 @@ import { FormikTextInput } from "~/features/common/form/FormikTextInput";
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
@@ -33,6 +36,7 @@ interface WebsiteMonitorConfig
   extends Omit<MonitorConfig, "datasource_params"> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
+  llm_model_override?: string;
 }
 
 const FORM_COPY = `This monitor allows you to simulate and verify user consent actions, such as 'accept,' 'reject,' or 'opt-out,' on consent experiences. For each detected activity, the monitor will record whether it occurred before or after the configured user actions, ensuring compliance with user consent choices.`;
@@ -65,6 +69,20 @@ const ConfigureWebsiteMonitorForm = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { flags } = useFlags();
+
+  // Feature flag for LLM classification in website monitors
+  const llmClassifierFeatureEnabled = !!flags.alphaWebMonitorLlmClassification;
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery(
+    { api_set: false },
+    { skip: !llmClassifierFeatureEnabled },
+  );
+
+  // Server-side LLM classifier capability
+  const serverSupportsLlmClassifier =
+    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : (router.query.id as string);
@@ -97,6 +115,7 @@ const ConfigureWebsiteMonitorForm = ({
       locations: [],
       exclude_domains: [],
     },
+    llm_model_override: monitor?.classify_params?.llm_model_override ?? "",
   };
 
   const handleSubmit = async (values: WebsiteMonitorConfig) => {
@@ -114,12 +133,20 @@ const ConfigureWebsiteMonitorForm = ({
             execution_start_date: undefined,
           };
 
+    // Build classify_params with llm_model_override if provided
+    const classifyParams = {
+      ...(monitor?.classify_params || {}),
+      ...(values.llm_model_override
+        ? { llm_model_override: values.llm_model_override }
+        : { llm_model_override: undefined }),
+    };
+
     const payload: WebsiteMonitorConfig = {
       ...monitor,
       ...values,
       ...executionInfo,
       key: monitor?.key,
-      classify_params: monitor?.classify_params || {},
+      classify_params: classifyParams,
       datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
@@ -233,6 +260,33 @@ const ConfigureWebsiteMonitorForm = ({
           onBlur={formik.handleBlur}
           value={values.shared_config_id}
         />
+        {llmClassifierFeatureEnabled && (
+          <Form.Item
+            label={
+              <Tooltip
+                title={
+                  !serverSupportsLlmClassifier
+                    ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
+                    : "Optionally specify a custom model to use for LLM classification of website assets"
+                }
+              >
+                <span>LLM model override</span>
+              </Tooltip>
+            }
+          >
+            <FormikTextInput
+              name="llm_model_override"
+              id="llm_model_override"
+              placeholder="e.g., openrouter/google/gemini-2.5-flash"
+              disabled={!serverSupportsLlmClassifier}
+              error={errors.llm_model_override}
+              touched={touched.llm_model_override}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={values.llm_model_override || ""}
+            />
+          </Form.Item>
+        )}
         <FormikSelect
           name="execution_frequency"
           id="execution_frequency"
