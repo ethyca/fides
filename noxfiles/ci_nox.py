@@ -432,7 +432,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
         "--cov=fides",
         "--cov-branch",
         "--no-cov-on-fail",
-        "--junitxml=test_report.xml"
+        "--junitxml=test_report.xml",
+        "-n auto"
     ] if test_group != "nox" else []
     TEST_MATRIX[test_group](session=session, additional_args=additional_args)
 

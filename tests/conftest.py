@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import boto3
 import google.auth.credentials
+import httpx
 import pytest
 import requests
 import yaml
@@ -232,7 +233,7 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+        transport=httpx.ASGITransport(), base_url="http://0.0.0.0:8080", follow_redirects=True
     ) as client:
         yield client
 

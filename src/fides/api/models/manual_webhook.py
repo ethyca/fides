@@ -95,7 +95,7 @@ class AccessManualWebhook(Base):
         vs str for access input validation.
         """
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
+            model_name="ManualWebhookValidationModel",
             model_config=ConfigDict(extra="forbid"),
             **self.erasure_field_definitions(),
         )
@@ -105,8 +105,8 @@ class AccessManualWebhook(Base):
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
-            __config__=ConfigDict(extra="ignore"),
+            model_name="ManualWebhookValidationModel",
+            model_config=ConfigDict(extra="ignore"),
             **self.access_field_definitions(),
         )
 
@@ -115,7 +115,7 @@ class AccessManualWebhook(Base):
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
+            model_name="ManualWebhookValidationModel",
             model_config=ConfigDict(extra="ignore"),
             **self.erasure_field_definitions(),
         )
