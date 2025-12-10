@@ -22,14 +22,14 @@ from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
 # Legacy Fideslang taxonomy keys
-LEGACY_TAXONOMY_KEYS = {
+LEGACY_TAXONOMY_KEYS = [
     "data_category",
     "data_use",
     "data_subject",
-}
+]
 
 # Taxonomies that are managed by Fides (legacy taxonomies and system group)
-MANAGED_TAXONOMY_KEYS = {"data_category", "data_use", "data_subject", "system_group"}
+MANAGED_TAXONOMY_KEYS = ["data_category", "data_use", "data_subject", "system_group"]
 
 
 from enum import StrEnum
