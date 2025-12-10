@@ -82,9 +82,9 @@ class PytestConfig:
     @property
     def args(self) -> list[str]:
         return [
-            *self.xdist_config,
-            *self.coverage_config,
-            *self.report_config,
+            *self.xdist_config.args,
+            *self.coverage_config.args,
+            *self.report_config.args,
         ]
 
 
