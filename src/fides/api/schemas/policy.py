@@ -1,4 +1,5 @@
-from enum import Enum as EnumType, StrEnum
+from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey

@@ -233,7 +233,7 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        transport=httpx.ASGITransport(),
+        transport=httpx.ASGITransport(app=app),
         base_url="http://0.0.0.0:8080",
         follow_redirects=True,
     ) as client:
