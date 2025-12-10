@@ -82,7 +82,7 @@ class AccessManualWebhook(Base):
         """Build a dynamic Pydantic schema from fields defined on this webhook"""
 
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
+            model_name="ManualWebhookValidationModel",
             __config__=ConfigDict(extra="forbid"),
             **self.access_field_definitions(),
         )
