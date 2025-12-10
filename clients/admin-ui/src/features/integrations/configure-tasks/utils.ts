@@ -85,8 +85,8 @@ export const parseConditionValue = (
   }
 
   // Handle Dayjs objects (from DatePicker)
-  if (rawValue && typeof rawValue === "object" && "toISOString" in rawValue) {
-    return (rawValue as Dayjs).toISOString();
+  if (dayjs.isDayjs(rawValue)) {
+    return rawValue.toISOString();
   }
 
   // Handle boolean values directly (from Radio.Group)
