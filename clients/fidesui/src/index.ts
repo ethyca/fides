@@ -1,6 +1,6 @@
-// Unmodified components exported directly from ChakraUI
 import { CustomTypography } from "./hoc/CustomTypography";
 
+// Unmodified components exported directly from ChakraUI
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/react";
@@ -102,6 +102,7 @@ export type {
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
+
 // Higher-order components
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
@@ -134,6 +135,10 @@ export { iso31661, iso31662 } from "iso-3166";
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
+
+// Export animation components
+export type { ExpandCollapseProps } from "./components/animation";
+export { ExpandCollapse } from "./components/animation";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
