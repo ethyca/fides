@@ -18,6 +18,12 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
+from noxfiles.setup_tests_nox import (
+    CoverageConfig,
+    PytestConfig,
+    ReportConfig,
+    XdistConfig,
+)
 from setup_tests_nox import (
     pytest_api,
     pytest_ctl,
@@ -429,20 +435,21 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
-    additional_args = (
-        [
-            "--cov-report=xml",
-            "--cov=fides",
-            "--cov-branch",
-            "--no-cov-on-fail",
-            "--junitxml=test_report.xml",
-            "-n",
-            "auto",
-        ]
-        if test_group != "nox"
-        else []
+    pytest_config = PytestConfig(
+        xdist_config=XdistConfig(parallel_runners="auto"),
+        coverage_config=CoverageConfig(
+            report_format="xml",
+            cov_name="fides",
+            skip_on_fail=True,
+            branch_coverage=True,
+        ),
+        report_config=ReportConfig(
+            report_format="xml",
+            report_file="test_report.xml",
+        ),
     )
-    TEST_MATRIX[test_group](session=session, additional_args=additional_args)
+
+    TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
 @nox.session()
