@@ -1,6 +1,161 @@
-import { ConditionLeaf } from "~/types/api";
+import dayjs, { Dayjs } from "dayjs";
+
+import { formatDate } from "~/features/common/utils";
+import { ConditionLeaf, Operator } from "~/types/api";
 
 import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
+
+// Field type detection
+export type FieldType =
+  | "boolean"
+  | "date"
+  | "location"
+  | "location_country"
+  | "location_groups"
+  | "location_regulations"
+  | "policy"
+  | "string";
+
+// Hardcoded list of date fields
+export const DATE_FIELDS = [
+  "privacy_request.created_at",
+  "privacy_request.requested_at",
+  "privacy_request.due_date",
+  "privacy_request.identity_verified_at",
+];
+
+/**
+ * Determines the field type based on the field address.
+ * This is used to render appropriate input components for different field types.
+ */
+export const getFieldType = (fieldAddress: string): FieldType => {
+  // Check date fields
+  if (DATE_FIELDS.includes(fieldAddress)) {
+    return "date";
+  }
+
+  // Check location field
+  if (fieldAddress === "privacy_request.location") {
+    return "location";
+  }
+
+  // Check location_country field (convenience field)
+  if (fieldAddress === "privacy_request.location_country") {
+    return "location_country";
+  }
+
+  // Check location_groups field (convenience field)
+  if (fieldAddress === "privacy_request.location_groups") {
+    return "location_groups";
+  }
+
+  // Check location_regulations field (convenience field)
+  if (fieldAddress === "privacy_request.location_regulations") {
+    return "location_regulations";
+  }
+
+  // Check policy ID field
+  if (fieldAddress === "privacy_request.policy.id") {
+    return "policy";
+  }
+
+  // Check boolean fields (known boolean fields in privacy request)
+  if (
+    fieldAddress.includes("has_access_rule") ||
+    fieldAddress.includes("has_erasure_rule") ||
+    fieldAddress.includes("has_consent_rule") ||
+    fieldAddress.includes("has_update_rule")
+  ) {
+    return "boolean";
+  }
+
+  return "string";
+};
+
+/**
+ * Parses a form value into the appropriate type for a condition.
+ * Handles Dayjs objects, booleans, numbers, and strings.
+ */
+export const parseConditionValue = (
+  operator: Operator,
+  rawValue?: string | boolean | Dayjs,
+): string | number | boolean | null => {
+  if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
+    return null;
+  }
+
+  // Handle Dayjs objects (from DatePicker)
+  if (dayjs.isDayjs(rawValue)) {
+    return rawValue.toISOString();
+  }
+
+  // Handle boolean values directly (from Radio.Group)
+  if (typeof rawValue === "boolean") {
+    return rawValue;
+  }
+
+  // Handle string values
+  if (typeof rawValue === "string") {
+    if (!rawValue.trim()) {
+      return null;
+    }
+
+    // Try boolean first
+    if (rawValue.toLowerCase() === "true") {
+      return true;
+    }
+    if (rawValue.toLowerCase() === "false") {
+      return false;
+    }
+
+    // Try number
+    const numValue = Number(rawValue);
+    if (!Number.isNaN(numValue)) {
+      return numValue;
+    }
+
+    // Date strings, location strings, location_groups, location_regulations pass through as-is
+    // Default to string
+    return rawValue;
+  }
+
+  return null;
+};
+
+/**
+ * Parses a stored condition value back to the appropriate form value type.
+ * This is used when editing an existing condition to populate the form correctly.
+ */
+export const parseStoredValueForForm = (
+  fieldAddress: string,
+  storedValue:
+    | string
+    | number
+    | boolean
+    | Array<string | number | boolean>
+    | null
+    | undefined,
+): string | boolean | Dayjs | undefined => {
+  if (storedValue === null || storedValue === undefined) {
+    return undefined;
+  }
+
+  const fieldType = getFieldType(fieldAddress);
+
+  // Handle boolean fields
+  if (fieldType === "boolean" && typeof storedValue === "boolean") {
+    return storedValue;
+  }
+
+  // Handle date fields - convert ISO string to Dayjs
+  if (fieldType === "date" && typeof storedValue === "string") {
+    const parsed = dayjs(storedValue);
+    return parsed.isValid() ? parsed : undefined;
+  }
+
+  // For all other types (location, location_country, location_groups, location_regulations, policy, string), return as string
+  return storedValue.toString();
+};
 
 // Determine field source based on editing condition
 export const getInitialFieldSource = (
@@ -28,6 +183,9 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.identity.phone_number",
   "privacy_request.identity.external_id",
   "privacy_request.location",
+  "privacy_request.location_country",
+  "privacy_request.location_groups",
+  "privacy_request.location_regulations",
   "privacy_request.policy.id",
   "privacy_request.policy.name",
   "privacy_request.policy.key",
@@ -176,4 +334,79 @@ export const groupFieldsByCategory = (
     label: category,
     options: options.sort((a, b) => a.label.localeCompare(b.label)),
   }));
+};
+
+// Operator options for the condition form
+export const OPERATOR_OPTIONS = [
+  { label: "Equals", value: Operator.EQ },
+  { label: "Not equals", value: Operator.NEQ },
+  { label: "Greater than", value: Operator.GT },
+  { label: "Greater than or equal", value: Operator.GTE },
+  { label: "Less than", value: Operator.LT },
+  { label: "Less than or equal", value: Operator.LTE },
+  { label: "Exists", value: Operator.EXISTS },
+  { label: "Does not exist", value: Operator.NOT_EXISTS },
+  { label: "List contains", value: Operator.LIST_CONTAINS },
+  { label: "Not in list", value: Operator.NOT_IN_LIST },
+  { label: "Starts with", value: Operator.STARTS_WITH },
+  { label: "Contains", value: Operator.CONTAINS },
+];
+
+/**
+ * Formats a condition value for display in the UI.
+ * Handles dates and other value types appropriately.
+ */
+export const formatConditionValue = (
+  condition: ConditionLeaf,
+): string | undefined => {
+  const { value, field_address: fieldAddress } = condition;
+
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  const fieldType = getFieldType(fieldAddress);
+
+  // Format date values
+  if (fieldType === "date" && typeof value === "string") {
+    try {
+      return formatDate(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  // For all other types, convert to string
+  return String(value);
+};
+
+/**
+ * Gets the appropriate tooltip text for the value field based on the field type.
+ */
+export const getValueTooltip = (
+  fieldType: FieldType,
+  isValueDisabled: boolean,
+): string => {
+  if (isValueDisabled) {
+    return "Value is not required for exists/not exists operators";
+  }
+
+  switch (fieldType) {
+    case "boolean":
+      return "Select true or false";
+    case "date":
+      return "Select a date and time";
+    case "location":
+      return "Select a location";
+    case "location_country":
+      return "Select a country";
+    case "location_groups":
+      return "Select a location group (e.g., us, eea, ca)";
+    case "location_regulations":
+      return "Select a regulation (e.g., gdpr, ccpa, lgpd)";
+    case "policy":
+      return "Select a policy";
+    default:
+      return "Enter the value to compare against. Can be text, number, or true/false";
+  }
 };
