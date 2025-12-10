@@ -785,12 +785,7 @@ class TestDuplicatePrivacyRequestService:
         privacy_request_with_email_identity: PrivacyRequest,
         privacy_request_service: PrivacyRequestService,
     ):
-        """Test that the privacy request service identifies and marks duplicate privacy requests.
-
-        Duplicate detection happens inside handle_approval(), which is called from
-        _handle_notifications_and_processing(). We mock queue_privacy_request to prevent
-        the request from being queued, and message_send_enabled to skip verification.
-        """
+        """Test that the privacy request service identifies and marks duplicate privacy requests."""
         privacy_request_with_email_identity.update(
             db=db, data={"status": PrivacyRequestStatus.in_processing}
         )
@@ -798,15 +793,10 @@ class TestDuplicatePrivacyRequestService:
             identity=Identity(email="customer-1@example.com"),
             policy_key=privacy_request_with_email_identity.policy.key,
         )
-        with (
-            mock.patch(
-                "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
-            ),
-            mock.patch(
-                "fides.service.privacy_request.privacy_request_service.message_send_enabled",
-                return_value=False,
-            ),
-        ):
+        with mock.patch(
+            "fides.service.privacy_request.privacy_request_service._handle_notifications_and_processing"
+        ) as mock_handle_notifications_and_processing:
+            mock_handle_notifications_and_processing.return_value = None
             privacy_request = privacy_request_service.create_privacy_request(data)
             assert privacy_request.status == PrivacyRequestStatus.duplicate
             assert privacy_request.duplicate_request_group_id is not None
