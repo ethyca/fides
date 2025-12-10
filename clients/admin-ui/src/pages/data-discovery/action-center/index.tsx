@@ -39,7 +39,7 @@ const ActionCenterPage = () => {
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
   ];
 
-  const { data, isError, isLoading, isFetching } =
+  const { data, isError, isLoading, isFetching, refetch } =
     useGetAggregateMonitorResultsQuery({
       page: pageIndex,
       size: pageSize,
@@ -66,14 +66,6 @@ const ActionCenterPage = () => {
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  const loadingResults = isFetching
-    ? Array.from({ length: pageSize }, (_, index) => ({
-        key: index.toString(),
-        updates: [],
-        last_monitored: null,
-      }))
-    : [];
 
   if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
@@ -125,7 +117,7 @@ const ActionCenterPage = () => {
           </Flex>
           <List
             loading={isLoading}
-            dataSource={results || loadingResults}
+            dataSource={results}
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
@@ -138,7 +130,6 @@ const ActionCenterPage = () => {
               return (
                 !!summary?.key && (
                   <MonitorResult
-                    showSkeleton={isFetching}
                     key={summary.key}
                     monitorSummary={summary}
                     href={link}
