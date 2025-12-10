@@ -21,7 +21,7 @@ import { ConditionLeaf } from "~/types/api";
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
 import { useSaveConditions } from "./hooks/useSaveConditions";
-import { formatFieldDisplay } from "./utils";
+import { formatConditionValue, formatFieldDisplay } from "./utils";
 
 const { Paragraph, Text } = Typography;
 
@@ -236,7 +236,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         renderItem={(condition: ConditionLeaf, index: number) => (
           <List.Item
             key={index}
-            aria-label={`Condition: ${formatFieldDisplay(condition.field_address)} ${operatorLabels[condition.operator]}${condition.value !== null && condition.value !== undefined ? ` ${String(condition.value)}` : ""}`}
+            aria-label={`Condition: ${formatFieldDisplay(condition.field_address)} ${operatorLabels[condition.operator]}${formatConditionValue(condition) ? ` ${formatConditionValue(condition)}` : ""}`}
             actions={[
               <Button
                 key="edit"
@@ -272,12 +272,13 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                     {operatorLabels[condition.operator]}
                   </Tag>
                   <div className="max-w-[300px]">
-                    {condition.value !== null &&
-                      condition.value !== undefined && (
-                        <Text ellipsis={{ tooltip: String(condition.value) }}>
-                          {String(condition.value)}
-                        </Text>
-                      )}
+                    {formatConditionValue(condition) && (
+                      <Text
+                        ellipsis={{ tooltip: formatConditionValue(condition) }}
+                      >
+                        {formatConditionValue(condition)}
+                      </Text>
+                    )}
                   </div>
                 </Flex>
               }
