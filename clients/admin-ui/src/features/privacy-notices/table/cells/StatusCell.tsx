@@ -30,7 +30,15 @@ const StatusCell = ({ record }: { record: PrivacyNoticeRowType }) => {
   const noticeStatus = getNoticeStatus(record);
   const { tooltip, color } = VALUE_TO_TAG_PROPS_MAP[noticeStatus];
 
-  return <TagCell value={noticeStatus} tooltip={tooltip} color={color} />;
+  return (
+    <TagCell
+      value={noticeStatus}
+      tooltip={tooltip}
+      color={color}
+      data-testid="status-badge"
+      style={{ textTransform: "uppercase" }}
+    />
+  );
 };
 
 export default StatusCell;

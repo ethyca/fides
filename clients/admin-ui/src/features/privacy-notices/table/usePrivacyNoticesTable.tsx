@@ -135,7 +135,6 @@ const usePrivacyNoticesTable = () => {
         title: "Mechanism",
         dataIndex: "consent_mechanism",
         key: "consent_mechanism",
-        // render: (value: ConsentMechanism) => <MechanismCell value={value} />,
         render: (value: ConsentMechanism) => (
           <Tag
             data-testid="status-badge"

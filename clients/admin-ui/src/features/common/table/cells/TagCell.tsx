@@ -1,39 +1,36 @@
 import {
   AntTag as Tag,
+  AntTagProps as TagProps,
   AntTooltip as Tooltip,
   CUSTOM_TAG_COLOR,
 } from "fidesui";
 
-/**
- * A cell component that displays a tag with an optional tooltip.
- *
- * @param value - The value to display in the tag
- * @param tooltip - The tooltip to display when hovering over the tag
- * @param color - The color of the tag
- */
-const TagCell = ({
-  value,
-  tooltip,
-  color,
-}: {
+interface TagCellProps extends TagProps {
   value: string;
-  tooltip: string;
-  color: CUSTOM_TAG_COLOR;
-}) => {
+  tooltip?: string;
+  color?: CUSTOM_TAG_COLOR;
+}
+
+/**
+ * A cell component that displays a tag with an optional tooltip
+ */
+const TagCell = ({ value, tooltip, color, ...tagProps }: TagCellProps) => {
   const innerTag = (
-    <Tag color={color} data-testid="tag-cell">
+    <Tag color={color} data-testid="tag-cell" {...tagProps}>
       {value}
     </Tag>
   );
-  if (tooltip) {
-    return (
-      <Tooltip title={tooltip}>
-        {/* the span is necessary to prevent the tooltip from changing the line height */}
-        <span>{innerTag}</span>
-      </Tooltip>
-    );
+
+  if (!tooltip) {
+    return innerTag;
   }
-  return innerTag;
+
+  return (
+    <Tooltip title={tooltip}>
+      {/* the span is necessary to prevent the tooltip from changing the line height */}
+      <span>{innerTag}</span>
+    </Tooltip>
+  );
 };
 
 export default TagCell;
