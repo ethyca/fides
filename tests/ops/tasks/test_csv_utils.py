@@ -270,7 +270,7 @@ class TestWriteSimpleCSV:
                 zip_file,
                 "config",
                 {"setting1": "value1", "nested": {"key": "value"}},
-                "test-request-id"
+                "test-request-id",
             )
 
         zip_buffer.seek(0)

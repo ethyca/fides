@@ -233,7 +233,9 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        transport=httpx.ASGITransport(), base_url="http://0.0.0.0:8080", follow_redirects=True
+        transport=httpx.ASGITransport(),
+        base_url="http://0.0.0.0:8080",
+        follow_redirects=True,
     ) as client:
         yield client
 
@@ -2057,6 +2059,7 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
+
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):

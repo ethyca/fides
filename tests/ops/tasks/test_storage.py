@@ -30,7 +30,7 @@ from fides.config import CONFIG
 @patch("fides.api.tasks.storage.get_gcs_blob", autospec=True)
 class TestUploadToGCS:
     def test_upload_to_gcs_success(
-            self, mock_get_gcs_blob, mock_write_to_in_memory_buffer
+        self, mock_get_gcs_blob, mock_write_to_in_memory_buffer
     ):
         mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
@@ -66,7 +66,7 @@ class TestUploadToGCS:
 
     @patch("fides.api.tasks.storage.logger", autospec=True)
     def test_upload_to_gcs_exception(
-            self, mock_logger, mock_get_gcs_blob, mock_write_to_in_memory_buffer
+        self, mock_logger, mock_get_gcs_blob, mock_write_to_in_memory_buffer
     ):
         mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
@@ -499,7 +499,7 @@ class TestConvertToEncryptedJSON:
 @patch("fides.api.tasks.storage.write_to_in_memory_buffer")
 class TestUploadToS3:
     def test_upload_to_s3_success(
-            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
+        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
     ):
         def mock_get_s3_client(auth_method, storage_secrets, assume_role_arn=None):
             return s3_client
@@ -530,7 +530,7 @@ class TestUploadToS3:
         )
 
     def test_upload_to_s3_document_only(
-            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
+        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch, storage_config
     ):
         """Test uploading a document directly without a privacy request."""
 
@@ -561,7 +561,7 @@ class TestUploadToS3:
         )
 
     def test_upload_to_s3_missing_privacy_request(
-            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test that ValueError is raised when both privacy_request and document are None."""
 
@@ -589,7 +589,7 @@ class TestUploadToS3:
         mock_write_to_in_memory_buffer.assert_not_called()
 
     def test_upload_to_s3_param_validation_error(
-            self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+        self, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test handling of ParamValidationError during upload."""
 
@@ -629,7 +629,7 @@ class TestUploadToS3:
 
     @patch("fides.api.tasks.storage.logger")
     def test_upload_to_s3_upload_error(
-            self, mock_logger, mock_write_to_in_memory_buffer, s3_client, monkeypatch
+        self, mock_logger, mock_write_to_in_memory_buffer, s3_client, monkeypatch
     ):
         """Test handling of general upload errors."""
 

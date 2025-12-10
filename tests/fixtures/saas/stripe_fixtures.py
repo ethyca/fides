@@ -34,8 +34,10 @@ secrets = get_secrets("stripe")
 @pytest.fixture(scope="session")
 def stripe_secrets(saas_config):
     return {
-        "domain": pydash.get(saas_config, "stripe.domain") or secrets.get("domain", None),
-        "api_key": pydash.get(saas_config, "stripe.api_key") or secrets.get("api_key", None),
+        "domain": pydash.get(saas_config, "stripe.domain")
+        or secrets.get("domain", None),
+        "api_key": pydash.get(saas_config, "stripe.api_key")
+        or secrets.get("api_key", None),
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or secrets.get("payment_types", None),
     }

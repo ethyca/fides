@@ -656,7 +656,11 @@ class TestWriteToInMemoryBuffer:
             rows = list(reader)
             assert len(rows) == 2
             assert rows[0] == {"uuid": "xyz-112-333", "name": "foo", "email": "foo@bar"}
-            assert rows[1] == {"uuid": "xyz-122-333", "name": "foo1", "email": "foo@bar1"}
+            assert rows[1] == {
+                "uuid": "xyz-122-333",
+                "name": "foo1",
+                "email": "foo@bar1",
+            }
 
         with zipfile.open("mongo:foobar.csv") as customer_csv:
             text_stream = StringIO(customer_csv.read().decode("utf-8"))

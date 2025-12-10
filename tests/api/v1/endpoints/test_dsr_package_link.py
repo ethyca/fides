@@ -141,7 +141,9 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        response = test_client.get(url, headers=root_auth_header, follow_redirects=False)
+        response = test_client.get(
+            url, headers=root_auth_header, follow_redirects=False
+        )
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL
