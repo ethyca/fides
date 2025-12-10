@@ -344,7 +344,9 @@ def pytest_misc_unit(session: Session, additional_args: list[str]) -> None:
     session.run(*run_command, external=True)
 
 
-def pytest_misc_integration(session: Session, mark: str, additional_args: list[str]) -> None:
+def pytest_misc_integration(
+    session: Session, mark: str, additional_args: list[str]
+) -> None:
     """Runs integration tests from smaller test directories."""
     session.notify("teardown")
     if mark == "external":
