@@ -140,9 +140,15 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
         belongs_to
     )
 
-    # Set location_country to the first parent if the location is a subdivision
-    # This helps with conditions like "is this a US state?"
-    if belongs_to and not location_data.is_country:
+    # Set location_country based on whether this is a country or subdivision
+    if location_data.is_country:
+        # If the location is already a country, use the normalized location ID
+        extra_fields[PrivacyRequestLocationConvenienceFields.location_country.value] = (
+            location_data.id
+        )
+    elif belongs_to:
+        # If it's a subdivision, use the first parent (typically the country)
+        # This helps with conditions like "is this a US state?"
         extra_fields[PrivacyRequestLocationConvenienceFields.location_country.value] = (
             belongs_to[0]
         )
