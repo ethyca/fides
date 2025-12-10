@@ -1,4 +1,4 @@
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import {
   AntDatePicker as DatePicker,
   AntInput as Input,
@@ -60,9 +60,13 @@ export const ConditionValueSelector = ({
 
   // Date input
   if (fieldType === "date") {
+    // Ensure value is a valid Dayjs object or null to prevent "date.isValid is not a function" error
+    // This can happen if the user switches from another field type with a non-date value
+    const dateValue = dayjs.isDayjs(value) ? value : null;
+
     return (
       <DatePicker
-        value={value as Dayjs | null}
+        value={dateValue}
         onChange={onChange}
         showTime
         format="YYYY-MM-DD HH:mm:ss"

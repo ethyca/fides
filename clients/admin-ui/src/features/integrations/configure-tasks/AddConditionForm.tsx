@@ -71,6 +71,15 @@ const AddConditionForm = ({
     }
   }, [isOperatorFixed, form]);
 
+  // Reset value when user changes the field address to prevent type mismatches
+  // (e.g., switching from a string field with "test" to a date field that expects a Dayjs object)
+  // Only clear if the field has been touched to preserve initial values when editing
+  useEffect(() => {
+    if (form.isFieldTouched("fieldAddress")) {
+      form.setFieldValue("value", undefined);
+    }
+  }, [selectedFieldAddress, form]);
+
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
