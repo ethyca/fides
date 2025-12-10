@@ -21,19 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
 
-=======
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
 - Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
 
-### Changed
-- Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
-
-### Developer Experience
-- Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
-
-### Fixed
-- Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 
