@@ -96,6 +96,8 @@ class HTTPSConnector(BaseConnector[None]):
                 if response_expected:
                     raise ClientUnsuccessfulException(status_code=response.status_code)
 
+            logger.info("Successfully executed connector.")
+
             return json.loads(response.text) if response_expected else {}
 
         except requests.ConnectionError:
