@@ -99,6 +99,7 @@ from fides.api.schemas.partitioning import TimeBasedPartitioning
 from fides.api.schemas.partitioning.time_based_partitioning import (
     validate_partitioning_list,
 )
+from fides.api.schemas.query_hints.base import QueryHints
 from fides.api.util.collection_util import merge_dicts
 from fides.api.util.querytoken import QueryToken
 
@@ -464,6 +465,8 @@ class Collection(BaseModel):
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
     partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
+    # Query hints for optimizing database queries (e.g., MAXDOP for MSSQL)
+    query_hints: Optional[QueryHints] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
