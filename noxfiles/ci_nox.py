@@ -18,7 +18,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from noxfiles.setup_tests_nox import (
+from setup_tests_nox import (
     CoverageConfig,
     PytestConfig,
     ReportConfig,
