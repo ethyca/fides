@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { Page_EventAuditResponse_ } from "~/types/api";
 import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
@@ -115,6 +116,15 @@ const taxonomyApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
+    getTaxonomyHistory: build.query<
+      Page_EventAuditResponse_,
+      { fides_key: string }
+    >({
+      query: ({ fides_key }) => ({ url: `taxonomies/${fides_key}/history` }),
+      providesTags: (result, error, { fides_key }) => [
+        { type: "Taxonomy History", id: fides_key },
+      ],
     }),
   }),
 });

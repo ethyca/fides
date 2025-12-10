@@ -1,4 +1,9 @@
-import { AntButton as Button, AntFlex as Flex, useMessage } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntTabs,
+  useMessage,
+} from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -80,12 +85,14 @@ const CustomTaxonomyEditDrawer = ({
         </Flex>
       }
     >
-      <CustomTaxonomyDetails
-        taxonomy={taxonomy}
-        onSubmit={handleUpdate}
-        formId={FORM_ID}
-        customFields={customFields}
-      />
+      <AntTabs>
+        <CustomTaxonomyDetails
+          taxonomy={taxonomy}
+          onSubmit={handleUpdate}
+          formId={FORM_ID}
+          customFields={customFields}
+        />
+      </AntTabs>
     </DetailsDrawer>
   );
 };
