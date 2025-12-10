@@ -744,11 +744,21 @@ def run_privacy_request(
                     erasure_rules = policy.get_rules_for_action(
                         action_type=ActionType.erasure
                     )
-                    if (
-                        privacy_request.finalized_at is None
-                        and erasure_rules
-                        and CONFIG.execution.erasure_request_finalization_required
-                    ):
+                    consent_rules = policy.get_rules_for_action(
+                        action_type=ActionType.consent
+                    )
+                    config_proxy = ConfigProxy(session)
+                    requires_finalization = privacy_request.finalized_at is None and (
+                        (
+                            erasure_rules
+                            and config_proxy.execution.erasure_request_finalization_required
+                        )
+                        or (
+                            consent_rules
+                            and config_proxy.execution.consent_request_finalization_required
+                        )
+                    )
+                    if requires_finalization:
                         logger.info(
                             "Marking privacy request '{}' as requires manual finalization.",
                             privacy_request.id,
