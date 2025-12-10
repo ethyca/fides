@@ -179,6 +179,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Pull Docker images in background
+        run: |
+          docker pull postgres:16 > /dev/null 2>&1 &
+          docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          echo "Docker pull initiated in background."
+        shell: bash
+
       - name: Download container
         uses: actions/download-artifact@v4
         with:
@@ -352,6 +359,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Pull Docker images in background
+        run: |
+          docker pull postgres:16 > /dev/null 2>&1 &
+          docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          echo "Docker pull initiated in background."
+        shell: bash
+
       - name: Download container
         uses: actions/download-artifact@v4
         with:
@@ -400,7 +414,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   ##################
   ## Unsafe Tests ##
