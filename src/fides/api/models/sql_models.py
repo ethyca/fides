@@ -6,7 +6,8 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from __future__ import annotations
 
-from enum import Enum as EnumType, StrEnum
+from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
