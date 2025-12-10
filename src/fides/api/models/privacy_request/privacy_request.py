@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -140,6 +140,16 @@ class PrivacyRequest(
     A privacy request is a database record representing the request's
     progression within the Fides system.
     """
+
+    __table_args__ = (
+        # Composite index for duplicate detection queries
+        # Optimizes filtering by policy_id and created_at time window
+        Index(
+            "ix_privacyrequest_policy_created",
+            "policy_id",
+            "created_at",
+        ),
+    )
 
     external_id = Column(String, index=True)
     # When the request was dispatched into the Fides pipeline

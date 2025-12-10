@@ -253,8 +253,12 @@ class TestPrivacyRequestService:
         "require_manual_request_approval",
         "postgres_example_test_dataset_config",
     )
+    @patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
     def test_resubmit_does_not_approve_request_if_webhooks(
         self,
+        mock_trigger_pre_approval_webhook,
         db: Session,
         privacy_request_service: PrivacyRequestService,
         mock_messaging_service: MessagingService,
