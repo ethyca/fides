@@ -87,16 +87,18 @@ class HTTPSConnector(BaseConnector[None]):
                 try:
                     response_text = Pii(response.text)
                 except Exception as exception:
-                    response_text = f"Error getting response text: {exception}"
+                    response_text = (
+                        f"Encountered an error getting response: {exception}"
+                    )
 
                 logger.error(
-                    f"Received status code: {response.status_code}. {response_text}"
+                    f"HTTP Connector received status code: {response.status_code}. {response_text}"
                 )
 
                 if response_expected:
                     raise ClientUnsuccessfulException(status_code=response.status_code)
 
-            logger.info("Successfully executed connector.")
+            logger.info("HTTPS Connector successfully executed a call.")
 
             return json.loads(response.text) if response_expected else {}
 
