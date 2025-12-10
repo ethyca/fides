@@ -90,6 +90,7 @@ tinycss2==1.2.1
 toml==0.10.2
 tornado~=6.5.2
 twilio==7.15.0
+typer==0.20.0
 types-defusedxml==0.7.0.20240218
 typing-extensions==4.14.1
 urllib3~=2.5.0
