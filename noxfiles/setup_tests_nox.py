@@ -103,8 +103,6 @@ def pytest_ctl(session: Session, mark: str, additional_args: list[str]) -> None:
             "-m",
             mark,
             "--full-trace",
-            "--junitxml=report.xml",
-            "--exitfirst"
         )
         session.run(*run_command, external=True)
 
