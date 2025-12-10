@@ -1646,3 +1646,63 @@ class TestManualTaskGraphTaskHelperMethods:
         # does not call _return_to_in_processing()
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+    def test_consent_request_returns_true_when_no_config(self, manual_task_graph_task):
+        """Test consent request returns True when _run_request returns None (no config)"""
+        with mock_run_request(manual_task_graph_task, return_value=None):
+            result = manual_task_graph_task.consent_request({})
+            assert result is True
+
+    def test_consent_request_logs_end_when_successful(self, manual_task_graph_task):
+        """Test consent request logs end when successful"""
+        test_data = [{"consent": "confirmed"}]
+
+        with (
+            mock_run_request(manual_task_graph_task, return_value=test_data),
+            create_log_end_mock(manual_task_graph_task) as mock_log_end,
+        ):
+            result = manual_task_graph_task.consent_request({"email": "test@example.com"})
+            assert result is True
+            mock_log_end.assert_called_once_with(ActionType.consent)
+
+    def test_consent_request_sets_consent_sent_on_completion(self, manual_task_graph_task):
+        """Test consent request sets consent_sent=True when operator completes the manual task.
+
+        For manual tasks, the operator's form submission serves as confirmation that
+        consent was propagated (even though the system didn't directly call an API).
+        We set consent_sent=True for accurate reporting and tracking.
+        """
+        test_data = [{"consent": "confirmed"}]
+
+        with (
+            mock_run_request(manual_task_graph_task, return_value=test_data),
+            create_log_end_mock(manual_task_graph_task),
+        ):
+            # Ensure request_task has an id
+            manual_task_graph_task.request_task.id = "test-task-id"
+
+            result = manual_task_graph_task.consent_request({"email": "test@example.com"})
+
+            assert result is True
+            assert manual_task_graph_task.request_task.consent_sent is True
+
+    def test_consent_request_with_empty_identity(self, manual_task_graph_task):
+        """Test consent request handles empty identity dict"""
+        with mock_run_request(manual_task_graph_task, return_value=None):
+            result = manual_task_graph_task.consent_request({})
+            assert result is True
+
+    def test_consent_request_uses_correct_config_type(self, manual_task_graph_task):
+        """Test consent request uses consent_privacy_request config type"""
+        with patch.object(
+            manual_task_graph_task, "_run_request", autospec=True
+        ) as mock_run:
+            mock_run.return_value = None
+
+            manual_task_graph_task.consent_request({"email": "test@example.com"})
+
+            # Verify _run_request was called with consent config type
+            mock_run.assert_called_once()
+            call_args = mock_run.call_args
+            assert call_args[0][0] == ManualTaskConfigurationType.consent_privacy_request
+            assert call_args[0][1] == ActionType.consent

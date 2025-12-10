@@ -123,6 +123,36 @@ class ManualTaskGraphTask(GraphTask):
         self.log_end(ActionType.erasure, record_count=0)
         return 0
 
+    @retry(action_type=ActionType.consent, default_return=False)
+    def consent_request(self, identity: dict[str, Any]) -> bool:
+        """Execute manual task logic for consent requests.
+
+        Calls _run_request with CONSENT configs.
+        Returns True if consent confirmation submitted, raises AwaitingAsyncTask if not.
+
+        For manual tasks, the operator confirms consent propagation by completing the
+        manual task form. When the form is submitted, we mark consent_sent=True to
+        indicate the operator has confirmed the consent was handled (even though the
+        system didn't directly send it to a third-party API).
+        """
+        result = self._run_request(
+            ManualTaskConfigurationType.consent_privacy_request,
+            ActionType.consent,
+            [identity] if identity else [],
+        )
+        if result is None:
+            # No consent config or conditional skip - complete immediately
+            return True
+
+        # Mark consent_sent=True to indicate the operator confirmed consent was handled.
+        # Unlike automated connectors that set this based on API response, manual tasks
+        # rely on the operator's form submission as confirmation of consent propagation.
+        if self.request_task.id:
+            self.request_task.consent_sent = True
+
+        self.log_end(ActionType.consent)
+        return True
+
     # ------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------
