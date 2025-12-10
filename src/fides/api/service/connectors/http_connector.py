@@ -17,6 +17,7 @@ from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
+from fides.api.util.logger import Pii
 
 
 class HTTPSConnector(BaseConnector[None]):
@@ -81,14 +82,22 @@ class HTTPSConnector(BaseConnector[None]):
                 else _request_without_oauth()
             )
 
-            if not response_expected:
-                return {}
-
             if not response.ok:
-                logger.error("Invalid response received from webhook.")
-                raise ClientUnsuccessfulException(status_code=response.status_code)
+                response_text: str
+                try:
+                    response_text = Pii(response.text)
+                except Exception as exception:
+                    response_text = f"Error getting response text: {exception}"
 
-            return json.loads(response.text)
+                logger.error(
+                    f"Invalid response received from webhook. Received status code: {response.status_code}",
+                    response_text,
+                )
+
+                if response_expected:
+                    raise ClientUnsuccessfulException(status_code=response.status_code)
+
+            return json.loads(response.text) if response_expected else {}
 
         except requests.ConnectionError:
             logger.error("HTTPS client received a connection error.")
