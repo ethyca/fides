@@ -1661,11 +1661,15 @@ class TestManualTaskGraphTaskHelperMethods:
             mock_run_request(manual_task_graph_task, return_value=test_data),
             create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
-            result = manual_task_graph_task.consent_request({"email": "test@example.com"})
+            result = manual_task_graph_task.consent_request(
+                {"email": "test@example.com"}
+            )
             assert result is True
             mock_log_end.assert_called_once_with(ActionType.consent)
 
-    def test_consent_request_sets_consent_sent_on_completion(self, manual_task_graph_task):
+    def test_consent_request_sets_consent_sent_on_completion(
+        self, manual_task_graph_task
+    ):
         """Test consent request sets consent_sent=True when operator completes the manual task.
 
         For manual tasks, the operator's form submission serves as confirmation that
@@ -1681,7 +1685,9 @@ class TestManualTaskGraphTaskHelperMethods:
             # Ensure request_task has an id
             manual_task_graph_task.request_task.id = "test-task-id"
 
-            result = manual_task_graph_task.consent_request({"email": "test@example.com"})
+            result = manual_task_graph_task.consent_request(
+                {"email": "test@example.com"}
+            )
 
             assert result is True
             assert manual_task_graph_task.request_task.consent_sent is True
@@ -1704,5 +1710,7 @@ class TestManualTaskGraphTaskHelperMethods:
             # Verify _run_request was called with consent config type
             mock_run.assert_called_once()
             call_args = mock_run.call_args
-            assert call_args[0][0] == ManualTaskConfigurationType.consent_privacy_request
+            assert (
+                call_args[0][0] == ManualTaskConfigurationType.consent_privacy_request
+            )
             assert call_args[0][1] == ActionType.consent

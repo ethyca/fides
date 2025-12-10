@@ -1356,30 +1356,35 @@ class PrivacyRequest(
     def create_manual_task_instances(
         self, db: Session, connection_configs_with_manual_tasks: list[ConnectionConfig]
     ) -> list[ManualTaskInstance]:
-        """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
-        # Early return if no relevant policy rules
-        policy_rules = {
-            ActionType.access: bool(
-                self.policy.get_rules_for_action(action_type=ActionType.access)
-            ),
-            ActionType.erasure: bool(
-                self.policy.get_rules_for_action(action_type=ActionType.erasure)
-            ),
+        """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request.
+
+        Manual task instances are only created when:
+        1. The policy has rules for a given action type (access, erasure, or consent)
+        2. The manual task has a config for that action type
+
+        This ensures manual tasks are only created for the action types that are
+        actually relevant to the privacy request's policy.
+        """
+        # Map action types to their corresponding manual task config types
+        action_to_config_type = {
+            ActionType.access: ManualTaskConfigurationType.access_privacy_request,
+            ActionType.erasure: ManualTaskConfigurationType.erasure_privacy_request,
+            ActionType.consent: ManualTaskConfigurationType.consent_privacy_request,
         }
 
-        if not any(policy_rules.values()):
-            return []
+        # Get all action types from the policy in one call
+        policy_action_types = self.policy.get_all_action_types()
 
-        # Build configuration types using list comprehension
+        # Build list of config types for action types that have policy rules
         config_types = [
-            (
-                ManualTaskConfigurationType.access_privacy_request
-                if action_type == ActionType.access
-                else ManualTaskConfigurationType.erasure_privacy_request
-            )
-            for action_type, has_rules in policy_rules.items()
-            if has_rules
+            config_type
+            for action_type, config_type in action_to_config_type.items()
+            if action_type in policy_action_types
         ]
+
+        # Early return if no relevant policy rules
+        if not config_types:
+            return []
 
         # Get all relevant manual tasks and configs in one query
         connection_config_ids = [cc.id for cc in connection_configs_with_manual_tasks]

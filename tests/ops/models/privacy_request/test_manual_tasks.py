@@ -30,7 +30,7 @@ class TestPrivacyRequestManualTaskInstances:
     @pytest.fixture()
     @pytest.mark.usefixtures("policy")
     def manual_setup(self, db: Session):
-        """Create a connection config, manual task and two configs (access & erasure)."""
+        """Create a connection config, manual task and configs (access, erasure, consent)."""
         # ConnectionConfig for manual task
         connection_config = ConnectionConfig.create(
             db=db,
@@ -52,11 +52,12 @@ class TestPrivacyRequestManualTaskInstances:
             },
         )
 
-        # Create access and erasure configs with fields
+        # Create access, erasure, and consent configs with fields
         configs = {}
         for config_type, field_key in [
             (ManualTaskConfigurationType.access_privacy_request, "access_field"),
             (ManualTaskConfigurationType.erasure_privacy_request, "erasure_field"),
+            (ManualTaskConfigurationType.consent_privacy_request, "consent_field"),
         ]:
             config = ManualTaskConfig.create(
                 db=db,
@@ -88,6 +89,7 @@ class TestPrivacyRequestManualTaskInstances:
             "manual_task": manual_task,
             "access_config": configs["access_privacy_request"],
             "erasure_config": configs["erasure_privacy_request"],
+            "consent_config": configs["consent_privacy_request"],
         }
 
         # Cleanup
@@ -244,6 +246,112 @@ class TestPrivacyRequestManualTaskInstances:
         yield pr
         pr.delete(db)
 
+    @pytest.fixture()
+    def consent_only_policy(self, db: Session):
+        """Create a policy with only consent rules."""
+        policy = Policy.create(
+            db=db,
+            data={
+                "name": "Consent Only Policy",
+                "key": "consent_only_policy",
+            },
+        )
+
+        Rule.create(
+            db=db,
+            data={
+                "name": "Consent Rule",
+                "key": "consent_rule",
+                "policy_id": policy.id,
+                "action_type": ActionType.consent,
+            },
+        )
+
+        yield policy
+        try:
+            policy.delete(db)
+        except Exception as e:
+            print(f"Error deleting policy: {e}")
+
+    @pytest.fixture()
+    def consent_privacy_request(self, db: Session, consent_only_policy):
+        """Privacy request with consent-only policy."""
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.now(timezone.utc),
+                "policy_id": consent_only_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        yield pr
+        pr.delete(db)
+
+    @pytest.fixture()
+    def full_policy(self, db: Session):
+        """Create a policy with access, erasure, and consent rules."""
+        policy = Policy.create(
+            db=db,
+            data={
+                "name": "Full Policy",
+                "key": "full_policy",
+            },
+        )
+
+        Rule.create(
+            db=db,
+            data={
+                "name": "Access Rule",
+                "key": "access_rule",
+                "policy_id": policy.id,
+                "action_type": ActionType.access,
+            },
+        )
+
+        Rule.create(
+            db=db,
+            data={
+                "name": "Erasure Rule",
+                "key": "erasure_rule",
+                "policy_id": policy.id,
+                "action_type": ActionType.erasure,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+            },
+        )
+
+        Rule.create(
+            db=db,
+            data={
+                "name": "Consent Rule",
+                "key": "consent_rule",
+                "policy_id": policy.id,
+                "action_type": ActionType.consent,
+            },
+        )
+
+        yield policy
+        try:
+            policy.delete(db)
+        except Exception as e:
+            print(f"Error deleting policy: {e}")
+
+    @pytest.fixture()
+    def full_privacy_request(self, db: Session, full_policy):
+        """Privacy request with policy containing all action types."""
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.now(timezone.utc),
+                "policy_id": full_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        yield pr
+        pr.delete(db)
+
     def test_manual_task_instances_relationship(
         self, db, privacy_request, manual_setup
     ):
@@ -321,6 +429,24 @@ class TestPrivacyRequestManualTaskInstances:
         for instance in instances:
             instance.delete(db)
 
+    def test_create_manual_task_instances_consent_only(
+        self, db, consent_privacy_request, manual_setup
+    ):
+        """Test creating instances for consent-only policy."""
+        connection_config = manual_setup["connection_config"]
+        consent_config = manual_setup["consent_config"]
+
+        # Test that only consent instances are created
+        instances = consent_privacy_request.create_manual_task_instances(
+            db, [connection_config]
+        )
+        assert len(instances) == 1
+        assert instances[0].config_id == consent_config.id
+
+        # Cleanup
+        for instance in instances:
+            instance.delete(db)
+
     def test_create_manual_task_instances_mixed_policy(
         self, db, privacy_request, manual_setup
     ):
@@ -337,6 +463,27 @@ class TestPrivacyRequestManualTaskInstances:
 
         config_ids = {instance.config_id for instance in instances}
         assert config_ids == {access_config.id, erasure_config.id}
+
+        # Cleanup
+        for instance in instances:
+            instance.delete(db)
+
+    def test_create_manual_task_instances_full_policy(
+        self, db, full_privacy_request, manual_setup
+    ):
+        """Test creating instances for policy with access, erasure, and consent rules."""
+        connection_config = manual_setup["connection_config"]
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+        consent_config = manual_setup["consent_config"]
+
+        instances = full_privacy_request.create_manual_task_instances(
+            db, [connection_config]
+        )
+        assert len(instances) == 3
+
+        config_ids = {instance.config_id for instance in instances}
+        assert config_ids == {access_config.id, erasure_config.id, consent_config.id}
 
         # Cleanup
         for instance in instances:

@@ -73,7 +73,10 @@ class TestManualTaskConfig:
         ],
     )
     def test_create_config_with_valid_config_types(
-        self, db: Session, manual_task: ManualTask, config_type: ManualTaskConfigurationType
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        config_type: ManualTaskConfigurationType,
     ):
         """Test that configs can be created with all valid configuration types."""
         config = ManualTaskConfig.create(
