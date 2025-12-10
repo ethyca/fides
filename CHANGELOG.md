@@ -22,7 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
 
 ### Added
-- Added options to use privacy request fields as manual task coditions [#7089](https://github.com/ethyca/fides/pull/7089)
+- Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 
