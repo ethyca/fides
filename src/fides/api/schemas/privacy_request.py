@@ -390,6 +390,11 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
 # automatic batching to avoid memory issues with large request lists.
 BULK_PRIVACY_REQUEST_BATCH_SIZE = 50
 
+# Maximum number of privacy requests that can be returned from filter queries
+# for bulk operations. This prevents accidentally matching thousands of requests
+# which could cause memory/performance issues.
+MAX_BULK_FILTER_RESULTS = 10000
+
 
 class PrivacyRequestBulkSelection(FidesSchema):
     """
@@ -398,6 +403,9 @@ class PrivacyRequestBulkSelection(FidesSchema):
     If request_ids is provided, it will be used directly.
     If filters is provided (without request_ids), filters will be used to select privacy requests,
     with optional exclusions via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted and will be
+    automatically converted to {"request_ids": [...]}.
     """
 
     request_ids: Optional[List[str]] = Field(
@@ -412,6 +420,14 @@ class PrivacyRequestBulkSelection(FidesSchema):
         None,
         description="List of privacy request IDs to exclude from the action (only used with filters)",
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_input(cls, data: Any) -> Any:
+        """Convert plain list of IDs to schema format for backwards compatibility."""
+        if isinstance(data, list):
+            return {"request_ids": data}
+        return data
 
     @model_validator(mode="after")
     def validate_selection_provided(self) -> "PrivacyRequestBulkSelection":
