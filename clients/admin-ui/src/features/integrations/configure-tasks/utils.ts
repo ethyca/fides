@@ -168,7 +168,7 @@ export const getInitialFieldSource = (
       ? FieldSource.PRIVACY_REQUEST
       : FieldSource.DATASET;
   }
-  return FieldSource.DATASET;
+  return FieldSource.PRIVACY_REQUEST;
 };
 
 // Allowlist of fields to expose in the UI
