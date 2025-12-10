@@ -9,6 +9,7 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
+    ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -54,6 +55,43 @@ ATTACHMENT_FIELD_DATA = {
 
 
 class TestManualTaskConfig:
+    @pytest.mark.parametrize(
+        "config_type",
+        [
+            pytest.param(
+                ManualTaskConfigurationType.access_privacy_request,
+                id="access_privacy_request",
+            ),
+            pytest.param(
+                ManualTaskConfigurationType.erasure_privacy_request,
+                id="erasure_privacy_request",
+            ),
+            pytest.param(
+                ManualTaskConfigurationType.consent_privacy_request,
+                id="consent_privacy_request",
+            ),
+        ],
+    )
+    def test_create_config_with_valid_config_types(
+        self, db: Session, manual_task: ManualTask, config_type: ManualTaskConfigurationType
+    ):
+        """Test that configs can be created with all valid configuration types."""
+        config = ManualTaskConfig.create(
+            db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": config_type.value,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+        assert config.id is not None
+        assert config.task_id == manual_task.id
+        assert config.config_type == config_type
+        assert config.version == 1
+        assert config.is_current is True
+        assert config.field_definitions == []
+
     def test_create_config(self, db: Session, manual_task: ManualTask):
         config = ManualTaskConfig.create(
             db,

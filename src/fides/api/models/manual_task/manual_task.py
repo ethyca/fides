@@ -93,6 +93,7 @@ class ManualTaskConfigurationType(str, Enum):
     """Enum for manual task configuration types."""
 
     access_privacy_request = "access_privacy_request"
+    consent_privacy_request = "consent_privacy_request"
     erasure_privacy_request = "erasure_privacy_request"
     # Add more configuration types as needed
 

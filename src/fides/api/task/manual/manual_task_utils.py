@@ -21,6 +21,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 PRIVACY_REQUEST_CONFIG_TYPES = {
     ManualTaskConfigurationType.access_privacy_request,
     ManualTaskConfigurationType.erasure_privacy_request,
+    ManualTaskConfigurationType.consent_privacy_request,
 }
 
 
