@@ -77,6 +77,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}
+
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
