@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 from loguru import logger
@@ -83,7 +83,7 @@ class HTTPSConnector(BaseConnector[None]):
             )
 
             if not response.ok:
-                response_text: str
+                response_text: Union[str, Pii]
                 try:
                     response_text = Pii(response.text)
                 except Exception as exception:
@@ -98,9 +98,12 @@ class HTTPSConnector(BaseConnector[None]):
                 if response_expected:
                     raise ClientUnsuccessfulException(status_code=response.status_code)
 
-            logger.info("HTTPS Connector successfully executed a call.")
+            logger.info(f"HTTP Connector received status code: {response.status_code}")
 
-            return json.loads(response.text) if response_expected else {}
+            if response_expected:
+                return json.loads(response.text)
+
+            return {}
 
         except requests.ConnectionError:
             logger.error("HTTPS client received a connection error.")

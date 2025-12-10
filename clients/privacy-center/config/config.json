@@ -103,6 +103,18 @@
       },
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"
+    },
+    {
+      "policy_key": "dns",
+      "icon_path": "/delete.svg",
+      "title": "Do Not Sell",
+      "description": "We will not sell your data",
+      "description_subtext": [],
+      "identity_inputs": {
+        "email": "required"
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
     }
   ],
   "includeConsent": true,
