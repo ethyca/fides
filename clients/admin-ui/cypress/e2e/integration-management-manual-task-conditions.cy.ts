@@ -73,6 +73,9 @@ describe("Integration Management - Manual Task Conditions", () => {
     it("should handle exists/not exists operators correctly (value input disabled)", () => {
       cy.getByTestId("add-condition-btn").click();
 
+      // Select dataset field source
+      cy.getByTestId("field-source-dataset").click();
+
       // Fill in the dataset reference picker
       cy.getByTestId("dataset-reference-picker").pickDatasetReference(
         "Demo Users Dataset",
@@ -114,6 +117,9 @@ describe("Integration Management - Manual Task Conditions", () => {
 
     it("should successfully add a new condition", () => {
       cy.getByTestId("add-condition-btn").click();
+
+      // Select dataset field source
+      cy.getByTestId("field-source-dataset").click();
 
       // Fill in the dataset reference picker
       cy.getByTestId("dataset-reference-picker").pickDatasetReference(
