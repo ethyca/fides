@@ -53,16 +53,13 @@ export const PrivacyRequestFieldPicker = ({
       privacyCenterConfig?.actions,
     );
 
-    // Transform custom fields to field options, filtering out location type fields
-    // (location shows as an independent privacy request field)
-    const customFieldOptions = Object.entries(uniqueCustomFields)
-      .filter(
-        ([, fieldDefinition]) => fieldDefinition.field_type !== "location",
-      )
-      .map(([fieldName, fieldDefinition]) => ({
+    // Transform custom fields to field options
+    const customFieldOptions = Object.entries(uniqueCustomFields).map(
+      ([fieldName, fieldDefinition]) => ({
         label: fieldDefinition.label,
         value: `privacy_request.custom_privacy_request_fields.${fieldName}`,
-      }));
+      }),
+    );
 
     // If there are custom fields, add them as a separate group
     if (customFieldOptions.length > 0) {
