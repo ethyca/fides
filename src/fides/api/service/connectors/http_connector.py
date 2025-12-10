@@ -90,8 +90,7 @@ class HTTPSConnector(BaseConnector[None]):
                     response_text = f"Error getting response text: {exception}"
 
                 logger.error(
-                    f"Invalid response received from webhook. Received status code: {response.status_code}",
-                    response_text,
+                    f"Invalid response received from webhook. Received status code: {response.status_code}. {response_text}"
                 )
 
                 if response_expected:
