@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import NextLink from "next/link";
 import { useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
@@ -52,6 +53,8 @@ export const MonitorResult = ({
   href,
   ...props
 }: MonitorResultProps) => {
+  const { flags } = useFeatures();
+  const { heliosV2: heliosV2Enabled } = flags;
   const {
     name,
     consent_status: consentStatus,
@@ -108,7 +111,7 @@ export const MonitorResult = ({
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Flex vertical className="grow">
           <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
-            <Col span={14}>
+            <Col span={heliosV2Enabled ? 14 : 17}>
               <List.Item.Meta
                 avatar={
                   <ConnectionTypeLogo
@@ -160,8 +163,11 @@ export const MonitorResult = ({
                 </Tooltip>
               )}
             </Col>
-            <Col span={5} className="flex items-center justify-end">
-              {showConfidenceRow && (
+            <Col
+              span={heliosV2Enabled ? 5 : 2}
+              className="flex items-center justify-end"
+            >
+              {heliosV2Enabled && showConfidenceRow && (
                 <>
                   <Button
                     type="link"
@@ -201,29 +207,31 @@ export const MonitorResult = ({
               </NextLink>
             </Col>
           </Row>
-          <AnimatePresence initial={false}>
-            {showConfidenceRow &&
-              isConfidenceRowExpanded &&
-              confidenceCounts && (
-                // TODO: [ENG-2136] Add a custom Expanded/Collapsed animation component in FidesUI
-                <motion.div
-                  key="confidence-row"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <ConfidenceRow
-                    confidenceCounts={confidenceCounts}
-                    reviewHref={href}
-                    monitorId={key}
-                    className="mt-6"
-                    id={`confidence-row-${key}`}
-                  />
-                </motion.div>
-              )}
-          </AnimatePresence>
+          {heliosV2Enabled && (
+            <AnimatePresence initial={false}>
+              {showConfidenceRow &&
+                isConfidenceRowExpanded &&
+                confidenceCounts && (
+                  // TODO: [ENG-2136] Add a custom Expanded/Collapsed animation component in FidesUI
+                  <motion.div
+                    key="confidence-row"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <ConfidenceRow
+                      confidenceCounts={confidenceCounts}
+                      reviewHref={href}
+                      monitorId={key}
+                      className="mt-6"
+                      id={`confidence-row-${key}`}
+                    />
+                  </motion.div>
+                )}
+            </AnimatePresence>
+          )}
         </Flex>
       </Skeleton>
     </List.Item>
