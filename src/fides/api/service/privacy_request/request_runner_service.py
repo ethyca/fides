@@ -732,6 +732,7 @@ def run_privacy_request(
                 if not proceed:
                     return
 
+            # pylint: disable=too-many-nested-blocks
             # Request finalization CHECKPOINT
             if can_run_checkpoint(
                 request_checkpoint=CurrentStep.finalization,
