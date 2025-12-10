@@ -92,7 +92,7 @@ const AddConditionForm = ({
         ),
       }
     : {
-        fieldSource: FieldSource.DATASET,
+        fieldSource: FieldSource.PRIVACY_REQUEST,
       };
 
   const handleSubmit = useCallback(
