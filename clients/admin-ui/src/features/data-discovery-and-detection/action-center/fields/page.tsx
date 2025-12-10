@@ -5,7 +5,6 @@ import {
   AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
-  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -76,7 +75,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -121,20 +119,12 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
 
-  const bulkActions = useBulkActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
-  const fieldActions = useFieldActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
+  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -297,7 +287,9 @@ const ActionCenterFields: NextPage = () => {
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
-              <Title level={2}>Monitor results</Title>
+              <Title level={2} ellipsis>
+                Monitor results
+              </Title>
               <Flex align="center">
                 {monitorConfigData?.last_monitored && (
                   <Text type="secondary">
@@ -309,7 +301,7 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between">
+            <Flex justify="space-between" wrap="wrap" gap="small">
               <Flex gap="small">
                 <DebouncedSearchInput
                   value={search.searchQuery}
@@ -572,7 +564,6 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-      {modalContext}
     </FixedLayout>
   );
 };

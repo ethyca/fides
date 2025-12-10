@@ -1,4 +1,3 @@
-import type { ModalStaticFunctions } from "antd/es/modal/confirm";
 import {
   AntFlex as Flex,
   AntForm as Form,
@@ -27,8 +26,8 @@ const DenyRequestForm = ({ form }: { form: FormInstance }) => {
   );
 };
 
-export const useDenyPrivacyRequestModal = (modalApi: ModalStaticFunctions) => {
-  const { openFormModal } = useFormModal<{ denialReason: string }>(modalApi);
+export const useDenyPrivacyRequestModal = () => {
+  const { openFormModal } = useFormModal<{ denialReason: string }>();
 
   const openDenyPrivacyRequestModal = useCallback(
     async (warningMessage?: string) => {
