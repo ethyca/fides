@@ -5,6 +5,7 @@ import {
   AntFlex as Flex,
   AntTag as Tag,
   formatIsoLocation,
+  Icons,
   isoStringToEntry,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -17,9 +18,11 @@ import { TagExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { FRAMEWORK_MAP } from "~/features/privacy-notices/constants";
+import {
+  FRAMEWORK_MAP,
+  MECHANISM_MAP,
+} from "~/features/privacy-notices/constants";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
-import MechanismCell from "~/features/privacy-notices/table/cells/MechanismCell";
 import NoticeChildrenCell from "~/features/privacy-notices/table/cells/NoticeChildrenCell";
 import NoticeEnableCell from "~/features/privacy-notices/table/cells/NoticeEnableCell";
 import StatusCell from "~/features/privacy-notices/table/cells/StatusCell";
@@ -46,8 +49,10 @@ const EmptyTableNotice = () => {
               type="primary"
               size="small"
               data-testid="add-privacy-notice-btn"
+              icon={<Icons.Add />}
+              iconPosition="end"
             >
-              Add a privacy notice +
+              Add a privacy notice
             </Button>
           </div>
         </Flex>
@@ -79,7 +84,7 @@ const usePrivacyNoticesTable = () => {
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
 
   const items = useMemo(() => data?.items ?? [], [data?.items]);
-  const dataSource: PrivacyNoticeRowType[] = useMemo(
+  const dataSource = useMemo(
     () =>
       items.map((item) => {
         const { children, ...rest } = item;
@@ -111,107 +116,112 @@ const usePrivacyNoticesTable = () => {
 
   const { tableProps } = useAntTable(tableState, antTableConfig);
 
-  const columns: ColumnsType<PrivacyNoticeRowType> = useMemo(
-    () =>
-      [
-        {
-          title: "Title",
-          dataIndex: "name",
-          key: "name",
-          render: (_: boolean, record: PrivacyNoticeRowType) => (
-            <LinkCell
-              href={`${PRIVACY_NOTICES_ROUTE}/${record.id}`}
-              data-testid="notice-name"
-            >
-              {record.name}
-            </LinkCell>
-          ),
+  const columns: ColumnsType<(typeof dataSource)[number]> = useMemo(
+    () => [
+      {
+        title: "Title",
+        dataIndex: "name",
+        key: "name",
+        render: (_, record) => (
+          <LinkCell
+            href={`${PRIVACY_NOTICES_ROUTE}/${record.id}`}
+            data-testid="notice-name"
+          >
+            {record.name}
+          </LinkCell>
+        ),
+      },
+      {
+        title: "Mechanism",
+        dataIndex: "consent_mechanism",
+        key: "consent_mechanism",
+        // render: (value: ConsentMechanism) => <MechanismCell value={value} />,
+        render: (value: ConsentMechanism) => (
+          <Tag
+            data-testid="status-badge"
+            style={{ textTransform: "uppercase" }}
+          >
+            {MECHANISM_MAP.get(value) ?? value}
+          </Tag>
+        ),
+      },
+      {
+        title: "Locations",
+        dataIndex: "configured_regions",
+        key: "regions",
+        render: (regions: PrivacyNoticeRegion[] | undefined) => {
+          const values =
+            regions?.map((location: PrivacyNoticeRegion) => {
+              const isoEntry = isoStringToEntry(location);
+              return {
+                label: isoEntry
+                  ? formatIsoLocation({ isoEntry, showFlag: true })
+                  : (PRIVACY_NOTICE_REGION_RECORD[location] ?? location),
+                key: location,
+              };
+            }) ?? [];
+          return (
+            <TagExpandableCell
+              values={values}
+              columnState={{
+                isExpanded: isLocationsExpanded,
+              }}
+            />
+          );
         },
-        {
-          title: "Mechanism",
-          dataIndex: "consent_mechanism",
-          key: "consent_mechanism",
-          render: (value: ConsentMechanism) => <MechanismCell value={value} />,
-        },
-        {
-          title: "Locations",
-          dataIndex: "configured_regions",
-          key: "regions",
-          render: (regions: PrivacyNoticeRegion[] | undefined) => {
-            const values =
-              regions?.map((location: PrivacyNoticeRegion) => {
-                const isoEntry = isoStringToEntry(location);
-                return {
-                  label: isoEntry
-                    ? formatIsoLocation({ isoEntry, showFlag: true })
-                    : (PRIVACY_NOTICE_REGION_RECORD[location] ?? location),
-                  key: location,
-                };
-              }) ?? [];
-            return (
-              <TagExpandableCell
-                values={values}
-                columnState={{
-                  isExpanded: isLocationsExpanded,
-                }}
-              />
-            );
+        menu: {
+          items: expandCollapseAllMenuItems,
+          onClick: (e) => {
+            e.domEvent.stopPropagation();
+            if (e.key === "expand-all") {
+              setIsLocationsExpanded(true);
+            } else if (e.key === "collapse-all") {
+              setIsLocationsExpanded(false);
+            }
           },
-          menu: {
-            items: expandCollapseAllMenuItems,
-            onClick: (e) => {
-              e.domEvent.stopPropagation();
-              if (e.key === "expand-all") {
-                setIsLocationsExpanded(true);
-              } else if (e.key === "collapse-all") {
-                setIsLocationsExpanded(false);
-              }
+        },
+      },
+      {
+        title: "Status",
+        dataIndex: "disabled",
+        key: "status",
+        render: (_, record) => <StatusCell record={record} />,
+      },
+      {
+        title: "Framework",
+        dataIndex: "framework",
+        key: "framework",
+        render: (framework: string | null) =>
+          framework ? (
+            <Tag data-testid="framework-badge">
+              {FRAMEWORK_MAP.get(framework) ?? framework}
+            </Tag>
+          ) : null,
+      },
+      {
+        title: "Children",
+        dataIndex: "noticeChildren",
+        key: "noticeChildren",
+        render: (noticeChildren?: LimitedPrivacyNoticeResponseSchema[]) => (
+          <NoticeChildrenCell value={noticeChildren} />
+        ),
+      },
+      ...(userCanUpdate
+        ? [
+            {
+              title: "Enable",
+              dataIndex: "disabled",
+              key: "enable",
+              render: (_: unknown, record: (typeof dataSource)[number]) => (
+                <NoticeEnableCell record={record} />
+              ),
+              onCell: () => ({
+                onClick: (e: React.MouseEvent) => e.stopPropagation(),
+              }),
             },
-          },
-        },
-        {
-          title: "Status",
-          dataIndex: "disabled",
-          key: "status",
-          render: (_: boolean, record: PrivacyNoticeRowType) => (
-            <StatusCell record={record} />
-          ),
-        },
-        {
-          title: "Framework",
-          dataIndex: "framework",
-          key: "framework",
-          render: (framework: string | null) =>
-            framework ? (
-              <Tag data-testid="framework-badge">
-                {FRAMEWORK_MAP.get(framework) ?? framework}
-              </Tag>
-            ) : null,
-        },
-        {
-          title: "Children",
-          dataIndex: "noticeChildren",
-          key: "noticeChildren",
-          render: (noticeChildren?: LimitedPrivacyNoticeResponseSchema[]) => (
-            <NoticeChildrenCell value={noticeChildren} />
-          ),
-        },
-        ...(userCanUpdate
-          ? [
-              {
-                title: "Enable",
-                dataIndex: "disabled",
-                key: "enable",
-                render: (_: boolean, record: PrivacyNoticeRowType) => (
-                  <NoticeEnableCell record={record} />
-                ),
-                onCell: () => ({
-                  onClick: (e: React.MouseEvent) => e.stopPropagation(),
-                }),
-              },
-            ]
-          : []),
-      ] as ColumnsType<PrivacyNoticeRowType>,
+          ]
+        : []),
+    ],
     [userCanUpdate, isLocationsExpanded],
   );
 
