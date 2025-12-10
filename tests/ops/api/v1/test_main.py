@@ -2,7 +2,7 @@
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from starlette.testclient import TestClient
 
 from fides.api.main import create_fides_app, lifespan
@@ -52,7 +52,7 @@ class TestConfigureSecurityEnvOverrides:
 
         # an endpoint using verify_oauth_client_prod
         async with AsyncClient(
-            app=test_app, base_url="http://0.0.0.0:8080", follow_redirects=True
+            transport=ASGITransport(), base_url="http://0.0.0.0:8080", follow_redirects=True
         ) as client:
             response = await client.get(V1_URL_PREFIX + "/system")
             assert response.status_code == 401
@@ -78,7 +78,7 @@ class TestConfigureSecurityEnvOverrides:
 
         # an endpoint using verify_oauth_client_prod
         async with AsyncClient(
-            app=test_app, base_url="http://0.0.0.0:8080", follow_redirects=True
+            transport=ASGITransport(), base_url="http://0.0.0.0:8080", follow_redirects=True
         ) as client:
             response = await client.get(V1_URL_PREFIX + "/system")
             assert response.status_code == 401
