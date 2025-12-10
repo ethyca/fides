@@ -5,6 +5,14 @@
     padding-left: 0px;
   }
 
+  &:global(.ant-tree-directory) {
+    :global(.ant-tree-treenode) {
+      :global(.ant-tree-node-content-wrapper) {
+        position: relative;
+      }
+    }
+  }
+
   :global(.ant-tree-icon__customize) {
     flex: none;
   }

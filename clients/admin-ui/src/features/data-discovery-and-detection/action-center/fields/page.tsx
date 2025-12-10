@@ -256,31 +256,34 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            nodeActions={
-              new Map(
-                RESOURCE_ACTIONS.map((action) => [
-                  action,
-                  {
-                    label: FIELD_ACTION_LABEL[action],
-                    disabled: (node) => {
-                      /** Logic for this should exist on the BE */
-                      if (
-                        (action === FieldActionType.PROMOTE_REMOVALS &&
-                          node.status ===
-                            TreeResourceChangeIndicator.REMOVAL) ||
-                        (action === FieldActionType.CLASSIFY &&
-                          node.classifyable)
-                      ) {
-                        return false;
-                      }
+            selectedNodeKeys={selectedNodeKeys}
+            primaryAction={FieldActionType.CLASSIFY}
+            nodeActions={Object.fromEntries(
+              RESOURCE_ACTIONS.map((action) => [
+                action,
+                {
+                  label: FIELD_ACTION_LABEL[action],
+                  /** Logic for this should exist on the BE */
+                  disabled: (nodes) =>
+                    _(nodes)
+                      .map((node) => {
+                        if (
+                          (action === FieldActionType.PROMOTE_REMOVALS &&
+                            node.status ===
+                              TreeResourceChangeIndicator.REMOVAL) ||
+                          (action === FieldActionType.CLASSIFY &&
+                            node.classifyable)
+                        ) {
+                          return false;
+                        }
 
-                      return true;
-                    },
-                    callback: (key) => fieldActions[action]([key], false),
-                  },
-                ]),
-              )
-            }
+                        return true;
+                      })
+                      .some((d) => d === true),
+                  callback: (keys) => fieldActions[action](keys, false),
+                },
+              ]),
+            )}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
