@@ -61,12 +61,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -la ./.github/workflows
-
-      - name: Download Redis and Postgres images
-        uses: "./.github/workflows/cache_redis_and_postgres_images.yml"
-
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
@@ -299,9 +293,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Download Redis and Postgres images
-        uses: "./.github/workflows/cache_redis_and_postgres_images.yml"
 
       - name: Set Up Python
         uses: actions/setup-python@v5
