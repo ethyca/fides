@@ -469,8 +469,8 @@ class TestPrivacyRequestToEvaluationDataLocation:
         }
         data = transformer.to_evaluation_data(field_addresses)
 
-        # France is a country itself, not a subdivision
-        assert data["privacy_request"]["location_country"] is None
+        # France is a country itself - location_country returns the country code
+        assert data["privacy_request"]["location_country"] == "fr"
         assert data["privacy_request"]["location_groups"] == ["eea"]
         assert data["privacy_request"]["location_regulations"] == ["gdpr"]
 
