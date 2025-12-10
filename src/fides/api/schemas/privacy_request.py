@@ -403,6 +403,9 @@ class PrivacyRequestBulkSelection(FidesSchema):
     If request_ids is provided, it will be used directly.
     If filters is provided (without request_ids), filters will be used to select privacy requests,
     with optional exclusions via exclude_ids.
+
+    For backwards compatibility, a plain list of request IDs is also accepted and will be
+    automatically converted to {"request_ids": [...]}.
     """
 
     request_ids: Optional[List[str]] = Field(
@@ -417,6 +420,14 @@ class PrivacyRequestBulkSelection(FidesSchema):
         None,
         description="List of privacy request IDs to exclude from the action (only used with filters)",
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_input(cls, data: Any) -> Any:
+        """Convert plain list of IDs to schema format for backwards compatibility."""
+        if isinstance(data, list):
+            return {"request_ids": data}
+        return data
 
     @model_validator(mode="after")
     def validate_selection_provided(self) -> "PrivacyRequestBulkSelection":

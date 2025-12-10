@@ -6,8 +6,6 @@ from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
-    Awaitable,
-    Callable,
     DefaultDict,
     Dict,
     List,
@@ -19,7 +17,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import BackgroundTasks, Body, Depends, HTTPException, Request, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -211,37 +209,6 @@ def get_privacy_request_or_error(
         )
 
     return privacy_request
-
-
-def _create_bulk_selection_dependency(
-    schema_class: type[PrivacyRequestBulkSelection] = PrivacyRequestBulkSelection,
-) -> Callable[[Request], Awaitable[PrivacyRequestBulkSelection]]:
-    """
-    Factory to create a dependency that normalizes input to the specified schema type.
-
-    If a plain list is provided, convert it to the schema with request_ids.
-    Otherwise, parse as the schema type directly.
-    """
-
-    async def _normalize_bulk_selection(
-        request: Request,
-    ) -> PrivacyRequestBulkSelection:
-        try:
-            body = await request.json()
-        except json.JSONDecodeError as exc:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Request body is required and must be valid JSON",
-            ) from exc
-
-        # If it's a plain list, convert to the schema with request_ids
-        if isinstance(body, list):
-            return schema_class(request_ids=body)
-
-        # Otherwise, parse as the schema type
-        return schema_class(**body)
-
-    return _normalize_bulk_selection
 
 
 def validate_filters(filters: PrivacyRequestFilter) -> None:
@@ -922,9 +889,7 @@ def validate_manual_input(
     ],
 )
 def bulk_restart_privacy_request_from_failure(
-    privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _create_bulk_selection_dependency()
-    ),
+    privacy_requests: PrivacyRequestBulkSelection,
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
@@ -1105,9 +1070,7 @@ def verify_identification_code(
     response_model=BulkReviewResponse,
 )
 def approve_privacy_request(
-    privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _create_bulk_selection_dependency()
-    ),
+    privacy_requests: PrivacyRequestBulkSelection,
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1149,9 +1112,7 @@ def approve_privacy_request(
     response_model=BulkReviewResponse,
 )
 def deny_privacy_request(
-    privacy_requests: DenyPrivacyRequestSelection = Depends(
-        _create_bulk_selection_dependency(DenyPrivacyRequestSelection)
-    ),
+    privacy_requests: DenyPrivacyRequestSelection,
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1187,9 +1148,7 @@ def deny_privacy_request(
     response_model=BulkReviewResponse,
 )
 def cancel_privacy_request(
-    privacy_requests: CancelPrivacyRequestSelection = Depends(
-        _create_bulk_selection_dependency(CancelPrivacyRequestSelection)
-    ),
+    privacy_requests: CancelPrivacyRequestSelection,
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1724,9 +1683,7 @@ def resume_privacy_request_from_requires_input(
     response_model=BulkReviewResponse,
 )
 def bulk_finalize_privacy_requests(
-    privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _create_bulk_selection_dependency()
-    ),
+    privacy_requests: PrivacyRequestBulkSelection,
     *,
     db: Session = Depends(deps.get_db),
     client: ClientDetail = Security(
@@ -1923,9 +1880,7 @@ def request_task_async_callback(
     response_model=BulkSoftDeletePrivacyRequests,
 )
 def bulk_soft_delete_privacy_requests(
-    privacy_requests: PrivacyRequestBulkSelection = Depends(
-        _create_bulk_selection_dependency()
-    ),
+    privacy_requests: PrivacyRequestBulkSelection,
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
