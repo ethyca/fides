@@ -435,7 +435,7 @@ class TestPrivacyRequestToEvaluationDataLocation:
         data = transformer.to_evaluation_data(field_addresses)
 
         assert data["privacy_request"]["location"] == "US-CA"
-        assert data["privacy_request"]["location_country"] == "us"
+        assert data["privacy_request"]["location_country"] == "US"
         assert data["privacy_request"]["location_groups"] == ["us"]
         assert data["privacy_request"]["location_regulations"] == ["ccpa"]
 
@@ -452,7 +452,7 @@ class TestPrivacyRequestToEvaluationDataLocation:
         }
         data = transformer.to_evaluation_data(field_addresses)
 
-        assert data["privacy_request"]["location_country"] == "us"
+        assert data["privacy_request"]["location_country"] == "US"
         assert data["privacy_request"]["location_regulations"] == ["cpa"]
 
     def test_location_convenience_fields_eea_country(
@@ -469,8 +469,8 @@ class TestPrivacyRequestToEvaluationDataLocation:
         }
         data = transformer.to_evaluation_data(field_addresses)
 
-        # France is a country itself - location_country returns the country code
-        assert data["privacy_request"]["location_country"] == "fr"
+        # France is a country itself - location_country returns the country code in uppercase
+        assert data["privacy_request"]["location_country"] == "FR"
         assert data["privacy_request"]["location_groups"] == ["eea"]
         assert data["privacy_request"]["location_regulations"] == ["gdpr"]
 
@@ -503,3 +503,31 @@ class TestPrivacyRequestToEvaluationDataLocation:
         data = transformer.to_evaluation_data(field_addresses)
 
         assert data["privacy_request"]["location_country"] is None
+
+    def test_location_convenience_fields_unknown_subdivision_known_country(
+        self, db: Session, privacy_request: PrivacyRequest
+    ):
+        """Test fallback behavior when subdivision isn't in database but country is.
+
+        For locations like "PT-14" (Portugal region 14), the exact subdivision
+        may not exist in the location database, but we can still extract and
+        look up the country code "pt" to provide useful convenience fields.
+        """
+        # PT-14 is a subdivision format that doesn't exist in the location database,
+        # but "pt" (Portugal) does
+        privacy_request.update(db=db, data={"location": "PT-14"})
+
+        transformer = PrivacyRequestDataTransformer(privacy_request)
+        field_addresses = {
+            "privacy_request.location_country",
+            "privacy_request.location_groups",
+            "privacy_request.location_regulations",
+        }
+        data = transformer.to_evaluation_data(field_addresses)
+
+        # Should fall back to using the country code from the location string (uppercase)
+        assert data["privacy_request"]["location_country"] == "PT"
+        # Portugal belongs to the EEA
+        assert data["privacy_request"]["location_groups"] == ["eea"]
+        # Portugal has GDPR
+        assert data["privacy_request"]["location_regulations"] == ["gdpr"]

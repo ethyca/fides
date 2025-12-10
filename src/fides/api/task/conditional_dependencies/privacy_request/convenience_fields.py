@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from fides.api.models.location_regulation_selections import get_location_by_id
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_experience import region_country
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     ConditionalDependencyFieldInfo,
@@ -119,7 +120,13 @@ def get_policy_convenience_fields(
 
 
 def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
-    """Gets convenience fields for a location to support hierarchy-based conditions."""
+    """Gets convenience fields for a location to support hierarchy-based conditions.
+
+    If the exact location is not found in the location database, attempts to extract
+    the country code by splitting on underscore/hyphen and looking up the first part.
+    This handles cases like "PT-14" where the subdivision isn't in the database but
+    the country "PT" is.
+    """
     extra_fields: dict[str, Any] = {
         PrivacyRequestLocationConvenienceFields.location_country.value: None,
         PrivacyRequestLocationConvenienceFields.location_groups.value: [],
@@ -130,7 +137,30 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
         return extra_fields
 
     location_data = get_location_by_id(location)
+
+    # If exact location not found, try to extract and look up the country code
     if not location_data:
+        # Normalize location to internal format (lowercase, underscores) before extracting country
+        # region_country splits on "_", so "PT-14" -> "pt_14" -> "pt"
+        normalized = location.lower().replace("-", "_")
+        country_code = region_country(normalized)
+        if country_code != normalized:  # Only try if we actually extracted a country
+            location_data = get_location_by_id(country_code)
+            if location_data:
+                # We found the country, so set location_country to this value (uppercase for ISO format)
+                # and use the country's data for groups/regulations
+                extra_fields[
+                    PrivacyRequestLocationConvenienceFields.location_country.value
+                ] = country_code.upper()
+                extra_fields[
+                    PrivacyRequestLocationConvenienceFields.location_groups.value
+                ] = (location_data.belongs_to or [])
+                extra_fields[
+                    PrivacyRequestLocationConvenienceFields.location_regulations.value
+                ] = (location_data.regulation or [])
+                return extra_fields
+
+        # Still not found, return defaults
         return extra_fields
 
     # If location has parent groups, the first one is typically the country
@@ -141,16 +171,17 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
     )
 
     # Set location_country based on whether this is a country or subdivision
+    # Use uppercase for ISO 3166 format consistency
     if location_data.is_country:
-        # If the location is already a country, use the normalized location ID
+        # If the location is already a country, use the location ID in uppercase
         extra_fields[PrivacyRequestLocationConvenienceFields.location_country.value] = (
-            location_data.id
+            location_data.id.upper()
         )
     elif belongs_to:
-        # If it's a subdivision, use the first parent (typically the country)
+        # If it's a subdivision, use the first parent (typically the country) in uppercase
         # This helps with conditions like "is this a US state?"
         extra_fields[PrivacyRequestLocationConvenienceFields.location_country.value] = (
-            belongs_to[0]
+            belongs_to[0].upper()
         )
 
     # Add regulations applicable to this location

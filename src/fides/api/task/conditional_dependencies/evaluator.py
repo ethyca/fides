@@ -234,6 +234,9 @@ class ConditionEvaluator:
             The result of the operator applied to the actual and expected values
         """
         # Get the method for the operator and execute it
+        logger.info(
+            f"Applying operator {operator} to data value {data_value} and user input value {user_input_value}"
+        )
         try:
             operator_method = OPERATOR_METHODS[operator]
             return operator_method(data_value, user_input_value)
