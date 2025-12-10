@@ -3,7 +3,6 @@ import {
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntModal as modal,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
@@ -35,7 +34,6 @@ export const PrivacyRequestsDashboard = () => {
   });
 
   const messageApi = useMessage();
-  const [modalApi, modalContext] = modal.useModal();
 
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
@@ -92,7 +90,6 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    modalApi,
   });
 
   return (
@@ -180,7 +177,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {modalContext}
     </div>
   );
 };
