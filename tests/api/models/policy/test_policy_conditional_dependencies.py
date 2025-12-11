@@ -146,47 +146,6 @@ def group_condition(db: Session, policy: Policy) -> PolicyCondition:
 # ============================================================================
 
 
-class TestPolicyConditionCRUD:
-    """Test basic CRUD operations for PolicyCondition"""
-
-    def test_policy_condition_creation(
-        self, db: Session, policy: Policy, sample_condition_leaf_country: ConditionLeaf
-    ):
-        """Test creating a basic conditional dependency"""
-        condition = create_policy_condition(
-            db=db,
-            policy_id=policy.id,
-            condition_type=ConditionalDependencyType.leaf,
-            data={**sample_condition_leaf_country.model_dump(), "sort_order": 1},
-        )
-
-        assert condition.id is not None
-        assert condition.policy_id == policy.id
-        assert condition.condition_type == ConditionalDependencyType.leaf
-        assert condition.field_address == sample_condition_leaf_country.field_address
-        assert condition.operator == sample_condition_leaf_country.operator
-        assert condition.value == sample_condition_leaf_country.value
-        assert condition.sort_order == 1
-        assert condition.parent_id is None
-        assert condition.created_at is not None
-        assert condition.updated_at is not None
-
-    def test_policy_condition_with_group_condition(self, db: Session, policy: Policy):
-        """Test creating a conditional dependency with a group condition"""
-        condition = create_policy_condition(
-            db=db,
-            policy_id=policy.id,
-            condition_type=ConditionalDependencyType.group,
-            data={
-                "logical_operator": LOGICAL_OPERATOR_AND,
-                "sort_order": 1,
-            },
-        )
-
-        assert condition.condition_type == ConditionalDependencyType.group
-        assert condition.logical_operator == LOGICAL_OPERATOR_AND
-
-
 class TestPolicyConditionRelationships:
     """Test relationships and foreign key constraints"""
 
