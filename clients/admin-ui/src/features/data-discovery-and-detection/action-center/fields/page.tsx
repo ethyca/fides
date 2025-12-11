@@ -5,7 +5,6 @@ import {
   AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
-  AntModal as modal,
   AntPagination as Pagination,
   AntSplitter as Splitter,
   AntText as Text,
@@ -76,7 +75,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -121,20 +119,12 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
 
-  const bulkActions = useBulkActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
-  const fieldActions = useFieldActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
+  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -266,38 +256,43 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            nodeActions={
-              new Map(
-                RESOURCE_ACTIONS.map((action) => [
-                  action,
-                  {
-                    label: FIELD_ACTION_LABEL[action],
-                    disabled: (node) => {
-                      /** Logic for this should exist on the BE */
-                      if (
-                        (action === FieldActionType.PROMOTE_REMOVALS &&
-                          node.status ===
-                            TreeResourceChangeIndicator.REMOVAL) ||
-                        (action === FieldActionType.CLASSIFY &&
-                          node.classifyable)
-                      ) {
-                        return false;
-                      }
+            selectedNodeKeys={selectedNodeKeys}
+            primaryAction={FieldActionType.CLASSIFY}
+            nodeActions={Object.fromEntries(
+              RESOURCE_ACTIONS.map((action) => [
+                action,
+                {
+                  label: FIELD_ACTION_LABEL[action],
+                  /** Logic for this should exist on the BE */
+                  disabled: (nodes) =>
+                    _(nodes)
+                      .map((node) => {
+                        if (
+                          (action === FieldActionType.PROMOTE_REMOVALS &&
+                            node.status ===
+                              TreeResourceChangeIndicator.REMOVAL) ||
+                          (action === FieldActionType.CLASSIFY &&
+                            node.classifyable)
+                        ) {
+                          return false;
+                        }
 
-                      return true;
-                    },
-                    callback: (key) => fieldActions[action]([key], false),
-                  },
-                ]),
-              )
-            }
+                        return true;
+                      })
+                      .some((d) => d === true),
+                  callback: (keys) => fieldActions[action](keys, false),
+                },
+              ]),
+            )}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
-              <Title level={2}>Monitor results</Title>
+              <Title level={2} ellipsis>
+                Monitor results
+              </Title>
               <Flex align="center">
                 {monitorConfigData?.last_monitored && (
                   <Text type="secondary">
@@ -309,7 +304,7 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between">
+            <Flex justify="space-between" wrap="wrap" gap="small">
               <Flex gap="small">
                 <DebouncedSearchInput
                   value={search.searchQuery}
@@ -572,7 +567,6 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-      {modalContext}
     </FixedLayout>
   );
 };

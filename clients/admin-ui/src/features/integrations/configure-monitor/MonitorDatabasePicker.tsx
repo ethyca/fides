@@ -100,7 +100,7 @@ const MonitorDatabasePicker = ({
   });
 
   return (
-    <Flex w="full" direction="column" maxH="lg">
+    <Flex w="full" direction="column" maxH="lg" overflow="auto">
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={(row) => handleToggleSelection(row.id)}
