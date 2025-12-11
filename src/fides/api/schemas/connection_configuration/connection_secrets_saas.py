@@ -1,6 +1,6 @@
 import abc
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union, Literal
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
@@ -116,9 +116,12 @@ class SaaSSchemaFactory:
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
             if connector_param.options is not None:
-                DynamicOptions = Enum('DynamicOptions', {value: value for value in connector_param.options},
-        type=str)
-                param_type = List[DynamicOptions]
+                DynamicOption = Enum(
+                    "DynamicOption",
+                    {value: value for value in connector_param.options},
+                    type=str,
+                )
+                param_type = Union[DynamicOption, List[DynamicOption]]
             field_definitions[connector_param.name] = (
                 (
                     Optional[
