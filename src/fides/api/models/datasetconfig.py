@@ -19,6 +19,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.schemas.query_hints.base import QueryHints
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.saas_util import merge_datasets
 
@@ -336,6 +337,24 @@ def convert_dataset_to_graph(
         if collection.fides_meta and collection.fides_meta.partitioning:
             collection_partitioning = collection.fides_meta.partitioning
 
+        # Extract query hints from collection metadata if present
+        collection_query_hints = None
+        if (
+            collection.fides_meta
+            and hasattr(collection.fides_meta, "query_hints")
+            and collection.fides_meta.query_hints
+        ):
+            try:
+                collection_query_hints = QueryHints(
+                    hints=collection.fides_meta.query_hints
+                )
+            except Exception:
+                logger.warning(
+                    "Invalid query_hints on collection {}.{}, ignoring",
+                    dataset_name,
+                    collection.name,
+                )
+
         graph_collection = Collection(
             name=collection.name,
             fields=graph_fields,
@@ -347,6 +366,7 @@ def convert_dataset_to_graph(
                 set(collection.data_categories) if collection.data_categories else set()
             ),
             partitioning=collection_partitioning,
+            query_hints=collection_query_hints,
         )
         graph_collections.append(graph_collection)
     logger.debug(
