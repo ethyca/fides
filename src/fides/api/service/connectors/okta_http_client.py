@@ -1,9 +1,8 @@
 import json
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
-from loguru import logger
 from requests.adapters import HTTPAdapter
 from typing_extensions import TypedDict
 from urllib3.util.retry import Retry
