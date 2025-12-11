@@ -19,11 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.76.1..main)
 
 ### Added
-- Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
-- Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
 - Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 
 ### Changed
@@ -34,6 +32,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
+
+
+## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
+
+### Added
+- Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
+- Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
+
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 
