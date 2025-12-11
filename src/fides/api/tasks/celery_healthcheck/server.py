@@ -31,7 +31,7 @@ class HealthcheckHandler(SimpleHTTPRequestHandler):
                 result = insp.ping()
 
                 data = json.dumps({"status": "ok", "data": result})
-                logger.info(f"Healthcheck ping result: {data}")
+                logger.debug(f"Healthcheck ping result: {data}")
 
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
