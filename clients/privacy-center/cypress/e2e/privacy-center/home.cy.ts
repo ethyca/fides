@@ -52,8 +52,10 @@ describe("Home", () => {
       body: undefined,
     }).as("getExperience");
 
-    cy.getByTestId("card").contains("Manage your consent").click();
-    cy.getByTestId("notice-empty-state");
+    cy.getByTestId("card")
+      .contains("Manage your consent")
+      .click({ force: true });
+    cy.getByTestId("notice-empty-state").should("be.visible");
   });
 
   describe("when handling errors", () => {
