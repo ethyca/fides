@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
@@ -173,11 +174,13 @@ export const MonitorResult = ({
                     type="link"
                     className="p-0"
                     icon={
-                      isConfidenceRowExpanded ? (
-                        <Icons.ChevronUp />
-                      ) : (
-                        <Icons.ChevronDown />
-                      )
+                      <Icons.ChevronDown
+                        className={classNames(
+                          "transition-transform",
+                          "duration-300",
+                          isConfidenceRowExpanded ? "rotate-180" : undefined,
+                        )}
+                      />
                     }
                     iconPosition="end"
                     onClick={() =>
