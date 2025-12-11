@@ -95,7 +95,7 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
     run_command = (
         *EXEC,
         "pytest",
-        pytest_config.args,
+        *pytest_config.args,
         "tests/lib/",
     )
     session.run(*run_command, external=True)

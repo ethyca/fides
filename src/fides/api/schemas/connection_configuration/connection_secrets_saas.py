@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union, Literal
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
@@ -114,6 +114,8 @@ class SaaSSchemaFactory:
         field_definitions: Dict[str, Any] = {}
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
+            if connector_param.options is not None:
+                param_type = Literal[connector_param.options]
             field_definitions[connector_param.name] = (
                 (
                     Optional[
@@ -154,7 +156,6 @@ class SaaSSchemaFactory:
         # so they can be accessible in the 'required_components_supplied' validator
         model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.type}_schema",
-            **field_definitions,
             __base__=SaaSSchema,
             _connector_params=PrivateAttr(
                 {
@@ -173,6 +174,7 @@ class SaaSSchemaFactory:
                 if self.saas_config.external_references
                 else []
             ),
+            **field_definitions,
         )
 
         return model

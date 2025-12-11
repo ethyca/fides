@@ -23,8 +23,6 @@ from setup_tests_nox import (
     PytestConfig,
     ReportConfig,
     XdistConfig,
-)
-from setup_tests_nox import (
     pytest_api,
     pytest_ctl,
     pytest_lib,

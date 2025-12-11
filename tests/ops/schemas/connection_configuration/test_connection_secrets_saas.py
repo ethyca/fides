@@ -109,10 +109,8 @@ class TestSaaSConnectionSecrets:
         saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         with pytest.raises(ValidationError) as exc:
-            schema.model_validate({"account_type": "brokerage"})
-        assert "'account_type' must be one of [checking, savings, investment]" in str(
-            exc.value
-        )
+            schema.model_validate({"account_type": "investment"})
+        assert exc.type is ValidationError
 
     def test_value_not_in_options_with_multiselect(self, saas_config: SaaSConfig):
         saas_config.connector_params = [

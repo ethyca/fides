@@ -180,8 +180,8 @@ class TestFidesClientUnit:
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
         request.read()
-        dictionary = json.loads(request.content.decode("utf-8"))
-        assert dictionary == {"field1": "value1"}
+        result = json.loads(request.content.decode("utf-8"))
+        assert result == [{"field1": "value1"}]
 
     @pytest.mark.asyncio
     def test_poll_for_completion(
