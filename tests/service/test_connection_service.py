@@ -30,6 +30,7 @@ from fides.api.schemas.enums.connection_category import ConnectionCategory
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.service.connection.connection_service import ConnectionService
+from fides.service.connection.merge_configs_util import merge_datasets
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -1052,7 +1053,7 @@ class TestConnectionService:
         customer_dataset = self._apply_dataset_changes(stored_dataset, customer_changes)
 
         # Execute merge
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+        result_dataset_dict: Dict[str, Any] = merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
@@ -1109,7 +1110,7 @@ class TestConnectionService:
         )
 
         # Get initial merged result
-        initial_result = connection_service.merge_datasets(
+        initial_result = merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
@@ -1117,7 +1118,7 @@ class TestConnectionService:
         )
 
         # Now test with no changes (upcoming dataset becomes stored, no new changes)
-        no_change_result = connection_service.merge_datasets(
+        no_change_result = merge_datasets(
             stored_dataset=upcoming_dataset,
             customer_dataset=initial_result,
             upcoming_dataset=upcoming_dataset,
@@ -1225,7 +1226,7 @@ class TestConnectionService:
             )
 
         # Merge the datasets
-        result_dataset_dict: Dict[str, Any] = connection_service.merge_datasets(
+        result_dataset_dict: Dict[str, Any] = merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
