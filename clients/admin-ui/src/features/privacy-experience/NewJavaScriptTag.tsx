@@ -17,15 +17,9 @@ import {
 import { useMemo, useRef, useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
-import { useFeatures } from "~/features/common/features";
 import { GearLightIcon } from "~/features/common/Icon";
-import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { Property } from "~/types/api";
-import {
-  FIDES_JS_SCRIPT_TEMPLATE,
-  PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-  PROPERTY_UNIQUE_ID_TEMPLATE,
-} from "./fidesJsScriptTemplate";
+import { FIDES_JS_SCRIPT_TEMPLATE} from "./fidesJsScriptTemplate";
 
 interface Props {
   property: Property;
@@ -35,37 +29,11 @@ const NewJavaScriptTag = ({ property }: Props) => {
   const modal = useDisclosure();
   const initialRef = useRef(null);
   const [privacyCenterHostname, setPrivacyCenterHostname] = useState("");
-  const { fidesCloud: isFidesCloud } = useFeatures();
 
-  const { data: fidesCloudConfig, isSuccess } = useGetFidesCloudConfigQuery(
-    undefined,
-    {
-      skip: !isFidesCloud,
-    },
+  const fidesJsScriptTag = useMemo(
+    () => FIDES_JS_SCRIPT_TEMPLATE(privacyCenterHostname, property),
+    [privacyCenterHostname, property],
   );
-
-  const fidesJsScriptTag = useMemo(() => {
-    let script = FIDES_JS_SCRIPT_TEMPLATE.replaceAll(
-      PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.id!.toString(),
-    );
-    // Use user input if provided, otherwise fall back to Fides Cloud config
-    const hostname =
-      privacyCenterHostname ||
-      (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
-        ? fidesCloudConfig.privacy_center_url
-        : "");
-    if (hostname) {
-      script = script.replaceAll(PRIVACY_CENTER_HOSTNAME_TEMPLATE, hostname);
-    }
-    return script;
-  }, [
-    fidesCloudConfig?.privacy_center_url,
-    isFidesCloud,
-    isSuccess,
-    property,
-    privacyCenterHostname,
-  ]);
 
   return (
     <>

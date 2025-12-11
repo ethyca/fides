@@ -20,9 +20,7 @@ import ClipboardButton from "~/features/common/ClipboardButton";
 import { CopyIcon } from "~/features/common/Icon";
 import {
   FIDES_JS_SCRIPT_TEMPLATE,
-  PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-  removePropertyIdFromScript
-} from "./fidesJsScriptTemplate";
+} from "~/features/privacy-experience/fidesJsScriptTemplate";
 
 const JavaScriptTag = () => {
   const modal = useDisclosure();
@@ -31,16 +29,7 @@ const JavaScriptTag = () => {
 
   const fidesJsScriptTag = useMemo(
     () => {
-      let script = FIDES_JS_SCRIPT_TEMPLATE;
-
-      script = removePropertyIdFromScript(script, false);
-      if (privacyCenterHostname) {
-        script = script.replaceAll(
-          PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-          privacyCenterHostname,
-        );
-      }
-      return script;
+      return FIDES_JS_SCRIPT_TEMPLATE(privacyCenterHostname);
     },
     [privacyCenterHostname],
   );
