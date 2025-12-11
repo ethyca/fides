@@ -1,4 +1,4 @@
-import time
+import pytest
 
 import pytest
 import requests
