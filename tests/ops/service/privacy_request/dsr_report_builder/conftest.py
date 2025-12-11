@@ -169,7 +169,6 @@ def common_file_assertions():
         "attachment_extensions": [".txt", ".pdf", ".jpg", ".png"],
         "index_files": [
             "index.html",
-            "attachments/index.html",
         ],
     }
 
@@ -185,7 +184,6 @@ def common_assertions(common_file_assertions):
             "attachments_dir": "attachments",
             "manual_webhook_dir": "data/manual/test_webhook",
             "welcome_path": "clickme.html",
-            "attachments_index": "attachments/index.html",
             "back_svg_path": "data/back.svg",
             "collection_dir": "data/dataset/collection",
             "collection_index": "data/dataset/collection/index.html",

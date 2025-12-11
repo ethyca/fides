@@ -17,7 +17,9 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
@@ -51,25 +53,29 @@ import {
   transformFormValuesToSystem,
   transformSystemToFormValues,
 } from "~/features/system/form";
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import {
+  useBulkAssignStewardMutation,
   useCreateSystemMutation,
   useGetAllSystemsQuery,
+  useLazyGetSystemByFidesKeyQuery,
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import VendorSelector from "~/features/system/VendorSelector";
-import { ResourceTypes, SystemResponse } from "~/types/api";
-
-import { ControlledSelect } from "../common/form/ControlledSelect";
-import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
   legalBasisForTransferOptions,
   responsibilityOptions,
-} from "./SystemInformationFormSelectOptions";
+} from "~/features/system/SystemInformationFormSelectOptions";
+import VendorSelector from "~/features/system/VendorSelector";
+import {
+  useGetAllUsersQuery,
+  useRemoveUserManagedSystemMutation,
+} from "~/features/user-management";
+import { SystemResponse } from "~/types/api";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -101,8 +107,25 @@ const SystemInformationForm = ({
   const { plus: systemGroupsEnabled } = useFeatures();
 
   const dispatch = useAppDispatch();
+
+  // Fetch eligible users for data stewards (exclude approvers and external respondents)
+  const { data: eligibleUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+    exclude_approvers: true,
+  });
+
+  // Transform users to options for the select dropdown
+  const dataStewardOptions = useMemo(() => {
+    const users = eligibleUsersData?.items || [];
+    return users.map((user) => ({
+      label: user.username,
+      value: user.username,
+    }));
+  }, [eligibleUsersData]);
   const customFields = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
+    resourceType: LegacyResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
   });
 
@@ -158,7 +181,10 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const [bulkAssignSteward] = useBulkAssignStewardMutation();
   const [populateSystemAssets] = usePopulateSystemAssetsMutation();
+  const [getSystemByFidesKey] = useLazyGetSystemByFidesKeyQuery();
+  const [removeUserManagedSystem] = useRemoveUserManagedSystemMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -265,7 +291,9 @@ const SystemInformationForm = ({
       }
     };
 
-    let result;
+    let result:
+      | { data: SystemResponse }
+      | { error: FetchBaseQueryError | SerializedError };
     if (isEditing) {
       result = await updateSystemMutationTrigger(systemBody);
     } else {
@@ -274,7 +302,12 @@ const SystemInformationForm = ({
 
     await customFields.upsertCustomFields(values);
 
-    if (!isEditing && values.vendor_id && result.data?.fides_key) {
+    if (
+      !isEditing &&
+      values.vendor_id &&
+      !isErrorResult(result) &&
+      result.data?.fides_key
+    ) {
       const assetResult = await populateSystemAssets({
         systemKey: result.data.fides_key,
       });
@@ -284,6 +317,100 @@ const SystemInformationForm = ({
             "An unexpected error occurred while populating the system assets from Compass. Please try again.",
           ),
         );
+      }
+    }
+
+    // Handle data stewards assignment after system is created/updated
+    if (!isErrorResult(result) && result.data?.fides_key) {
+      const systemData = result.data;
+      // Get current stewards from the system response (with both username and id)
+      const currentStewardsMap = new Map(
+        (systemData.data_stewards || []).map(
+          (user: { username: string; id: string }) => [user.username, user.id],
+        ),
+      );
+      const currentStewards = Array.from(currentStewardsMap.keys());
+      const desiredStewards = values.data_stewards || [];
+
+      // Find stewards that need to be added (not already assigned)
+      const stewardsToAdd = desiredStewards.filter(
+        (steward) => !currentStewards.includes(steward),
+      );
+
+      // Find stewards that need to be removed (no longer in desired list)
+      const stewardsToRemove = currentStewards.filter(
+        (steward: string) => !desiredStewards.includes(steward),
+      );
+
+      // Assign each new steward to the system
+      await Promise.all(
+        stewardsToAdd.map(async (steward) => {
+          const assignResult = await bulkAssignSteward({
+            data_steward: steward,
+            system_keys: [systemData.fides_key],
+          });
+          if (isErrorResult(assignResult)) {
+            toast({
+              status: "warning",
+              description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
+                assignResult.error,
+                "Please try again.",
+              )}`,
+            });
+          }
+        }),
+      );
+
+      // Remove stewards that are no longer selected
+      // Use the user ID from the current stewards map to call the remove endpoint
+      await Promise.all(
+        stewardsToRemove
+          .map((steward) => {
+            const stewardId = currentStewardsMap.get(steward);
+            if (!stewardId) {
+              toast({
+                status: "warning",
+                description: `Could not find user ID for ${steward}. Skipping removal.`,
+              });
+              return null;
+            }
+            return { steward, stewardId };
+          })
+          .filter(
+            (item): item is { steward: string; stewardId: string } =>
+              item !== null,
+          )
+          .map(async ({ steward, stewardId }) => {
+            const removeResult = await removeUserManagedSystem({
+              userId: stewardId,
+              systemKey: systemData.fides_key,
+            });
+            if (isErrorResult(removeResult)) {
+              toast({
+                status: "warning",
+                description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
+                  removeResult.error,
+                  "Please try again.",
+                )}`,
+              });
+            }
+          }),
+      );
+
+      // Refetch the system to get updated data stewards
+      if (stewardsToAdd.length > 0 || stewardsToRemove.length > 0) {
+        const refreshedSystemResult = await getSystemByFidesKey(
+          systemData.fides_key,
+        );
+        if (
+          refreshedSystemResult &&
+          "data" in refreshedSystemResult &&
+          refreshedSystemResult.data &&
+          !("error" in refreshedSystemResult)
+        ) {
+          // Update the result with the refreshed system data
+          result.data = refreshedSystemResult.data as SystemResponse;
+        }
       }
     }
 
@@ -544,12 +671,20 @@ const SystemInformationForm = ({
                     />
                   </SystemFormInputGroup>
                   <SystemFormInputGroup heading="Administrative properties">
-                    <CustomTextInput
+                    <ControlledSelect
+                      mode="multiple"
+                      layout="stacked"
                       label="Data stewards"
                       name="data_stewards"
                       tooltip="Who are the stewards assigned to the system?"
-                      variant="stacked"
-                      disabled
+                      options={dataStewardOptions}
+                      showSearch
+                      filterOption={(input, option) =>
+                        String(option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      placeholder="Select data stewards"
                     />
                     <DictSuggestionTextInput
                       id="privacy_policy"
@@ -633,7 +768,7 @@ const SystemInformationForm = ({
                   </SystemFormInputGroup>
                   {values.fides_key ? (
                     <CustomFieldsList
-                      resourceType={ResourceTypes.SYSTEM}
+                      resourceType={LegacyResourceTypes.SYSTEM}
                       resourceFidesKey={values.fides_key}
                     />
                   ) : null}

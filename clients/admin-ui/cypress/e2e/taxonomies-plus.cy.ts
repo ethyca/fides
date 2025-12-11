@@ -5,7 +5,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { ResourceTypes } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 
 describe("Taxonomy management with Plus features", () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("Taxonomy management with Plus features", () => {
 
   const RESOURCE_TYPE = {
     label: "Data Categories",
-    key: ResourceTypes.DATA_CATEGORY,
+    key: LegacyResourceTypes.DATA_CATEGORY,
   };
   const RESOURCE_CHILD = {
     label: "Job Title",

@@ -253,8 +253,12 @@ class TestPrivacyRequestService:
         "require_manual_request_approval",
         "postgres_example_test_dataset_config",
     )
+    @patch(
+        "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
+    )
     def test_resubmit_does_not_approve_request_if_webhooks(
         self,
+        mock_trigger_pre_approval_webhook,
         db: Session,
         privacy_request_service: PrivacyRequestService,
         mock_messaging_service: MessagingService,
@@ -1426,3 +1430,54 @@ class TestPrivacyRequestService:
             assert len(result.failed) == 1
             assert result.failed[0].message == "Privacy request could not be finalized"
             assert result.failed[0].data["id"] == privacy_request.id
+
+    @pytest.mark.parametrize(
+        "request_count,expected_batch_count,expected_last_batch_size",
+        [
+            (10, 1, 10),  # Less than batch size
+            (50, 1, 50),  # Exactly batch size
+            (51, 2, 1),  # One more than batch size
+            (75, 2, 25),  # One and a half batches
+            (100, 2, 50),  # Exactly two batches
+            (125, 3, 25),  # Two and a half batches
+        ],
+    )
+    def test_get_batches_for_bulk_operation(
+        self,
+        request_count,
+        expected_batch_count,
+        expected_last_batch_size,
+    ):
+        """Test that get_batches_for_bulk_operation correctly batches request IDs."""
+        from fides.api.schemas.privacy_request import BULK_PRIVACY_REQUEST_BATCH_SIZE
+
+        # Create a list of request IDs
+        request_ids = [f"req_{i}" for i in range(request_count)]
+
+        # Get batches
+        batches = PrivacyRequestService.get_batches_for_bulk_operation(request_ids)
+
+        # Verify batch count
+        assert len(batches) == expected_batch_count
+
+        # Verify all batches except the last have the full batch size
+        for i in range(expected_batch_count - 1):
+            assert len(batches[i]) == BULK_PRIVACY_REQUEST_BATCH_SIZE
+
+        # Verify the last batch has the expected size
+        assert len(batches[-1]) == expected_last_batch_size
+
+        # Verify all request IDs are included across all batches
+        all_batched_ids = [id for batch in batches for id in batch]
+        assert len(all_batched_ids) == request_count
+        assert set(all_batched_ids) == set(request_ids)
+
+        # Verify IDs are in the correct order (no shuffling)
+        assert all_batched_ids == request_ids
+
+        # Verify each batch contains consecutive IDs
+        start_idx = 0
+        for batch in batches:
+            expected_batch = request_ids[start_idx : start_idx + len(batch)]
+            assert batch == expected_batch
+            start_idx += len(batch)
