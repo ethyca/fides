@@ -1,8 +1,6 @@
 import { Property } from "~/types/api";
 
 export const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
-// export const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
-
 /**
  * Generates the property ID query parameter string for the Fides.js script URL
  */
@@ -27,12 +25,12 @@ export const FIDES_JS_SCRIPT_TEMPLATE = (privacyCenterHostname?: string, propert
 
     function insertFidesScript() {
         addEventListener("FidesInitializing", function () {
-            // any pre-initialization code can go here
-            // window.Fides.gtm();
+            // pre-initialization code goes here. e.g., tag manager integrations
+            // example: window.Fides.gtm();
         });
 
         addEventListener("FidesInitialized", function () {
-            // addExperienceIdToBody();
+            // example: addExperienceIdToBody();
         });
 
         function addExperienceIdToBody() {
@@ -78,11 +76,6 @@ export const FIDES_JS_SCRIPT_TEMPLATE = (privacyCenterHostname?: string, propert
     if (privacyCenterHostname) {
         script = script.replaceAll(PRIVACY_CENTER_HOSTNAME_TEMPLATE, privacyCenterHostname);
     }
-
-    // // Replace property ID template if provided
-    // if (propertyId) {
-    //     script = script.replaceAll(PROPERTY_UNIQUE_ID_TEMPLATE, propertyId);
-    // }
 
     return script;
 };
