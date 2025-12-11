@@ -6,8 +6,9 @@ import {
 import { useMemo } from "react";
 
 import { useGetPrivacyRequestFieldsQuery } from "~/features/datastore-connections/connection-manual-tasks.slice";
+import { extractUniqueCustomFields } from "~/features/privacy-requests/dashboard/utils";
+import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 
-import { useCustomFieldMetadata } from "../hooks/useCustomFieldMetadata";
 import {
   ALLOWED_PRIVACY_REQUEST_FIELDS,
   flattenPrivacyRequestFields,
@@ -31,8 +32,8 @@ export const PrivacyRequestFieldPicker = ({
     connectionKey,
   });
 
-  // Get custom fields from the hook
-  const { customFieldsMap } = useCustomFieldMetadata();
+  // Fetch privacy center config to get custom fields
+  const { data: privacyCenterConfig } = useGetPrivacyCenterConfigQuery();
 
   // Flatten the nested structure and filter to allowed fields
   const fieldOptions = useMemo(() => {
@@ -47,8 +48,13 @@ export const PrivacyRequestFieldPicker = ({
 
     const standardFieldOptions = groupFieldsByCategory(flattenedFields);
 
+    // Extract unique custom fields from privacy center config
+    const uniqueCustomFields = extractUniqueCustomFields(
+      privacyCenterConfig?.actions,
+    );
+
     // Transform custom fields to field options
-    const customFieldOptions = Object.entries(customFieldsMap).map(
+    const customFieldOptions = Object.entries(uniqueCustomFields).map(
       ([fieldName, fieldDefinition]) => ({
         label: fieldDefinition.label,
         value: `privacy_request.custom_privacy_request_fields.${fieldName}`,
@@ -69,7 +75,7 @@ export const PrivacyRequestFieldPicker = ({
     }
 
     return standardFieldOptions;
-  }, [data, customFieldsMap]);
+  }, [data, privacyCenterConfig]);
 
   if (error) {
     return (

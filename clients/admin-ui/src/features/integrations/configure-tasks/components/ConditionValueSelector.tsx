@@ -12,39 +12,29 @@ import { ChangeEvent } from "react";
 import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
 import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
 
-import { CustomFieldMetadata } from "../types";
-import { FieldType, getFieldTypeWithMetadata } from "../utils";
+import { FieldType } from "../utils";
 
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
   disabled?: boolean;
   value?: string | boolean | Dayjs | null;
   onChange?: (value: string | boolean | Dayjs | null) => void;
-  fieldAddress?: string;
-  customFieldMetadata?: CustomFieldMetadata | null;
 }
 
 /**
  * Renders the appropriate input component based on the field type.
- * Handles boolean, date, location, location_country, location_groups, location_regulations,
- * policy, custom_select, custom_multiselect, and string field types.
+ * Handles boolean, date, location, location_country, location_groups, location_regulations, policy, and string field types.
  * This component is designed to work with Ant Design Form.Item.
  */
 export const ConditionValueSelector = ({
-  fieldType: baseFieldType,
+  fieldType,
   disabled = false,
   value,
   onChange,
-  fieldAddress,
-  customFieldMetadata,
 }: ConditionValueSelectorProps) => {
-  // Determine the effective field type with custom field metadata
-  const fieldType = fieldAddress
-    ? getFieldTypeWithMetadata(fieldAddress, customFieldMetadata ?? null)
-    : baseFieldType;
   // Fetch policies for policy selector (only when needed)
   const { data: policiesData } = useGetPoliciesQuery(undefined, {
-    skip: baseFieldType !== "policy",
+    skip: fieldType !== "policy",
   });
 
   // Fetch locations and regulations data (only when needed)
@@ -191,38 +181,6 @@ export const ConditionValueSelector = ({
         allowClear
         showSearch
         aria-label="Select a policy"
-        filterOption={(input, option) =>
-          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-        }
-      />
-    );
-  }
-
-  // Custom select/multiselect input (single-select for conditions)
-  // Even for multiselect fields, conditions compare against a single value
-  if (
-    (fieldType === "custom_select" || fieldType === "custom_multiselect") &&
-    customFieldMetadata?.options
-  ) {
-    const selectOptions =
-      customFieldMetadata.options.map((option) => ({
-        label: option,
-        value: option,
-      })) ?? [];
-
-    return (
-      <Select
-        value={value as string}
-        onChange={onChange}
-        options={selectOptions}
-        placeholder={
-          disabled ? "Not required" : `Select ${customFieldMetadata.label}`
-        }
-        disabled={disabled}
-        data-testid="value-custom-select-input"
-        allowClear
-        showSearch
-        aria-label={`Select ${customFieldMetadata.label}`}
         filterOption={(input, option) =>
           (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
         }

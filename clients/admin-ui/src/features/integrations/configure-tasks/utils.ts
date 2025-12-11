@@ -3,11 +3,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { formatDate } from "~/features/common/utils";
 import { ConditionLeaf, Operator } from "~/types/api";
 
-import {
-  CustomFieldMetadata,
-  FieldSource,
-  PrivacyRequestFieldDefinition,
-} from "./types";
+import { FieldSource, PrivacyRequestFieldDefinition } from "./types";
 
 // Field type detection
 export type FieldType =
@@ -18,9 +14,7 @@ export type FieldType =
   | "location_groups"
   | "location_regulations"
   | "policy"
-  | "string"
-  | "custom_select"
-  | "custom_multiselect";
+  | "string";
 
 // Hardcoded list of date fields
 export const DATE_FIELDS = [
@@ -79,33 +73,6 @@ export const getFieldType = (fieldAddress: string): FieldType => {
 };
 
 /**
- * Determines the field type with custom field metadata support.
- * This extends getFieldType to handle custom fields with select/multiselect types.
- *
- * @param fieldAddress - The field address to check
- * @param customFieldMetadata - Optional custom field metadata for the field
- * @returns The field type
- */
-export const getFieldTypeWithMetadata = (
-  fieldAddress: string,
-  customFieldMetadata: CustomFieldMetadata | null,
-): FieldType => {
-  // Check if this is a custom field with specific field type
-  if (customFieldMetadata) {
-    if (customFieldMetadata.field_type === "select") {
-      return "custom_select";
-    }
-    if (customFieldMetadata.field_type === "multiselect") {
-      return "custom_multiselect";
-    }
-    // For text and location custom fields, fall through to standard detection
-  }
-
-  // Use standard field type detection
-  return getFieldType(fieldAddress);
-};
-
-/**
  * Parses a form value into the appropriate type for a condition.
  * Handles Dayjs objects, booleans, numbers, and strings.
  */
@@ -147,7 +114,7 @@ export const parseConditionValue = (
       return numValue;
     }
 
-    // Date strings, location strings, location_groups, location_regulations, custom field values pass through as-is
+    // Date strings, location strings, location_groups, location_regulations pass through as-is
     // Default to string
     return rawValue;
   }
@@ -186,7 +153,7 @@ export const parseStoredValueForForm = (
     return parsed.isValid() ? parsed : undefined;
   }
 
-  // For all other types (location, location_country, location_groups, location_regulations, policy, string, custom fields), return as string
+  // For all other types (location, location_country, location_groups, location_regulations, policy, string), return as string
   return storedValue.toString();
 };
 
@@ -201,7 +168,7 @@ export const getInitialFieldSource = (
       ? FieldSource.PRIVACY_REQUEST
       : FieldSource.DATASET;
   }
-  return FieldSource.PRIVACY_REQUEST;
+  return FieldSource.DATASET;
 };
 
 // Allowlist of fields to expose in the UI
@@ -220,6 +187,8 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.location_groups",
   "privacy_request.location_regulations",
   "privacy_request.policy.id",
+  "privacy_request.policy.name",
+  "privacy_request.policy.key",
   "privacy_request.policy.has_access_rule",
   "privacy_request.policy.has_erasure_rule",
   "privacy_request.policy.has_consent_rule",
@@ -437,9 +406,6 @@ export const getValueTooltip = (
       return "Select a regulation (e.g., gdpr, ccpa, lgpd)";
     case "policy":
       return "Select a policy";
-    case "custom_select":
-    case "custom_multiselect":
-      return "Select a value from the available options";
     default:
       return "Enter the value to compare against. Can be text, number, or true/false";
   }

@@ -15,7 +15,6 @@ import { ConditionLeaf, Operator } from "~/types/api";
 import { ConditionValueSelector } from "./components/ConditionValueSelector";
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
 import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicker";
-import { useCustomFieldMetadata } from "./hooks/useCustomFieldMetadata";
 import { FieldSource } from "./types";
 import {
   getFieldType,
@@ -54,19 +53,11 @@ const AddConditionForm = ({
     getInitialFieldSource(editingCondition),
   );
 
-  // Get custom field metadata hook
-  const { getCustomFieldMetadata } = useCustomFieldMetadata();
-
   // Watch the selected field to determine its type
   const selectedFieldAddress = Form.useWatch("fieldAddress", form);
   const selectedFieldType = selectedFieldAddress
     ? getFieldType(selectedFieldAddress)
     : "string";
-
-  // Get custom field metadata for the selected field
-  const customFieldMetadata = selectedFieldAddress
-    ? getCustomFieldMetadata(selectedFieldAddress)
-    : null;
 
   // Check if operator should be disabled and set to LIST_CONTAINS
   const isOperatorFixed =
@@ -101,7 +92,7 @@ const AddConditionForm = ({
         ),
       }
     : {
-        fieldSource: FieldSource.PRIVACY_REQUEST,
+        fieldSource: FieldSource.DATASET,
       };
 
   const handleSubmit = useCallback(
@@ -232,8 +223,6 @@ const AddConditionForm = ({
         <ConditionValueSelector
           fieldType={selectedFieldType}
           disabled={isValueDisabled}
-          fieldAddress={selectedFieldAddress}
-          customFieldMetadata={customFieldMetadata}
         />
       </Form.Item>
 

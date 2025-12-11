@@ -29,12 +29,3 @@ export enum FieldSource {
   DATASET = "dataset",
   PRIVACY_REQUEST = "privacy_request",
 }
-
-// Custom field metadata types
-export interface CustomFieldMetadata {
-  field_type?: "text" | "select" | "multiselect" | "location" | null;
-  options?: string[] | null;
-  label: string;
-}
-
-export type CustomFieldMetadataMap = Record<string, CustomFieldMetadata>;
