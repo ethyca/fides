@@ -113,8 +113,9 @@ const CustomFieldForm = ({
       title: "Delete custom field?",
       content: (
         <Typography.Paragraph>
-          Are you sure you want to delete <strong>{initialField?.name}</strong>{" "}
-          This action cannot be undone.
+          Are you sure you want to delete{" "}
+          <strong>{initialField?.name ?? "this custom field"}</strong>? This
+          action cannot be undone.
         </Typography.Paragraph>
       ),
       onOk: handleDelete,
