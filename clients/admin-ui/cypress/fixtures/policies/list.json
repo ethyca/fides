@@ -1,0 +1,55 @@
+{
+  "items": [
+    {
+      "name": "Default Consent Policy",
+      "key": "default_consent_policy",
+      "drp_action": null,
+      "execution_timeframe": 45,
+      "rules": [
+        {
+          "name": "Default Consent Rule",
+          "key": "default_consent_rule",
+          "action_type": "consent",
+          "storage_destination": null,
+          "masking_strategy": null
+        }
+      ]
+    },
+    {
+      "name": "Default Erasure Policy",
+      "key": "default_erasure_policy",
+      "drp_action": "deletion",
+      "execution_timeframe": 45,
+      "rules": [
+        {
+          "name": "Default Erasure Rule",
+          "key": "default_erasure_policy_rule",
+          "action_type": "erasure",
+          "storage_destination": null,
+          "masking_strategy": {
+            "strategy": "hmac"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Default Access Policy",
+      "key": "default_access_policy",
+      "drp_action": "access",
+      "execution_timeframe": 45,
+      "rules": [
+        {
+          "name": "Default Access Rule",
+          "key": "default_access_policy_rule",
+          "action_type": "access",
+          "storage_destination": null,
+          "masking_strategy": null
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}
