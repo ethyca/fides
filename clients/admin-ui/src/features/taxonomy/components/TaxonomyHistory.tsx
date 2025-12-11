@@ -1,6 +1,14 @@
 import { formatDistance } from "date-fns";
-import { AntList, AntSkeleton, AntTooltip, AntTypography } from "fidesui";
+import {
+  AntFlex,
+  AntList,
+  AntPagination as Pagination,
+  AntSkeleton,
+  AntTooltip,
+  AntTypography,
+} from "fidesui";
 
+import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { useGetTaxonomyHistoryQuery } from "~/features/taxonomy/taxonomy.slice";
 
@@ -23,8 +31,17 @@ const EVENT_TYPE_LABEL_MAP = {
 };
 
 const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
+  const pagination = useAntPagination({
+    defaultPageSize: 10,
+    disableUrlState: true,
+    showSizeChanger: false,
+  });
+  const { paginationProps, pageIndex, pageSize } = pagination;
+
   const { data, isLoading } = useGetTaxonomyHistoryQuery({
     fides_key: taxonomyKey,
+    page: pageIndex,
+    size: pageSize,
   });
 
   if (isLoading) {
@@ -43,33 +60,48 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
   }
 
   return (
-    <AntList size="small" itemLayout="vertical">
-      {data?.items.map((item) => {
-        const distance = formatDistance(new Date(item.created_at), new Date(), {
-          addSuffix: true,
-        });
-        const formattedDate = formatDate(new Date(item.created_at));
+    <AntFlex vertical gap="middle">
+      <AntList size="small" itemLayout="vertical">
+        {data?.items.map((item) => {
+          const distance = formatDistance(
+            new Date(item.created_at),
+            new Date(),
+            {
+              addSuffix: true,
+            },
+          );
+          const formattedDate = formatDate(new Date(item.created_at));
 
-        const description = (
-          <>
-            <AntTooltip title={formattedDate}>
-              {`${sentenceCase(distance)}`}
-            </AntTooltip>
-            {item.user_id ? <span> by {item.user_id}</span> : null}
-          </>
-        );
+          const description = (
+            <>
+              <AntTooltip title={formattedDate}>
+                {`${sentenceCase(distance)}`}
+              </AntTooltip>
+              {item.user_id ? <span> by {item.user_id}</span> : null}
+            </>
+          );
 
-        return (
-          <AntList.Item key={item.id}>
-            <AntList.Item.Meta
-              title={EVENT_TYPE_LABEL_MAP[item.event_type as EventType]}
-              description={description}
-            />
-            <AntTypography.Text>{item.description}</AntTypography.Text>
-          </AntList.Item>
-        );
-      })}
-    </AntList>
+          return (
+            <AntList.Item key={item.id}>
+              <AntList.Item.Meta
+                title={EVENT_TYPE_LABEL_MAP[item.event_type as EventType]}
+                description={description}
+              />
+              <AntTypography.Text>{item.description}</AntTypography.Text>
+            </AntList.Item>
+          );
+        })}
+      </AntList>
+      <AntFlex justify="middle">
+        {data?.total && (
+          <Pagination
+            {...paginationProps}
+            total={data.total}
+            hideOnSinglePage
+          />
+        )}
+      </AntFlex>
+    </AntFlex>
   );
 };
 

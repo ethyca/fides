@@ -119,9 +119,15 @@ const taxonomyApi = baseApi.injectEndpoints({
     }),
     getTaxonomyHistory: build.query<
       Page_EventAuditResponse_,
-      { fides_key: string }
+      { fides_key: string; page?: number; size?: number }
     >({
-      query: ({ fides_key }) => ({ url: `taxonomies/${fides_key}/history` }),
+      query: ({ fides_key, page, size }) => ({
+        url: `taxonomies/${fides_key}/history`,
+        params: {
+          page,
+          size,
+        },
+      }),
       providesTags: (result, error, { fides_key }) => [
         { type: "Taxonomy History", id: fides_key },
       ],
