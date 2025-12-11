@@ -23,6 +23,7 @@ import {
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
+import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
 import CustomTaxonomyEditDrawer from "~/features/taxonomy/components/CustomTaxonomyEditDrawer";
 import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
@@ -62,9 +63,18 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   );
   const features = useFeatures();
   const isPlusEnabled = features.plus;
+  const { isLoading: isPlusHealthLoading } = useGetHealthQuery();
   const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(undefined, {
     skip: !isPlusEnabled,
   });
+
+  // Sync taxonomyType when initialTaxonomy changes (after router hydration)
+  useEffect(() => {
+    if (initialTaxonomy) {
+      setTaxonomyType(initialTaxonomy);
+    }
+  }, [initialTaxonomy]);
+
   const {
     createTrigger,
     getAllTrigger,
@@ -158,7 +168,11 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
 
   // Redirect away from system groups if Plus is disabled
   useEffect(() => {
-    if (taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP && !isPlusEnabled) {
+    if (
+      taxonomyType === TaxonomyTypeEnum.SYSTEM_GROUP &&
+      !isPlusHealthLoading &&
+      !isPlusEnabled
+    ) {
       const query = { ...router.query };
       delete query.key;
       router.replace(
@@ -170,7 +184,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
         { shallow: true },
       );
     }
-  }, [taxonomyType, isPlusEnabled, router]);
+  }, [taxonomyType, isPlusEnabled, isPlusHealthLoading, router]);
 
   const createNewLabel = useCallback(
     async (labelName: string) => {
