@@ -1,6 +1,6 @@
 {
   "static.gpc": "Globalna kontrola privatnosti",
-  "static.gpc.description": "Poštuju se vaše preferencije globalne kontrole privatnosti. Automatski se isključeni iz slučajeve korištenja podataka koji se pridržavaju globalne kontrole privatnosti.",
+  "static.gpc.description": "Otkrili smo vaš signal globalne kontrole privatnosti i poštovat ćemo vaše preferencije sukladno tome.",
   "static.gpc.status.applied": "Primijenjeno",
   "static.gpc.status.overridden": "Premošćeno",
   "static.gpc.title": "Otkrivena je globalna kontrola privatnosti",

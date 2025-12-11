@@ -1,6 +1,6 @@
 {
   "static.gpc": "グローバルプライバシーコントロール",
-  "static.gpc.description": "グローバルプライバシーコントロールの設定は尊重されます。グローバルプライバシーコントロールに従うデータのユースケースからは自動的にオプトアウトされています。",
+  "static.gpc.description": "グローバルプライバシーコントロールのシグナルを検出しました。お客様の設定に従って対応いたします。",
   "static.gpc.status.applied": "適用",
   "static.gpc.status.overridden": "変更",
   "static.gpc.title": "グローバルプライバシー管理を検出しました",

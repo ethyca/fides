@@ -1,6 +1,6 @@
 {
   "static.gpc": "Pribatutasun-kontrol globala",
-  "static.gpc.description": "Pribatutasun-kontrol globalaren lehentasuna bete da. Pribatutasun-kontrol globalari atxikitzen zaizkion datuen erabileren kasuetatik automatikoki baztertua izan zara.",
+  "static.gpc.description": "Zure pribatutasun-kontrol globalaren seinalea hauteman dugu eta zure lehentasunak horren arabera errespetatuko ditugu.",
   "static.gpc.status.applied": "Ezarrita",
   "static.gpc.status.overridden": "Baliogabetuta",
   "static.gpc.title": "Pribatutasun-kontrol globala atzeman da",

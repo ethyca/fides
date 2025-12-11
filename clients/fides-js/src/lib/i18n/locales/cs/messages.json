@@ -1,6 +1,6 @@
 {
   "static.gpc": "Globální kontrola ochrany osobních údajů",
-  "static.gpc.description": "Byly dodrženy vaše globální preference ochrany osobních údajů. Automaticky jste byli vyřazeni z používání údajů v případech, na které se vztahuje globální ochrana osobních údajů.",
+  "static.gpc.description": "Zjistili jsme váš signál globální kontroly ochrany osobních údajů a budeme vaše preference náležitě respektovat.",
   "static.gpc.status.applied": "Aplikováno",
   "static.gpc.status.overridden": "Přepsáno",
   "static.gpc.title": "Byla zjištěna globální kontrola soukromí",

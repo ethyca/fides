@@ -1,6 +1,6 @@
 {
   "static.gpc": "Kontroll Globali tal-Privatezza",
-  "static.gpc.description": "Il-preferenza globali tiegħek għall-kontroll tal-privatezza ġiet onorata. Inti awtomatikament għażilt li ma tibqax tuża d-dejta f'każijiet li jirrispettaw il-kontroll globali tal-privatezza.",
+  "static.gpc.description": "Sibna s-sinjal tal-kontroll globali tal-privatezza tiegħek u se nonoraw il-preferenzi tiegħek kif xieraq.",
   "static.gpc.status.applied": "Applikat",
   "static.gpc.status.overridden": "Maqbuża",
   "static.gpc.title": "Kontroll Globali tal-Privatezza misjub",
