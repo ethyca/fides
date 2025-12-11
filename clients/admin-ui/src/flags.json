@@ -83,12 +83,5 @@
     "development": true,
     "test": false,
     "production": false
-  },
-  "alphaPrivacyRequestFieldConditions": {
-    "label": "Privacy request field conditions",
-    "description": "Allows to use privacy request fields as conditions for manual tasks",
-    "development": true,
-    "test": false,
-    "production": false
   }
 }

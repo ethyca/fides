@@ -1,9 +1,14 @@
 import {
   AntBadge as Badge,
+  AntButton as Button,
+  AntDropdown as Dropdown,
   AntFlex as Flex,
+  AntText as Text,
   AntTitle as Title,
   AntTooltip as Tooltip,
   AntTree as Tree,
+  Icons,
+  SparkleIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -18,7 +23,9 @@ import {
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { Node } from "~/features/common/hooks/useNodeMap";
 import { PaginationState } from "~/features/common/pagination";
+import { pluralize } from "~/features/common/utils";
 import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
@@ -107,7 +114,7 @@ const mapResponseToTreeData = (
 };
 
 const appendTreeNodeData = (
-  list: CustomTreeDataNode[],
+  list: Node<CustomTreeDataNode>[],
   key: React.Key,
   children: CustomTreeDataNode[],
 ): CustomTreeDataNode[] =>
@@ -223,13 +230,22 @@ export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
 
-interface MonitorTreeProps {
+interface NodeActions<Action, ActionDict extends Record<string, Action>> {
+  nodeActions: ActionDict;
+  primaryAction: keyof ActionDict;
+}
+
+interface MonitorTreeProps
+  extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
-  nodeActions: Map<Key, TreeNodeAction>;
+  selectedNodeKeys: Key[];
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
-  ({ setSelectedNodeKeys, nodeActions }, ref) => {
+  (
+    { setSelectedNodeKeys, selectedNodeKeys, nodeActions, primaryAction },
+    ref,
+  ) => {
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -579,10 +595,10 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
 
     return (
       <Flex gap="middle" vertical className="h-full">
-        <Title level={3} className="sticky top-0">
+        <Title level={3} className="sticky top-0" ellipsis>
           Schema explorer
         </Title>
-        <Tree
+        <Tree.DirectoryTree
           loadData={onLoadData}
           treeData={treeData}
           expandedKeys={expandedKeys}
@@ -591,7 +607,9 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           showIcon
           showLine
           blockNode
-          rootClassName={`h-full overflow-x-hidden ${styles["monitor-tree"]}`}
+          multiple
+          rootClassName={`h-full overflow-x-hidden ${styles["monitor-tree"]} group/monitor-tree ${selectedNodeKeys.length > 1 ? "multi-select" : ""}`}
+          expandAction="doubleClick"
           // eslint-disable-next-line react/no-unstable-nested-components
           titleRender={(node) => (
             <MonitorTreeDataTitle
@@ -602,19 +620,69 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             />
           )}
         />
-        {
-          // Enable when multi select is supported
-          // {selectedNodeKeys.length > 0 && (
-          //   <Flex justify="space-between" align="center">
-          //     <Button
-          //       aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
-          //       icon={<SparkleIcon size={12} />}
-          //       size="small"
-          //       onClick={onClickClassifyButton}
-          //     />
-          //   </Flex>
-          // )}
-        }
+        {selectedNodeKeys.length > 0 && (
+          <Flex justify="space-between" align="center" gap="small">
+            <Button
+              aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
+              icon={<SparkleIcon size={12} />}
+              size="small"
+              onClick={() =>
+                nodeActions[primaryAction]?.callback(
+                  selectedNodeKeys,
+                  selectedNodeKeys.flatMap((nodeKey) => {
+                    const node = findNodeByUrn(treeData, nodeKey.toString());
+                    return node ? [node] : [];
+                  }),
+                )
+              }
+              className="flex-none"
+            />
+            <Text
+              ellipsis
+            >{`${selectedNodeKeys.length} ${pluralize(selectedNodeKeys.length, "resource", "resources")} selected`}</Text>
+            <Dropdown
+              menu={{
+                items: nodeActions
+                  ? Object.entries(nodeActions).map(
+                      ([key, { label, disabled }]) => ({
+                        key,
+                        label,
+                        disabled: disabled(
+                          selectedNodeKeys.flatMap((nodeKey) => {
+                            const node = findNodeByUrn(
+                              treeData,
+                              nodeKey.toString(),
+                            );
+                            return node ? [node] : [];
+                          }),
+                        ),
+                      }),
+                    )
+                  : [],
+                onClick: ({ key, domEvent }) => {
+                  domEvent.preventDefault();
+                  domEvent.stopPropagation();
+                  nodeActions[key]?.callback(
+                    selectedNodeKeys,
+                    selectedNodeKeys.flatMap((nodeKey) => {
+                      const node = findNodeByUrn(treeData, nodeKey.toString());
+                      return node ? [node] : [];
+                    }),
+                  );
+                },
+              }}
+              destroyOnHidden
+              className="group mr-1 flex-none"
+            >
+              <Button
+                aria-label="Show More Resource Actions"
+                icon={<Icons.OverflowMenuVertical />}
+                size="small"
+                className="self-end"
+              />
+            </Dropdown>
+          </Flex>
+        )}
       </Flex>
     );
   },
