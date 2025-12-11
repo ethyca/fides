@@ -135,6 +135,8 @@ services:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      # The default HTTP health check port is 9000, override it here to ensure that
+      # the override works as expected.
       FIDES__CELERY__HEALTHCHECK_PORT: "9001"
     expose:
         - 9001
