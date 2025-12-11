@@ -1,6 +1,7 @@
 import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
+  AntFlex as Flex,
   AntTag as Tag,
   Icons,
   useDisclosure,
@@ -134,7 +135,7 @@ const useUserManagementTable = () => {
           const canEditUser = canUserUpdate || isOwnProfile;
 
           return (
-            <>
+            <Flex gap="small">
               <LinkCell
                 href={
                   canEditUser
@@ -150,7 +151,7 @@ const useUserManagementTable = () => {
                   Invite sent
                 </Tag>
               )}
-            </>
+            </Flex>
           );
         },
       },

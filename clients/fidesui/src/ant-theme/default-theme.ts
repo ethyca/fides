@@ -39,9 +39,14 @@ export const defaultAntTheme: ThemeConfig = {
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
+    colorBorderSecondary: palette.FIDESUI_NEUTRAL_100,
+    colorSplit: palette.FIDESUI_NEUTRAL_100,
     zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
   components: {
+    Avatar: {
+      colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
+    },
     Alert: {
       colorInfoBg: palette.FIDESUI_FULL_WHITE,
       colorInfo: palette.FIDESUI_NEUTRAL_500,
@@ -55,7 +60,6 @@ export const defaultAntTheme: ThemeConfig = {
       textTextHoverColor: palette.FIDESUI_NEUTRAL_600,
     },
     Card: {
-      colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
       borderRadiusLG: 8,
     },
     Drawer: {

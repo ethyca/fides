@@ -609,6 +609,7 @@ def get_users(
     params: Params = Depends(),
     username: Optional[str] = None,
     include_external: bool = True,
+    exclude_approvers: bool = False,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
 ) -> AbstractPage[FidesUser]:
@@ -628,10 +629,15 @@ def get_users(
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
         # Filter out external respondents if include_external is False
-        if not include_external:
-            query = query.join(FidesUserPermissions).filter(
-                ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
-            )
+        # Filter out approvers if exclude_approvers is True
+        if not include_external or exclude_approvers:
+            query = query.join(FidesUserPermissions)
+            if not include_external:
+                query = query.filter(
+                    ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
+                )
+            if exclude_approvers:
+                query = query.filter(~FidesUserPermissions.roles.op("@>")([APPROVER]))
     else:
         # User has USER_READ_OWN scope, only show their own data
         query = query.filter(FidesUser.id == client.user_id)

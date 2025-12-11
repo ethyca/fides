@@ -212,6 +212,7 @@ SAAS_CONFIG_READ = f"{SAAS_CONFIG}:{READ}"
 
 SAAS_CONNECTION_INSTANTIATE = f"{CONNECTION}:{INSTANTIATE}"
 CONNECTOR_TEMPLATE_REGISTER = f"{CONNECTOR_TEMPLATE}:{REGISTER}"
+CONNECTOR_TEMPLATE_READ = f"{CONNECTOR_TEMPLATE}:{READ}"
 
 SCOPE_READ = f"{SCOPE}:{READ}"
 
@@ -266,6 +267,7 @@ SCOPE_DOCS = {
     CONNECTION_AUTHORIZE: "OAuth2 Authorization",
     CONNECTION_TYPE_READ: "View types of connections",
     CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
+    CONNECTOR_TEMPLATE_READ: "View connector template configurations",
     CONSENT_READ: "Read consent preferences",
     CONSENT_SETTINGS_READ: "Read org-wide consent settings",
     CONSENT_SETTINGS_UPDATE: "Update org-wide consent settings",

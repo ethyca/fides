@@ -214,7 +214,9 @@ const Overlay: FunctionComponent<Props> = ({
   // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (!disableBanner) {
+      // Use explicit false check to avoid race condition where disableBanner is still null
+      // (!null === true which would incorrectly trigger setBannerIsOpen)
+      if (disableBanner === false) {
         setBannerIsOpen(true);
       }
     }, delayBannerMilliseconds);

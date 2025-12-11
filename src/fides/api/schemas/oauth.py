@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 from fastapi import Form
 from fastapi.openapi.models import OAuthFlows
@@ -14,6 +14,7 @@ class AccessToken(BaseModel):
     """A wrapper for the access_code returned upon successful authentication"""
 
     access_token: str
+    token_type: Literal["Bearer"] = "Bearer"
 
 
 # NOTE: Adapted from

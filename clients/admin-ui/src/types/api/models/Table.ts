@@ -2,9 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from "./Classification";
+import type { ClassificationWithConfidence } from "./ClassificationWithConfidence";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
+import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 export type Table = {
@@ -29,8 +30,12 @@ export type Table = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
+  /**
+   * List of errors encountered during processing
+   */
+  errors?: Array<ResourceError>;
   source_modified?: string | null;
-  classifications?: Array<Classification>;
+  classifications?: Array<ClassificationWithConfidence>;
   database_name?: string | null;
   schema_name: string;
   parent_schema: string;
