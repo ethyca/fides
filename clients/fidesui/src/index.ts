@@ -137,8 +137,11 @@ export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 
 // Export animation components
-export type { ExpandCollapseProps } from "./components/animation";
-export { ExpandCollapse } from "./components/animation";
+export type {
+  ExitGridProps,
+  ExpandCollapseProps,
+} from "./components/animation";
+export { ExitGrid, ExpandCollapse } from "./components/animation";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
