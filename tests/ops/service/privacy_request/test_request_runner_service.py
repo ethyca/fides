@@ -216,56 +216,51 @@ def privacy_request_complete_email_notification_enabled(db):
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    "dsr_version,privacy_request_fixture,expected_action_type",
+    [
+        (
+            "use_dsr_3_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_3_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+    ],
 )
-def test_policy_upload_dispatch_message_called(
+def test_completion_email_sent_for_request(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
-    privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
     dsr_version,
+    privacy_request_fixture,
+    expected_action_type,
     request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
+    """Test that completion email is sent for access and consent requests."""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    privacy_request = request.getfixturevalue(privacy_request_fixture)
 
     upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
-        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-    )
-    assert upload_mock.called
-    assert mock_email_dispatch.call_count == 1
-
-
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_consent_complete_email_sent_for_consent_request(
-    upload_mock: Mock,
-    mock_email_dispatch: Mock,
-    privacy_request_with_consent_policy: PrivacyRequest,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-    privacy_request_complete_email_notification_enabled,
-) -> None:
-    """Test that consent completion email is sent for consent requests."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_with_consent_policy.id).get(
+    run_privacy_request_task.delay(privacy_request.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
     assert mock_email_dispatch.call_count == 1
     call_kwargs = mock_email_dispatch.call_args.kwargs
-    assert (
-        call_kwargs["action_type"]
-        == MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT
-    )
+    assert call_kwargs["action_type"] == expected_action_type
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
