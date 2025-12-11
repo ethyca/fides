@@ -21,7 +21,9 @@ class HealthcheckHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         """Handle GET requests"""
-        # Do something
+    def do_GET(self):
+        """Handle GET requests"""
+        try:
         try:
             try:
                 parent = self.parent
