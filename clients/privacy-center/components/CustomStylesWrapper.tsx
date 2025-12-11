@@ -4,12 +4,22 @@ import { ReactNode } from "react";
 
 import { useStyles } from "~/features/common/styles.slice";
 
-const CustomStylesWrapper = ({ children }: { children: ReactNode }) => {
+const CustomStylesWrapper = ({
+  children,
+  nonce,
+}: {
+  children: ReactNode;
+  nonce: string | null;
+}) => {
   const styles = useStyles();
 
   return (
     <>
-      {styles ? <style suppressHydrationWarning>{styles}</style> : null}
+      {styles ? (
+        <style nonce={nonce ?? undefined} suppressHydrationWarning>
+          {styles}
+        </style>
+      ) : null}
       {children}
     </>
   );
