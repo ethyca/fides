@@ -381,16 +381,14 @@ const CustomFieldForm = ({
 
       <Flex justify="space-between">
         {showDeleteButton && (
-          <>
-            <Button
-              danger
-              onClick={confirmDelete}
-              loading={deleteIsLoading}
-              data-testid="delete-btn"
-            >
-              Delete
-            </Button>
-          </>
+          <Button
+            danger
+            onClick={confirmDelete}
+            loading={deleteIsLoading}
+            data-testid="delete-btn"
+          >
+            Delete
+          </Button>
         )}
         <Button type="primary" htmlType="submit" data-testid="save-btn">
           Save
