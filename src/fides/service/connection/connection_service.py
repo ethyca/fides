@@ -10,7 +10,7 @@ from fides.api.common_exceptions import (
     ConnectionException,
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
-    SaaSConfigNotFoundException,
+    SaaSConfigNotFoundException, ValidationError,
 )
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
@@ -204,7 +204,10 @@ class ConnectionService:
             "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
-        connection_secrets = schema.model_validate(request_body)
+        try:
+            connection_secrets = schema.model_validate(request_body)
+        except Exception as exc:
+            logger.warning(f"Failed to validate secrets: {exc}")
 
         # SaaS secrets with external references must go through extra validation
         if connection_type == ConnectionType.saas:

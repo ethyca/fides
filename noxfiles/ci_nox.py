@@ -434,7 +434,7 @@ def pytest(session: nox.Session, test_group: str) -> None:
 
     validate_test_matrix(session)
     pytest_config = PytestConfig(
-        xdist_config=XdistConfig(parallel_runners="auto"),
+        xdist_config=XdistConfig(parallel_runners="0"),
         coverage_config=CoverageConfig(
             report_format="xml",
             cov_name="fides",
