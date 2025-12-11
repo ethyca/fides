@@ -104,7 +104,7 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
 def pytest_nox(session: Session, pytest_config: PytestConfig) -> None:
     """Runs any tests of nox commands themselves."""
     # the nox tests don't run with coverage or xdist so just add the reporting config here
-    run_command = ("pytest", *pytest_config.report_config, "noxfiles/")
+    run_command = ("pytest", *pytest_config.report_config.args, "noxfiles/")
     session.run(*run_command, external=True)
 
 
