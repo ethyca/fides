@@ -21,7 +21,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
 
-<<<<<<< HEAD
 =======
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
@@ -36,7 +35,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 
->>>>>>> cd632ba282 (indexes for duplicate detection (#7095))
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 
 ### Added
