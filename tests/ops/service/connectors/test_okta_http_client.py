@@ -236,7 +236,9 @@ class TestOktaHttpClientMethods:
         mock_rate_limiter,
     ):
         mock_response = MagicMock()
-        mock_response.raise_for_status.side_effect = requests.HTTPError("401 Unauthorized")
+        mock_response.raise_for_status.side_effect = requests.HTTPError(
+            "401 Unauthorized"
+        )
         mock_session.get.return_value = mock_response
 
         with pytest.raises(ConnectionException) as exc_info:
