@@ -104,10 +104,8 @@ const CustomFieldForm = ({
       messageApi.error(getErrorMessage(result.error));
       return;
     }
-    // navigate to main page after success toast is shown
-    messageApi.success("Custom field deleted successfully", undefined, () => {
-      router.push(CUSTOM_FIELDS_ROUTE);
-    });
+    messageApi.success("Custom field deleted successfully");
+    router.push(CUSTOM_FIELDS_ROUTE);
   };
 
   const confirmDelete = () => {
