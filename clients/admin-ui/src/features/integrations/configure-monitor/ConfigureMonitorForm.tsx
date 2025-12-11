@@ -1,5 +1,6 @@
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import {
   AntButton as Button,
   AntDatePicker as DatePicker,
@@ -25,6 +26,8 @@ import {
 
 import { START_TIME_TOOLTIP_COPY } from "./ConfigureWebsiteMonitorForm";
 import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+
+dayjs.extend(utc);
 
 interface MonitorConfigFormValues {
   name: string;
@@ -127,9 +130,9 @@ const ConfigureMonitorForm = ({
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
-            execution_start_date: values.execution_start_date.format(
-              "YYYY-MM-DD[T]HH:mm:ss[Z]",
-            ),
+            execution_start_date: values.execution_start_date
+              .utc()
+              .format("YYYY-MM-DD[T]HH:mm:ss[Z]"),
           }
         : {
             execution_frequency: MonitorFrequency.NOT_SCHEDULED,
