@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_EventAuditResponse_ } from "~/types/api";
+import { Page_EventAuditResponse_ } from "~/types/api/models/Page_EventAuditResponse_";
 import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
@@ -139,4 +139,5 @@ export const {
   useCreateCustomTaxonomyMutation,
   useUpdateCustomTaxonomyMutation,
   useDeleteCustomTaxonomyMutation,
+  useGetTaxonomyHistoryQuery,
 } = taxonomyApi;
