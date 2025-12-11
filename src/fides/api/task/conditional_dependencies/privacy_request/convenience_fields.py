@@ -158,9 +158,7 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
                 extra_fields[
                     PrivacyRequestLocationConvenienceFields.location_regulations.value
                 ] = (location_data.regulation or [])
-                return extra_fields
 
-        # Still not found, return defaults
         return extra_fields
 
     # If location has parent groups, the first one is typically the country
