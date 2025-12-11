@@ -808,74 +808,73 @@ def run_privacy_request(
                             session
                         ).notifications.send_request_completion_notification
 
-                        action_type = (
-                            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
-                            if policy.get_rules_for_action(
-                                action_type=ActionType.access
+                        action_types = policy.get_all_action_types()
+
+                        # Access/erasure completion emails take priority over consent
+                        if (
+                            ActionType.access in action_types
+                            or ActionType.erasure in action_types
+                        ):
+                            action_type = (
+                                MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+                                if ActionType.access in action_types
+                                else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
                             )
-                            else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
-                        )
 
-                        message_send_result = message_send_enabled(
-                            session,
-                            privacy_request.property_id,
-                            action_type,
-                            legacy_request_completion_enabled,
-                        )
-                        has_consent_rules = policy.get_rules_for_action(
-                            action_type=ActionType.consent
-                        )
-                        has_access_or_erasure_rules = policy.get_rules_for_action(
-                            action_type=ActionType.access
-                        ) or policy.get_rules_for_action(action_type=ActionType.erasure)
+                            message_send_result = message_send_enabled(
+                                session,
+                                privacy_request.property_id,
+                                action_type,
+                                legacy_request_completion_enabled,
+                            )
 
-                        if message_send_result and has_access_or_erasure_rules:
-                            if not access_result_urls:
-                                # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
-                                # from the database because the Privacy Request would have exited
-                                # processing and lost access to the access_result_urls in memory
-                                access_result_urls = (
-                                    privacy_request.access_result_urls or {}
-                                ).get("access_result_urls", [])
+                            if message_send_result:
+                                if not access_result_urls:
+                                    # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
+                                    # from the database because the Privacy Request would have exited
+                                    # processing and lost access to the access_result_urls in memory
+                                    access_result_urls = (
+                                        privacy_request.access_result_urls or {}
+                                    ).get("access_result_urls", [])
 
-                            try:
-                                initiate_privacy_request_completion_email(
-                                    session,
-                                    policy,
-                                    access_result_urls,
-                                    identity_data,
-                                    privacy_request.property_id,
-                                    privacy_request.id,
-                                )
-                                # Add success log for completion email
-                                privacy_request.add_success_execution_log(
-                                    session,
-                                    connection_key=None,
-                                    dataset_name="Privacy request completion email",
-                                    collection_name=None,
-                                    message="Privacy request completion email sent successfully.",
-                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                                )
-                            except (
-                                IdentityNotFoundException,
-                                MessageDispatchException,
-                            ) as e:
-                                # Add error log for completion email failure
-                                privacy_request.add_error_execution_log(
-                                    session,
-                                    connection_key=None,
-                                    dataset_name="Privacy request completion email",
-                                    collection_name=None,
-                                    message=f"Privacy request completion email failed: {str(e)}",
-                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                                )
-                                privacy_request.error_processing(db=session)
-                                # If dev mode, log traceback
-                                _log_exception(e, CONFIG.dev_mode)
-                                return
+                                try:
+                                    initiate_privacy_request_completion_email(
+                                        session,
+                                        policy,
+                                        access_result_urls,
+                                        identity_data,
+                                        privacy_request.property_id,
+                                        privacy_request.id,
+                                    )
+                                    # Add success log for completion email
+                                    privacy_request.add_success_execution_log(
+                                        session,
+                                        connection_key=None,
+                                        dataset_name="Privacy request completion email",
+                                        collection_name=None,
+                                        message="Privacy request completion email sent successfully.",
+                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                    )
+                                except (
+                                    IdentityNotFoundException,
+                                    MessageDispatchException,
+                                ) as e:
+                                    # Add error log for completion email failure
+                                    privacy_request.add_error_execution_log(
+                                        session,
+                                        connection_key=None,
+                                        dataset_name="Privacy request completion email",
+                                        collection_name=None,
+                                        message=f"Privacy request completion email failed: {str(e)}",
+                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                    )
+                                    privacy_request.error_processing(db=session)
+                                    # If dev mode, log traceback
+                                    _log_exception(e, CONFIG.dev_mode)
+                                    return
 
-                        # Send consent completion email if applicable
-                        if has_consent_rules:
+                        # Send consent completion email only for consent-only requests
+                        elif ActionType.consent in action_types:
                             consent_message_enabled = message_send_enabled(
                                 session,
                                 privacy_request.property_id,
