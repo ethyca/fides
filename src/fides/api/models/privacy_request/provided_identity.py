@@ -57,6 +57,14 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
                 "ix_providedidentity_privacy_request_id",
                 "privacy_request_id",
             ),
+            # Composite index for duplicate detection queries
+            # Optimizes EXISTS subqueries that match on privacy_request_id, field_name, and hashed_value
+            Index(
+                "ix_providedidentity_reqid_field_hash",
+                "privacy_request_id",
+                "field_name",
+                "hashed_value",
+            ),
             # Hash migration tracking index from HashMigrationMixin
             Index(
                 "idx_providedidentity_unmigrated",

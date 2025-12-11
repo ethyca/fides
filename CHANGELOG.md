@@ -23,6 +23,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
+- Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
+- Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
