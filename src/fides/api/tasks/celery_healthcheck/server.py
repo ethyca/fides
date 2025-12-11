@@ -1,6 +1,7 @@
 import json
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from typing import Any, Optional
 
 from celery import bootsteps
 from celery.worker import WorkController
@@ -8,22 +9,21 @@ from loguru import logger
 
 HEALTHCHECK_DEFAULT_PORT = 9000
 HEALTHCHECK_DEFAULT_PING_TIMEOUT = 2.0
-DEFAULT_SHUTDOWN_TIMEOUT = 2.0
+HEALTHCHECK_DEFAULT_HTTP_SERVER_SHUTDOWN_TIMEOUT = 2.0
 
 
 class HealthcheckHandler(SimpleHTTPRequestHandler):
     """HTTP request handler with additional properties and functions"""
 
-    def __init__(self, parent: WorkController, healthcheck_ping_timeout: float, *args):
+    def __init__(
+        self, parent: WorkController, healthcheck_ping_timeout: float, *args: Any
+    ):
         self.parent = parent
         self.healthcheck_ping_timeout = healthcheck_ping_timeout
         super().__init__(*args)
 
-    def do_GET(self):
+    def do_GET(self) -> None:
         """Handle GET requests"""
-    def do_GET(self):
-        """Handle GET requests"""
-        try:
         try:
             try:
                 parent = self.parent
@@ -52,9 +52,13 @@ class HealthcheckHandler(SimpleHTTPRequestHandler):
 
 
 class HealthCheckServer(bootsteps.StartStopStep):
-    def __init__(self, parent: WorkController, **kwargs):
-        self.thread = None
+    # ignore kwargs type
+    def __init__(self, parent: WorkController, **kwargs):  # type: ignore [arg-type, no-untyped-def]
+        self.thread: Optional[threading.Thread] = None
+        self.http_server: Optional[HTTPServer] = None
+
         self.parent = parent
+
         # config
         self.healthcheck_port = int(
             getattr(parent.app.conf, "healthcheck_port", HEALTHCHECK_DEFAULT_PORT)
@@ -70,16 +74,21 @@ class HealthCheckServer(bootsteps.StartStopStep):
             getattr(
                 parent.app.conf,
                 "shutdown_timeout",
-                DEFAULT_SHUTDOWN_TIMEOUT,
+                HEALTHCHECK_DEFAULT_HTTP_SERVER_SHUTDOWN_TIMEOUT,
             )
         )
 
-    def http_handler(self, *args):
+        super().__init__(**kwargs)
+
+    # The mypy hints for an HTTP handler are strange, so ignoring them here
+    def http_handler(self, *args) -> None:  # type: ignore [arg-type, no-untyped-def]
         HealthcheckHandler(self.parent, self.healthcheck_ping_timeout, *args)
 
-    def start(self, parent: WorkController):
+    def start(self, parent: WorkController) -> None:
+        # Ignore mypy hints here as the constructed object immediately handles the request
+        # (if you look in the source code for SimpleHTTPRequestHandler, specifically the finalize request method)
         self.http_server = HTTPServer(
-            ("0.0.0.0", self.healthcheck_port), self.http_handler
+            ("0.0.0.0", self.healthcheck_port), self.http_handler  # type: ignore [arg-type]
         )
 
         self.thread = threading.Thread(
@@ -87,10 +96,21 @@ class HealthCheckServer(bootsteps.StartStopStep):
         )
         self.thread.start()
 
-    def stop(self, parent: WorkController):
-        logger.info(
-            f"Stopping health check server with a timeout of {self.shutdown_timeout} seconds"
-        )
-        self.http_server.shutdown()
-        self.thread.join(self.shutdown_timeout)
+    def stop(self, parent: WorkController) -> None:
+        if self.http_server is None:
+            logger.warning(
+                "Requested stop of HTTP healthcheck server, but no server was started"
+            )
+        else:
+            logger.info(
+                f"Stopping health check server with a timeout of {self.shutdown_timeout} seconds"
+            )
+            self.http_server.shutdown()
+
+        # Really this should not happen if the HTTP server is None, but just in case, we should check.
+        if self.thread is None:
+            logger.warning("No thread in HTTP healthcheck server to shutdown...")
+        else:
+            self.thread.join(self.shutdown_timeout)
+
         logger.info(f"Health check server stopped on port {self.healthcheck_port}")
