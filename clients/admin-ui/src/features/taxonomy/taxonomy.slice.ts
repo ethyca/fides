@@ -84,7 +84,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       { taxonomyType: string; key: string }
     >({
       query: ({ taxonomyType, key }) => ({
-        url: `taxonomies/${taxonomyType}/${key}`,
+        url: `taxonomies/${taxonomyType}/elements/${key}`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
