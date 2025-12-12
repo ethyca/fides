@@ -1,40 +1,71 @@
-"""Tests for digest conditional dependencies functionality."""
-
-from typing import Any
+"""Tests for DigestCondition model."""
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyError,
-    ConditionalDependencyType,
-)
 from fides.api.models.digest import DigestConfig, DigestType
 from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
     DigestConditionType,
 )
 from fides.api.task.conditional_dependencies.schemas import (
-    Condition,
     ConditionGroup,
     ConditionLeaf,
     GroupOperator,
     Operator,
 )
 
+# ============================================================================
+# Fixtures
+# ============================================================================
 
-def assert_group_condition(
-    condition: DigestCondition,
-    logical_operator: GroupOperator,
-    conditions: list[Condition],
-):
-    assert condition.condition_type == ConditionalDependencyType.group
-    assert condition.logical_operator == logical_operator
-    assert condition.field_address is None
-    assert condition.operator is None
-    assert condition.value is None
-    assert condition.children == conditions
+
+@pytest.fixture
+def leaf_condition_tree() -> dict:
+    """Sample leaf condition tree as JSONB."""
+    return {
+        "field_address": "user.email",
+        "operator": "exists",
+        "value": None,
+    }
+
+
+@pytest.fixture
+def group_condition_tree() -> dict:
+    """Sample group condition tree as JSONB."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            {"field_address": "user.role", "operator": "eq", "value": "admin"},
+            {"field_address": "user.department", "operator": "eq", "value": "privacy"},
+        ],
+    }
+
+
+@pytest.fixture
+def nested_group_condition_tree() -> dict:
+    """Sample nested group condition tree as JSONB."""
+    return {
+        "logical_operator": "or",
+        "conditions": [
+            {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "field_address": "task.assignee",
+                        "operator": "eq",
+                        "value": "user123",
+                    },
+                    {
+                        "field_address": "task.due_date",
+                        "operator": "lte",
+                        "value": "2024-01-01",
+                    },
+                ],
+            },
+            {"field_address": "task.priority", "operator": "eq", "value": "high"},
+        ],
+    }
 
 
 # ============================================================================
@@ -60,655 +91,434 @@ class TestDigestConditionType:
 
 
 # ============================================================================
-# DigestCondition CRUD Tests
+# Relationship Tests
 # ============================================================================
 
 
-class TestDigestConditionCRUD:
-    """Test basic CRUD operations for DigestCondition."""
+class TestDigestConditionRelationships:
+    """Test relationships between DigestConfig and DigestCondition."""
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
-    def test_create_leaf_condition_types(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        digest_condition_type: DigestConditionType,
-        sample_eq_condition_leaf: ConditionLeaf,
+    def test_condition_to_config_relationship(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
     ):
-        """Test creating a receiver leaf condition."""
+        """Test the relationship from condition to digest config."""
         condition = DigestCondition.create(
             db=db,
             data={
                 "digest_config_id": digest_config.id,
-                "digest_condition_type": digest_condition_type,
-                **sample_eq_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
             },
         )
 
-        assert condition.id is not None
-        assert condition.digest_config_id == digest_config.id
-        assert condition.digest_condition_type == digest_condition_type
-        assert condition.condition_type == ConditionalDependencyType.leaf
-        assert condition.field_address == sample_eq_condition_leaf.field_address
-        assert condition.operator == sample_eq_condition_leaf.operator
-        assert condition.value == sample_eq_condition_leaf.value
-        assert condition.sort_order == 1
-        assert condition.parent_id is None
-
-        # Test relationship
-        assert condition.digest_config == digest_config
+        assert condition.digest_config.id == digest_config.id
         condition.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
-    @pytest.mark.parametrize("group_condition", [GroupOperator.or_, GroupOperator.and_])
-    def test_create_group_condition_types(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        digest_condition_type: DigestConditionType,
-        group_condition: GroupOperator,
+    def test_config_to_conditions_relationship(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
     ):
-        """Test creating a content group condition."""
+        """Test the relationship from digest config to conditions."""
         condition = DigestCondition.create(
             db=db,
             data={
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": group_condition,
                 "digest_config_id": digest_config.id,
-                "digest_condition_type": digest_condition_type,
-                "sort_order": 1,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
             },
         )
 
-        assert condition.digest_condition_type == digest_condition_type
-        assert condition.condition_type == ConditionalDependencyType.group
-        assert_group_condition(condition, group_condition, [])
+        db.refresh(digest_config)
+        assert len(digest_config.conditions) == 1
+        assert digest_config.conditions[0].id == condition.id
         condition.delete(db)
 
-    def test_required_fields_validation(self, db: Session, digest_config: DigestConfig):
-        """Test that required fields are validated."""
-        # Missing digest_config_id
-        with pytest.raises(ConditionalDependencyError):
-            DigestCondition.create(
-                db=db,
-                data={
-                    "digest_condition_type": DigestConditionType.RECEIVER,
-                    "condition_type": ConditionalDependencyType.leaf,
-                },
-            )
 
-        # Missing digest_condition_type
-        with pytest.raises(ConditionalDependencyError):
-            DigestCondition.create(
-                db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "condition_type": ConditionalDependencyType.leaf,
-                },
-            )
+# ============================================================================
+# Cascade Delete Tests
+# ============================================================================
 
-        # Missing condition_type
-        with pytest.raises(ConditionalDependencyError):
-            DigestCondition.create(
-                db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.RECEIVER,
-                },
-            )
 
-    def test_cascade_delete_with_digest_config(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        receiver_condition: dict[str, Any],
-        sample_eq_condition_leaf: ConditionLeaf,
+class TestDigestConditionCascadeDeletes:
+    """Test cascade delete behavior."""
+
+    def test_condition_deleted_when_config_deleted(
+        self, db: Session, leaf_condition_tree: dict
     ):
-        """Test that conditions are deleted when digest config is deleted."""
+        """Test that condition is deleted when digest config is deleted."""
+        # Create a new config for this test to avoid affecting other tests
+        config = DigestConfig.create(
+            db=db,
+            data={
+                "digest_type": DigestType.MANUAL_TASKS,
+                "name": "Test Config for Cascade Delete",
+            },
+        )
+
         condition = DigestCondition.create(
             db=db,
             data={
-                **receiver_condition,
-                **sample_eq_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
+                "digest_config_id": config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
             },
         )
-
         condition_id = condition.id
-        digest_config.delete(db)
 
-        # Verify condition is also deleted
-        deleted_condition = (
-            db.query(DigestCondition).filter(DigestCondition.id == condition_id).first()
-        )
-        assert deleted_condition is None
+        # Verify condition exists
+        assert db.query(DigestCondition).filter_by(id=condition_id).first() is not None
+
+        # Delete the config
+        config.delete(db)
+
+        # Verify condition is cascade deleted
+        assert db.query(DigestCondition).filter_by(id=condition_id).first() is None
 
 
 # ============================================================================
-# Condition Tree Tests
+# get_root_condition Tests
 # ============================================================================
 
 
-class TestDigestConditionTrees:
-    """Test building and managing condition trees."""
+class TestDigestConditionGetRootCondition:
+    """Test the get_root_condition class method."""
 
-    def test_create_group_condition_tree_with_children(
-        self,
-        db: Session,
-        content_condition: dict[str, Any],
-        group_condition_and: dict[str, Any],
-        content_condition_leaf: ConditionLeaf,
-        priority_condition_leaf: ConditionLeaf,
+    def test_get_root_condition_returns_none_when_no_conditions(
+        self, db: Session, digest_config: DigestConfig
     ):
-        """Test creating a group condition tree with child conditions."""
-        # Create root group condition
-        root_group = DigestCondition.create(
-            db=db, data={**content_condition, **group_condition_and, "sort_order": 1}
-        )
-
-        # Create child leaf conditions
-        child1 = DigestCondition.create(
-            db=db,
-            data={
-                **content_condition,
-                **content_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": root_group.id,
-                "sort_order": 1,
-            },
-        )
-
-        child2 = DigestCondition.create(
-            db=db,
-            data={
-                **content_condition,
-                **priority_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": root_group.id,
-                "sort_order": 2,
-            },
-        )
-
-        # Refresh to get children
-        db.refresh(root_group)
-
-        # Test conversion to condition group
-        condition_group = root_group.to_condition_group()
-        assert isinstance(condition_group, ConditionGroup)
-        assert_group_condition(root_group, GroupOperator.and_, [child1, child2])
-
-        # Check children are properly ordered
-        assert isinstance(condition_group.conditions[0], ConditionLeaf)
-        assert condition_group.conditions[0].field_address == "task.status"
-        assert isinstance(condition_group.conditions[1], ConditionLeaf)
-        assert condition_group.conditions[1].field_address == "task.priority"
-
-        # Test parent-child relationships
-        assert child1.parent == root_group
-        assert child2.parent == root_group
-        assert len(root_group.children) == 2
-        root_group.delete(db)
-
-    def test_nested_group_condition_tree(
-        self,
-        complex_condition_tree: dict[str, Any],
-    ):
-        """Test creating nested group condition trees."""
-        root_group = complex_condition_tree["root"]
-        nested_groups = complex_condition_tree["nested_groups"]
-        leaves = complex_condition_tree["leaves"]
-
-        # Test conversion to nested condition group
-        assert isinstance(root_group.to_condition_group(), ConditionGroup)
-        assert_group_condition(root_group, GroupOperator.or_, nested_groups)
-        assert len(root_group.children) == 2
-
-        # Test first nested group (A AND B)
-        first_nested = root_group.children[0]
-        assert isinstance(first_nested.to_condition_group(), ConditionGroup)
-        assert_group_condition(first_nested, GroupOperator.and_, leaves[0:2])
-        assert len(first_nested.children) == 2
-        assert first_nested.children[0].field_address == "task.assignee"
-        assert first_nested.children[1].field_address == "task.due_date"
-
-        # Test second nested group (C AND D)
-        second_nested = root_group.children[1]
-        assert isinstance(second_nested.to_condition_group(), ConditionGroup)
-        assert_group_condition(second_nested, GroupOperator.and_, leaves[2:4])
-        assert len(second_nested.children) == 2
-        assert second_nested.children[0].field_address == leaves[2].field_address
-        assert second_nested.children[1].field_address == leaves[3].field_address
-
-    def test_cascade_delete_with_parent_condition(
-        self,
-        db: Session,
-        receiver_condition: dict[str, Any],
-        sample_exists_condition_leaf: ConditionLeaf,
-    ):
-        """Test that child conditions are deleted when parent is deleted."""
-        # Create parent group
-        parent_group = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.and_,
-                "sort_order": 1,
-            },
-        )
-
-        # Create child conditions
-        child1 = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                **sample_exists_condition_leaf.model_dump(),
-                "parent_id": parent_group.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
-            },
-        )
-
-        child2 = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                "parent_id": parent_group.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.active",
-                "operator": Operator.eq,
-                "value": True,
-                "sort_order": 2,
-            },
-        )
-
-        child1_id = child1.id
-        child2_id = child2.id
-
-        # Delete parent
-        parent_group.delete(db)
-
-        # Verify children are also deleted
-        deleted_child1 = (
-            db.query(DigestCondition).filter(DigestCondition.id == child1_id).first()
-        )
-        deleted_child2 = (
-            db.query(DigestCondition).filter(DigestCondition.id == child2_id).first()
-        )
-
-        assert deleted_child1 is None
-        assert deleted_child2 is None
-
-
-# ============================================================================
-# DigestCondition Query Tests
-# ============================================================================
-
-
-class TestDigestConditionQueries:
-    """Test querying digest conditions."""
-
-    @pytest.mark.usefixtures("sample_conditions")
-    def test_get_root_condition_by_type(self, db: Session, digest_config: DigestConfig):
-        """Test getting root condition by digest condition type."""
-        # sample_conditions fixture creates conditions, so we can test retrieval
-
-        # Test getting receiver condition
-        receiver_condition = DigestCondition.get_root_condition(
+        """Test get_root_condition returns None when no conditions exist."""
+        result = DigestCondition.get_root_condition(
             db,
             digest_config_id=digest_config.id,
             digest_condition_type=DigestConditionType.RECEIVER,
         )
-        assert receiver_condition is not None
-        assert isinstance(receiver_condition, ConditionLeaf)
-        assert receiver_condition.field_address == "user.email"
-        assert receiver_condition.value == None
+        assert result is None
 
-        # Test getting content condition
-        content_condition = DigestCondition.get_root_condition(
-            db,
-            digest_config_id=digest_config.id,
-            digest_condition_type=DigestConditionType.CONTENT,
-        )
-        assert content_condition is not None
-        assert isinstance(content_condition, ConditionLeaf)
-        assert content_condition.field_address == "task.status"
-        assert content_condition.value == "pending"
-
-        # Test getting priority condition
-        priority_condition = DigestCondition.get_root_condition(
-            db,
-            digest_config_id=digest_config.id,
-            digest_condition_type=DigestConditionType.PRIORITY,
-        )
-        assert priority_condition is not None
-        assert isinstance(priority_condition, ConditionLeaf)
-        assert priority_condition.field_address == "task.priority"
-        assert priority_condition.value == "high"
-
-    def test_get_root_condition_nonexistent(self, db: Session):
-        """Test getting root condition for nonexistent type returns None."""
-        # Test with empty digest config (no conditions)
-        empty_config = DigestConfig.create(
+    def test_get_root_condition_returns_none_when_condition_tree_is_null(
+        self, db: Session, digest_config: DigestConfig
+    ):
+        """Test get_root_condition returns None when condition_tree is null."""
+        condition = DigestCondition.create(
             db=db,
-            data={"digest_type": DigestType.PRIVACY_REQUESTS, "name": "Empty Config"},
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": None,
+            },
         )
 
         result = DigestCondition.get_root_condition(
             db,
-            digest_config_id=empty_config.id,
+            digest_config_id=digest_config.id,
             digest_condition_type=DigestConditionType.RECEIVER,
         )
         assert result is None
-        empty_config.delete(db)
+        condition.delete(db)
 
-    @pytest.mark.usefixtures("sample_conditions")
-    def test_get_all_root_conditions(self, db: Session, digest_config: DigestConfig):
-        """Test getting all root conditions for a digest config."""
-        # sample_conditions fixture creates conditions, so we can test retrieval
-        all_conditions = DigestCondition.get_all_root_conditions(db, digest_config.id)
+    def test_get_root_condition_leaf(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
+    ):
+        """Test get_root_condition returns ConditionLeaf for leaf condition."""
+        condition = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
+            },
+        )
 
-        assert len(all_conditions) == 3
-        assert DigestConditionType.RECEIVER in all_conditions
-        assert DigestConditionType.CONTENT in all_conditions
-        assert DigestConditionType.PRIORITY in all_conditions
+        result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.RECEIVER,
+        )
 
-        # Test receiver condition
-        receiver = all_conditions[DigestConditionType.RECEIVER]
-        assert isinstance(receiver, ConditionLeaf)
-        assert receiver.field_address == "user.email"
+        assert isinstance(result, ConditionLeaf)
+        assert result.field_address == "user.email"
+        assert result.operator == Operator.exists
+        assert result.value is None
+        condition.delete(db)
 
-        # Test content condition
-        content = all_conditions[DigestConditionType.CONTENT]
-        assert isinstance(content, ConditionLeaf)
-        assert content.field_address == "task.status"
+    def test_get_root_condition_group(
+        self, db: Session, digest_config: DigestConfig, group_condition_tree: dict
+    ):
+        """Test get_root_condition returns ConditionGroup for group condition."""
+        condition = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.CONTENT,
+                "condition_tree": group_condition_tree,
+            },
+        )
 
-        # Test priority condition
-        priority = all_conditions[DigestConditionType.PRIORITY]
-        assert isinstance(priority, ConditionLeaf)
-        assert priority.field_address == "task.priority"
+        result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.CONTENT,
+        )
 
-    def test_get_root_condition_missing_args(self, db: Session):
-        """Test that get_root_condition raises error with missing arguments."""
+        assert isinstance(result, ConditionGroup)
+        assert result.logical_operator == GroupOperator.and_
+        assert len(result.conditions) == 2
+        condition.delete(db)
+
+    def test_get_root_condition_nested_group(
+        self,
+        db: Session,
+        digest_config: DigestConfig,
+        nested_group_condition_tree: dict,
+    ):
+        """Test get_root_condition handles nested group conditions."""
+        condition = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.PRIORITY,
+                "condition_tree": nested_group_condition_tree,
+            },
+        )
+
+        result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.PRIORITY,
+        )
+
+        assert isinstance(result, ConditionGroup)
+        assert result.logical_operator == GroupOperator.or_
+        assert len(result.conditions) == 2
+        assert isinstance(result.conditions[0], ConditionGroup)
+        assert isinstance(result.conditions[1], ConditionLeaf)
+        condition.delete(db)
+
+    def test_get_root_condition_by_type(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
+    ):
+        """Test get_root_condition returns correct condition for each type."""
+        # Create conditions for different types
+        receiver_tree = {
+            "field_address": "user.email",
+            "operator": "exists",
+            "value": None,
+        }
+        content_tree = {
+            "field_address": "task.status",
+            "operator": "eq",
+            "value": "pending",
+        }
+        priority_tree = {
+            "field_address": "task.priority",
+            "operator": "eq",
+            "value": "high",
+        }
+
+        receiver = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": receiver_tree,
+            },
+        )
+        content = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.CONTENT,
+                "condition_tree": content_tree,
+            },
+        )
+        priority = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.PRIORITY,
+                "condition_tree": priority_tree,
+            },
+        )
+
+        # Test each type returns the correct condition
+        receiver_result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.RECEIVER,
+        )
+        assert receiver_result.field_address == "user.email"
+
+        content_result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.CONTENT,
+        )
+        assert content_result.field_address == "task.status"
+
+        priority_result = DigestCondition.get_root_condition(
+            db,
+            digest_config_id=digest_config.id,
+            digest_condition_type=DigestConditionType.PRIORITY,
+        )
+        assert priority_result.field_address == "task.priority"
+
+        # Cleanup
+        receiver.delete(db)
+        content.delete(db)
+        priority.delete(db)
+
+    def test_get_root_condition_raises_without_required_args(self, db: Session):
+        """Test get_root_condition raises ValueError without required arguments."""
         with pytest.raises(
             ValueError,
-            match="digest_config_id and digest_condition_type are required keyword arguments",
+            match="digest_config_id and digest_condition_type are required",
         ):
             DigestCondition.get_root_condition(db, digest_config_id="only_one_arg")
 
-    @pytest.mark.usefixtures("sample_conditions")
-    def test_filter_conditions_by_type(self, db: Session, digest_config: DigestConfig):
-        """Test filtering conditions by digest condition type."""
-        receiver_conditions = (
-            db.query(DigestCondition)
-            .filter(
-                DigestCondition.digest_config_id == digest_config.id,
-                DigestCondition.digest_condition_type == DigestConditionType.RECEIVER,
-            )
-            .all()
-        )
 
-        assert len(receiver_conditions) == 1
-        assert (
-            receiver_conditions[0].digest_condition_type == DigestConditionType.RECEIVER
-        )
+# ============================================================================
+# get_all_root_conditions Tests
+# ============================================================================
 
-        content_conditions = (
-            db.query(DigestCondition)
-            .filter(
-                DigestCondition.digest_config_id == digest_config.id,
-                DigestCondition.digest_condition_type == DigestConditionType.CONTENT,
-            )
-            .all()
-        )
 
-        assert len(content_conditions) == 1
-        assert (
-            content_conditions[0].digest_condition_type == DigestConditionType.CONTENT
-        )
+class TestDigestConditionGetAllRootConditions:
+    """Test the get_all_root_conditions class method."""
 
-    def test_filter_root_conditions_only(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        receiver_condition: dict[str, Any],
-        group_condition_and: dict[str, Any],
-        sample_exists_condition_leaf: ConditionLeaf,
+    def test_get_all_root_conditions_empty(
+        self, db: Session, digest_config: DigestConfig
     ):
-        """Test filtering for root conditions only (parent_id is None)."""
-        # Create root condition
-        root_condition = DigestCondition.create(
-            db=db, data={**receiver_condition, **group_condition_and, "sort_order": 1}
-        )
+        """Test get_all_root_conditions returns dict with None values when no conditions."""
+        result = DigestCondition.get_all_root_conditions(db, digest_config.id)
 
-        # Create child condition
-        child_condition = DigestCondition.create(
+        assert len(result) == 3
+        assert DigestConditionType.RECEIVER in result
+        assert DigestConditionType.CONTENT in result
+        assert DigestConditionType.PRIORITY in result
+        assert all(v is None for v in result.values())
+
+    def test_get_all_root_conditions_partial(
+        self, db: Session, digest_config: DigestConfig
+    ):
+        """Test get_all_root_conditions with only some conditions defined."""
+        receiver_tree = {
+            "field_address": "user.email",
+            "operator": "exists",
+            "value": None,
+        }
+        receiver = DigestCondition.create(
             db=db,
             data={
-                **receiver_condition,
-                **sample_exists_condition_leaf.model_dump(),
-                "parent_id": root_condition.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": receiver_tree,
             },
         )
 
-        # Query for root conditions only
-        root_conditions = (
-            db.query(DigestCondition)
-            .filter(
-                DigestCondition.digest_config_id == digest_config.id,
-                DigestCondition.parent_id.is_(None),
-            )
-            .all()
-        )
+        result = DigestCondition.get_all_root_conditions(db, digest_config.id)
 
-        assert len(root_conditions) == 1
-        assert root_conditions[0].id == root_condition.id
-        assert root_conditions[0].parent_id is None
+        assert result[DigestConditionType.RECEIVER] is not None
+        assert result[DigestConditionType.RECEIVER].field_address == "user.email"
+        assert result[DigestConditionType.CONTENT] is None
+        assert result[DigestConditionType.PRIORITY] is None
 
-        # Query for child conditions
-        child_conditions = (
-            db.query(DigestCondition)
-            .filter(
-                DigestCondition.digest_config_id == digest_config.id,
-                DigestCondition.parent_id.isnot(None),
-            )
-            .all()
-        )
+        receiver.delete(db)
 
-        assert len(child_conditions) == 1
-        assert child_conditions[0].id == child_condition.id
-        assert child_conditions[0].parent_id == root_condition.id
-
-
-# ============================================================================
-# DigestConfig Integration Tests
-# ============================================================================
-
-
-class TestDigestConfigConditionIntegration:
-    """Test integration between DigestConfig and DigestCondition."""
-
-    def test_digest_config_relationship_loading(
-        self,
-        db: Session,
-        digest_config: DigestConfig,
-        receiver_condition: dict[str, Any],
-        content_condition: dict[str, Any],
-        sample_exists_condition_leaf: ConditionLeaf,
+    def test_get_all_root_conditions_complete(
+        self, db: Session, digest_config: DigestConfig
     ):
-        """Test that digest config properly loads condition relationships."""
-        # Create multiple conditions
+        """Test get_all_root_conditions with all conditions defined."""
+        conditions = []
+        for condition_type, field in [
+            (DigestConditionType.RECEIVER, "user.email"),
+            (DigestConditionType.CONTENT, "task.status"),
+            (DigestConditionType.PRIORITY, "task.priority"),
+        ]:
+            condition = DigestCondition.create(
+                db=db,
+                data={
+                    "digest_config_id": digest_config.id,
+                    "digest_condition_type": condition_type,
+                    "condition_tree": {
+                        "field_address": field,
+                        "operator": "exists",
+                        "value": None,
+                    },
+                },
+            )
+            conditions.append(condition)
+
+        result = DigestCondition.get_all_root_conditions(db, digest_config.id)
+
+        assert all(v is not None for v in result.values())
+        assert result[DigestConditionType.RECEIVER].field_address == "user.email"
+        assert result[DigestConditionType.CONTENT].field_address == "task.status"
+        assert result[DigestConditionType.PRIORITY].field_address == "task.priority"
+
+        for condition in conditions:
+            condition.delete(db)
+
+
+# ============================================================================
+# Unique Constraint Tests
+# ============================================================================
+
+
+class TestDigestConditionConstraints:
+    """Test database constraints."""
+
+    def test_unique_config_type_constraint(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
+    ):
+        """Test that only one condition row can exist per (config_id, type) pair."""
+        # Create first condition
         condition1 = DigestCondition.create(
             db=db,
             data={
-                **receiver_condition,
-                **sample_exists_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
             },
         )
 
+        # Attempt to create second condition with same type should fail
+        with pytest.raises(Exception):  # IntegrityError
+            DigestCondition.create(
+                db=db,
+                data={
+                    "digest_config_id": digest_config.id,
+                    "digest_condition_type": DigestConditionType.RECEIVER,
+                    "condition_tree": {
+                        "field_address": "other",
+                        "operator": "eq",
+                        "value": "x",
+                    },
+                },
+            )
+
+        condition1.delete(db)
+
+    def test_different_types_allowed(
+        self, db: Session, digest_config: DigestConfig, leaf_condition_tree: dict
+    ):
+        """Test that different condition types can exist for same config."""
+        condition1 = DigestCondition.create(
+            db=db,
+            data={
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.RECEIVER,
+                "condition_tree": leaf_condition_tree,
+            },
+        )
         condition2 = DigestCondition.create(
             db=db,
             data={
-                **content_condition,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "task.status",
-                "operator": Operator.eq,
-                "value": "pending",
-                "sort_order": 1,
+                "digest_config_id": digest_config.id,
+                "digest_condition_type": DigestConditionType.CONTENT,
+                "condition_tree": leaf_condition_tree,
             },
         )
 
-        # Refresh to load relationships
+        # Both should exist
         db.refresh(digest_config)
-
-        # Test that conditions are accessible through relationship
         assert len(digest_config.conditions) == 2
-        condition_ids = [condition.id for condition in digest_config.conditions]
-        assert condition1.id in condition_ids
-        assert condition2.id in condition_ids
 
-        # Test reverse relationship
-        for condition in digest_config.conditions:
-            assert condition.digest_config == digest_config
-            assert condition.digest_config_id == digest_config.id
-
-
-# ============================================================================
-# Validation and Error Tests
-# ============================================================================
-
-
-class TestDigestConditionValidation:
-    """Test validation and error cases for digest conditions."""
-
-    def test_invalid_condition_conversion(
-        self,
-        db: Session,
-        receiver_condition: dict[str, Any],
-        group_condition_and: dict[str, Any],
-        sample_eq_condition_leaf: ConditionLeaf,
-    ):
-        """Test error handling for invalid condition conversions."""
-        # Create group condition
-        group_condition = DigestCondition.create(
-            db=db, data={**receiver_condition, **group_condition_and, "sort_order": 0}
-        )
-
-        # Test converting group to leaf fails
-        with pytest.raises(ValueError, match="Cannot convert group condition to leaf"):
-            group_condition.to_condition_leaf()
-
-        # Create leaf condition as a child of the group condition
-        leaf_condition = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                **sample_eq_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": group_condition.id,
-                "sort_order": 1,
-            },
-        )
-
-        # Test converting leaf to group fails
-        with pytest.raises(ValueError, match="Cannot convert leaf condition to group"):
-            leaf_condition.to_condition_group()
-
-    def test_group_condition_with_empty_children(
-        self,
-        db: Session,
-        receiver_condition: dict[str, Any],
-        group_condition_or: dict[str, Any],
-    ):
-        """Test that group condition with no children raises validation error."""
-        group_condition = DigestCondition.create(
-            db=db, data={**receiver_condition, **group_condition_or, "sort_order": 1}
-        )
-
-        # Test that converting empty group to condition group fails
-        with pytest.raises(ValueError, match="conditions list cannot be empty"):
-            group_condition.to_condition_group()
-
-    def test_invalid_digest_config_reference(
-        self, db: Session, sample_exists_condition_leaf: ConditionLeaf
-    ):
-        """Test creating condition with invalid digest config reference."""
-        with pytest.raises(ConditionalDependencyError):
-            DigestCondition.create(
-                db=db,
-                data={
-                    **sample_exists_condition_leaf.model_dump(),
-                    "digest_condition_type": DigestConditionType.RECEIVER,
-                    "condition_type": ConditionalDependencyType.leaf,
-                    "sort_order": 1,
-                },
-            )
-
-    def test_invalid_parent_reference(
-        self,
-        db: Session,
-        receiver_condition: dict[str, Any],
-        sample_exists_condition_leaf: ConditionLeaf,
-    ):
-        """Test creating condition with invalid parent reference."""
-        with pytest.raises(
-            ValueError,
-            match="Parent condition with id 'nonexistent_parent_id' does not exist",
-        ):
-            DigestCondition.create(
-                db=db,
-                data={
-                    **receiver_condition,
-                    **sample_exists_condition_leaf.model_dump(),
-                    "parent_id": "nonexistent_parent_id",
-                    "condition_type": ConditionalDependencyType.leaf,
-                    "sort_order": 1,
-                },
-            )
-
-    def test_mixed_condition_types_in_tree(
-        self,
-        db: Session,
-        receiver_condition: dict[str, Any],
-        group_condition_and: dict[str, Any],
-        sample_eq_condition_leaf: ConditionLeaf,
-    ):
-        """Test that conditions in the same tree must have same digest_condition_type."""
-        # Create parent with RECEIVER type
-        parent_condition = DigestCondition.create(
-            db=db, data={**receiver_condition, **group_condition_and, "sort_order": 1}
-        )
-        child_condition1 = DigestCondition.create(
-            db=db,
-            data={
-                **receiver_condition,
-                **sample_eq_condition_leaf.model_dump(),
-                "parent_id": parent_condition.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
-            },
-        )
-
-        assert child_condition1.digest_condition_type == DigestConditionType.RECEIVER
-        assert child_condition1.parent_id == parent_condition.id
+        condition1.delete(db)
+        condition2.delete(db)
