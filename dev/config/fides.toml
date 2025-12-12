@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "af1a773620a78dd18b5144a9247d1f8b" # string
+analytics_id = "4ba7475983abe86951529e360eb03d13" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -107,6 +107,17 @@ api_engine_keepalives_count = 5 # integer
 # If true, the engine will pre-ping connections to ensure they are
 # still valid before using them.
 api_engine_pool_pre_ping = true # boolean
+
+# Number of concurrent database connections Fides will use for async
+# API requests. Note that the pool begins with no connections, but as
+# they are requested the connections are maintained and reused up to
+# this limit.
+api_async_engine_pool_size = 50 # integer
+
+# Number of additional 'overflow' concurrent database connections Fides
+# will use for async API requests if the pool reaches the limit. These
+# overflow connections are discarded afterwards and not maintained.
+api_async_engine_max_overflow = 50 # integer
 
 # If true, the async engine will pre-ping connections to ensure they
 # are still valid before using them.
