@@ -33,15 +33,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 
-### Security
-- Upgraded NextJS and React dependencies in Privacy Center to fix new vulnerabilities [#7112](https://github.com/ethyca/fides/pull/7112)
-
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
 
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
 - Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
+
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix new vulnerabilities [#7112](https://github.com/ethyca/fides/pull/7112)
 
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
