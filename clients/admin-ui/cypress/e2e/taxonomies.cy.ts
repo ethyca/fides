@@ -271,7 +271,7 @@ describe("Taxonomy management page", () => {
     });
   });
 
-  describe.only("Label deletion", () => {
+  describe("Label deletion", () => {
     beforeEach(() => {
       cy.visit("/taxonomy");
     });
