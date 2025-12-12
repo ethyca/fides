@@ -63,6 +63,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     updateTaxonomy: build.mutation<
@@ -77,6 +78,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     deleteTaxonomy: build.mutation<
@@ -89,6 +91,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     createCustomTaxonomy: build.mutation<TaxonomyResponse, TaxonomyCreate>({
@@ -108,7 +111,10 @@ const taxonomyApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: () => [{ type: "Taxonomy" }],
+      invalidatesTags: (result, error, { fides_key }) => [
+        { type: "Taxonomy" },
+        { type: "Taxonomy History", id: fides_key },
+      ],
     }),
     deleteCustomTaxonomy: build.mutation<void, string>({
       query: (fides_key) => ({
