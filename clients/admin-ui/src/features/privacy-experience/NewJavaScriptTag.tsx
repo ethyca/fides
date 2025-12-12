@@ -19,7 +19,7 @@ import { useMemo, useRef, useState } from "react";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { GearLightIcon } from "~/features/common/Icon";
 import { Property } from "~/types/api";
-import { FIDES_JS_SCRIPT_TEMPLATE} from "./fidesJsScriptTemplate";
+import { getFidesJsScriptTemplate} from "./fidesJsScriptTemplate";
 
 interface Props {
   property: Property;
@@ -31,7 +31,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
   const [privacyCenterHostname, setPrivacyCenterHostname] = useState("");
 
   const fidesJsScriptTag = useMemo(
-    () => FIDES_JS_SCRIPT_TEMPLATE(privacyCenterHostname, property),
+    () => getFidesJsScriptTemplate(privacyCenterHostname, property),
     [privacyCenterHostname, property],
   );
 

@@ -4,23 +4,24 @@ export const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-pa
 /**
  * Generates the property ID query parameter string for the Fides.js script URL
  */
-const PROPERTY_UNIQUE_ID_TEMPLATE = (propertyId?: string | null): string => {
+const getPropertyIdTemplate = (propertyId?: string | null): string => {
     if (propertyId) {
         return propertyId;
     }
+    // when there is no property id, we use a placeholder
     return "{property-unique-id}";
 };
 /**
  * Generates the complete Fides.js script tag with privacy center hostname and property ID
  */
-export const FIDES_JS_SCRIPT_TEMPLATE = (privacyCenterHostname?: string, property?: Property): string => {
+export const getFidesJsScriptTemplate = (privacyCenterHostname?: string, property?: Property): string => {
     const propertyId = property?.id;
-    const propertyIdDeclaration = propertyId ? `var fidesPropertyId = "${PROPERTY_UNIQUE_ID_TEMPLATE(propertyId)}"; // Example Property ID\n    ` : "";
+    const propertyIdDeclaration = propertyId ? `var fidesPropertyId = "${getPropertyIdTemplate(propertyId)}"; // Example Property ID\n    ` : "";
     const propertyIdQueryParam = propertyId ? ` + "property_id=" + fidesPropertyId` : "";
 
     let script = `<script>
 (function () {
-    var fidesHost = "${PRIVACY_CENTER_HOSTNAME_TEMPLATE}"; // This should be the CDN url.
+    var fidesHost = ${privacyCenterHostname ? `"${privacyCenterHostname}"` : `"${PRIVACY_CENTER_HOSTNAME_TEMPLATE}"`}; // This should be the CDN url.
     ${propertyIdDeclaration}var fidesSrc = fidesHost + "/fides.js?"${propertyIdQueryParam};
 
     function insertFidesScript() {
@@ -71,11 +72,6 @@ export const FIDES_JS_SCRIPT_TEMPLATE = (privacyCenterHostname?: string, propert
     insertFidesScript();
 })();
 </script>`;
-
-    // Replace privacy center hostname template if provided
-    if (privacyCenterHostname) {
-        script = script.replaceAll(PRIVACY_CENTER_HOSTNAME_TEMPLATE, privacyCenterHostname);
-    }
 
     return script;
 };

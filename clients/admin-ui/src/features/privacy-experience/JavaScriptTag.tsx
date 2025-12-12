@@ -19,7 +19,7 @@ import { useMemo, useRef, useState } from "react";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { CopyIcon } from "~/features/common/Icon";
 import {
-  FIDES_JS_SCRIPT_TEMPLATE,
+  getFidesJsScriptTemplate,
 } from "~/features/privacy-experience/fidesJsScriptTemplate";
 
 const JavaScriptTag = () => {
@@ -29,7 +29,7 @@ const JavaScriptTag = () => {
 
   const fidesJsScriptTag = useMemo(
     () => {
-      return FIDES_JS_SCRIPT_TEMPLATE(privacyCenterHostname);
+      return getFidesJsScriptTemplate(privacyCenterHostname);
     },
     [privacyCenterHostname],
   );
