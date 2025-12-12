@@ -1,5 +1,6 @@
 import { AntTreeDataNode as TreeDataNode } from "fidesui";
 
+import { Node } from "~/features/common/hooks/useNodeMap";
 import {
   ConfidenceBucket,
   Database,
@@ -48,9 +49,11 @@ export interface MonitorFieldParameters {
   query: MonitorFieldQueryParameters;
 }
 
-export type TreeNodeAction = {
+export type NodeAction<N extends Node> = {
   label: string;
   /** TODO: should be generically typed * */
-  callback: (key: Key, node: CustomTreeDataNode) => void;
-  disabled: (node: CustomTreeDataNode) => boolean;
+  callback: (key: Key, nodes: N[]) => void;
+  disabled: (nodes: N[]) => boolean;
 };
+
+export type TreeNodeAction = NodeAction<CustomTreeDataNode>;

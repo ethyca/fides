@@ -127,6 +127,10 @@ export * from "./components/data-display/filter.utils";
 export * from "./components/data-display/location.utils";
 export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
 
+// Export ISO 3166 data for location selection
+export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
+export { iso31661, iso31662 } from "iso-3166";
+
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
@@ -163,7 +167,11 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export * from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useModal as useAntModal,
+  useMessage,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**

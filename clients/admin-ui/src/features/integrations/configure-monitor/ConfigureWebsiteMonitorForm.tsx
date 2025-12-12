@@ -39,7 +39,7 @@ const FORM_COPY = `This monitor allows you to simulate and verify user consent a
 
 const REGIONS_TOOLTIP_COPY = `Specify the region(s) to include in the scan. The monitor will scan the same URL across these locations to identify tracking technologies, such as cookies served by ad tech vendors.`;
 
-const START_TIME_TOOLTIP_COPY = `Set the start time for the scan. For optimal performance and minimal disruption, schedule scans during periods of low traffic.`;
+export const START_TIME_TOOLTIP_COPY = `Set the start time for the scan. For optimal performance and minimal disruption, schedule scans during periods of low traffic.`;
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Name"),

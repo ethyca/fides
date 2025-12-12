@@ -1,4 +1,3 @@
-import ast
 import csv
 import io
 import json
@@ -98,6 +97,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
@@ -3948,21 +3948,25 @@ class TestApprovePrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_approve_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     def test_approve_privacy_request_viewer_role(
         self, url, api_client, generate_role_header
     ):
         auth_header = generate_role_header(roles=[VIEWER])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(
@@ -4341,6 +4345,101 @@ class TestApprovePrivacyRequest:
         assert message_meta["body_params"] is None
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
+
+
+class TestFilteredBulkActions:
+    """Test bulk actions with filters and exclusions across all bulk endpoints"""
+
+    @pytest.mark.parametrize(
+        "endpoint,method,filter_status,scopes",
+        [
+            (PRIVACY_REQUEST_APPROVE, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (PRIVACY_REQUEST_DENY, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (PRIVACY_REQUEST_CANCEL, "patch", "pending", [PRIVACY_REQUEST_REVIEW]),
+            (
+                PRIVACY_REQUEST_BULK_FINALIZE,
+                "post",
+                "requires_manual_finalization",
+                [PRIVACY_REQUEST_REVIEW],
+            ),
+            (
+                PRIVACY_REQUEST_BULK_RETRY,
+                "post",
+                "error",
+                [PRIVACY_REQUEST_CALLBACK_RESUME],
+            ),
+            (
+                PRIVACY_REQUEST_BULK_SOFT_DELETE,
+                "post",
+                "complete",
+                [PRIVACY_REQUEST_DELETE],
+            ),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    @mock.patch(
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
+    )
+    def test_bulk_action_with_filters_and_exclusions(
+        self,
+        mock_dispatch_message,
+        submit_mock,
+        db,
+        api_client,
+        user,
+        privacy_requests,
+        endpoint,
+        method,
+        filter_status,
+        scopes,
+    ):
+        """Test that filters and exclusions work correctly for all bulk endpoints"""
+        # Set 2 to the filter status, 1 to a different status
+        target_status = PrivacyRequestStatus[filter_status]
+        for pr in privacy_requests[:2]:
+            pr.update(db=db, data={"status": target_status})
+        privacy_requests[2].update(
+            db=db,
+            data={
+                "status": (
+                    PrivacyRequestStatus.complete
+                    if filter_status != "complete"
+                    else PrivacyRequestStatus.pending
+                )
+            },
+        )
+
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+
+        url = V1_URL_PREFIX + endpoint
+        body = {
+            "filters": {"status": [filter_status]},
+            "exclude_ids": [privacy_requests[1].id],
+        }
+
+        http_method = getattr(api_client, method)
+        response = http_method(url, headers=auth_header, json=body)
+
+        assert response.status_code == 200
+        response_body = response.json()
+
+        # All bulk endpoints return succeeded/failed structure
+        assert "succeeded" in response_body
+        succeeded_ids = [
+            r["id"] if isinstance(r, dict) else r for r in response_body["succeeded"]
+        ]
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id not in succeeded_ids  # Excluded
 
 
 class TestMarkPrivacyRequestPreApproveEligible:
@@ -4853,14 +4952,16 @@ class TestDenyPrivacyRequest:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_deny_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(
@@ -5160,14 +5261,16 @@ class TestCancelPrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_CANCEL
 
     def test_cancel_privacy_request_not_authenticated(self, url, api_client):
-        response = api_client.patch(url)
+        response = api_client.patch(url, json={"request_ids": ["test"]})
         assert response.status_code == 401
 
     def test_cancel_privacy_request_bad_scopes(
         self, url, api_client, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.patch(url, headers=auth_header)
+        response = api_client.patch(
+            url, headers=auth_header, json={"request_ids": ["test"]}
+        )
         assert response.status_code == 403
 
     @mock.patch(
@@ -5819,6 +5922,42 @@ class TestBulkRestartFromFailure:
 
         assert privacy_requests[0].id in succeeded_ids
         assert bad_test_id in failed_ids
+
+        submit_mock.assert_called_with(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
+        )
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_restart_from_failure_with_bulk_selection_format(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        """Test that the endpoint works with the new PrivacyRequestBulkSelection format"""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = {"request_ids": [privacy_requests[0].id]}
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.access,
+        )
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+
+        assert privacy_requests[0].id in succeeded_ids
 
         submit_mock.assert_called_with(
             queue=DSR_QUEUE_NAME,
