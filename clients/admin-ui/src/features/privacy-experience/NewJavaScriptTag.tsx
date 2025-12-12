@@ -1,6 +1,9 @@
 import {
   AntButton as Button,
   Code,
+  FormControl,
+  FormLabel,
+  Input,
   Link,
   Modal,
   ModalBody,
@@ -11,18 +14,12 @@ import {
   Text,
   useDisclosure,
 } from "fidesui";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
-import { useFeatures } from "~/features/common/features";
 import { GearLightIcon } from "~/features/common/Icon";
-import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { Property } from "~/types/api";
-
-const PRIVACY_CENTER_HOSTNAME_TEMPLATE = "{privacy-center-hostname-and-path}";
-const PROPERTY_UNIQUE_ID_TEMPLATE = "{property-unique-id}";
-const FIDES_JS_SCRIPT_TEMPLATE = `<script src="https://${PRIVACY_CENTER_HOSTNAME_TEMPLATE}/fides.js?property_id=${PROPERTY_UNIQUE_ID_TEMPLATE}"></script>`;
-const FIDES_GTM_SCRIPT_TAG = "<script>Fides.gtm()</script>";
+import { getFidesJsScriptTemplate} from "./fidesJsScriptTemplate";
 
 interface Props {
   property: Property;
@@ -31,28 +28,12 @@ interface Props {
 const NewJavaScriptTag = ({ property }: Props) => {
   const modal = useDisclosure();
   const initialRef = useRef(null);
-  const { fidesCloud: isFidesCloud } = useFeatures();
+  const [privacyCenterHostname, setPrivacyCenterHostname] = useState("");
 
-  const { data: fidesCloudConfig, isSuccess } = useGetFidesCloudConfigQuery(
-    undefined,
-    {
-      skip: !isFidesCloud,
-    },
+  const fidesJsScriptTag = useMemo(
+    () => getFidesJsScriptTemplate(privacyCenterHostname, property),
+    [privacyCenterHostname, property],
   );
-
-  const fidesJsScriptTag = useMemo(() => {
-    const script = FIDES_JS_SCRIPT_TEMPLATE.replace(
-      PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.id!.toString(),
-    );
-    if (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url) {
-      script.replace(
-        PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-        fidesCloudConfig.privacy_center_url,
-      );
-    }
-    return script;
-  }, [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess, property]);
 
   return (
     <>
@@ -88,31 +69,38 @@ const NewJavaScriptTag = ({ property }: Props) => {
                 {property.name} property.
               </Text>
               <Text>
-                1. Paste this code as high in the <b>&lt;head&gt;</b> of the
+                Paste this code as high in the <b>&lt;head&gt;</b> of the
                 page as possible:
               </Text>
+              <FormControl>
+                <FormLabel>Privacy Center Hostname</FormLabel>
+                <Input
+                  value={privacyCenterHostname}
+                  onChange={(e) => setPrivacyCenterHostname(e.target.value)}
+                  placeholder="e.g.,<your-domain>.fides-cdn.ethyca.com"
+                  data-testid="privacy-center-hostname-input"
+                />
+              </FormControl>
               <Code
                 display="flex"
                 justifyContent="space-between"
-                alignItems="top"
+                alignItems="flex-start"
                 p={0}
+                position="relative"
               >
-                <Text p={4}>{fidesJsScriptTag}</Text>
+                <Text
+                  p={4}
+                  whiteSpace="pre"
+                  fontFamily="mono"
+                  fontSize="sm"
+                  flex={1}
+                  maxH="400px"
+                  overflowX="auto"
+                  overflowY="auto"
+                >
+                  {fidesJsScriptTag}
+                </Text>
                 <ClipboardButton copyText={fidesJsScriptTag} />
-              </Code>
-              <Text>
-                2. Optionally, you can enable Google Tag Manager for managing
-                tags on your website by including the script tag below along
-                with the Fides.js tag. Place it below the Fides.js script tag.
-              </Text>
-              <Code
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                p={0}
-              >
-                <Text p={4}>{FIDES_GTM_SCRIPT_TAG}</Text>
-                <ClipboardButton copyText={FIDES_GTM_SCRIPT_TAG} />
               </Code>
               <Text>
                 For more information about adding a JavaScript tag to your
