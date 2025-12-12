@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.76.1"
+    "version": "2.75.3b0.post0.dev46"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9328,18 +9328,13 @@
           "Privacy Requests"
         ],
         "summary": "Bulk Restart Privacy Request From Failure",
-        "description": "Bulk restart privacy requests from failure.",
+        "description": "Bulk restart privacy requests from failure.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.",
         "operationId": "bulk_restart_privacy_request_from_failure_api_v1_privacy_request_bulk_retry_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array",
-                "maxItems": 50,
-                "title": "Privacy Request Ids"
+                "$ref": "#/components/schemas/PrivacyRequestBulkSelection"
               }
             }
           },
@@ -9485,13 +9480,13 @@
           "Privacy Requests"
         ],
         "summary": "Approve Privacy Request",
-        "description": "Approve and dispatch a list of privacy requests and/or report failure",
+        "description": "Approve and dispatch a list of privacy requests and/or report failure.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.\n\nExample with request_ids:\n    {\"request_ids\": [\"pri_123\", \"pri_456\"]}\n\nExample with filters:\n    {\"filters\": {\"status\": [\"pending\"]}, \"exclude_ids\": [\"pri_789\"]}",
         "operationId": "approve_privacy_request_api_v1_privacy_request_administrate_approve_patch",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReviewPrivacyRequestIds"
+                "$ref": "#/components/schemas/PrivacyRequestBulkSelection"
               }
             }
           },
@@ -9534,13 +9529,13 @@
           "Privacy Requests"
         ],
         "summary": "Deny Privacy Request",
-        "description": "Deny a list of privacy requests and/or report failure",
+        "description": "Deny a list of privacy requests and/or report failure.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.",
         "operationId": "deny_privacy_request_api_v1_privacy_request_administrate_deny_patch",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DenyPrivacyRequests"
+                "$ref": "#/components/schemas/DenyPrivacyRequestSelection"
               }
             }
           },
@@ -9583,13 +9578,13 @@
           "Privacy Requests"
         ],
         "summary": "Cancel Privacy Request",
-        "description": "Cancel a list of privacy requests and/or report failure",
+        "description": "Cancel a list of privacy requests and/or report failure.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.",
         "operationId": "cancel_privacy_request_api_v1_privacy_request_administrate_cancel_patch",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CancelPrivacyRequests"
+                "$ref": "#/components/schemas/CancelPrivacyRequestSelection"
               }
             }
           },
@@ -10117,13 +10112,13 @@
           "Privacy Requests"
         ],
         "summary": "Bulk Finalize Privacy Requests",
-        "description": "Bulk finalize privacy requests that are in requires_manual_finalization status.\nEach request will be moved from the 'requires_finalization' state to 'complete'.\nReturns an object with the list of successfully finalized privacy requests and the list of failed finalizations.",
+        "description": "Each request will be moved from the 'requires_finalization' state to 'complete'.\nReturns an object with the list of successfully finalized privacy requests and the list of failed finalizations.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.",
         "operationId": "bulk_finalize_privacy_requests_api_v1_privacy_request_bulk_finalize_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReviewPrivacyRequestIds"
+                "$ref": "#/components/schemas/PrivacyRequestBulkSelection"
               }
             }
           },
@@ -10370,13 +10365,13 @@
           "Privacy Requests"
         ],
         "summary": "Bulk Soft Delete Privacy Requests",
-        "description": "Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime\nand its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an\nobject with the list of successfully deleted privacy requests and the list of failed deletions.",
+        "description": "Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime\nand its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an\nobject with the list of successfully deleted privacy requests and the list of failed deletions.\n\nYou can either provide explicit request_ids OR use filters to select privacy requests.\nWhen using filters, you can optionally exclude specific IDs via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted.",
         "operationId": "bulk_soft_delete_privacy_requests_api_v1_privacy_request_bulk_soft_delete_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReviewPrivacyRequestIds"
+                "$ref": "#/components/schemas/PrivacyRequestBulkSelection"
               }
             }
           },
@@ -16184,15 +16179,48 @@
         "title": "BulkUpdateFailed",
         "description": "Schema for use when Bulk Create/Update fails."
       },
-      "CancelPrivacyRequests": {
+      "CancelPrivacyRequestSelection": {
         "properties": {
           "request_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 50,
-            "title": "Request Ids"
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Ids",
+            "description": "List of privacy request IDs to act on. The backend will automatically batch requests if the list is large."
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestFilter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filters to select privacy requests (only used when request_ids is not provided)"
+          },
+          "exclude_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Ids",
+            "description": "List of privacy request IDs to exclude from the action (only used with filters)"
           },
           "reason": {
             "anyOf": [
@@ -16207,11 +16235,8 @@
           }
         },
         "type": "object",
-        "required": [
-          "request_ids"
-        ],
-        "title": "CancelPrivacyRequests",
-        "description": "Pass in a list of privacy request ids and cancellation reason"
+        "title": "CancelPrivacyRequestSelection",
+        "description": "Select privacy requests to cancel with optional reason"
       },
       "CheckpointActionRequiredDetails": {
         "properties": {
@@ -19145,15 +19170,48 @@
         "title": "DatasetTraversalDetails",
         "description": "Describes whether or not the parent dataset is traversable; if not, includes\nan error message describing the traversal issues."
       },
-      "DenyPrivacyRequests": {
+      "DenyPrivacyRequestSelection": {
         "properties": {
           "request_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 50,
-            "title": "Request Ids"
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Ids",
+            "description": "List of privacy request IDs to act on. The backend will automatically batch requests if the list is large."
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestFilter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filters to select privacy requests (only used when request_ids is not provided)"
+          },
+          "exclude_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Ids",
+            "description": "List of privacy request IDs to exclude from the action (only used with filters)"
           },
           "reason": {
             "anyOf": [
@@ -19168,11 +19226,8 @@
           }
         },
         "type": "object",
-        "required": [
-          "request_ids"
-        ],
-        "title": "DenyPrivacyRequests",
-        "description": "Pass in a list of privacy request ids and rejection reason"
+        "title": "DenyPrivacyRequestSelection",
+        "description": "Select privacy requests to deny with optional reason"
       },
       "DrpAction": {
         "type": "string",
@@ -24458,6 +24513,54 @@
         "title": "PrivacyRequestAccessResults",
         "description": "Schema for the access results of a PrivacyRequest"
       },
+      "PrivacyRequestBulkSelection": {
+        "properties": {
+          "request_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Ids",
+            "description": "List of privacy request IDs to act on. The backend will automatically batch requests if the list is large."
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestFilter"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filters to select privacy requests (only used when request_ids is not provided)"
+          },
+          "exclude_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Ids",
+            "description": "List of privacy request IDs to exclude from the action (only used with filters)"
+          }
+        },
+        "type": "object",
+        "title": "PrivacyRequestBulkSelection",
+        "description": "Select privacy requests for bulk actions using either explicit IDs or filters.\n\nIf request_ids is provided, it will be used directly.\nIf filters is provided (without request_ids), filters will be used to select privacy requests,\nwith optional exclusions via exclude_ids.\n\nFor backwards compatibility, a plain list of request IDs is also accepted and will be\nautomatically converted to {\"request_ids\": [...]}."
+      },
       "PrivacyRequestCreate": {
         "properties": {
           "external_id": {
@@ -26485,24 +26588,6 @@
         ],
         "title": "ResponseWithMessage",
         "description": "Generic schema for responses with a message"
-      },
-      "ReviewPrivacyRequestIds": {
-        "properties": {
-          "request_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 50,
-            "title": "Request Ids"
-          }
-        },
-        "type": "object",
-        "required": [
-          "request_ids"
-        ],
-        "title": "ReviewPrivacyRequestIds",
-        "description": "Pass in a list of privacy request ids"
       },
       "RoleRegistryEnum": {
         "type": "string",
