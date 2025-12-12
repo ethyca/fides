@@ -96,8 +96,8 @@ export const InfrastructureSystemListItem = ({
   const itemKey = item.urn ?? item.id ?? "";
   const url = rowClickUrl?.(item);
   const { metadata } = item;
-  const systemName = item.name || "Uncategorized";
-  const systemType = metadata?.app_type || "System type";
+  const systemName = item.name ?? "Uncategorized";
+  const systemType = metadata?.app_type ?? "System type";
 
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
   const logoUrl = useMemo(() => {
