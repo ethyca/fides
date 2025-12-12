@@ -15,7 +15,28 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 )
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
+from fides.api.task.manual.manual_task_utils import (
+    extract_field_addresses_from_condition_tree,
+)
 from fides.api.util.collection_util import Row
+
+
+def _extract_privacy_request_addresses(
+    tree: dict[str, Any], addresses: set[str]
+) -> None:
+    """Recursively extract privacy_request.* field addresses from a condition tree.
+
+    Args:
+        tree: The condition tree dict
+        addresses: Set to add found privacy_request addresses to (mutated in place)
+    """
+    if "field_address" in tree:
+        field_address = tree["field_address"]
+        if field_address and field_address.startswith("privacy_request."):
+            addresses.add(field_address)
+    elif "conditions" in tree:
+        for condition in tree.get("conditions", []):
+            _extract_privacy_request_addresses(condition, addresses)
 
 
 def extract_conditional_dependency_data_from_inputs(
@@ -41,21 +62,26 @@ def extract_conditional_dependency_data_from_inputs(
 
     conditional_data: dict[str, Any] = {}
 
-    # Get all task input conditional dependencies field addresses
-    field_addresses = [
-        dependency.field_address
-        for dependency in manual_task.conditional_dependencies
-        if dependency.field_address
-        and not dependency.field_address.startswith("privacy_request.")
-    ]
+    # Extract all field addresses from condition trees
+    all_field_addresses: set[str] = set()
+    privacy_request_field_addresses: set[str] = set()
 
-    # Get all privacy request conditional dependencies field addresses
-    privacy_request_field_addresses = {
-        dependency.field_address
-        for dependency in manual_task.conditional_dependencies
-        if dependency.field_address
-        and dependency.field_address.startswith("privacy_request.")
-    }
+    for dependency in manual_task.conditional_dependencies:
+        # Extract field addresses from the condition_tree JSONB
+        extracted_addresses = extract_field_addresses_from_condition_tree(
+            dependency.condition_tree
+        )
+        all_field_addresses.update(extracted_addresses)
+
+        # Also extract privacy_request field addresses separately
+        # (they are excluded from extract_field_addresses_from_condition_tree)
+        if dependency.condition_tree:
+            _extract_privacy_request_addresses(
+                dependency.condition_tree, privacy_request_field_addresses
+            )
+
+    # Convert to list for iteration (exclude privacy_request addresses)
+    field_addresses = list(all_field_addresses)
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
     if privacy_request_field_addresses:

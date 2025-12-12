@@ -338,7 +338,7 @@ class TestManualTaskUtilsConditionalDependencies:
         )  # from "payment_card.subscription.status"
 
     @pytest.mark.usefixtures(
-        "connection_with_manual_access_task", "condition_gt_18", "condition_age_lt_65"
+        "connection_with_manual_access_task", "age_range_condition"
     )
     def test_no_duplicate_fields_from_conditional_dependencies(
         self, db: Session, manual_task: ManualTask

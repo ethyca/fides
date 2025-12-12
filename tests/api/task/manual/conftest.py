@@ -1038,6 +1038,17 @@ def get_nested_group_condition_tree() -> dict:
     }
 
 
+def get_age_range_condition_tree() -> dict:
+    """Group condition tree: (age >= 18) AND (age < 65) - tests duplicate field addresses."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            get_condition_gt_18_tree(),
+            get_condition_lt_65_tree(),
+        ],
+    }
+
+
 # =============================================================================
 # Conditional Dependency Fixtures
 # =============================================================================
@@ -1065,6 +1076,20 @@ def condition_age_lt_65(db: Session, manual_task: ManualTask):
         data={
             "manual_task_id": manual_task.id,
             "condition_tree": get_condition_lt_65_tree(),
+        },
+    )
+    yield condition
+    condition.delete(db)
+
+
+@pytest.fixture()
+def age_range_condition(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with (age >= 18) AND (age < 65) - tests duplicate field addresses."""
+    condition = ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_tree": get_age_range_condition_tree(),
         },
     )
     yield condition

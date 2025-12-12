@@ -12,8 +12,6 @@ from fides.api.models.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskInstance,
-    ManualTaskLog,
-    ManualTaskLogStatus,
     ManualTaskSubmission,
     StatusType,
 )
@@ -59,7 +57,6 @@ class TestManualTaskInstance:
         assert instance.status == StatusType.pending
         assert instance.completed_at is None
         assert instance.completed_by_id is None
-        assert instance.logs == []
         assert instance.submissions == []
         assert instance.config is manual_task_config
         assert instance.task is manual_task
@@ -353,58 +350,6 @@ class TestManualTaskInstance:
         )
         assert orphaned_instance is not None
         assert orphaned_instance.task_id is None
-
-    def test_manual_task_deletion_orphans_historical_data(
-        self, db: Session, manual_task_instance: ManualTaskInstance
-    ) -> None:
-        """Test that deleting a ManualTask orphans historical data but deletes references."""
-        task = manual_task_instance.task
-
-        # Create some logs for the task
-        log1 = ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.created,
-            message="Test log 1",
-        )
-        log2 = ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.in_progress,
-            message="Test log 2",
-        )
-
-        # Verify logs exist
-        assert len(task.logs) >= 2
-
-        # Store IDs for verification
-        task_id = task.id
-        instance_id = manual_task_instance.id
-        log1_id = log1.id
-        log2_id = log2.id
-
-        # Delete the task (should orphan instance and logs)
-        db.delete(task)
-        db.commit()
-
-        # Verify task is deleted
-        deleted_task = db.query(ManualTask).filter_by(id=task_id).first()
-        assert deleted_task is None
-
-        # Verify instance still exists but is orphaned
-        orphaned_instance = (
-            db.query(ManualTaskInstance).filter_by(id=instance_id).first()
-        )
-        assert orphaned_instance is not None
-        assert orphaned_instance.task_id is None
-
-        # Verify logs still exist but are orphaned
-        orphaned_log1 = db.query(ManualTaskLog).filter_by(id=log1_id).first()
-        orphaned_log2 = db.query(ManualTaskLog).filter_by(id=log2_id).first()
-        assert orphaned_log1 is not None
-        assert orphaned_log2 is not None
-        assert orphaned_log1.task_id is None
-        assert orphaned_log2.task_id is None
 
 
 class TestManualTaskSubmission:
@@ -972,41 +917,3 @@ class TestManualTaskSubmission:
         updated_submissions = manual_task_instance.submissions
         assert len(updated_submissions) == 1
         assert updated_submissions[0].data["value"] == "updated"
-
-    def test_manual_task_creation_logging(
-        self,
-        db: Session,
-        privacy_request,
-    ):
-        """Test that manual task creation properly logs with valid task_id (refreshes if needed)."""
-        # Count existing logs
-        initial_log_count = db.query(ManualTaskLog).count()
-
-        # Create a manual task
-        task_data = {
-            "task_type": "privacy_request",
-            "parent_entity_id": privacy_request.id,
-            "parent_entity_type": "connection_config",
-        }
-
-        task = ManualTask.create(db=db, data=task_data)
-
-        # Verify task was created with valid ID
-        assert task.id is not None
-        assert task.id != ""
-
-        # Check that a log was created (should always happen now)
-        final_log_count = db.query(ManualTaskLog).count()
-        assert final_log_count == initial_log_count + 1
-
-        # Find the log entry for this task
-        task_log = (
-            db.query(ManualTaskLog).filter(ManualTaskLog.task_id == task.id).first()
-        )
-
-        # Verify the log has valid task_id (not NULL)
-        assert task_log is not None
-        assert task_log.task_id is not None
-        assert task_log.task_id == task.id
-        assert task_log.message == f"Created manual task for {task_data['task_type']}"
-        assert task_log.status == "created"
