@@ -229,68 +229,6 @@ def upgrade():
 
 
 def downgrade():
-    # Re-create manual_task_log table
-    op.create_table(
-        "manual_task_log",
-        sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=False,
-        ),
-        sa.Column("task_id", sa.String(), nullable=True),
-        sa.Column("config_id", sa.String(), nullable=True),
-        sa.Column("instance_id", sa.String(), nullable=True),
-        sa.Column("user_id", sa.String(), nullable=True),
-        sa.Column("status", sa.String(), nullable=False),
-        sa.Column("message", sa.String(), nullable=True),
-        sa.Column("details", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["config_id"],
-            ["manual_task_config.id"],
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["instance_id"],
-            ["manual_task_instance.id"],
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["task_id"],
-            ["manual_task.id"],
-            ondelete="SET NULL",
-        ),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(
-        "ix_manual_task_log_config_id", "manual_task_log", ["config_id"], unique=False
-    )
-    op.create_index(
-        "ix_manual_task_log_created_at", "manual_task_log", ["created_at"], unique=False
-    )
-    op.create_index(
-        "ix_manual_task_log_instance_id",
-        "manual_task_log",
-        ["instance_id"],
-        unique=False,
-    )
-    op.create_index(
-        "ix_manual_task_log_status", "manual_task_log", ["status"], unique=False
-    )
-    op.create_index(
-        "ix_manual_task_log_task_id", "manual_task_log", ["task_id"], unique=False
-    )
-    op.create_index(
-        "ix_manual_task_log_user_id", "manual_task_log", ["user_id"], unique=False
-    )
-
     # Note: Downgrade will lose the JSONB tree structure - data migration is one-way
     # Re-add columns for manual_task_conditional_dependency
     op.add_column(
