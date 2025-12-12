@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, Index, String, text
+from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -10,6 +10,7 @@ from fides.api.db.util import EnumColumn
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
     ConditionalDependencyError,
+    ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -42,119 +43,52 @@ class DigestConditionType(str, Enum):
 
 
 class DigestCondition(ConditionalDependencyBase):
-    """Digest conditional dependencies - multi-type hierarchies.
+    """Digest conditional dependencies - stores condition trees as JSONB.
 
-    - Multi-type hierarchy means one digest_config can have multiple independent
-      condition trees, each with a different digest_condition_type (RECEIVER, CONTENT, PRIORITY)
-    - Within each tree, all nodes must have the same digest_condition_type
-    - This enables separate condition logic for different aspects of digest processing
+    Each digest_config can have up to three independent condition trees,
+    one per digest_condition_type (RECEIVER, CONTENT, PRIORITY).
+    This enables separate condition logic for different aspects of digest processing.
 
-    Ensures that all conditions within the same tree have the same digest_condition_type.
-    This prevents logical errors where different condition types are mixed in a single
-    condition tree structure.
-
-    Example Tree Structure:
+    Example structure:
         DigestConfig (e.g., "Weekly Privacy Digest")
-        ├── RECEIVER Dependency Condition Tree (who gets the digest)
-        │   └── Group (AND)
-        │       ├── Leaf: user.role == "admin"
-        │       └── Leaf: user.department == "privacy"
-        ├── CONTENT Dependency Condition Tree (what gets included)
-        │   └── Group (OR)
-        │       ├── Leaf: task.priority == "high"
-        │       └── Leaf: task.overdue == true
-        └── PRIORITY Dependency Condition Tree (when to send)
-            └── Leaf: task.count >= 5
+        ├── RECEIVER condition_tree (who gets the digest)
+        │   └── {"logical_operator": "and", "conditions": [...]}
+        ├── CONTENT condition_tree (what gets included)
+        │   └── {"logical_operator": "or", "conditions": [...]}
+        └── PRIORITY condition_tree (what is high priority)
+            └── {"field_address": "task.count", "operator": "gte", "value": 5}
     """
 
     @declared_attr
     def __tablename__(cls) -> str:
         return "digest_condition"
 
-    # We need to redefine it here so that self-referential relationships
-    # can properly reference the `id` column instead of the built-in Python function.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
-    # Foreign key relationships
+    # Foreign key to parent digest config
     digest_config_id = Column(
         String(255),
         ForeignKey("digest_config.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    parent_id = Column(
-        String(255),
-        ForeignKey("digest_condition.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
-    )
 
-    # Digest-specific: condition category
+    # Condition category - determines which aspect of digest this condition controls
     digest_condition_type = Column(
         EnumColumn(DigestConditionType), nullable=False, index=True
     )
 
-    # Relationships
+    # Relationship to parent config
     digest_config = relationship("DigestConfig", back_populates="conditions")
-    parent = relationship(
-        "DigestCondition",
-        remote_side=[id],
-        back_populates="children",
-        foreign_keys=[parent_id],
-    )
-    children = relationship(
-        "DigestCondition",
-        back_populates="parent",
-        cascade="all, delete-orphan",
-        foreign_keys=[parent_id],
-    )
 
-    # Ensure only one root condition per digest_condition_type per digest_config
+    # Ensure only one condition row per digest_condition_type per digest_config
     __table_args__ = (
-        Index(
-            "ix_digest_condition_unique_root_per_type",
+        UniqueConstraint(
             "digest_config_id",
             "digest_condition_type",
-            unique=True,
-            postgresql_where=text("parent_id IS NULL"),
+            name="uq_digest_condition_config_type",
         ),
     )
-
-    @staticmethod
-    def _validate_condition_type_consistency(db: Session, data: dict[str, Any]) -> None:
-        """Validate that a condition's digest_condition_type matches its parent's type.
-
-        Since each parent was validated when created, checking against the immediate parent
-        is sufficient to ensure tree-wide consistency.
-
-        Args:
-            db: Database session for querying
-            data: Dictionary containing condition data to validate (must include both parent_id and digest_condition_type)
-
-        Raises:
-            ValueError: If parent doesn't exist or digest_condition_type doesn't match parent's type
-        """
-        parent_id = data.get("parent_id")
-        digest_condition_type = data.get("digest_condition_type")
-
-        if not parent_id:
-            # Root condition - no validation needed
-            return
-
-        # Get the parent condition
-        parent = (
-            db.query(DigestCondition).filter(DigestCondition.id == parent_id).first()
-        )
-        if not parent:
-            raise ValueError(f"Parent condition with id '{parent_id}' does not exist")
-
-        # Validate that the new condition matches the parent's digest_condition_type
-        if parent.digest_condition_type != digest_condition_type:
-            raise ValueError(
-                f"Cannot create condition with type '{digest_condition_type}' under parent "
-                f"with type '{parent.digest_condition_type}'. All conditions in the same tree "
-                f"must have the same digest_condition_type."
-            )
 
     @classmethod
     def create(
@@ -164,40 +98,11 @@ class DigestCondition(ConditionalDependencyBase):
         data: dict[str, Any],
         check_name: bool = True,
     ) -> "DigestCondition":
-        """Create a new DigestCondition with validation."""
-        # Validate condition type consistency
-        cls._validate_condition_type_consistency(db, data)
+        """Create a new DigestCondition."""
         try:
             return super().create(db=db, data=data, check_name=check_name)
         except Exception as e:
             raise ConditionalDependencyError(str(e))
-
-    def update(self, db: Session, *, data: dict[str, Any]) -> "DigestCondition":
-        """Update DigestCondition with validation."""
-        # Ensure validation data includes current values for fields not being updated
-        validation_data = {
-            "parent_id": data.get("parent_id", self.parent_id),
-            "digest_condition_type": data.get(
-                "digest_condition_type", self.digest_condition_type
-            ),
-        }
-
-        # Validate before updating
-        self._validate_condition_type_consistency(db, validation_data)
-        return super().update(db=db, data=data)  # type: ignore[return-value]
-
-    def save(self, db: Session) -> "DigestCondition":
-        """Save DigestCondition with validation."""
-        # Extract current object data for validation
-        data = {
-            "parent_id": self.parent_id,
-            "digest_condition_type": self.digest_condition_type,
-        }
-
-        # Validate before saving (only if this has a parent)
-        if self.parent_id:
-            self._validate_condition_type_consistency(db, data)
-        return super().save(db=db)  # type: ignore[return-value]
 
     @classmethod
     def get_root_condition(
@@ -205,11 +110,10 @@ class DigestCondition(ConditionalDependencyBase):
         db: Session,
         **kwargs: Any,
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
-        """Get the root condition tree for a specific digest condition type.
+        """Get the condition tree for a specific digest condition type.
 
-        Implementation of the abstract base method for DigestCondition's multi-type hierarchy.
         Each digest_config can have separate condition trees for RECEIVER, CONTENT, and PRIORITY
-        types. This method retrieves the root of one specific tree.
+        types. This method retrieves the tree for one specific type.
 
         Args:
             db: SQLAlchemy database session for querying
@@ -219,7 +123,7 @@ class DigestCondition(ConditionalDependencyBase):
                                      Must be one of: RECEIVER, CONTENT, PRIORITY
 
         Returns:
-            Optional[Union[ConditionLeaf, ConditionGroup]]: Root condition tree for the specified
+            Optional[Union[ConditionLeaf, ConditionGroup]]: Condition tree for the specified
                                                           type, or None if no conditions exist
 
         Raises:
@@ -231,11 +135,6 @@ class DigestCondition(ConditionalDependencyBase):
             ...     db, digest_config_id=digest_config.id,
             ...     digest_condition_type=DigestConditionType.RECEIVER
             ... )
-            >>> # Get content conditions for the same digest
-            >>> content_conditions = DigestCondition.get_root_condition(
-            ...     db, digest_config_id=digest_config.id,
-            ...     digest_condition_type=DigestConditionType.CONTENT
-            ... )
         """
         digest_config_id = kwargs.get("digest_config_id")
         digest_condition_type = kwargs.get("digest_condition_type")
@@ -245,26 +144,25 @@ class DigestCondition(ConditionalDependencyBase):
                 "digest_config_id and digest_condition_type are required keyword arguments"
             )
 
-        root = (
+        condition_row = (
             db.query(cls)
             .filter(
                 cls.digest_config_id == digest_config_id,
                 cls.digest_condition_type == digest_condition_type,
-                cls.parent_id.is_(None),
             )
             .one_or_none()
         )
 
-        if not root:
+        if not condition_row or condition_row.condition_tree is None:
             return None
 
-        return root.to_correct_condition_type()
+        return ConditionTypeAdapter.validate_python(condition_row.condition_tree)
 
     @classmethod
     def get_all_root_conditions(
         cls, db: Session, digest_config_id: str
     ) -> dict[DigestConditionType, Optional[Condition]]:
-        """Get root conditions for all digest condition types"""
+        """Get condition trees for all digest condition types."""
         return {
             condition_type: cls.get_root_condition(
                 db,

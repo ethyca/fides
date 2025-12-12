@@ -12,7 +12,6 @@ from fides.api.models.manual_task import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -73,7 +72,7 @@ class TestManualTaskConfig:
         [
             pytest.param(
                 {"config_type": "invalid_config_type"},
-                ValueError,
+                LookupError,
                 id="invalid_config_type",
             ),
             pytest.param({"version": "not_an_int"}, DataError, id="invalid_version"),

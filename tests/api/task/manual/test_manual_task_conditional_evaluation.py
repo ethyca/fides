@@ -21,152 +21,139 @@ def email_exists_conditional_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "exists",
-            "value": None,
-            "sort_order": 1,
+            "condition_tree": {
+                "field_address": "postgres_example_test_dataset:customer:email",
+                "operator": "exists",
+                "value": None,
+            },
         },
     )
 
 
 @pytest.fixture
-def city_eq_new_york_conditional_dependency(db, manual_task):
+def group_conditional_dependency(db, manual_task):
+    """Create a complex nested group condition tree.
+
+    Structure:
+    AND:
+      - AND (input data conditions):
+        - email exists
+        - city == "New York"
+      - AND (privacy request conditions):
+        - location == "New York"
+        - has_access_rule == True
+    """
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:address:city",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 2,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "logical_operator": "and",
+                        "conditions": [
+                            {
+                                "field_address": "postgres_example_test_dataset:customer:email",
+                                "operator": "exists",
+                                "value": None,
+                            },
+                            {
+                                "field_address": "postgres_example_test_dataset:address:city",
+                                "operator": "eq",
+                                "value": "New York",
+                            },
+                        ],
+                    },
+                    {
+                        "logical_operator": "and",
+                        "conditions": [
+                            {
+                                "field_address": "privacy_request.location",
+                                "operator": "eq",
+                                "value": "New York",
+                            },
+                            {
+                                "field_address": "privacy_request.policy.has_access_rule",
+                                "operator": "eq",
+                                "value": True,
+                            },
+                        ],
+                    },
+                ],
+            },
         },
     )
 
 
 @pytest.fixture
-def input_group_conditional_dependency(
-    db,
-    manual_task,
-    email_exists_conditional_dependency,
-    city_eq_new_york_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
-        },
-    )
+def email_and_privacy_request_conditional_dependency(db, manual_task):
+    """Combined fixture for tests that need email + privacy_request conditions.
 
-    email_exists_conditional_dependency.parent = dependency
-    email_exists_conditional_dependency.sort_order = 3
-    city_eq_new_york_conditional_dependency.parent = dependency
-    dependency.children = [
-        email_exists_conditional_dependency,
-        city_eq_new_york_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
-
-
-@pytest.fixture
-def privacy_request_location_dependency(db, manual_task):
+    Structure:
+    AND:
+      - email exists
+      - location == "New York"
+      - has_access_rule == True
+    """
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.location",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 1,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "field_address": "postgres_example_test_dataset:customer:email",
+                        "operator": "exists",
+                        "value": None,
+                    },
+                    {
+                        "field_address": "privacy_request.location",
+                        "operator": "eq",
+                        "value": "New York",
+                    },
+                    {
+                        "field_address": "privacy_request.policy.has_access_rule",
+                        "operator": "eq",
+                        "value": True,
+                    },
+                ],
+            },
         },
     )
 
 
 @pytest.fixture
-def privacy_request_access_rule_dependency(db, manual_task):
+def email_and_city_conditional_dependency(db, manual_task):
+    """Combined fixture for tests that need email + city conditions.
+
+    Structure:
+    AND:
+      - email exists
+      - city == "New York"
+    """
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.has_access_rule",
-            "operator": "eq",
-            "value": True,
-            "sort_order": 1,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "field_address": "postgres_example_test_dataset:customer:email",
+                        "operator": "exists",
+                        "value": None,
+                    },
+                    {
+                        "field_address": "postgres_example_test_dataset:address:city",
+                        "operator": "eq",
+                        "value": "New York",
+                    },
+                ],
+            },
         },
     )
-
-
-@pytest.fixture
-def privacy_request_policy_id_dependency(db, manual_task, policy):
-    return ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.id",
-            "operator": "eq",
-            "value": policy.id,
-        },
-    )
-
-
-@pytest.fixture
-def privacy_request_group_conditional_dependency(
-    db,
-    manual_task,
-    privacy_request_location_dependency,
-    privacy_request_access_rule_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
-        },
-    )
-    privacy_request_location_dependency.parent = dependency
-    privacy_request_access_rule_dependency.parent = dependency
-    dependency.children = [
-        privacy_request_location_dependency,
-        privacy_request_access_rule_dependency,
-    ]
-    db.commit()
-    return dependency
-
-
-@pytest.fixture
-def group_conditional_dependency(
-    db,
-    manual_task,
-    input_group_conditional_dependency,
-    privacy_request_group_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
-        },
-    )
-    input_group_conditional_dependency.parent = dependency
-    privacy_request_group_conditional_dependency.parent = dependency
-    dependency.children = [
-        input_group_conditional_dependency,
-        privacy_request_group_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
 
 
 class TestManualTaskConditionalDependencies:
@@ -268,11 +255,7 @@ class TestManualTaskDataExtraction:
 
         self.CollectionAddress = CollectionAddress
 
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency",
-        "privacy_request_location_dependency",
-        "privacy_request_access_rule_dependency",
-    )
+    @pytest.mark.usefixtures("email_and_privacy_request_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_and_privacy_request(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
@@ -380,11 +363,11 @@ class TestManualTaskDataExtraction:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
-                    "operator": "eq",
-                    "value": "dark",
-                    "sort_order": 1,
+                    "condition_tree": {
+                        "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
+                        "operator": "eq",
+                        "value": "dark",
+                    },
                 },
             )
 
@@ -438,9 +421,7 @@ class TestManualTaskDataExtraction:
             }
             assert result == expected
 
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency", "city_eq_new_york_conditional_dependency"
-    )
+    @pytest.mark.usefixtures("email_and_city_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
