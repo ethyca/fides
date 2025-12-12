@@ -66,10 +66,10 @@ const getActions = ({
         type="text"
         size="small"
         icon={<Icons.CheckmarkOutline />}
-        aria-label={`Confirm all ${item.label} fields`}
+        aria-label={`Approve all ${item.label} fields`}
         onClick={onConfirmAll}
       >
-        Confirm
+        Approve
       </Button>,
     );
   }
