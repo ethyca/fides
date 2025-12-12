@@ -15,13 +15,11 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 )
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
-from fides.api.task.manual.manual_task_utils import (
-    extract_field_addresses_from_condition_tree,
-)
+from fides.api.task.manual.manual_task_utils import extract_dataset_field_addresses
 from fides.api.util.collection_util import Row
 
 
-def _extract_privacy_request_addresses(
+def _extract_privacy_request_field_addresses(
     tree: dict[str, Any], addresses: set[str]
 ) -> None:
     """Recursively extract privacy_request.* field addresses from a condition tree.
@@ -36,7 +34,7 @@ def _extract_privacy_request_addresses(
             addresses.add(field_address)
     elif "conditions" in tree:
         for condition in tree.get("conditions", []):
-            _extract_privacy_request_addresses(condition, addresses)
+            _extract_privacy_request_field_addresses(condition, addresses)
 
 
 def extract_conditional_dependency_data_from_inputs(
@@ -71,13 +69,13 @@ def extract_conditional_dependency_data_from_inputs(
         tree = dependency.condition_tree
         if isinstance(tree, dict) or tree is None:
             # Extract field addresses from the condition_tree JSONB
-            extracted_addresses = extract_field_addresses_from_condition_tree(tree)
+            extracted_addresses = extract_dataset_field_addresses(tree)
             all_field_addresses.update(extracted_addresses)
 
             # Also extract privacy_request field addresses separately
-            # (they are excluded from extract_field_addresses_from_condition_tree)
+            # (they are excluded from extract_dataset_field_addresses)
             if tree:
-                _extract_privacy_request_addresses(
+                _extract_privacy_request_field_addresses(
                     tree, privacy_request_field_addresses
                 )
 

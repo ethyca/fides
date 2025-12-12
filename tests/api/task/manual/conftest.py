@@ -46,7 +46,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
-    extract_field_addresses_from_condition_tree,
+    extract_dataset_field_addresses,
     get_manual_task_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
@@ -396,7 +396,7 @@ def _build_request_task(
         field_addresses: list[str] = []
         for dependency in manual_task.conditional_dependencies:
             field_addresses.extend(
-                extract_field_addresses_from_condition_tree(dependency.condition_tree)
+                extract_dataset_field_addresses(dependency.condition_tree)
             )
 
         # For testing, we'll create input keys and edges based on the field addresses

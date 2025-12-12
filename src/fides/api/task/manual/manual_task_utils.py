@@ -19,10 +19,10 @@ PRIVACY_REQUEST_CONFIG_TYPES = {
 }
 
 
-def extract_field_addresses_from_condition_tree(
+def extract_dataset_field_addresses(
     tree: Optional[dict[str, Any]],
 ) -> set[str]:
-    """Recursively extract field addresses from a JSONB condition tree.
+    """Recursively extract dataset field addresses from a JSONB condition tree.
 
     This function is used to extract all field addresses from a condition tree
     stored as JSONB. It's useful for determining upstream dependencies when
@@ -47,9 +47,7 @@ def extract_field_addresses_from_condition_tree(
     # Check if this is a group condition (has conditions list)
     elif "conditions" in tree:
         for condition in tree.get("conditions", []):
-            field_addresses.update(
-                extract_field_addresses_from_condition_tree(condition)
-            )
+            field_addresses.update(extract_dataset_field_addresses(condition))
 
     return field_addresses
 
@@ -167,9 +165,7 @@ def _create_collection_from_manual_task(
         # condition_tree is always a dict (ConditionLeaf or ConditionGroup), never a list
         tree = dependency.condition_tree
         if isinstance(tree, dict) or tree is None:
-            conditional_field_addresses.update(
-                extract_field_addresses_from_condition_tree(tree)
-            )
+            conditional_field_addresses.update(extract_dataset_field_addresses(tree))
 
     # Create scalar fields for data category fields and conditional dependency field addresses
     fields: list[ScalarField] = []
