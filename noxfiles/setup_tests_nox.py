@@ -78,6 +78,8 @@ class PytestConfig:
     xdist_config: Optional[XdistConfig] = None
     coverage_config: Optional[CoverageConfig] = None
     report_config: Optional[ReportConfig] = None
+    suppress_stdout: bool = True
+    suppress_warnings: bool = True
 
     @property
     def args(self) -> list[str]:
@@ -85,6 +87,8 @@ class PytestConfig:
             *self.xdist_config.args,
             *self.coverage_config.args,
             *self.report_config.args,
+            "-s" if self.suppress_stdout else "",
+            "-W ignore" if self.suppress_warnings else "",
         ]
 
 
