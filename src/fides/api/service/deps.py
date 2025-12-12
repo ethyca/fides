@@ -37,8 +37,22 @@ def get_dataset_service(db: Session = Depends(get_db)) -> DatasetService:
     return DatasetService(db)
 
 
-def get_dataset_config_service(db: Session = Depends(get_db)) -> DatasetConfigService:
-    return DatasetConfigService(db)
+def get_event_audit_service(db: Session = Depends(get_db)) -> EventAuditService:
+    return EventAuditService(db)
+
+
+def get_connection_service(
+    db: Session = Depends(get_db),
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> ConnectionService:
+    return ConnectionService(db, event_audit_service)
+
+
+def get_dataset_config_service(
+    db: Session = Depends(get_db),
+    connection_service: ConnectionService = Depends(get_connection_service),
+) -> DatasetConfigService:
+    return DatasetConfigService(db, connection_service)
 
 
 def get_user_service(
@@ -49,22 +63,11 @@ def get_user_service(
     return UserService(db, config, config_proxy)
 
 
-def get_event_audit_service(db: Session = Depends(get_db)) -> EventAuditService:
-    return EventAuditService(db)
-
-
 def get_taxonomy_service(
     db: Session = Depends(get_db),
     event_audit_service: EventAuditService = Depends(get_event_audit_service),
 ) -> TaxonomyService:
     return TaxonomyService(db, event_audit_service)
-
-
-def get_connection_service(
-    db: Session = Depends(get_db),
-    event_audit_service: EventAuditService = Depends(get_event_audit_service),
-) -> ConnectionService:
-    return ConnectionService(db, event_audit_service)
 
 
 def get_system_service(db: AsyncSession = Depends(get_async_db)) -> SystemService:
