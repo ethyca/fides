@@ -134,7 +134,6 @@ class TestLogRequest:
             line for line in loguru_caplog.records if "Request received" in line.message
         ]
         assert len(request_received_logs) > 0
-        request_received_log_record = loguru_caplog.records
 
         assert any(log.extra.get("method") == "GET" for log in request_received_logs)
         assert any(log.extra.get("status_code") == 500 for log in request_received_logs)
