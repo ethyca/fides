@@ -351,6 +351,31 @@ class TestManualTaskInstance:
         assert orphaned_instance is not None
         assert orphaned_instance.task_id is None
 
+    def test_manual_task_deletion_orphans_historical_data(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ) -> None:
+        """Test that deleting a ManualTask orphans historical data but deletes references."""
+        task = manual_task_instance.task
+
+        # Store IDs for verification
+        task_id = task.id
+        instance_id = manual_task_instance.id
+
+        # Delete the task (should orphan instance and logs)
+        db.delete(task)
+        db.commit()
+
+        # Verify task is deleted
+        deleted_task = db.query(ManualTask).filter_by(id=task_id).first()
+        assert deleted_task is None
+
+        # Verify instance still exists but is orphaned
+        orphaned_instance = (
+            db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        )
+        assert orphaned_instance is not None
+        assert orphaned_instance.task_id is None
+
 
 class TestManualTaskSubmission:
     def test_create_manual_task_submission(
