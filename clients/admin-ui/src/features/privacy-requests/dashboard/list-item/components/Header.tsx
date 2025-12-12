@@ -1,4 +1,9 @@
-import { AntFlex as Flex, AntTypography as Typography, Icons } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntTag as Tag,
+  AntTypography as Typography,
+  Icons,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -7,11 +12,14 @@ import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { PrivacyRequestResponse } from "~/types/api";
 
+import { IdentityValueWithKey } from "../../utils";
+
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponse;
+  primaryIdentity: IdentityValueWithKey | null;
 }
 
-export const Header = ({ privacyRequest }: HeaderProps) => {
+export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
 
   return (
@@ -29,18 +37,20 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
               });
             }}
           >
-            {/*
-            Convert different action types to a single string
-            (e.g. "Access/Erasure request"
-            */}
-            {privacyRequest.policy.rules
-              ?.map((rule) => SubjectRequestActionTypeMap.get(rule.action_type))
-              .join("/")}{" "}
-            request
+            {primaryIdentity?.value ?? "Unknown identity"}
           </Typography.Link>
         </Typography.Title>
       </div>
       <RequestStatusBadge status={privacyRequest.status} />
+      {privacyRequest.policy.rules && (
+        <Flex gap={4}>
+          {privacyRequest.policy.rules.map((rule) => (
+            <Tag key={rule.action_type}>
+              {SubjectRequestActionTypeMap.get(rule.action_type)}
+            </Tag>
+          ))}
+        </Flex>
+      )}
       <Typography.Text
         type="secondary"
         copyable={{

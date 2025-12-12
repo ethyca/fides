@@ -1,7 +1,6 @@
 import {
   AntFlex as Flex,
   AntList as List,
-  AntTag as Tag,
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui";
@@ -45,16 +44,11 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
     <List.Item>
       <div className="pr-4">{checkbox}</div>
       <Flex vertical gap="small" className="grow pr-8">
-        <Header privacyRequest={item} />
+        <Header privacyRequest={item} primaryIdentity={primaryIdentity} />
         <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
-            {primaryIdentity && (
-              <LabeledText label={primaryIdentity.label}>
-                {primaryIdentity.value}
-              </LabeledText>
-            )}
-            <Tag>{item.policy.name}</Tag>
-            <Tag>{item.source}</Tag>
+            <LabeledText label="Policy">{item.policy.name}</LabeledText>
+            <LabeledText label="Source">{item.source}</LabeledText>
           </Flex>
 
           {hasExtraDetails && (
