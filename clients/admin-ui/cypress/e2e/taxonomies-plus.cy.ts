@@ -128,10 +128,6 @@ describe("Taxonomy management with Plus features", () => {
 
   describe("System groups", () => {
     describe("With Plus enabled", () => {
-      beforeEach(() => {
-        cy.visit("/taxonomy");
-      });
-
       it("Shows system groups as a taxonomy option", () => {
         cy.getByTestId("taxonomy-type-selector").click();
 
@@ -142,11 +138,12 @@ describe("Taxonomy management with Plus features", () => {
         cy.contains("Data subjects").should("exist");
       });
 
-      it("Can navigate to system groups taxonomy", () => {
+      it("Can navigate to system groups taxonomy by clicking on the taxonomy type selector", () => {
         cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
           "System groups",
         );
         cy.wait("@getSystemGroups");
+        cy.url().should("include", "system_group");
 
         // Should show system groups root with proper label
         cy.getByTestId("taxonomy-node-root")
@@ -159,24 +156,32 @@ describe("Taxonomy management with Plus features", () => {
         cy.contains("Red Group").should("exist");
       });
 
-      it("Displays human-readable root node label", () => {
-        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
-          "System groups",
-        );
+      it("Can navigate to system groups taxonomy directly via URL", () => {
+        cy.visit("/taxonomy/system_group");
         cy.wait("@getSystemGroups");
 
-        // Root node should show "System groups" not "system_group"
-        cy.getByTestId("taxonomy-node-root").should("contain", "System groups");
+        // Should show system groups root with proper label
+        cy.getByTestId("taxonomy-node-root")
+          .should("contain", "System groups")
+          .should("not.contain", "system_group");
       });
 
-      it("Can interact with system group nodes", () => {
-        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
-          "System groups",
-        );
-        cy.wait("@getSystemGroups");
+      describe("System group nodes", () => {
+        beforeEach(() => {
+          cy.visit("/taxonomy/system_group");
+          cy.wait("@getSystemGroups");
+        });
 
-        // Should be able to click on system group nodes
-        cy.getByTestId("taxonomy-node-blue_group").should("exist").click();
+        it("Displays human-readable root node label", () => {
+          cy.getByTestId("taxonomy-node-root").should(
+            "contain",
+            "System groups",
+          );
+        });
+
+        it("Can interact with system group nodes", () => {
+          cy.getByTestId("taxonomy-node-blue_group").should("exist").click();
+        });
       });
     });
   });
