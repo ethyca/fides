@@ -139,11 +139,6 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     refetch: refetchOktaData,
   } = oktaDataQuery;
 
-  // Force refetch when activeTab changes to ensure fresh data
-  useEffect(() => {
-    refetchOktaData();
-  }, [activeTab, refetchOktaData]);
-
   // Transform API data to table format
   // Vendor filters are now applied server-side via the vendor_id query parameter
   const transformedData = useMemo((): {
