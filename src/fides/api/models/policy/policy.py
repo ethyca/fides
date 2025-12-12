@@ -33,6 +33,7 @@ from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.graph.traversal import TraversalNode
+    from fides.api.models.policy.conditional_dependency import PolicyCondition
 
 
 def _validate_drp_action(drp_action: Optional[str]) -> None:
@@ -90,6 +91,13 @@ class Policy(Base):
         ClientDetail,
         backref="policies",
     )  # Which client created the Policy
+
+    # Conditional dependencies for policy execution
+    conditions = relationship(
+        "PolicyCondition",
+        back_populates="policy",
+        cascade="all, delete-orphan",
+    )
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
