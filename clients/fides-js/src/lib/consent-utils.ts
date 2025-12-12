@@ -281,6 +281,14 @@ export const shouldResurfaceBanner = (
     if (!!options && isConsentOverride(options)) {
       return false;
     }
+
+    if (
+      cookie.fides_meta.consentMethod === ConsentMethod.DISMISS ||
+      cookie.fides_meta.consentMethod === ConsentMethod.REJECT
+    ) {
+      return true;
+    }
+
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
