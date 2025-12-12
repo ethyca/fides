@@ -73,6 +73,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Whether erasure requests require an additional finalization step after all collections have been executed.",
     )
+    consent_request_finalization_required: bool = Field(
+        default=False,
+        description="Whether consent requests require an additional finalization step after all collections have been executed.",
+    )
     fuzzy_search_enabled: bool = Field(
         default=True,
         description="Whether fuzzy search is enabled for privacy request lookups.",
