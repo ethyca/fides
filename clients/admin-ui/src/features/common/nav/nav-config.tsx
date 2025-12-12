@@ -332,6 +332,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [],
         hidden: true,
       },
+      {
+        title: "Error Test",
+        path: "/error-test",
+        scopes: [],
+      },
     ],
   },
 ];
