@@ -39,6 +39,12 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
    */
   slideDistance?: number;
   /**
+   * Stagger delay between layout animations in seconds
+   * @default 0.05
+   * Set to 0 to disable stagger
+   */
+  layoutStagger?: number;
+  /**
    * Additional className for the container
    */
   className?: string;
@@ -72,6 +78,7 @@ export const ExitGrid = <T,>({
   duration = 0.3,
   ease = "easeInOut",
   slideDistance = -50,
+  layoutStagger = 0.05,
   ...props
 }: ExitGridProps<T>) => {
   return (
@@ -93,7 +100,14 @@ export const ExitGrid = <T,>({
               key={key}
               initial={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, y: slideDistance }}
-              transition={{ duration, ease }}
+              transition={{
+                layout: {
+                  duration,
+                  ease,
+                  delay: layoutStagger > 0 ? index * layoutStagger : 0,
+                  type: "spring",
+                },
+              }}
               layout
               role="listitem"
             >
