@@ -48,10 +48,6 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
    * Additional className for the container
    */
   className?: string;
-  /**
-   * Additional className for each item wrapper
-   */
-  itemClassName?: string;
 }
 
 /**
