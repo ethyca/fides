@@ -1064,6 +1064,8 @@ dataset:
       data_categories: [system.operations]
     - name: digest_config_id
       data_categories: [system.operations]
+    - name: digest_condition_type
+      data_categories: [system.operations]
     - name: condition_tree
       data_categories: [system.operations]
     - name: created_at

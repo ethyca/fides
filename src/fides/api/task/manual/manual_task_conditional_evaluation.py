@@ -67,18 +67,19 @@ def extract_conditional_dependency_data_from_inputs(
     privacy_request_field_addresses: set[str] = set()
 
     for dependency in manual_task.conditional_dependencies:
-        # Extract field addresses from the condition_tree JSONB
-        extracted_addresses = extract_field_addresses_from_condition_tree(
-            dependency.condition_tree
-        )
-        all_field_addresses.update(extracted_addresses)
+        # condition_tree is always a dict (ConditionLeaf or ConditionGroup), never a list
+        tree = dependency.condition_tree
+        if isinstance(tree, dict) or tree is None:
+            # Extract field addresses from the condition_tree JSONB
+            extracted_addresses = extract_field_addresses_from_condition_tree(tree)
+            all_field_addresses.update(extracted_addresses)
 
-        # Also extract privacy_request field addresses separately
-        # (they are excluded from extract_field_addresses_from_condition_tree)
-        if dependency.condition_tree:
-            _extract_privacy_request_addresses(
-                dependency.condition_tree, privacy_request_field_addresses
-            )
+            # Also extract privacy_request field addresses separately
+            # (they are excluded from extract_field_addresses_from_condition_tree)
+            if tree:
+                _extract_privacy_request_addresses(
+                    tree, privacy_request_field_addresses
+                )
 
     # Convert to list for iteration (exclude privacy_request addresses)
     field_addresses = list(all_field_addresses)
