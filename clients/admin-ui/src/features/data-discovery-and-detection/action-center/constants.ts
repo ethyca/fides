@@ -154,8 +154,8 @@ export const INFRASTRUCTURE_SYSTEM_FILTER_LABELS: Record<
   InfrastructureSystemFilterLabel,
   string
 > = {
-  all: "All Apps",
-  new: "New Apps",
+  all: "All apps",
+  new: "New apps",
   active: "Active",
   inactive: "Inactive",
   known: "Known Vendors",
