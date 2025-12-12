@@ -285,9 +285,8 @@ describe("Taxonomy management page", () => {
     });
 
     it("Can (soft) delete a label", () => {
-      cy.intercept("PUT", "/api/v1/data_category*", {
-        fides_key: "user.content",
-        active: false,
+      cy.intercept("DELETE", "/api/v1/data_category*", {
+        statusCode: 204,
       }).as("deleteDataCategory");
 
       cy.getByTestId(`taxonomy-node-user.content`).click();
