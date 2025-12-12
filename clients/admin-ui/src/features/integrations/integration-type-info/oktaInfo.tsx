@@ -32,8 +32,9 @@ const OktaIntegrationOverview = () => (
     </InfoText>
     <InfoText>
       <strong>Authentication:</strong> Okta integration uses OAuth2 Client
-      Credentials with private_key_jwt for secure authentication. You'll need to
-      create an API Services application in Okta and generate an RSA key pair.
+      Credentials with private_key_jwt for secure authentication. You&apos;ll
+      need to create an API Services application in Okta and generate an RSA key
+      pair.
     </InfoText>
   </>
 );
