@@ -4,6 +4,7 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import { getNonce } from "~/common/get-nonce";
 import HomePage from "~/components/HomePage";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
@@ -22,10 +23,11 @@ const Home = async ({ searchParams }: { searchParams: NextSearchParams }) => {
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });
+  const nonce = await getNonce();
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PageLayout>
+      <PageLayout nonce={nonce}>
         <HomePage />
       </PageLayout>
     </LoadServerEnvironmentIntoStores>

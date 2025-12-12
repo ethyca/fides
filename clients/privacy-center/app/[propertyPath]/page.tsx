@@ -7,6 +7,7 @@
  *          If no property matched the path, it renders the 404 page.
  */
 
+import { getNonce } from "~/common/get-nonce";
 import HomePage from "~/components/HomePage";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
@@ -37,10 +38,11 @@ const PropertyPathHomePage = async ({
     searchParams,
   });
   const isPropertyFoundForPath = !!serverEnvironment.property;
+  const nonce = await getNonce();
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PageLayout>
+      <PageLayout nonce={nonce}>
         {isPropertyFoundForPath ? <HomePage /> : <Custom404 />}
       </PageLayout>
     </LoadServerEnvironmentIntoStores>
