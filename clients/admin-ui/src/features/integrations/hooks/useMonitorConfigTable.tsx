@@ -56,7 +56,7 @@ export const useMonitorConfigTable = ({
   const { pageIndex, pageSize } = tableState;
 
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
-  const useNewOktaEndpoints = flags.alphaNewOktaAuth && isOktaIntegration;
+  const useNewOktaEndpoints = flags.oktaMonitor && isOktaIntegration;
 
   // Use Identity Provider Monitor endpoint for Okta with new auth, otherwise use regular endpoint
   const regularMonitorsQuery = useGetMonitorsByIntegrationQuery(

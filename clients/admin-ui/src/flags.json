@@ -37,7 +37,7 @@
   },
   "oktaMonitor": {
     "label": "Okta monitor",
-    "description": "Monitor Okta for activity",
+    "description": "Monitor Okta for activity using OAuth2 authentication and Identity Provider Monitor endpoints",
     "development": true,
     "test": true,
     "production": false
@@ -80,13 +80,6 @@
   "alphaPrivacyNoticesSandbox": {
     "label": "Alpha privacy notices sandbox",
     "description": "Enable privacy notices sandbox page for testing consent v3",
-    "development": true,
-    "test": false,
-    "production": false
-  },
-  "alphaNewOktaAuth": {
-    "label": "New Okta authentication",
-    "description": "Use OAuth2 authentication and Identity Provider Monitor endpoints for Okta integrations",
     "development": true,
     "test": false,
     "production": false

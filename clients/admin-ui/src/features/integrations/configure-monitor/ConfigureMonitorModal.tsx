@@ -54,7 +54,7 @@ const ConfigureMonitorModal = ({
 }) => {
   const { flags } = useFlags();
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
-  const useNewOktaEndpoints = flags.alphaNewOktaAuth && isOktaIntegration;
+  const useNewOktaEndpoints = flags.oktaMonitor && isOktaIntegration;
 
   const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
