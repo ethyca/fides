@@ -226,8 +226,6 @@ def upgrade():
     op.drop_column("manual_task_conditional_dependency", "value")
     op.drop_column("manual_task_conditional_dependency", "operator")
 
-    # Step 5: Drop manual_task_log table (no longer used - using audit logs instead)
-    op.drop_table("manual_task_log")
 
 
 def downgrade():
