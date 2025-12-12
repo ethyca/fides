@@ -60,7 +60,12 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
  * <ExitGrid
  *   dataSource={items}
  *   itemKey={(item) => item.id}
- *   grid={{ gutter: 16, column: 3 }}
+ *   columns={2}
+ *   gutter={4}
+ *   duration={0.5}
+ *   ease="easeInOut"
+ *   slideDistance={-50}
+ *   layoutStagger={0.05}
  *   renderItem={(item) => <Card>{item.content}</Card>}
  * />
  * ```
