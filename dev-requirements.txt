@@ -8,11 +8,12 @@ moto[s3]==5.1.0
 mypy==1.10.0
 nox==2022.8.7
 pre-commit==2.20.0
-pylint==3.2.5
+pylint~=3.3.2
 pytest-asyncio==0.19.0
 pytest-celery==1.2.1
 pytest-cov==4.0.0
 pytest-env==0.7.0
+pytest-loguru==0.4.0
 pytest-mock==3.14.0
 pytest-rerunfailures==14.0
 pytest-xdist==3.6.1
