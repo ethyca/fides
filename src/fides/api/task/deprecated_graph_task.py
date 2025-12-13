@@ -37,7 +37,9 @@ dask.config.set(scheduler="threads")
 
 
 def update_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Tuple[Any, ...]],
+    dsk: Dict[
+        str, Tuple[Any, ...]
+    ],  # Updated to use string keys for Python 3.13 compatibility
     resources: TaskResources,
     start_fn: Callable,
 ) -> None:
@@ -51,9 +53,8 @@ def update_mapping_from_cache(
     cached_results: Dict[str, Optional[List[Row]]] = resources.get_all_cached_objects()
 
     for collection_name in cached_results:
-        dsk[CollectionAddress.from_string(collection_name)] = (
-            start_fn(cached_results[collection_name]),
-        )
+        # Use string key directly instead of converting to CollectionAddress
+        dsk[collection_name] = (start_fn(cached_results[collection_name]),)
 
 
 def format_data_use_map_for_caching(
@@ -173,11 +174,20 @@ def run_access_request_deprecated(
         env: Dict[CollectionAddress, GraphTask] = {}
         end_nodes: List[CollectionAddress] = traversal.traverse(env, collect_tasks_fn)
 
-        dsk: Dict[CollectionAddress, Tuple[Any, ...]] = {
-            k: (t.access_request, *t.execution_node.input_keys) for k, t in env.items()
+        # Python 3.13 Dask compatibility: Convert all CollectionAddress keys to strings
+        # Dask no longer treats custom objects as task keys in dependencies
+        dsk: Dict[str, Tuple[Any, ...]] = {
+            k.value: (
+                t.access_request,
+                *[key.value for key in t.execution_node.input_keys],
+            )
+            for k, t in env.items()
         }
-        dsk[ROOT_COLLECTION_ADDRESS] = (start_function([traversal.seed_data]),)
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
+        dsk[ROOT_COLLECTION_ADDRESS.value] = (start_function([traversal.seed_data]),)
+        dsk[TERMINATOR_ADDRESS.value] = (
+            termination_fn,
+            *[node.value for node in end_nodes],
+        )
         update_mapping_from_cache(dsk, resources, start_function)
 
         # cache a map of collections -> data uses for the output package of access requests
@@ -194,12 +204,15 @@ def run_access_request_deprecated(
             )
         )
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS.value, num_workers=1))
         return v.compute()
 
 
 def update_erasure_mapping_from_cache(
-    dsk: Dict[CollectionAddress, Union[Tuple[Any, ...], int]], resources: TaskResources
+    dsk: Dict[
+        str, Union[Tuple[Any, ...], int]
+    ],  # Updated to use string keys for Python 3.13 compatibility
+    resources: TaskResources,
 ) -> None:
     """On pause or restart from failure, update the dsk graph to skip running erasures on collections
     we've already visited. Instead, just return the previous count of rows affected.
@@ -209,9 +222,8 @@ def update_erasure_mapping_from_cache(
     cached_erasures: Dict[str, int] = resources.get_all_cached_erasures()
 
     for collection_name in cached_erasures:
-        dsk[CollectionAddress.from_string(collection_name)] = cached_erasures[
-            collection_name
-        ]
+        # Use string key directly instead of converting to CollectionAddress
+        dsk[collection_name] = cached_erasures[collection_name]
 
 
 def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
@@ -259,7 +271,8 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         # `inputs` kwarg on each task's `erasure_request` method.  The resulting
         # callable accepts the original positional arguments expected by Dask.
 
-        dsk: Dict[CollectionAddress, Any] = {}
+        # Python 3.13 compatibility: Use string keys instead of CollectionAddress objects
+        dsk: Dict[str, Any] = {}
         for k, t in env.items():
             # Collect upstream access data in the same order as the input keys
             upstream_access_data: List[List[Row]] = [
@@ -273,18 +286,25 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
             )
 
             # Build the task tuple: (callable, retrieved_data, *prereqs)
-            dsk[k] = (
+            # Convert CollectionAddress key to string
+            dsk[k.value] = (
                 erasure_fn_with_inputs,
                 access_request_data.get(
                     str(k), []
                 ),  # Data retrieved for this collection
-                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
+                *[
+                    dep.value
+                    for dep in _evaluate_erasure_dependencies(t, erasure_end_nodes)
+                ],
             )
 
         # root node returns 0 to be consistent with the output of the other erasure tasks
-        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        dsk[ROOT_COLLECTION_ADDRESS.value] = 0
         # terminator function reads and returns the cached erasure results for the entire erasure traversal
-        dsk[TERMINATOR_ADDRESS] = (termination_fn, *erasure_end_nodes)
+        dsk[TERMINATOR_ADDRESS.value] = (
+            termination_fn,
+            *[node.value for node in erasure_end_nodes],
+        )
         update_erasure_mapping_from_cache(dsk, resources)
 
         # using an existing function from dask.core to detect cycles in the generated graph
@@ -308,7 +328,7 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
                 f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
             )
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS.value, num_workers=1))
         return v.compute()
 
 

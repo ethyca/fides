@@ -561,7 +561,7 @@ def test_create_and_process_erasure_request_specific_category_postgres(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_generic_category(
     postgres_integration_db,

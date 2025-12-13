@@ -20,8 +20,10 @@ from fides.api.task.conditional_dependencies.schemas import (
 if TYPE_CHECKING:
     from fides.api.models.digest.digest_config import DigestConfig
 
+from enum import StrEnum
 
-class DigestConditionType(str, Enum):
+
+class DigestConditionType(StrEnum):
     """Types of digest conditions - each can have their own tree.
 
     Types:

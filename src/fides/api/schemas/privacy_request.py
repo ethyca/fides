@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional, Type, Union
 from uuid import UUID
 
@@ -301,7 +302,7 @@ class PrivacyRequestNotificationInfo(FidesSchema):
     notify_after_failures: int
 
 
-class PrivacyRequestStatus(str, EnumType):
+class PrivacyRequestStatus(StrEnum):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
     identity_unverified = "identity_unverified"

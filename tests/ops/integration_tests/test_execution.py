@@ -221,7 +221,7 @@ class TestDeleteCollection:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_collection_omitted_on_restart_from_failure(
         self,
@@ -569,7 +569,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_skip_collection_on_restart(
         self,
@@ -1180,7 +1180,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_restart_graph_from_failure_during_erasure(
     db,

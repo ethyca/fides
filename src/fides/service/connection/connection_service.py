@@ -12,6 +12,7 @@ from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
     SaaSConfigNotFoundException,
+    ValidationError,
 )
 from fides.api.models.connectionconfig import (
     ConnectionConfig,

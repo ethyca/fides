@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import boto3
 import google.auth.credentials
+import httpx
 import pytest
 import requests
 import yaml
@@ -232,7 +233,9 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://0.0.0.0:8080",
+        follow_redirects=True,
     ) as client:
         yield client
 
@@ -765,6 +768,42 @@ def celery_enable_logging():
     return True
 
 
+# This is here because the test suite occasionally fails to teardown the
+# Celery worker if it takes too long to terminate the worker thread. This
+# will prevent that and, instead, log a warning
+@pytest.fixture(scope="session")
+def celery_session_worker(
+    request,
+    celery_session_app,
+    celery_includes,
+    celery_class_tasks,
+    celery_worker_pool,
+    celery_worker_parameters,
+):
+    from celery.contrib.testing import worker
+
+    for module in celery_includes:
+        celery_session_app.loader.import_task_module(module)
+    for class_task in celery_class_tasks:
+        celery_session_app.register_task(class_task)
+
+    try:
+
+        logger.info("Starting safe celery session worker...")
+        with worker.start_worker(
+            celery_session_app,
+            pool=celery_worker_pool,
+            **celery_worker_parameters,
+        ) as w:
+            try:
+                yield w
+                logger.info("Done with celery worker, trying to dispose of it..")
+            except RuntimeError:
+                logger.warning("Failed to dispose of the celery worker.")
+    except RuntimeError as re:
+        logger.warning("Failed to stop the celery worker: " + str(re))
+
+
 @pytest.fixture(scope="session")
 def celery_worker_parameters():
     """Configure celery worker parameters for testing.
@@ -773,7 +812,7 @@ def celery_worker_parameters():
     takes longer to shut down, especially during parallel test runs with pytest-xdist.
     The CI environment can be slow, so we use a generous timeout.
     """
-    return {"shutdown_timeout": 180.0}
+    return {"shutdown_timeout": 20.0}
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -2050,14 +2089,38 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     Some places within the application, for example `fides.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
+
+    NOTE: This is dangerous, now that starlette's TestClient no longer accepts allow_redirects like requests
+    does - so this is not a direct drop-in any longer and the methods may need to be wrapped / transmogrified.
     """
+
+    # Flip allow_redirects from requests to follow_redirects in starlette
+    def _wrap_requests_post(url, **kwargs):
+        if kwargs.get("allow_redirects") is not None:
+            flag_value = kwargs.pop("allow_redirects")
+            kwargs["follow_redirects"] = flag_value
+
+        return test_client.post(url, **kwargs)
+
     monkeysession.setattr(requests, "get", test_client.get)
-    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "post", _wrap_requests_post)
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
 
 
+@pytest.fixture
+def worker_id(request) -> str:
+    """Fixture to get the xdist worker ID (e.g., 'gw0', 'gw1') or 'master'."""
+    if hasattr(request.config, "workerinput"):
+        # In a worker process
+        return request.config.workerinput["workerid"]
+    else:
+        # In the master process (or not using xdist)
+        return "master"
+
+
+@pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
     """Pytest hook automatically called for each xdist worker node configuration."""
     if hasattr(node, "workerinput") and node.workerinput:
