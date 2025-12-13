@@ -1,12 +1,16 @@
 import copy
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import yaml
 from deepdiff import DeepDiff
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
+from sqlalchemy.orm import Session
 
+from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource
+from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.service.connectors import ConnectionConfig
 from fides.api.util.saas_util import replace_dataset_placeholders
 
 
@@ -231,4 +235,142 @@ def merge_datasets(
     upcoming_dataset_copy["collections"] = list(upcoming_collections.values())
 
     merged_dataset = upcoming_dataset_copy
+    return merged_dataset
+
+
+def get_monitored_endpoint_resources_for_connection(
+    db: Session, connection_config: ConnectionConfig
+) -> List[StagedResource]:
+    """
+    Get monitored endpoint staged resources for a given connection config.
+    Only returns Endpoint type resources since those are what we need to preserve.
+
+    Returns:
+        List of monitored endpoint staged resources
+    """
+    # Get all monitor configs for this connection
+    monitor_configs = MonitorConfig.filter(
+        db=db,
+        conditions=(MonitorConfig.connection_config_id == connection_config.id),
+    ).all()
+
+    if not monitor_configs:
+        return []
+
+    monitor_config_ids = [mc.key for mc in monitor_configs]
+
+    # Query staged resources with monitored status for these monitor configs
+    # Only get Endpoint type resources since those represent SaaS endpoints/collections
+    monitored_endpoints = StagedResource.filter(
+        db=db,
+        conditions=(
+            (StagedResource.monitor_config_id.in_(monitor_config_ids))
+            & (StagedResource.resource_type == "Endpoint")
+        ),
+    ).all()
+
+    return monitored_endpoints
+
+
+def merge_saas_config_with_monitored_resources(
+    new_saas_config: SaaSConfig,
+    monitored_endpoints: List[StagedResource],
+    existing_saas_config: Optional[SaaSConfig] = None,
+) -> SaaSConfig:
+    """
+    Merge new SaaS config with monitored endpoints from existing config.
+
+    Args:
+        new_saas_config: The new SaaS config from template
+        monitored_endpoints: List of monitored endpoint staged resources
+        existing_saas_config: The existing SaaS config that may contain promoted endpoints
+
+    Returns:
+        Merged SaaS config with preserved monitored endpoints
+    """
+    if not monitored_endpoints or not existing_saas_config:
+        return new_saas_config
+
+    # Create a copy of the new config to modify
+    merged_config_dict = new_saas_config.model_dump()
+
+    # Extract endpoint names from monitored resources (using description field)
+    monitored_endpoint_names = {
+        resource.name for resource in monitored_endpoints if resource.name
+    }
+
+    # Get existing endpoints from the current config
+    existing_endpoints = {ep.name: ep for ep in existing_saas_config.endpoints}
+    new_endpoints = {
+        ep.get("name"): ep for ep in merged_config_dict.get("endpoints", [])
+    }
+
+    # Preserve monitored endpoints from existing config that aren't in the new template
+    if "endpoints" in merged_config_dict:
+        for endpoint_name in monitored_endpoint_names:
+            if (
+                endpoint_name not in new_endpoints
+                and endpoint_name in existing_endpoints
+            ):
+                # Preserve the full endpoint from existing config (with all fields)
+                merged_config_dict["endpoints"].append(
+                    existing_endpoints[endpoint_name]
+                )
+                logger.info(
+                    f"Preserved monitored endpoint from existing config: {endpoint_name}"
+                )
+
+    return SaaSConfig(**merged_config_dict)
+
+
+def preserve_monitored_collections_in_dataset_merge(
+    monitored_endpoints: List[StagedResource],
+    customer_dataset: dict[str, Any],
+    upcoming_dataset: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Preserve monitored collections from customer dataset in the upcoming dataset.
+
+    This ensures that promoted collections with all their fields are preserved
+    when the dataset template is updated.
+
+    Args:
+        monitored_endpoints: List of monitored endpoint staged resources
+        customer_dataset: The existing customer dataset (contains promoted collections)
+        upcoming_dataset: The new dataset from template (may be missing promoted collections)
+
+    Returns:
+        Updated upcoming dataset with preserved monitored collections
+    """
+    if not monitored_endpoints or not customer_dataset.get("collections"):
+        return upcoming_dataset
+
+    # Extract collection names from monitored resources (using description field)
+    monitored_collection_names = {
+        resource.name for resource in monitored_endpoints if resource.name
+    }
+
+    # Get collections from customer and upcoming datasets
+    customer_collections = {
+        col.get("name"): col for col in customer_dataset.get("collections", [])
+    }
+    upcoming_collections = {
+        col.get("name"): col for col in upcoming_dataset.get("collections", [])
+    }
+
+    # Create a copy of upcoming dataset to modify
+    merged_dataset = copy.deepcopy(upcoming_dataset)
+
+    # Preserve monitored collections from customer dataset that aren't in upcoming dataset
+    for collection_name in monitored_collection_names:
+        if (
+            collection_name in customer_collections
+            and collection_name not in upcoming_collections
+        ):
+            # Preserve the full collection from customer dataset (with all fields)
+            merged_dataset["collections"].append(customer_collections[collection_name])
+            logger.info(
+                f"Preserved monitored collection from customer dataset: {collection_name}"
+            )
+
     return merged_dataset
