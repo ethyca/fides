@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from nox import Session
-
 from constants_nox import (
     CI_ARGS_EXEC,
     COMPOSE_FILE,
@@ -14,6 +12,7 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
+from nox import Session
 from run_infrastructure import (
     API_TEST_DIR,
     OPS_API_TEST_DIRS,
@@ -164,12 +163,18 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
         )
         session.run(*run_command, external=True)
     else:
+        import copy
+
+        # Don't use xdist for this one
+        local_pytest_config = copy.copy(pytest_config)
+        local_pytest_config.xdist_config.parallel_runners = "0"
+
         session.run(*START_APP, external=True)
         session.run(*LOGIN, external=True)
         run_command = (
             *EXEC,
             "pytest",
-            *pytest_config.args,
+            *local_pytest_config.args,
             "tests/ctl/",
             "-m",
             mark,
