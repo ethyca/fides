@@ -17,7 +17,7 @@ boto3==1.41.2
 celery==5.5.3
 certifi==2024.8.30
 click-repl~=0.3.0
-click==8.3.1
+click==8.1.7
 click-plugins~=1.1.1
 click-didyoumean~=0.3.1
 click_default_group==1.2.2
