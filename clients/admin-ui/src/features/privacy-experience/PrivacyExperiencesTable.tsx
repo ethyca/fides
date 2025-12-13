@@ -17,11 +17,20 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Flex,
+  formatIsoLocation,
+  HStack,
+  isoStringToEntry,
+  Text,
+  VStack,
+} from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
+import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
@@ -31,10 +40,10 @@ import {
 } from "~/features/privacy-experience/cells";
 import JavaScriptTag from "~/features/privacy-experience/JavaScriptTag";
 import { useGetAllExperienceConfigsQuery } from "~/features/privacy-experience/privacy-experience.slice";
-import { getRegions } from "~/features/privacy-notices/cells";
 import {
   CustomAssetType,
   ExperienceConfigListViewResponse,
+  PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -44,6 +53,26 @@ const emptyExperienceResponse = {
   page: 1,
   size: 25,
   pages: 1,
+};
+
+export const getRegions = (
+  regions: PrivacyNoticeRegion[] | undefined,
+): (string | ReactNode)[] => {
+  if (!regions) {
+    return [];
+  }
+  const values: (string | ReactNode)[] = [];
+  regions.forEach((region) => {
+    const isoEntry = isoStringToEntry(region);
+    const value = isoEntry
+      ? formatIsoLocation({ isoEntry, showFlag: true })
+      : PRIVACY_NOTICE_REGION_MAP.get(region);
+
+    if (value !== undefined) {
+      values.push(value);
+    }
+  });
+  return values;
 };
 
 const EmptyTableExperience = () => {

@@ -10,7 +10,7 @@ const NewPrivacyNoticePage = () => (
     <PageHeader
       heading="Privacy Notices"
       breadcrumbItems={[
-        { title: "All privacy Notices", href: PRIVACY_NOTICES_ROUTE },
+        { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
         { title: "New privacy notice" },
       ]}
     />
