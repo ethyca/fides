@@ -768,6 +768,42 @@ def celery_enable_logging():
     return True
 
 
+# This is here because the test suite occasionally fails to teardown the
+# Celery worker if it takes too long to terminate the worker thread. This
+# will prevent that and, instead, log a warning
+@pytest.fixture(scope="session")
+def celery_session_worker(
+    request,
+    celery_session_app,
+    celery_includes,
+    celery_class_tasks,
+    celery_worker_pool,
+    celery_worker_parameters,
+):
+    from celery.contrib.testing import worker
+
+    for module in celery_includes:
+        celery_session_app.loader.import_task_module(module)
+    for class_task in celery_class_tasks:
+        celery_session_app.register_task(class_task)
+
+    try:
+
+        logger.info("Starting safe celery session worker...")
+        with worker.start_worker(
+            celery_session_app,
+            pool=celery_worker_pool,
+            **celery_worker_parameters,
+        ) as w:
+            try:
+                yield w
+                logger.info("Done with celery worker, trying to dispose of it..")
+            except RuntimeError:
+                logger.warning("Failed to dispose of the celery worker.")
+    except RuntimeError as re:
+        logger.warning("Failed to stop the celery worker: " + str(re))
+
+
 @pytest.fixture(scope="session")
 def celery_worker_parameters():
     """Configure celery worker parameters for testing.
@@ -776,7 +812,7 @@ def celery_worker_parameters():
     takes longer to shut down, especially during parallel test runs with pytest-xdist.
     The CI environment can be slow, so we use a generous timeout.
     """
-    return {"shutdown_timeout": 180.0}
+    return {"shutdown_timeout": 20.0}
 
 
 @pytest.fixture(autouse=True, scope="session")

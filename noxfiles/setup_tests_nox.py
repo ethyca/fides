@@ -86,6 +86,7 @@ class PytestConfig:
             *self.xdist_config.args,
             *self.coverage_config.args,
             *self.report_config.args,
+            "-x",
             "-s" if self.suppress_stdout else "",
             "-W ignore" if self.suppress_warnings else "",
         ]
