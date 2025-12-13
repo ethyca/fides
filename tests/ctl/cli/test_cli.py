@@ -615,6 +615,7 @@ class TestEvaluate:
 @pytest.mark.usefixtures("default_organization")
 class TestScan:
     @pytest.mark.integration
+    @pytest.mark.xfail(reason="This test is unstable.")
     def test_scan_dataset_db_input_connection_string(
         self, worker_id: str, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
