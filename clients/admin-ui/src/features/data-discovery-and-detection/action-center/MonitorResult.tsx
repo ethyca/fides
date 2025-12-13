@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
@@ -12,10 +13,10 @@ import {
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
+  ExpandCollapse,
   Icons,
   SparkleIcon,
 } from "fidesui";
-import { AnimatePresence, motion } from "framer-motion";
 import NextLink from "next/link";
 import { useState } from "react";
 
@@ -173,11 +174,13 @@ export const MonitorResult = ({
                     type="link"
                     className="p-0"
                     icon={
-                      isConfidenceRowExpanded ? (
-                        <Icons.ChevronUp />
-                      ) : (
-                        <Icons.ChevronDown />
-                      )
+                      <Icons.ChevronDown
+                        className={classNames(
+                          "transition-transform",
+                          "duration-300",
+                          isConfidenceRowExpanded ? "rotate-180" : undefined,
+                        )}
+                      />
                     }
                     iconPosition="end"
                     onClick={() =>
@@ -207,30 +210,19 @@ export const MonitorResult = ({
               </NextLink>
             </Col>
           </Row>
-          {heliosV2Enabled && (
-            <AnimatePresence initial={false}>
-              {showConfidenceRow &&
-                isConfidenceRowExpanded &&
-                confidenceCounts && (
-                  // TODO: [ENG-2136] Add a custom Expanded/Collapsed animation component in FidesUI
-                  <motion.div
-                    key="confidence-row"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <ConfidenceRow
-                      confidenceCounts={confidenceCounts}
-                      reviewHref={href}
-                      monitorId={key}
-                      className="mt-6"
-                      id={`confidence-row-${key}`}
-                    />
-                  </motion.div>
-                )}
-            </AnimatePresence>
+          {heliosV2Enabled && showConfidenceRow && confidenceCounts && (
+            <ExpandCollapse
+              isExpanded={isConfidenceRowExpanded}
+              motionKey={`confidence-row-${key}`}
+            >
+              <ConfidenceRow
+                confidenceCounts={confidenceCounts}
+                reviewHref={href}
+                monitorId={key}
+                className="mt-6"
+                id={`confidence-row-${key}`}
+              />
+            </ExpandCollapse>
           )}
         </Flex>
       </Skeleton>
