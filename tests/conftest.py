@@ -2053,12 +2053,35 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     Some places within the application, for example `fides.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
+
+    NOTE: This is dangerous, now that starlette's TestClient no longer accepts allow_redirects like requests
+    does - so this is not a direct drop-in any longer and the methods may need to be wrapped / transmogrified.
     """
+
+    # Flip allow_redirects from requests to follow_redirects in starlette
+    def _wrap_requests_post(url, **kwargs):
+        if kwargs.get("allow_redirects") is not None:
+            flag_value = kwargs.pop("allow_redirects")
+            kwargs["follow_redirects"] = flag_value
+
+        return test_client.post(url, **kwargs)
+
     monkeysession.setattr(requests, "get", test_client.get)
-    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "post", _wrap_requests_post)
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
+
+
+@pytest.fixture
+def worker_id(request) -> str:
+    """Fixture to get the xdist worker ID (e.g., 'gw0', 'gw1') or 'master'."""
+    if hasattr(request.config, "workerinput"):
+        # In a worker process
+        return request.config.workerinput["workerid"]
+    else:
+        # In the master process (or not using xdist)
+        return "master"
 
 
 @pytest.hookimpl(optionalhook=True)
