@@ -42,7 +42,7 @@ iab-tcf==0.2.2
 immutables==0.21
 importlib_resources==5.12.0
 joblib==1.3.2
-loguru==0.6.0
+loguru==0.7.3
 msgpack~=1.1.2
 multidimensional_urlencode==0.0.4
 networkx==3.1
