@@ -53,9 +53,7 @@ export const CopyTooltip = ({
 }: CopyTooltipProps) => {
   const [hasCopied, setHasCopied] = useState<boolean>(false);
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(contentToCopy);
       setHasCopied(true);
@@ -69,11 +67,16 @@ export const CopyTooltip = ({
     }
   };
 
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await handleCopy();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       e.stopPropagation();
-      handleClick(e as any);
+      handleCopy();
     }
   };
 
@@ -104,7 +107,7 @@ export const CopyTooltip = ({
         role="button"
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        style={{ cursor: "pointer" }}
+        style={{ cursor: "default" }}
       >
         {children}
       </span>
