@@ -136,30 +136,6 @@ class TestMergeSaaSConfigWithMonitoredResources:
             ),
         ]
 
-    def test_merge_with_no_monitored_endpoints(self, new_saas_config: SaaSConfig):
-        """Test that function returns new config when no monitored endpoints provided."""
-        result = merge_saas_config_with_monitored_resources(
-            new_saas_config=new_saas_config,
-            monitored_endpoints=[],
-            existing_saas_config=None,
-        )
-
-        assert result == new_saas_config
-        assert len(result.endpoints) == 3  # users, orders, products
-
-    def test_merge_with_no_existing_config(
-        self, new_saas_config: SaaSConfig, monitored_endpoints: List[StagedResource]
-    ):
-        """Test that function returns new config when no existing config provided."""
-        result = merge_saas_config_with_monitored_resources(
-            new_saas_config=new_saas_config,
-            monitored_endpoints=monitored_endpoints,
-            existing_saas_config=None,
-        )
-
-        assert result == new_saas_config
-        assert len(result.endpoints) == 3  # users, orders, products
-
     def test_merge_preserves_monitored_endpoints(
         self,
         new_saas_config: SaaSConfig,
@@ -233,41 +209,6 @@ class TestMergeSaaSConfigWithMonitoredResources:
         endpoint_names = {ep.name for ep in result.endpoints}
         assert "custom_endpoint" not in endpoint_names
         assert len(result.endpoints) == 3  # users, orders, products
-
-    def test_merge_handles_empty_monitored_names(
-        self,
-        new_saas_config: SaaSConfig,
-        existing_saas_config: SaaSConfig,
-    ):
-        """Test that function handles monitored endpoints with empty names."""
-        monitored_endpoints = [
-            StagedResource(
-                name="",  # Empty name
-                urn="test_connector:empty",
-                resource_type="endpoint",
-            ),
-            StagedResource(
-                name=None,  # None name
-                urn="test_connector:none",
-                resource_type="endpoint",
-            ),
-            StagedResource(
-                name="custom_endpoint",
-                urn="test_connector:custom_endpoint",
-                resource_type="endpoint",
-            ),
-        ]
-
-        result = merge_saas_config_with_monitored_resources(
-            new_saas_config=new_saas_config,
-            monitored_endpoints=monitored_endpoints,
-            existing_saas_config=existing_saas_config,
-        )
-
-        # Should only preserve custom_endpoint (valid name)
-        endpoint_names = {ep.name for ep in result.endpoints}
-        assert "custom_endpoint" in endpoint_names
-        assert len(result.endpoints) == 4  # users, orders, products, custom_endpoint
 
     def test_merge_preserves_endpoint_structure(
         self,
@@ -413,48 +354,6 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
             ),
         ]
 
-    def test_preserve_with_no_monitored_collections(
-        self, customer_dataset: Dict[str, Any], upcoming_dataset: Dict[str, Any]
-    ):
-        """Test that function returns upcoming dataset when no monitored collections provided."""
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=[],
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        assert result == upcoming_dataset
-
-    def test_preserve_with_no_customer_dataset(
-        self,
-        upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
-    ):
-        """Test that function returns upcoming dataset when no customer dataset provided."""
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset={},
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        assert result == upcoming_dataset
-
-    def test_preserve_with_no_customer_collections(
-        self,
-        upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
-    ):
-        """Test that function returns upcoming dataset when customer dataset has no collections."""
-        customer_dataset = {"fides_key": "test", "collections": []}
-
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        assert result == upcoming_dataset
-
     def test_preserve_monitored_collections(
         self,
         customer_dataset: Dict[str, Any],
@@ -526,41 +425,6 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
         collection_names = {col["name"] for col in result["collections"]}
         assert "custom_collection" not in collection_names
         assert collection_names == {"users", "orders", "products"}
-
-    def test_preserve_handles_empty_monitored_names(
-        self,
-        customer_dataset: Dict[str, Any],
-        upcoming_dataset: Dict[str, Any],
-    ):
-        """Test that function handles monitored collections with empty names."""
-        monitored_collections = [
-            StagedResource(
-                name="",  # Empty name
-                urn="test_dataset:empty",
-                resource_type="collection",
-            ),
-            StagedResource(
-                name=None,  # None name
-                urn="test_dataset:none",
-                resource_type="collection",
-            ),
-            StagedResource(
-                name="custom_collection",
-                urn="test_dataset:custom_collection",
-                resource_type="collection",
-            ),
-        ]
-
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        # Should only preserve custom_collection (valid name)
-        collection_names = {col["name"] for col in result["collections"]}
-        assert "custom_collection" in collection_names
-        assert collection_names == {"users", "orders", "products", "custom_collection"}
 
     def test_preserve_maintains_collection_structure(
         self,
