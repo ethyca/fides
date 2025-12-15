@@ -6,23 +6,26 @@ type LabeledProps = React.PropsWithChildren<{
   copyValue?: string | null;
 }>;
 
-export const LabeledText = ({ label, children, copyValue }: LabeledProps) => (
-  <Flex gap="small" wrap>
-    <Text type="secondary">{label}:</Text>
-    {copyValue && (
-      <CopyTooltip
-        contentToCopy={copyValue}
-        copyText={`Copy ${lowerCase(label?.toString() ?? "")}`}
-      >
-        <Text ellipsis={{ tooltip: true }} className="!max-w-60">
-          {children}
-        </Text>
-      </CopyTooltip>
-    )}
-    {!copyValue && (
-      <Text ellipsis={{ tooltip: true }} className="!max-w-60">
-        {children}
-      </Text>
-    )}
-  </Flex>
-);
+export const LabeledText = ({ label, children, copyValue }: LabeledProps) => {
+  const textContent = (
+    <Text ellipsis={{ tooltip: true }} className="!max-w-60">
+      {children}
+    </Text>
+  );
+
+  return (
+    <Flex gap="small" wrap>
+      <Text type="secondary">{label}:</Text>
+      {copyValue ? (
+        <CopyTooltip
+          contentToCopy={copyValue}
+          copyText={`Copy ${lowerCase(label?.toString() ?? "")}`}
+        >
+          {textContent}
+        </CopyTooltip>
+      ) : (
+        textContent
+      )}
+    </Flex>
+  );
+};
