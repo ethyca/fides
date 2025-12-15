@@ -264,21 +264,6 @@ class ManualTask(Base):
             if ref.reference_type == ManualTaskReferenceType.assigned_user
         ]
 
-    # CRUD Operations
-    @classmethod
-    def create(
-        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
-    ) -> "ManualTask":
-        """Create a new manual task."""
-        task = super().create(db=db, data=data, check_name=check_name)
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.created,
-            message=f"Created manual task for {data['task_type']}",
-        )
-        return task
-
 
 class ManualTaskInstance(Base):
     """Model for tracking task status per entity instance."""
@@ -570,32 +555,6 @@ class ManualTaskConfig(Base):
         cascade="all, delete-orphan",
     )
 
-    @classmethod
-    def create(
-        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
-    ) -> "ManualTaskConfig":
-        """Create a new manual task configuration."""
-        # Validate config_type
-        try:
-            ManualTaskConfigurationType(data["config_type"])
-        except ValueError:
-            raise ValueError(f"Invalid config type: {data['config_type']}")
-
-        config = super().create(db=db, data=data, check_name=check_name)
-
-        # Log the config creation as a task-level log
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=data["task_id"],
-            config_id=config.id,
-            status=ManualTaskLogStatus.created,
-            message=f"Created manual task configuration for {data['config_type']}",
-            details={
-                "config_type": data["config_type"],
-            },
-        )
-        return config
-
     def get_field(self, field_key: str) -> Optional["ManualTaskConfigField"]:
         """Get a field by its key."""
         for field in self.field_definitions:
@@ -681,7 +640,7 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
-        # Get the config to access its task_id and check if it exists
+         # Get the config to check if it exists
         config = (
             db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == data["config_id"])
@@ -689,9 +648,6 @@ class ManualTaskConfigField(Base):
         )
         if not config:
             raise ValueError(f"Config with id {data['config_id']} not found")
-
-        # Create the field and let SQLAlchemy complex type validation handled in service.
-        field = super().create(db=db, data=data, check_name=check_name)
 
         # Create a log entry
         if config.task_id:
@@ -702,7 +658,9 @@ class ManualTaskConfigField(Base):
                 status=ManualTaskLogStatus.created,
                 message=f"Created manual task config field for {data['field_key']}",
             )
-        return field
+
+        # Create the field and let SQLAlchemy complex type validation handled in service.
+        return super().create(db=db, data=data, check_name=check_name)
 
 
 class ManualTaskSubmission(Base):

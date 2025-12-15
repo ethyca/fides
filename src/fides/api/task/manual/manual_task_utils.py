@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy.orm import Session, selectinload
 
@@ -230,3 +230,53 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs
+
+def extract_dataset_field_addresses(
+    tree: Optional[dict[str, Any]],
+) -> set[str]:
+    """Recursively extract dataset field addresses from a JSONB condition tree.
+
+    This function is used to extract all field addresses from a condition tree
+    stored as JSONB. It's useful for determining upstream dependencies when
+    building the dataset graph for conditional dependencies.
+
+    Args:
+        tree: The condition tree dict (or None)
+
+    Returns:
+        Set of field addresses found in the tree, excluding privacy_request.* fields
+    """
+    if not tree:
+        return set()
+
+    field_addresses: set[str] = set()
+
+    # Check if this is a leaf condition (has field_address)
+    if "field_address" in tree:
+        field_address = tree["field_address"]
+        if field_address and not field_address.startswith("privacy_request."):
+            field_addresses.add(field_address)
+    # Check if this is a group condition (has conditions list)
+    elif "conditions" in tree:
+        for condition in tree.get("conditions", []):
+            field_addresses.update(extract_dataset_field_addresses(condition))
+
+    return field_addresses
+
+
+def extract_privacy_request_field_addresses(
+    tree: dict[str, Any], addresses: set[str]
+) -> None:
+    """Recursively extract privacy_request.* field addresses from a condition tree.
+
+    Args:
+        tree: The condition tree dict
+        addresses: Set to add found privacy_request addresses to (mutated in place)
+    """
+    if "field_address" in tree:
+        field_address = tree["field_address"]
+        if field_address and field_address.startswith("privacy_request."):
+            addresses.add(field_address)
+    elif "conditions" in tree:
+        for condition in tree.get("conditions", []):
+            extract_privacy_request_field_addresses(condition, addresses)

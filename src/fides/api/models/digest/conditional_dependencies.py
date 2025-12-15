@@ -10,6 +10,7 @@ from fides.api.db.util import EnumColumn
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
     ConditionalDependencyError,
+    ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
@@ -42,29 +43,22 @@ class DigestConditionType(str, Enum):
 
 
 class DigestCondition(ConditionalDependencyBase):
-    """Digest conditional dependencies - multi-type hierarchies.
+    """Digest conditional dependencies - multi-type hierarchies, stores the condition tree
+    as JSONB.
 
-    - Multi-type hierarchy means one digest_config can have multiple independent
-      condition trees, each with a different digest_condition_type (RECEIVER, CONTENT, PRIORITY)
-    - Within each tree, all nodes must have the same digest_condition_type
-    - This enables separate condition logic for different aspects of digest processing
+    Each digest_config can have up to three independent condition trees,
+    one per digest_condition_type (RECEIVER, CONTENT, PRIORITY).
+    This enables separate condition logic for different aspects of digest processing.
 
-    Ensures that all conditions within the same tree have the same digest_condition_type.
-    This prevents logical errors where different condition types are mixed in a single
-    condition tree structure.
 
     Example Tree Structure:
         DigestConfig (e.g., "Weekly Privacy Digest")
-        ├── RECEIVER Dependency Condition Tree (who gets the digest)
-        │   └── Group (AND)
-        │       ├── Leaf: user.role == "admin"
-        │       └── Leaf: user.department == "privacy"
-        ├── CONTENT Dependency Condition Tree (what gets included)
-        │   └── Group (OR)
-        │       ├── Leaf: task.priority == "high"
-        │       └── Leaf: task.overdue == true
-        └── PRIORITY Dependency Condition Tree (when to send)
-            └── Leaf: task.count >= 5
+        ├── RECEIVER condition_tree (who gets the digest)
+        │   └── {"logical_operator": "and", "conditions": [...]}
+        ├── CONTENT condition_tree (what gets included)
+        │   └── {"logical_operator": "or", "conditions": [...]}
+        └── PRIORITY condition_tree (what is high priority)
+            └── {"field_address": "task.count", "operator": "gte", "value": 5}
     """
 
     @declared_attr
@@ -75,7 +69,7 @@ class DigestCondition(ConditionalDependencyBase):
     # can properly reference the `id` column instead of the built-in Python function.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
-    # Foreign key relationships
+    # Foreign key to parent digest config
     digest_config_id = Column(
         String(255),
         ForeignKey("digest_config.id", ondelete="CASCADE"),
@@ -89,12 +83,12 @@ class DigestCondition(ConditionalDependencyBase):
         index=True,
     )
 
-    # Digest-specific: condition category
+    # Condition category - determines which aspect of digest this condition controls
     digest_condition_type = Column(
         EnumColumn(DigestConditionType), nullable=False, index=True
     )
 
-    # Relationships
+    # Relationship to parent config
     digest_config = relationship("DigestConfig", back_populates="conditions")
     parent = relationship(
         "DigestCondition",
@@ -111,6 +105,13 @@ class DigestCondition(ConditionalDependencyBase):
 
     # Ensure only one root condition per digest_condition_type per digest_config
     __table_args__ = (
+        # TODO update to this in next migration to use UniqueConstraint
+        # UniqueConstraint(
+        #     "digest_config_id",
+        #     "digest_condition_type",
+        #     name="uq_digest_condition_config_type",
+        # ),
+
         Index(
             "ix_digest_condition_unique_root_per_type",
             "digest_config_id",
@@ -219,8 +220,7 @@ class DigestCondition(ConditionalDependencyBase):
                                      Must be one of: RECEIVER, CONTENT, PRIORITY
 
         Returns:
-            Optional[Union[ConditionLeaf, ConditionGroup]]: Root condition tree for the specified
-                                                          type, or None if no conditions exist
+            Optional[Union[ConditionLeaf, ConditionGroup]]: Condition tree for the specified
 
         Raises:
             ValueError: If required parameters are missing
@@ -245,26 +245,25 @@ class DigestCondition(ConditionalDependencyBase):
                 "digest_config_id and digest_condition_type are required keyword arguments"
             )
 
-        root = (
+        condition_row = (
             db.query(cls)
             .filter(
                 cls.digest_config_id == digest_config_id,
                 cls.digest_condition_type == digest_condition_type,
-                cls.parent_id.is_(None),
             )
             .one_or_none()
         )
 
-        if not root:
+        if not condition_row or condition_row.condition_tree is None:
             return None
 
-        return root.to_correct_condition_type()
+        return ConditionTypeAdapter.validate_python(condition_row.condition_tree)
 
     @classmethod
     def get_all_root_conditions(
         cls, db: Session, digest_config_id: str
     ) -> dict[DigestConditionType, Optional[Condition]]:
-        """Get root conditions for all digest condition types"""
+        """Get condition trees for all digest condition types"""
         return {
             condition_type: cls.get_root_condition(
                 db,
