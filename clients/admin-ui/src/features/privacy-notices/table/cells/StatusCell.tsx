@@ -1,11 +1,7 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import TagCell from "~/features/common/table/cells/TagCell";
-import {
-  getNoticeStatus,
-  NoticeStatus,
-} from "~/features/privacy-notices/table/getNoticeStatus";
-import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
+import { NoticeStatus } from "~/features/privacy-notices/table/getNoticeStatus";
 
 const VALUE_TO_TAG_PROPS_MAP: Record<
   NoticeStatus,
@@ -26,13 +22,13 @@ const VALUE_TO_TAG_PROPS_MAP: Record<
       "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
   },
 };
-const StatusCell = ({ record }: { record: PrivacyNoticeRowType }) => {
-  const noticeStatus = getNoticeStatus(record);
-  const { tooltip, color } = VALUE_TO_TAG_PROPS_MAP[noticeStatus];
+
+const StatusCell = ({ status }: { status: NoticeStatus }) => {
+  const { tooltip, color } = VALUE_TO_TAG_PROPS_MAP[status];
 
   return (
     <TagCell
-      value={noticeStatus}
+      value={status}
       tooltip={tooltip}
       color={color}
       data-testid="status-badge"

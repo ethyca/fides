@@ -26,13 +26,8 @@ import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy
 import NoticeChildrenCell from "~/features/privacy-notices/table/cells/NoticeChildrenCell";
 import NoticeEnableCell from "~/features/privacy-notices/table/cells/NoticeEnableCell";
 import StatusCell from "~/features/privacy-notices/table/cells/StatusCell";
-import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
-import {
-  ConsentMechanism,
-  LimitedPrivacyNoticeResponseSchema,
-  PrivacyNoticeRegion,
-  ScopeRegistryEnum,
-} from "~/types/api";
+import { getNoticeStatus } from "~/features/privacy-notices/table/getNoticeStatus";
+import { PrivacyNoticeRegion, ScopeRegistryEnum } from "~/types/api";
 
 const EmptyTableNotice = () => {
   const router = useRouter();
@@ -90,6 +85,11 @@ const usePrivacyNoticesTable = () => {
         const { children, ...rest } = item;
         return {
           ...rest,
+          noticeStatus: getNoticeStatus(
+            rest.systems_applicable,
+            rest.disabled,
+            rest.data_uses,
+          ),
           noticeChildren: children,
         };
       }),
@@ -104,7 +104,7 @@ const usePrivacyNoticesTable = () => {
       totalRows,
       isLoading,
       isFetching,
-      getRowKey: (record: PrivacyNoticeRowType) => record.id,
+      getRowKey: (record: (typeof dataSource)[number]) => record.id,
       customTableProps: {
         locale: {
           emptyText: <EmptyTableNotice />,
@@ -122,12 +122,12 @@ const usePrivacyNoticesTable = () => {
         title: "Title",
         dataIndex: "name",
         key: "name",
-        render: (_, record) => (
+        render: (_, { id, name }) => (
           <LinkCell
-            href={`${PRIVACY_NOTICES_ROUTE}/${record.id}`}
+            href={`${PRIVACY_NOTICES_ROUTE}/${id}`}
             data-testid="notice-name"
           >
-            {record.name}
+            {name}
           </LinkCell>
         ),
       },
@@ -135,12 +135,12 @@ const usePrivacyNoticesTable = () => {
         title: "Mechanism",
         dataIndex: "consent_mechanism",
         key: "consent_mechanism",
-        render: (value: ConsentMechanism) => (
+        render: (_, { consent_mechanism }) => (
           <Tag
             data-testid="status-badge"
             style={{ textTransform: "uppercase" }}
           >
-            {MECHANISM_MAP.get(value) ?? value}
+            {MECHANISM_MAP.get(consent_mechanism) ?? consent_mechanism}
           </Tag>
         ),
       },
@@ -148,7 +148,7 @@ const usePrivacyNoticesTable = () => {
         title: "Locations",
         dataIndex: "configured_regions",
         key: "regions",
-        render: (regions: PrivacyNoticeRegion[] | undefined) => {
+        render: (_, { configured_regions: regions }) => {
           const values =
             regions?.map((location: PrivacyNoticeRegion) => {
               const isoEntry = isoStringToEntry(location);
@@ -182,15 +182,15 @@ const usePrivacyNoticesTable = () => {
       },
       {
         title: "Status",
-        dataIndex: "disabled",
+        dataIndex: "noticeStatus",
         key: "status",
-        render: (_, record) => <StatusCell record={record} />,
+        render: (_, { noticeStatus }) => <StatusCell status={noticeStatus} />,
       },
       {
         title: "Framework",
         dataIndex: "framework",
         key: "framework",
-        render: (framework: string | null) =>
+        render: (_, { framework }) =>
           framework ? (
             <Tag data-testid="framework-badge">
               {FRAMEWORK_MAP.get(framework) ?? framework}
@@ -201,7 +201,7 @@ const usePrivacyNoticesTable = () => {
         title: "Children",
         dataIndex: "noticeChildren",
         key: "noticeChildren",
-        render: (noticeChildren?: LimitedPrivacyNoticeResponseSchema[]) => (
+        render: (_, { noticeChildren }) => (
           <NoticeChildrenCell value={noticeChildren} />
         ),
       },

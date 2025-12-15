@@ -1,17 +1,14 @@
-import { PrivacyNoticeRowType } from "~/features/privacy-notices/table/PrivacyNoticeRowType";
-
 export enum NoticeStatus {
   AVAILABLE = "available",
   ENABLED = "enabled",
   INACTIVE = "inactive",
 }
 
-export const getNoticeStatus = (record: PrivacyNoticeRowType) => {
-  const {
-    systems_applicable: systemsApplicable,
-    disabled,
-    data_uses: dataUses,
-  } = record;
+export const getNoticeStatus = (
+  systemsApplicable: boolean | undefined,
+  disabled: boolean,
+  dataUses: string[],
+) => {
   if (!dataUses) {
     return NoticeStatus.INACTIVE;
   }
