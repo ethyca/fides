@@ -294,7 +294,7 @@ def merge_saas_config_with_monitored_resources(
     # Create a copy of the new config to modify
     merged_config_dict = new_saas_config.model_dump()
 
-    # Extract endpoint names from monitored resources (using description field)
+    # Extract endpoint names from monitored resources (using name field)
     monitored_endpoint_names = {
         resource.name for resource in monitored_endpoints if resource.name
     }
@@ -313,8 +313,9 @@ def merge_saas_config_with_monitored_resources(
                 and endpoint_name in existing_endpoints
             ):
                 # Preserve the full endpoint from existing config (with all fields)
+                # Convert Pydantic model to dict to match the expected type
                 merged_config_dict["endpoints"].append(
-                    existing_endpoints[endpoint_name]
+                    existing_endpoints[endpoint_name].model_dump()
                 )
                 logger.info(
                     f"Preserved monitored endpoint from existing config: {endpoint_name}"
@@ -345,7 +346,7 @@ def preserve_monitored_collections_in_dataset_merge(
     if not monitored_endpoints or not customer_dataset.get("collections"):
         return upcoming_dataset
 
-    # Extract collection names from monitored resources (using description field)
+    # Extract collection names from monitored resources (using name field)
     monitored_collection_names = {
         resource.name for resource in monitored_endpoints if resource.name
     }
