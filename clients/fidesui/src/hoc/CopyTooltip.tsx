@@ -69,6 +69,14 @@ export const CopyTooltip = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      handleClick(e as any);
+    }
+  };
+
   const tooltipContent = (
     <Button
       type="text"
@@ -77,7 +85,9 @@ export const CopyTooltip = ({
       disabled={hasCopied}
       className={styles.tooltipButton}
     >
-      {hasCopied ? copiedText : copyText}
+      {hasCopied
+        ? copiedText
+        : `Press enter or space to ${copyText.toLowerCase()}`}
     </Button>
   );
 
@@ -87,8 +97,17 @@ export const CopyTooltip = ({
       mouseLeaveDelay={0.3}
       {...props}
       title={tooltipContent}
+      trigger={["focus", "hover"]}
+      rootClassName={styles.tooltip}
     >
-      {children}
+      <span
+        role="button"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        style={{ cursor: "pointer" }}
+      >
+        {children}
+      </span>
     </Tooltip>
   );
 };
