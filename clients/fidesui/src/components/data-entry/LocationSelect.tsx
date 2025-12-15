@@ -100,6 +100,11 @@ export const LocationSelect = (props: LocationSelectProps) => {
     allowClear: true,
     showSearch: true,
     optionFilterProp: "label",
+    /**
+     * @description defaults to true. a number can be passed to override this.
+     * false will disable virtual scrolling and have a performance impact.
+     */
+    popupMatchSelectWidth: true,
     filterSort: (left: IsoOption, right: IsoOption) =>
       (left?.label ?? "")
         .toLowerCase()
@@ -142,10 +147,6 @@ export const LocationSelect = (props: LocationSelectProps) => {
       {...defaultProps}
       {...props}
       options={isoSelectOptions}
-      /**
-       * @description this must be set to true to prevent performance issues
-       */
-      popupMatchSelectWidth
     />
   );
 };
