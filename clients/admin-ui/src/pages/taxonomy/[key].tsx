@@ -4,8 +4,10 @@ import { useRouter } from "next/router";
 import TaxonomyPageContent from "~/features/taxonomy/components/TaxonomyPageContent";
 
 const TaxonomyPage: NextPage = () => {
-  const router = useRouter();
-  const initialTaxonomy = router.query.key as string;
+  const {
+    query: { key },
+  } = useRouter();
+  const initialTaxonomy = typeof key === "string" ? key : undefined;
 
   return <TaxonomyPageContent initialTaxonomy={initialTaxonomy} />;
 };
