@@ -23,9 +23,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
+- Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+- Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
@@ -39,6 +41,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
 - Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
+
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix new vulnerabilities [#7112](https://github.com/ethyca/fides/pull/7112)
 
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
