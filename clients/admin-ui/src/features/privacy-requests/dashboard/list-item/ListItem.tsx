@@ -64,17 +64,28 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 </LabeledText>
               )}
               {otherIdentities.map((identity) => (
-                <LabeledText key={identity.key} label={identity.label}>
+                <LabeledText
+                  key={identity.key}
+                  label={identity.label}
+                  copyValue={identity.value}
+                >
                   {identity.value}
                 </LabeledText>
               ))}
-              {customFields.map((field) => (
-                <LabeledText key={field.key} label={field.label}>
-                  {isArray(field.value)
-                    ? field.value.join(" - ")
-                    : toString(field.value)}
-                </LabeledText>
-              ))}
+              {customFields.map((field) => {
+                const valueString = isArray(field.value)
+                  ? field.value.join(" - ")
+                  : toString(field.value);
+                return (
+                  <LabeledText
+                    key={field.key}
+                    label={field.label}
+                    copyValue={valueString}
+                  >
+                    {valueString}
+                  </LabeledText>
+                );
+              })}
             </Flex>
           )}
         </Flex>
