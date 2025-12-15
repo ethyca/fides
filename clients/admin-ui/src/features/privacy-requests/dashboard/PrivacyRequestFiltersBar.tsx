@@ -4,6 +4,7 @@ import {
   AntDisplayValueType as DisplayValueType,
   AntFlex as Flex,
   AntSelect as Select,
+  LocationSelect,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -25,6 +26,7 @@ interface PrivacyRequestFiltersBarProps {
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    location: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
   setFilters: (filters: {
@@ -33,6 +35,7 @@ interface PrivacyRequestFiltersBarProps {
     to?: string | null;
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
+    location?: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
 }
@@ -77,6 +80,12 @@ export const PrivacyRequestFiltersBar = ({
   const handleActionTypeChange = (value: ActionType[]) => {
     setFilters({
       action_type: value.length > 0 ? value : null,
+    });
+  };
+
+  const handleLocationChange = (value: string | null) => {
+    setFilters({
+      location: value,
     });
   };
 
@@ -146,6 +155,15 @@ export const PrivacyRequestFiltersBar = ({
         aria-label="Request type"
         className="w-44"
         maxTagPlaceholder={maxTagPlaceholder}
+      />
+      <LocationSelect
+        placeholder="Location"
+        value={filters.location || null}
+        onChange={handleLocationChange}
+        allowClear
+        data-testid="request-location-filter"
+        aria-label="Location"
+        className="w-44"
       />
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
