@@ -34,11 +34,6 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
    */
   ease?: Easing | Easing[];
   /**
-   * Distance to slide removed items in pixels (negative = up, positive = down)
-   * @default -50
-   */
-  slideDistance?: number;
-  /**
    * Stagger delay between layout animations in seconds
    * @default 0.05
    * Set to 0 to disable stagger
@@ -78,7 +73,6 @@ export const ExitGrid = <T,>({
   gutter = 0,
   duration = 0.3,
   ease = "easeInOut",
-  slideDistance = -50,
   layoutStagger = 0.05,
   ...props
 }: ExitGridProps<T>) => {
@@ -100,7 +94,7 @@ export const ExitGrid = <T,>({
             <motion.div
               key={key}
               initial={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, y: slideDistance }}
+              exit={{ opacity: 0 }}
               transition={{
                 layout: {
                   duration,
