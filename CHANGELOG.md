@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+- Removed the ManualTaskLog table since it is un-used. This is a lossy migration, it can be `downgraded` but data will not be restored. [#7124](https://github.com/ethyca/fides/pull/7124) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
