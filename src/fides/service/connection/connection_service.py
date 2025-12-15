@@ -65,7 +65,7 @@ from fides.api.util.saas_util import (
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
 from fides.service.connection.merge_configs_util import (
-    get_monitored_endpoint_resources_for_connection,
+    get_endpoint_resources,
     merge_datasets,
     merge_saas_config_with_monitored_resources,
     preserve_monitored_collections_in_dataset_merge,
@@ -590,10 +590,8 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
-        # Get monitored endpoint resources before updating
-        monitored_endpoints = get_monitored_endpoint_resources_for_connection(
-            self.db, connection_config
-        )
+        # Get endpoint resources before updating
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
 
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
@@ -702,10 +700,8 @@ class ConnectionService:
                 "fides_meta": ctl_dataset.fides_meta,
             }
 
-            # Get monitored endpoints and preserve collections from customer dataset
-            monitored_endpoints = get_monitored_endpoint_resources_for_connection(
-                self.db, connection_config
-            )
+            # Get endpoint resources and preserve collections from customer dataset
+            monitored_endpoints = get_endpoint_resources(self.db, connection_config)
             if monitored_endpoints:
                 upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
                     monitored_endpoints, customer_dataset, upcoming_dataset

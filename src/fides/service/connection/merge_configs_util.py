@@ -238,15 +238,15 @@ def merge_datasets(
     return merged_dataset
 
 
-def get_monitored_endpoint_resources_for_connection(
+def get_endpoint_resources(
     db: Session, connection_config: ConnectionConfig
 ) -> List[StagedResource]:
     """
-    Get monitored endpoint staged resources for a given connection config.
+    Get endpoint staged resources for a given connection config.
     Only returns Endpoint type resources since those are what we need to preserve.
 
     Returns:
-        List of monitored endpoint staged resources
+        List of endpoint staged resources
     """
     # Get all monitor configs for this connection
     monitor_configs = MonitorConfig.filter(
@@ -259,9 +259,9 @@ def get_monitored_endpoint_resources_for_connection(
 
     monitor_config_ids = [mc.key for mc in monitor_configs]
 
-    # Query staged resources with monitored status for these monitor configs
+    # Query staged resources for these monitor configs
     # Only get Endpoint type resources since those represent SaaS endpoints/collections
-    monitored_endpoints = StagedResource.filter(
+    endpoint_resources = StagedResource.filter(
         db=db,
         conditions=(
             (StagedResource.monitor_config_id.in_(monitor_config_ids))
@@ -269,7 +269,7 @@ def get_monitored_endpoint_resources_for_connection(
         ),
     ).all()
 
-    return monitored_endpoints
+    return endpoint_resources
 
 
 def merge_saas_config_with_monitored_resources(
@@ -278,15 +278,15 @@ def merge_saas_config_with_monitored_resources(
     existing_saas_config: Optional[SaaSConfig] = None,
 ) -> SaaSConfig:
     """
-    Merge new SaaS config with monitored endpoints from existing config.
+    Merge new SaaS config with endpoint resources from monitors.
 
     Args:
         new_saas_config: The new SaaS config from template
-        monitored_endpoints: List of monitored endpoint staged resources
+        monitored_endpoints: List of endpoint staged resources from monitors
         existing_saas_config: The existing SaaS config that may contain promoted endpoints
 
     Returns:
-        Merged SaaS config with preserved monitored endpoints
+        Merged SaaS config with preserved endpoints from monitors
     """
     if not monitored_endpoints or not existing_saas_config:
         return new_saas_config
