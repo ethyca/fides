@@ -101,7 +101,7 @@ const AuthenticateOktaForm = () => {
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
-  const useOAuth2 = flags.alphaNewOktaAuth;
+  const useOAuth2 = flags.oktaMonitor;
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
