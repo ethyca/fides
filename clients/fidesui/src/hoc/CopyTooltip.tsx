@@ -52,6 +52,7 @@ export const CopyTooltip = ({
   ...props
 }: CopyTooltipProps) => {
   const [hasCopied, setHasCopied] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   const handleCopy = async () => {
     try {
@@ -80,6 +81,16 @@ export const CopyTooltip = ({
     }
   };
 
+  const getTooltipText = () => {
+    if (hasCopied) {
+      return copiedText;
+    }
+    if (isFocused) {
+      return `Press enter or space to ${copyText.toLowerCase()}`;
+    }
+    return copyText;
+  };
+
   const tooltipContent = (
     <Button
       type="text"
@@ -88,9 +99,7 @@ export const CopyTooltip = ({
       disabled={hasCopied}
       className={styles.tooltipButton}
     >
-      {hasCopied
-        ? copiedText
-        : `Press enter or space to ${copyText.toLowerCase()}`}
+      {getTooltipText()}
     </Button>
   );
 
@@ -107,7 +116,9 @@ export const CopyTooltip = ({
         role="button"
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        style={{ cursor: "default" }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className={styles.keyboardAccessibleButton}
       >
         {children}
       </span>
