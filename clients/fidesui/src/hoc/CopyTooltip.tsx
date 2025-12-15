@@ -11,8 +11,6 @@ interface CopyTooltipProps extends Omit<TooltipProps, "title"> {
   copyText?: string;
   /** Custom text to show after copying (defaults to "Copied!") */
   copiedText?: string;
-  /** Duration in milliseconds to show "Copied!" message before reverting (defaults to 2000) */
-  copiedDuration?: number;
 }
 
 /**
@@ -24,7 +22,7 @@ interface CopyTooltipProps extends Omit<TooltipProps, "title"> {
  * - Shows "Copy ID" (or custom text) tooltip on hover
  * - Click the tooltip text to copy content to clipboard
  * - Shows "Copied!" (or custom text) confirmation
- * - Automatically reverts to original text after configured duration
+ * - Automatically reverts to original text when the tooltip is closed
  *
  * @example
  * ```tsx
@@ -48,7 +46,6 @@ export const CopyTooltip = ({
   contentToCopy,
   copyText = "Copy ID",
   copiedText = "Copied!",
-  copiedDuration = 2000,
   ...props
 }: CopyTooltipProps) => {
   const [hasCopied, setHasCopied] = useState<boolean>(false);
@@ -58,10 +55,6 @@ export const CopyTooltip = ({
     try {
       await navigator.clipboard.writeText(contentToCopy);
       setHasCopied(true);
-
-      setTimeout(() => {
-        setHasCopied(false);
-      }, copiedDuration);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("Failed to copy to clipboard:", err);
@@ -111,6 +104,11 @@ export const CopyTooltip = ({
       title={tooltipContent}
       trigger={["focus", "hover"]}
       rootClassName={styles.tooltip}
+      onOpenChange={(visible) => {
+        if (!visible) {
+          setHasCopied(false);
+        }
+      }}
     >
       <span
         role="button"
