@@ -32,6 +32,12 @@
           "default_value": "123",
           "hidden": true
         },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "ip_geolocation_hint": true,
+          "required": true
+        },
         "preferred_format": {
           "label": "Preferred format",
           "field_type": "select",
@@ -87,6 +93,12 @@
             "Activity History",
             "Analytics Data"
           ]
+        },
+        "location": {
+          "label": "Location",
+          "field_type": "location",
+          "required": false,
+          "ip_geolocation_hint": true
         }
       },
       "confirmButtonText": "Continue",
