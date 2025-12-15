@@ -2,7 +2,7 @@ import {
   AntFlex as Flex,
   AntTag as Tag,
   AntTypography as Typography,
-  Icons,
+  CopyTooltip,
 } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
@@ -51,18 +51,9 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
           ))}
         </Flex>
       )}
-      <Typography.Text
-        type="secondary"
-        copyable={{
-          text: privacyRequest.id,
-          icon: (
-            <Icons.Copy className="size-4 text-[var(--ant-color-text-secondary)]" />
-          ),
-          tooltips: ["Copy request ID", "Copied"],
-        }}
-      >
-        {privacyRequest.id}
-      </Typography.Text>
+      <CopyTooltip contentToCopy={privacyRequest.id}>
+        <Typography.Text type="secondary">{privacyRequest.id}</Typography.Text>
+      </CopyTooltip>
     </Flex>
   );
 };

@@ -112,6 +112,7 @@ export {
   CustomTag as AntTag,
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
+  CopyTooltip,
 } from "./hoc";
 export type {
   CustomListProps as AntListProps,
