@@ -86,7 +86,7 @@ export const CopyTooltip = ({
       return copiedText;
     }
     if (isFocused) {
-      return `Press enter or space to ${copyText.toLowerCase()}`;
+      return `Press enter or space to copy`;
     }
     return copyText;
   };
