@@ -72,7 +72,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   }
 > = {
   addition: { label: "Unlabeled" }, // No tag for this status
-  approved: { label: "Reviewed", color: CUSTOM_TAG_COLOR.NECTAR },
+  approved: { label: "Reviewed", color: CUSTOM_TAG_COLOR.WARNING },
   classification_addition: {
     label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
