@@ -304,16 +304,24 @@ export const TcfOverlay = () => {
   }, [experienceFull]);
 
   useEffect(() => {
+    let isMounted = true;
     const loadDraftIds = async () => {
       if (!experienceFull) {
-        const defaultIds = EMPTY_ENABLED_IDS;
-        if (experienceMinimal?.privacy_notices) {
-          defaultIds.customPurposesConsent = await getEnabledIdsNotice(
-            experienceMinimal.privacy_notices,
-            options.fidesCookieSuffix,
-          );
+        // Get custom purposes consent if available
+        const customPurposesConsent = experienceMinimal?.privacy_notices
+          ? await getEnabledIdsNotice(
+              experienceMinimal.privacy_notices,
+              options.fidesCookieSuffix,
+            )
+          : [];
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setDraftIds({
+            ...EMPTY_ENABLED_IDS,
+            customPurposesConsent,
+          });
         }
-        setDraftIds(defaultIds);
       } else {
         const {
           tcf_purpose_consents: consentPurposes = [],
@@ -328,23 +336,37 @@ export const TcfOverlay = () => {
           tcf_system_legitimate_interests: legintSystems = [],
         } = experienceFull as PrivacyExperience;
 
-        // Vendors and systems are the same to the FE, so we combine them here
-        setDraftIds({
-          purposesConsent: getEnabledIds(consentPurposes),
-          customPurposesConsent: await getEnabledIdsNotice(
-            customPurposes,
-            options.fidesCookieSuffix,
-          ),
-          purposesLegint: getEnabledIds(legintPurposes),
-          specialPurposes: getEnabledIds(specialPurposes),
-          features: getEnabledIds(features),
-          specialFeatures: getEnabledIds(specialFeatures),
-          vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
-          vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
-        });
+        // Await custom purposes consent
+        const customPurposesConsent = await getEnabledIdsNotice(
+          customPurposes,
+          options.fidesCookieSuffix,
+        );
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          // Vendors and systems are the same to the FE, so we combine them here
+          setDraftIds({
+            purposesConsent: getEnabledIds(consentPurposes),
+            customPurposesConsent,
+            purposesLegint: getEnabledIds(legintPurposes),
+            specialPurposes: getEnabledIds(specialPurposes),
+            features: getEnabledIds(features),
+            specialFeatures: getEnabledIds(specialFeatures),
+            vendorsConsent: getEnabledIds([
+              ...consentVendors,
+              ...consentSystems,
+            ]),
+            vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
+          });
+        }
       }
     };
     loadDraftIds();
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull, experienceMinimal]);
 
