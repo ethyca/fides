@@ -268,7 +268,9 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
-        <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
+        <Splitter.Panel
+          style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
+        >
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2} ellipsis>

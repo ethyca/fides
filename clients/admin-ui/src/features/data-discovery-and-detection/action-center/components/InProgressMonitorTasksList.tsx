@@ -146,7 +146,7 @@ export const InProgressMonitorTasksList = ({
 
       <List
         {...listProps}
-        className="h-full overflow-scroll"
+        className="h-full overflow-y-auto overflow-x-clip" // overflow-x-clip to prevent horizontal scroll. see https://stackoverflow.com/a/69767073/441894
         renderItem={(task: MonitorTaskInProgressResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
