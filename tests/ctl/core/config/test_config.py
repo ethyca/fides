@@ -639,7 +639,8 @@ class TestReadOnlyDatabaseConfig:
 
         # Async URI should convert sslmode to ssl and remove sslrootcert
         assert db_settings.async_readonly_database_uri is not None
+        parsed = urlparse(db_settings.async_readonly_database_uri)
         # sslmode should be converted to ssl in query params
-        assert "ssl=" in db_settings.async_readonly_database_uri
+        assert "ssl=" in parsed.query
         # sslrootcert should be removed from query params
-        assert "sslrootcert" not in db_settings.async_readonly_database_uri
+        assert "sslrootcert" not in parsed.query
