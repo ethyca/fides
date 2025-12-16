@@ -29,6 +29,11 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
    */
   duration?: number;
   /**
+   * Bounce factor for the spring animation
+   * @default 0.15
+   */
+  bounce?: number;
+  /**
    * Easing function for the animation
    * @default "easeInOut"
    */
@@ -49,20 +54,6 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
  * A grid component with built-in exit animations for items.
  * Items slide vertically and fade out when removed.
  * Remaining items slide horizontally to fill the gap.
- *
- * @example
- * ```tsx
- * <ExitGrid
- *   dataSource={items}
- *   itemKey={(item) => item.id}
- *   columns={2}
- *   gutter={4}
- *   duration={0.5}
- *   ease="easeInOut"
- *   layoutStagger={0.05}
- *   renderItem={(item) => <Card>{item.content}</Card>}
- * />
- * ```
  */
 export const ExitGrid = <T,>({
   dataSource,
@@ -71,6 +62,7 @@ export const ExitGrid = <T,>({
   columns = 1,
   gutter = 0,
   duration = 0.3,
+  bounce = 0.15,
   ease = "easeInOut",
   layoutStagger = 0.05,
   ...props
@@ -97,6 +89,7 @@ export const ExitGrid = <T,>({
               transition={{
                 layout: {
                   duration,
+                  bounce,
                   ease,
                   delay: layoutStagger > 0 ? index * layoutStagger : 0,
                   type: "spring",
