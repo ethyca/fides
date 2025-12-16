@@ -83,9 +83,9 @@ export const PrivacyRequestFiltersBar = ({
     });
   };
 
-  const handleLocationChange = (value: string | null) => {
+  const handleLocationChange = (value: string | null | undefined) => {
     setFilters({
-      location: value,
+      location: value ?? null,
     });
   };
 
