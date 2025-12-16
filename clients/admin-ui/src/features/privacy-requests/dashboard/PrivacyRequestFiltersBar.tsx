@@ -12,6 +12,9 @@ import {
   SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
 } from "~/features/privacy-requests/constants";
+import PrivacyRequestSortMenu, {
+  SortParams,
+} from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -35,11 +38,15 @@ interface PrivacyRequestFiltersBarProps {
     action_type?: ActionType[] | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
+  sortState: SortParams;
+  setSortState: (sortState: SortParams) => void;
 }
 
 export const PrivacyRequestFiltersBar = ({
   filters,
   setFilters,
+  sortState,
+  setSortState,
 }: PrivacyRequestFiltersBarProps) => {
   // Fetch privacy center config to get custom fields
   const { data: config } = useGetPrivacyCenterConfigQuery();
@@ -159,6 +166,10 @@ export const PrivacyRequestFiltersBar = ({
           />
         ),
       )}
+      <PrivacyRequestSortMenu
+        sortState={sortState}
+        setSortState={setSortState}
+      />
     </Flex>
   );
 };
