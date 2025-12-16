@@ -2,6 +2,7 @@ import { ComponentChildren, Fragment, VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
 import { getConsentContext } from "../lib/consent-context";
+import { messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import ExperienceDescription from "./ExperienceDescription";
 import GpcInfo from "./GpcInfo";
@@ -31,8 +32,13 @@ const ConsentContent = ({
   const { title, description } = headerContent;
   const { i18n } = useI18n();
   const gpcEnabled = getConsentContext().globalPrivacyControl;
-  const gpcTitle = i18n.t("static.gpc.title");
-  const gpcDescription = i18n.t("static.gpc.description");
+  // Use dynamic translation if available, otherwise fallback to static
+  const gpcTitle = messageExists(i18n, "exp.gpc_title")
+    ? i18n.t("exp.gpc_title")
+    : i18n.t("static.gpc.title");
+  const gpcDescription = messageExists(i18n, "exp.gpc_description")
+    ? i18n.t("exp.gpc_description")
+    : i18n.t("static.gpc.description");
 
   return (
     <Fragment>

@@ -658,6 +658,12 @@ export type ExperienceConfigTranslation = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
   banner_title?: string;
+  // GPC (Global Privacy Control) translatable fields
+  gpc_label?: string;
+  gpc_description?: string;
+  gpc_status_applied_label?: string;
+  gpc_status_overridden_label?: string;
+  gpc_title?: string;
   is_default?: boolean;
   privacy_policy_link_label?: string;
   privacy_policy_url?: string;
