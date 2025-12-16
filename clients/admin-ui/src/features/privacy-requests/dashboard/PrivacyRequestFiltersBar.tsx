@@ -165,6 +165,7 @@ export const PrivacyRequestFiltersBar = ({
         aria-label="Location"
         className="w-44"
         popupMatchSelectWidth={300}
+        includeCountryOnlyOptions
       />
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
