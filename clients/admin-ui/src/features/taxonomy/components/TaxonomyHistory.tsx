@@ -59,10 +59,12 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
     );
   }
 
+  const dataSource = data?.items ?? [];
+
   return (
     <AntFlex vertical gap="middle">
       <AntList size="small" itemLayout="vertical">
-        {data?.items.map((item) => {
+        {dataSource.map((item) => {
           const distance = formatDistance(
             new Date(item.created_at),
             new Date(),
@@ -84,7 +86,10 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
           return (
             <AntList.Item key={item.id}>
               <AntList.Item.Meta
-                title={EVENT_TYPE_LABEL_MAP[item.event_type as EventType]}
+                title={
+                  EVENT_TYPE_LABEL_MAP[item.event_type as EventType] ??
+                  item.event_type
+                }
                 description={description}
               />
               <AntTypography.Text>{item.description}</AntTypography.Text>

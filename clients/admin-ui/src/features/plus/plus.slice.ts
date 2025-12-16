@@ -264,15 +264,19 @@ const plusApi = baseApi.injectEndpoints({
         { type: "Taxonomy History", id: field_type },
       ],
     }),
-    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
+    deleteCustomFieldDefinition: build.mutation<
+      void,
+      { id: string; resource_type: string; field_type: string }
+    >({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [
-        "Custom Field Definition",
-        "Datamap",
-        "Taxonomy History",
+      invalidatesTags: (result, error, { resource_type, field_type }) => [
+        { type: "Custom Field Definition" },
+        { type: "Datamap" },
+        { type: "Taxonomy History", id: resource_type },
+        { type: "Taxonomy History", id: field_type },
       ],
     }),
 
