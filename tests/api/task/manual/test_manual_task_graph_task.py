@@ -755,6 +755,11 @@ class TestManualTaskConditionalDependencies:
         manual_task, graph_task = build_graph_task
 
         # Create privacy request conditional dependency
+        condition_tree = {
+            "field_address": privacy_request_field_address,
+            "operator": "eq",
+            "value": privacy_request_value,
+        }
         ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -764,6 +769,7 @@ class TestManualTaskConditionalDependencies:
                 "operator": "eq",
                 "value": privacy_request_value,
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 

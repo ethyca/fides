@@ -15,8 +15,11 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 )
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
+from fides.api.task.manual.manual_task_utils import (
+    extract_dataset_field_addresses,
+    extract_privacy_request_field_addresses,
+)
 from fides.api.util.collection_util import Row
-from fides.api.task.manual.manual_task_utils import extract_dataset_field_addresses, extract_privacy_request_field_addresses
 
 
 def extract_conditional_dependency_data_from_inputs(

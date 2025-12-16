@@ -640,7 +640,7 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
-         # Get the config to check if it exists
+        # Get the config to check if it exists
         config = (
             db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == data["config_id"])

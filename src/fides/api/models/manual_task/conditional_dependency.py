@@ -85,8 +85,11 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
 
         if not manual_task_id:
             raise ValueError("manual_task_id is required as a keyword argument")
+        # Filter for root condition (parent_id IS NULL) since child rows don't have condition_tree
         condition_row = (
-            db.query(cls).filter(cls.manual_task_id == manual_task_id).first()
+            db.query(cls)
+            .filter(cls.manual_task_id == manual_task_id, cls.parent_id.is_(None))
+            .first()
         )
 
         if not condition_row or condition_row.condition_tree is None:

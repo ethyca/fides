@@ -173,41 +173,44 @@ def sample_conditions(
     """Create sample conditions for all types."""
     conditions = []
 
-    # Receiver condition
-    receiver_condition = DigestCondition.create(
+    # Receiver condition - with condition_tree for JSONB storage
+    receiver_cond = DigestCondition.create(
         db=db,
         data={
             **receiver_condition,
             **receiver_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
             "sort_order": 1,
+            "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
-    conditions.append(receiver_condition)
+    conditions.append(receiver_cond)
 
-    # Content condition
-    content_condition = DigestCondition.create(
+    # Content condition - with condition_tree for JSONB storage
+    content_cond = DigestCondition.create(
         db=db,
         data={
             **content_condition,
             **content_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
             "sort_order": 1,
+            "condition_tree": content_condition_leaf.model_dump(),
         },
     )
-    conditions.append(content_condition)
+    conditions.append(content_cond)
 
-    # Priority condition
-    priority_condition = DigestCondition.create(
+    # Priority condition - with condition_tree for JSONB storage
+    priority_cond = DigestCondition.create(
         db=db,
         data={
             **priority_condition,
             **priority_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
             "sort_order": 1,
+            "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
-    conditions.append(priority_condition)
+    conditions.append(priority_cond)
 
     yield conditions
     for condition in conditions:
@@ -229,6 +232,7 @@ def receiver_digest_condition_leaf(
             "condition_type": ConditionalDependencyType.leaf,
             **receiver_condition_leaf.model_dump(),
             "sort_order": 1,
+            "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
     yield condition
@@ -250,6 +254,7 @@ def content_digest_condition_leaf(
             **content_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
             "sort_order": 1,
+            "condition_tree": content_condition_leaf.model_dump(),
         },
     )
     yield condition
@@ -271,6 +276,7 @@ def priority_digest_condition_leaf(
             **priority_condition_leaf.model_dump(),
             "condition_type": ConditionalDependencyType.leaf,
             "sort_order": 1,
+            "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
     yield condition
@@ -285,6 +291,43 @@ def complex_condition_tree(
     group_condition_and: dict[str, Any],
 ):
     """Create a complex condition tree for testing."""
+    # Build full condition_tree for JSONB storage: (A AND B) OR (C AND D)
+    condition_tree = {
+        "logical_operator": "or",
+        "conditions": [
+            {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "field_address": "task.assignee",
+                        "operator": "eq",
+                        "value": "user123",
+                    },
+                    {
+                        "field_address": "task.due_date",
+                        "operator": "lte",
+                        "value": "2024-01-01",
+                    },
+                ],
+            },
+            {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "field_address": "task.category",
+                        "operator": "eq",
+                        "value": "urgent",
+                    },
+                    {
+                        "field_address": "task.created_at",
+                        "operator": "gte",
+                        "value": "2024-01-01T00:00:00Z",
+                    },
+                ],
+            },
+        ],
+    }
+
     # Create root group: (A AND B) OR (C AND D)
     root_group = DigestCondition.create(
         db=db,
@@ -292,10 +335,11 @@ def complex_condition_tree(
             **content_condition,
             **group_condition_or,
             "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
 
-    # Create first nested group: (A AND B)
+    # Create first nested group: (A AND B) - for backward compatibility
     nested_group1 = DigestCondition.create(
         db=db,
         data={
@@ -306,7 +350,7 @@ def complex_condition_tree(
         },
     )
 
-    # Create second nested group: (C AND D)
+    # Create second nested group: (C AND D) - for backward compatibility
     nested_group2 = DigestCondition.create(
         db=db,
         data={
@@ -317,7 +361,7 @@ def complex_condition_tree(
         },
     )
 
-    # Create leaf conditions for first group
+    # Create leaf conditions for first group - for backward compatibility
     leaf_a = DigestCondition.create(
         db=db,
         data={
@@ -344,7 +388,7 @@ def complex_condition_tree(
         },
     )
 
-    # Create leaf conditions for second group
+    # Create leaf conditions for second group - for backward compatibility
     leaf_c = DigestCondition.create(
         db=db,
         data={

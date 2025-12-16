@@ -974,9 +974,19 @@ def mock_dataset_graph():
     return DatasetGraph(postgres_dataset)
 
 
+def create_condition_gt_18_tree() -> dict:
+    """Return the condition tree dict for age >= 18."""
+    return {
+        "field_address": "postgres_example:customer:profile.age",
+        "operator": "gte",
+        "value": 18,
+    }
+
+
 def create_condition_gt_18(
     db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
 ):
+    condition_tree = create_condition_gt_18_tree() if parent_id is None else None
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -987,13 +997,24 @@ def create_condition_gt_18(
             "operator": "gte",
             "value": 18,
             "sort_order": sort_order,
+            "condition_tree": condition_tree,
         },
     )
+
+
+def create_condition_age_lt_65_tree() -> dict:
+    """Return the condition tree dict for age < 65."""
+    return {
+        "field_address": "postgres_example:customer:profile.age",
+        "operator": "lt",
+        "value": 65,
+    }
 
 
 def create_condition_age_lt_65(
     db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 2
 ):
+    condition_tree = create_condition_age_lt_65_tree() if parent_id is None else None
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -1004,13 +1025,24 @@ def create_condition_age_lt_65(
             "operator": "lt",
             "value": 65,
             "sort_order": sort_order,
+            "condition_tree": condition_tree,
         },
     )
+
+
+def create_condition_eq_active_tree() -> dict:
+    """Return the condition tree dict for status == active."""
+    return {
+        "field_address": "postgres_example:payment_card:subscription.status",
+        "operator": "eq",
+        "value": "active",
+    }
 
 
 def create_condition_eq_active(
     db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
 ):
+    condition_tree = create_condition_eq_active_tree() if parent_id is None else None
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -1021,13 +1053,24 @@ def create_condition_eq_active(
             "operator": "eq",
             "value": "active",
             "sort_order": sort_order,
+            "condition_tree": condition_tree,
         },
     )
+
+
+def create_condition_eq_admin_tree() -> dict:
+    """Return the condition tree dict for role == admin."""
+    return {
+        "field_address": "postgres_example:customer:role",
+        "operator": "eq",
+        "value": "admin",
+    }
 
 
 def create_condition_eq_admin(
     db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
 ):
+    condition_tree = create_condition_eq_admin_tree() if parent_id is None else None
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -1038,6 +1081,7 @@ def create_condition_eq_admin(
             "value": "admin",
             "sort_order": sort_order,
             "parent_id": parent_id,
+            "condition_tree": condition_tree,
         },
     )
 
@@ -1077,6 +1121,14 @@ def condition_eq_admin(db: Session, manual_task: ManualTask):
 @pytest.fixture()
 def group_condition(db: Session, manual_task: ManualTask):
     """Create a group conditional dependency with logical_operator 'and'"""
+    # Build the full condition tree for JSONB storage
+    condition_tree = {
+        "logical_operator": "and",
+        "conditions": [
+            create_condition_gt_18_tree(),
+            create_condition_eq_active_tree(),
+        ],
+    }
     root_condition = ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -1084,8 +1136,10 @@ def group_condition(db: Session, manual_task: ManualTask):
             "condition_type": ConditionalDependencyType.group,
             "logical_operator": "and",
             "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
+    # Also create child rows for backward compatibility during transition
     create_condition_gt_18(db, manual_task, root_condition.id, 2)
     create_condition_eq_active(db, manual_task, root_condition.id, 3)
     yield root_condition
@@ -1095,6 +1149,20 @@ def group_condition(db: Session, manual_task: ManualTask):
 @pytest.fixture()
 def nested_group_condition(db: Session, manual_task: ManualTask):
     """Create a nested group conditional dependency with logical_operator 'or'"""
+    # Build the full condition tree for JSONB storage
+    condition_tree = {
+        "logical_operator": "and",
+        "conditions": [
+            {
+                "logical_operator": "or",
+                "conditions": [
+                    create_condition_gt_18_tree(),
+                    create_condition_eq_active_tree(),
+                    create_condition_eq_admin_tree(),
+                ],
+            }
+        ],
+    }
     root_condition = ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -1102,8 +1170,10 @@ def nested_group_condition(db: Session, manual_task: ManualTask):
             "condition_type": ConditionalDependencyType.group,
             "logical_operator": "and",
             "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
+    # Also create child rows for backward compatibility during transition
     nested_group = ManualTaskConditionalDependency.create(
         db=db,
         data={

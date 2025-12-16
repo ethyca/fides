@@ -111,7 +111,6 @@ class DigestCondition(ConditionalDependencyBase):
         #     "digest_condition_type",
         #     name="uq_digest_condition_config_type",
         # ),
-
         Index(
             "ix_digest_condition_unique_root_per_type",
             "digest_config_id",
@@ -245,11 +244,13 @@ class DigestCondition(ConditionalDependencyBase):
                 "digest_config_id and digest_condition_type are required keyword arguments"
             )
 
+        # Filter for root condition (parent_id IS NULL) since child rows don't have condition_tree
         condition_row = (
             db.query(cls)
             .filter(
                 cls.digest_config_id == digest_config_id,
                 cls.digest_condition_type == digest_condition_type,
+                cls.parent_id.is_(None),
             )
             .one_or_none()
         )
