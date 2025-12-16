@@ -127,12 +127,12 @@ class TestMergeSaaSConfigWithMonitoredResources:
             StagedResource(
                 name="custom_endpoint",
                 urn="test_connector:custom_endpoint",
-                resource_type="endpoint",
+                resource_type="Endpoint",
             ),
             StagedResource(
                 name="users",  # This exists in both configs
                 urn="test_connector:users",
-                resource_type="endpoint",
+                resource_type="Endpoint",
             ),
         ]
 
@@ -195,7 +195,7 @@ class TestMergeSaaSConfigWithMonitoredResources:
             StagedResource(
                 name="users",
                 urn="test_connector:users",
-                resource_type="endpoint",
+                resource_type="Endpoint",
             ),
         ]
 
@@ -345,12 +345,12 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
             StagedResource(
                 name="custom_collection",
                 urn="test_dataset:custom_collection",
-                resource_type="collection",
+                resource_type="Endpoint",
             ),
             StagedResource(
                 name="users",  # This exists in both datasets
                 urn="test_dataset:users",
-                resource_type="collection",
+                resource_type="Endpoint",
             ),
         ]
 
@@ -411,7 +411,7 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
             StagedResource(
                 name="users",
                 urn="test_dataset:users",
-                resource_type="collection",
+                resource_type="Endpoint",
             ),
         ]
 
