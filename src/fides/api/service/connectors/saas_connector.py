@@ -39,6 +39,7 @@ from fides.api.schemas.saas.shared_schemas import (
     ConsentPropagationStatus,
     SaaSRequestParams,
 )
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.service.async_dsr.strategies.async_dsr_strategy import AsyncDSRStrategy
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
@@ -280,15 +281,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             if async_dsr_strategy := _get_async_dsr_strategy(
                 db, request_task, query_config, ActionType.access
             ):
-                if self.guard_access_request(policy):
+                # Guard clause only applies to polling requests
+                # Callback requests should always proceed
+                if async_dsr_strategy.type == AsyncTaskType.polling:
+                    if not self.guard_access_request(policy):
+                        logger.info(f"Skipping async access request for policy: {policy.name}")
+                        return []
                     return async_dsr_strategy.async_retrieve_data(
                         client=self.create_client(),
                         request_task_id=request_task.id,
                         query_config=query_config,
                         input_data=input_data,
                     )
-                logger.info(f"Skipping async access request for policy: {policy.name}")
-                return []
 
         rows: List[Row] = []
         for read_request in read_requests:
