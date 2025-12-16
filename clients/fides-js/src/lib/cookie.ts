@@ -360,8 +360,18 @@ export const saveFidesCookie = async (
   // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
+  // Validate compression option and fallback to "none" if invalid
+  let validatedCompression: "gzip" | "none" = "none";
+  if (fidesCookieCompression === "gzip" || fidesCookieCompression === "none") {
+    validatedCompression = fidesCookieCompression;
+  } else if (fidesCookieCompression) {
+    fidesDebugger(
+      `Invalid fidesCookieCompression value: "${fidesCookieCompression}". Expected "gzip" or "none". Defaulting to "none".`,
+    );
+  }
+
   let encodedCookie: string = JSON.stringify(cookie);
-  if (fidesCookieCompression === "gzip") {
+  if (validatedCompression === "gzip") {
     encodedCookie = await compressCookie(encodedCookie);
   } else if (base64Cookie) {
     encodedCookie = base64_encode(encodedCookie);
