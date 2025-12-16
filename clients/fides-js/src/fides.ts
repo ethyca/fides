@@ -117,7 +117,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   }
   /* END THIRD PARTY CONSENT MIGRATION */
 
-  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
+  this.cookie = await getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,

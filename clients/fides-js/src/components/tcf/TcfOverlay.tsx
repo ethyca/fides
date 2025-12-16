@@ -135,9 +135,18 @@ export const TcfOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie(
-    options.fidesCookieSuffix,
+  const [parsedCookie, setParsedCookie] = useState<FidesCookie | undefined>(
+    undefined,
   );
+
+  useEffect(() => {
+    const loadCookie = async () => {
+      const cookieData = await getFidesConsentCookie(options.fidesCookieSuffix);
+      setParsedCookie(cookieData);
+    };
+    loadCookie();
+  }, [options.fidesCookieSuffix]);
+
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
   const userlocale = detectUserLocale(
@@ -295,44 +304,47 @@ export const TcfOverlay = () => {
   }, [experienceFull]);
 
   useEffect(() => {
-    if (!experienceFull) {
-      const defaultIds = EMPTY_ENABLED_IDS;
-      if (experienceMinimal?.privacy_notices) {
-        defaultIds.customPurposesConsent = getEnabledIdsNotice(
-          experienceMinimal.privacy_notices,
-          options.fidesCookieSuffix,
-        );
-      }
-      setDraftIds(defaultIds);
-    } else {
-      const {
-        tcf_purpose_consents: consentPurposes = [],
-        privacy_notices: customPurposes = [],
-        tcf_purpose_legitimate_interests: legintPurposes = [],
-        tcf_special_purposes: specialPurposes = [],
-        tcf_features: features = [],
-        tcf_special_features: specialFeatures = [],
-        tcf_vendor_consents: consentVendors = [],
-        tcf_vendor_legitimate_interests: legintVendors = [],
-        tcf_system_consents: consentSystems = [],
-        tcf_system_legitimate_interests: legintSystems = [],
-      } = experienceFull as PrivacyExperience;
+    const loadDraftIds = async () => {
+      if (!experienceFull) {
+        const defaultIds = EMPTY_ENABLED_IDS;
+        if (experienceMinimal?.privacy_notices) {
+          defaultIds.customPurposesConsent = await getEnabledIdsNotice(
+            experienceMinimal.privacy_notices,
+            options.fidesCookieSuffix,
+          );
+        }
+        setDraftIds(defaultIds);
+      } else {
+        const {
+          tcf_purpose_consents: consentPurposes = [],
+          privacy_notices: customPurposes = [],
+          tcf_purpose_legitimate_interests: legintPurposes = [],
+          tcf_special_purposes: specialPurposes = [],
+          tcf_features: features = [],
+          tcf_special_features: specialFeatures = [],
+          tcf_vendor_consents: consentVendors = [],
+          tcf_vendor_legitimate_interests: legintVendors = [],
+          tcf_system_consents: consentSystems = [],
+          tcf_system_legitimate_interests: legintSystems = [],
+        } = experienceFull as PrivacyExperience;
 
-      // Vendors and systems are the same to the FE, so we combine them here
-      setDraftIds({
-        purposesConsent: getEnabledIds(consentPurposes),
-        customPurposesConsent: getEnabledIdsNotice(
-          customPurposes,
-          options.fidesCookieSuffix,
-        ),
-        purposesLegint: getEnabledIds(legintPurposes),
-        specialPurposes: getEnabledIds(specialPurposes),
-        features: getEnabledIds(features),
-        specialFeatures: getEnabledIds(specialFeatures),
-        vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
-        vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
-      });
-    }
+        // Vendors and systems are the same to the FE, so we combine them here
+        setDraftIds({
+          purposesConsent: getEnabledIds(consentPurposes),
+          customPurposesConsent: await getEnabledIdsNotice(
+            customPurposes,
+            options.fidesCookieSuffix,
+          ),
+          purposesLegint: getEnabledIds(legintPurposes),
+          specialPurposes: getEnabledIds(specialPurposes),
+          features: getEnabledIds(features),
+          specialFeatures: getEnabledIds(specialFeatures),
+          vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
+          vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
+        });
+      }
+    };
+    loadDraftIds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull, experienceMinimal]);
 
