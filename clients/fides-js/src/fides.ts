@@ -23,6 +23,7 @@ import {
 } from "./lib/consent-types";
 import {
   getFidesConsentCookie,
+  hasFidesConsentCookie,
   isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -108,7 +109,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Check for migrated consent from any registered providers
   let migratedConsent: NoticeConsent | undefined;
 
-  if (!getFidesConsentCookie(config.options.fidesCookieSuffix)) {
+  if (!hasFidesConsentCookie(config.options.fidesCookieSuffix)) {
     const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
     if (consent && method) {
       migratedConsent = consent;

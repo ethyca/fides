@@ -113,6 +113,16 @@ export const getCookieByName = (cookieName: string): string | undefined =>
   cookies.get(cookieName);
 
 /**
+ * Check if a fides consent cookie exists (sync operation, no decompression)
+ */
+export const hasFidesConsentCookie = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+): boolean => {
+  const cookieString = getCookieByName(getConsentCookieName(suffix));
+  return !!cookieString;
+};
+
+/**
  * Retrieve and decode fides consent cookie
  */
 export const getFidesConsentCookie = (
