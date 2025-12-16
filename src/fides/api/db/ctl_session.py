@@ -1,5 +1,5 @@
 import ssl
-from typing import Any, AsyncGenerator, Dict
+from typing import Any, AsyncGenerator, Callable, Dict
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -43,8 +43,11 @@ async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit
 
 # Read-only async engine and session
 # Only created if read-only database URI is configured
-readonly_async_engine = None
-readonly_async_session = None
+readonly_async_engine: Any = None
+readonly_async_session: Callable[[], AsyncSession]
+
+# Initialize readonly_async_session (will be overridden if readonly DB is configured)
+readonly_async_session = async_session
 
 if CONFIG.database.async_readonly_database_uri:
     # Build connect_args for readonly (similar to primary)
@@ -84,10 +87,6 @@ if CONFIG.database.async_readonly_database_uri:
     readonly_async_session = sessionmaker(
         readonly_async_engine, class_=AsyncSession, expire_on_commit=False
     )
-
-# If not configured, fallback to primary session
-if readonly_async_session is None:
-    readonly_async_session = async_session
 
 # TODO: this engine and session are only used in test modules,
 # and they do not respect engine settings like pool_size, max_overflow, etc.

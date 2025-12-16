@@ -66,7 +66,8 @@ def get_readonly_autoclose_db_session() -> Generator[Session, None, None]:
     """
     if not CONFIG.database.sqlalchemy_readonly_database_uri:
         # If read-only not configured, use primary session
-        yield from get_autoclose_db_session()
+        with get_autoclose_db_session() as db:
+            yield db
         return
 
     # Create read-only session using existing get_readonly_api_session
