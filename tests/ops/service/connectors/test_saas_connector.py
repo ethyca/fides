@@ -1339,9 +1339,7 @@ class TestAsyncConnectors:
                 {},
             )
 
-    @mock.patch(
-        "fides.api.service.connectors.saas_connector._get_async_dsr_strategy"
-    )
+    @mock.patch("fides.api.service.connectors.saas_connector._get_async_dsr_strategy")
     def test_guard_access_request_with_erasure_only_policy(
         self,
         mock_get_async_strategy,
