@@ -38,13 +38,17 @@ export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
   "Removing...",
 ];
 
-/**
- * Filter out excluded statuses from a list of statuses.
- */
-export const getFilterableStatuses = (
-  statuses: ResourceStatusLabel[],
-): ResourceStatusLabel[] =>
-  statuses.filter((status) => !EXCLUDED_FILTER_STATUSES.includes(status));
+export const DEFAULT_FILTER_STATUSES: Exclude<
+  ResourceStatusLabel,
+  "Approved" | "Ignored" | "Approving..." | "Removing..."
+>[] = [
+  "Unlabeled",
+  "Classifying...",
+  "Classified",
+  "Reviewed",
+  "Removed",
+  "Error",
+];
 
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
