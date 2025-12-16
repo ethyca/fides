@@ -21,11 +21,11 @@ enum SortOption {
 const SORT_OPTIONS = [
   {
     label: "Time received (newest)",
-    key: SortOption.CREATED_AT_ASC,
+    key: SortOption.CREATED_AT_DESC,
   },
   {
     label: "Time received (oldest)",
-    key: SortOption.CREATED_AT_DESC,
+    key: SortOption.CREATED_AT_ASC,
   },
   {
     label: "Days left (shortest)",
