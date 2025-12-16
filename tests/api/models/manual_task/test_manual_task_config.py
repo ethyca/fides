@@ -76,7 +76,7 @@ class TestManualTaskConfig:
         [
             pytest.param(
                 {"config_type": "invalid_config_type"},
-                ValueError,
+                LookupError,
                 id="invalid_config_type",
             ),
             pytest.param({"version": "not_an_int"}, DataError, id="invalid_version"),
@@ -119,17 +119,15 @@ class TestManualTaskConfig:
         )
         assert config.task == manual_task
         assert config.field_definitions == []
-        assert len(config.logs) == 1
-        assert config.logs[0].config_id == config.id
-        assert config.logs[0].task_id == manual_task.id
-        assert config.logs[0].status == ManualTaskLogStatus.created
 
         data = TEXT_FIELD_DATA.copy()
         data["task_id"] = manual_task.id
         data["config_id"] = config.id
         ManualTaskConfigField.create(db, data=data)
 
+        # Verify field definitions and logs (logs created by ManualTaskConfigField.create)
         assert len(config.field_definitions) == 1
+        assert len(config.logs) == 1  # Log created when field was added
 
 
 @pytest.mark.parametrize(

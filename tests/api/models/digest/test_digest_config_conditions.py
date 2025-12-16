@@ -52,6 +52,7 @@ class TestDigestConfigConditionMethods:
         """Test get_receiver_condition returns a ConditionLeaf."""
 
         # Update the condition to use the correct digest_config
+        # Include condition_tree for get_root_condition to work
         condition = DigestCondition.create(
             db=db,
             data={
@@ -60,6 +61,7 @@ class TestDigestConfigConditionMethods:
                 **sample_exists_condition_leaf.model_dump(),
                 "condition_type": ConditionalDependencyType.leaf,
                 "sort_order": 1,
+                "condition_tree": sample_exists_condition_leaf.model_dump(),
             },
         )
 
@@ -92,7 +94,16 @@ class TestDigestConfigConditionMethods:
         sample_eq_condition_leaf: ConditionLeaf,
     ):
         """Test get_receiver_condition returns a ConditionGroup."""
-        # Create root group condition
+        # Build the condition_tree JSONB for the root group
+        condition_tree = {
+            "logical_operator": "and",
+            "conditions": [
+                sample_exists_condition_leaf.model_dump(),
+                sample_eq_condition_leaf.model_dump(),
+            ],
+        }
+
+        # Create root group condition with condition_tree
         root_group = DigestCondition.create(
             db=db,
             data={
@@ -100,10 +111,11 @@ class TestDigestConfigConditionMethods:
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": digest_condition_type,
                 "sort_order": 0,
+                "condition_tree": condition_tree,
             },
         )
 
-        # Create child conditions
+        # Create child conditions (for backward compatibility/relationships)
         DigestCondition.create(
             db=db,
             data={
@@ -112,7 +124,6 @@ class TestDigestConfigConditionMethods:
                 "digest_condition_type": digest_condition_type,
                 "parent_id": root_group.id,
                 "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": root_group.id,
                 "sort_order": 1,
             },
         )
@@ -276,7 +287,12 @@ class TestDigestConfigConditionIntegration:
             },
         )
 
-        # Create conditions for config1
+        # Create conditions for config1 with condition_tree
+        condition1_tree = {
+            "field_address": "user.team",
+            "operator": "eq",
+            "value": "alpha",
+        }
         DigestCondition.create(
             db=db,
             data={
@@ -287,10 +303,16 @@ class TestDigestConfigConditionIntegration:
                 "operator": Operator.eq,
                 "value": "alpha",
                 "sort_order": 1,
+                "condition_tree": condition1_tree,
             },
         )
 
-        # Create conditions for config2
+        # Create conditions for config2 with condition_tree
+        condition2_tree = {
+            "field_address": "user.team",
+            "operator": "eq",
+            "value": "beta",
+        }
         DigestCondition.create(
             db=db,
             data={
@@ -301,6 +323,7 @@ class TestDigestConfigConditionIntegration:
                 "operator": Operator.eq,
                 "value": "beta",
                 "sort_order": 1,
+                "condition_tree": condition2_tree,
             },
         )
 
@@ -331,7 +354,12 @@ class TestDigestConfigConditionIntegration:
         # Initially no conditions
         assert digest_config.get_receiver_condition(db) is None
 
-        # Create a condition
+        # Create a condition with condition_tree
+        condition_tree = {
+            "field_address": "user.status",
+            "operator": "eq",
+            "value": "active",
+        }
         condition = DigestCondition.create(
             db=db,
             data={
@@ -342,6 +370,7 @@ class TestDigestConfigConditionIntegration:
                 "operator": Operator.eq,
                 "value": "active",
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
@@ -351,8 +380,13 @@ class TestDigestConfigConditionIntegration:
         assert isinstance(receiver_conditions, ConditionLeaf)
         assert receiver_conditions.value == "active"
 
-        # Update the condition
-        condition.update(db, data={"value": "verified"})
+        # Update the condition (including condition_tree)
+        updated_tree = {
+            "field_address": "user.status",
+            "operator": "eq",
+            "value": "verified",
+        }
+        condition.update(db, data={"value": "verified", "condition_tree": updated_tree})
 
         # Should reflect the update
         updated_receiver_conditions = digest_config.get_receiver_condition(db)
@@ -368,6 +402,22 @@ class TestDigestConfigConditionIntegration:
         self, db: Session, digest_config: DigestConfig
     ):
         """Test performance with large condition trees."""
+        # Build the condition_tree JSONB structure first
+        branches = []
+        for branch_idx in range(3):
+            leaves = []
+            for leaf_idx in range(5):
+                leaves.append(
+                    {
+                        "field_address": f"task.field_{branch_idx}_{leaf_idx}",
+                        "operator": "eq",
+                        "value": f"value_{branch_idx}_{leaf_idx}",
+                    }
+                )
+            branches.append({"logical_operator": "and", "conditions": leaves})
+
+        condition_tree = {"logical_operator": "or", "conditions": branches}
+
         # Create a large condition tree (3 levels deep, multiple branches)
         root_group = DigestCondition.create(
             db=db,
@@ -377,10 +427,11 @@ class TestDigestConfigConditionIntegration:
                 "condition_type": ConditionalDependencyType.group,
                 "logical_operator": GroupOperator.or_,
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
-        # Create multiple branches
+        # Create multiple branches (for backward compatibility/relationships)
         for branch_idx in range(3):
             branch_group = DigestCondition.create(
                 db=db,

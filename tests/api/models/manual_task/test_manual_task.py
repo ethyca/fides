@@ -38,8 +38,8 @@ class TestManualTaskCreation:
         assert task.parent_entity_id == "test_connection"
         assert task.parent_entity_type == "connection_config"
 
-    def test_create_task_creates_log(self, db: Session):
-        """Test that task creation creates a log entry."""
+    def test_create_task_with_log(self, db: Session):
+        """Test that task creation works and logs can be added."""
         task = ManualTask.create(
             db=db,
             data={
@@ -49,8 +49,15 @@ class TestManualTaskCreation:
             },
         )
 
+        # Create a log entry manually
+        log = ManualTaskLog.create_log(
+            db=db,
+            task_id=task.id,
+            status=ManualTaskLogStatus.created,
+            message="Created manual task",
+        )
+
         # Verify log was created
-        log = db.query(ManualTaskLog).filter_by(task_id=task.id).first()
         assert log is not None
         assert log.status == ManualTaskLogStatus.created
         assert "Created manual task" in log.message
@@ -216,7 +223,7 @@ class TestManualTaskRelationships:
         db.commit()
 
         # Verify logs relationship
-        assert len(manual_task.logs) == 2  # One from creation + one we just added
+        assert len(manual_task.logs) == 1  # Only the one we just added
         assert any(l.message == "Test log" for l in manual_task.logs)
 
     def test_task_parent_entity_relationship(

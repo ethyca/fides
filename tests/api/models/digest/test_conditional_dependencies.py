@@ -27,14 +27,24 @@ from fides.api.task.conditional_dependencies.schemas import (
 def assert_group_condition(
     condition: DigestCondition,
     logical_operator: GroupOperator,
-    conditions: list[Condition],
+    expected_children: list[DigestCondition],
 ):
+    """Assert properties of a group condition.
+
+    Args:
+        condition: The DigestCondition to check
+        logical_operator: Expected logical operator
+        expected_children: Expected child DigestCondition objects (by reference)
+    """
     assert condition.condition_type == ConditionalDependencyType.group
     assert condition.logical_operator == logical_operator
     assert condition.field_address is None
     assert condition.operator is None
     assert condition.value is None
-    assert condition.children == conditions
+    # Compare by id since objects may be different instances
+    actual_child_ids = {c.id for c in condition.children}
+    expected_child_ids = {c.id for c in expected_children}
+    assert actual_child_ids == expected_child_ids
 
 
 # ============================================================================

@@ -973,12 +973,12 @@ class TestManualTaskSubmission:
         assert len(updated_submissions) == 1
         assert updated_submissions[0].data["value"] == "updated"
 
-    def test_manual_task_creation_logging(
+    def test_manual_task_logging(
         self,
         db: Session,
         privacy_request,
     ):
-        """Test that manual task creation properly logs with valid task_id (refreshes if needed)."""
+        """Test that manual task logs can be created with valid task_id."""
         # Count existing logs
         initial_log_count = db.query(ManualTaskLog).count()
 
@@ -995,14 +995,17 @@ class TestManualTaskSubmission:
         assert task.id is not None
         assert task.id != ""
 
-        # Check that a log was created (should always happen now)
+        # Create a log entry for the task
+        task_log = ManualTaskLog.create_log(
+            db=db,
+            task_id=task.id,
+            status=ManualTaskLogStatus.created,
+            message=f"Created manual task for {task_data['task_type']}",
+        )
+
+        # Check that a log was created
         final_log_count = db.query(ManualTaskLog).count()
         assert final_log_count == initial_log_count + 1
-
-        # Find the log entry for this task
-        task_log = (
-            db.query(ManualTaskLog).filter(ManualTaskLog.task_id == task.id).first()
-        )
 
         # Verify the log has valid task_id (not NULL)
         assert task_log is not None

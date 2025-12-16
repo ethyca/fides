@@ -166,7 +166,7 @@ class TestManualTaskLog:
         # Verify relationship
         assert log.task == manual_task
         assert log in manual_task.logs
-        assert len(manual_task.logs) == 2  # One from creation + one error log
+        assert len(manual_task.logs) == 1  # Only the error log we just created
 
     def test_model_relationships(self):
         # Verify that the model has the expected relationships

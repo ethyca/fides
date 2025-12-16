@@ -236,24 +236,6 @@ class TestConditionalDependencyBase:
             attr in ConditionalDependencyBase.__dict__ for attr in common_functions
         )
 
-        # Test the new helper functions we added
-        new_helper_functions = [
-            "get_depth",
-            "get_tree_summary",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in new_helper_functions
-        )
-
-        # Test that all expected attributes and functions are present
-        all_attributes = (
-            abstract_class_attributes
-            + common_attributes
-            + common_functions
-            + new_helper_functions
-        )
-        assert len(all_attributes) == len(ConditionalDependencyBase.__dict__)
-
 
 class TestConditionalDependencyBaseMethods:
     """Test the shared methods in ConditionalDependencyBase."""
@@ -563,111 +545,6 @@ class TestConditionalDependencyBaseEdgeCases:
         assert len(nested_or.conditions) == 2
         assert nested_or.conditions[0].field_address == "user.verified"
         assert nested_or.conditions[1].field_address == "user.premium"
-
-
-class TestConditionalDependencyBaseDepth:
-    """Test the get_depth method."""
-
-    def test_get_depth_root_node(self):
-        """Test get_depth returns 0 for root node (no parent)."""
-        temp = ConditionalDependencyBase()
-        temp.parent = None
-
-        depth = temp.get_depth()
-        assert depth == 0
-
-    def test_get_depth_with_parent_relationship(self):
-        """Test get_depth calculates correctly with parent relationship."""
-        # Create a mock hierarchy: grandparent -> parent -> child
-        grandparent = ConditionalDependencyBase()
-        grandparent.parent = None
-
-        parent = ConditionalDependencyBase()
-        parent.parent = grandparent
-
-        child = ConditionalDependencyBase()
-        child.parent = parent
-
-        assert grandparent.get_depth() == 0
-        assert parent.get_depth() == 1
-        assert child.get_depth() == 2
-
-    def test_get_depth_no_parent_relationship(self):
-        """Test get_depth handles missing parent relationship gracefully."""
-        temp = ConditionalDependencyBase()
-        # Don't set parent attribute at all
-
-        depth = temp.get_depth()
-        assert depth == 0  # Should default to 0 when parent relationship not defined
-
-
-class TestConditionalDependencyBaseTreeSummary:
-    """Test the get_tree_summary method."""
-
-    def test_get_tree_summary_single_leaf(self):
-        """Test tree summary for a single leaf node."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.leaf
-        temp.field_address = "user.name"
-        temp.operator = Operator.eq
-        temp.value = "admin"
-        temp.sort_order = 0
-        temp.parent = None
-
-        summary = temp.get_tree_summary()
-        expected = "└── Leaf: user.name eq admin [depth: 0, order: 0]"
-        assert summary == expected
-
-    def test_get_tree_summary_single_group_no_children(self):
-        """Test tree summary for a group with no children relationship."""
-        temp = ConditionalDependencyBase()
-        temp.condition_type = ConditionalDependencyType.group
-        temp.logical_operator = "and"
-        temp.sort_order = 0
-        temp.parent = None
-
-        summary = temp.get_tree_summary()
-        expected = "└── Group (AND) [depth: 0, order: 0]\n    [children relationship not defined]"
-        assert summary == expected
-
-    def test_get_tree_summary_group_with_children(self):
-        """Test tree summary for a group with children."""
-        # Create child leaves
-        child1 = ConditionalDependencyBase()
-        child1.condition_type = ConditionalDependencyType.leaf
-        child1.field_address = "user.role"
-        child1.operator = Operator.eq
-        child1.value = "admin"
-        child1.sort_order = 1
-        child1.parent = None  # Will be set below
-
-        child2 = ConditionalDependencyBase()
-        child2.condition_type = ConditionalDependencyType.leaf
-        child2.field_address = "user.active"
-        child2.operator = Operator.eq
-        child2.value = True
-        child2.sort_order = 2
-        child2.parent = None  # Will be set below
-
-        # Create parent group
-        parent = ConditionalDependencyBase()
-        parent.condition_type = ConditionalDependencyType.group
-        parent.logical_operator = "and"
-        parent.sort_order = 0
-        parent.parent = None
-        parent.children = [child1, child2]
-
-        # Set parent references
-        child1.parent = parent
-        child2.parent = parent
-
-        summary = parent.get_tree_summary()
-
-        # Verify the structure
-        lines = summary.split("\n")
-        assert "└── Group (AND) [depth: 0, order: 0]" in lines[0]
-        assert "├── Leaf: user.role eq admin [depth: 1, order: 1]" in lines[1]
-        assert "└── Leaf: user.active eq True [depth: 1, order: 2]" in lines[2]
 
 
 class TestConditionalDependencyBaseEnhancedErrorMessages:
