@@ -1,11 +1,12 @@
-import { AntList as List, AntListProps as ListProps } from "fidesui";
+import { ExitGrid } from "fidesui";
+import { HTMLAttributes, useMemo } from "react";
 
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
-import { ConfidenceCard, ConfidenceCardItem } from "./ConfidenceCard";
+import { ConfidenceCard } from "./ConfidenceCard";
 import { ConfidenceLevelLabel } from "./constants";
 
-interface ConfidenceRowProps extends ListProps<ConfidenceCardItem> {
+interface ConfidenceRowProps extends HTMLAttributes<HTMLDivElement> {
   confidenceCounts: {
     highConfidenceCount: number;
     mediumConfidenceCount: number;
@@ -15,16 +16,21 @@ interface ConfidenceRowProps extends ListProps<ConfidenceCardItem> {
   monitorId: string;
 }
 
+export interface ConfidenceCardItem {
+  label: string;
+  count: number;
+  severity: ConfidenceBucket;
+}
+
 export const ConfidenceRow = ({
   confidenceCounts,
   reviewHref,
   monitorId,
   ...props
 }: ConfidenceRowProps) => {
-  return (
-    <List
-      grid={{ gutter: 16, column: 3 }}
-      dataSource={[
+  const dataSource = useMemo<ConfidenceCardItem[]>(
+    () =>
+      [
         {
           label: ConfidenceLevelLabel.HIGH,
           count: confidenceCounts.highConfidenceCount,
@@ -40,15 +46,22 @@ export const ConfidenceRow = ({
           count: confidenceCounts.lowConfidenceCount,
           severity: ConfidenceBucket.LOW,
         },
-      ].filter((item) => item.count > 0)}
+      ].filter((item) => item.count > 0),
+    [confidenceCounts],
+  );
+
+  return (
+    <ExitGrid<ConfidenceCardItem>
+      dataSource={dataSource}
+      itemKey={(item) => item.severity}
+      columns={3}
+      gutter={4}
       renderItem={(item) => (
-        <List.Item>
-          <ConfidenceCard
-            item={item}
-            reviewHref={reviewHref}
-            monitorId={monitorId}
-          />
-        </List.Item>
+        <ConfidenceCard
+          item={item}
+          reviewHref={reviewHref}
+          monitorId={monitorId}
+        />
       )}
       {...props}
     />
