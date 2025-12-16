@@ -205,7 +205,12 @@ class MonitorConfig(Base):
         server_default="t",
     )
 
-    # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
+    # Many-to-many link to users assigned as stewards for this monitor
+    stewards = relationship(
+        "FidesUser",
+        secondary="monitorsteward",
+        lazy="selectin",
+    )
 
     connection_config = relationship(ConnectionConfig)
 
