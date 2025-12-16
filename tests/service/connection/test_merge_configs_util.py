@@ -4,8 +4,10 @@ import copy
 from typing import Any, Dict, List
 
 import pytest
+from sqlalchemy.orm import Session
 
-from fides.api.models.detection_discovery.core import StagedResource
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConnectorParam,
@@ -16,6 +18,7 @@ from fides.api.schemas.saas.saas_config import (
     SaaSRequestMap,
 )
 from fides.service.connection.merge_configs_util import (
+    get_endpoint_resources,
     merge_saas_config_with_monitored_resources,
     preserve_monitored_collections_in_dataset_merge,
 )
@@ -524,3 +527,152 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
         # Result should be different from upcoming dataset
         assert result != upcoming_dataset
         assert len(result["collections"]) > len(upcoming_dataset["collections"])
+
+
+class TestGetEndpointResourcesIntegration:
+    """Integration tests for get_endpoint_resources function with database."""
+
+    @pytest.fixture
+    def test_monitor_config(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> MonitorConfig:
+        """Create a test MonitorConfig."""
+        monitor_config = MonitorConfig.create(
+            db=db,
+            data={
+                "key": "test_monitor_integration",
+                "name": "Test Monitor Integration",
+                "connection_config_id": connection_config.id,
+                "databases": ["test_db"],
+                "excluded_databases": [],
+            },
+        )
+        return monitor_config
+
+    @pytest.fixture
+    def endpoint_staged_resources(
+        self, db: Session, test_monitor_config: MonitorConfig
+    ) -> List[StagedResource]:
+        """Create StagedResource records with correct resource_type in database."""
+        resources = []
+
+        # Create endpoint resources with correct "Endpoint" resource_type
+        for name in ["users", "orders", "custom_endpoint"]:
+            resource = StagedResource.create(
+                db=db,
+                data={
+                    "urn": f"{test_monitor_config.key}:{name}",
+                    "name": name,
+                    "resource_type": "Endpoint",  # Correct capitalized value
+                    "monitor_config_id": test_monitor_config.key,
+                },
+            )
+            resources.append(resource)
+
+        # Create a non-endpoint resource that should NOT be returned
+        non_endpoint_resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": f"{test_monitor_config.key}:some_table",
+                "name": "some_table",
+                "resource_type": "Table",  # Different resource type
+                "monitor_config_id": test_monitor_config.key,
+            },
+        )
+        resources.append(non_endpoint_resource)
+
+        return resources
+
+    @pytest.fixture
+    def wrong_case_staged_resources(
+        self, db: Session, test_monitor_config: MonitorConfig
+    ) -> List[StagedResource]:
+        """Create StagedResource records with WRONG resource_type case (would cause bug)."""
+        resources = []
+
+        # Create resources with WRONG lowercase "endpoint" - this would cause the bug
+        for name in ["wrong_case_endpoint1", "wrong_case_endpoint2"]:
+            resource = StagedResource.create(
+                db=db,
+                data={
+                    "urn": f"{test_monitor_config.key}:{name}",
+                    "name": name,
+                    "resource_type": "endpoint",  # Wrong lowercase - this is the bug!
+                    "monitor_config_id": test_monitor_config.key,
+                },
+            )
+            resources.append(resource)
+
+        return resources
+
+    def test_get_endpoint_resources_returns_correct_resources(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        test_monitor_config: MonitorConfig,
+        endpoint_staged_resources: List[StagedResource],
+    ):
+        """Test that get_endpoint_resources returns only Endpoint type resources."""
+        result = get_endpoint_resources(db, connection_config)
+
+        # Should return 3 endpoint resources (users, orders, custom_endpoint)
+        # Should NOT return the Table resource (some_table)
+        assert len(result) == 3
+
+        returned_names = {r.name for r in result}
+        assert returned_names == {"users", "orders", "custom_endpoint"}
+
+        # Verify all returned resources have correct resource_type
+        for resource in result:
+            assert resource.resource_type == "Endpoint"
+            assert resource.monitor_config_id == test_monitor_config.key
+
+    def test_get_endpoint_resources_ignores_wrong_case_resources(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        test_monitor_config: MonitorConfig,
+        endpoint_staged_resources: List[StagedResource],
+        wrong_case_staged_resources: List[StagedResource],
+    ):
+        """Test that resources with wrong case resource_type are ignored (demonstrates the bug fix)."""
+        result = get_endpoint_resources(db, connection_config)
+
+        # Should only return the 3 correctly-cased "Endpoint" resources
+        # Should NOT return the 2 wrong-cased "endpoint" resources
+        assert len(result) == 3
+
+        returned_names = {r.name for r in result}
+        assert returned_names == {"users", "orders", "custom_endpoint"}
+
+        # Verify wrong-case resources are NOT returned
+        assert "wrong_case_endpoint1" not in returned_names
+        assert "wrong_case_endpoint2" not in returned_names
+
+    def test_get_endpoint_resources_with_no_monitor_configs(
+        self, db: Session, connection_config: ConnectionConfig
+    ):
+        """Test that function returns empty list when no monitor configs exist."""
+        result = get_endpoint_resources(db, connection_config)
+        assert result == []
+
+    def test_get_endpoint_resources_with_no_endpoint_resources(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        test_monitor_config: MonitorConfig,
+    ):
+        """Test that function returns empty list when no endpoint resources exist."""
+        # Create only non-endpoint resources
+        StagedResource.create(
+            db=db,
+            data={
+                "urn": f"{test_monitor_config.key}:some_table",
+                "name": "some_table",
+                "resource_type": "Table",
+                "monitor_config_id": test_monitor_config.key,
+            },
+        )
+
+        result = get_endpoint_resources(db, connection_config)
+        assert result == []
