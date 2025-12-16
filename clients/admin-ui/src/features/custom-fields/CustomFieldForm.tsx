@@ -99,7 +99,16 @@ const CustomFieldForm = ({
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
 
   const handleDelete = async () => {
-    const result = await deleteCustomField({ id: initialField?.id as string });
+    if (!initialField) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { id, resource_type, field_type } = initialField;
+    const result = await deleteCustomField({
+      id: id!,
+      resource_type,
+      field_type,
+    });
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
       return;
