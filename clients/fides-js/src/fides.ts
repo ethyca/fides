@@ -22,7 +22,6 @@ import {
   OverrideType,
 } from "./lib/consent-types";
 import {
-  getFidesConsentCookie,
   hasFidesConsentCookie,
   isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,

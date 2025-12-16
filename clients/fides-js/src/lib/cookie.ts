@@ -127,6 +127,19 @@ export const hasFidesConsentCookie = (
  */
 const COMPRESSED_COOKIE_PREFIX = "gzip:";
 
+/**
+ * Check if compression APIs are available in the current browser
+ */
+const isCompressionSupported = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return (
+    typeof CompressionStream !== "undefined" &&
+    typeof DecompressionStream !== "undefined"
+  );
+};
+
 const base64UrlEncode = (data: Uint8Array): string => {
   const base64 = btoa(String.fromCharCode(...data));
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -141,27 +154,54 @@ const base64UrlDecode = (str: string): Uint8Array => {
 
 /**
  * Compress cookie string using native CompressionStream API
+ * Falls back to uncompressed JSON if compression is not supported
  */
 const compressCookie = async (jsonString: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(jsonString);
-  const stream = new Blob([data])
-    .stream()
-    .pipeThrough(new CompressionStream("deflate"));
-  const buffer = await new Response(stream).arrayBuffer();
-  return COMPRESSED_COOKIE_PREFIX + base64UrlEncode(new Uint8Array(buffer));
+  if (!isCompressionSupported()) {
+    fidesDebugger(
+      "CompressionStream API not supported in this browser, saving uncompressed cookie",
+    );
+    return jsonString;
+  }
+
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(jsonString);
+    const stream = new Blob([data])
+      .stream()
+      .pipeThrough(new CompressionStream("deflate"));
+    const buffer = await new Response(stream).arrayBuffer();
+    return COMPRESSED_COOKIE_PREFIX + base64UrlEncode(new Uint8Array(buffer));
+  } catch (error) {
+    fidesDebugger(
+      "Failed to compress cookie, falling back to uncompressed",
+      error,
+    );
+    return jsonString;
+  }
 };
 
 /**
  * Decompress cookie string using native DecompressionStream API
+ * Throws error if decompression fails (caller should handle)
  */
 const decompressCookie = async (cookieString: string): Promise<string> => {
-  const base64 = cookieString.slice(COMPRESSED_COOKIE_PREFIX.length);
-  const compressed = base64UrlDecode(base64);
-  const stream = new Blob([compressed])
-    .stream()
-    .pipeThrough(new DecompressionStream("deflate"));
-  return new Response(stream).text();
+  if (!isCompressionSupported()) {
+    throw new Error(
+      "DecompressionStream API not supported, cannot read compressed cookie",
+    );
+  }
+
+  try {
+    const base64 = cookieString.slice(COMPRESSED_COOKIE_PREFIX.length);
+    const compressed = base64UrlDecode(base64);
+    const stream = new Blob([compressed.buffer as ArrayBuffer])
+      .stream()
+      .pipeThrough(new DecompressionStream("deflate"));
+    return await new Response(stream).text();
+  } catch (error) {
+    throw new Error(`Failed to decompress cookie: ${error}`);
+  }
 };
 
 const isCompressedCookie = (cookieString: string): boolean =>
@@ -181,8 +221,18 @@ export const getFidesConsentCookie = async (
   try {
     // Check for compressed format first
     if (isCompressedCookie(cookieString)) {
-      const decompressed = await decompressCookie(cookieString);
-      return JSON.parse(decompressed);
+      try {
+        const decompressed = await decompressCookie(cookieString);
+        return JSON.parse(decompressed);
+      } catch (decompressError) {
+        fidesDebugger(
+          `Failed to decompress cookie (browser may not support CompressionStream API)`,
+          decompressError,
+        );
+        // If decompression fails, we cannot read this cookie
+        // Don't try base64 fallback as that's for a different format
+        return undefined;
+      }
     }
     // Try JSON decoding
     return JSON.parse(cookieString);
@@ -334,6 +384,7 @@ export const saveFidesCookie = async (
       },
     );
     if (c) {
+      // eslint-disable-next-line no-await-in-loop
       const savedCookie = await getFidesConsentCookie(fidesCookieSuffix);
       // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
       if (
