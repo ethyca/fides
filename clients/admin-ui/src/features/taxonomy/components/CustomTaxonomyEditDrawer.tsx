@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
-  AntTabs,
+  AntTabs as Tabs,
   useMessage,
 } from "fidesui";
 
@@ -86,7 +86,7 @@ const CustomTaxonomyEditDrawer = ({
         </Flex>
       }
     >
-      <AntTabs
+      <Tabs
         items={[
           {
             label: "Details",

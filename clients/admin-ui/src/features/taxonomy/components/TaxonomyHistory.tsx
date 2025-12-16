@@ -1,11 +1,11 @@
 import { formatDistance } from "date-fns";
 import {
-  AntFlex,
-  AntList,
+  AntFlex as Flex,
+  AntList as List,
   AntPagination as Pagination,
-  AntSkeleton,
-  AntTooltip,
-  AntTypography,
+  AntSkeleton as Skeleton,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
 } from "fidesui";
 
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
@@ -46,24 +46,24 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
 
   if (isLoading) {
     return (
-      <AntList size="small" itemLayout="vertical">
+      <List size="small" itemLayout="vertical">
         {Array.from({ length: 5 }).map((_, index) => (
           // eslint-disable-next-line react/no-array-index-key
-          <AntList.Item key={index}>
-            <AntSkeleton active>
-              <AntList.Item.Meta />
-            </AntSkeleton>
-          </AntList.Item>
+          <List.Item key={index}>
+            <Skeleton active>
+              <List.Item.Meta />
+            </Skeleton>
+          </List.Item>
         ))}
-      </AntList>
+      </List>
     );
   }
 
   const dataSource = data?.items ?? [];
 
   return (
-    <AntFlex vertical gap="middle">
-      <AntList size="small" itemLayout="vertical">
+    <Flex vertical gap="middle">
+      <List size="small" itemLayout="vertical">
         {dataSource.map((item) => {
           const distance = formatDistance(
             new Date(item.created_at),
@@ -76,28 +76,28 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
 
           const description = (
             <>
-              <AntTooltip title={formattedDate}>
+              <Tooltip title={formattedDate}>
                 {`${sentenceCase(distance)}`}
-              </AntTooltip>
+              </Tooltip>
               {item.user_id ? <span> by {item.user_id}</span> : null}
             </>
           );
 
           return (
-            <AntList.Item key={item.id}>
-              <AntList.Item.Meta
+            <List.Item key={item.id}>
+              <List.Item.Meta
                 title={
                   EVENT_TYPE_LABEL_MAP[item.event_type as EventType] ??
                   item.event_type
                 }
                 description={description}
               />
-              <AntTypography.Text>{item.description}</AntTypography.Text>
-            </AntList.Item>
+              <Typography.Text>{item.description}</Typography.Text>
+            </List.Item>
           );
         })}
-      </AntList>
-      <AntFlex justify="middle">
+      </List>
+      <Flex justify="middle">
         {data?.total && (
           <Pagination
             {...paginationProps}
@@ -105,8 +105,8 @@ const TaxonomyHistory = ({ taxonomyKey }: { taxonomyKey: string }) => {
             hideOnSinglePage
           />
         )}
-      </AntFlex>
-    </AntFlex>
+      </Flex>
+    </Flex>
   );
 };
 
