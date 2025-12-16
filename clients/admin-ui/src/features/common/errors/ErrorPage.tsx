@@ -1,15 +1,8 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import {
-  AntButton,
-  AntButtonProps,
-  AntFlex,
-  AntTooltip,
-  AntTypography,
-  Icons,
-} from "fidesui";
+import { AntButton, AntButtonProps, AntFlex, AntTypography } from "fidesui";
 import { ReactNode } from "react";
-import ClipboardButton from "~/features/common/ClipboardButton";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
 import { getErrorMessage } from "~/features/common/helpers";
 
