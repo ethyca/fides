@@ -287,9 +287,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         query_config=query_config,
                         input_data=input_data,
                     )
-                else:
-                    logger.info(f"Skipping async access request for policy: {policy}")
-                    return []
+                logger.info(f"Skipping async access request for policy: {policy.name}")
+                return []
 
         rows: List[Row] = []
         for read_request in read_requests:
