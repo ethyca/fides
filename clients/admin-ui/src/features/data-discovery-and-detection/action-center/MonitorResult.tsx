@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
@@ -14,7 +13,7 @@ import {
   AntTooltip as Tooltip,
   AntTypography as Typography,
   ExpandCollapse,
-  Icons,
+  OpenCloseArrow,
   SparkleIcon,
 } from "fidesui";
 import NextLink from "next/link";
@@ -173,15 +172,7 @@ export const MonitorResult = ({
                   <Button
                     type="link"
                     className="p-0"
-                    icon={
-                      <Icons.ChevronDown
-                        className={classNames(
-                          "transition-transform",
-                          "duration-300",
-                          isConfidenceRowExpanded ? "rotate-180" : undefined,
-                        )}
-                      />
-                    }
+                    icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
                     iconPosition="end"
                     onClick={() =>
                       setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
