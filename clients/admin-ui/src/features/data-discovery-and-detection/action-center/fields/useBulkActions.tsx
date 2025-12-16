@@ -18,7 +18,7 @@ import {
 } from "./utils";
 
 export const useBulkActions = (
-  monitorId: string,
+  monitorId?: string,
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
   const [bulkAction] = useFieldActionsMutation();
@@ -33,6 +33,10 @@ export const useBulkActions = (
       excluded_resource_urns: string[],
       targetItemCount: number,
     ) => {
+      if (!monitorId) {
+        return;
+      }
+
       const key = Date.now();
       const confirmed = await modalApi.confirm(
         getActionModalProps(
