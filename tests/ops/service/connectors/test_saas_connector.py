@@ -1339,10 +1339,10 @@ class TestAsyncConnectors:
                 {},
             )
 
-    @mock.patch("fides.api.service.connectors.saas_connector._get_async_dsr_strategy")
+    @mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
     def test_guard_access_request_with_erasure_only_policy(
         self,
-        mock_get_async_strategy,
+        mock_create_client,
         db,
         privacy_request,
         saas_async_example_connection_config,
@@ -1352,6 +1352,7 @@ class TestAsyncConnectors:
         """
         Test that guard_access_request skips async access requests
         when the policy has no access rules (erasure-only request scenario).
+        This test ensures coverage of the logger.info and return [] lines.
         """
         # Create an erasure-only policy (no access rules)
         erasure_only_policy = Policy.create(
@@ -1389,18 +1390,15 @@ class TestAsyncConnectors:
 
         connector: SaaSConnector = get_connector(saas_async_example_connection_config)
 
-        # Mock async strategy to verify it's not called
-        mock_async_strategy = Mock()
-        mock_get_async_strategy.return_value = mock_async_strategy
-
         # Get access request task
         request_task = privacy_request.access_tasks.filter(
             RequestTask.collection_name == "user"
         ).first()
         execution_node = ExecutionNode(request_task)
 
-        # Policy has no access rules, so guard should return False
-        # async_retrieve_data should NOT be called, and we should get empty list
+        # Verify guard_access_request returns False for erasure-only policy
+        assert connector.guard_access_request(erasure_only_policy) is False
+
         result = connector.retrieve_data(
             execution_node,
             erasure_only_policy,
@@ -1411,7 +1409,6 @@ class TestAsyncConnectors:
 
         # Should return empty list without calling async_retrieve_data
         assert result == []
-        mock_async_strategy.async_retrieve_data.assert_not_called()
 
         # Cleanup
         try:
