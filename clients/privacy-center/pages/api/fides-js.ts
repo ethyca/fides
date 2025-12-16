@@ -405,6 +405,7 @@ export default async function handler(
       fidesUnsupportedRepeatedScriptLoading:
         environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
       fidesCookieSuffix: environment.settings.FIDES_COOKIE_SUFFIX,
+      fidesCookieCompression: environment.settings.FIDES_COOKIE_COMPRESSION,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

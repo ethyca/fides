@@ -392,3 +392,17 @@ If provided, the cookie name will be `fides_consent_{suffix}`. For example, if s
 Fides instances on the same domain to maintain separate consent cookies.
 
 Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
+
+***
+
+### fides\_cookie\_compression
+
+> **fides\_cookie\_compression**: `"gzip"` \| `"none"`
+
+Specifies the compression method to use for the consent cookie. This can help reduce
+cookie size when storing large consent preferences or TCF strings.
+
+- "none" = No compression applied (default)
+- "gzip" = Apply gzip compression to the cookie value
+
+Defaults to `"none"`.
