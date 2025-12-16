@@ -241,7 +241,12 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
-      invalidatesTags: ["Custom Field Definition", "Datamap"],
+      invalidatesTags: (result, error, { resource_type, field_type }) => [
+        { type: "Custom Field Definition" },
+        { type: "Datamap" },
+        { type: "Taxonomy History", id: resource_type },
+        { type: "Taxonomy History", id: field_type },
+      ],
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -252,14 +257,23 @@ const plusApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: ["Custom Field Definition", "Datamap"],
+      invalidatesTags: (result, error, { resource_type, field_type }) => [
+        { type: "Custom Field Definition" },
+        { type: "Datamap" },
+        { type: "Taxonomy History", id: resource_type },
+        { type: "Taxonomy History", id: field_type },
+      ],
     }),
     deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Custom Field Definition", "Datamap"],
+      invalidatesTags: [
+        "Custom Field Definition",
+        "Datamap",
+        "Taxonomy History",
+      ],
     }),
 
     // Custom Metadata Custom Field Definition By Resource Type (supports taxonomy:<key>)
