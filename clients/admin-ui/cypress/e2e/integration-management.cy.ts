@@ -722,7 +722,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
         cy.getByTestId("input-execution_start_date")
           .should("have.prop", "value")
-          .should("match", /2024-06-04T[0-9][0-9]:11/);
+          .should("match", /2024-06-04 [0-9][0-9]:[0-9][0-9]:11/);
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",

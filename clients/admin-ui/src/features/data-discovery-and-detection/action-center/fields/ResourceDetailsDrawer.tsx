@@ -72,12 +72,15 @@ export const ResourceDetailsDrawer = ({
                     size="small"
                     column={1}
                     items={[
-                      {
-                        key: "system",
-                        label: "System",
-                        children:
-                          "system_key" in resource && resource.system_key,
-                      },
+                      ...("system_key" in resource && resource.system_key
+                        ? [
+                            {
+                              key: "system",
+                              label: "System",
+                              children: resource.system_key,
+                            },
+                          ]
+                        : []),
                       {
                         key: "path",
                         label: "Path",
