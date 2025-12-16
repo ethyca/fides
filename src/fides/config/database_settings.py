@@ -215,9 +215,12 @@ class DatabaseSettings(FidesSettings):
     def resolve_readonly_password(
         cls, v: Optional[str], info: ValidationInfo
     ) -> Optional[str]:
-        """If readonly_server is set but readonly_password is not, fall back to primary password."""
+        """If readonly_server is set but readonly_password is not, fall back to primary password (already escaped)."""
         if v is None and info.data.get("readonly_server"):
-            return info.data.get("password")
+            return info.data.get("password")  # Already escaped by password validator
+        # If provided directly, escape it like the primary password
+        if v and isinstance(v, str):
+            return quote_plus(v)
         return v
 
     @field_validator("readonly_port", mode="before")

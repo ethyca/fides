@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import pytest
 from pydantic import ValidationError
@@ -541,7 +542,8 @@ class TestReadOnlyDatabaseConfig:
 
         # Check sync readonly URI
         assert db_settings.sqlalchemy_readonly_database_uri is not None
-        assert "replica-db.example.com" in db_settings.sqlalchemy_readonly_database_uri
+        sync_parsed = urlparse(db_settings.sqlalchemy_readonly_database_uri)
+        assert sync_parsed.hostname == "replica-db.example.com"
         assert "readonly_user" in db_settings.sqlalchemy_readonly_database_uri
         assert "5433" in db_settings.sqlalchemy_readonly_database_uri
         assert "fides_replica" in db_settings.sqlalchemy_readonly_database_uri
@@ -549,7 +551,8 @@ class TestReadOnlyDatabaseConfig:
 
         # Check async readonly URI
         assert db_settings.async_readonly_database_uri is not None
-        assert "replica-db.example.com" in db_settings.async_readonly_database_uri
+        async_parsed = urlparse(db_settings.async_readonly_database_uri)
+        assert async_parsed.hostname == "replica-db.example.com"
         assert "readonly_user" in db_settings.async_readonly_database_uri
         assert "5433" in db_settings.async_readonly_database_uri
         assert "fides_replica" in db_settings.async_readonly_database_uri
@@ -568,7 +571,8 @@ class TestReadOnlyDatabaseConfig:
 
         # Should use primary credentials but readonly server
         assert db_settings.sqlalchemy_readonly_database_uri is not None
-        assert "replica-db.example.com" in db_settings.sqlalchemy_readonly_database_uri
+        parsed = urlparse(db_settings.sqlalchemy_readonly_database_uri)
+        assert parsed.hostname == "replica-db.example.com"
         assert "app_user" in db_settings.sqlalchemy_readonly_database_uri
         assert "5432" in db_settings.sqlalchemy_readonly_database_uri
         assert "fides" in db_settings.sqlalchemy_readonly_database_uri
