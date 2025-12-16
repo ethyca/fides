@@ -142,7 +142,11 @@ export type {
   ExpandCollapseProps,
   OpenCloseArrowProps,
 } from "./components/animation";
-export { ExitGrid, ExpandCollapse, OpenCloseArrow } from "./components/animation";
+export {
+  ExitGrid,
+  ExpandCollapse,
+  OpenCloseArrow,
+} from "./components/animation";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
