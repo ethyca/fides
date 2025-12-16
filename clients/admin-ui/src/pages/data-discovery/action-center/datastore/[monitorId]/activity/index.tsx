@@ -3,21 +3,10 @@ import { NextPage } from "next";
 import { useParams } from "next/navigation";
 
 import { useFeatures } from "~/features/common/features";
-import {
-  ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
-  ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
-} from "~/features/common/nav/routes";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
-import ActionCenterFields from "~/features/data-discovery-and-detection/action-center/fields/page";
-import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { InProgressMonitorTasksList } from "~/features/data-discovery-and-detection/action-center/components/InProgressMonitorTasksList";
 
-export const MONITOR_ACTION_CENTER_CONFIG = {
-  [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
-  [ActionCenterRoute.ATTENTION_REQUIRED]: ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
-} as const;
-
-export const HELIOS_ACCESS_ERROR =
-  "Attempting to access monitor results without the required feature flag enabled";
+import { HELIOS_ACCESS_ERROR, MONITOR_ACTION_CENTER_CONFIG } from "..";
 
 const DatastoreMonitorResultSystems: NextPage = () => {
   const {
@@ -40,7 +29,7 @@ const DatastoreMonitorResultSystems: NextPage = () => {
       monitorId={monitorId}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
     >
-      {loading ? null : <ActionCenterFields monitorId={monitorId} />}
+      {loading ? null : <InProgressMonitorTasksList filters={{ monitorId }} />}
     </ActionCenterLayout>
   );
 };
