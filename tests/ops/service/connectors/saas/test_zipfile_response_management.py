@@ -120,7 +120,7 @@ class TestZipFileResponseManagement:
                 "access": AccessLevel.write,
                 "secrets": {
                     "domain": parsed_url.netloc,
-                    "api_token": "test_token_123",
+                    "access_token": "test_token_123",
                 },
             },
         )
@@ -134,7 +134,7 @@ class TestZipFileResponseManagement:
             host=parsed_url.netloc,
             authentication={
                 "strategy": "bearer",
-                "configuration": {"token": "<api_token>"},
+                "configuration": {"token": "<access_token>"},
             },
         )
 
