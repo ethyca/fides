@@ -41,6 +41,54 @@ async_engine = create_async_engine(
 )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
+# Read-only async engine and session
+# Only created if read-only database URI is configured
+readonly_async_engine = None
+readonly_async_session = None
+
+if CONFIG.database.async_readonly_database_uri:
+    # Build connect_args for readonly (similar to primary)
+    readonly_connect_args: Dict[str, Any] = {}
+    readonly_params = CONFIG.database.readonly_params or {}
+
+    if readonly_params.get("sslrootcert"):
+        ssl_ctx = ssl.create_default_context(cafile=readonly_params["sslrootcert"])
+        ssl_ctx.verify_mode = ssl.CERT_REQUIRED
+        readonly_connect_args["ssl"] = ssl_ctx
+
+    if CONFIG.database.api_async_engine_keepalives_idle:
+        readonly_connect_args["keepalives_idle"] = (
+            CONFIG.database.api_async_engine_keepalives_idle
+        )
+    if CONFIG.database.api_async_engine_keepalives_interval:
+        readonly_connect_args["keepalives_interval"] = (
+            CONFIG.database.api_async_engine_keepalives_interval
+        )
+    if CONFIG.database.api_async_engine_keepalives_count:
+        readonly_connect_args["keepalives_count"] = (
+            CONFIG.database.api_async_engine_keepalives_count
+        )
+
+    readonly_async_engine = create_async_engine(
+        CONFIG.database.async_readonly_database_uri,
+        connect_args=readonly_connect_args,
+        echo=False,
+        hide_parameters=not CONFIG.dev_mode,
+        logging_name="ReadOnlyAsyncEngine",
+        json_serializer=custom_json_serializer,
+        json_deserializer=custom_json_deserializer,
+        pool_size=CONFIG.database.api_async_engine_pool_size,
+        max_overflow=CONFIG.database.api_async_engine_max_overflow,
+        pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
+    )
+    readonly_async_session = sessionmaker(
+        readonly_async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+# If not configured, fallback to primary session
+if readonly_async_session is None:
+    readonly_async_session = async_session
+
 # TODO: this engine and session are only used in test modules,
 # and they do not respect engine settings like pool_size, max_overflow, etc.
 # these should be removed, and we should standardize on what's provided in `session.py`

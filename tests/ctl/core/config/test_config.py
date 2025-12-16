@@ -517,3 +517,125 @@ def test_get_config_ac_mode_without_tc_mode() -> None:
         exc.value.errors()[0]["msg"]
         == "Value error, AC cannot be enabled unless TCF mode is also enabled."
     )
+
+
+@pytest.mark.unit
+class TestReadOnlyDatabaseConfig:
+    """Test suite for read-only database configuration."""
+
+    def test_readonly_db_with_full_config(self):
+        """Test that read-only database URI is correctly constructed with all fields."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="app_user",
+            password="app_password",
+            port="5432",
+            db="fides",
+            readonly_server="replica-db.example.com",
+            readonly_user="readonly_user",
+            readonly_password="readonly_password",
+            readonly_port="5433",
+            readonly_db="fides_replica",
+            readonly_params={"sslmode": "require"},
+        )
+
+        # Check sync readonly URI
+        assert db_settings.sqlalchemy_readonly_database_uri is not None
+        assert "replica-db.example.com" in db_settings.sqlalchemy_readonly_database_uri
+        assert "readonly_user" in db_settings.sqlalchemy_readonly_database_uri
+        assert "5433" in db_settings.sqlalchemy_readonly_database_uri
+        assert "fides_replica" in db_settings.sqlalchemy_readonly_database_uri
+        assert "postgresql+psycopg2" in db_settings.sqlalchemy_readonly_database_uri
+
+        # Check async readonly URI
+        assert db_settings.async_readonly_database_uri is not None
+        assert "replica-db.example.com" in db_settings.async_readonly_database_uri
+        assert "readonly_user" in db_settings.async_readonly_database_uri
+        assert "5433" in db_settings.async_readonly_database_uri
+        assert "fides_replica" in db_settings.async_readonly_database_uri
+        assert "postgresql+asyncpg" in db_settings.async_readonly_database_uri
+
+    def test_readonly_db_with_minimal_config(self):
+        """Test that read-only database falls back to primary credentials when not specified."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="app_user",
+            password="app_password",
+            port="5432",
+            db="fides",
+            readonly_server="replica-db.example.com",
+        )
+
+        # Should use primary credentials but readonly server
+        assert db_settings.sqlalchemy_readonly_database_uri is not None
+        assert "replica-db.example.com" in db_settings.sqlalchemy_readonly_database_uri
+        assert "app_user" in db_settings.sqlalchemy_readonly_database_uri
+        assert "5432" in db_settings.sqlalchemy_readonly_database_uri
+        assert "fides" in db_settings.sqlalchemy_readonly_database_uri
+
+    def test_readonly_db_without_server(self):
+        """Test that read-only database URI is None when readonly_server is not set."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="app_user",
+            password="app_password",
+            port="5432",
+            db="fides",
+        )
+
+        assert db_settings.sqlalchemy_readonly_database_uri is None
+        assert db_settings.async_readonly_database_uri is None
+
+    def test_readonly_db_field_validators(self):
+        """Test that field validators correctly fall back to primary values."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="primary_user",
+            password="primary_pass",
+            port="5432",
+            db="primary_db",
+            params={"sslmode": "require"},
+            readonly_server="replica-db.example.com",
+        )
+
+        # Validators should have set these to primary values
+        assert db_settings.readonly_user == "primary_user"
+        assert db_settings.readonly_password == "primary_pass"
+        assert db_settings.readonly_port == "5432"
+        assert db_settings.readonly_db == "primary_db"
+        assert db_settings.readonly_params == {"sslmode": "require"}
+
+    def test_readonly_db_with_custom_params(self):
+        """Test that custom readonly params are used instead of primary params."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="app_user",
+            password="app_password",
+            port="5432",
+            db="fides",
+            params={"sslmode": "require", "connect_timeout": "10"},
+            readonly_server="replica-db.example.com",
+            readonly_params={"sslmode": "prefer"},
+        )
+
+        # Should use readonly params, not primary params
+        assert db_settings.readonly_params == {"sslmode": "prefer"}
+
+    def test_readonly_async_uri_ssl_handling(self):
+        """Test that async readonly URI correctly handles SSL params for asyncpg."""
+        db_settings = DatabaseSettings(
+            server="primary-db.example.com",
+            user="app_user",
+            password="app_password",
+            port="5432",
+            db="fides",
+            readonly_server="replica-db.example.com",
+            readonly_params={"sslmode": "require", "sslrootcert": "/path/to/cert"},
+        )
+
+        # Async URI should convert sslmode to ssl and remove sslrootcert
+        assert db_settings.async_readonly_database_uri is not None
+        # sslmode should be converted to ssl in query params
+        assert "ssl=" in db_settings.async_readonly_database_uri
+        # sslrootcert should be removed from query params
+        assert "sslrootcert" not in db_settings.async_readonly_database_uri

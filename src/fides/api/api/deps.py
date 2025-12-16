@@ -56,6 +56,27 @@ def get_autoclose_db_session() -> Generator[Session, None, None]:
         db.close()
 
 
+@contextmanager
+def get_readonly_autoclose_db_session() -> Generator[Session, None, None]:
+    """
+    Return a read-only database session as a context manager that automatically closes.
+    Falls back to primary database session if read-only is not configured.
+
+    Use this when you need manual control over the session lifecycle outside of API endpoints.
+    """
+    if not CONFIG.database.sqlalchemy_readonly_database_uri:
+        # If read-only not configured, use primary session
+        yield from get_autoclose_db_session()
+        return
+
+    # Create read-only session using existing get_readonly_api_session
+    try:
+        db = get_readonly_api_session()
+        yield db
+    finally:
+        db.close()
+
+
 def get_api_session() -> Session:
     """Gets the shared database session to use for API functionality"""
     global _engine  # pylint: disable=W0603
