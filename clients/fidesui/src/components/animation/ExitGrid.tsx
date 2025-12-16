@@ -59,7 +59,6 @@ export interface ExitGridProps<T> extends HTMLAttributes<HTMLDivElement> {
  *   gutter={4}
  *   duration={0.5}
  *   ease="easeInOut"
- *   slideDistance={-50}
  *   layoutStagger={0.05}
  *   renderItem={(item) => <Card>{item.content}</Card>}
  * />
