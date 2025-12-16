@@ -13,20 +13,14 @@ import {
   Icons,
 } from "fidesui";
 import _ from "lodash";
-import { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import FixedLayout from "~/features/common/FixedLayout";
 import { useSearch } from "~/features/common/hooks";
-import {
-  ACTION_CENTER_ROUTE,
-  DATASET_ROUTE,
-} from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
@@ -71,9 +65,8 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
       : [],
   );
 
-const ActionCenterFields: NextPage = () => {
+const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
   const router = useRouter();
-  const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -234,19 +227,7 @@ const ActionCenterFields: NextPage = () => {
   );
 
   return (
-    <FixedLayout
-      title="Action center - Discovered assets by system"
-      mainProps={{ overflow: "hidden" }}
-      fullHeight
-    >
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-        isSticky={false}
-      />
+    <>
       <Splitter className="h-[calc(100%-48px)] overflow-hidden">
         <Splitter.Panel
           defaultSize={250}
@@ -567,7 +548,7 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-    </FixedLayout>
+    </>
   );
 };
 export default ActionCenterFields;
