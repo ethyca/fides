@@ -332,11 +332,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [],
         hidden: true,
       },
-      {
-        title: "Error Test",
-        path: "/error-test",
-        scopes: [],
-      },
     ],
   },
 ];
@@ -364,6 +359,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Table Migration POC",
         path: routes.TABLE_MIGRATION_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Error Test",
+        path: routes.ERRORS_POC_ROUTE,
         scopes: [],
       },
     ],
