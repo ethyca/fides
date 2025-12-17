@@ -119,7 +119,7 @@ const ConsentPage: NextPage = () => {
     const updateCookie = async () => {
       const cookie: FidesCookie = await getOrMakeFidesCookie();
       if (isNoticeDriven) {
-        saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
+        await saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
       }
     };
     updateCookie();
