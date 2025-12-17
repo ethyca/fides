@@ -24,9 +24,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 - Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
+- Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+- Improvements to the UI/UX of the new request manager screen [#7128](https://github.com/ethyca/fides/pull/7128)
 - Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
 
 ### Developer Experience
@@ -35,6 +37,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
+- Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
+- Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
