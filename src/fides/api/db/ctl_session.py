@@ -1,7 +1,9 @@
+import asyncio
 import ssl
 from typing import Any, AsyncGenerator, Dict
 
-from sqlalchemy import create_engine
+from loguru import logger
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -64,3 +66,41 @@ async def get_async_db() -> AsyncGenerator:
     """Return an async session generator for dependency injection into API endpoints"""
     async with async_session() as session:
         yield session
+
+
+async def warmup_async_pool() -> None:
+    """
+    Warm up the async connection pool by pre-creating connections.
+
+    This function creates up to pool_size connections concurrently and executes
+    a simple query on each to ensure they are fully established and validated.
+    This reduces latency for the first requests after server startup.
+    """
+
+    pool_size = CONFIG.database.api_async_engine_pool_size
+    if pool_size <= 0:
+        logger.debug("Skipping async pool warmup: pool_size is 0")
+        return
+
+    logger.info(
+        "Warming up async connection pool (creating {} connections)...", pool_size
+    )
+
+    async def create_and_validate_connection() -> None:
+        """Create a single connection and validate it with a query."""
+        try:
+            async with async_session() as session:
+                await session.execute(text("SELECT 1"))
+        except Exception as exc:
+            logger.warning("Failed to create connection during pool warmup: {}", exc)
+            # Don't re-raise - we want to continue warming up other connections
+
+    try:
+        # Create all connections concurrently
+        await asyncio.gather(
+            *[create_and_validate_connection() for _ in range(pool_size)]
+        )
+        logger.info("Async connection pool warmup completed successfully")
+    except Exception as exc:
+        logger.error("Error during async pool warmup: {}", exc)
+        # Don't raise - pool will still work, just without pre-warmed connections
