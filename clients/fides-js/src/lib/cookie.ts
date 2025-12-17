@@ -169,7 +169,7 @@ const compressCookie = async (jsonString: string): Promise<string> => {
     const data = encoder.encode(jsonString);
     const stream = new Blob([data])
       .stream()
-      .pipeThrough(new CompressionStream("deflate"));
+      .pipeThrough(new CompressionStream("gzip"));
     const buffer = await new Response(stream).arrayBuffer();
     return COMPRESSED_COOKIE_PREFIX + base64UrlEncode(new Uint8Array(buffer));
   } catch (error) {
@@ -197,7 +197,7 @@ const decompressCookie = async (cookieString: string): Promise<string> => {
     const compressed = base64UrlDecode(base64);
     const stream = new Blob([compressed.buffer as ArrayBuffer])
       .stream()
-      .pipeThrough(new DecompressionStream("deflate"));
+      .pipeThrough(new DecompressionStream("gzip"));
     return await new Response(stream).text();
   } catch (error) {
     throw new Error(`Failed to decompress cookie: ${error}`);
