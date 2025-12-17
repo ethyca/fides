@@ -22,7 +22,6 @@ const ErrorPage = ({
   actions: ActionProps[];
 }) => {
   const { status, data } = error;
-  // TODO: examine this error handling more carefully to extract the right message
   const errorMessage = getErrorMessage(error);
   const dataString = JSON.stringify(data);
 
