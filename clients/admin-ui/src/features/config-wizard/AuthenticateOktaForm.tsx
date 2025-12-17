@@ -192,15 +192,18 @@ const AuthenticateOktaForm = () => {
   const handleTokenSubmit = async (values: TokenFormValues) => {
     setScannerError(undefined);
 
-    const config: OktaTokenConfig = {
+    // Token form now uses OAuth2 fields (clientId, privateKey) instead of token
+    const config: OktaOAuth2Config = {
       orgUrl: values.orgUrl,
-      token: values.token,
+      clientId: values.clientId,
+      privateKey: values.privateKey,
+      scopes: values.scopes ? [values.scopes] : ["okta.apps.read"],
     };
 
     const result = await generate({
       organization_key: organizationKey,
       generate: {
-        config: config as OktaConfig,
+        config: config as unknown as OktaConfig,
         target: ValidTargets.OKTA,
         type: GenerateTypes.SYSTEMS,
       },
@@ -360,7 +363,7 @@ const AuthenticateOktaForm = () => {
                   <CustomTextArea
                     name="privateKey"
                     label="Private key"
-                    tooltip={PRIVATE_KEY_TOOLTIP}
+                    tooltip="RSA private key in PEM or JWK format for OAuth2 authentication"
                     placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
                     textAreaProps={{
                       rows: 8,
