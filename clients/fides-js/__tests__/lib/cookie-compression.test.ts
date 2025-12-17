@@ -19,7 +19,10 @@ jest.mock("uuid");
 const mockUuid = jest.mocked(uuid);
 mockUuid.v4.mockReturnValue(MOCK_UUID);
 
-const MOCK_LARGE_COOKIE: FidesCookie = {
+// Constant to make it clear we're using the default cookie name (no suffix)
+const NO_COOKIE_SUFFIX = undefined;
+
+const MOCK_COOKIE_WITH_TCF: FidesCookie = {
   identity: { fides_user_device_id: MOCK_UUID },
   fides_meta: {
     version: "0.9.0",
@@ -31,7 +34,7 @@ const MOCK_LARGE_COOKIE: FidesCookie = {
     analytics: false,
     advertising: true,
   },
-  // Simulate a large fides_string with many vendors
+  // Include a realistic fides_string with TCF data
   fides_string:
     "CPzHUgAPzHUgAGXABBENCJFsAP_gAEPgAAAALuwMwAKgAYAA5AB8AIIAWABaADQAHoAQwAigBQAC2AGEAQkAjQCOAE6AP0Ag4BmgD4gJPATEAnQBV0C4ALhAXQAvABeYDJgGigOWAgmBGYCNYEcAJFAStAliBMYCgAFEQK9QV-BYOCwoLEwWLBY2Cx4LOwWfBaqC1gLdwW9Bb-C4ILrQXYBdmC7gLugu9A6AAqABgADkAHwAggBYAFoANAAegBDACKAFAALYAYQBCQCNAI4AToA_QCDgGaAPiAmIBOgCrgFwALoAXgAvMBkwDRQHLAQTAjMBGsCOAEigJVgStAmMBQCCvgK_QWABYmCxYLGQWOBZWCzALMwWbBZ0C0EFogWkAtNBagFqYLVgtbBbAFsYLZgtrBbcFwoLiAuLBccFyILlguZBc4Fz4LpAu1BdwF3gAAAA.YAAAAAAAAAAA,2~43.46.61.70.83.89.93.108.117.122.124.135.143.144.147.149.159.192.196.211.228.230.239.259.266.286.291.311.320.322.323.327.367.371.385.394.407.415.424.430.436.445.486.491.494.495.522.523.540.550.560.568.574.576.584.587.591.737.802.803.820.839.864.899.904.922.938.959.979.981.985",
   tcf_consent: {
@@ -61,8 +64,7 @@ describe("Cookie compression", () => {
   });
 
   afterEach(() => {
-    mockGetCookie.mockClear();
-    mockSetCookie.mockClear();
+    jest.clearAllMocks();
   });
 
   describe("saveFidesCookie with encoding/compression", () => {
@@ -77,26 +79,42 @@ describe("Cookie compression", () => {
       expect(cookieValue).not.toMatch(/^gzip:/);
     });
 
-    it("attempts compression for large cookies", async () => {
-      await saveFidesCookie(MOCK_LARGE_COOKIE, {
+    it("falls back to uncompressed JSON when CompressionStream is unavailable (Node/Jest)", async () => {
+      await saveFidesCookie(MOCK_COOKIE_WITH_TCF, {
         fidesCookieCompression: "gzip",
       });
 
       expect(mockSetCookie).toHaveBeenCalled();
       const cookieValue = mockSetCookie.mock.calls[0][1];
-      // In Node environment, will fallback to uncompressed
-      // In browser with CompressionStream, would be compressed with gzip: prefix
-      expect(cookieValue).toBeDefined();
+
+      // In Node/Jest environment, CompressionStream is not available
+      // Should fallback to uncompressed JSON without gzip: prefix
+      expect(cookieValue).not.toMatch(/^gzip:/);
+      expect(() => JSON.parse(cookieValue)).not.toThrow();
+
+      // Verify the cookie data is preserved
+      const parsed = JSON.parse(cookieValue);
+      expect(parsed.identity.fides_user_device_id).toBe(MOCK_UUID);
+      expect(parsed.fides_string).toBe(MOCK_COOKIE_WITH_TCF.fides_string);
     });
 
-    it("handles compression gracefully when CompressionStream is not available", async () => {
-      const cookie = await getOrMakeFidesCookie();
-      await saveFidesCookie(cookie, { fidesCookieCompression: "gzip" });
+    it("respects compression setting regardless of cookie size", async () => {
+      // Test with a small cookie to prove compression is not size-dependent
+      const smallCookie = await getOrMakeFidesCookie();
+      await saveFidesCookie(smallCookie, { fidesCookieCompression: "gzip" });
 
       expect(mockSetCookie).toHaveBeenCalled();
       const cookieValue = mockSetCookie.mock.calls[0][1];
-      // Should fallback to uncompressed JSON (which happens in Node/Jest automatically)
+
+      // Even with a small cookie, compression setting is respected
+      // (falls back to JSON in Node/Jest since CompressionStream is unavailable)
+      expect(cookieValue).not.toMatch(/^gzip:/);
       expect(() => JSON.parse(cookieValue)).not.toThrow();
+
+      // Verify the fallback value is correct and matches the original cookie
+      const parsed = JSON.parse(cookieValue);
+      expect(parsed.identity.fides_user_device_id).toBe(MOCK_UUID);
+      expect(parsed.consent).toEqual(smallCookie.consent);
     });
 
     it("sets a base64 cookie when base64Cookie option is true", async () => {
@@ -125,19 +143,19 @@ describe("Cookie compression", () => {
       mockGetCookie.mockReturnValue(savedValue);
 
       // Read back
-      const retrievedCookie = await getFidesConsentCookie(undefined);
+      const retrievedCookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
 
       expect(retrievedCookie).toBeDefined();
       expect(retrievedCookie?.identity.fides_user_device_id).toBe(MOCK_UUID);
       expect(retrievedCookie?.consent).toEqual(originalCookie.consent);
     });
 
-    it("handles base64-encoded cookies as fallback", async () => {
+    it("automatically decodes base-64 encoded cookies", async () => {
       const originalCookie = await getOrMakeFidesCookie();
       const base64Encoded = base64_encode(JSON.stringify(originalCookie));
       mockGetCookie.mockReturnValue(base64Encoded);
 
-      const cookie = await getFidesConsentCookie(undefined);
+      const cookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
 
       expect(cookie).toBeDefined();
       expect(cookie?.identity.fides_user_device_id).toBe(MOCK_UUID);
@@ -146,7 +164,7 @@ describe("Cookie compression", () => {
     it("returns undefined for invalid compressed cookies", async () => {
       mockGetCookie.mockReturnValue("gzip:invalid-compressed-data");
 
-      const cookie = await getFidesConsentCookie(undefined);
+      const cookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
 
       expect(cookie).toBeUndefined();
     });
@@ -155,7 +173,7 @@ describe("Cookie compression", () => {
       // Mock a cookie with gzip prefix but invalid compressed data
       mockGetCookie.mockReturnValue("gzip:invalid-base64-data!!!");
 
-      const cookie = await getFidesConsentCookie(undefined);
+      const cookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
 
       // Should return undefined since decompression will fail
       expect(cookie).toBeUndefined();
@@ -163,24 +181,24 @@ describe("Cookie compression", () => {
 
     it("performs round-trip save/retrieve successfully", async () => {
       // Save with compression option
-      await saveFidesCookie(MOCK_LARGE_COOKIE, {
+      await saveFidesCookie(MOCK_COOKIE_WITH_TCF, {
         fidesCookieCompression: "gzip",
       });
       const savedValue = mockSetCookie.mock.calls[0][1];
 
       // Read back the saved cookie
       mockGetCookie.mockReturnValue(savedValue);
-      const retrievedCookie = await getFidesConsentCookie(undefined);
+      const retrievedCookie = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
 
       // Verify all data is preserved (whether compressed or not)
       expect(retrievedCookie).toBeDefined();
-      expect(retrievedCookie?.identity).toEqual(MOCK_LARGE_COOKIE.identity);
-      expect(retrievedCookie?.consent).toEqual(MOCK_LARGE_COOKIE.consent);
+      expect(retrievedCookie?.identity).toEqual(MOCK_COOKIE_WITH_TCF.identity);
+      expect(retrievedCookie?.consent).toEqual(MOCK_COOKIE_WITH_TCF.consent);
       expect(retrievedCookie?.fides_string).toEqual(
-        MOCK_LARGE_COOKIE.fides_string,
+        MOCK_COOKIE_WITH_TCF.fides_string,
       );
       expect(retrievedCookie?.tcf_consent).toEqual(
-        MOCK_LARGE_COOKIE.tcf_consent,
+        MOCK_COOKIE_WITH_TCF.tcf_consent,
       );
     });
   });
