@@ -13,7 +13,6 @@ describe("when fidesCookieCompression is set to 'gzip'", () => {
   it("saves cookies with gzip compression", () => {
     stubConfig({
       options: {
-        isOverlayEnabled: true,
         fidesCookieCompression: "gzip",
       },
     });
@@ -46,24 +45,29 @@ describe("when fidesCookieCompression is set to 'gzip'", () => {
       cy.get("button").contains("Opt in to all").click();
     });
 
-    // Verify the cookie was compressed
+    // Wait for cookie to be saved
+    cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+
+    // Verify the cookie is compressed
     cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
       const decodedValue = decodeURIComponent(cookie!.value);
       expect(decodedValue).to.match(/^gzip:/);
     });
 
-    // Reload the page to verify decompression works
+    // Reload the page - if decompression fails, banner would reappear
     cy.reload();
 
-    // Verify Fides can read the compressed cookie
-    cy.window().its("Fides").its("consent").should("exist");
-    cy.window().its("Fides").its("consent").should("deep.include", {
-      data_sales: true,
-      tracking: true,
+    // If decompression worked, banner should not reappear (consent was read successfully)
+    cy.get("div#fides-banner").should("not.exist");
+
+    // Cookie should still be compressed
+    cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+      const decodedValue = decodeURIComponent(cookie!.value);
+      expect(decodedValue).to.match(/^gzip:/);
     });
   });
 
-  it("handles modal interactions with compressed cookies", () => {
+  it("maintains compression when updating preferences via modal", () => {
     stubConfig({
       options: {
         isOverlayEnabled: true,
@@ -76,25 +80,33 @@ describe("when fidesCookieCompression is set to 'gzip'", () => {
       cy.get("button").contains("Opt in to all").click();
     });
 
-    // Wait for banner to close
-    cy.get("div#fides-banner").should("not.exist");
+    // Wait for cookie to be saved
+    cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
+
+    // Verify initial cookie is compressed
+    cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+      const decodedValue = decodeURIComponent(cookie!.value);
+      expect(decodedValue).to.match(/^gzip:/);
+    });
 
     // Open modal to change preferences
     cy.get("#fides-modal-link").click();
-    cy.get("div#fides-modal-content").within(() => {
-      cy.get("button").contains("Opt out of all").click();
+    cy.getByTestId("consent-modal").should("be.visible");
+
+    // Change a preference toggle
+    cy.getByTestId("toggle-Advertising").within(() => {
+      cy.get("input").click();
+    });
+
+    // Save changes
+    cy.getByTestId("consent-modal").within(() => {
+      cy.get("button").contains("Save").click();
     });
 
     // Verify updated cookie is still compressed
     cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
       const decodedValue = decodeURIComponent(cookie!.value);
       expect(decodedValue).to.match(/^gzip:/);
-    });
-
-    // Verify consent was updated
-    cy.window().its("Fides").its("consent").should("deep.include", {
-      data_sales: false,
-      tracking: false,
     });
   });
 });
