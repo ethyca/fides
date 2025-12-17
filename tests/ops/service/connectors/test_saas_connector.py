@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     ClientUnsuccessfulException,
     ConnectionException,
@@ -1121,6 +1122,21 @@ class TestAsyncConnectors:
             db, privacy_request, traversal_nodes, end_nodes, graph
         )
 
+    @pytest.fixture(scope="function")
+    def async_graph_polling(self, saas_async_polling_example_dataset_config, db, privacy_request):
+        # Build proper async graph with persisted request tasks for polling tests
+        async_graph = saas_async_polling_example_dataset_config.get_graph()
+        graph = DatasetGraph(async_graph)
+        traversal = Traversal(graph, {"email": "customer-1@example.com"})
+        traversal_nodes = {}
+        end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        persist_new_access_request_tasks(
+            db, privacy_request, traversal, traversal_nodes, end_nodes, graph
+        )
+        persist_initial_erasure_request_tasks(
+            db, privacy_request, traversal_nodes, end_nodes, graph
+        )
+
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_read_request_expects_async_results(
         self,
@@ -1307,20 +1323,20 @@ class TestAsyncConnectors:
             == 5
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
     def test_guard_access_request_with_access_policy(
         self,
-        mock_send,
+        mock_create_client,
         privacy_request,
-        saas_async_example_connection_config,
-        async_graph,
+        saas_async_polling_example_connection_config,
+        async_graph_polling,
     ):
         """
         Test that guard_access_request allows async access requests to run
         when the policy has access rules (access request scenario).
         """
-        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
-        mock_send().json.return_value = {"results_pending": True}
+        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        mock_create_client.return_value = mock.MagicMock()
 
         # Get access request task
         request_task = privacy_request.access_tasks.filter(
@@ -1329,8 +1345,7 @@ class TestAsyncConnectors:
         execution_node = ExecutionNode(request_task)
 
         # Policy has access rules, so guard should return True and async_retrieve_data should be called
-        # This will raise AwaitingAsyncTask
-        with pytest.raises(AwaitingAsyncTask):
+        with pytest.raises(AwaitingAsyncProcessing):
             connector.retrieve_data(
                 execution_node,
                 privacy_request.policy,
@@ -1347,14 +1362,15 @@ class TestAsyncConnectors:
         mock_create_client,
         db,
         privacy_request,
-        saas_async_example_connection_config,
-        async_graph,
+        saas_async_polling_example_connection_config,
+        async_graph_polling,
         oauth_client,
     ):
         """
         Test that guard_access_request skips async access requests
         when the policy has no access rules (erasure-only request scenario).
         This test ensures coverage of the logger.info and return [] lines.
+        Uses polling async strategy to test the guard clause.
         """
         # Create an erasure-only policy (no access rules)
         erasure_only_policy = Policy.create(
@@ -1390,7 +1406,7 @@ class TestAsyncConnectors:
             },
         )
 
-        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
 
         # Get access request task
         request_task = privacy_request.access_tasks.filter(
