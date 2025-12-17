@@ -1,4 +1,3 @@
-import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
@@ -213,31 +212,6 @@ describe("cookies", () => {
           expect(cookie.tcf_consent).toEqual({});
         });
       });
-      describe("in base64 format", () => {
-        const V090_COOKIE_OBJECT: FidesCookie = {
-          consent: SAVED_CONSENT,
-          identity: { fides_user_device_id: SAVED_UUID },
-          fides_meta: {
-            createdAt: CREATED_DATE,
-            updatedAt: UPDATED_DATE,
-            version: "0.9.0",
-          },
-          tcf_consent: {},
-        };
-        // mock base64 cookie
-        mockGetCookie.mockReturnValue(
-          base64_encode(JSON.stringify(V090_COOKIE_OBJECT)),
-        );
-
-        it("returns the saved cookie and decodes from base64", async () => {
-          const cookie: FidesCookie = await getOrMakeFidesCookie();
-          expect(cookie.consent).toEqual(SAVED_CONSENT);
-          expect(cookie.fides_meta.consentMethod).toEqual(undefined);
-          expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
-          expect(cookie.identity.fides_user_device_id).toEqual(MOCK_UUID);
-          expect(cookie.tcf_consent).toEqual({});
-        });
-      });
     });
   });
 
@@ -271,18 +245,6 @@ describe("cookies", () => {
       const cookie: FidesCookie = await getOrMakeFidesCookie(undefined);
       await saveFidesCookie(cookie, { base64Cookie: false });
       const expectedCookieString = JSON.stringify(cookie);
-      expect(mockSetCookie.mock.calls).toHaveLength(1);
-      const [name, value, attributes] = mockSetCookie.mock.calls[0];
-      expect(name).toEqual("fides_consent");
-      expect(value).toEqual(expectedCookieString);
-      expect(attributes).toHaveProperty("domain", "localhost");
-      expect(attributes).toHaveProperty("expires", 365);
-    });
-
-    it("sets a base64 cookie", async () => {
-      const cookie: FidesCookie = await getOrMakeFidesCookie();
-      await saveFidesCookie(cookie, { base64Cookie: true });
-      const expectedCookieString = base64_encode(JSON.stringify(cookie));
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
       expect(name).toEqual("fides_consent");
