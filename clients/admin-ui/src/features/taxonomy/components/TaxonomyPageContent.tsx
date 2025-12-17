@@ -60,6 +60,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   const isCustomTaxonomy = !Object.values(TaxonomyTypeEnum).includes(
     taxonomyType as TaxonomyTypeEnum,
   );
+
   const features = useFeatures();
   const isPlusEnabled = features.plus;
   const { isLoading: isPlusHealthLoading } = useGetHealthQuery();
