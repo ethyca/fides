@@ -150,15 +150,14 @@ def verify_migration_structure() -> Tuple[bool, List[str]]:
     return len(errors) == 0, errors
 
 
-def verify_messages_json_matches(strict: bool = False) -> Tuple[bool, List[str]]:
+def verify_messages_json_matches() -> Tuple[bool, List[str]]:
     """
-    Verify migration matches messages.json fixtures.
+    Verify migration matches messages.json fixtures exactly.
 
-    NOTE: The messages.json files are the original source of GPC translations.
-    The migration may have slightly different values if they were manually entered.
-    Set strict=True to treat mismatches as errors.
+    The messages.json files are the authoritative source of GPC translations.
+    The migration must match these values verbatim.
     """
-    issues = []
+    errors = []
     try:
         gpc_translations, _ = get_migration_gpc_translations()
     except FileNotFoundError as e:
@@ -179,21 +178,13 @@ def verify_messages_json_matches(strict: bool = False) -> Tuple[bool, List[str]]
         for field in GPC_FIELDS:
             if field in messages_gpc:
                 if migration_gpc.get(field) != messages_gpc[field]:
-                    issues.append(
+                    errors.append(
                         f"MISMATCH {language}.{field}:\n"
                         f"    Migration: {migration_gpc.get(field)}\n"
                         f"    Messages:  {messages_gpc[field]}"
                     )
 
-    if issues and not strict:
-        print(f"  WARNING: {len(issues)} translation mismatches found")
-        print(
-            "  (These are acceptable - migration uses valid alternative translations)"
-        )
-        print("  Use --strict to treat these as errors")
-        return True, []  # Non-strict mode: warnings only
-
-    return len(issues) == 0, issues
+    return len(errors) == 0, errors
 
 
 def verify_fidesplus_yaml(fidesplus_path: Path) -> Tuple[bool, List[str]]:
@@ -291,11 +282,6 @@ def main():
         action="store_true",
         help="Check that fides-js components use DB values (requires UI changes)",
     )
-    parser.add_argument(
-        "--strict",
-        action="store_true",
-        help="Treat translation mismatches between migration and messages.json as errors",
-    )
     args = parser.parse_args()
 
     all_passed = True
@@ -310,11 +296,11 @@ def main():
         for error in errors:
             print(f"  ✗ {error}")
 
-    # 2. Verify messages.json matches
+    # 2. Verify messages.json matches exactly
     print("\n=== Verifying Messages.json Fixtures ===")
-    passed, errors = verify_messages_json_matches(strict=args.strict)
+    passed, errors = verify_messages_json_matches()
     if passed:
-        print("  ✓ Migration translations verified")
+        print("  ✓ Migration matches messages.json exactly")
     else:
         all_passed = False
         for error in errors:
