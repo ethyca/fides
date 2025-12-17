@@ -3,7 +3,7 @@ import { AntImage } from "fidesui";
 
 const ERROR_IMAGE_PATH = "/images/errors";
 
-const ErrorImage = ({ status }: { status: FetchBaseQueryError["status"] }) => {
+const ErrorImage = ({ status }: { status?: FetchBaseQueryError["status"] }) => {
   if (status === 404) {
     return (
       <AntImage

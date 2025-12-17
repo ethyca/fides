@@ -1,3 +1,4 @@
+import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton,
@@ -18,12 +19,14 @@ const ErrorPage = ({
   error,
   actions,
 }: {
-  error: FetchBaseQueryError;
+  error: FetchBaseQueryError | SerializedError;
   actions: ActionProps[];
 }) => {
-  const { status, data } = error;
   const errorMessage = getErrorMessage(error);
-  const dataString = JSON.stringify(data);
+  // handle both FetchBaseQueryError and SerializedError
+  const dataString =
+    "data" in error ? JSON.stringify(error.data) : JSON.stringify(error);
+  const status = "status" in error ? error.status : undefined;
 
   return (
     <AntFlex vertical align="center" justify="center" className="h-screen">
