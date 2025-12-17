@@ -52,8 +52,8 @@ from fides.api.util.rate_limit import (
     fides_limiter,
     is_rate_limit_enabled,
 )
-from fides.api.util.security_headers import SecurityHeadersMiddleware
 from fides.api.util.saas_config_updater import update_saas_configs
+from fides.api.util.security_headers import SecurityHeadersMiddleware
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
