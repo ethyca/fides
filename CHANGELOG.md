@@ -38,6 +38,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
+- Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
+- Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
