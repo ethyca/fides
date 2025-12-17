@@ -219,6 +219,37 @@ def verify_fidesplus_yaml(fidesplus_path: Path) -> Tuple[bool, List[str]]:
     return len(errors) == 0, errors
 
 
+def verify_yaml_formatting(fidesplus_path: Path) -> Tuple[bool, List[str]]:
+    """Verify GPC fields are properly formatted on their own lines in YAML."""
+    errors = []
+    yaml_path = fidesplus_path / "data/privacy_notices/experience_translations.yml"
+
+    if not yaml_path.exists():
+        return False, [f"YAML file not found: {yaml_path}"]
+
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines, 1):
+        # Check if any line contains multiple GPC fields (formatting error)
+        gpc_count = sum(1 for field in GPC_FIELDS if field + ":" in line)
+        if gpc_count > 1:
+            errors.append(f"Line {i}: Multiple GPC fields on same line: {line.strip()}")
+
+        # Check if GPC field is mixed with non-GPC content on same line
+        for field in GPC_FIELDS:
+            if field + ":" in line:
+                # Line should start with whitespace + field name
+                stripped = line.lstrip()
+                if not stripped.startswith(field + ":"):
+                    errors.append(
+                        f"Line {i}: GPC field '{field}' not at start of line: "
+                        f"{line.strip()[:80]}..."
+                    )
+
+    return len(errors) == 0, errors
+
+
 def verify_ui_uses_db_values() -> Tuple[bool, List[str]]:
     """Verify fides-js components use DB values, not static keys."""
     errors = []
@@ -317,6 +348,16 @@ def main():
             passed, errors = verify_fidesplus_yaml(fidesplus_path)
             if passed:
                 print("  ✓ YAML matches migration")
+            else:
+                all_passed = False
+                for error in errors:
+                    print(f"  ✗ {error}")
+
+            # Also verify YAML formatting
+            print("\n=== Verifying YAML Formatting ===")
+            passed, errors = verify_yaml_formatting(fidesplus_path)
+            if passed:
+                print("  ✓ GPC fields are properly formatted (each on own line)")
             else:
                 all_passed = False
                 for error in errors:
