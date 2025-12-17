@@ -399,10 +399,11 @@ Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
 
 > **fides\_cookie\_compression**: `"gzip"` \| `"none"`
 
-Specifies the compression method to use for the consent cookie. This can help reduce
-cookie size when storing large consent preferences or TCF strings.
+Specifies the compression method to use for the consent cookie. When set to "gzip",
+compression is always applied regardless of cookie size. This can help reduce cookie
+size when storing consent preferences with TCF strings or many vendors.
 
 - "none" = No compression applied (default)
-- "gzip" = Apply gzip compression to the cookie value
+- "gzip" = Always apply gzip compression to the cookie value
 
 Defaults to `"none"`.
