@@ -12,36 +12,36 @@ const { APPROVE, CLASSIFY, PROMOTE, MUTE, UN_MUTE, PROMOTE_REMOVALS } =
   FieldActionType;
 
 export const FIELD_ACTION_LABEL: Record<FieldActionTypeValue, string> = {
-  approve: "Approve",
+  approve: "Mark as reviewed",
   "assign-categories": "Assign categories",
   classify: "Classify",
   mute: "Ignore",
-  promote: "Confirm",
+  promote: "Approve",
   "promote-removals": "Remove",
-  "un-approve": "Un-approve",
+  "un-approve": "Un-mark as reviewed",
   "un-mute": "Restore",
 };
 
 /** TODO: fix all */
 export const FIELD_ACTION_INTERMEDIATE: Record<FieldActionTypeValue, string> = {
-  approve: "Approving",
+  approve: "Marking as reviewed",
   "assign-categories": "Updating data categories",
   classify: "Classifying",
   mute: "Ignoring",
-  promote: "Confirming",
+  promote: "Approving",
   "promote-removals": "Removing",
-  "un-approve": "Un-approving",
+  "un-approve": "Un-marking as reviewed",
   "un-mute": "Restoring",
 };
 
 export const FIELD_ACTION_COMPLETED: Record<FieldActionTypeValue, string> = {
-  approve: "Approved",
+  approve: "Marked as reviewed",
   "assign-categories": "Data category updated",
   classify: "Classified",
   mute: "Ignored",
-  promote: "Confirmed",
+  promote: "Approved",
   "promote-removals": "Removed",
-  "un-approve": "Un-approved",
+  "un-approve": "Un-marked as reviewed",
   "un-mute": "Restored",
 };
 
@@ -102,11 +102,12 @@ export const ACTIONS_DISABLED_MESSAGE: Record<
   (typeof DROPDOWN_ACTIONS)[number],
   string
 > = {
-  [APPROVE]: "You can only approve resources with a data category applied",
+  [APPROVE]:
+    "You can only mark resources as reviewed with a data category applied",
   [CLASSIFY]:
     "You cannot classify resources that are already in classification or ignored",
   [MUTE]: "You cannot ignore resources that are already ignored",
-  [PROMOTE]: "You can only confirm resources that have a data category applied",
+  [PROMOTE]: "You can only approve resources that have a data category applied",
   [UN_MUTE]: "You can only restore resources that are ignored",
   [PROMOTE_REMOVALS]:
     "You can only remove resources that are in a removed status",
@@ -170,10 +171,11 @@ export const FIELD_ACTION_ICON = {
 } as const satisfies Readonly<Record<FieldActionType, ReactNode>>;
 
 export const FIELD_ACTION_HOTKEYS = {
-  APPROVE: "a",
-  PROMOTE: "c",
+  APPROVE: "r",
+  PROMOTE: "a",
   MUTE: "i",
-  REFRESH: "r",
+  UN_MUTE: "z",
+  REFRESH: ".",
   TOGGLE_DRAWER: "o",
   OPEN_CLASSIFICATION_SELECT: "e",
 } as const;
@@ -188,13 +190,13 @@ export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
   "un-mute": (targetItemCount: number) =>
     `Are you sure you want to restore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
   approve: (targetItemCount: number) =>
-    `Are you sure you want to approve ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}?`,
+    `Are you sure you want to mark ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")} as reviewed?`,
   classify: (targetItemCount: number) =>
     `Are you sure you want to run the classifier and apply data categories to ${targetItemCount.toLocaleString()} unlabeled ${pluralize(targetItemCount, "resource", "resources")}?`,
   mute: (targetItemCount: number) =>
     `Are you sure you want to ignore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After ignoring, these resources may reappear in future scans.`,
   promote: (targetItemCount: number) =>
-    `Are you sure you want to confirm ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After confirming this data can be used for policy automation and DSRs. `,
+    `Are you sure you want to approve ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After approving this data can be used for policy automation and DSRs. `,
 } as const satisfies Readonly<
   Record<FieldActionType, (targetItemCount: number) => ReactNode>
 >;

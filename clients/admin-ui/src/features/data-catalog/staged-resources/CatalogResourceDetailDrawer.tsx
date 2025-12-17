@@ -32,7 +32,7 @@ const CatalogResourceDetailDrawer = ({
   const showDataCategories =
     (resourceType === StagedResourceTypeValue.FIELD ||
       resourceType === StagedResourceTypeValue.TABLE) &&
-    status === CatalogResourceStatus.IN_REVIEW;
+    status === CatalogResourceStatus.CLASSIFIED;
 
   return (
     <Drawer isOpen={!!resource} onClose={onClose} size="md">

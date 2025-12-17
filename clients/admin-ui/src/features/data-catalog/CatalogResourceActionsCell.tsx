@@ -71,7 +71,7 @@ const CatalogResourceActionsCell = ({
           Classify
         </Button>
       )}
-      {status === CatalogResourceStatus.IN_REVIEW && (
+      {status === CatalogResourceStatus.CLASSIFIED && (
         <Button
           size="small"
           onClick={approveResource}
