@@ -4,10 +4,10 @@ import * as React from "react";
 interface PieChartLabelProps {
   cx: number;
   cy: number;
-  midAngle: number;
-  innerRadius: number;
-  outerRadius: number;
-  percent: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
 }
 
 /**
@@ -21,6 +21,15 @@ export const renderPieChartLabel = ({
   outerRadius,
   percent,
 }: PieChartLabelProps) => {
+  if (
+    midAngle === undefined ||
+    innerRadius === undefined ||
+    outerRadius === undefined ||
+    percent === undefined
+  ) {
+    return null;
+  }
+
   const RADIAN = Math.PI / 180;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);

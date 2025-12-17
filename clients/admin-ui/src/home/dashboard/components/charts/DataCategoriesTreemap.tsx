@@ -33,7 +33,8 @@ const CustomTreemapContent = (
     width <= 0 ||
     height <= 0
   ) {
-    return null;
+    // Return an empty group to satisfy Treemap content type expectations
+    return <g />;
   }
 
   // Use index to look up the color from our data array
@@ -118,10 +119,12 @@ export const DataCategoriesTreemap = ({
   height = CHART_CONFIG.treemap.defaultHeight,
 }: DataCategoriesTreemapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({
-    width: CHART_CONFIG.treemap.minWidth,
-    height: CHART_CONFIG.treemap.minHeight,
-  });
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>(
+    {
+      width: CHART_CONFIG.treemap.minWidth,
+      height: CHART_CONFIG.treemap.minHeight,
+    }
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -199,4 +202,3 @@ export const DataCategoriesTreemap = ({
     </ChartContainer>
   );
 };
-

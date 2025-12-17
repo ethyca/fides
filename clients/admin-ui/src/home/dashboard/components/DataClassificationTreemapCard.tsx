@@ -31,7 +31,8 @@ const CustomTreemapContent = (
     width <= 0 ||
     height <= 0
   ) {
-    return null;
+    // Return an empty group to satisfy Treemap content type expectations
+    return <g />;
   }
 
   // Use index to look up the color from our data array
@@ -115,10 +116,12 @@ export const DataClassificationTreemapCard = ({
   height = 300,
 }: DataClassificationTreemapCardProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({
-    width: 400,
-    height,
-  });
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>(
+    {
+      width: 400,
+      height,
+    }
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -224,4 +227,3 @@ export const DataClassificationTreemapCard = ({
     </Card>
   );
 };
-

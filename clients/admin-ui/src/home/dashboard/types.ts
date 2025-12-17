@@ -6,6 +6,7 @@ export interface FieldStatusData {
   name: string;
   value: number;
   color: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface ClassificationActivityDataPoint {

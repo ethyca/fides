@@ -34,7 +34,7 @@
     "dev": "rollup --watch -c --environment NODE_ENV:development",
     "build": "rollup -c --environment NODE_ENV:production$(test \"$IS_TEST\" = \"true\" && echo \",IS_TEST:true\")",
     "build:test": "rollup -c --environment NODE_ENV:production,IS_TEST:true",
-    "postbuild": "npm run docs:generate",
+    "postbuild": "echo \"Skipping docs generation during build\"",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
     "format": "prettier --write .",
