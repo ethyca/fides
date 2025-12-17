@@ -27,7 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
 - Added handling for "page-level" errors [#7144](https://github.com/ethyca/fides/pull/7144)
 - Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
-
+- Pre-warming the async DB pool on server startup [#7141](https://github.com/ethyca/fides/pull/7141)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
