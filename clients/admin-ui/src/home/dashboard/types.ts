@@ -19,7 +19,8 @@ export interface DataCategoryData {
   name: string;
   value: number;
   fill: string;
-  [key: string]: string | number | undefined;
+  children?: DataCategoryData[];
+  [key: string]: string | number | DataCategoryData[] | undefined;
 }
 
 export interface ConsentRateDataPoint {
