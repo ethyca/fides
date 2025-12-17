@@ -1442,3 +1442,85 @@ class TestAsyncConnectors:
             erasure_only_policy.delete(db)
         except Exception:
             pass
+
+    @mock.patch(
+        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
+    )
+    def test_callback_requests_ignore_guard_clause(
+        self,
+        mock_create_client,
+        db,
+        privacy_request,
+        saas_async_example_connection_config,
+        async_graph,
+        oauth_client,
+    ):
+        """
+        Test that callback requests ignore the guard clause entirely.
+        Even if guard_access_request returns False (erasure-only policy),
+        callback requests should still proceed and raise AwaitingAsyncTask.
+        """
+        # Create an erasure-only policy (no access rules)
+        erasure_only_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Erasure Only Policy Callback Test",
+                "key": "erasure_only_policy_callback_test",
+                "client_id": oauth_client.id,
+            },
+        )
+
+        erasure_rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule Callback Test",
+                "key": "erasure_rule_callback_test",
+                "policy_id": erasure_only_policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+                "client_id": oauth_client.id,
+            },
+        )
+
+        RuleTarget.create(
+            db=db,
+            data={
+                "data_category": "user.name",
+                "rule_id": erasure_rule.id,
+                "client_id": oauth_client.id,
+            },
+        )
+
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+        mock_create_client.return_value = mock.MagicMock()
+
+        # Get access request task
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        # Verify guard_access_request returns False for erasure-only policy
+        assert connector.guard_access_request(erasure_only_policy) is False
+
+        # Even though guard_access_request returns False, callback requests
+        # should ignore the guard and still proceed with async_retrieve_data
+        # This will raise AwaitingAsyncTask (not return empty list like polling would)
+        with pytest.raises(AwaitingAsyncTask):
+            connector.retrieve_data(
+                execution_node,
+                erasure_only_policy,
+                privacy_request,
+                request_task,
+                {},
+            )
+
+        # Cleanup
+        try:
+            erasure_rule.delete(db)
+            erasure_only_policy.delete(db)
+        except Exception:
+            pass
