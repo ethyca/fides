@@ -7,6 +7,7 @@ const domains: {
   expected: string;
 }[] = require("../../fixtures/domains.json");
 
+const NO_COOKIE_SUFFIX = undefined;
 /**
  * This test is for validating our cookie domain logic. We want to ensure that cookies are able to be set on the topmost domain without needing to be the full domain.
  *
@@ -94,8 +95,8 @@ describe.skip("Consent overlay", () => {
         });
         cy.getCookie(CONSENT_COOKIE_NAME)
           .should("exist")
-          .then(() => {
-            const c = getFidesConsentCookie();
+          .then(async () => {
+            const c = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
             expect(c?.fides_meta.consentMethod).to.eq("reject");
           });
         cy.get("button#fides-modal-link").click();
@@ -104,8 +105,8 @@ describe.skip("Consent overlay", () => {
         });
         cy.getCookie(CONSENT_COOKIE_NAME)
           .should("exist")
-          .then(() => {
-            const c = getFidesConsentCookie();
+          .then(async () => {
+            const c = await getFidesConsentCookie(NO_COOKIE_SUFFIX);
             expect(c?.fides_meta.consentMethod).to.eq("accept");
           });
       });
