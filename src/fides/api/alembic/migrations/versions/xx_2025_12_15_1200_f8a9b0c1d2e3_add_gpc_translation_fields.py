@@ -26,7 +26,7 @@ down_revision = "a7241db3ee6a"
 branch_labels = None
 depends_on = None
 
-# GPC translations for all supported languages (from FidesJS static messages)
+# GPC translations for all supported languages
 # fmt: off
 GPC_TRANSLATIONS = {
     "ar": {
@@ -148,7 +148,7 @@ GPC_TRANSLATIONS = {
         "gpc_status_overridden_label": "Anulado",
         "gpc_title": "Control de privacidade global detectado",
     },
-    "hi-IN": {
+    "hi": {
         "gpc_label": "वैश्विक गोपनीयता नियंत्रण",
         "gpc_description": "आपकी वैश्विक गोपनीयता नियंत्रण प्राथमिकता का सम्मान किया गया है। आपको स्वचालित रूप से उन डेटा उपयोग मामलों से बाहर कर दिया गया है जो वैश्विक गोपनीयता नियंत्रण का पालन करते हैं।",
         "gpc_status_applied_label": "लागू",
@@ -182,6 +182,13 @@ GPC_TRANSLATIONS = {
         "gpc_status_applied_label": "適用済み",
         "gpc_status_overridden_label": "オーバーライド",
         "gpc_title": "グローバルプライバシーコントロールが検出されました",
+    },
+    "ko": {
+        "gpc_label": "글로벌 개인정보 보호 제어",
+        "gpc_description": "귀하의 글로벌 개인정보 보호 제어 설정이 적용되었습니다. 글로벌 개인정보 보호 제어를 준수하는 데이터 사용 사례에서 자동으로 제외되었습니다.",
+        "gpc_status_applied_label": "적용됨",
+        "gpc_status_overridden_label": "재정의됨",
+        "gpc_title": "글로벌 개인정보 보호 제어 감지됨",
     },
     "lt": {
         "gpc_label": "Visuotinė privatumo kontrolė",
@@ -224,6 +231,13 @@ GPC_TRANSLATIONS = {
         "gpc_status_applied_label": "Zastosowano",
         "gpc_status_overridden_label": "Nadpisano",
         "gpc_title": "Wykryto globalną kontrolę prywatności",
+    },
+    "pt": {
+        "gpc_label": "Controle Global de Privacidade",
+        "gpc_description": "Sua preferência de Controle Global de Privacidade foi respeitada. Você foi automaticamente excluído dos casos de uso de dados que aderem ao Controle Global de Privacidade.",
+        "gpc_status_applied_label": "Aplicado",
+        "gpc_status_overridden_label": "Substituído",
+        "gpc_title": "Controle Global de Privacidade detectado",
     },
     "pt-BR": {
         "gpc_label": "Controle Global de Privacidade",
@@ -319,6 +333,9 @@ GPC_TRANSLATIONS = {
 }
 # fmt: on
 
+# English fallback for any language not in the dict
+EN_FALLBACK = GPC_TRANSLATIONS["en"]
+
 
 def upgrade():
     # Add GPC columns to experiencetranslation table
@@ -365,10 +382,19 @@ def upgrade():
         sa.Column("gpc_title", sa.String(), nullable=True),
     )
 
-    # Populate default values for existing translations in all supported languages
+    # Populate default GPC values for all existing translations
     connection = op.get_bind()
-    for language, translations in GPC_TRANSLATIONS.items():
-        result = connection.execute(
+
+    # Get all distinct languages in the DB
+    result = connection.execute(
+        sa.text("SELECT DISTINCT language FROM experiencetranslation")
+    )
+    languages_in_db = [row[0] for row in result]
+
+    for language in languages_in_db:
+        # Use language-specific translations if available, otherwise English
+        translations = GPC_TRANSLATIONS.get(language, EN_FALLBACK)
+        update_result = connection.execute(
             sa.text(
                 """
                 UPDATE experiencetranslation
@@ -382,9 +408,10 @@ def upgrade():
             ),
             {**translations, "language": language},
         )
-        if result.rowcount > 0:
+        if update_result.rowcount > 0:
             logger.info(
-                f"Updated {result.rowcount} experience translation(s) for language '{language}' with GPC defaults"
+                f"Updated {update_result.rowcount} experience translation(s) "
+                f"for language '{language}' with GPC defaults"
             )
 
 
