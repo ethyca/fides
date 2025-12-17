@@ -204,17 +204,21 @@ class TestGenerateOktaFunction:
             private_key='{"kty":"RSA","d":"test","n":"test","e":"AQAB"}',
         )
 
-        with patch("fides.connectors.okta.validate_credentials") as mock_validate:
-            mock_validate.side_effect = ConnectorAuthFailureException(
-                "Authentication failed"
-            )
+        # Patch both get_okta_client (to avoid key validation) and validate_credentials
+        # Since validate_credentials is imported inside generate_okta, we patch where it's defined
+        mock_client = Mock()
+        with patch("fides.connectors.okta.get_okta_client", return_value=mock_client):
+            with patch("fides.connectors.okta.validate_credentials") as mock_validate:
+                mock_validate.side_effect = ConnectorAuthFailureException(
+                    "Authentication failed"
+                )
 
-            with pytest.raises(HTTPException) as exc_info:
-                generate_okta(okta_config=okta_config, organization=organization)
+                with pytest.raises(HTTPException) as exc_info:
+                    generate_okta(okta_config=okta_config, organization=organization)
 
-            assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
-            assert "Authentication failed" in str(exc_info.value.detail)
-            mock_validate.assert_called_once_with(okta_config)
+                assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
+                assert "Authentication failed" in str(exc_info.value.detail)
+                mock_validate.assert_called_once_with(okta_config)
 
     def test_generate_okta_empty_systems(self):
         """Test generation with empty systems list."""
