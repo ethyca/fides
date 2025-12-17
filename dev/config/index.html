@@ -1605,7 +1605,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">490</span>
 <span class="normal">491</span>
 <span class="normal">492</span>
-<span class="normal">493</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1646,7 +1650,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;7cf5d1da5472730a34a2080c15fe91c6&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;f08e7f82a5b9f3971bc15784d1f33f24&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1746,6 +1750,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The hostname of the application database server.</span>
 <span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default-db&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Additional connection parameters for read-only database connections.</span>
+<span class="c1"># If not provided and readonly_server is set, uses &#39;params&#39;.</span>
+<span class="n">readonly_params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1"># object</span>
 
 <span class="c1"># Number of concurrent database connections Fides will use for</span>
 <span class="c1"># executing privacy request tasks, either locally or on each worker.</span>

@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "7cf5d1da5472730a34a2080c15fe91c6" # string
+analytics_id = "f08e7f82a5b9f3971bc15784d1f33f24" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -139,6 +139,10 @@ port = "5432" # string
 
 # The hostname of the application database server.
 server = "default-db" # string
+
+# Additional connection parameters for read-only database connections.
+# If not provided and readonly_server is set, uses 'params'.
+readonly_params = {} # object
 
 # Number of concurrent database connections Fides will use for
 # executing privacy request tasks, either locally or on each worker.
