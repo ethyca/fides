@@ -148,7 +148,7 @@ def verify_migration_structure() -> Tuple[bool, List[str]]:
 def verify_messages_json_matches(strict: bool = False) -> Tuple[bool, List[str]]:
     """
     Verify migration matches messages.json fixtures.
-    
+
     NOTE: The messages.json files are the original source of GPC translations.
     The migration may have slightly different values if they were manually entered.
     Set strict=True to treat mismatches as errors.
@@ -182,10 +182,12 @@ def verify_messages_json_matches(strict: bool = False) -> Tuple[bool, List[str]]
 
     if issues and not strict:
         print(f"  WARNING: {len(issues)} translation mismatches found")
-        print("  (These are acceptable - migration uses valid alternative translations)")
+        print(
+            "  (These are acceptable - migration uses valid alternative translations)"
+        )
         print("  Use --strict to treat these as errors")
         return True, []  # Non-strict mode: warnings only
-    
+
     return len(issues) == 0, issues
 
 
@@ -248,7 +250,9 @@ def verify_ui_uses_db_values() -> Tuple[bool, List[str]]:
         errors.append(f"GpcBadge.tsx not found: {gpc_badge_path}")
 
     # Check ConsentContent.tsx
-    consent_path = get_repo_root() / "clients/fides-js/src/components/ConsentContent.tsx"
+    consent_path = (
+        get_repo_root() / "clients/fides-js/src/components/ConsentContent.tsx"
+    )
     if consent_path.exists():
         with open(consent_path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -350,4 +354,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
