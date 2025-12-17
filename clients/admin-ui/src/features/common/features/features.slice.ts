@@ -117,15 +117,26 @@ export const useFlags = () => {
     [dispatch],
   );
 
-  const reset = useCallback(() => {
-    dispatch(featuresSlice.actions.reset());
-  }, [dispatch]);
+  const setAll = useCallback(
+    (flagsToSet: Array<NamesFor<FlagConfig>>, value: boolean) => {
+      flagsToSet.forEach((flag) => {
+        dispatch(
+          featuresSlice.actions.override({
+            flag,
+            env: process.env.NEXT_PUBLIC_APP_ENV,
+            value,
+          }),
+        );
+      });
+    },
+    [dispatch],
+  );
 
   return {
     flags,
     defaults,
-    reset,
     override,
+    setAll,
   };
 };
 

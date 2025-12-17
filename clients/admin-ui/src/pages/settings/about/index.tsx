@@ -23,7 +23,7 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
   showAlphaFeatures = false,
 }) => {
   const features = useFeatures();
-  const { flags, override, reset } = useFlags();
+  const { flags, override, setAll } = useFlags();
 
   const alphaFlags = FLAG_NAMES.filter((flag) => flag.startsWith("alpha"));
   const betaFlags = FLAG_NAMES.filter((flag) => !flag.startsWith("alpha"));
@@ -59,7 +59,8 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
         <Heading as="h2" fontSize="xl">
           Beta Features
         </Heading>
-        <Button onClick={reset}>Reset</Button>
+        <Button onClick={() => setAll(betaFlags, true)}>Enable all</Button>
+        <Button onClick={() => setAll(betaFlags, false)}>Disable all</Button>
       </Flex>
       <Grid
         gridTemplateColumns="1fr 2fr 6fr"
@@ -85,7 +86,10 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
             <Heading as="h2" fontSize="xl">
               Alpha Features
             </Heading>
-            <Button onClick={reset}>Reset</Button>
+            <Button onClick={() => setAll(alphaFlags, true)}>Enable all</Button>
+            <Button onClick={() => setAll(alphaFlags, false)}>
+              Disable all
+            </Button>
           </Flex>
           <Grid
             gridTemplateColumns="1fr 2fr 6fr"
