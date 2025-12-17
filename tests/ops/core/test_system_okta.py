@@ -2,10 +2,9 @@
 
 from unittest.mock import Mock, patch
 
-import pytest
 from fideslang.models import Organization, System
 
-from fides.connectors.models import ConnectorAuthFailureException, OktaConfig
+from fides.connectors.models import OktaConfig
 from fides.core import system as _system
 
 
@@ -41,15 +40,11 @@ class TestGenerateOktaSystems:
             ),
         ]
 
-        with patch(
-            "fides.core.system.okta_connector.get_okta_client"
-        ) as mock_get_client:
+        with patch("fides.connectors.okta.get_okta_client") as mock_get_client:
             with patch(
-                "fides.core.system.okta_connector.list_okta_applications"
+                "fides.connectors.okta.list_okta_applications"
             ) as mock_list_apps:
-                with patch(
-                    "fides.core.system.okta_connector.create_okta_systems"
-                ) as mock_create:
+                with patch("fides.connectors.okta.create_okta_systems") as mock_create:
                     mock_client = Mock()
                     mock_get_client.return_value = mock_client
                     mock_list_apps.return_value = mock_applications
@@ -71,15 +66,11 @@ class TestGenerateOktaSystems:
         """Test generation with None config."""
         organization = Organization(fides_key="test-org")
 
-        with patch(
-            "fides.core.system.okta_connector.get_okta_client"
-        ) as mock_get_client:
+        with patch("fides.connectors.okta.get_okta_client") as mock_get_client:
             with patch(
-                "fides.core.system.okta_connector.list_okta_applications"
+                "fides.connectors.okta.list_okta_applications"
             ) as mock_list_apps:
-                with patch(
-                    "fides.core.system.okta_connector.create_okta_systems"
-                ) as mock_create:
+                with patch("fides.connectors.okta.create_okta_systems") as mock_create:
                     mock_client = Mock()
                     mock_get_client.return_value = mock_client
                     mock_list_apps.return_value = []
@@ -105,15 +96,11 @@ class TestGenerateOktaSystems:
             private_key='{"kty":"RSA","d":"test","n":"test","e":"AQAB"}',
         )
 
-        with patch(
-            "fides.core.system.okta_connector.get_okta_client"
-        ) as mock_get_client:
+        with patch("fides.connectors.okta.get_okta_client") as mock_get_client:
             with patch(
-                "fides.core.system.okta_connector.list_okta_applications"
+                "fides.connectors.okta.list_okta_applications"
             ) as mock_list_apps:
-                with patch(
-                    "fides.core.system.okta_connector.create_okta_systems"
-                ) as mock_create:
+                with patch("fides.connectors.okta.create_okta_systems") as mock_create:
                     mock_client = Mock()
                     mock_get_client.return_value = mock_client
                     mock_list_apps.return_value = []

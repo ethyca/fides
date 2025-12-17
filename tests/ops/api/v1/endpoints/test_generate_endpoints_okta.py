@@ -4,12 +4,13 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi import HTTPException, status
+from fideslang.models import Organization, System
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.generate import GenerateResponse, generate_okta
+from fides.api.common_exceptions import ConnectionException
 from fides.common.api.scope_registry import GENERATE_EXEC
 from fides.connectors.models import ConnectorAuthFailureException, OktaConfig
-from fideslang.models import Organization, System
 
 
 class TestGenerateEndpointOkta:
@@ -174,13 +175,13 @@ class TestGenerateOktaFunction:
             ),
         ]
 
-        with patch(
-            "fides.api.api.v1.endpoints.generate.validate_credentials"
-        ) as mock_validate:
+        mock_client = Mock()
+        mock_client.list_applications = Mock(return_value=([], None))
+        mock_client.list_all_applications = Mock(return_value=[])
+        with patch("fides.connectors.okta.get_okta_client", return_value=mock_client):
             with patch(
                 "fides.api.api.v1.endpoints.generate.generate_okta_systems"
             ) as mock_generate_systems:
-                mock_validate.return_value = None
                 mock_generate_systems.return_value = mock_systems
 
                 result = generate_okta(
@@ -190,7 +191,6 @@ class TestGenerateOktaFunction:
                 assert len(result) == 2
                 assert result[0]["fides_key"] == "app1"
                 assert result[1]["fides_key"] == "app2"
-                mock_validate.assert_called_once_with(okta_config)
                 mock_generate_systems.assert_called_once_with(
                     organization=organization, okta_config=okta_config
                 )
@@ -204,9 +204,7 @@ class TestGenerateOktaFunction:
             private_key='{"kty":"RSA","d":"test","n":"test","e":"AQAB"}',
         )
 
-        with patch(
-            "fides.api.api.v1.endpoints.generate.validate_credentials"
-        ) as mock_validate:
+        with patch("fides.connectors.okta.validate_credentials") as mock_validate:
             mock_validate.side_effect = ConnectorAuthFailureException(
                 "Authentication failed"
             )
@@ -227,13 +225,13 @@ class TestGenerateOktaFunction:
             private_key='{"kty":"RSA","d":"test","n":"test","e":"AQAB"}',
         )
 
-        with patch(
-            "fides.api.api.v1.endpoints.generate.validate_credentials"
-        ) as mock_validate:
+        mock_client = Mock()
+        mock_client.list_applications = Mock(return_value=([], None))
+        mock_client.list_all_applications = Mock(return_value=[])
+        with patch("fides.connectors.okta.get_okta_client", return_value=mock_client):
             with patch(
                 "fides.api.api.v1.endpoints.generate.generate_okta_systems"
             ) as mock_generate_systems:
-                mock_validate.return_value = None
                 mock_generate_systems.return_value = []
 
                 result = generate_okta(
@@ -241,7 +239,6 @@ class TestGenerateOktaFunction:
                 )
 
                 assert result == []
-                mock_validate.assert_called_once_with(okta_config)
                 mock_generate_systems.assert_called_once_with(
                     organization=organization, okta_config=okta_config
                 )
