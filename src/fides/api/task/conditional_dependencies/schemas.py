@@ -127,6 +127,3 @@ EvaluationResult = Union[ConditionEvaluationResult, GroupEvaluationResult]
 Condition = Union[ConditionLeaf, ConditionGroup]
 ConditionGroup.model_rebuild()
 GroupEvaluationResult.model_rebuild()
-
-# TypeAdapter for validating Condition from raw data (e.g., from database JSONB)
-ConditionTypeAdapter = TypeAdapter(Condition)
