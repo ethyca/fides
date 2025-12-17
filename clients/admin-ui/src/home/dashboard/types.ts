@@ -19,6 +19,7 @@ export interface DataCategoryData {
   name: string;
   value: number;
   fill: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface ConsentRateDataPoint {
@@ -95,4 +96,3 @@ export interface DashboardData {
   janus: JanusData;
   lethe: LetheData;
 }
-
