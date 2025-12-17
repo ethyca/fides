@@ -78,3 +78,11 @@ twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
 fideslang==3.1.2
+# OpenTelemetry instrumentation
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-sqlalchemy==0.42b0
+opentelemetry-instrumentation-httpx==0.42b0
+opentelemetry-instrumentation-redis==0.42b0
+opentelemetry-exporter-otlp==1.21.0

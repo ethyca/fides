@@ -9,6 +9,12 @@ from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
 from fides.config import CONFIG
 
+# Import tracing utilities - safe to import even if OpenTelemetry is not installed
+try:
+    from fides.telemetry.tracing import instrument_sqlalchemy
+except ImportError:
+    instrument_sqlalchemy = None  # type: ignore
+
 # Associated with a workaround in fides.core.config.database_settings
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
 connect_args: Dict[str, Any] = {}
@@ -58,6 +64,10 @@ sync_session = sessionmaker(
     expire_on_commit=False,
     autocommit=False,
 )
+
+# Instrument the sync engine with OpenTelemetry tracing if available and enabled
+if instrument_sqlalchemy:
+    instrument_sqlalchemy(sync_engine, CONFIG)
 
 
 async def get_async_db() -> AsyncGenerator:
