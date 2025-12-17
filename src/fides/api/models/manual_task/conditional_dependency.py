@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session, relationship
 from fides.api.db.base_class import FidesBase
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
+    ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
-    ConditionTypeAdapter,
 )
 
 if TYPE_CHECKING:

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, List, Optional, Union
 
-from pydantic import BaseModel, Field, TypeAdapter, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class Operator(str, Enum):
