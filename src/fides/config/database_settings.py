@@ -6,7 +6,13 @@ from copy import deepcopy
 from typing import Dict, Optional, cast
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
+from pydantic import (
+    Field,
+    PostgresDsn,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import SettingsConfigDict
 
 from fides.config.utils import get_test_mode
@@ -200,56 +206,38 @@ class DatabaseSettings(FidesSettings):
             return quote_plus(value)
         return value
 
-    @field_validator("readonly_user", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def resolve_readonly_user(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> Optional[str]:
-        """If readonly_server is set but readonly_user is not, fall back to primary user."""
-        if v is None and info.data.get("readonly_server"):
-            return info.data.get("user")
-        return v
+    def resolve_readonly_fields(cls, values: Dict) -> Dict:
+        """
+        If readonly_server is set but readonly fields are not provided,
+        fall back to primary database values.
+        """
+        if values.get("readonly_server"):
+            # Fall back to primary user if readonly_user not provided
+            if values.get("readonly_user") is None:
+                values["readonly_user"] = values.get("user")
 
-    @field_validator("readonly_password", mode="before")
-    @classmethod
-    def resolve_readonly_password(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> Optional[str]:
-        """If readonly_server is set but readonly_password is not, fall back to primary password (already escaped)."""
-        if v is None and info.data.get("readonly_server"):
-            return info.data.get("password")  # Already escaped by password validator
-        # If provided directly, escape it like the primary password
-        if v and isinstance(v, str):
-            return quote_plus(v)
-        return v
+            # Fall back to primary password if readonly_password not provided
+            if values.get("readonly_password") is None:
+                values["readonly_password"] = values.get("password")
+            # If readonly_password was provided directly, escape it
+            elif isinstance(values.get("readonly_password"), str):
+                values["readonly_password"] = quote_plus(values["readonly_password"])
 
-    @field_validator("readonly_port", mode="before")
-    @classmethod
-    def resolve_readonly_port(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> Optional[str]:
-        """If readonly_server is set but readonly_port is not, fall back to primary port."""
-        if v is None and info.data.get("readonly_server"):
-            return info.data.get("port")
-        return v
+            # Fall back to primary port if readonly_port not provided
+            if values.get("readonly_port") is None:
+                values["readonly_port"] = values.get("port")
 
-    @field_validator("readonly_db", mode="before")
-    @classmethod
-    def resolve_readonly_db(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> Optional[str]:
-        """If readonly_server is set but readonly_db is not, fall back to primary db."""
-        if v is None and info.data.get("readonly_server"):
-            return info.data.get("db")
-        return v
+            # Fall back to primary db if readonly_db not provided
+            if values.get("readonly_db") is None:
+                values["readonly_db"] = values.get("db")
 
-    @field_validator("readonly_params", mode="before")
-    @classmethod
-    def resolve_readonly_params(cls, v: Optional[Dict], info: ValidationInfo) -> Dict:
-        """If readonly_server is set but readonly_params is not provided, fall back to primary params."""
-        if not v and info.data.get("readonly_server"):
-            return info.data.get("params", {})
-        return v or {}
+            # Fall back to primary params if readonly_params not provided
+            if not values.get("readonly_params"):
+                values["readonly_params"] = values.get("params", {})
+
+        return values
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod
@@ -351,14 +339,20 @@ class DatabaseSettings(FidesSettings):
         if not info.data.get("readonly_server"):
             return None
         port: int = port_integer_converter(info)
+        readonly_port: int = (
+            port_integer_converter(info, "readonly_port")
+            if info.data.get("readonly_port")
+            else port
+        )
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+psycopg2",
-                username=info.data.get("readonly_user"),
-                password=info.data.get("readonly_password"),
+                username=info.data.get("readonly_user") or info.data.get("user"),
+                password=info.data.get("readonly_password")
+                or info.data.get("password"),
                 host=info.data.get("readonly_server"),
-                port=info.data.get("readonly_port") or port,
-                path=f"{info.data.get('readonly_db') or ''}",
+                port=readonly_port,
+                path=f"{info.data.get('readonly_db') or info.data.get('db') or ''}",
                 query=(
                     urlencode(
                         cast(Dict, info.data.get("readonly_params")),
@@ -389,14 +383,20 @@ class DatabaseSettings(FidesSettings):
         params.pop("sslrootcert", None)
 
         port: int = port_integer_converter(info)
+        readonly_port: int = (
+            port_integer_converter(info, "readonly_port")
+            if info.data.get("readonly_port")
+            else port
+        )
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+asyncpg",
-                username=info.data.get("readonly_user"),
-                password=info.data.get("readonly_password"),
+                username=info.data.get("readonly_user") or info.data.get("user"),
+                password=info.data.get("readonly_password")
+                or info.data.get("password"),
                 host=info.data.get("readonly_server"),
-                port=info.data.get("readonly_port") or port,
-                path=f"{info.data.get('readonly_db') or ''}",
+                port=readonly_port,
+                path=f"{info.data.get('readonly_db') or info.data.get('db') or ''}",
                 query=urlencode(params, quote_via=quote, safe="/") if params else None,
             )
         )
