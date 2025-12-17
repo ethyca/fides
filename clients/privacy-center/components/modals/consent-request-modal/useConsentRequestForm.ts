@@ -138,7 +138,7 @@ const useConsentRequestForm = ({
         // After successfully initializing a consent request, save the current
         // cookie with our unique fides_user_device_id, etc.
         try {
-          saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
+          await saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
         } catch (error) {
           handleError({ title: "Could not save consent cookie" });
           return;
