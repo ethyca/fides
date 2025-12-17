@@ -283,7 +283,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             ):
                 # Guard clause only applies to polling requests
                 # Callback requests should always proceed
-                if ( async_dsr_strategy.type == AsyncTaskType.polling ) and ( not self.guard_access_request(policy) ):
+                if (async_dsr_strategy.type == AsyncTaskType.polling) and (
+                    not self.guard_access_request(policy)
+                ):
                     logger.info(
                         f"Skipping async access request for policy: {policy.name}"
                     )
@@ -361,9 +363,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Guard clause to ensure we only run async access requests
         if the access request is enabled and we are in an Access Request
         """
-        logger.info(f"Guard clause to ensure we only run async access requests if the access request is enabled and we are in an Access Request")
-        logger.info(f"Enabled actions: {self.configuration.enabled_actions}")
-        logger.info(f"Policy rules for access: {policy.get_rules_for_action(ActionType.access)}")
         if (
             self.configuration.enabled_actions is None
             or ActionType.access in self.configuration.enabled_actions

@@ -1123,7 +1123,9 @@ class TestAsyncConnectors:
         )
 
     @pytest.fixture(scope="function")
-    def async_graph_polling(self, saas_async_polling_example_dataset_config, db, privacy_request):
+    def async_graph_polling(
+        self, saas_async_polling_example_dataset_config, db, privacy_request
+    ):
         # Build proper async graph with persisted request tasks for polling tests
         async_graph = saas_async_polling_example_dataset_config.get_graph()
         graph = DatasetGraph(async_graph)
@@ -1323,7 +1325,9 @@ class TestAsyncConnectors:
             == 5
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    @mock.patch(
+        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
+    )
     def test_guard_access_request_with_access_policy(
         self,
         mock_create_client,
@@ -1335,7 +1339,9 @@ class TestAsyncConnectors:
         Test that guard_access_request allows async access requests to run
         when the policy has access rules (access request scenario).
         """
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
         mock_create_client.return_value = mock.MagicMock()
 
         # Get access request task
@@ -1406,7 +1412,9 @@ class TestAsyncConnectors:
             },
         )
 
-        connector: SaaSConnector = get_connector(saas_async_polling_example_connection_config)
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
 
         # Get access request task
         request_task = privacy_request.access_tasks.filter(
