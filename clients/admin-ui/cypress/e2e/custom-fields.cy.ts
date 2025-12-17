@@ -1,3 +1,4 @@
+import { getByRole } from "@testing-library/dom";
 import { stubCustomFields, stubPlus } from "cypress/support/stubs";
 
 import { RoleRegistryEnum } from "~/types/api";
@@ -169,7 +170,9 @@ describe("Custom Fields V2", () => {
       cy.contains("Are you sure you want to delete").should("be.visible");
 
       // Confirm deletion
-      cy.getByTestId("continue-btn").click();
+      cy.get(".ant-modal-confirm-btns").within(() => {
+        cy.contains("Delete").click();
+      });
       cy.wait("@deleteCustomFieldDefinition")
         .its("response.statusCode")
         .should("eq", 204);
