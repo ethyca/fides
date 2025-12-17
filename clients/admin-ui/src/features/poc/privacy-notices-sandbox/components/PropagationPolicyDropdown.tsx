@@ -27,6 +27,7 @@ const PropagationPolicyDropdown = ({
       value: PropagationPolicyKeyEnum.CASCADE_UP_AND_DOWN,
       label: "Cascade up and down",
     },
+    { value: PropagationPolicyKeyEnum.PREFER_OPT_IN, label: "Prefer opt in" },
   ];
 
   return (
