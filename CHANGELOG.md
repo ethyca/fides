@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
 - Track active taxonomy in URL in taxonomy screen [#7113](https://github.com/ethyca/fides/pull/7113)
 - Updated status labels for the Action Center [#7098](https://github.com/ethyca/fides/pull/7098)
+- Extending read-only DB configuration [#7139](https://github.com/ethyca/fides/pull/7139)
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
