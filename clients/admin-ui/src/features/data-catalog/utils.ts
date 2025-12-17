@@ -1,9 +1,10 @@
 import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
+/** TODO: centralize to a ResourceStatus mapping */
 export enum CatalogResourceStatus {
   ATTENTION_REQUIRED = "Attention required",
-  IN_REVIEW = "In review",
-  APPROVED = "Approved",
+  CLASSIFIED = "Classified",
+  APPROVED = "Reviewed",
   CLASSIFYING = "Classifying",
   NONE = "None",
 }
@@ -47,7 +48,7 @@ export const getCatalogResourceStatus = (
       resource.child_diff_statuses[DiffStatus.CLASSIFICATION_UPDATE]);
 
   if (classificationChanged || childClassificationChanged) {
-    return CatalogResourceStatus.IN_REVIEW;
+    return CatalogResourceStatus.CLASSIFIED;
   }
 
   return CatalogResourceStatus.APPROVED;

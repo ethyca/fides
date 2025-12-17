@@ -127,6 +127,12 @@ export const useFieldActionHotkeys = (
     [activeListItem, fieldActions],
   );
 
+  useHotkeys(
+    FIELD_ACTION_HOTKEYS.UN_MUTE,
+    () => handleHotkeyAction(FieldActionType.UN_MUTE),
+    [activeListItem, fieldActions],
+  );
+
   useHotkeys(FIELD_ACTION_HOTKEYS.REFRESH, () => onRefresh(), [onRefresh]);
 
   useHotkeys(
