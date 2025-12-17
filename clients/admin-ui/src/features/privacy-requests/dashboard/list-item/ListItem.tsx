@@ -1,7 +1,6 @@
 import {
   AntFlex as Flex,
   AntList as List,
-  AntTag as Tag,
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui";
@@ -45,16 +44,11 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
     <List.Item>
       <div className="pr-4">{checkbox}</div>
       <Flex vertical gap="small" className="grow pr-8">
-        <Header privacyRequest={item} />
+        <Header privacyRequest={item} primaryIdentity={primaryIdentity} />
         <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
-            {primaryIdentity && (
-              <LabeledText label={primaryIdentity.label}>
-                {primaryIdentity.value}
-              </LabeledText>
-            )}
-            <Tag>{item.policy.name}</Tag>
-            <Tag>{item.source}</Tag>
+            <LabeledText label="Policy">{item.policy.name}</LabeledText>
+            <LabeledText label="Source">{item.source}</LabeledText>
           </Flex>
 
           {hasExtraDetails && (
@@ -70,17 +64,28 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 </LabeledText>
               )}
               {otherIdentities.map((identity) => (
-                <LabeledText key={identity.key} label={identity.label}>
+                <LabeledText
+                  key={identity.key}
+                  label={identity.label}
+                  copyValue={identity.value}
+                >
                   {identity.value}
                 </LabeledText>
               ))}
-              {customFields.map((field) => (
-                <LabeledText key={field.key} label={field.label}>
-                  {isArray(field.value)
-                    ? field.value.join(" - ")
-                    : toString(field.value)}
-                </LabeledText>
-              ))}
+              {customFields.map((field) => {
+                const valueString = isArray(field.value)
+                  ? field.value.join(" - ")
+                  : toString(field.value);
+                return (
+                  <LabeledText
+                    key={field.key}
+                    label={field.label}
+                    copyValue={valueString}
+                  >
+                    {valueString}
+                  </LabeledText>
+                );
+              })}
             </Flex>
           )}
         </Flex>
