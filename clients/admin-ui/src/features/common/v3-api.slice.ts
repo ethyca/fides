@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { buildArrayQueryParams } from "~/features/common/utils";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
 import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
@@ -72,10 +73,19 @@ export const privacyNoticesSandboxV3Api = v3Api.injectEndpoints({
       ConsentPreferenceResponse[],
       CurrentPreferencesQueryParams
     >({
-      query: (params) => ({
-        url: `privacy-preferences/current`,
-        params,
-      }),
+      query: (params) => {
+        const arrayParams = buildArrayQueryParams({
+          notice_keys: params.notice_keys,
+        });
+
+        return {
+          url: `privacy-preferences/current?${arrayParams.toString()}`,
+          params: {
+            "identity.email": params["identity.email"],
+            include_descendants: true,
+          },
+        };
+      },
     }),
   }),
 });

@@ -413,13 +413,13 @@ const ActionCenterFields: NextPage = () => {
                           image={Empty.PRESENTED_IMAGE_SIMPLE}
                           description={
                             <>
-                              <div>All resources have been confirmed.</div>
+                              <div>All resources have been approved.</div>
                               <div>
                                 {`You'll now find this data in Managed Datasets
                                 view.`}
                               </div>
                               <div>
-                                {`To see confirmed or ignored resources, adjust
+                                {`To see approved or ignored resources, adjust
                                 your filters`}
                               </div>
                             </>
