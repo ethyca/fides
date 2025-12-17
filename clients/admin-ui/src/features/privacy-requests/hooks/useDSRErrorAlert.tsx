@@ -1,4 +1,4 @@
-import { Box, Text } from "fidesui";
+import { Box, Text, useToast } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
@@ -22,6 +22,7 @@ type Requests = {
 
 export const useDSRErrorAlert = () => {
   const { errorAlert } = useAlert();
+  const toast = useToast();
   const [hasAlert, setHasAlert] = useState(false);
   const [requests, setRequests] = useState<Requests>({
     count: 0,
@@ -81,6 +82,17 @@ export const useDSRErrorAlert = () => {
       },
     );
   };
+
+  useEffect(
+    () =>
+      // Cleanup: close toast on unmount
+      () => {
+        if (toast.isActive(TOAST_ID)) {
+          toast.close(TOAST_ID);
+        }
+      },
+    [toast],
+  );
 
   return { processing };
 };
