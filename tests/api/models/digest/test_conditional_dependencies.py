@@ -29,13 +29,7 @@ def assert_group_condition(
     logical_operator: GroupOperator,
     expected_children: list[DigestCondition],
 ):
-    """Assert properties of a group condition.
-
-    Args:
-        condition: The DigestCondition to check
-        logical_operator: Expected logical operator
-        expected_children: Expected child DigestCondition objects (by reference)
-    """
+    """Assert properties of a group condition."""
     assert condition.condition_type == ConditionalDependencyType.group
     assert condition.logical_operator == logical_operator
     assert condition.field_address is None

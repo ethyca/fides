@@ -52,7 +52,6 @@ class TestDigestConfigConditionMethods:
         """Test get_receiver_condition returns a ConditionLeaf."""
 
         # Update the condition to use the correct digest_config
-        # Include condition_tree for get_root_condition to work
         condition = DigestCondition.create(
             db=db,
             data={

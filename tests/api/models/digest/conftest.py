@@ -171,9 +171,8 @@ def sample_conditions(
     priority_condition_leaf: ConditionLeaf,
 ):
     """Create sample conditions for all types."""
-    conditions = []
 
-    # Receiver condition - with condition_tree for JSONB storage
+    # Receiver condition
     receiver_cond = DigestCondition.create(
         db=db,
         data={
@@ -184,7 +183,6 @@ def sample_conditions(
             "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
-    conditions.append(receiver_cond)
 
     # Content condition - with condition_tree for JSONB storage
     content_cond = DigestCondition.create(
@@ -197,7 +195,6 @@ def sample_conditions(
             "condition_tree": content_condition_leaf.model_dump(),
         },
     )
-    conditions.append(content_cond)
 
     # Priority condition - with condition_tree for JSONB storage
     priority_cond = DigestCondition.create(
@@ -210,11 +207,7 @@ def sample_conditions(
             "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
-    conditions.append(priority_cond)
-
-    yield conditions
-    for condition in conditions:
-        condition.delete(db)
+    return [receiver_cond, content_cond, priority_cond]
 
 
 @pytest.fixture
