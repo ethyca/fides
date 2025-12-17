@@ -30,15 +30,19 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
 - Improvements to the UI/UX of the new request manager screen [#7128](https://github.com/ethyca/fides/pull/7128)
 - Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
+- Track active taxonomy in URL in taxonomy screen [#7113](https://github.com/ethyca/fides/pull/7113/changes)
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
+- Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
+- Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086/)
 - Added reusable animation components to FidesUI [#7125](https://github.com/ethyca/fides/pull/7125)
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 - Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
 - Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
+- Fixed repeatedly clicking "Delete" on custom fields causing multiple errors [#7115](https://github.com/ethyca/fides/pull/7115/)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
