@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 - Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
+- Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
