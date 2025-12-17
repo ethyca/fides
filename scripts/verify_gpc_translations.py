@@ -25,6 +25,13 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+try:
+    import yaml
+
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
+
 # Expected GPC fields
 GPC_FIELDS = [
     "gpc_label",
@@ -92,9 +99,7 @@ def get_fidesplus_yaml_gpc(
     fidesplus_path: Path, language: str
 ) -> Optional[Dict[str, str]]:
     """Load GPC strings from fidesplus experience_translations.yml."""
-    try:
-        import yaml
-    except ImportError:
+    if not YAML_AVAILABLE:
         print("WARNING: PyYAML not installed, skipping YAML verification")
         return None
 
