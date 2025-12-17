@@ -1,22 +1,31 @@
 import { formatDistanceStrict } from "date-fns";
 import {
+  AntButton as Button,
   AntCol as Col,
+  AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
   AntListItemProps as ListItemProps,
   AntRow as Row,
-  AntSkeleton as Skeleton,
+  AntSpace as Space,
   AntTag as Tag,
   AntTooltip as Tooltip,
   AntTypography as Typography,
+  ExpandCollapse,
+  OpenCloseArrow,
+  SparkleIcon,
 } from "fidesui";
 import NextLink from "next/link";
+import { useState } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { DatastoreMonitorUpdates } from "~/types/api/models/DatastoreMonitorUpdates";
 
+import { ConfidenceRow } from "./ConfidenceRow";
 import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import styles from "./MonitorResult.module.scss";
 import { MonitorResultDescription } from "./MonitorResultDescription";
@@ -33,16 +42,16 @@ const MONITOR_RESULT_COUNT_TYPES = {
 
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
-  showSkeleton?: boolean;
   href: string;
 }
 
 export const MonitorResult = ({
   monitorSummary,
-  showSkeleton,
   href,
   ...props
 }: MonitorResultProps) => {
+  const { flags } = useFeatures();
+  const { heliosV2: heliosV2Enabled } = flags;
   const {
     name,
     consent_status: consentStatus,
@@ -56,6 +65,27 @@ export const MonitorResult = ({
     monitorType,
     isTestMonitor,
   } = monitorSummary;
+
+  let confidenceCounts;
+  if (monitorType === MONITOR_TYPES.DATASTORE) {
+    const datastoreUpdates = updates as DatastoreMonitorUpdates | undefined;
+    confidenceCounts = {
+      highConfidenceCount: datastoreUpdates?.classified_high_confidence ?? 0,
+      mediumConfidenceCount:
+        datastoreUpdates?.classified_medium_confidence ?? 0,
+      lowConfidenceCount: datastoreUpdates?.classified_low_confidence ?? 0,
+    };
+  }
+  const [isConfidenceRowExpanded, setIsConfidenceRowExpanded] = useState(false);
+
+  const hasConfidenceCounts =
+    !!confidenceCounts &&
+    (confidenceCounts.highConfidenceCount > 0 ||
+      confidenceCounts.mediumConfidenceCount > 0 ||
+      confidenceCounts.lowConfidenceCount > 0);
+
+  const showConfidenceRow =
+    monitorType === MONITOR_TYPES.DATASTORE && hasConfidenceCounts && !!key;
 
   const formattedLastMonitored = lastMonitored
     ? formatDate(new Date(lastMonitored))
@@ -75,9 +105,9 @@ export const MonitorResult = ({
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
-      <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Row gutter={{ xs: 6, lg: 12 }} className="w-full">
-          <Col span={18} className="align-middle">
+      <Flex vertical className="grow">
+        <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
+          <Col span={heliosV2Enabled ? 14 : 17}>
             <List.Item.Meta
               avatar={
                 <ConnectionTypeLogo
@@ -119,7 +149,7 @@ export const MonitorResult = ({
               }
             />
           </Col>
-          <Col span={6} className="flex items-center justify-end">
+          <Col span={5} className="flex justify-end">
             {!!lastMonitoredDistance && (
               <Tooltip title={formattedLastMonitored}>
                 <Text type="secondary" data-testid="monitor-date">
@@ -129,8 +159,59 @@ export const MonitorResult = ({
               </Tooltip>
             )}
           </Col>
+          <Col
+            span={heliosV2Enabled ? 5 : 2}
+            className="flex items-center justify-end"
+          >
+            {heliosV2Enabled && showConfidenceRow && (
+              <>
+                <Button
+                  type="link"
+                  className="p-0"
+                  icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
+                  iconPosition="end"
+                  onClick={() =>
+                    setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
+                  }
+                  aria-haspopup="true"
+                  aria-expanded={isConfidenceRowExpanded}
+                  aria-controls={`confidence-row-${key}`}
+                  aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
+                >
+                  <Space>
+                    <SparkleIcon />
+                    Findings
+                  </Space>
+                </Button>
+                <Divider type="vertical" orientationMargin={0} />
+              </>
+            )}
+            <NextLink key="review" href={href} passHref legacyBehavior>
+              <Button
+                type="link"
+                className="p-0"
+                data-testid={`review-button-${monitorSummary.key}`}
+              >
+                Review
+              </Button>
+            </NextLink>
+          </Col>
         </Row>
-      </Skeleton>
+        {heliosV2Enabled && showConfidenceRow && confidenceCounts && (
+          <ExpandCollapse
+            isExpanded={isConfidenceRowExpanded}
+            motionKey={`confidence-row-${key}`}
+          >
+            <ConfidenceRow
+              confidenceCounts={confidenceCounts}
+              reviewHref={href}
+              monitorId={key}
+              className="mt-6"
+              id={`confidence-row-${key}`}
+            />
+          </ExpandCollapse>
+        )}
+      </Flex>
     </List.Item>
   );
 };

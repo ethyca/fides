@@ -28,6 +28,7 @@ const MonitorResultSystems: NextPage = () => {
           { title: "All activity", href: ACTION_CENTER_ROUTE },
           { title: monitorId },
         ]}
+        isSticky={false}
       />
       <DiscoveredSystemAggregateTable monitorId={monitorId} />
     </FixedLayout>

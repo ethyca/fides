@@ -1,12 +1,31 @@
-import { AntFlex as Flex, AntText as Text } from "fidesui";
+import { AntFlex as Flex, AntText as Text, CopyTooltip } from "fidesui";
+import { lowerCase } from "lodash";
 
-type LabeledProps = React.PropsWithChildren<{ label: React.ReactNode }>;
+type LabeledProps = React.PropsWithChildren<{
+  label: React.ReactNode;
+  copyValue?: string | null;
+}>;
 
-export const LabeledText = ({ label, children }: LabeledProps) => (
-  <Flex gap="small" wrap>
-    <Text type="secondary">{label}:</Text>
+export const LabeledText = ({ label, children, copyValue }: LabeledProps) => {
+  const textContent = (
     <Text ellipsis={{ tooltip: true }} className="!max-w-60">
       {children}
     </Text>
-  </Flex>
-);
+  );
+
+  return (
+    <Flex gap="small" wrap>
+      <Text type="secondary">{label}:</Text>
+      {copyValue ? (
+        <CopyTooltip
+          contentToCopy={copyValue}
+          copyText={`Copy ${lowerCase(label?.toString() ?? "")}`}
+        >
+          {textContent}
+        </CopyTooltip>
+      ) : (
+        textContent
+      )}
+    </Flex>
+  );
+};

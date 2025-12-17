@@ -1,5 +1,4 @@
 import {
-  AntButton as Button,
   AntFlex as Flex,
   AntList as List,
   AntMenu as Menu,
@@ -7,8 +6,7 @@ import {
   Icons,
   useToast,
 } from "fidesui";
-import NextLink from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features";
@@ -41,13 +39,12 @@ const ActionCenterPage = () => {
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
   ];
 
-  const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery({
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery,
-      monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
-    });
+  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+  });
 
   useEffect(() => {
     resetPagination();
@@ -68,46 +65,6 @@ const ActionCenterPage = () => {
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  const loadingResults = isFetching
-    ? Array.from({ length: pageSize }, (_, index) => ({
-        key: index.toString(),
-        updates: [],
-        last_monitored: null,
-      }))
-    : [];
-
-  // TODO: [HJ-337] Add button functionality
-
-  // const handleAdd = (monitorId: string) => {
-  //   console.log("Add report", monitorId);
-  // };
-
-  const getWebsiteMonitorActions = useCallback(
-    (monitorKey: string, link?: string) => [
-      // <Button
-      //   key="add"
-      //   type="link"
-      //   className="p-0"
-      //   onClick={() => {
-      //     handleAdd(monitorKey);
-      //   }}
-      //   data-testid={`add-button-${monitorKey}`}
-      // >
-      //   Add
-      // </Button>,
-      <NextLink key="review" href={link ?? ""} passHref legacyBehavior>
-        <Button
-          type="link"
-          className="p-0"
-          data-testid={`review-button-${monitorKey}`}
-        >
-          Review
-        </Button>
-      </NextLink>,
-    ],
-    [],
-  );
 
   if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
@@ -159,11 +116,11 @@ const ActionCenterPage = () => {
           </Flex>
           <List
             loading={isLoading}
-            dataSource={results || loadingResults}
+            dataSource={results}
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
-            className="h-full overflow-scroll"
+            className="h-full overflow-y-auto overflow-x-clip" // overflow-x-clip to prevent horizontal scroll. see https://stackoverflow.com/a/69767073/441894
             renderItem={(summary) => {
               const link =
                 summary.key && summary.monitorType
@@ -172,11 +129,9 @@ const ActionCenterPage = () => {
               return (
                 !!summary?.key && (
                   <MonitorResult
-                    showSkeleton={isFetching}
                     key={summary.key}
                     monitorSummary={summary}
                     href={link}
-                    actions={getWebsiteMonitorActions(summary.key, link)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
                   />
                 )
               );

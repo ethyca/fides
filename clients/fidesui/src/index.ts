@@ -1,6 +1,6 @@
-// Unmodified components exported directly from ChakraUI
 import { CustomTypography } from "./hoc/CustomTypography";
 
+// Unmodified components exported directly from ChakraUI
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/react";
@@ -47,6 +47,7 @@ export type {
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  AutoComplete as AntAutoComplete,
   Avatar as AntAvatar,
   Badge as AntBadge,
   Breadcrumb as AntBreadcrumb,
@@ -101,6 +102,7 @@ export type {
 } from "antd/lib/select";
 export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
+
 // Higher-order components
 export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
 export {
@@ -111,6 +113,7 @@ export {
   CustomTag as AntTag,
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
+  CopyTooltip,
 } from "./hoc";
 export type {
   CustomListProps as AntListProps,
@@ -126,9 +129,25 @@ export * from "./components/data-display/filter.utils";
 export * from "./components/data-display/location.utils";
 export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
 
+// Export ISO 3166 data for location selection
+export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
+export { iso31661, iso31662 } from "iso-3166";
+
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
+
+// Export animation components
+export type {
+  ExitGridProps,
+  ExpandCollapseProps,
+  OpenCloseArrowProps,
+} from "./components/animation";
+export {
+  ExitGrid,
+  ExpandCollapse,
+  OpenCloseArrow,
+} from "./components/animation";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
@@ -162,7 +181,11 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export * from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useModal as useAntModal,
+  useMessage,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**

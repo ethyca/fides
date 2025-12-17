@@ -386,14 +386,15 @@ const actionCenterApi = baseApi.injectEndpoints({
         };
       },
     }),
+    /* stagedResourceUrn is required by the API. This is made optional as a convenience but should not be expected to return a successful response unless a valid value is passed */
     getStagedResourceDetails: build.query<
       MonitorResource,
-      { stagedResourceUrn: string }
+      { stagedResourceUrn?: string }
     >({
       query: ({ stagedResourceUrn }) => ({
-        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
-          stagedResourceUrn,
-        )}`,
+        url: `/plus/discovery-monitor/staged_resource/${
+          stagedResourceUrn ? encodeURIComponent(stagedResourceUrn) : ""
+        }`,
       }),
       providesTags: ["Monitor Field Details"],
     }),
@@ -543,7 +544,11 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+      invalidatesTags: [
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Discovery Monitor Results",
+      ],
     }),
     promoteRemovalStagedResources: build.mutation<
       PromoteResourcesResponse,
