@@ -98,7 +98,8 @@ async def warmup_async_pool() -> None:
     try:
         # Create all connections concurrently
         await asyncio.gather(
-            *[create_and_validate_connection() for _ in range(pool_size)]
+            *[create_and_validate_connection() for _ in range(pool_size)],
+            return_exceptions=True,
         )
         logger.info("Async connection pool warmup completed successfully")
     except Exception as exc:
