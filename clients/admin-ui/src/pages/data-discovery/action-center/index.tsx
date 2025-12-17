@@ -39,13 +39,12 @@ const ActionCenterPage = () => {
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
   ];
 
-  const { data, isError, isLoading, isFetching } =
-    useGetAggregateMonitorResultsQuery({
-      page: pageIndex,
-      size: pageSize,
-      search: searchQuery,
-      monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
-    });
+  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+  });
 
   useEffect(() => {
     resetPagination();
@@ -66,14 +65,6 @@ const ActionCenterPage = () => {
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  const loadingResults = isFetching
-    ? Array.from({ length: pageSize }, (_, index) => ({
-        key: index.toString(),
-        updates: [],
-        last_monitored: null,
-      }))
-    : [];
 
   if (!webMonitorEnabled && !heliosV2Enabled) {
     return <DisabledMonitorsPage />;
@@ -125,7 +116,7 @@ const ActionCenterPage = () => {
           </Flex>
           <List
             loading={isLoading}
-            dataSource={results || loadingResults}
+            dataSource={results}
             locale={{
               emptyText: <EmptyMonitorsResult />,
             }}
@@ -138,7 +129,6 @@ const ActionCenterPage = () => {
               return (
                 !!summary?.key && (
                   <MonitorResult
-                    showSkeleton={isFetching}
                     key={summary.key}
                     monitorSummary={summary}
                     href={link}
