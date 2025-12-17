@@ -54,9 +54,8 @@ interface TaxonomyPageContentProps {
 
 const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   const router = useRouter();
-  const [taxonomyType, setTaxonomyType] = useState<string>(
-    initialTaxonomy || DEFAULT_TAXONOMY_TYPE,
-  );
+
+  const taxonomyType = initialTaxonomy ?? DEFAULT_TAXONOMY_TYPE;
 
   const isCustomTaxonomy = !Object.values(TaxonomyTypeEnum).includes(
     taxonomyType as TaxonomyTypeEnum,
@@ -67,13 +66,6 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   const { data: customTaxonomies } = useGetCustomTaxonomiesQuery(undefined, {
     skip: !isPlusEnabled,
   });
-
-  // Sync taxonomyType when initialTaxonomy changes (after router hydration)
-  useEffect(() => {
-    if (initialTaxonomy) {
-      setTaxonomyType(initialTaxonomy);
-    }
-  }, [initialTaxonomy]);
 
   const {
     createTrigger,
@@ -236,7 +228,6 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
       undefined,
       { shallow: true },
     );
-    setTaxonomyType(key);
   };
 
   const handleTaxonomyRootItemClick = () => {

@@ -128,10 +128,6 @@ describe("Taxonomy management with Plus features", () => {
 
   describe("System groups", () => {
     describe("With Plus enabled", () => {
-      beforeEach(() => {
-        cy.visit("/taxonomy");
-      });
-
       it("Shows system groups as a taxonomy option", () => {
         cy.getByTestId("taxonomy-type-selector").click();
 
@@ -182,10 +178,10 @@ describe("Taxonomy management with Plus features", () => {
             "System groups",
           );
         });
-      });
 
-      it("Can interact with system group nodes", () => {
-        cy.getByTestId("taxonomy-node-blue_group").should("exist").click();
+        it("Can interact with system group nodes", () => {
+          cy.getByTestId("taxonomy-node-blue_group").should("exist").click();
+        });
       });
     });
   });
