@@ -92,89 +92,89 @@ ENV RUNNING_IN_DOCKER=true
 
 EXPOSE 8080
 CMD [ "fides", "webserver" ]
-
-#############################
-## Development Application ##
-#############################
-FROM backend AS dev
-
-USER root
-
-RUN pip install -e . --no-deps
-
-USER fidesuser
-
-###################
-## Frontend Base ##
-###################
-FROM node:20-alpine AS frontend
-
-RUN apk add --no-cache libc6-compat
-# Build the frontend clients
-WORKDIR /fides/clients
-COPY clients/package.json clients/package-lock.json ./
-COPY clients/fides-js/package.json ./fides-js/package.json
-COPY clients/admin-ui/package.json ./admin-ui/package.json
-COPY clients/privacy-center/package.json ./privacy-center/package.json
-
-RUN npm ci
-
-COPY clients/ .
-
+#
+##############################
+### Development Application ##
+##############################
+#FROM backend AS dev
+#
+#USER root
+#
+#RUN pip install -e . --no-deps
+#
+#USER fidesuser
+#
 ####################
-## Built frontend ##
+### Frontend Base ##
 ####################
-FROM frontend AS built_frontend
-
-# IS_TEST enables test IDs in fides-js
-ARG IS_TEST=false
-ENV IS_TEST=$IS_TEST
-
-# Imports the Fides package version from the backend
-COPY --from=backend /fides/version.json ./version.json
-
-# Builds and exports admin-ui
-RUN npm run export-admin-ui
-# Builds privacy-center
-RUN npm run build-privacy-center
-
-###############################
-## Production Privacy Center ##
-###############################
-FROM node:20-alpine AS prod_pc
-
-WORKDIR /fides/clients
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-USER nextjs
-
-COPY --from=built_frontend --chown=nextjs:nodejs /fides/clients .
-WORKDIR /fides/clients/privacy-center
-
-EXPOSE 3000
-
-CMD ["npm", "run", "start"]
-
-############################
-## Production Application ##
-############################
-FROM backend AS prod
-
-# Copy frontend build over
-COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
-USER root
-# Install without a symlink
-RUN pip install --no-cache-dir setuptools wheel
-RUN pip install --no-cache-dir --upgrade packaging
-RUN python setup.py sdist
-
-# USER root commented out for debugging
-RUN pip install dist/ethyca_fides-*.tar.gz
-
-# Remove this directory to prevent issues with catch all
-RUN rm -r /fides/src/fides/ui-build
-USER fidesuser
+#FROM node:20-alpine AS frontend
+#
+#RUN apk add --no-cache libc6-compat
+## Build the frontend clients
+#WORKDIR /fides/clients
+#COPY clients/package.json clients/package-lock.json ./
+#COPY clients/fides-js/package.json ./fides-js/package.json
+#COPY clients/admin-ui/package.json ./admin-ui/package.json
+#COPY clients/privacy-center/package.json ./privacy-center/package.json
+#
+#RUN npm ci
+#
+#COPY clients/ .
+#
+#####################
+### Built frontend ##
+#####################
+#FROM frontend AS built_frontend
+#
+## IS_TEST enables test IDs in fides-js
+#ARG IS_TEST=false
+#ENV IS_TEST=$IS_TEST
+#
+## Imports the Fides package version from the backend
+#COPY --from=backend /fides/version.json ./version.json
+#
+## Builds and exports admin-ui
+#RUN npm run export-admin-ui
+## Builds privacy-center
+#RUN npm run build-privacy-center
+#
+################################
+### Production Privacy Center ##
+################################
+#FROM node:20-alpine AS prod_pc
+#
+#WORKDIR /fides/clients
+#
+#ENV NODE_ENV=production
+#ENV NEXT_TELEMETRY_DISABLED=1
+#
+#RUN addgroup --system --gid 1001 nodejs
+#RUN adduser --system --uid 1001 nextjs
+#USER nextjs
+#
+#COPY --from=built_frontend --chown=nextjs:nodejs /fides/clients .
+#WORKDIR /fides/clients/privacy-center
+#
+#EXPOSE 3000
+#
+#CMD ["npm", "run", "start"]
+#
+#############################
+### Production Application ##
+#############################
+#FROM backend AS prod
+#
+## Copy frontend build over
+#COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+#USER root
+## Install without a symlink
+#RUN pip install --no-cache-dir setuptools wheel
+#RUN pip install --no-cache-dir --upgrade packaging
+#RUN python setup.py sdist
+#
+## USER root commented out for debugging
+#RUN pip install dist/ethyca_fides-*.tar.gz
+#
+## Remove this directory to prevent issues with catch all
+#RUN rm -r /fides/src/fides/ui-build
+#USER fidesuser

@@ -39,7 +39,12 @@ from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
-
+from fides.telemetry.tracing import (
+    instrument_httpx,
+    instrument_redis,
+    instrument_fastapi,
+    setup_tracing,
+)
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.api_router import APIRouter
@@ -84,6 +89,16 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
+
+    # Initialize OpenTelemetry tracing early
+    logger.info("Setting up tracing")
+    setup_tracing(CONFIG)
+    logger.info("Instrumenting FastAPI application with OpenTelemetry tracing")
+    # Instrument FastAPI after tracer provider is set up
+    instrument_fastapi(fastapi_app, CONFIG)
+    instrument_httpx(CONFIG)
+    instrument_redis(CONFIG)
+
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
@@ -105,6 +120,9 @@ def create_fides_app(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
 
+    # Note: FastAPI instrumentation is done in the lifespan function after
+    # the tracer provider is set up (see main.py)
+
     for router in routers:
         fastapi_app.include_router(router)
 
@@ -122,6 +140,8 @@ def create_fides_app(
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
         pass
+
+
 
     return fastapi_app
 
