@@ -32,6 +32,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery.staged_resource_error import (
     StagedResourceError,
 )
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
@@ -207,7 +208,7 @@ class MonitorConfig(Base):
 
     # Many-to-many link to users assigned as stewards for this monitor
     stewards = relationship(
-        "FidesUser",
+        FidesUser,
         secondary="monitorsteward",
         lazy="selectin",
     )
