@@ -9,7 +9,6 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
   NoticeConsent,
@@ -24,10 +23,7 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
-import {
-  consentCookieObjHasSomeConsentSet,
-  getFidesConsentCookie,
-} from "../../lib/cookie";
+import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
@@ -37,6 +33,7 @@ import {
 import {
   FetchState,
   useAutoResetFlag,
+  useFidesConsentCookie,
   useNoticesServed,
   useRetryableFetch,
 } from "../../lib/hooks";
@@ -135,17 +132,7 @@ export const TcfOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const [parsedCookie, setParsedCookie] = useState<FidesCookie | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    const loadCookie = async () => {
-      const cookieData = await getFidesConsentCookie(options.fidesCookieSuffix);
-      setParsedCookie(cookieData);
-    };
-    loadCookie();
-  }, [options.fidesCookieSuffix]);
+  const parsedCookie = useFidesConsentCookie(options.fidesCookieSuffix);
 
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
