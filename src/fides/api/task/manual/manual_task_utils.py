@@ -236,9 +236,6 @@ def extract_dataset_field_addresses(
     stored as JSONB. It's useful for determining upstream dependencies when
     building the dataset graph for conditional dependencies.
 
-    Args:
-        tree: The condition tree dict (or None)
-
     Returns:
         Set of field addresses found in the tree, excluding privacy_request.* fields
     """
@@ -260,19 +257,18 @@ def extract_dataset_field_addresses(
     return field_addresses
 
 
-def extract_privacy_request_field_addresses(
-    tree: dict[str, Any], addresses: set[str]
-) -> None:
+def extract_privacy_request_field_addresses(tree: dict[str, Any]) -> set[str]:
     """Recursively extract privacy_request.* field addresses from a condition tree.
 
-    Args:
-        tree: The condition tree dict
-        addresses: Set to add found privacy_request addresses to (mutated in place)
+    Returns:
+        Set of privacy_request field addresses found in the tree
     """
+    addresses: set[str] = set()
     if "field_address" in tree:
         field_address = tree["field_address"]
         if field_address and field_address.startswith("privacy_request."):
-            addresses.add(field_address)
+            return {field_address}
     elif "conditions" in tree:
         for condition in tree.get("conditions", []):
-            extract_privacy_request_field_addresses(condition, addresses)
+            addresses.update(extract_privacy_request_field_addresses(condition))
+    return addresses

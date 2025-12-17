@@ -60,8 +60,8 @@ def extract_conditional_dependency_data_from_inputs(
             # Also extract privacy_request field addresses separately
             # (they are excluded from extract_dataset_field_addresses)
             if tree:
-                extract_privacy_request_field_addresses(
-                    tree, privacy_request_field_addresses
+                privacy_request_field_addresses.update(
+                    extract_privacy_request_field_addresses(tree)
                 )
 
     # Convert to list for iteration (exclude privacy_request addresses)
