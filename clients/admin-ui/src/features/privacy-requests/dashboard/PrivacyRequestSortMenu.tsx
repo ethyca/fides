@@ -1,4 +1,4 @@
-import { AntButton, AntDropdown, Icons } from "fidesui";
+import { AntSelect as Select, Icons } from "fidesui";
 
 import { FilterQueryParams } from "~/features/privacy-requests/dashboard/hooks/usePrivacyRequestsFilters";
 import { ColumnSort } from "~/types/api";
@@ -21,19 +21,19 @@ enum SortOption {
 const SORT_OPTIONS = [
   {
     label: "Time received (newest)",
-    key: SortOption.CREATED_AT_DESC,
+    value: SortOption.CREATED_AT_DESC,
   },
   {
     label: "Time received (oldest)",
-    key: SortOption.CREATED_AT_ASC,
+    value: SortOption.CREATED_AT_ASC,
   },
   {
     label: "Days left (shortest)",
-    key: SortOption.DAYS_LEFT_ASC,
+    value: SortOption.DAYS_LEFT_ASC,
   },
   {
     label: "Days left (longest)",
-    key: SortOption.DAYS_LEFT_DESC,
+    value: SortOption.DAYS_LEFT_DESC,
   },
 ];
 
@@ -60,29 +60,32 @@ const PrivacyRequestSortMenu = ({
   sortState,
   setSortState,
 }: PrivacyRequestSortMenuProps) => {
-  const selectedKey = Object.keys(SORT_OPTION_STATE_MAP).find((key) => {
-    const value = SORT_OPTION_STATE_MAP[key as SortOption];
+  const selectedKey = Object.values(SortOption).find((option) => {
+    const value = SORT_OPTION_STATE_MAP[option];
     return (
       value.sort_field === sortState.sort_field &&
       value.sort_direction === sortState.sort_direction
     );
   });
 
+  const { sort_direction: sortDirection } = sortState;
+
   return (
-    <AntDropdown
-      trigger={["click"]}
-      menu={{
-        items: SORT_OPTIONS.map((option) => ({
-          ...option,
-          onClick: () => setSortState(SORT_OPTION_STATE_MAP[option.key]),
-        })),
-        selectedKeys: selectedKey ? [selectedKey] : undefined,
-      }}
-    >
-      <AntButton icon={<Icons.ChevronSort />} iconPosition="end">
-        Sort
-      </AntButton>
-    </AntDropdown>
+    <Select
+      aria-label="Sort requests"
+      options={SORT_OPTIONS}
+      value={selectedKey}
+      onChange={(value) => setSortState(SORT_OPTION_STATE_MAP[value])}
+      placeholder="Sort by..."
+      className="w-64"
+      prefix={
+        sortDirection === ColumnSort.ASC ? (
+          <Icons.SortAscending />
+        ) : (
+          <Icons.SortDescending />
+        )
+      }
+    />
   );
 };
 
