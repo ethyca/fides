@@ -91,7 +91,7 @@ const FetchPreferencesSection = ({
             getCurrentResponse
               ? `GET /api/v3/privacy-preferences/current?identity.email=${email}${
                   selectedNoticeKeys.length > 0
-                    ? `&notice_keys=${selectedNoticeKeys.join(",")}`
+                    ? `&notice_keys=${selectedNoticeKeys.join(",")}&include_descendants=true`
                     : ""
                 }`
               : null
