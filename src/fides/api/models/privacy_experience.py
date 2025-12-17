@@ -197,11 +197,18 @@ class ExperienceTranslationBase:
         ),
     )
 
+    # GPC (Global Privacy Control) translatable fields
+    gpc_label = Column(String)  # "Global Privacy Control"
+    gpc_description = Column(String)  # Description shown when GPC is honored
+    gpc_status_applied_label = Column(String)  # "Applied"
+    gpc_status_overridden_label = Column(String)  # "Overridden"
+    gpc_title = Column(String)  # "Global Privacy Control detected"
+
+    modal_link_label = Column(String)
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
     purpose_header = Column(String)
-    modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)
     title = Column(String)
