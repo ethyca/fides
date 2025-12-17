@@ -83,7 +83,7 @@ const OAuth2ValidationSchema = Yup.object().shape({
 
 const TokenValidationSchema = Yup.object().shape({
   orgUrl: Yup.string().required().trim().url().label("Organization URL"),
-  token: Yup.string()
+  clientId: Yup.string()
     .required()
     .trim()
     .matches(/^[^\s]+$/, "Cannot contain spaces")
