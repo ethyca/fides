@@ -1,5 +1,11 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { AntButton, AntButtonProps, AntFlex, AntTypography } from "fidesui";
+import {
+  AntButton,
+  AntButtonProps,
+  AntFlex,
+  AntResult,
+  AntTypography,
+} from "fidesui";
 import { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -22,29 +28,34 @@ const ErrorPage = ({
 
   return (
     <AntFlex vertical align="center" justify="center" className="h-screen">
-      <AntFlex vertical gap="middle" align="center">
-        <ErrorImage status={status} />
-        <AntTypography.Title level={1}>
-          {status ? `Error ${status}` : "Unknown Error"}
-        </AntTypography.Title>
-        <AntTypography.Paragraph type="secondary">
-          {errorMessage}
-        </AntTypography.Paragraph>
-        <AntFlex gap="small" align="center">
-          <AntTypography.Text type="secondary">{dataString}</AntTypography.Text>
-          <ClipboardButton copyText={dataString} />
-        </AntFlex>
-        {actions.length > 0 && (
-          <AntFlex gap="middle" justify="center">
-            {actions.map((action, index) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <AntButton key={index} {...action}>
-                {action.label}
-              </AntButton>
-            ))}
-          </AntFlex>
-        )}
-      </AntFlex>
+      <AntResult
+        status="error"
+        icon={<ErrorImage status={status} />}
+        title={`Error ${status}`}
+        subTitle={
+          <>
+            <AntTypography.Paragraph type="secondary">
+              {errorMessage}
+            </AntTypography.Paragraph>
+            <AntTypography.Text type="secondary">
+              {dataString}
+            </AntTypography.Text>
+            <ClipboardButton copyText={dataString} />
+          </>
+        }
+        extra={
+          actions.length > 0 ? (
+            <AntFlex gap="small" justify="center">
+              {actions.map((action, index) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <AntButton key={index} {...action}>
+                  {action.label}
+                </AntButton>
+              ))}
+            </AntFlex>
+          ) : undefined
+        }
+      />
     </AntFlex>
   );
 };
