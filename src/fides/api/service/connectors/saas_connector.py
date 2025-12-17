@@ -281,21 +281,23 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             if async_dsr_strategy := _get_async_dsr_strategy(
                 db, request_task, query_config, ActionType.access
             ):
+                check_guard_access_request = self.guard_access_request(policy)
                 # Guard clause only applies to polling requests
                 # Callback requests should always proceed
                 if (async_dsr_strategy.type == AsyncTaskType.polling) and (
-                    not self.guard_access_request(policy)
+                    not check_guard_access_request
                 ):
                     logger.info(
                         f"Skipping async access request for policy: {policy.name}"
                     )
                     return []
-                return async_dsr_strategy.async_retrieve_data(
-                    client=self.create_client(),
-                    request_task_id=request_task.id,
-                    query_config=query_config,
-                    input_data=input_data,
-                )
+                if check_guard_access_request:
+                    return async_dsr_strategy.async_retrieve_data(
+                        client=self.create_client(),
+                        request_task_id=request_task.id,
+                        query_config=query_config,
+                        input_data=input_data,
+                    )
 
         rows: List[Row] = []
         for read_request in read_requests:

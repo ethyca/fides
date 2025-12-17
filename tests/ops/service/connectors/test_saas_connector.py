@@ -1495,7 +1495,12 @@ class TestAsyncConnectors:
         )
 
         connector: SaaSConnector = get_connector(saas_async_example_connection_config)
-        mock_create_client.return_value = mock.MagicMock()
+        # Mock the client and its send method to allow async callback flow
+        mock_client = mock.MagicMock()
+        mock_send_response = mock.MagicMock()
+        mock_send_response.json.return_value = {"id": "123"}
+        mock_client.send.return_value = mock_send_response
+        mock_create_client.return_value = mock_client
 
         # Get access request task
         request_task = privacy_request.access_tasks.filter(
@@ -1507,16 +1512,17 @@ class TestAsyncConnectors:
         assert connector.guard_access_request(erasure_only_policy) is False
 
         # Even though guard_access_request returns False, callback requests
-        # should ignore the guard and still proceed with async_retrieve_data
-        # This will raise AwaitingAsyncTask (not return empty list like polling would)
-        with pytest.raises(AwaitingAsyncTask):
-            connector.retrieve_data(
-                execution_node,
-                erasure_only_policy,
-                privacy_request,
-                request_task,
-                {},
-            )
+        # should ignore the guard and always proceed with common requests.
+        connector.retrieve_data(
+            execution_node,
+            erasure_only_policy,
+            privacy_request,
+            request_task,
+            {},
+        )
+
+        # Verify that the async callback flow was triggered (client.send was called)
+        assert mock_client.send.called
 
         # Cleanup
         try:
