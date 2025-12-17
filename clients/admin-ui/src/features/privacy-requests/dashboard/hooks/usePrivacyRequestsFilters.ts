@@ -18,6 +18,7 @@ export interface FilterQueryParams {
   to: string | null;
   status: PrivacyRequestStatus[] | null;
   action_type: ActionType[] | null;
+  location: string | null;
   custom_privacy_request_fields: Record<string, string | number> | null;
   sort_field: string | null;
   sort_direction: ColumnSort | null;
@@ -45,6 +46,7 @@ const usePrivacyRequestsFilters = ({
       to: parseAsString,
       status: parseAsArrayOf(parseAsStringEnum(allowedStatusFilterOptions)),
       action_type: parseAsArrayOf(parseAsStringEnum(Object.values(ActionType))),
+      location: parseAsString,
       custom_privacy_request_fields: parseAsCustomFields,
     },
     {
@@ -69,6 +71,7 @@ const usePrivacyRequestsFilters = ({
       to: filters.to,
       status: filters.status,
       action_type: filters.action_type,
+      location: filters.location,
       custom_privacy_request_fields: filterNullCustomFields(
         filters.custom_privacy_request_fields,
       ),
@@ -81,6 +84,7 @@ const usePrivacyRequestsFilters = ({
       filters.to,
       filters.status,
       filters.action_type,
+      filters.location,
       filters.custom_privacy_request_fields,
       sortState.sort_field,
       sortState.sort_direction,

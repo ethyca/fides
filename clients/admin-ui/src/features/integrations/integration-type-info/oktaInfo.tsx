@@ -30,6 +30,12 @@ const OktaIntegrationOverview = () => (
       you to detect connected systems, monitor access patterns, and enhance your
       data map for better visibility and control.
     </InfoText>
+    <InfoText>
+      <strong>Authentication:</strong> Okta integration uses OAuth2 Client
+      Credentials with private_key_jwt for secure authentication. You&apos;ll
+      need to create an API Services application in Okta and generate an RSA key
+      pair.
+    </InfoText>
   </>
 );
 
