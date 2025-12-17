@@ -41,12 +41,6 @@ type OktaOAuth2Config = {
   scopes: string[];
 };
 
-// Token-based config for legacy authentication
-type OktaTokenConfig = {
-  orgUrl: string;
-  token: string;
-};
-
 const oauth2InitialValues = {
   orgUrl: "",
   clientId: "",
