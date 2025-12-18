@@ -34,7 +34,7 @@ fastapi-cli~=0.0.16
 fastapi-pagination[sqlalchemy]==0.15.0
 fastapi[all]==0.123.3
 fideslang==3.1.4a0
-fideslog @ git+https://github.com/galvana/fideslog
+fideslog==1.2.15
 firebase-admin==5.3.0
 flower==2.0.1
 httpx~=0.28.1
