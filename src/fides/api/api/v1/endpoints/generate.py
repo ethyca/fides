@@ -163,7 +163,7 @@ async def generate(
             )
 
         elif generate_target == "okta" and isinstance(generate_config, OktaConfig):
-            generate_results = generate_okta(
+            generate_results = await generate_okta(
                 okta_config=generate_config,
                 organization=organization,
             )
@@ -239,7 +239,7 @@ def generate_dynamodb(
     return [i.model_dump(exclude_none=True) for i in aws_resources]
 
 
-def generate_okta(
+async def generate_okta(
     okta_config: OktaConfig, organization: Organization
 ) -> List[Dict[str, str]]:
     """
@@ -256,7 +256,7 @@ def generate_okta(
             detail=str(error),
         )
     log.info("Generating systems from Okta")
-    okta_systems = generate_okta_systems(
+    okta_systems = await generate_okta_systems(
         organization=organization, okta_config=okta_config
     )
     return [i.model_dump(exclude_none=True) for i in okta_systems]

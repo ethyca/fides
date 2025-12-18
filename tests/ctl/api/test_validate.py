@@ -23,9 +23,8 @@ EXTERNAL_CONFIG_BODY = {
         ),
     },
     "okta": {
-        "orgUrl": getenv("OKTA_ORG_URL", "https://dev-78908748.okta.com"),
-        "clientId": getenv("OKTA_CLIENT_ID", ""),
-        "privateKey": getenv("OKTA_PRIVATE_KEY", ""),
+        "orgUrl": "https://dev-78908748.okta.com",
+        "token": getenv("OKTA_CLIENT_TOKEN", ""),
     },
 }
 
@@ -62,8 +61,7 @@ EXTERNAL_FAILURE_CONFIG_BODY = {
     },
     "okta": {
         "orgUrl": "https://dev-78908748.okta.com",
-        "clientId": "INVALID_CLIENT_ID",
-        "privateKey": '{"kty":"RSA","d":"invalid","n":"invalid","e":"AQAB"}',
+        "token": "INVALID_TOKEN",
     },
     "bigquery": {
         "dataset": "fidesopstest",
@@ -79,7 +77,7 @@ EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
 
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "Authentication failed validating config. The security token included in the request is invalid.",
-    "okta": "Authentication failed validating config.",
+    "okta": "Authentication failed validating config. Invalid token provided",
     "bigquery": "Unexpected failure validating config. Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
 }
 
@@ -104,11 +102,5 @@ def test_validate_failure(
 
     validate_response = ValidateResponse.parse_raw(response.text)
     assert validate_response.status == "failure"
-    # Okta OAuth2 errors can vary, so use startswith for flexibility
-    if validate_target == "okta":
-        assert validate_response.message.startswith(
-            EXPECTED_FAILURE_MESSAGES[validate_target]
-        )
-    else:
-        assert validate_response.message == EXPECTED_FAILURE_MESSAGES[validate_target]
+    assert validate_response.message == EXPECTED_FAILURE_MESSAGES[validate_target]
     assert response.status_code == 200

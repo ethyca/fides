@@ -6,6 +6,7 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import { useFlags } from "~/features/common/features";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { pluralize } from "~/features/common/utils";
@@ -50,12 +51,14 @@ export const useMonitorConfigTable = ({
   onEditMonitor,
 }: UseMonitorConfigTableConfig) => {
   const tableState = useTableState<MonitorConfigColumnKeys>();
+  const { flags } = useFlags();
 
   const { pageIndex, pageSize } = tableState;
 
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
+  const useNewOktaEndpoints = flags.oktaMonitor && isOktaIntegration;
 
-  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+  // Use Identity Provider Monitor endpoint for Okta with new auth, otherwise use regular endpoint
   const regularMonitorsQuery = useGetMonitorsByIntegrationQuery(
     {
       page: pageIndex,
@@ -63,7 +66,7 @@ export const useMonitorConfigTable = ({
       connection_config_key: integration.key,
     },
     {
-      skip: isOktaIntegration,
+      skip: useNewOktaEndpoints,
     },
   );
 
@@ -74,7 +77,7 @@ export const useMonitorConfigTable = ({
       connection_config_key: integration.key,
     },
     {
-      skip: !isOktaIntegration,
+      skip: !useNewOktaEndpoints,
     },
   );
 
@@ -82,7 +85,7 @@ export const useMonitorConfigTable = ({
     isLoading,
     isFetching,
     data: response,
-  } = isOktaIntegration ? oktaMonitorsQuery : regularMonitorsQuery;
+  } = useNewOktaEndpoints ? oktaMonitorsQuery : regularMonitorsQuery;
 
   const antTableConfig = useMemo(
     () => ({
@@ -229,7 +232,7 @@ export const useMonitorConfigTable = ({
         <MonitorConfigActionsCell
           onEditClick={() => onEditMonitor(record)}
           isWebsiteMonitor={isWebsiteMonitor}
-          isOktaMonitor={isOktaIntegration}
+          isOktaMonitor={useNewOktaEndpoints}
           monitorId={record.key}
         />
       ),
@@ -256,7 +259,12 @@ export const useMonitorConfigTable = ({
       statusColumn,
       actionsColumn,
     ];
-  }, [integration.secrets, isWebsiteMonitor, onEditMonitor, isOktaIntegration]);
+  }, [
+    integration.secrets,
+    isWebsiteMonitor,
+    onEditMonitor,
+    useNewOktaEndpoints,
+  ]);
 
   return {
     // Table state and data

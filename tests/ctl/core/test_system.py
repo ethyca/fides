@@ -308,24 +308,7 @@ class TestSystemAWS:
         assert actual_result
 
 
-def get_okta_config() -> OktaConfig:
-    """
-    Helper to get OktaConfig from environment variables.
-
-    Requires:
-    - OKTA_ORG_URL: Your Okta org URL (e.g. https://dev-12345.okta.com)
-    - OKTA_CLIENT_ID: OAuth2 client ID
-    - OKTA_PRIVATE_KEY: JWK private key (JSON string)
-    """
-    org_url = os.environ.get("OKTA_ORG_URL", "https://dev-78908748.okta.com")
-    client_id = os.environ.get("OKTA_CLIENT_ID", "")
-    private_key = os.environ.get("OKTA_PRIVATE_KEY", "")
-
-    return OktaConfig(
-        orgUrl=org_url,
-        clientId=client_id,
-        privateKey=private_key,
-    )
+OKTA_ORG_URL = "https://dev-78908748.okta.com"
 
 
 @pytest.mark.usefixtures("default_organization")
@@ -334,15 +317,14 @@ class TestSystemOkta:
     def test_generate_system_okta(
         self, tmpdir: LocalPath, test_config: FidesConfig
     ) -> None:
-        okta_config = get_okta_config()
-        if not okta_config.clientId or not okta_config.privateKey:
-            pytest.skip("Okta OAuth2 credentials not configured")
-
         actual_result = _system.generate_system_okta(
             file_name=f"{tmpdir}/test_file.yml",
             include_null=False,
             organization_key="default_organization",
-            okta_config=okta_config,
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
         )
@@ -352,22 +334,24 @@ class TestSystemOkta:
     def test_scan_system_okta_success(
         self, tmpdir: LocalPath, test_config: FidesConfig
     ) -> None:
-        okta_config = get_okta_config()
-        if not okta_config.clientId or not okta_config.privateKey:
-            pytest.skip("Okta OAuth2 credentials not configured")
-
         file_name = f"{tmpdir}/test_file.yml"
         _system.generate_system_okta(
             file_name=file_name,
             include_null=False,
             organization_key="default_organization",
-            okta_config=okta_config,
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
         )
         _system.scan_system_okta(
             manifest_dir=file_name,
-            okta_config=okta_config,
+            okta_config=OktaConfig(
+                orgUrl=OKTA_ORG_URL,
+                token=os.environ["OKTA_CLIENT_TOKEN"],
+            ),
             organization_key="default_organization",
             coverage_threshold=100,
             url=test_config.cli.server_url,
@@ -379,14 +363,13 @@ class TestSystemOkta:
     def test_scan_system_okta_fail(
         self, tmpdir: LocalPath, test_config: FidesConfig
     ) -> None:
-        okta_config = get_okta_config()
-        if not okta_config.clientId or not okta_config.privateKey:
-            pytest.skip("Okta OAuth2 credentials not configured")
-
         with pytest.raises(SystemExit):
             _system.scan_system_okta(
                 manifest_dir="",
-                okta_config=okta_config,
+                okta_config=OktaConfig(
+                    orgUrl=OKTA_ORG_URL,
+                    token=os.environ["OKTA_CLIENT_TOKEN"],
+                ),
                 coverage_threshold=100,
                 organization_key="default_organization",
                 url=test_config.cli.server_url,

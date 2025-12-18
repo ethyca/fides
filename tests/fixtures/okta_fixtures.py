@@ -31,20 +31,19 @@ def okta_connection_config(db: Session) -> Generator:
     okta_integration_config = integration_config.get("okta", {})
 
     org_url = okta_integration_config.get("org_url") or os.environ.get("OKTA_ORG_URL")
-    client_id = okta_integration_config.get("client_id") or os.environ.get(
-        "OKTA_CLIENT_ID"
-    )
-    private_key = okta_integration_config.get("private_key") or os.environ.get(
-        "OKTA_PRIVATE_KEY"
+    api_token = okta_integration_config.get("api_token") or os.environ.get(
+        "OKTA_API_TOKEN"
     )
 
-    if not all([org_url, client_id, private_key]):
-        pytest.skip("Okta OAuth2 credentials not configured")
+    if not org_url:
+        raise RuntimeError("Missing org_url for Okta")
+
+    if not api_token:
+        raise RuntimeError("Missing api_token for Okta")
 
     schema = OktaSchema(
         org_url=org_url,
-        client_id=client_id,
-        private_key=private_key,
+        api_token=api_token,
     )
     connection_config.secrets = schema.model_dump()
     connection_config.save(db=db)

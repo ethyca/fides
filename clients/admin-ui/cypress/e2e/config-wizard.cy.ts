@@ -108,12 +108,8 @@ describe("Config Wizard", () => {
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");
-      cy.getByTestId("input-orgUrl").type("https://dev-12345.okta.com");
-      cy.getByTestId("input-clientId").type("0oa1abc2def3ghi4jkl5");
-      cy.getByTestId("input-privateKey").type(
-        '{"kty":"RSA","kid":"test","n":"test","e":"AQAB","d":"test"}',
-        { parseSpecialCharSequences: false },
-      );
+      cy.getByTestId("input-orgUrl").type("https://ethyca.com/");
+      cy.getByTestId("input-token").type("fakeToken");
     });
 
     it("Allows submitting the form and reviewing the results", () => {

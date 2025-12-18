@@ -196,35 +196,23 @@ def connection_string_option(command: Callable) -> Callable:
 
 
 def okta_org_url_option(command: Callable) -> Callable:
-    "Use org url option to connect to okta. Requires options --org-url, --client-id, and --private-key"
+    "Use org url option to connect to okta. Requires options --org-url and --token"
     command = click.option(
         "--org-url",
         type=str,
-        help="Connect to Okta using an 'Org URL'. _Requires options `--org-url`, `--client-id` & `--private-key`._",
+        help="Connect to Okta using an 'Org URL'. _Requires options `--org-url` & `--token`._",
     )(
         command
     )  # type: ignore
     return command
 
 
-def okta_client_id_option(command: Callable) -> Callable:
-    "Use client id option to connect to okta. Requires options --org-url, --client-id, and --private-key"
+def okta_token_option(command: Callable) -> Callable:
+    "Use token option to connect to okta. Requires options --org-url and --token"
     command = click.option(
-        "--client-id",
+        "--token",
         type=str,
-        help="Connect to Okta using an OAuth2 Client ID. _Requires options `--org-url`, `--client-id` & `--private-key`._",
-    )(
-        command
-    )  # type: ignore
-    return command
-
-
-def okta_private_key_option(command: Callable) -> Callable:
-    "Use private key option to connect to okta. Requires options --org-url, --client-id, and --private-key"
-    command = click.option(
-        "--private-key",
-        type=str,
-        help="Connect to Okta using a private key (JWK JSON format). _Requires options `--org-url`, `--client-id` & `--private-key`._",
+        help="Connect to Okta using a token. _Requires options `--org-url` and `--token`._",
     )(
         command
     )  # type: ignore

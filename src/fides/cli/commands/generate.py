@@ -10,9 +10,8 @@ from fides.cli.options import (
     connection_string_option,
     credentials_id_option,
     include_null_flag,
-    okta_client_id_option,
     okta_org_url_option,
-    okta_private_key_option,
+    okta_token_option,
     organization_fides_key_option,
 )
 from fides.cli.utils import (
@@ -180,8 +179,7 @@ def generate_system(ctx: click.Context) -> None:
 @click.argument("output_filename", type=str)
 @credentials_id_option
 @okta_org_url_option
-@okta_client_id_option
-@okta_private_key_option
+@okta_token_option
 @include_null_flag
 @organization_fides_key_option
 @with_analytics
@@ -189,22 +187,20 @@ def generate_system_okta(
     ctx: click.Context,
     output_filename: str,
     credentials_id: str,
+    token: str,
     org_url: str,
-    client_id: str,
-    private_key: str,
     include_null: bool,
     org_key: str,
 ) -> None:
     """
     Generates systems from your Okta applications. Connects via
-    OAuth2 client credentials.
+    an Okta admin account.
     """
     config = ctx.obj["CONFIG"]
     okta_config = handle_okta_credentials_options(
         fides_config=config,
+        token=token,
         org_url=org_url,
-        client_id=client_id,
-        private_key=private_key,
         credentials_id=credentials_id,
     )
 

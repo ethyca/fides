@@ -4,6 +4,7 @@ import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -11,7 +12,6 @@ import {
   parseError,
 } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   GenerateResponse,
   GenerateTypes,
@@ -32,7 +32,7 @@ import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
-// OAuth2 config type for Okta authentication
+// OAuth2 config type for new authentication method
 type OktaOAuth2Config = {
   orgUrl: string;
   clientId: string;
@@ -40,16 +40,28 @@ type OktaOAuth2Config = {
   scopes: string[];
 };
 
-const initialValues = {
+// Token-based config for legacy authentication
+type OktaTokenConfig = {
+  orgUrl: string;
+  token: string;
+};
+
+const oauth2InitialValues = {
   orgUrl: "",
   clientId: "",
   privateKey: "",
   scopes: "okta.apps.read",
 };
 
-type FormValues = typeof initialValues;
+const tokenInitialValues = {
+  orgUrl: "",
+  token: "",
+};
 
-const ValidationSchema = Yup.object().shape({
+type OAuth2FormValues = typeof oauth2InitialValues;
+type TokenFormValues = typeof tokenInitialValues;
+
+const OAuth2ValidationSchema = Yup.object().shape({
   orgUrl: Yup.string().required().trim().url().label("Organization URL"),
   clientId: Yup.string()
     .required()
@@ -60,46 +72,36 @@ const ValidationSchema = Yup.object().shape({
     .required()
     .trim()
     .test(
-      "is-valid-json",
-      "Private key must be valid JSON. Paste the JWK downloaded from Okta.",
-      (value) => {
-        if (!value) {
-          return true;
-        }
-        try {
-          JSON.parse(value);
-          return true;
-        } catch {
-          return false;
-        }
-      },
+      "is-valid-key",
+      "Private key must be in PEM format (starts with -----BEGIN RSA PRIVATE KEY-----)",
+      (value) => !value || value.includes("-----BEGIN"),
     )
     .label("Private Key"),
   scopes: Yup.string()
     .required()
     .trim()
     .label("Scopes")
-    .default("okta.apps.read")
-    .test(
-      "valid-scopes",
-      "Scopes must be a single scope or comma-separated list (e.g., 'okta.apps.read' or 'okta.apps.read, okta.users.read')",
-      (value) => {
-        if (!value) {
-          return true;
-        }
-        // Split on comma and check each scope is non-empty and has no internal whitespace
-        const scopes = value.split(",").map((s) => s.trim());
-        return scopes.every((scope) => scope.length > 0 && !/\s/.test(scope));
-      },
-    ),
+    .default("okta.apps.read"),
+});
+
+const TokenValidationSchema = Yup.object().shape({
+  orgUrl: Yup.string().required().trim().url().label("Organization URL"),
+  token: Yup.string()
+    .required()
+    .trim()
+    .matches(/^[^\s]+$/, "Cannot contain spaces")
+    .label("Token"),
 });
 
 const AuthenticateOktaForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
   const { successAlert } = useAlert();
+  const { flags } = useFlags();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
+
+  const useOAuth2 = flags.oktaMonitor;
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
@@ -124,7 +126,7 @@ const AuthenticateOktaForm = () => {
 
   const [generate, { isLoading }] = useGenerateMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleOAuth2Submit = async (values: OAuth2FormValues) => {
     setScannerError(undefined);
 
     const config: OktaOAuth2Config = {
@@ -148,11 +150,130 @@ const AuthenticateOktaForm = () => {
     }
   };
 
+  const handleTokenSubmit = async (values: TokenFormValues) => {
+    setScannerError(undefined);
+
+    const config: OktaTokenConfig = {
+      orgUrl: values.orgUrl,
+      token: values.token,
+    };
+
+    const result = await generate({
+      organization_key: organizationKey,
+      generate: {
+        config: config as OktaConfig,
+        target: ValidTargets.OKTA,
+        type: GenerateTypes.SYSTEMS,
+      },
+    });
+
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      handleResults(result.data.generate_results);
+    }
+  };
+
+  if (useOAuth2) {
+    return (
+      <Formik
+        initialValues={oauth2InitialValues}
+        validationSchema={OAuth2ValidationSchema}
+        onSubmit={handleOAuth2Submit}
+      >
+        {({ isValid, isSubmitting, dirty }) => (
+          <Form data-testid="authenticate-okta-form">
+            <Stack spacing={10}>
+              {isSubmitting ? (
+                <ScannerLoading
+                  title="System scanning in progress"
+                  onClose={handleCancel}
+                />
+              ) : null}
+
+              {scannerError ? <ScannerError error={scannerError} /> : null}
+              {!isSubmitting && !scannerError ? (
+                <>
+                  <Box>
+                    <NextBreadcrumb
+                      className="mb-4"
+                      items={[
+                        {
+                          title: "Add systems",
+                          href: "",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            handleCancel();
+                          },
+                        },
+                        { title: "Authenticate Okta Scanner" },
+                      ]}
+                    />
+                    <Text>
+                      To use the scanner to inventory systems in Okta, you must
+                      first authenticate using OAuth2 Client Credentials.
+                      You&apos;ll need to create an API Services application in
+                      Okta and generate an RSA key pair.
+                    </Text>
+                  </Box>
+                  <Stack>
+                    <CustomTextInput
+                      name="orgUrl"
+                      label="Organization URL"
+                      tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
+                      placeholder="https://your-org.okta.com"
+                    />
+                    <CustomTextInput
+                      name="clientId"
+                      label="Client ID"
+                      tooltip="The OAuth2 client ID from your Okta API Services application"
+                      placeholder="0oa1abc2def3ghi4jkl5"
+                    />
+                    <CustomTextArea
+                      name="privateKey"
+                      label="Private key"
+                      tooltip="RSA private key in PEM or JWK format for OAuth2 authentication"
+                      placeholder="-----BEGIN PRIVATE KEY-----&#10;MIIEvgIBADANBgkqhkiG9w0...&#10;-----END PRIVATE KEY-----"
+                      textAreaProps={{
+                        rows: 8,
+                        style: { fontFamily: "monospace", fontSize: "12px" },
+                      }}
+                    />
+                    <CustomTextInput
+                      name="scopes"
+                      label="Scopes"
+                      tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
+                      placeholder="okta.apps.read"
+                    />
+                  </Stack>
+                </>
+              ) : null}
+              {!isSubmitting ? (
+                <HStack>
+                  <Button onClick={handleCancel}>Cancel</Button>
+                  <Button
+                    htmlType="submit"
+                    type="primary"
+                    disabled={!dirty || !isValid}
+                    loading={isLoading}
+                    data-testid="submit-btn"
+                  >
+                    Save and continue
+                  </Button>
+                </HStack>
+              ) : null}
+            </Stack>
+          </Form>
+        )}
+      </Formik>
+    );
+  }
+
   return (
     <Formik
-      initialValues={initialValues}
-      validationSchema={ValidationSchema}
-      onSubmit={handleSubmit}
+      initialValues={tokenInitialValues}
+      validationSchema={TokenValidationSchema}
+      onSubmit={handleTokenSubmit}
     >
       {({ isValid, isSubmitting, dirty }) => (
         <Form data-testid="authenticate-okta-form">
@@ -182,36 +303,23 @@ const AuthenticateOktaForm = () => {
                       { title: "Authenticate Okta Scanner" },
                     ]}
                   />
-                  <Text>{OKTA_AUTH_DESCRIPTION}</Text>
+                  <Text>
+                    To use the scanner to inventory systems in Okta, you must
+                    first authenticate to your Okta account by providing the
+                    following information:
+                  </Text>
                 </Box>
                 <Stack>
                   <CustomTextInput
                     name="orgUrl"
-                    label="Organization URL"
-                    tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
-                    placeholder="https://your-org.okta.com"
+                    label="Domain"
+                    tooltip="The URL for your organization's account on Okta"
                   />
                   <CustomTextInput
-                    name="clientId"
-                    label="Client ID"
-                    tooltip="The OAuth2 client ID from your Okta API Services application"
-                    placeholder="0oa1abc2def3ghi4jkl5"
-                  />
-                  <CustomTextArea
-                    name="privateKey"
-                    label="Private key"
-                    tooltip="RSA private key in JWK format for OAuth2 authentication"
-                    placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
-                    textAreaProps={{
-                      rows: 8,
-                      style: { fontFamily: "monospace", fontSize: "12px" },
-                    }}
-                  />
-                  <CustomTextInput
-                    name="scopes"
-                    label="Scopes"
-                    tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
-                    placeholder="okta.apps.read"
+                    name="token"
+                    label="Okta token"
+                    type="password"
+                    tooltip="The token generated by Okta for your account."
                   />
                 </Stack>
               </>

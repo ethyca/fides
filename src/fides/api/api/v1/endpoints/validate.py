@@ -128,4 +128,4 @@ async def validate_okta(okta_config: OktaConfig) -> None:
     """
     import fides.connectors.okta as okta_connector
 
-    okta_connector.validate_credentials(okta_config=okta_config)
+    await okta_connector.validate_credentials(okta_config=okta_config)
