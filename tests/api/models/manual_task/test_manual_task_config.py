@@ -11,9 +11,6 @@ from fides.api.models.manual_task import (
     ManualTaskConfigField,
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
-    ManualTaskInstance,
-    ManualTaskLogStatus,
-    ManualTaskSubmission,
 )
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 

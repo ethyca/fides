@@ -1191,28 +1191,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-  - name: manual_task_log
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: task_id
-      data_categories: [system.operations]
-    - name: config_id
-      data_categories: [system.operations]
-    - name: instance_id
-      data_categories: [system.operations]
-    - name: status
-      data_categories: [system.operations]
-    - name: message
-      data_categories: [system.operations]
-    - name: details
-      data_categories: [system.operations]
-    - name: user_id
-      data_categories: [user.unique_id]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
   - name: manual_task_config
     fields:
     - name: config_type
@@ -1541,6 +1519,16 @@ dataset:
     - name: disabled
       data_categories: [system.operations]
     - name: dismissable
+      data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
       data_categories: [system.operations]
     - name: show_layer1_notices
       data_categories: [ system.operations ]
@@ -2407,6 +2395,16 @@ dataset:
     - name: purpose_header
       data_categories: [system.operations]
     - name: experience_config_id
+      data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]

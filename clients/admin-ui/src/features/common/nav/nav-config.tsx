@@ -361,6 +361,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.TABLE_MIGRATION_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Error Test",
+        path: routes.ERRORS_POC_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }

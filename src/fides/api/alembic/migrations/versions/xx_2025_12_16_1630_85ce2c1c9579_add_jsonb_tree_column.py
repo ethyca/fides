@@ -1,7 +1,7 @@
 """add jsonb tree column
 
 Revision ID: 85ce2c1c9579
-Revises: a7241db3ee6a
+Revises: 2c067179b727
 Create Date: 2025-12-16 16:30:52.073758
 
 """
@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 # revision identifiers, used by Alembic.
 revision = "85ce2c1c9579"
-down_revision = "a7241db3ee6a"
+down_revision = "2c067179b727"
 branch_labels = None
 depends_on = None
 

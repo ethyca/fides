@@ -11,8 +11,6 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskLog,
-    ManualTaskLogStatus,
     ManualTaskParentEntityType,
     ManualTaskReference,
     ManualTaskReferenceType,
@@ -38,6 +36,7 @@ class TestManualTaskCreation:
         assert task.parent_entity_id == "test_connection"
         assert task.parent_entity_type == "connection_config"
 
+<<<<<<< HEAD
     def test_create_task_with_log(self, db: Session):
         """Test that task creation works and logs can be added."""
         task = ManualTask.create(
@@ -62,6 +61,8 @@ class TestManualTaskCreation:
         assert log.status == ManualTaskLogStatus.created
         assert "Created manual task" in log.message
 
+=======
+>>>>>>> main
     def test_unique_parent_entity_constraint(
         self, db: Session, manual_task: ManualTask
     ):
@@ -211,6 +212,7 @@ class TestManualTaskReferences:
 class TestManualTaskRelationships:
     """Tests for task relationships with other models."""
 
+<<<<<<< HEAD
     def test_task_logs_relationship(self, db: Session, manual_task: ManualTask):
         """Test relationship with task logs."""
         # Create a log
@@ -226,6 +228,8 @@ class TestManualTaskRelationships:
         assert len(manual_task.logs) == 1  # Only the one we just added
         assert any(l.message == "Test log" for l in manual_task.logs)
 
+=======
+>>>>>>> main
     def test_task_parent_entity_relationship(
         self, db: Session, manual_task: ManualTask
     ):

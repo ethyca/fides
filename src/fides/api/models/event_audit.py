@@ -48,6 +48,15 @@ class EventAuditType(str, EnumType):
     digest_communications_sent = "digest.communications.sent"
     digest_checkpoint_created = "digest.checkpoint.created"
 
+    # Manual Task
+    manual_task_created = "manual_task.created"
+    manual_task_config_created = "manual_task.config.created"
+    manual_task_config_updated = "manual_task.config.updated"
+    manual_task_instance_created = "manual_task.instance.created"
+    manual_task_instance_completed = "manual_task.instance.completed"
+    manual_task_submission_created = "manual_task.submission.created"
+    manual_task_submission_updated = "manual_task.submission.updated"
+
 
 class EventAuditStatus(str, EnumType):
     """Status enum for event audit logging."""
