@@ -148,6 +148,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_cookie_suffix",
       validationRegex: /.*/,
     },
+    {
+      overrideName: "fidesCookieCompression",
+      overrideType: "string",
+      overrideKey: "fides_cookie_compression",
+      validationRegex: /^(gzip|none)$/,
+    },
   ];
 
 /**

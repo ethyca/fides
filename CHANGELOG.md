@@ -27,8 +27,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
 - Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
 - Added handling for "page-level" errors [#7144](https://github.com/ethyca/fides/pull/7144)
+- Added gzip compression option for larger consent cookies [#7142](https://github.com/ethyca/fides/pull/7142)
 - Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
-
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Track active taxonomy in URL in taxonomy screen [#7113](https://github.com/ethyca/fides/pull/7113)
 - Updated status labels for the Action Center [#7098](https://github.com/ethyca/fides/pull/7098)
 - Extending read-only DB configuration [#7139](https://github.com/ethyca/fides/pull/7139)
+- Removed the ManualTaskLog table since it is un-used. This is a lossy migration, it can be `downgraded` but data will not be restored. [#7124](https://github.com/ethyca/fides/pull/7124) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
