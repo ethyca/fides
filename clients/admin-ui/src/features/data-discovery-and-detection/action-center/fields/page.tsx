@@ -56,7 +56,7 @@ import {
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import { collectAllDescendantUrns } from "./treeUtils";
-import type { MonitorResource } from "./types";
+import type { CustomTreeDataNode, MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
 import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
@@ -71,6 +71,16 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
       ? [status]
       : [],
   );
+
+/**
+ * Collects all URNs from nodes including their descendants
+ * Used for tree-level actions that should affect all fields within
+ */
+const collectNodeUrns = (nodes: CustomTreeDataNode[]) =>
+  nodes.flatMap((node) => [
+    node.key.toString(),
+    ...collectAllDescendantUrns(node),
+  ]);
 
 const ActionCenterFields: NextPage = () => {
   const router = useRouter();
@@ -286,12 +296,7 @@ const ActionCenterFields: NextPage = () => {
                       })
                       .some((d) => d === true),
                   callback: (keys, nodes) => {
-                    // Collect all descendant URNs from the selected nodes
-                    // This ensures tree-level actions affect all fields within
-                    const allUrns = nodes.flatMap((node) => [
-                      node.key.toString(),
-                      ...collectAllDescendantUrns(node),
-                    ]);
+                    const allUrns = collectNodeUrns(nodes);
                     fieldActions[action](allUrns, false);
                   },
                 },
