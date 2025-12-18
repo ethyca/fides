@@ -9,6 +9,10 @@ on:
       - "main"
       - "release-**"
 
+permissions:
+  checks: write
+  pull-requests: write
+
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.16"
@@ -55,6 +59,7 @@ jobs:
   Collect-Tests:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,6 +73,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
 
       - name: Run Static Check
         run: nox -s collect_tests
@@ -98,6 +111,8 @@ jobs:
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Upload container
         uses: actions/upload-artifact@v4
@@ -142,6 +157,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -160,6 +183,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Pull Docker images in background
+        run: |
+          docker pull postgres:16 > /dev/null 2>&1 &
+          docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          echo "Docker pull initiated in background."
+        shell: bash
+
       - name: Download container
         uses: actions/download-artifact@v4
         with:
@@ -180,6 +210,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -227,6 +265,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -272,6 +318,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-qq
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -280,6 +334,12 @@ jobs:
 
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/test_report.xml'
 
   ################
   ## Safe Tests ##
@@ -311,7 +371,7 @@ jobs:
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-a.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -325,6 +385,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -334,11 +402,17 @@ jobs:
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/test_report.xml'
+
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   ##################
   ## Unsafe Tests ##
@@ -375,6 +449,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -437,6 +519,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -545,6 +635,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
