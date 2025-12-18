@@ -130,10 +130,8 @@ describe("New Privacy Requests", () => {
           cy.getByTestId("privacy-request-approve-btn").click();
         });
 
-      // Confirm in modal (using the modal confirm buttons pattern)
-      cy.get(".ant-modal-confirm-btns").within(() => {
-        cy.contains("Continue").click();
-      });
+      // Confirm in modal (old modal with test ID)
+      cy.getByTestId("continue-btn").click();
 
       // Should call the approve API
       cy.wait("@approvePrivacyRequest")
@@ -158,6 +156,12 @@ describe("New Privacy Requests", () => {
     });
 
     it("bulk approve works", () => {
+      // Wait for list items to be loaded
+      cy.get(".ant-list-item").should("have.length.at.least", 1);
+
+      // Wait for select-all checkbox to be visible
+      cy.get("#select-all").parents("label").should("be.visible");
+
       // Select all pending requests using select-all checkbox
       cy.get("#select-all").check();
 
