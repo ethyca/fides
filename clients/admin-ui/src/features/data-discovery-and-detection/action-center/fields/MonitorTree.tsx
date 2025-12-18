@@ -31,6 +31,7 @@ import {
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
+  DiffStatus,
   Page_DatastoreStagedResourceTreeAPIResponse_,
   StagedResourceTypeValue,
 } from "~/types/api";
@@ -80,7 +81,10 @@ const mapResponseToTreeData = (
                 className="h-full"
                 offset={[0, 5]}
                 color={statusInfo?.color}
-                dot={!!treeNode.update_status}
+                dot={
+                  !!treeNode.update_status &&
+                  treeNode.diff_status !== DiffStatus.MUTED
+                }
               >
                 <IconComponent className="h-full" />
               </Badge>
@@ -88,6 +92,7 @@ const mapResponseToTreeData = (
           )
         : undefined,
       status: treeNode.update_status,
+      diffStatus: treeNode.diff_status,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
@@ -509,7 +514,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               });
             }
 
-            // Update the status of each ancestor node
+            // Update the status and diffStatus of each ancestor node
             setTreeData((origin) =>
               ancestorsData.reduce(
                 (tree, ancestorNode) =>
@@ -517,6 +522,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
                     tree,
                     ancestorNode.urn,
                     ancestorNode.update_status,
+                    ancestorNode.diff_status,
                   ),
                 origin,
               ),

@@ -1,30 +1,33 @@
-import { TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
 
 import { CustomTreeDataNode } from "./types";
 
 /**
- * Updates a node's status if it exists in the tree
+ * Updates a node's status and optionally diffStatus if it exists in the tree
  * @param list The tree or subtree to update
  * @param key The key of the node to update
- * @param status The new status to set
+ * @param status The new update status to set
+ * @param diffStatus The new diff status to set (optional)
  * @returns The updated tree
  */
 const updateNodeStatus = (
   list: CustomTreeDataNode[],
   key: React.Key,
   status: TreeResourceChangeIndicator | null | undefined,
+  diffStatus?: DiffStatus | null | undefined,
 ): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
         ...node,
         status,
+        diffStatus,
       };
     }
     if (node.children) {
       return {
         ...node,
-        children: updateNodeStatus(node.children, key, status),
+        children: updateNodeStatus(node.children, key, status, diffStatus),
       };
     }
 

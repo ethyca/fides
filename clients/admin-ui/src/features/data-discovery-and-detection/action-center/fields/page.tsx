@@ -55,6 +55,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { collectAllDescendantUrns } from "./treeUtils";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -272,7 +273,11 @@ const ActionCenterFields: NextPage = () => {
                             node.status ===
                               TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
-                            node.classifyable)
+                            node.classifyable) ||
+                          (action === FieldActionType.MUTE &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.UN_MUTE &&
+                            node.diffStatus === DiffStatus.MUTED)
                         ) {
                           return false;
                         }
@@ -280,7 +285,15 @@ const ActionCenterFields: NextPage = () => {
                         return true;
                       })
                       .some((d) => d === true),
-                  callback: (keys) => fieldActions[action](keys, false),
+                  callback: (keys, nodes) => {
+                    // Collect all descendant URNs from the selected nodes
+                    // This ensures tree-level actions affect all fields within
+                    const allUrns = nodes.flatMap((node) => [
+                      node.key.toString(),
+                      ...collectAllDescendantUrns(node),
+                    ]);
+                    fieldActions[action](allUrns, false);
+                  },
                 },
               ]),
             )}

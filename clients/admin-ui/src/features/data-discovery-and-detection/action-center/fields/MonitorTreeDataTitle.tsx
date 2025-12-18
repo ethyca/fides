@@ -7,6 +7,8 @@ import {
   Icons,
 } from "fidesui";
 
+import { DiffStatus } from "~/types/api";
+
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
@@ -86,9 +88,15 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
+  const isMuted = node.diffStatus === DiffStatus.MUTED;
+
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
-    <Flex gap={4} align="center" className="group ml-1 flex grow">
+    <Flex
+      gap={4}
+      align="center"
+      className={`group ml-1 flex grow ${isMuted ? "opacity-40" : ""}`}
+    >
       <Text ellipsis={{ tooltip: node.title }} className="grow select-none">
         {node.title}
       </Text>
