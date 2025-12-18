@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.75.3b0.post0.dev67"
+    "version": "2.75.3b0.post0.dev68"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -22207,37 +22207,86 @@
             "type": "string",
             "title": "Orgurl"
           },
-          "token": {
+          "clientId": {
             "type": "string",
-            "title": "Token"
+            "title": "Clientid"
+          },
+          "privateKey": {
+            "type": "string",
+            "title": "Privatekey"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopes",
+            "default": [
+              "okta.apps.read"
+            ]
           }
         },
         "type": "object",
         "required": [
           "orgUrl",
-          "token"
+          "clientId",
+          "privateKey"
         ],
         "title": "OktaConfig",
-        "description": "The model for the connection config for Okta"
+        "description": "The model for the connection config for Okta using OAuth2."
       },
       "OktaDocsSchema": {
         "properties": {
           "org_url": {
             "type": "string",
+            "minLength": 1,
+            "format": "uri",
             "title": "Organization URL",
             "description": "The URL of your Okta organization (e.g. https://your-org.okta.com)"
           },
-          "api_token": {
+          "client_id": {
             "type": "string",
-            "title": "API Token",
-            "description": "The API token used to authenticate with Okta",
+            "title": "OAuth2 Client ID",
+            "description": "The OAuth2 client ID from your Okta service application"
+          },
+          "private_key": {
+            "type": "string",
+            "title": "Private Key",
+            "description": "RSA private key in JWK (JSON) format for signing JWT assertions. Download from Okta: Applications > Your App > Sign On > Client Credentials > Edit > Generate new key.",
+            "multiline": true,
             "sensitive": true
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "OAuth2 Scopes",
+            "description": "OAuth2 scopes to request (default: okta.apps.read)",
+            "default": [
+              "okta.apps.read"
+            ]
           }
         },
         "type": "object",
         "required": [
           "org_url",
-          "api_token"
+          "client_id",
+          "private_key"
         ],
         "title": "OktaDocsSchema",
         "description": "Okta Secrets Schema for API Docs"

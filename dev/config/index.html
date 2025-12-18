@@ -1106,7 +1106,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="credentials">Credentials</h3>
-<p>The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like <code>fides scan dataset db --credentials-id app_postgres</code>. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if <code>fides scan system okta</code> is used, it will expect the object to contain orgUrl and token key/value pairs. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:</p>
+<p>The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like <code>fides scan dataset db --credentials-id app_postgres</code>. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if <code>fides scan system okta</code> is used, it will expect the object to contain orgUrl, clientId, and privateKey key/value pairs for OAuth2 authentication. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example Credentials Section</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[credentials]</span>
 <span class="n">app_postgres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">connection_string</span><span class="p">=</span><span class="s2">&quot;postgresql+psycopg2://postgres:fides@fides-db:5432/fides&quot;</span><span class="p">}</span>
@@ -1650,7 +1650,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;5d2b532498897ae46163ca1bbaef3a04&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;b77a217b95cb1d9e84a48bcbe58010a1&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
