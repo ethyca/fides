@@ -1,7 +1,7 @@
 """remove redundant manual task logger
 
 Revision ID: 2c067179b727
-Revises: a7241db3ee6a
+Revises: f8a9b0c1d2e3
 Create Date: 2025-12-12 18:22:47.366874
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "2c067179b727"
-down_revision = "a7241db3ee6a"
+down_revision = "f8a9b0c1d2e3"
 branch_labels = None
 depends_on = None
 
