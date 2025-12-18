@@ -1,24 +1,80 @@
+import csv
 import zipfile
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Any, Optional
-
-import pandas as pd
 
 from fides.api.tasks.encryption_utils import encrypt_access_request_results
 from fides.config import CONFIG
 
 
-def create_csv_from_dataframe(df: pd.DataFrame) -> BytesIO:
-    """Create a CSV file from a pandas DataFrame.
+def create_csv_from_dict_list(data: list[dict[str, Any]]) -> BytesIO:
+    """Create a CSV file from a list of dictionaries.
 
     Args:
-        df: The DataFrame to convert to CSV
+        data: List of dictionaries to convert to CSV
 
     Returns:
         BytesIO: A file-like object containing the CSV data
     """
+    if not data:
+        return BytesIO()
+
+    # Use StringIO to build CSV, then encode to BytesIO
+    string_buffer = StringIO()
+
+    # Get all unique keys from all dictionaries
+    fieldnames = []
+    for row in data:
+        for key in row.keys():
+            if key not in fieldnames:
+                fieldnames.append(key)
+
+    writer = csv.DictWriter(string_buffer, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(data)
+
+    # Convert to BytesIO with proper encoding
     buffer = BytesIO()
-    df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+    buffer.write(string_buffer.getvalue().encode(CONFIG.security.encoding))
+    buffer.seek(0)
+    return buffer
+
+
+def create_csv_from_normalized_dict(data: dict[str, Any]) -> BytesIO:
+    """Create a CSV file from a single dictionary (flattened format).
+
+    Args:
+        data: Dictionary to convert to CSV
+
+    Returns:
+        BytesIO: A file-like object containing the CSV data
+    """
+    string_buffer = StringIO()
+
+    # Flatten nested dictionaries with dot notation
+    def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(flatten_dict(v, new_key, sep=sep).items())
+            else:
+                # Convert lists and other non-primitive types to strings
+                if isinstance(v, (list, tuple)):
+                    items.append((new_key, str(v)))
+                else:
+                    items.append((new_key, v))
+        return dict(items)
+
+    flattened = flatten_dict(data)
+
+    writer = csv.DictWriter(string_buffer, fieldnames=flattened.keys())
+    writer.writeheader()
+    writer.writerow(flattened)
+
+    # Convert to BytesIO with proper encoding
+    buffer = BytesIO()
+    buffer.write(string_buffer.getvalue().encode(CONFIG.security.encoding))
     buffer.seek(0)
     return buffer
 
@@ -28,7 +84,6 @@ def create_attachment_csv(attachments: list[dict[str, Any]]) -> Optional[BytesIO
 
     Args:
         attachments: List of attachment dictionaries
-        privacy_request_id: The ID of the privacy request for encryption
 
     Returns:
         Optional[BytesIO]: A file-like object containing the CSV data, or None if no attachments
@@ -62,12 +117,7 @@ def create_attachment_csv(attachments: list[dict[str, Any]]) -> Optional[BytesIO
     if not valid_attachments:
         return None
 
-    df = pd.DataFrame(valid_attachments)
-
-    if df.empty:
-        return None
-
-    return create_csv_from_dataframe(df)
+    return create_csv_from_dict_list(valid_attachments)
 
 
 def _write_attachment_csv(
@@ -109,8 +159,7 @@ def _write_item_csv(
         privacy_request_id: The ID of the privacy request for encryption
     """
     if items:
-        df = pd.DataFrame(items)
-        buffer = create_csv_from_dataframe(df)
+        buffer = create_csv_from_dict_list(items)
         zip_file.writestr(
             f"{key}.csv",
             encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
@@ -131,8 +180,7 @@ def _write_simple_csv(
         value: The value to write
         privacy_request_id: The ID of the privacy request for encryption
     """
-    df = pd.json_normalize({key: value})
-    buffer = create_csv_from_dataframe(df)
+    buffer = create_csv_from_normalized_dict({key: value})
     zip_file.writestr(
         f"{key}.csv",
         encrypt_access_request_results(buffer.getvalue(), privacy_request_id),

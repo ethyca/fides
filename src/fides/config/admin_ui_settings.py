@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Optional
 
 from pydantic import Field, SerializeAsAny
@@ -9,7 +9,7 @@ from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
 from .fides_settings import FidesSettings
 
 
-class ErrorNotificationMode(str, Enum):
+class ErrorNotificationMode(StrEnum):
     CONSOLE_ONLY = "console_only"
     TOAST = "toast"
 

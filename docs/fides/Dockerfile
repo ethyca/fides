@@ -1,10 +1,11 @@
-FROM python:3.10.16-slim-bookworm AS build
+FROM python:3.12-slim-bookworm AS build
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     g++ \
     gnupg \
     gcc \
+    git \
     python3-wheel \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -30,7 +31,12 @@ COPY . .
 RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
 
 
-FROM python:3.10.16-slim-bookworm AS docs
+FROM python:3.12-slim-bookworm AS docs
+
+# Add the fidesuser user
+RUN addgroup --system --gid 1001 fidesgroup
+RUN adduser --system --uid 1001 --home /home/fidesuser fidesuser
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
@@ -39,8 +45,8 @@ RUN apt-get update && \
 
 WORKDIR /docs
 
-COPY --from=build /opt/venv /opt/venv
-COPY --from=build /docs/fides .
+COPY --from=build --chown=fidesuser:fidesgroup /opt/venv /opt/venv
+COPY --from=build --chown=fidesuser:fidesgroup /docs/fides .
 
 ENV PATH="/opt/venv/bin:$PATH"
 

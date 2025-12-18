@@ -1,4 +1,5 @@
 from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
@@ -9,7 +10,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.storage.storage import StorageDestinationResponse
 
 
-class ActionType(str, EnumType):
+class ActionType(StrEnum):
     """The purpose of a particular privacy request"""
 
     access = "access"

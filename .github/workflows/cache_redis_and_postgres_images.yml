@@ -1,0 +1,27 @@
+name: Cache Redis and Postgres container images
+on:
+  workflow_call:
+    inputs:
+      redis-tag:
+        type: string
+        required: false
+        default: 8.0-alpine
+        description: The image tag to cache for Redis
+      postgres-tag:
+        type: string
+        required: false
+        default: 16
+        description: The image tag to cache for Postgres
+
+jobs:
+  cache-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/cache_docker_image.yml
+        with:
+          image-name: postgres
+          tag: ${{ inputs.postgres-tag }}
+      - uses: ./.github/workflows/cache_docker_image.yml
+        with:
+          image-name: redis
+          tag: ${{ inputs.redis-tag }}
