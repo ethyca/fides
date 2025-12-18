@@ -576,6 +576,12 @@ class TestManualTaskConditionalDependencyClassMethods:
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
         """Test getting root condition when it's a leaf condition"""
+        # Build condition_tree for JSONB storage
+        condition_tree = {
+            "field_address": sample_condition_leaf.field_address,
+            "operator": sample_condition_leaf.operator,
+            "value": sample_condition_leaf.value,
+        }
         dependency = ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -585,6 +591,7 @@ class TestManualTaskConditionalDependencyClassMethods:
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
@@ -603,6 +610,17 @@ class TestManualTaskConditionalDependencyClassMethods:
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
         """Test getting root condition when it's a group condition"""
+        # Build condition_tree for JSONB storage
+        condition_tree = {
+            "logical_operator": "and",
+            "conditions": [
+                {
+                    "field_address": sample_condition_leaf.field_address,
+                    "operator": sample_condition_leaf.operator,
+                    "value": sample_condition_leaf.value,
+                }
+            ],
+        }
         # Create parent group dependency
         parent_dependency = ManualTaskConditionalDependency.create(
             db=db,
@@ -611,10 +629,11 @@ class TestManualTaskConditionalDependencyClassMethods:
                 "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
-        # Create child leaf dependency
+        # Create child leaf dependency (for backward compatibility)
         child_dependency = ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -659,6 +678,19 @@ class TestManualTaskConditionalDependencyClassMethods:
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
         """Test getting root condition with complex hierarchy"""
+        # Build condition_tree for JSONB storage
+        condition_tree = {
+            "logical_operator": "and",
+            "conditions": [
+                {
+                    "logical_operator": "or",
+                    "conditions": [
+                        {"field_address": "user.field_0", "operator": "eq", "value": 0},
+                        {"field_address": "user.field_1", "operator": "eq", "value": 1},
+                    ],
+                }
+            ],
+        }
         # Create root group dependency
         root_dependency = ManualTaskConditionalDependency.create(
             db=db,
@@ -667,10 +699,11 @@ class TestManualTaskConditionalDependencyClassMethods:
                 "condition_type": ConditionalDependencyType.group,
                 "logical_operator": "and",
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
-        # Create level 1 child group
+        # Create level 1 child group (for backward compatibility)
         level1_child = ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -682,7 +715,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             },
         )
 
-        # Create level 2 leaf children
+        # Create level 2 leaf children (for backward compatibility)
         for i in range(2):
             ManualTaskConditionalDependency.create(
                 db=db,
