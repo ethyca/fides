@@ -14,6 +14,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     String,
     UniqueConstraint,
     func,
@@ -431,6 +432,7 @@ class StagedResourceAncestor(Base):
         ForeignKey("stagedresource.urn", ondelete="CASCADE"),
         nullable=False,
     )
+    distance = Column(Integer, nullable=False)
 
     ancestor_staged_resource = relationship(
         "StagedResource",
@@ -452,18 +454,19 @@ class StagedResourceAncestor(Base):
         Index("ix_staged_resource_ancestor_pkey", "id", unique=True),
         Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
         Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
+        Index("ix_staged_resource_ancestor_ancestor_distance", "ancestor_urn", "distance"),
     )
 
     @classmethod
     def create_all_staged_resource_ancestor_links(
         cls,
         db: Session,
-        ancestor_links: Dict[str, Set[str]],
+        ancestor_links: Dict[str, Set[tuple[str, int]]],
         batch_size: int = 10000,  # Conservative batch size
     ) -> None:
         """
         Bulk inserts all entries in the StagedResourceAncestor table
-        based on the provided mapping of descendant URNs to their ancestor URN sets.
+        based on the provided mapping of descendant URNs to their ancestor URN and distance sets.
 
         We execute the bulk INSERT with the provided (synchronous) db session,
         but the transaction is _not_ committed, so the caller must commit the transaction
@@ -473,12 +476,12 @@ class StagedResourceAncestor(Base):
 
         Args:
             db: Database session
-            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs
+            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs and distances
         """
         stmt_text = text(
             """
-            INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
-            VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn)
+            INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn, distance)
+            VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn, :distance)
             ON CONFLICT (ancestor_urn, descendant_urn) DO NOTHING;
             """
         )
@@ -487,9 +490,9 @@ class StagedResourceAncestor(Base):
 
         for descendant_urn, ancestor_urns in ancestor_links.items():
             if ancestor_urns:  # Only create links if there are ancestors
-                for ancestor_urn in ancestor_urns:
+                for (ancestor_urn, distance) in ancestor_urns:
                     current_batch.append(
-                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn}
+                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn, "distance": distance}
                     )
 
                     # Execute batch when it reaches the desired size
