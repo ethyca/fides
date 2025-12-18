@@ -1516,6 +1516,16 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
+      data_categories: [system.operations]
     - name: show_layer1_notices
       data_categories: [ system.operations ]
     - name: layer1_button_options
@@ -2381,6 +2391,16 @@ dataset:
     - name: purpose_header
       data_categories: [system.operations]
     - name: experience_config_id
+      data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]

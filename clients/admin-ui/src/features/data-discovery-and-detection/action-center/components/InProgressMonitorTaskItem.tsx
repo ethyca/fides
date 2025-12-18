@@ -122,7 +122,7 @@ export const InProgressMonitorTaskItem = ({
         : "Monitor scanning";
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
-      const verb = task.status === "complete" ? "Confirmed" : "Confirming";
+      const verb = task.status === "complete" ? "Approved" : "Approving";
       return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
