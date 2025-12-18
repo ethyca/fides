@@ -1436,7 +1436,6 @@ class TestAsyncConnectors:
         # Should return empty list without calling async_retrieve_data
         assert result == []
 
-
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
     )
