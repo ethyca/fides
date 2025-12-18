@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass
-from typing import TypeAlias
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -19,7 +18,7 @@ def is_exact_match(matcher: re.Pattern[str], path_name: str) -> bool:
     return is_included_path
 
 
-HeaderDefinition: TypeAlias = tuple[str, str]
+HeaderDefinition = tuple[str, str]
 
 
 @dataclass
