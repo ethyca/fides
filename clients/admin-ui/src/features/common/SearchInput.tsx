@@ -38,9 +38,10 @@ const SearchInput = ({
     () => {
       inputRef.current?.focus();
     },
-    // useKey because we use with '?' elsewhere which conflicts with this hotkey
-    // reverse keyup and keydown because otherwise a literal "/" will get typed in the search input
-    { useKey: true, keyup: true, keydown: false },
+    // useKey because we use with '?' elsewhere which conflicts with this hotkey.
+    // `keyup` to prevent "/" from being typed in the input.
+    // `preventDefault` + `keydown` to stop Firefox Quick Find.
+    { useKey: true, keyup: true, keydown: true, preventDefault: true },
     [inputRef.current],
   );
 
