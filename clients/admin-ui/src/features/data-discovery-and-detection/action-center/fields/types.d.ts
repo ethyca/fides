@@ -5,6 +5,7 @@ import {
   ConfidenceBucket,
   Database,
   DatastoreStagedResource,
+  DiffStatus,
   Field,
   Schema,
   Table,
