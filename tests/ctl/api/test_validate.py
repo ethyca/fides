@@ -31,7 +31,20 @@ EXTERNAL_CONFIG_BODY = {
 
 
 @pytest.mark.external
-@pytest.mark.parametrize("validate_target", ["aws", "okta", "bigquery"])
+@pytest.mark.parametrize(
+    "validate_target",
+    [
+        "aws",
+        pytest.param(
+            "okta",
+            marks=[
+                pytest.mark.xfail(reason="Old Okta tests"),
+                pytest.mark.integration_external,
+            ],
+        ),
+        "bigquery",
+    ],
+)
 def test_validate_success(
     test_config: FidesConfig,
     validate_target: str,
@@ -85,7 +98,20 @@ EXPECTED_FAILURE_MESSAGES = {
 
 
 @pytest.mark.external
-@pytest.mark.parametrize("validate_target", ["aws", "okta", "bigquery"])
+@pytest.mark.parametrize(
+    "validate_target",
+    [
+        "aws",
+        pytest.param(
+            "okta",
+            marks=[
+                pytest.mark.xfail(reason="Old Okta tests"),
+                pytest.mark.integration_external,
+            ],
+        ),
+        "bigquery",
+    ],
+)
 def test_validate_failure(
     test_config: FidesConfig,
     validate_target: str,

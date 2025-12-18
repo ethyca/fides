@@ -329,6 +329,7 @@ def get_okta_config() -> OktaConfig:
 
 
 @pytest.mark.xfail(reason="Old Okta tests")
+@pytest.mark.integration_external
 @pytest.mark.usefixtures("default_organization")
 class TestSystemOkta:
     @pytest.mark.external

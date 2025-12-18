@@ -81,7 +81,14 @@ EXPECTED_FAILURE_MESSAGES = {
     "generate_type, generate_target",
     [
         ("systems", "aws"),
-        ("systems", "okta"),
+        pytest.param(
+            "systems",
+            "okta",
+            marks=[
+                pytest.mark.xfail(reason="Old Okta tests"),
+                pytest.mark.integration_external,
+            ],
+        ),
         ("datasets", "db"),
         ("datasets", "bigquery"),
         ("datasets", "dynamodb"),
@@ -118,7 +125,14 @@ def test_generate(
     "generate_type, generate_target",
     [
         ("systems", "aws"),
-        ("systems", "okta"),
+        pytest.param(
+            "systems",
+            "okta",
+            marks=[
+                pytest.mark.xfail(reason="Old Okta tests"),
+                pytest.mark.integration_external,
+            ],
+        ),
         ("datasets", "db"),
         ("datasets", "bigquery"),
         ("datasets", "dynamodb"),
