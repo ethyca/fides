@@ -84,8 +84,8 @@ const SystemActionsMenu = ({
       messageApi.success(
         `${selectedRowKeys.length} systems deleted successfully`,
       );
+      setDeleteModalIsOpen(false);
     }
-    setDeleteModalIsOpen(false);
   };
 
   const menuItems = useMemo(() => {
