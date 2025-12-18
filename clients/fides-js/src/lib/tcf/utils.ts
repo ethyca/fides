@@ -279,14 +279,15 @@ export const getEnabledIds = (modelList: TcfModels) => {
  * Retrieves the enabled IDs from the given Notice list. This is used to
  * determine which IDs are currently enabled for the user to display in the UI.
  */
-export const getEnabledIdsNotice = (
+export const getEnabledIdsNotice = async (
   noticeList: PrivacyNoticeWithPreference[],
   suffix: FidesInitOptions["fidesCookieSuffix"],
-) => {
+): Promise<string[]> => {
   if (!noticeList) {
     return [];
   }
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie(suffix);
+  const parsedCookie: FidesCookie | undefined =
+    await getFidesConsentCookie(suffix);
 
   return noticeList
     .map((notice) => {

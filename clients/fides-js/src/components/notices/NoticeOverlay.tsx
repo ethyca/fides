@@ -14,7 +14,6 @@ import {
   AssetType,
   ConsentMechanism,
   ConsentMethod,
-  FidesCookie,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -27,15 +26,12 @@ import {
   isConsentOverride,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import {
-  consentCookieObjHasSomeConsentSet,
-  getFidesConsentCookie,
-} from "../../lib/cookie";
+import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsServingComponent,
 } from "../../lib/events";
-import { useNoticesServed } from "../../lib/hooks";
+import { useFidesConsentCookie, useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
@@ -71,9 +67,7 @@ const NoticeOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie(
-    options.fidesCookieSuffix,
-  );
+  const parsedCookie = useFidesConsentCookie(options.fidesCookieSuffix);
 
   const getEnabledNoticeKeys = useCallback(
     (consent: NoticeConsent) => {

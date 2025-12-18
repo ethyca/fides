@@ -197,6 +197,9 @@ export interface FidesInitOptions {
     | "disabled";
 
   fidesCookieSuffix?: string | null;
+
+  // Cookie compression method to reduce cookie size
+  fidesCookieCompression: "gzip" | "none";
 }
 
 /**
@@ -879,6 +882,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
   | "fidesCookieSuffix"
+  | "fidesCookieCompression"
 >;
 
 export type FidesExperienceTranslationOverrides = {
