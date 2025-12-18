@@ -64,16 +64,10 @@ describe("New Privacy Requests", () => {
     });
 
     it("status filter works", () => {
-      // Open status filter dropdown
-      cy.getByTestId("request-status-filter").click();
+      cy.wait("@getPrivacyRequests");
 
-      // Select "Completed" status
-      cy.get(".ant-select-item-option")
-        .filter(':contains("Completed")')
-        .click();
-
-      // Click outside to close dropdown
-      cy.get("body").click(0, 0);
+      // Use the custom antSelect command to select "Completed" status
+      cy.getByTestId("request-status-filter").antSelect("Completed");
 
       // Should trigger a new API call with status filter in body
       cy.wait("@getPrivacyRequests").then((interception) => {
