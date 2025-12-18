@@ -408,7 +408,10 @@ def collect_tests(session: nox.Session) -> None:
     session.install(".")
     install_requirements(session, True)
     command = ("pytest", "tests/", "--collect-only")
-    session.run(*command)
+    session.run(
+        *command,
+        env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
+    )
     validate_test_coverage(session)
 
 
