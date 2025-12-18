@@ -22,7 +22,7 @@ import {
   OverrideType,
 } from "./lib/consent-types";
 import {
-  getFidesConsentCookie,
+  hasFidesConsentCookie,
   isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -108,7 +108,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Check for migrated consent from any registered providers
   let migratedConsent: NoticeConsent | undefined;
 
-  if (!getFidesConsentCookie(config.options.fidesCookieSuffix)) {
+  if (!hasFidesConsentCookie(config.options.fidesCookieSuffix)) {
     const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
     if (consent && method) {
       migratedConsent = consent;
@@ -116,7 +116,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   }
   /* END THIRD PARTY CONSENT MIGRATION */
 
-  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
+  this.cookie = await getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,

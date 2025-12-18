@@ -152,9 +152,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     },
   };
   this.config = config;
-  this.cookie = {
-    ...getInitialCookie(config),
-  };
+  this.cookie = await getInitialCookie(config);
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
