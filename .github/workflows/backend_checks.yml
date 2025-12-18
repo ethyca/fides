@@ -104,7 +104,7 @@ jobs:
       - name: Build container
         uses: docker/build-push-action@v6
         with:
-          builder: ${{ steps.buildx.outputs.name }} - ${{ matrix.python_version }}
+          builder: ${{ steps.buildx.outputs.name }}-${{ matrix.python_version }}
           context: .
           build-args: PYTHON_VERSION=${{ matrix.python_version }}
           target: prod
