@@ -43,7 +43,7 @@ def pytest_nox(session: Session, coverage_arg: str) -> None:
 
 
 def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
-    """Runs ctl tests."""
+    """Runs all the ctl tests."""
     session.notify("teardown")
     if mark == "external":
         start_command = (
