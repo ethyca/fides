@@ -306,29 +306,23 @@ def handle_database_credentials_options(
 
 
 def handle_okta_credentials_options(
-    fides_config: FidesConfig,
-    org_url: str,
-    client_id: str,
-    private_key: str,
-    credentials_id: str,
+    fides_config: FidesConfig, token: str, org_url: str, credentials_id: str
 ) -> Optional[OktaConfig]:
     """
-    Handles the mutually exclusive okta connections options org-url/client-id/private-key and credentials-id.
+    Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
     okta_config: Optional[OktaConfig] = None
-    if client_id or private_key or org_url:
-        if not client_id or not private_key or not org_url:
+    if token or org_url:
+        if not token or not org_url:
             raise click.UsageError(
-                "Illegal usage: org-url, client-id, and private-key must be used together"
+                "Illegal usage: token and org-url must be used together"
             )
         if credentials_id:
             raise click.UsageError(
-                "Illegal usage: org-url/client-id/private-key and credentials-id cannot be used together"
+                "Illegal usage: token/org-url and credentials-id cannot be used together"
             )
-        okta_config = OktaConfig(
-            org_url=org_url, client_id=client_id, private_key=private_key
-        )
+        okta_config = OktaConfig(orgUrl=org_url, token=token)
     if credentials_id:
         okta_config = get_config_okta_credentials(
             credentials_config=fides_config.credentials,

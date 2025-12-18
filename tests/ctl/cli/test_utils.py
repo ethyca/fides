@@ -131,14 +131,12 @@ def test_handle_okta_credentials_options_both_raises(
     "Check for an exception if both credentials options are supplied."
     with pytest.raises(click.UsageError):
         input_org_url = "hello.com"
-        input_client_id = "test_client_id"
-        input_private_key = '{"kty":"RSA","d":"test","n":"test","e":"AQAB"}'
+        input_token = "abcd12345"
         input_credentials_id = "okta_1"
         utils.handle_okta_credentials_options(
             fides_config=test_config,
+            token=input_token,
             org_url=input_org_url,
-            client_id=input_client_id,
-            private_key=input_private_key,
             credentials_id=input_credentials_id,
         )
 
@@ -152,14 +150,12 @@ class TestHandleOktaCredentialsOptions:
         "Check for an exception if credentials dont exist"
         with pytest.raises(click.UsageError):
             input_org_url = ""
-            input_client_id = ""
-            input_private_key = ""
+            input_token = ""
             input_credentials_id = "UNKNOWN"
             utils.handle_okta_credentials_options(
                 fides_config=test_config,
+                token=input_token,
                 org_url=input_org_url,
-                client_id=input_client_id,
-                private_key=input_private_key,
                 credentials_id=input_credentials_id,
             )
 
@@ -167,41 +163,39 @@ class TestHandleOktaCredentialsOptions:
         self,
         test_config: FidesConfig,
     ) -> None:
-        "Check config credentials are returned"
+        "Check for an exception if credentials dont exist"
         input_org_url = ""
-        input_client_id = ""
-        input_private_key = ""
+        input_token = ""
         input_credentials_id = "okta_1"
         okta_config = utils.handle_okta_credentials_options(
             fides_config=test_config,
+            token=input_token,
             org_url=input_org_url,
-            client_id=input_client_id,
-            private_key=input_private_key,
             credentials_id=input_credentials_id,
         )
-        assert okta_config.org_url == "https://dev-78908748.okta.com"
-        assert okta_config.client_id == "redacted_override_in_tests"
-        assert okta_config.private_key is not None
+        assert okta_config.model_dump() == {
+            "orgUrl": "https://dev-78908748.okta.com",
+            "token": "redacted_override_in_tests",
+        }
 
     def test_returns_input_dict(
         self,
         test_config: FidesConfig,
     ) -> None:
-        "Check input credentials are returned"
+        "Check for an exception if credentials dont exist"
         input_org_url = "hello.com"
-        input_client_id = "test_client_id"
-        input_private_key = '{"kty":"RSA","d":"test","n":"test","e":"AQAB"}'
+        input_token = "abcd12345"
         input_credentials_id = ""
         okta_config = utils.handle_okta_credentials_options(
             fides_config=test_config,
+            token=input_token,
             org_url=input_org_url,
-            client_id=input_client_id,
-            private_key=input_private_key,
             credentials_id=input_credentials_id,
         )
-        assert okta_config.org_url == input_org_url
-        assert okta_config.client_id == input_client_id
-        assert okta_config.private_key == input_private_key
+        assert okta_config.model_dump() == {
+            "orgUrl": input_org_url,
+            "token": input_token,
+        }
 
 
 @pytest.mark.unit

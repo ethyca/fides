@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116, E0213
 from typing import ClassVar, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 
 
 class AWSConfig(BaseModel):
@@ -45,15 +45,12 @@ class BigQueryConfig(BaseModel):
 
 class OktaConfig(BaseModel):
     """
-    The model for the connection config for Okta using OAuth2.
+    The model for the connection config for Okta
     """
 
-    model_config = ConfigDict(populate_by_name=True)
-
-    org_url: str = Field(alias="orgUrl")
-    client_id: str = Field(alias="clientId")
-    private_key: str = Field(alias="privateKey")
-    scopes: Optional[List[str]] = Field(default=["okta.apps.read"])
+    # camel case matches okta client config model
+    orgUrl: str
+    token: str
 
 
 class DatabaseConfig(BaseModel):
