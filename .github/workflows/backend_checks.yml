@@ -104,15 +104,15 @@ jobs:
       - name: Build container
         uses: docker/build-push-action@v6
         with:
-          builder: ${{ steps.buildx.outputs.name }}-${{ matrix.python_version }}
+          builder: ${{ steps.buildx.outputs.name }}
           context: .
           build-args: PYTHON_VERSION=${{ matrix.python_version }}
           target: prod
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.python_version }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.python_version }}
 
 
       - name: Upload container
