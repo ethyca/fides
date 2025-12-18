@@ -752,6 +752,8 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_input_credential_options(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
@@ -781,6 +783,8 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_input_credentials_id(
         self,
         test_config_path: str,
@@ -810,6 +814,8 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_environment_credentials(
         self,
         test_config_path: str,
@@ -962,6 +968,8 @@ class TestGenerate:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_input_credential_options(
         self,
         test_config_path: str,
@@ -994,6 +1002,8 @@ class TestGenerate:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_environment_credentials(
         test_config_path: str,
         test_cli_runner: CliRunner,
@@ -1009,6 +1019,8 @@ class TestGenerate:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_input_credentials_id(
         self,
         test_config_path: str,

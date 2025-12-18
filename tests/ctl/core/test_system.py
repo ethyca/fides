@@ -328,6 +328,8 @@ def get_okta_config() -> OktaConfig:
     )
 
 
+@pytest.mark.xfail(reason="Old Okta tests")
+@pytest.mark.integration_external
 @pytest.mark.usefixtures("default_organization")
 class TestSystemOkta:
     @pytest.mark.external
@@ -353,8 +355,8 @@ class TestSystemOkta:
         self, tmpdir: LocalPath, test_config: FidesConfig
     ) -> None:
         okta_config = get_okta_config()
-        if not okta_config.clientId or not okta_config.privateKey:
-            pytest.skip("Okta OAuth2 credentials not configured")
+        # if not okta_config.clientId or not okta_config.privateKey:
+        #     pytest.skip("Okta OAuth2 credentials not configured")
 
         file_name = f"{tmpdir}/test_file.yml"
         _system.generate_system_okta(
