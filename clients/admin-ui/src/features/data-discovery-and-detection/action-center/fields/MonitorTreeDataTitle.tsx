@@ -96,6 +96,7 @@ export const MonitorTreeDataTitle = ({
       gap={4}
       align="center"
       className={`group ml-1 flex grow ${isMuted ? "opacity-40" : ""}`}
+      aria-label={isMuted ? `${node.title} (ignored)` : undefined}
     >
       <Text ellipsis={{ tooltip: node.title }} className="grow select-none">
         {node.title}
