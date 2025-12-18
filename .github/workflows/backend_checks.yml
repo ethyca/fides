@@ -110,7 +110,7 @@ jobs:
           target: prod
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
-          tags: ${{ env.IMAGE }}
+          tags: ${{ env.IMAGE }}-${{ matrix.python_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
