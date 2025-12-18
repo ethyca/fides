@@ -54,6 +54,10 @@ import {
 } from "./treeUtils";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
+const shouldShowBadgeDot = (
+  treeNode: Page_DatastoreStagedResourceTreeAPIResponse_["items"][number],
+) => !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
+
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
@@ -81,10 +85,7 @@ const mapResponseToTreeData = (
                 className="h-full"
                 offset={[0, 5]}
                 color={statusInfo?.color}
-                dot={
-                  !!treeNode.update_status &&
-                  treeNode.diff_status !== DiffStatus.MUTED
-                }
+                dot={shouldShowBadgeDot(treeNode)}
               >
                 <IconComponent className="h-full" />
               </Badge>
