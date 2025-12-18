@@ -6,6 +6,7 @@ from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
+import newrelic.agent
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
@@ -51,6 +52,7 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 )
 
 
+@newrelic.agent.function_trace(name="extract_payload")
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form."""
     try:
@@ -344,6 +346,7 @@ async def get_root_client(
     return client
 
 
+@newrelic.agent.function_trace(name="verify_oauth_client")
 async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
@@ -368,6 +371,7 @@ async def verify_oauth_client(
     return client
 
 
+@newrelic.agent.function_trace(name="extract_token_and_load_client")
 def extract_token_and_load_client(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
@@ -437,6 +441,7 @@ def extract_token_and_load_client(
     return token_data, client
 
 
+@newrelic.agent.function_trace(name="has_permissions")
 def has_permissions(
     token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
 ) -> bool:
@@ -460,6 +465,7 @@ def has_permissions(
     return has_required_permissions
 
 
+@newrelic.agent.function_trace(name="_has_scope_via_role")
 def _has_scope_via_role(
     token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
 ) -> bool:
@@ -481,6 +487,7 @@ def _has_scope_via_role(
     return True
 
 
+@newrelic.agent.function_trace(name="_has_direct_scopes")
 def _has_direct_scopes(
     token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
 ) -> bool:

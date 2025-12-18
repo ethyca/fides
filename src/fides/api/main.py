@@ -33,6 +33,8 @@ from fides.api.app_setup import (
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.cryptography.identity_salt import get_identity_salt
+from fides.api.db.ctl_session import async_engine, sync_engine, warmup_async_pool
+from fides.api.db.session import get_engine_pool_stats
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
 from fides.api.migrations.post_upgrade_index_creation import (
@@ -89,6 +91,8 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
 
     await run_database_startup(wrapped_app)
 
+    await warmup_async_pool()
+
     check_redis()
 
     if not scheduler.running:
@@ -134,62 +138,62 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
 app = create_fides_app(lifespan=lifespan)  # type: ignore
 
 
-if CONFIG.dev_mode:
+# if CONFIG.dev_mode:
 
-    @app.middleware("http")
-    async def profile_request(request: Request, call_next: Callable) -> Response:
-        profiling = request.headers.get("profile-request", False)
-        if profiling:
-            profiler = Profiler(interval=0.001, async_mode="enabled")
-            profiler.start()
-            await call_next(request)
-            profiler.stop()
-            logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
+#     @app.middleware("http")
+#     async def profile_request(request: Request, call_next: Callable) -> Response:
+#         profiling = request.headers.get("profile-request", False)
+#         if profiling:
+#             profiler = Profiler(interval=0.001, async_mode="enabled")
+#             profiler.start()
+#             await call_next(request)
+#             profiler.stop()
+#             logger.debug("Request Profiled!")
+#             return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
 
-        return await call_next(request)
+#         return await call_next(request)
 
 
-@app.middleware("http")
-async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
-    """
-    HTTP Middleware that logs analytics events for each call to Fides endpoints.
-    :param request: Request to Fides api
-    :param call_next: Callable api endpoint
-    :return: Response
-    """
+# @app.middleware("http")
+# async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
+#     """
+#     HTTP Middleware that logs analytics events for each call to Fides endpoints.
+#     :param request: Request to Fides api
+#     :param call_next: Callable api endpoint
+#     :return: Response
+#     """
 
-    # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
-    path = request.url.path
-    if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
-        return await call_next(request)
+#     # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
+#     path = request.url.path
+#     if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
+#         return await call_next(request)
 
-    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
-    now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url}"
+#     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
+#     now: datetime = datetime.now(tz=timezone.utc)
+#     endpoint = f"{request.method}: {request.url}"
 
-    try:
-        response = await call_next(request)
-        # HTTPExceptions are considered a handled err by default so are not thrown here.
-        # Accepted workaround is to inspect status code of response.
-        # More context- https://github.com/tiangolo/fastapi/issues/1840
-        response.background = BackgroundTask(
-            prepare_and_log_request,
-            endpoint,
-            request.url.hostname,
-            response.status_code,
-            now,
-            fides_source,
-            "HTTPException" if response.status_code >= 400 else None,
-        )
-        return response
+#     try:
+#         response = await call_next(request)
+#         # HTTPExceptions are considered a handled err by default so are not thrown here.
+#         # Accepted workaround is to inspect status code of response.
+#         # More context- https://github.com/tiangolo/fastapi/issues/1840
+#         response.background = BackgroundTask(
+#             prepare_and_log_request,
+#             endpoint,
+#             request.url.hostname,
+#             response.status_code,
+#             now,
+#             fides_source,
+#             "HTTPException" if response.status_code >= 400 else None,
+#         )
+#         return response
 
-    except Exception as e:
-        await prepare_and_log_request(
-            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
-        )
-        _log_exception(e, CONFIG.dev_mode)
-        raise
+#     except Exception as e:
+#         await prepare_and_log_request(
+#             endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
+#         )
+#         _log_exception(e, CONFIG.dev_mode)
+#         raise
 
 
 async def prepare_and_log_request(
@@ -229,30 +233,30 @@ async def prepare_and_log_request(
     )
 
 
-@app.middleware("http")
-async def log_request(request: Request, call_next: Callable) -> Response:
-    """Log basic information about every request handled by the server."""
-    start = datetime.now()
+# @app.middleware("http")
+# async def log_request(request: Request, call_next: Callable) -> Response:
+#     """Log basic information about every request handled by the server."""
+#     start = datetime.now()
 
-    # If the request fails, we still want to log it
-    try:
-        response = await call_next(request)
-    except Exception as e:  # pylint: disable=bare-except
-        logger.exception(f"Unhandled exception processing request: '{e}'")
-        response = Response(status_code=500)
+#     # If the request fails, we still want to log it
+#     try:
+#         response = await call_next(request)
+#     except Exception as e:  # pylint: disable=bare-except
+#         logger.exception(f"Unhandled exception processing request: '{e}'")
+#         response = Response(status_code=500)
 
-    handler_time = datetime.now() - start
+#     handler_time = datetime.now() - start
 
-    # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
-    total_time = round(handler_time.total_seconds() * 1000, 3)
-    logger.bind(
-        method=request.method,
-        status_code=response.status_code,
-        handler_time=f"{total_time}ms",
-        path=request.url.path,
-        fides_client=request.headers.get("Fides-Client", "unknown"),
-    ).info("Request received")
-    return response
+#     # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
+#     total_time = round(handler_time.total_seconds() * 1000, 3)
+#     logger.bind(
+#         method=request.method,
+#         status_code=response.status_code,
+#         handler_time=f"{total_time}ms",
+#         path=request.url.path,
+#         fides_client=request.headers.get("Fides-Client", "unknown"),
+#     ).info("Request received")
+#     return response
 
 
 # Configure the static file paths last since otherwise it will take over all paths
@@ -360,23 +364,23 @@ def start_webserver(port: int = 8080) -> None:
     server.run()
 
 
-@app.middleware("http")
-async def action_to_audit_log(
-    request: Request,
-    call_next: Callable,
-) -> Response:
-    """Log basic information about every non-GET request handled by the server."""
+# @app.middleware("http")
+# async def action_to_audit_log(
+#     request: Request,
+#     call_next: Callable,
+# ) -> Response:
+#     """Log basic information about every non-GET request handled by the server."""
 
-    if (
-        request.method != "GET"
-        and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
-        and CONFIG.security.enable_audit_log_resource_middleware
-    ):
-        try:
-            await handle_audit_log_resource(request)
-        except Exception as exc:
-            logger.debug(exc)
-    return await call_next(request)
+#     if (
+#         request.method != "GET"
+#         and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
+#         and CONFIG.security.enable_audit_log_resource_middleware
+#     ):
+#         try:
+#             await handle_audit_log_resource(request)
+#         except Exception as exc:
+#             logger.debug(exc)
+#     return await call_next(request)
 
 
 @app.exception_handler(RequestValidationError)

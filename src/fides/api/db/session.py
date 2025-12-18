@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from loguru import logger
 from sqlalchemy import create_engine
@@ -100,3 +100,63 @@ class ExtendedSession(Session):
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise
+
+
+def get_engine_pool_stats(engine: Optional[Engine]) -> Optional[Dict[str, Any]]:
+    """
+    Extract connection pool statistics from a SQLAlchemy engine.
+
+    Args:
+        engine: SQLAlchemy Engine object to inspect
+
+    Returns:
+        Dictionary containing pool statistics:
+        - pool_size: configured pool_size (max permanent connections)
+        - max_overflow: configured max_overflow (max temporary connections)
+        - num_checked_out: connections currently in use
+        - num_in_pool: connections currently available in the pool
+        - overflow_count: overflow connections currently in use (beyond pool_size)
+        - total_connections: total connections that exist (in_pool + checked_out)
+        Returns None if engine is None or doesn't have a pool.
+    """
+    if engine is None:
+        return None
+
+    try:
+        pool = engine.pool
+        # NullPool doesn't have meaningful stats
+        if isinstance(pool, NullPool):
+            return {"type": "NullPool", "pooling_disabled": True}
+
+        # Access pool statistics through public and internal attributes
+        # These are available on QueuePool (the default pool implementation)
+        checked_out = pool.checkedout()
+
+        # Get the actual number of connections in the pool (available for checkout)
+        # This is tracked in _pool which is a queue
+        num_in_pool = 0
+        if hasattr(pool, "_pool"):
+            num_in_pool = pool._pool.qsize()
+
+        # Calculate overflow: connections created beyond pool_size
+        # This is tracked in _overflow which can be negative during initialization
+        overflow_count = 0
+        if hasattr(pool, "_overflow"):
+            overflow_count = max(0, pool._overflow)
+
+        # Total connections = in pool + checked out
+        total_connections = num_in_pool + checked_out
+
+        stats = {
+            "pool_size": pool.size(),
+            "max_overflow": pool._max_overflow if hasattr(pool, "_max_overflow") else 0,
+            "num_checked_out": checked_out,
+            "num_in_pool": num_in_pool,
+            "overflow_count": overflow_count,
+            "total_connections": total_connections,
+        }
+
+        return stats
+    except Exception as exc:
+        logger.debug("Failed to get pool stats: {}", exc)
+        return None
