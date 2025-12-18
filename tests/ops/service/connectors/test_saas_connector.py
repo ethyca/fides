@@ -1436,12 +1436,6 @@ class TestAsyncConnectors:
         # Should return empty list without calling async_retrieve_data
         assert result == []
 
-        # Cleanup
-        try:
-            erasure_rule.delete(db)
-            erasure_only_policy.delete(db)
-        except Exception:
-            pass
 
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
@@ -1523,10 +1517,3 @@ class TestAsyncConnectors:
 
         # Verify that the async callback flow was triggered (client.send was called)
         assert mock_client.send.called
-
-        # Cleanup
-        try:
-            erasure_rule.delete(db)
-            erasure_only_policy.delete(db)
-        except Exception:
-            pass
