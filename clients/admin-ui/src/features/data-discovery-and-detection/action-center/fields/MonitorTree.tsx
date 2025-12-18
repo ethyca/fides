@@ -31,7 +31,6 @@ import {
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
-  DiffStatus,
   Page_DatastoreStagedResourceTreeAPIResponse_,
   StagedResourceTypeValue,
 } from "~/types/api";
@@ -50,13 +49,10 @@ import {
   collectAllDescendantUrns,
   findNodeByUrn,
   removeChildrenFromNode,
+  shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
-
-const shouldShowBadgeDot = (
-  treeNode: Page_DatastoreStagedResourceTreeAPIResponse_["items"][number],
-) => !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,

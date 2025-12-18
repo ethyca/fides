@@ -1,4 +1,5 @@
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 
 import { CustomTreeDataNode } from "./types";
 
@@ -109,9 +110,32 @@ const findNodeByUrn = (
   return undefined;
 };
 
+/**
+ * Determines if the badge dot should be shown for a tree node
+ * Badge dots are hidden for muted resources
+ * @param treeNode The tree node to check
+ * @returns True if the badge dot should be shown
+ */
+const shouldShowBadgeDot = (treeNode: DatastoreStagedResourceTreeAPIResponse) =>
+  !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
+
+/**
+ * Collects all URNs from nodes including their descendants
+ * Used for tree-level actions that should affect all fields within
+ * @param nodes The nodes to collect URNs from
+ * @returns Array of all URNs including descendants
+ */
+const collectNodeUrns = (nodes: CustomTreeDataNode[]) =>
+  nodes.flatMap((node) => [
+    node.key.toString(),
+    ...collectAllDescendantUrns(node),
+  ]);
+
 export {
   collectAllDescendantUrns,
+  collectNodeUrns,
   findNodeByUrn,
   removeChildrenFromNode,
+  shouldShowBadgeDot,
   updateNodeStatus,
 };
