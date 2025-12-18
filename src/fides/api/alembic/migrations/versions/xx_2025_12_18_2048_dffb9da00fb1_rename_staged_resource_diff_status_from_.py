@@ -8,6 +8,7 @@ Create Date: 2025-12-18 20:48:52.581991
 
 import sqlalchemy as sa
 from alembic import op
+from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "dffb9da00fb1"
@@ -30,7 +31,7 @@ def upgrade():
         )
     )
 
-    print(
+    logger.info(
         f"Updated {result.rowcount} staged resource(s) from 'approved' to 'reviewed' status"
     )
 
@@ -49,6 +50,6 @@ def downgrade():
         )
     )
 
-    print(
+    logger.info(
         f"Reverted {result.rowcount} staged resource(s) from 'reviewed' to 'approved' status"
     )

@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated status labels for the Action Center [#7098](https://github.com/ethyca/fides/pull/7098)
 - Extending read-only DB configuration [#7139](https://github.com/ethyca/fides/pull/7139)
 - Removed the ManualTaskLog table since it is un-used. This is a lossy migration, it can be `downgraded` but data will not be restored. [#7124](https://github.com/ethyca/fides/pull/7124) https://github.com/ethyca/fides/labels/db-migration
+- Renamed staged resource diff status from 'approved' to 'reviewed' in database migration [#7159](https://github.com/ethyca/fides/pull/7159) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
