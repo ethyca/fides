@@ -130,8 +130,10 @@ describe("New Privacy Requests", () => {
           cy.getByTestId("privacy-request-approve-btn").click();
         });
 
-      // Confirm in modal
-      cy.getByTestId("continue-btn").click();
+      // Confirm in modal (using the modal confirm buttons pattern)
+      cy.get(".ant-modal-confirm-btns").within(() => {
+        cy.contains("Continue").click();
+      });
 
       // Should call the approve API
       cy.wait("@approvePrivacyRequest")
@@ -159,14 +161,20 @@ describe("New Privacy Requests", () => {
       // Select all pending requests using select-all checkbox
       cy.get("#select-all").check();
 
+      // Wait for bulk actions button to be visible and enabled
+      cy.get('[data-testid="bulk-actions-btn"]').should("be.visible");
+      cy.get('[data-testid="bulk-actions-btn"]').should("not.be.disabled");
+
       // Open bulk actions dropdown
       cy.get('[data-testid="bulk-actions-btn"]').click();
 
       // Click approve
       cy.contains("Approve").click();
 
-      // Confirm in modal
-      cy.getByTestId("continue-btn").click();
+      // Confirm in modal (using the modal confirm buttons pattern)
+      cy.get(".ant-modal-confirm-btns").within(() => {
+        cy.contains("Continue").click();
+      });
 
       // Should call bulk approve API
       cy.wait("@approvePrivacyRequest")
