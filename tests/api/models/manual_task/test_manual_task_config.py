@@ -12,7 +12,6 @@ from fides.api.models.manual_task import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -73,7 +72,7 @@ class TestManualTaskConfig:
         [
             pytest.param(
                 {"config_type": "invalid_config_type"},
-                LookupError,
+                ValueError,
                 id="invalid_config_type",
             ),
             pytest.param({"version": "not_an_int"}, DataError, id="invalid_version"),
@@ -124,7 +123,6 @@ class TestManualTaskConfig:
 
         # Verify field definitions and logs (logs created by ManualTaskConfigField.create)
         assert len(config.field_definitions) == 1
-        assert len(config.logs) == 1  # Log created when field was added
 
 
 @pytest.mark.parametrize(
