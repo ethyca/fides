@@ -13,7 +13,7 @@ class TracingSettings(FidesSettings):
     """Configuration for OpenTelemetry distributed tracing."""
 
     enabled: bool = Field(
-        default=True,
+        default=False,
         description="Enable OpenTelemetry tracing for the application.",
     )
 
