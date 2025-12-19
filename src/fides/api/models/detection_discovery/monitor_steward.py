@@ -6,12 +6,7 @@ from fides.api.db.base_class import Base
 class MonitorSteward(Base):
     """
     Table to link users to monitors as monitor stewards.
-
-    The `id` column (from Base) is the primary key, while a unique constraint
-    on (user_id, monitor_config_id) prevents duplicate steward assignments.
     """
-
-    __tablename__ = "monitorsteward"
 
     user_id = Column(
         String,
