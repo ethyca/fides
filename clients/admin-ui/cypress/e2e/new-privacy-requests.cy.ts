@@ -2,6 +2,7 @@ import {
   stubPlus,
   stubPrivacyRequests,
   stubPrivacyRequestsConfigurationCrud,
+  stubTCFConfig,
 } from "cypress/support/stubs";
 
 import { RoleRegistryEnum } from "~/types/api";
@@ -11,6 +12,7 @@ describe("New Privacy Requests", () => {
     cy.login();
     stubPrivacyRequests();
     stubPrivacyRequestsConfigurationCrud();
+    cy.intercept("/api/v1/config?api_set=false", {});
 
     // Add intercept for the new search endpoint (POST instead of GET)
     cy.intercept("POST", "/api/v1/privacy-request/search*", {
@@ -156,11 +158,12 @@ describe("New Privacy Requests", () => {
     });
 
     it("bulk approve works", () => {
-      // Wait for list items to be loaded
+      // Wait for results
       cy.get(".ant-list-item").should("have.length.at.least", 1);
 
-      // Wait for select-all checkbox to be visible
-      cy.get("#select-all").parents("label").should("be.visible");
+      // Couldn't find a better way to wait until the ant checkbox is interactive
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(400);
 
       // Select all pending requests using select-all checkbox
       cy.get("#select-all").check();
