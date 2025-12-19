@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+- Replaced old request manager UI with new list based view [#7168](https://github.com/ethyca/fides/pull/7168)
 - Improvements to the UI/UX of the new request manager screen [#7128](https://github.com/ethyca/fides/pull/7128)
 - Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
 - Track active taxonomy in URL in taxonomy screen [#7113](https://github.com/ethyca/fides/pull/7113)
