@@ -1,6 +1,6 @@
 import { AntInput as Input, AntInputProps as InputProps } from "fidesui";
 import { debounce } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface DebouncedInputProps extends InputProps {
   /**
@@ -12,6 +12,7 @@ export interface DebouncedInputProps extends InputProps {
 
 /**
  * A debounced version of AntInput that delays onChange events.
+ * The UI updates immediately while the onChange callback is debounced.
  * Useful for filtering/search inputs where you want to avoid triggering
  * API calls or expensive operations on every keystroke.
  *
@@ -31,27 +32,25 @@ export const DebouncedInput = ({
   delay = 500,
   ...props
 }: DebouncedInputProps) => {
-  const [currentInput, setCurrentInput] = useState(value || "");
-  const debouncedOnChangeRef = useRef(debounce(onChange || (() => {}), delay));
+  const [internalValue, setInternalValue] = useState(value || "");
 
   // Keep internal state in sync with external value prop
   useEffect(() => {
-    setCurrentInput(value || "");
+    setInternalValue(value || "");
   }, [value]);
 
-  // Update debounce delay if it changes
-  useEffect(() => {
-    debouncedOnChangeRef.current = debounce(onChange || (() => {}), delay);
-  }, [onChange, delay]);
-
-  const handleOnChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      setCurrentInput(newValue);
-      debouncedOnChangeRef.current(e);
-    },
-    [],
+  // Create a memoized debounced onChange handler
+  const debouncedOnChange = useMemo(
+    () => (onChange ? debounce(onChange, delay) : undefined),
+    [onChange, delay],
   );
 
-  return <Input {...props} value={currentInput} onChange={handleOnChange} />;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Update internal state immediately for instant UI feedback
+    setInternalValue(e.target.value);
+    // Call debounced onChange
+    debouncedOnChange?.(e);
+  };
+
+  return <Input {...props} value={internalValue} onChange={handleChange} />;
 };
