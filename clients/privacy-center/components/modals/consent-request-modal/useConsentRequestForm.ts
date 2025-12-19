@@ -2,7 +2,7 @@ import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
@@ -40,7 +40,17 @@ const useConsentRequestForm = ({
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
-  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
+  const [cookie, setCookie] = useState<Awaited<
+    ReturnType<typeof getOrMakeFidesCookie>
+  > | null>(null);
+
+  useEffect(() => {
+    const loadCookie = async () => {
+      const loadedCookie = await getOrMakeFidesCookie();
+      setCookie(loadedCookie);
+    };
+    loadCookie();
+  }, []);
 
   // Use our custom hook for form field logic
   const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
@@ -55,6 +65,10 @@ const useConsentRequestForm = ({
       ...getInitialValues(),
     },
     onSubmit: async (values) => {
+      if (!cookie) {
+        return;
+      }
+
       const { email, phone, ...customPrivacyRequestFieldValues } = values;
 
       // populate the values from the form or from the field's default value
@@ -124,7 +138,7 @@ const useConsentRequestForm = ({
         // After successfully initializing a consent request, save the current
         // cookie with our unique fides_user_device_id, etc.
         try {
-          saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
+          await saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
         } catch (error) {
           handleError({ title: "Could not save consent cookie" });
           return;

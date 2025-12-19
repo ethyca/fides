@@ -544,7 +544,11 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+      invalidatesTags: [
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Discovery Monitor Results",
+      ],
     }),
     promoteRemovalStagedResources: build.mutation<
       PromoteResourcesResponse,

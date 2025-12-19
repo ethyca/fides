@@ -1,4 +1,9 @@
-import { AntFlex as Flex, AntTypography as Typography, Icons } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntTag as Tag,
+  AntTypography as Typography,
+  CopyTooltip,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -7,11 +12,14 @@ import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { PrivacyRequestResponse } from "~/types/api";
 
+import { IdentityValueWithKey } from "../../utils";
+
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponse;
+  primaryIdentity: IdentityValueWithKey | null;
 }
 
-export const Header = ({ privacyRequest }: HeaderProps) => {
+export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
 
   return (
@@ -29,30 +37,23 @@ export const Header = ({ privacyRequest }: HeaderProps) => {
               });
             }}
           >
-            {/*
-            Convert different action types to a single string
-            (e.g. "Access/Erasure request"
-            */}
-            {privacyRequest.policy.rules
-              ?.map((rule) => SubjectRequestActionTypeMap.get(rule.action_type))
-              .join("/")}{" "}
-            request
+            {primaryIdentity?.value ?? "Unknown identity"}
           </Typography.Link>
         </Typography.Title>
       </div>
       <RequestStatusBadge status={privacyRequest.status} />
-      <Typography.Text
-        type="secondary"
-        copyable={{
-          text: privacyRequest.id,
-          icon: (
-            <Icons.Copy className="size-4 text-[var(--ant-color-text-secondary)]" />
-          ),
-          tooltips: ["Copy request ID", "Copied"],
-        }}
-      >
-        {privacyRequest.id}
-      </Typography.Text>
+      {privacyRequest.policy.rules && (
+        <Flex gap={4}>
+          {privacyRequest.policy.rules.map((rule) => (
+            <Tag key={rule.action_type}>
+              {SubjectRequestActionTypeMap.get(rule.action_type)}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+      <CopyTooltip contentToCopy={privacyRequest.id}>
+        <Typography.Text type="secondary">{privacyRequest.id}</Typography.Text>
+      </CopyTooltip>
     </Flex>
   );
 };
