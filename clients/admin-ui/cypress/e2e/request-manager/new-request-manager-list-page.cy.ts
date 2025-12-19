@@ -18,13 +18,11 @@ describe("New Privacy Requests", () => {
     cy.intercept("POST", "/api/v1/privacy-request/search*", {
       fixture: "privacy-requests/list.json",
     }).as("getPrivacyRequests");
-
-    cy.overrideFeatureFlag("privacyRequestV2", true);
   });
 
   describe("The requests dashboard", () => {
     beforeEach(() => {
-      cy.visit("/new-privacy-requests");
+      cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
 
@@ -112,7 +110,7 @@ describe("New Privacy Requests", () => {
 
   describe("Request list items", () => {
     beforeEach(() => {
-      cy.visit("/new-privacy-requests");
+      cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
 
@@ -168,7 +166,7 @@ describe("New Privacy Requests", () => {
 
   describe("Bulk actions", () => {
     beforeEach(() => {
-      cy.visit("/new-privacy-requests");
+      cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
 
@@ -227,7 +225,7 @@ describe("New Privacy Requests", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
       stubPlus(true);
       stubTCFConfig();
-      cy.visit("/new-privacy-requests");
+      cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
 
@@ -269,21 +267,21 @@ describe("New Privacy Requests", () => {
 
       it("shows the option to create when permitted", () => {
         cy.assumeRole(RoleRegistryEnum.OWNER);
-        cy.visit("/new-privacy-requests");
+        cy.visit("/privacy-requests");
         cy.wait("@getPrivacyRequests");
         cy.getByTestId("submit-request-btn").should("exist");
       });
 
       it("does not show the option to create when not permitted", () => {
         cy.assumeRole(RoleRegistryEnum.VIEWER_AND_APPROVER);
-        cy.visit("/new-privacy-requests");
+        cy.visit("/privacy-requests");
         cy.wait("@getPrivacyRequests");
         cy.getByTestId("submit-request-btn").should("not.exist");
       });
 
       it("shows the option to create for approver role", () => {
         cy.assumeRole(RoleRegistryEnum.APPROVER);
-        cy.visit("/new-privacy-requests");
+        cy.visit("/privacy-requests");
         cy.wait("@getPrivacyRequests");
         cy.getByTestId("submit-request-btn").should("exist");
       });
@@ -292,7 +290,7 @@ describe("New Privacy Requests", () => {
     describe("submitting a request", () => {
       beforeEach(() => {
         stubPlus(true);
-        cy.visit("/new-privacy-requests");
+        cy.visit("/privacy-requests");
         cy.wait("@getPrivacyRequests");
       });
 
