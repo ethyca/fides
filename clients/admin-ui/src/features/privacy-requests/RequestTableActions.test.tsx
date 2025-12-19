@@ -42,9 +42,6 @@ jest.mock("~/features/common/Restrict", () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Simple mock implementations for modals
-const mockUseDisclosure = jest.fn();
-
 jest.mock("fidesui", () => ({
   AntButton: ({
     children,
@@ -74,7 +71,11 @@ jest.mock("fidesui", () => ({
   },
   Portal: ({ children }: any) => <div>{children}</div>,
   Text: ({ children }: any) => <span>{children}</span>,
-  useDisclosure: () => mockUseDisclosure(),
+  useDisclosure: jest.fn(() => ({
+    isOpen: false,
+    onOpen: jest.fn(),
+    onClose: jest.fn(),
+  })),
 }));
 
 // Mock modal components but make them testable
@@ -154,16 +155,8 @@ describe("RequestTableActions", () => {
     status: PrivacyRequestStatus.PENDING,
   } as PrivacyRequestResponse;
 
-  const mockDisclosure = {
-    isOpen: false,
-    onOpen: jest.fn(),
-    onClose: jest.fn(),
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDisclosure.isOpen = false;
-    mockUseDisclosure.mockReturnValue(mockDisclosure);
     mockUseGetConfigurationSettingsQuery.mockReturnValue({
       data: {
         notifications: {
@@ -306,7 +299,8 @@ describe("RequestTableActions", () => {
       const approveBtn = screen.getByTestId("privacy-request-approve-btn");
       await user.click(approveBtn);
 
-      expect(mockDisclosure.onOpen).toHaveBeenCalledTimes(1);
+      const modal = screen.getByTestId("approve-modal");
+      expect(modal).toBeInTheDocument();
     });
 
     it("should open deny modal when deny button is clicked", async () => {
@@ -316,8 +310,8 @@ describe("RequestTableActions", () => {
       const denyBtn = screen.getByTestId("privacy-request-deny-btn");
       await user.click(denyBtn);
 
-      // Second disclosure for deny
-      expect(mockUseDisclosure).toHaveBeenCalled();
+      const modal = screen.getByTestId("deny-modal");
+      expect(modal).toBeInTheDocument();
     });
 
     it("should open delete modal when delete button is clicked", async () => {
@@ -327,7 +321,8 @@ describe("RequestTableActions", () => {
       const deleteBtn = screen.getByTestId("privacy-request-delete-btn");
       await user.click(deleteBtn);
 
-      expect(mockUseDisclosure).toHaveBeenCalled();
+      const modal = screen.getByTestId("confirmation-modal");
+      expect(modal).toBeInTheDocument();
     });
 
     it("should open finalize modal when finalize button is clicked", async () => {
@@ -341,7 +336,8 @@ describe("RequestTableActions", () => {
       const finalizeBtn = screen.getByTestId("privacy-request-finalize-btn");
       await user.click(finalizeBtn);
 
-      expect(mockUseDisclosure).toHaveBeenCalled();
+      const modal = screen.getByTestId("confirmation-modal");
+      expect(modal).toBeInTheDocument();
     });
   });
 
@@ -370,81 +366,134 @@ describe("RequestTableActions", () => {
     });
   });
 
-  describe("Modal interactions", () => {
-    it("should call handleApproveRequest when approve modal is confirmed", async () => {
+  describe("Complete user flows", () => {
+    it("should complete full approval flow from button click to request approval", async () => {
       const user = userEvent.setup();
-      mockDisclosure.isOpen = true;
-
       render(<RequestTableActions subjectRequest={baseRequest} />);
 
+      // Click approve button
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      await user.click(approveBtn);
+
+      // Verify modal opens
+      const modal = screen.getByTestId("approve-modal");
+      expect(modal).toBeInTheDocument();
+
+      // Confirm approval in modal
       const confirmBtn = screen.getByTestId("approve-modal-confirm");
       await user.click(confirmBtn);
 
+      // Verify the mutation was called
       expect(mockHandleApproveRequest).toHaveBeenCalledTimes(1);
+
+      // Verify modal closes
+      expect(screen.queryByTestId("approve-modal")).not.toBeInTheDocument();
     });
 
-    it("should call handleDenyRequest when deny modal is confirmed", async () => {
+    it("should complete full deny flow from button click to request denial", async () => {
       const user = userEvent.setup();
-      mockDisclosure.isOpen = true;
-
       render(<RequestTableActions subjectRequest={baseRequest} />);
 
+      // Click deny button
+      const denyBtn = screen.getByTestId("privacy-request-deny-btn");
+      await user.click(denyBtn);
+
+      // Verify modal opens
+      const modal = screen.getByTestId("deny-modal");
+      expect(modal).toBeInTheDocument();
+
+      // Confirm denial in modal
       const confirmBtn = screen.getByTestId("deny-modal-confirm");
       await user.click(confirmBtn);
 
+      // Verify the mutation was called with reason
       expect(mockHandleDenyRequest).toHaveBeenCalledWith("Test reason");
+
+      // Verify modal closes
+      expect(screen.queryByTestId("deny-modal")).not.toBeInTheDocument();
     });
 
-    it("should call handleDeleteRequest when delete modal is confirmed", async () => {
+    it("should complete full delete flow from button click to request deletion", async () => {
       const user = userEvent.setup();
-      mockDisclosure.isOpen = true;
-
       render(<RequestTableActions subjectRequest={baseRequest} />);
 
+      // Click delete button
+      const deleteBtn = screen.getByTestId("privacy-request-delete-btn");
+      await user.click(deleteBtn);
+
+      // Verify modal opens
+      const modal = screen.getByTestId("confirmation-modal");
+      expect(modal).toBeInTheDocument();
+
+      // Confirm deletion in modal
       const confirmBtn = screen.getByTestId("confirmation-modal-confirm");
       await user.click(confirmBtn);
 
+      // Verify the mutation was called
       expect(mockHandleDeleteRequest).toHaveBeenCalledTimes(1);
+
+      // Verify modal closes
+      expect(
+        screen.queryByTestId("confirmation-modal"),
+      ).not.toBeInTheDocument();
     });
 
-    it("should call handleFinalizeRequest when finalize modal is confirmed", async () => {
+    it("should complete full finalize flow from button click to request finalization", async () => {
       const user = userEvent.setup();
-      mockDisclosure.isOpen = true;
       const request = {
         ...baseRequest,
         status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
       };
-
       render(<RequestTableActions subjectRequest={request} />);
 
+      // Click finalize button
+      const finalizeBtn = screen.getByTestId("privacy-request-finalize-btn");
+      await user.click(finalizeBtn);
+
+      // Verify modal opens
+      const modal = screen.getByTestId("confirmation-modal");
+      expect(modal).toBeInTheDocument();
+
+      // Confirm finalization in modal
       const confirmBtn = screen.getByTestId("confirmation-modal-confirm");
       await user.click(confirmBtn);
 
+      // Verify the mutation was called
       expect(mockHandleFinalizeRequest).toHaveBeenCalledTimes(1);
+
+      // Verify modal closes
+      expect(
+        screen.queryByTestId("confirmation-modal"),
+      ).not.toBeInTheDocument();
     });
   });
 
   describe("Keyboard navigation", () => {
-    it("should allow keyboard interaction with action buttons", async () => {
+    it("should open modal via keyboard interaction with approve button", async () => {
       const user = userEvent.setup();
       render(<RequestTableActions subjectRequest={baseRequest} />);
 
       const approveBtn = screen.getByTestId("privacy-request-approve-btn");
-      approveBtn.focus();
+
+      // Navigate to button and activate with Enter
+      await user.tab();
       expect(approveBtn).toHaveFocus();
 
       await user.keyboard("{Enter}");
-      expect(mockDisclosure.onOpen).toHaveBeenCalled();
+
+      // Verify modal opens
+      const modal = screen.getByTestId("approve-modal");
+      expect(modal).toBeInTheDocument();
     });
 
-    it("should allow tab navigation between buttons", async () => {
+    it("should allow tab navigation between action buttons", async () => {
       const user = userEvent.setup();
       render(<RequestTableActions subjectRequest={baseRequest} />);
 
       const approveBtn = screen.getByTestId("privacy-request-approve-btn");
       const denyBtn = screen.getByTestId("privacy-request-deny-btn");
 
-      approveBtn.focus();
+      await user.tab();
       expect(approveBtn).toHaveFocus();
 
       await user.tab();
