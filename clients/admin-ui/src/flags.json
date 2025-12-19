@@ -83,5 +83,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDashboardInsights": {
+    "label": "Alpha dashboard insights",
+    "description": "Enable dashboard insights view with Helios, Janus, and Lethe sections",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
