@@ -22,12 +22,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.76.1..main)
 
 ### Added
+- Added editable GPC translation fields to privacy experience configuration [#7137](https://github.com/ethyca/fides/pull/7137)
 - Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 - Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
 - Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
 - Added handling for "page-level" errors [#7144](https://github.com/ethyca/fides/pull/7144)
 - Added gzip compression option for larger consent cookies [#7142](https://github.com/ethyca/fides/pull/7142)
 - Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
+- Added ignore and restore actions to schema explorer tree in Action Center [#7156](https://github.com/ethyca/fides/pull/7156)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
@@ -44,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
 - Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086)
 - Added reusable animation components to FidesUI [#7125](https://github.com/ethyca/fides/pull/7125)
+- Added test coverage for new request manager page [#7164](https://github.com/ethyca/fides/pull/7164)
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
