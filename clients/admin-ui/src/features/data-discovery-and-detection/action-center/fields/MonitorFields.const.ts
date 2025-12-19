@@ -49,7 +49,7 @@ export const getFilterableStatuses = (
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
     addition: "Unlabeled",
-    approved: "Reviewed",
+    reviewed: "Reviewed",
     classification_addition: "Classified",
     classification_error: "Error",
     classification_queued: "Classifying...",
@@ -72,7 +72,7 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   }
 > = {
   addition: { label: "Unlabeled" }, // No tag for this status
-  approved: { label: "Reviewed", color: CUSTOM_TAG_COLOR.ALERT },
+  reviewed: { label: "Reviewed", color: CUSTOM_TAG_COLOR.ALERT },
   classification_addition: {
     label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,

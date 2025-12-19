@@ -55,13 +55,13 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const itemHasClassificationChanges =
     diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||
     diffStatus === DiffStatus.CLASSIFICATION_UPDATE ||
-    diffStatus === DiffStatus.APPROVED;
+    diffStatus === DiffStatus.REVIEWED;
 
   const childItemsHaveClassificationChanges =
     childDiffStatus &&
     (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
       childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE] ||
-      childDiffStatus[DiffStatus.APPROVED]);
+      childDiffStatus[DiffStatus.REVIEWED]);
 
   const showPromoteAction =
     (itemHasClassificationChanges || childItemsHaveClassificationChanges) &&
