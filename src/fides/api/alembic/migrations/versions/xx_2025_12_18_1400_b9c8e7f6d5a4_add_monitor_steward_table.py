@@ -39,6 +39,9 @@ def upgrade():
         ),
         sa.ForeignKeyConstraint(["user_id"], ["fidesuser.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "user_id", "monitor_config_id", name="uq_monitorsteward_user_monitor"
+        ),
     )
     op.create_index(
         op.f("ix_monitorsteward_id"), "monitorsteward", ["id"], unique=False
