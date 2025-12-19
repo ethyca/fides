@@ -58,6 +58,13 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
             "body": "Your erasure request has been completed.",
         },
     },
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT.value: {
+        "label": "Consent request completed",
+        "content": {
+            "subject": "Your consent preferences have been saved",
+            "body": "Your consent request has been completed.",
+        },
+    },
     MessagingActionType.MANUAL_TASK_DIGEST.value: {
         "label": "Manual task digest",
         "content": {

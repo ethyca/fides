@@ -85,6 +85,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
+    PRIVACY_REQUEST_COMPLETE_CONSENT = "privacy_request_complete_consent"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
@@ -100,6 +101,7 @@ CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
     MessagingActionType.PRIVACY_REQUEST_RECEIPT.value,
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value,
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
     MessagingActionType.MANUAL_TASK_DIGEST.value,
