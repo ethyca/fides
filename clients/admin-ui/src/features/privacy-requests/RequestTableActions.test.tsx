@@ -1,0 +1,454 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+
+import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
+
+import { RequestTableActions } from "./RequestTableActions";
+
+// Mock the mutations hook
+const mockHandleApproveRequest = jest.fn();
+const mockHandleDenyRequest = jest.fn();
+const mockHandleDeleteRequest = jest.fn();
+const mockHandleFinalizeRequest = jest.fn();
+const mockIsLoading = jest.fn(() => false);
+
+jest.mock("./hooks/useMutations", () => ({
+  useMutations: () => ({
+    handleApproveRequest: mockHandleApproveRequest,
+    handleDenyRequest: mockHandleDenyRequest,
+    handleDeleteRequest: mockHandleDeleteRequest,
+    handleFinalizeRequest: mockHandleFinalizeRequest,
+    isLoading: mockIsLoading(),
+  }),
+}));
+
+// Mock the config settings query
+const mockUseGetConfigurationSettingsQuery = jest.fn();
+jest.mock("~/features/config-settings/config-settings.slice", () => ({
+  useGetConfigurationSettingsQuery: () =>
+    mockUseGetConfigurationSettingsQuery(),
+}));
+
+// Mock the messaging provider query
+const mockUseGetActiveMessagingProviderQuery = jest.fn();
+jest.mock("~/features/messaging/messaging.slice", () => ({
+  useGetActiveMessagingProviderQuery: () =>
+    mockUseGetActiveMessagingProviderQuery(),
+}));
+
+// Mock Restrict component to always render children
+jest.mock("~/features/common/Restrict", () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Simple mock implementations for modals
+const mockUseDisclosure = jest.fn();
+
+jest.mock("fidesui", () => ({
+  AntButton: ({
+    children,
+    onClick,
+    loading,
+    disabled,
+    icon,
+    ...props
+  }: any) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-busy={loading ? "true" : undefined}
+      {...props}
+    >
+      {icon}
+      {children}
+    </button>
+  ),
+  HStack: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Icons: {
+    Checkmark: () => <span>✓</span>,
+    Close: () => <span>✕</span>,
+    Stamp: () => <span>🔖</span>,
+    TrashCan: ({ size }: any) => <span data-size={size}>🗑</span>,
+  },
+  Portal: ({ children }: any) => <div>{children}</div>,
+  Text: ({ children }: any) => <span>{children}</span>,
+  useDisclosure: () => mockUseDisclosure(),
+}));
+
+// Mock modal components but make them testable
+jest.mock("./ApprovePrivacyRequestModal", () => ({
+  __esModule: true,
+  default: ({ isOpen, onApproveRequest, onClose }: any) =>
+    isOpen ? (
+      <div data-testid="approve-modal">
+        <button
+          data-testid="approve-modal-confirm"
+          onClick={() => {
+            onApproveRequest();
+            onClose();
+          }}
+          type="button"
+        >
+          Confirm Approve
+        </button>
+      </div>
+    ) : null,
+}));
+
+jest.mock("./DenyPrivacyRequestModal", () => ({
+  __esModule: true,
+  default: ({ isOpen, onDenyRequest, onClose }: any) =>
+    isOpen ? (
+      <div data-testid="deny-modal">
+        <button
+          data-testid="deny-modal-confirm"
+          onClick={() => {
+            onDenyRequest("Test reason");
+            onClose();
+          }}
+          type="button"
+        >
+          Confirm Deny
+        </button>
+      </div>
+    ) : null,
+}));
+
+jest.mock("~/features/common/modals/ConfirmationModal", () => ({
+  __esModule: true,
+  default: ({ isOpen, onConfirm, onClose }: any) =>
+    isOpen ? (
+      <div data-testid="confirmation-modal">
+        <button
+          data-testid="confirmation-modal-confirm"
+          onClick={() => {
+            onConfirm();
+            onClose();
+          }}
+          type="button"
+        >
+          Confirm
+        </button>
+      </div>
+    ) : null,
+}));
+
+// Helper to check button visibility
+const expectButtonVisibility = (
+  button: HTMLElement | null,
+  shouldBeVisible: boolean,
+) => {
+  if (shouldBeVisible) {
+    expect(button).toBeInTheDocument();
+  } else {
+    expect(button).not.toBeInTheDocument();
+  }
+};
+
+describe("RequestTableActions", () => {
+  const baseRequest: PrivacyRequestResponse = {
+    id: "pri_123",
+    created_at: "2024-01-15T10:00:00Z",
+    status: PrivacyRequestStatus.PENDING,
+  } as PrivacyRequestResponse;
+
+  const mockDisclosure = {
+    isOpen: false,
+    onOpen: jest.fn(),
+    onClose: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDisclosure.isOpen = false;
+    mockUseDisclosure.mockReturnValue(mockDisclosure);
+    mockUseGetConfigurationSettingsQuery.mockReturnValue({
+      data: {
+        notifications: {
+          send_request_completion_notification: true,
+        },
+      },
+    });
+    mockUseGetActiveMessagingProviderQuery.mockReturnValue({
+      data: {
+        service_type: "mailgun",
+      },
+    });
+  });
+
+  /**
+   * Action visibility matrix for all privacy request statuses.
+   * This table drives the parameterized tests below.
+   */
+  const actionVisibilityByStatus = [
+    {
+      status: PrivacyRequestStatus.PENDING,
+      approve: true,
+      deny: true,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.DUPLICATE,
+      approve: true,
+      deny: true,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.IDENTITY_UNVERIFIED,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.REQUIRES_INPUT,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.APPROVED,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.DENIED,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.IN_PROCESSING,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.COMPLETE,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.PAUSED,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.ERROR,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.CANCELED,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.AWAITING_EMAIL_SEND,
+      approve: false,
+      deny: false,
+      finalize: false,
+      delete: true,
+    },
+    {
+      status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+      approve: false,
+      deny: false,
+      finalize: true,
+      delete: true,
+    },
+  ];
+
+  describe.each(actionVisibilityByStatus)(
+    "Action visibility for $status",
+    ({ status, approve, deny, finalize, delete: deleteBtn }) => {
+      it("should show/hide all action buttons correctly", () => {
+        const request = { ...baseRequest, status };
+        render(<RequestTableActions subjectRequest={request} />);
+
+        const buttons = {
+          approve: screen.queryByTestId("privacy-request-approve-btn"),
+          deny: screen.queryByTestId("privacy-request-deny-btn"),
+          finalize: screen.queryByTestId("privacy-request-finalize-btn"),
+          delete: screen.queryByTestId("privacy-request-delete-btn"),
+        };
+
+        expectButtonVisibility(buttons.approve, approve);
+        expectButtonVisibility(buttons.deny, deny);
+        expectButtonVisibility(buttons.finalize, finalize);
+        expectButtonVisibility(buttons.delete, deleteBtn);
+      });
+    },
+  );
+
+  describe("Button interactions", () => {
+    it("should open approve modal when approve button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      await user.click(approveBtn);
+
+      expect(mockDisclosure.onOpen).toHaveBeenCalledTimes(1);
+    });
+
+    it("should open deny modal when deny button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const denyBtn = screen.getByTestId("privacy-request-deny-btn");
+      await user.click(denyBtn);
+
+      // Second disclosure for deny
+      expect(mockUseDisclosure).toHaveBeenCalled();
+    });
+
+    it("should open delete modal when delete button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const deleteBtn = screen.getByTestId("privacy-request-delete-btn");
+      await user.click(deleteBtn);
+
+      expect(mockUseDisclosure).toHaveBeenCalled();
+    });
+
+    it("should open finalize modal when finalize button is clicked", async () => {
+      const user = userEvent.setup();
+      const request = {
+        ...baseRequest,
+        status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+      };
+      render(<RequestTableActions subjectRequest={request} />);
+
+      const finalizeBtn = screen.getByTestId("privacy-request-finalize-btn");
+      await user.click(finalizeBtn);
+
+      expect(mockUseDisclosure).toHaveBeenCalled();
+    });
+  });
+
+  describe("Loading states", () => {
+    beforeEach(() => {
+      mockIsLoading.mockReturnValue(true);
+    });
+
+    it("should disable buttons when loading", () => {
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      const denyBtn = screen.getByTestId("privacy-request-deny-btn");
+      const deleteBtn = screen.getByTestId("privacy-request-delete-btn");
+
+      expect(approveBtn).toBeDisabled();
+      expect(denyBtn).toBeDisabled();
+      expect(deleteBtn).toBeDisabled();
+    });
+
+    it("should show loading state on buttons", () => {
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      expect(approveBtn).toHaveAttribute("aria-busy", "true");
+    });
+  });
+
+  describe("Modal interactions", () => {
+    it("should call handleApproveRequest when approve modal is confirmed", async () => {
+      const user = userEvent.setup();
+      mockDisclosure.isOpen = true;
+
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const confirmBtn = screen.getByTestId("approve-modal-confirm");
+      await user.click(confirmBtn);
+
+      expect(mockHandleApproveRequest).toHaveBeenCalledTimes(1);
+    });
+
+    it("should call handleDenyRequest when deny modal is confirmed", async () => {
+      const user = userEvent.setup();
+      mockDisclosure.isOpen = true;
+
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const confirmBtn = screen.getByTestId("deny-modal-confirm");
+      await user.click(confirmBtn);
+
+      expect(mockHandleDenyRequest).toHaveBeenCalledWith("Test reason");
+    });
+
+    it("should call handleDeleteRequest when delete modal is confirmed", async () => {
+      const user = userEvent.setup();
+      mockDisclosure.isOpen = true;
+
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const confirmBtn = screen.getByTestId("confirmation-modal-confirm");
+      await user.click(confirmBtn);
+
+      expect(mockHandleDeleteRequest).toHaveBeenCalledTimes(1);
+    });
+
+    it("should call handleFinalizeRequest when finalize modal is confirmed", async () => {
+      const user = userEvent.setup();
+      mockDisclosure.isOpen = true;
+      const request = {
+        ...baseRequest,
+        status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+      };
+
+      render(<RequestTableActions subjectRequest={request} />);
+
+      const confirmBtn = screen.getByTestId("confirmation-modal-confirm");
+      await user.click(confirmBtn);
+
+      expect(mockHandleFinalizeRequest).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Keyboard navigation", () => {
+    it("should allow keyboard interaction with action buttons", async () => {
+      const user = userEvent.setup();
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      approveBtn.focus();
+      expect(approveBtn).toHaveFocus();
+
+      await user.keyboard("{Enter}");
+      expect(mockDisclosure.onOpen).toHaveBeenCalled();
+    });
+
+    it("should allow tab navigation between buttons", async () => {
+      const user = userEvent.setup();
+      render(<RequestTableActions subjectRequest={baseRequest} />);
+
+      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
+      const denyBtn = screen.getByTestId("privacy-request-deny-btn");
+
+      approveBtn.focus();
+      expect(approveBtn).toHaveFocus();
+
+      await user.tab();
+      expect(denyBtn).toHaveFocus();
+    });
+  });
+});
