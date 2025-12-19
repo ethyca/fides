@@ -40,10 +40,18 @@ export const DebouncedInput = ({
   }, [value]);
 
   // Create a memoized debounced onChange handler
+  // Create a memoized debounced onChange handler
   const debouncedOnChange = useMemo(
     () => (onChange ? debounce(onChange, delay) : undefined),
     [onChange, delay],
   );
+
+  // Cleanup on unmount or when dependencies change
+  useEffect(() => {
+    return () => {
+      debouncedOnChange?.cancel();
+    };
+  }, [debouncedOnChange]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Update internal state immediately for instant UI feedback
