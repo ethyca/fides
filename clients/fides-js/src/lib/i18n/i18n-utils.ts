@@ -67,6 +67,12 @@ function extractMessagesFromExperienceConfig(
     "banner_description",
     "banner_title",
     "description",
+    // GPC (Global Privacy Control) translatable fields
+    "gpc_label",
+    "gpc_description",
+    "gpc_status_applied_label",
+    "gpc_status_overridden_label",
+    "gpc_title",
     "purpose_header",
     "privacy_policy_link_label",
     "privacy_policy_url",
