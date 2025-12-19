@@ -91,7 +91,7 @@ export const MONITOR_UPDATE_NAMES = new Map<
   ["in_review", ["Classified", "Classified"]],
   ["classifying", ["Classifying", "Classifying"]],
   ["removals", ["Removal", "Removals"]],
-  ["approved", ["Reviewed", "Reviewed"]],
+  ["reviewed", ["Reviewed", "Reviewed"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [
@@ -103,7 +103,7 @@ export const MONITOR_UPDATE_ORDER = [
   "unlabeled",
   "classifying",
   "in_review",
-  "approved",
+  "reviewed",
   "removals",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
