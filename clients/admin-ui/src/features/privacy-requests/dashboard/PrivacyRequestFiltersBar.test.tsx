@@ -22,27 +22,60 @@ jest.mock("../privacy-requests.slice", () => ({
   useGetPrivacyCenterConfigQuery: () => mockUseGetPrivacyCenterConfigQuery(),
 }));
 
-// Mock fidesui
+// Mock fidesui with testable implementations
 jest.mock("fidesui", () => ({
   AntDatePicker: {
-    RangePicker: ({ placeholder }: any) => (
+    RangePicker: ({ placeholder, onChange, value }: any) => (
       <div data-testid="date-range-filter">
-        <input type="text" placeholder={placeholder?.[0]} />
-        <input type="text" placeholder={placeholder?.[1]} />
+        <input
+          data-testid="date-range-from"
+          type="text"
+          placeholder={placeholder?.[0]}
+          value={value?.[0]?.format("YYYY-MM-DD") || ""}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            const dayjs = require("dayjs");
+            onChange?.(newValue ? [dayjs(newValue), value?.[1]] : null);
+          }}
+        />
+        <input
+          data-testid="date-range-to"
+          type="text"
+          placeholder={placeholder?.[1]}
+          value={value?.[1]?.format("YYYY-MM-DD") || ""}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            const dayjs = require("dayjs");
+            onChange?.(newValue ? [value?.[0], dayjs(newValue)] : null);
+          }}
+        />
       </div>
     ),
   },
   AntDisplayValueType: {} as any,
   AntFlex: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  AntSelect: ({ children, value, onChange, ...props }: any) => (
-    <select
-      {...props}
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-    >
-      {children}
-    </select>
-  ),
+  AntSelect: ({ children, value, onChange, mode, ...props }: any) => {
+    const isMultiple = mode === "multiple";
+    return (
+      <select
+        {...props}
+        multiple={isMultiple}
+        value={isMultiple ? value || [] : value}
+        onChange={(e) => {
+          if (isMultiple) {
+            const selectedOptions = Array.from(e.target.selectedOptions).map(
+              (opt: any) => opt.value,
+            );
+            onChange?.(selectedOptions);
+          } else {
+            onChange?.(e.target.value);
+          }
+        }}
+      >
+        {children}
+      </select>
+    );
+  },
   LocationSelect: ({ value, onChange, ...props }: any) => (
     <select
       {...props}
@@ -163,13 +196,11 @@ describe("PrivacyRequestFiltersBar", () => {
       await user.type(searchInput, "test@example.com");
 
       // The mocked DebouncedSearchInput calls onChange for each character
-      // Check that it was called with the search value
       await waitFor(() => {
         expect(mockSetFilters).toHaveBeenCalled();
-        const { calls } = mockSetFilters.mock;
-        expect(calls.length).toBeGreaterThan(0);
-        // Verify at least one call has a search property
-        expect(calls.some((call) => call[0].search)).toBe(true);
+        const lastCall =
+          mockSetFilters.mock.calls[mockSetFilters.mock.calls.length - 1];
+        expect(lastCall[0].search).toBeTruthy();
       });
     });
 
@@ -211,74 +242,199 @@ describe("PrivacyRequestFiltersBar", () => {
         />,
       );
 
-      // Date picker should be in the document with values
-      expect(screen.getByTestId("date-range-filter")).toBeInTheDocument();
+      const fromInput = screen.getByTestId("date-range-from");
+      const toInput = screen.getByTestId("date-range-to");
+
+      expect(fromInput).toHaveValue("2024-01-01");
+      expect(toInput).toHaveValue("2024-01-31");
+    });
+
+    it("should update filters when date range is selected", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const fromInput = screen.getByTestId("date-range-from");
+      await user.type(fromInput, "2024-01-01");
+
+      await waitFor(() => {
+        expect(mockSetFilters).toHaveBeenCalled();
+        const lastCall =
+          mockSetFilters.mock.calls[mockSetFilters.mock.calls.length - 1];
+        expect(lastCall[0].from).toBe("2024-01-01");
+      });
+    });
+
+    it("should clear date range when cleared", async () => {
+      const user = userEvent.setup();
+      render(
+        <PrivacyRequestFiltersBar
+          {...defaultProps}
+          filters={{
+            ...defaultProps.filters,
+            from: "2024-01-01",
+            to: "2024-01-31",
+          }}
+        />,
+      );
+
+      const fromInput = screen.getByTestId("date-range-from");
+      await user.clear(fromInput);
+
+      await waitFor(() => {
+        expect(mockSetFilters).toHaveBeenCalled();
+      });
     });
   });
 
   describe("Status filter", () => {
-    it("should render status filter and handle selections", () => {
-      const { rerender } = render(
-        <PrivacyRequestFiltersBar {...defaultProps} />,
-      );
-      expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
+    it("should render status filter with options", () => {
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+      const statusFilter = screen.getByTestId("request-status-filter");
+      expect(statusFilter).toBeInTheDocument();
+    });
 
-      // Should handle multiple status selections
-      rerender(
+    it("should call setFilters when status is selected", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const statusFilter = screen.getByTestId("request-status-filter");
+      await user.selectOptions(statusFilter, [PrivacyRequestStatus.PENDING]);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        status: [PrivacyRequestStatus.PENDING],
+      });
+    });
+
+    it("should handle multiple status selections", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const statusFilter = screen.getByTestId("request-status-filter");
+      await user.selectOptions(statusFilter, [
+        PrivacyRequestStatus.PENDING,
+        PrivacyRequestStatus.COMPLETE,
+      ]);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        status: [PrivacyRequestStatus.PENDING, PrivacyRequestStatus.COMPLETE],
+      });
+    });
+
+    it("should clear status filter when selection is cleared", async () => {
+      const user = userEvent.setup();
+      render(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
             ...defaultProps.filters,
-            status: [
-              PrivacyRequestStatus.PENDING,
-              PrivacyRequestStatus.COMPLETE,
-            ],
+            status: [PrivacyRequestStatus.PENDING],
           }}
         />,
       );
-      expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
+
+      const statusFilter = screen.getByTestId("request-status-filter");
+      await user.selectOptions(statusFilter, []);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({ status: null });
     });
   });
 
   describe("Action type filter", () => {
-    it("should render action type filter and handle selections", () => {
-      const { rerender } = render(
-        <PrivacyRequestFiltersBar {...defaultProps} />,
-      );
-      expect(
-        screen.getByTestId("request-action-type-filter"),
-      ).toBeInTheDocument();
+    it("should render action type filter with options", () => {
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
+      expect(actionTypeFilter).toBeInTheDocument();
+    });
 
-      // Should handle multiple action type selections
-      rerender(
+    it("should call setFilters when action type is selected", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
+      await user.selectOptions(actionTypeFilter, [ActionType.ACCESS]);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        action_type: [ActionType.ACCESS],
+      });
+    });
+
+    it("should handle multiple action type selections", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
+      await user.selectOptions(actionTypeFilter, [
+        ActionType.ACCESS,
+        ActionType.ERASURE,
+      ]);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        action_type: [ActionType.ACCESS, ActionType.ERASURE],
+      });
+    });
+
+    it("should clear action type filter when selection is cleared", async () => {
+      const user = userEvent.setup();
+      render(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
             ...defaultProps.filters,
-            action_type: [ActionType.ACCESS, ActionType.ERASURE],
+            action_type: [ActionType.ACCESS],
           }}
         />,
       );
-      expect(
-        screen.getByTestId("request-action-type-filter"),
-      ).toBeInTheDocument();
+
+      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
+      await user.selectOptions(actionTypeFilter, []);
+
+      expect(mockSetFilters).toHaveBeenCalledWith({ action_type: null });
     });
   });
 
   describe("Location filter", () => {
-    it("should render location filter and display selected value", () => {
-      const { rerender } = render(
-        <PrivacyRequestFiltersBar {...defaultProps} />,
-      );
+    it("should render location filter", () => {
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
       expect(screen.getByTestId("request-location-filter")).toBeInTheDocument();
+    });
 
-      rerender(
+    it("should call setFilters when location is selected", async () => {
+      const user = userEvent.setup();
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+
+      const locationFilter = screen.getByTestId("request-location-filter");
+      await user.selectOptions(locationFilter, "US");
+
+      expect(mockSetFilters).toHaveBeenCalledWith({ location: "US" });
+    });
+
+    it("should display selected location value", () => {
+      render(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{ ...defaultProps.filters, location: "US" }}
         />,
       );
-      expect(screen.getByTestId("request-location-filter")).toBeInTheDocument();
+
+      const locationFilter = screen.getByTestId(
+        "request-location-filter",
+      ) as HTMLSelectElement;
+      expect(locationFilter.value).toBe("US");
+    });
+
+    it("should clear location filter when cleared", async () => {
+      const user = userEvent.setup();
+      render(
+        <PrivacyRequestFiltersBar
+          {...defaultProps}
+          filters={{ ...defaultProps.filters, location: "US" }}
+        />,
+      );
+
+      const locationFilter = screen.getByTestId("request-location-filter");
+      await user.selectOptions(locationFilter, "");
+
+      expect(mockSetFilters).toHaveBeenCalledWith({ location: null });
     });
   });
 
