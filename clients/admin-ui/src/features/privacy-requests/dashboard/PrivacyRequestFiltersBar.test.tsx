@@ -147,6 +147,14 @@ jest.mock("./CustomFieldFilter", () => ({
   ),
 }));
 
+// Helper functions to query date range inputs by Ant Design's date-range attribute
+const getDateRangeInput = {
+  from: (container: HTMLElement) =>
+    container.querySelector('input[date-range="start"]') as HTMLInputElement,
+  to: (container: HTMLElement) =>
+    container.querySelector('input[date-range="end"]') as HTMLInputElement,
+};
+
 describe("PrivacyRequestFiltersBar", () => {
   const mockSetFilters = jest.fn();
   const mockSetSortState = jest.fn();
@@ -178,12 +186,18 @@ describe("PrivacyRequestFiltersBar", () => {
 
   describe("Initial render", () => {
     it("should render all filter controls", () => {
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+      const { container } = render(
+        <PrivacyRequestFiltersBar {...defaultProps} />,
+      );
 
       expect(
         screen.getByPlaceholderText("Request ID or identity value"),
       ).toBeInTheDocument();
-      expect(screen.getByTestId("date-range-filter")).toBeInTheDocument();
+
+      // Check date range picker by verifying both inputs exist
+      expect(screen.getByPlaceholderText("From")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("To")).toBeInTheDocument();
+
       expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
       expect(
         screen.getByTestId("request-action-type-filter"),
@@ -193,7 +207,7 @@ describe("PrivacyRequestFiltersBar", () => {
     });
 
     it("should display existing filter values", () => {
-      render(
+      const { container } = render(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
@@ -211,8 +225,13 @@ describe("PrivacyRequestFiltersBar", () => {
       expect(
         screen.getByPlaceholderText("Request ID or identity value"),
       ).toHaveValue("test@example.com");
-      expect(screen.getByTestId("date-range-from")).toHaveValue("2024-01-01");
-      expect(screen.getByTestId("date-range-to")).toHaveValue("2024-01-31");
+
+      // Use helper to get date range inputs
+      const fromInput = getDateRangeInput.from(container);
+      const toInput = getDateRangeInput.to(container);
+      expect(fromInput).toHaveValue("2024-01-01");
+      expect(toInput).toHaveValue("2024-01-31");
+
       expect(screen.getByTestId("request-location-filter")).toHaveValue("US");
     });
   });
@@ -220,7 +239,7 @@ describe("PrivacyRequestFiltersBar", () => {
   describe("Complete filtering workflows", () => {
     it("should apply multiple filters in sequence", async () => {
       const user = userEvent.setup();
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
+      const { container } = render(<PrivacyRequestFiltersBar {...defaultProps} />);
 
       // Search for a request
       const searchInput = screen.getByPlaceholderText(
@@ -235,8 +254,8 @@ describe("PrivacyRequestFiltersBar", () => {
         expect(lastCall[0].search).toBeTruthy();
       });
 
-      // Set date range
-      const fromInput = screen.getByTestId("date-range-from");
+      // Set date range using helper
+      const fromInput = getDateRangeInput.from(container);
       await user.click(fromInput);
       await user.keyboard("2024-01-01");
 
