@@ -42,6 +42,7 @@ jest.mock("~/features/common/Restrict", () => ({
 }));
 
 jest.mock("fidesui", () => {
+  // eslint-disable-next-line global-require
   const react = require("react");
 
   return {
