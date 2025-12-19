@@ -239,7 +239,9 @@ describe("PrivacyRequestFiltersBar", () => {
   describe("Complete filtering workflows", () => {
     it("should apply multiple filters in sequence", async () => {
       const user = userEvent.setup();
-      const { container } = render(<PrivacyRequestFiltersBar {...defaultProps} />);
+      const { container } = render(
+        <PrivacyRequestFiltersBar {...defaultProps} />,
+      );
 
       // Search for a request
       const searchInput = screen.getByPlaceholderText(
@@ -247,11 +249,8 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.type(searchInput, "test@example.com");
 
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalled();
-        const lastCall =
-          mockSetFilters.mock.calls[mockSetFilters.mock.calls.length - 1];
-        expect(lastCall[0].search).toBeTruthy();
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        search: "test@example.com",
       });
 
       // Set date range using helper
@@ -335,9 +334,7 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.clear(searchInput);
 
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalledWith({ search: null });
-      });
+      expect(mockSetFilters).toHaveBeenCalledWith({ search: null });
     });
 
     it("should handle sorting changes", async () => {
@@ -392,10 +389,8 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.type(departmentInput, "Engineering");
 
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalledWith({
-          custom_privacy_request_fields: { department: "Engineering" },
-        });
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        custom_privacy_request_fields: { department: "Engineering" },
       });
     });
 
@@ -432,10 +427,8 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.clear(departmentInput);
 
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalledWith({
-          custom_privacy_request_fields: null,
-        });
+      expect(mockSetFilters).toHaveBeenCalledWith({
+        custom_privacy_request_fields: null,
       });
     });
   });
