@@ -120,9 +120,6 @@ def create_fides_app(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
 
-    # Note: FastAPI instrumentation is done in the lifespan function after
-    # the tracer provider is set up (see main.py)
-
     for router in routers:
         fastapi_app.include_router(router)
 
