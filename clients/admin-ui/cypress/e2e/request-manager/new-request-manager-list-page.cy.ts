@@ -140,6 +140,28 @@ describe("New Privacy Requests", () => {
         .its("request.body.request_ids")
         .should("have.length", 1);
     });
+
+    it("reject action works from list item", () => {
+      // Find a "New" request and click its deny button
+      cy.get('[data-testid="request-status-badge"]')
+        .filter(':contains("New")')
+        .first()
+        .closest(".ant-list-item")
+        .within(() => {
+          cy.getByTestId("privacy-request-deny-btn").click();
+        });
+
+      // Fill in denial reason and confirm in modal
+      cy.getByTestId("deny-privacy-request-modal").within(() => {
+        cy.getByTestId("input-denialReason").type("test denial reason");
+        cy.getByTestId("deny-privacy-request-modal-btn").click();
+      });
+
+      // Should call the deny API
+      cy.wait("@denyPrivacyRequest")
+        .its("request.body.request_ids")
+        .should("have.length", 1);
+    });
   });
 
   describe("Bulk actions", () => {
