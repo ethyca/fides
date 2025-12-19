@@ -18,6 +18,8 @@ describe("New Privacy Requests", () => {
     cy.intercept("POST", "/api/v1/privacy-request/search*", {
       fixture: "privacy-requests/list.json",
     }).as("getPrivacyRequests");
+
+    cy.overrideFeatureFlag("privacyRequestV2", true);
   });
 
   describe("The requests dashboard", () => {
