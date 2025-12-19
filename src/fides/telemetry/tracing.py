@@ -107,9 +107,8 @@ def setup_tracing(config: FidesConfig) -> Optional[TracerProvider]:
         resource = Resource(attributes={SERVICE_NAME: config.tracing.service_name})
 
         # Create sampler based on sample rate
-        #sampler = ParentBasedTraceIdRatio(config.tracing.sample_rate)
-        from opentelemetry.sdk.trace.sampling import ParentBased, ALWAYS_ON
-        sampler = ParentBased(root=ALWAYS_ON)
+        sampler = ParentBasedTraceIdRatio(config.tracing.sample_rate)
+
 
 
         # Create tracer provider
