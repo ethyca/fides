@@ -15,6 +15,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      tempo:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      memcached:
+        condition: service_started
+      grafana:
+        condition: service_started
     expose:
       - 8080
     env_file:
@@ -35,6 +43,10 @@ services:
       FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY: ${FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY-}
       SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${SAAS_OP_SERVICE_ACCOUNT_TOKEN-}
       SAAS_SECRETS_OP_VAULT_ID: ${SAAS_SECRETS_OP_VAULT_ID-}
+      FIDES__TRACING__OTLP_ENDPOINT: "http://tempo:4317"
+      FIDES__TRACING__OTLP_PROTOCOL: "grpc"
+      FIDES__TRACING__ENABLED: "true"
+
     volumes:
       - type: bind
         source: .
@@ -314,6 +326,9 @@ services:
         condition: service_healthy
       fides-2:
         condition: service_healthy
+
+include:
+  - path: ./docker/telemetry/docker-compose.yml
 
 volumes:
   postgres: null
