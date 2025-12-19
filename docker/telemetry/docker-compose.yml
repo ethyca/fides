@@ -47,7 +47,7 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor metricsSummary
       - GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-exploretraces-app/grafana-exploretraces-app-latest.zip;grafana-traces-app
     ports:
-      - "3000:3000"
+      - "3010:3000"
  
 volumes:
   tempo-data:
