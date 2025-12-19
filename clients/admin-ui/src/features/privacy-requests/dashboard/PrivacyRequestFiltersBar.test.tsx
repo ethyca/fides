@@ -36,7 +36,13 @@ jest.mock(
     new Proxy(jest.requireActual("fidesui"), {
       get(target, prop) {
         if (prop === "AntSelect") {
-          return function ({ value, onChange, mode, options, ...props }: any) {
+          const MockAntSelect = ({
+            value,
+            onChange,
+            mode,
+            options,
+            ...props
+          }: any) => {
             const isMultiple = mode === "multiple";
             return (
               <select
@@ -65,6 +71,8 @@ jest.mock(
               </select>
             );
           };
+          MockAntSelect.displayName = "MockAntSelect";
+          return MockAntSelect;
         }
         return target[prop as keyof typeof target];
       },
