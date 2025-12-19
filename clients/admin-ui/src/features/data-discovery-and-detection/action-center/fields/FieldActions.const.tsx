@@ -75,7 +75,12 @@ export const DROPDOWN_ACTIONS = [
   PROMOTE_REMOVALS,
 ] as const;
 
-export const RESOURCE_ACTIONS = [PROMOTE_REMOVALS, CLASSIFY] as const;
+export const RESOURCE_ACTIONS = [
+  PROMOTE_REMOVALS,
+  CLASSIFY,
+  MUTE,
+  UN_MUTE,
+] as const;
 
 export const DEFAULT_LIST_ITEM_ACTIONS = [CLASSIFY, PROMOTE] as const;
 
