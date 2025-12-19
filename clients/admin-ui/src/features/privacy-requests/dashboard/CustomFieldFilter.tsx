@@ -1,4 +1,4 @@
-import { AntSelect as Select, DebouncedInput } from "fidesui";
+import { AntSelect as Select, AntInput as Input } from "fidesui";
 
 import type { CustomFieldDefinition as GeneratedCustomFieldDefinition } from "~/types/api/models/CustomFieldDefinition";
 
@@ -68,7 +68,8 @@ export const CustomFieldFilter = ({
 
   // Default to text input for text or undefined fieldType
   return (
-    <DebouncedInput
+    <Input
+      debounce
       placeholder={label}
       value={value || ""}
       onChange={(e) => onChange(e.target.value || null)}
