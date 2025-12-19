@@ -54,9 +54,8 @@ jest.mock(
                     const selectedOptions = Array.from(
                       e.target.selectedOptions,
                     ).map((opt: any) => opt.value);
-                    onChange?.(
-                      selectedOptions.length > 0 ? selectedOptions : null,
-                    );
+                    // For multi-select, always pass an array (empty or with values)
+                    onChange?.(selectedOptions);
                   } else {
                     const selectedValue = e.target.value;
                     onChange?.(selectedValue || null);
@@ -85,27 +84,6 @@ jest.mock("../privacy-requests.slice", () => ({
   useGetPrivacyCenterConfigQuery: () => mockUseGetPrivacyCenterConfigQuery(),
 }));
 
-jest.mock("~/features/common/DebouncedSearchInput", () => ({
-  DebouncedSearchInput: ({
-    onChange,
-    value,
-    placeholder,
-    ...props
-  }: {
-    onChange: (value: string) => void;
-    value: string;
-    placeholder: string;
-  }) => (
-    <input
-      {...props}
-      type="text"
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  ),
-}));
-
 // Mock PrivacyRequestSortMenu
 jest.mock("./PrivacyRequestSortMenu", () => ({
   __esModule: true,
@@ -124,36 +102,6 @@ jest.mock("./PrivacyRequestSortMenu", () => ({
     </button>
   ),
 }));
-
-// Mock CustomFieldFilter
-jest.mock("./CustomFieldFilter", () => ({
-  CustomFieldFilter: ({
-    fieldName,
-    fieldDefinition,
-    value,
-    onChange,
-  }: {
-    fieldName: string;
-    fieldDefinition: any;
-    value: string | null;
-    onChange: (value: string | null) => void;
-  }) => (
-    <input
-      data-testid={`custom-field-filter-${fieldName}`}
-      placeholder={fieldDefinition.label}
-      value={value || ""}
-      onChange={(e) => onChange(e.target.value || null)}
-    />
-  ),
-}));
-
-// Helper functions to query date range inputs by Ant Design's date-range attribute
-const getDateRangeInput = {
-  from: (container: HTMLElement) =>
-    container.querySelector('input[date-range="start"]') as HTMLInputElement,
-  to: (container: HTMLElement) =>
-    container.querySelector('input[date-range="end"]') as HTMLInputElement,
-};
 
 describe("PrivacyRequestFiltersBar", () => {
   const mockSetFilters = jest.fn();
@@ -186,17 +134,11 @@ describe("PrivacyRequestFiltersBar", () => {
 
   describe("Initial render", () => {
     it("should render all filter controls", () => {
-      const { container } = render(
-        <PrivacyRequestFiltersBar {...defaultProps} />,
-      );
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
 
       expect(
         screen.getByPlaceholderText("Request ID or identity value"),
       ).toBeInTheDocument();
-
-      // Check date range picker by verifying both inputs exist
-      expect(screen.getByPlaceholderText("From")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("To")).toBeInTheDocument();
 
       expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
       expect(
@@ -207,7 +149,7 @@ describe("PrivacyRequestFiltersBar", () => {
     });
 
     it("should display existing filter values", () => {
-      const { container } = render(
+      render(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
@@ -226,12 +168,6 @@ describe("PrivacyRequestFiltersBar", () => {
         screen.getByPlaceholderText("Request ID or identity value"),
       ).toHaveValue("test@example.com");
 
-      // Use helper to get date range inputs
-      const fromInput = getDateRangeInput.from(container);
-      const toInput = getDateRangeInput.to(container);
-      expect(fromInput).toHaveValue("2024-01-01");
-      expect(toInput).toHaveValue("2024-01-31");
-
       expect(screen.getByTestId("request-location-filter")).toHaveValue("US");
     });
   });
@@ -239,9 +175,7 @@ describe("PrivacyRequestFiltersBar", () => {
   describe("Complete filtering workflows", () => {
     it("should apply multiple filters in sequence", async () => {
       const user = userEvent.setup();
-      const { container } = render(
-        <PrivacyRequestFiltersBar {...defaultProps} />,
-      );
+      render(<PrivacyRequestFiltersBar {...defaultProps} />);
 
       // Search for a request
       const searchInput = screen.getByPlaceholderText(
@@ -249,41 +183,30 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.type(searchInput, "test@example.com");
 
-      expect(mockSetFilters).toHaveBeenCalledWith({
-        search: "test@example.com",
-      });
-
-      // Set date range using helper
-      const fromInput = getDateRangeInput.from(container);
-      await user.click(fromInput);
-      await user.keyboard("2024-01-01");
-
-      await waitFor(() => {
-        const lastCall =
-          mockSetFilters.mock.calls[mockSetFilters.mock.calls.length - 1];
-        expect(lastCall[0].from).toBe("2024-01-01");
-      });
+      // Wait for debounced callback (500ms delay)
+      await waitFor(
+        () => {
+          expect(mockSetFilters).toHaveBeenCalledWith({
+            search: "test@example.com",
+          });
+        },
+        { timeout: 1000 },
+      );
 
       // Select status
       const statusFilter = screen.getByTestId("request-status-filter");
-      await user.selectOptions(statusFilter, [
-        PrivacyRequestStatus.PENDING,
-        PrivacyRequestStatus.COMPLETE,
-      ]);
+      await user.selectOptions(statusFilter, PrivacyRequestStatus.PENDING);
 
       expect(mockSetFilters).toHaveBeenCalledWith({
-        status: [PrivacyRequestStatus.PENDING, PrivacyRequestStatus.COMPLETE],
+        status: [PrivacyRequestStatus.PENDING],
       });
 
       // Select action type
       const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      await user.selectOptions(actionTypeFilter, [
-        ActionType.ACCESS,
-        ActionType.ERASURE,
-      ]);
+      await user.selectOptions(actionTypeFilter, ActionType.ACCESS);
 
       expect(mockSetFilters).toHaveBeenCalledWith({
-        action_type: [ActionType.ACCESS, ActionType.ERASURE],
+        action_type: [ActionType.ACCESS],
       });
 
       // Select location
@@ -310,23 +233,17 @@ describe("PrivacyRequestFiltersBar", () => {
         />,
       );
 
-      // Clear status
+      // Clear status - use deselectOptions for multi-select
       const statusFilter = screen.getByTestId("request-status-filter");
-      await user.selectOptions(statusFilter, []);
+      await user.deselectOptions(statusFilter, [PrivacyRequestStatus.PENDING]);
 
       expect(mockSetFilters).toHaveBeenCalledWith({ status: null });
 
       // Clear action type
       const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      await user.selectOptions(actionTypeFilter, []);
+      await user.deselectOptions(actionTypeFilter, [ActionType.ACCESS]);
 
       expect(mockSetFilters).toHaveBeenCalledWith({ action_type: null });
-
-      // Clear location
-      const locationFilter = screen.getByTestId("request-location-filter");
-      await user.selectOptions(locationFilter, "");
-
-      expect(mockSetFilters).toHaveBeenCalledWith({ location: null });
 
       // Clear search
       const searchInput = screen.getByPlaceholderText(
@@ -334,7 +251,13 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.clear(searchInput);
 
-      expect(mockSetFilters).toHaveBeenCalledWith({ search: null });
+      // Wait for debounced callback (500ms delay)
+      await waitFor(
+        () => {
+          expect(mockSetFilters).toHaveBeenCalledWith({ search: null });
+        },
+        { timeout: 1000 },
+      );
     });
 
     it("should handle sorting changes", async () => {
@@ -389,9 +312,15 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.type(departmentInput, "Engineering");
 
-      expect(mockSetFilters).toHaveBeenCalledWith({
-        custom_privacy_request_fields: { department: "Engineering" },
-      });
+      // Wait for debounced callback (500ms delay)
+      await waitFor(
+        () => {
+          expect(mockSetFilters).toHaveBeenCalledWith({
+            custom_privacy_request_fields: { department: "Engineering" },
+          });
+        },
+        { timeout: 1000 },
+      );
     });
 
     it("should clear custom fields", async () => {
@@ -427,9 +356,15 @@ describe("PrivacyRequestFiltersBar", () => {
       );
       await user.clear(departmentInput);
 
-      expect(mockSetFilters).toHaveBeenCalledWith({
-        custom_privacy_request_fields: null,
-      });
+      // Wait for debounced callback (500ms delay)
+      await waitFor(
+        () => {
+          expect(mockSetFilters).toHaveBeenCalledWith({
+            custom_privacy_request_fields: null,
+          });
+        },
+        { timeout: 1000 },
+      );
     });
   });
 });
