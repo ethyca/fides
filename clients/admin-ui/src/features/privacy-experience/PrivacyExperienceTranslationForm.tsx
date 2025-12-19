@@ -304,6 +304,51 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
         />
       )}
+      {formConfig.gpc_label?.included && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.gpc_label`}
+          id={`translations.${translationIndex}.gpc_label`}
+          label="GPC label (optional)"
+          tooltip="The label shown next to the GPC badge (e.g. 'Global Privacy Control')"
+          variant="stacked"
+        />
+      )}
+      {formConfig.gpc_title?.included && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.gpc_title`}
+          id={`translations.${translationIndex}.gpc_title`}
+          label="GPC title (optional)"
+          tooltip="Title shown in the GPC info section (e.g. 'Global Privacy Control detected')"
+          variant="stacked"
+        />
+      )}
+      {formConfig.gpc_description?.included && (
+        <CustomTextArea
+          name={`translations.${translationIndex}.gpc_description`}
+          id={`translations.${translationIndex}.gpc_description`}
+          label="GPC description (optional)"
+          tooltip="Description shown when GPC preference is honored"
+          variant="stacked"
+        />
+      )}
+      {formConfig.gpc_status_applied_label?.included && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.gpc_status_applied_label`}
+          id={`translations.${translationIndex}.gpc_status_applied_label`}
+          label="GPC 'Applied' status label (optional)"
+          tooltip="Text shown when GPC is applied (e.g. 'Applied')"
+          variant="stacked"
+        />
+      )}
+      {formConfig.gpc_status_overridden_label?.included && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.gpc_status_overridden_label`}
+          id={`translations.${translationIndex}.gpc_status_overridden_label`}
+          label="GPC 'Overridden' status label (optional)"
+          tooltip="Text shown when GPC is overridden (e.g. 'Overridden')"
+          variant="stacked"
+        />
+      )}
     </PrivacyExperienceConfigColumnLayout>
   );
 };

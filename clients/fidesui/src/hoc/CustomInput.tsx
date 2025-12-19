@@ -67,7 +67,7 @@ const withCustomProps = (WrappedComponent: typeof Input) => {
       // Cleanup on unmount
       useEffect(() => {
         return () => debouncedOnChange?.cancel();
-      }, [debouncedOnChange]);
+      }, []);
 
       // Determine which value and handler to use based on debounce
       const inputValue = debounceDelay ? internalValue : value;
