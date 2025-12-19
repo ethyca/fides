@@ -87,76 +87,22 @@ jest.mock("../../RequestTableActions", () => ({
   ),
 }));
 
-// Mock fidesui - keep most functionality but make it testable
-jest.mock("fidesui", () => ({
-  AntFlex: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  AntList: {
-    Item: ({ children }: any) => (
-      <div role="listitem" data-testid="list-item">
-        {children}
-      </div>
-    ),
-  },
-  AntText: ({ children, type, ellipsis, ...props }: any) => (
-    <span data-type={type} {...props}>
-      {children}
-    </span>
-  ),
-  AntTag: ({ children, color, bordered, ...props }: any) => (
-    <span data-color={color} data-bordered={bordered} {...props}>
-      {children}
-    </span>
-  ),
-  AntTooltip: ({ children, title }: any) => (
-    <span data-tooltip={title}>{children}</span>
-  ),
-  AntTypography: {
-    Title: ({ children, level, ...props }: any) => (
-      <div data-level={level} {...props}>
-        {children}
-      </div>
-    ),
-    Text: ({ children, type, ...props }: any) => (
-      <span data-type={type} {...props}>
-        {children}
-      </span>
-    ),
-    Link: ({ children, href, onClick, ...props }: any) => (
-      <a href={href} onClick={onClick} {...props}>
-        {children}
-      </a>
-    ),
-  },
-  CUSTOM_TAG_COLOR: {
-    DEFAULT: "default",
-    SUCCESS: "success",
-    ERROR: "error",
-    WARNING: "warning",
-  },
-  formatIsoLocation: ({ isoEntry }: any) =>
-    `${isoEntry.country} - ${isoEntry.region}`,
-  isoStringToEntry: (str: string) => {
-    const parts = str.split("-");
-    if (parts.length === 2) {
-      return { country: parts[0], region: parts[1] };
-    }
-    throw new Error("Invalid ISO string");
-  },
-  // Keep CopyTooltip functional for keyboard testing
-  CopyTooltip: ({ children, contentToCopy, copyText }: any) => (
-    <button
-      type="button"
-      data-testid="copy-button"
-      data-copy-value={contentToCopy}
-      aria-label={copyText}
-      onClick={() => {
-        navigator.clipboard.writeText(contentToCopy);
-      }}
-    >
-      {children}
-    </button>
-  ),
-}));
+// Mock only the utility functions from fidesui
+jest.mock("fidesui", () => {
+  const actual = jest.requireActual("fidesui");
+  return {
+    ...actual,
+    formatIsoLocation: ({ isoEntry }: any) =>
+      `${isoEntry.country} - ${isoEntry.region}`,
+    isoStringToEntry: (str: string) => {
+      const parts = str.split("-");
+      if (parts.length === 2) {
+        return { country: parts[0], region: parts[1] };
+      }
+      throw new Error("Invalid ISO string");
+    },
+  };
+});
 
 describe("ListItem", () => {
   const baseRequest = createMockRequest();
