@@ -16,6 +16,61 @@ jest.mock("nuqs", () => ({
   })),
 }));
 
+// Mock iso-3166 which is ESM-only and causes issues in Jest
+jest.mock("iso-3166", () => ({
+  iso31661: [
+    { alpha2: "US", name: "United States" },
+    { alpha2: "CA", name: "Canada" },
+    { alpha2: "GB", name: "United Kingdom" },
+  ],
+  iso31662: [
+    { code: "US-CA", name: "California", parent: "US" },
+    { code: "US-NY", name: "New York", parent: "US" },
+  ],
+}));
+
+// Mock only AntSelect to make it testable with native select interactions
+jest.mock(
+  "fidesui",
+  () =>
+    new Proxy(jest.requireActual("fidesui"), {
+      get(target, prop) {
+        if (prop === "AntSelect") {
+          return function ({ value, onChange, mode, options, ...props }: any) {
+            const isMultiple = mode === "multiple";
+            return (
+              <select
+                {...props}
+                multiple={isMultiple}
+                value={isMultiple ? value || [] : value || ""}
+                onChange={(e) => {
+                  if (isMultiple) {
+                    const selectedOptions = Array.from(
+                      e.target.selectedOptions,
+                    ).map((opt: any) => opt.value);
+                    onChange?.(
+                      selectedOptions.length > 0 ? selectedOptions : null,
+                    );
+                  } else {
+                    const selectedValue = e.target.value;
+                    onChange?.(selectedValue || null);
+                  }
+                }}
+              >
+                {options?.map((opt: any) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            );
+          };
+        }
+        return target[prop as keyof typeof target];
+      },
+    }),
+);
+
 // Mock the privacy center config query
 const mockUseGetPrivacyCenterConfigQuery = jest.fn();
 jest.mock("../privacy-requests.slice", () => ({
