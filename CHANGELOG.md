@@ -43,6 +43,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
 - Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086)
 - Added reusable animation components to FidesUI [#7125](https://github.com/ethyca/fides/pull/7125)
+- Added test coverage for new request manager page [#7164](https://github.com/ethyca/fides/pull/7164)
+
 
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
