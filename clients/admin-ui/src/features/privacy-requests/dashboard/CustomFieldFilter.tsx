@@ -1,4 +1,4 @@
-import { AntSelect as Select, AntInput as Input } from "fidesui";
+import { AntInput as Input, AntSelect as Select } from "fidesui";
 
 import type { CustomFieldDefinition as GeneratedCustomFieldDefinition } from "~/types/api/models/CustomFieldDefinition";
 
