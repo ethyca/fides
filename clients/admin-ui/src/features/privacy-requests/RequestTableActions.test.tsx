@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import React from "react";
 
 import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
@@ -10,7 +11,7 @@ const mockHandleApproveRequest = jest.fn();
 const mockHandleDenyRequest = jest.fn();
 const mockHandleDeleteRequest = jest.fn();
 const mockHandleFinalizeRequest = jest.fn();
-const mockIsLoading = jest.fn(() => false);
+let mockIsLoading = false;
 
 jest.mock("./hooks/useMutations", () => ({
   useMutations: () => ({
@@ -18,7 +19,9 @@ jest.mock("./hooks/useMutations", () => ({
     handleDenyRequest: mockHandleDenyRequest,
     handleDeleteRequest: mockHandleDeleteRequest,
     handleFinalizeRequest: mockHandleFinalizeRequest,
-    isLoading: mockIsLoading(),
+    get isLoading() {
+      return mockIsLoading;
+    },
   }),
 }));
 
@@ -42,41 +45,53 @@ jest.mock("~/features/common/Restrict", () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock("fidesui", () => ({
-  AntButton: ({
-    children,
-    onClick,
-    loading,
-    disabled,
-    icon,
-    ...props
-  }: any) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-busy={loading ? "true" : undefined}
-      {...props}
-    >
-      {icon}
-      {children}
-    </button>
-  ),
-  HStack: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  Icons: {
-    Checkmark: () => <span>✓</span>,
-    Close: () => <span>✕</span>,
-    Stamp: () => <span>🔖</span>,
-    TrashCan: ({ size }: any) => <span data-size={size}>🗑</span>,
-  },
-  Portal: ({ children }: any) => <div>{children}</div>,
-  Text: ({ children }: any) => <span>{children}</span>,
-  useDisclosure: jest.fn(() => ({
-    isOpen: false,
-    onOpen: jest.fn(),
-    onClose: jest.fn(),
-  })),
-}));
+// Mock fidesui components for testing
+jest.mock("fidesui", () => {
+  // We need to import React inside the factory
+  const react = require("react");
+
+  return {
+    AntButton: ({
+      children,
+      onClick,
+      loading,
+      disabled,
+      icon,
+      ...props
+    }: any) => (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-busy={loading ? "true" : undefined}
+        {...props}
+      >
+        {icon}
+        {children}
+      </button>
+    ),
+    HStack: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    Icons: {
+      Checkmark: () => <span>✓</span>,
+      Close: () => <span>✕</span>,
+      Stamp: () => <span>🔖</span>,
+      TrashCan: ({ size }: any) => <span data-size={size}>🗑</span>,
+    },
+    Portal: ({ children }: any) => <div>{children}</div>,
+    Text: ({ children }: any) => <span>{children}</span>,
+    useDisclosure: () => {
+      const [isOpen, setIsOpen] = react.useState(false);
+
+      return {
+        isOpen,
+        onOpen: () => setIsOpen(true),
+        onClose: () => setIsOpen(false),
+      };
+    },
+  };
+});
+
+// Note: fidesui is mocked globally in jest.setup.ts
 
 // Mock modal components but make them testable
 jest.mock("./ApprovePrivacyRequestModal", () => ({
@@ -157,6 +172,7 @@ describe("RequestTableActions", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsLoading = false; // Reset loading state before each test
     mockUseGetConfigurationSettingsQuery.mockReturnValue({
       data: {
         notifications: {
@@ -343,7 +359,7 @@ describe("RequestTableActions", () => {
 
   describe("Loading states", () => {
     beforeEach(() => {
-      mockIsLoading.mockReturnValue(true);
+      mockIsLoading = true;
     });
 
     it("should disable buttons when loading", () => {
