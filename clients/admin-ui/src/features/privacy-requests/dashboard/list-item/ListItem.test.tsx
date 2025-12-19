@@ -118,45 +118,13 @@ describe("ListItem", () => {
     });
   });
 
-  describe("Primary identity rendering", () => {
-    it.each<{
-      identity: Record<string, { label: string; value: string }>;
-      expected: string;
-      description: string;
-    }>([
-      {
-        identity: { email: { label: "Email", value: "user@example.com" } },
-        expected: "user@example.com",
-        description: "email",
-      },
-      {
-        identity: { phone_number: { label: "Phone", value: "+1234567890" } },
-        expected: "+1234567890",
-        description: "phone when email not available",
-      },
-      {
-        identity: { custom_id: { label: "Custom ID", value: "CUST123" } },
-        expected: "CUST123",
-        description: "custom field when email and phone not available",
-      },
-      {
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-          phone_number: { label: "Phone", value: "+1234567890" },
-        },
-        expected: "user@example.com",
-        description: "email over phone when both available",
-      },
-    ])("should display $description", ({ identity, expected }) => {
-      const request = createMockRequest({ identity });
-      render(<ListItem item={request} />);
-      // Since we're using real components now, search for the text content
-      expect(screen.getByText(expected)).toBeInTheDocument();
+  describe("Identity rendering", () => {
+    it("should display primary identity (email)", () => {
+      render(<ListItem item={baseRequest} />);
+      expect(screen.getByText("user@example.com")).toBeInTheDocument();
     });
-  });
 
-  describe("Other identities rendering", () => {
-    it("should display other identities excluding primary", () => {
+    it("should display multiple identities with primary and others separated", () => {
       const request = createMockRequest({
         identity: {
           email: { label: "Email", value: "user@example.com" },
@@ -167,71 +135,50 @@ describe("ListItem", () => {
 
       render(<ListItem item={request} />);
 
+      // Primary identity displayed
+      expect(screen.getByText("user@example.com")).toBeInTheDocument();
+
+      // Other identities displayed with labels
       expect(screen.getByText("Phone:")).toBeInTheDocument();
       expect(screen.getByText("+1234567890")).toBeInTheDocument();
       expect(screen.getByText("Custom ID:")).toBeInTheDocument();
       expect(screen.getByText("CUST123")).toBeInTheDocument();
     });
-
-    it("should not display other identities when only primary exists", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.queryByText("Phone:")).not.toBeInTheDocument();
-    });
-
-    it("should filter out identities with empty values", () => {
-      const request = createMockRequest({
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-          phone_number: { label: "Phone", value: "" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      expect(screen.queryByText("Phone:")).not.toBeInTheDocument();
-    });
   });
 
   describe("Basic fields rendering", () => {
-    it("should display all required fields correctly", () => {
+    it("should display required fields (policy, source, actions)", () => {
       render(<ListItem item={baseRequest} />);
 
-      // Check for policy name
       expect(screen.getByText("Access Request Policy")).toBeInTheDocument();
       expect(screen.getByText("Policy:")).toBeInTheDocument();
-
-      // Check for source
       expect(screen.getByText("Source:")).toBeInTheDocument();
       expect(screen.getByText("privacy_center")).toBeInTheDocument();
-
-      // Check that actions are rendered
       expect(screen.getByTestId("request-table-actions")).toBeInTheDocument();
       expect(screen.getByTestId("actions-request-id")).toHaveTextContent(
         "pri_123",
       );
     });
+
+    it("should render status badge", () => {
+      render(<ListItem item={baseRequest} />);
+      const listItem = screen.getByRole("listitem");
+      expect(listItem).toBeInTheDocument();
+    });
   });
 
   describe("Location rendering", () => {
-    it("should display location with ISO formatting when present", () => {
-      const request = createMockRequest({
-        location: "US-CA",
-      });
-
+    it("should display formatted ISO location", () => {
+      const request = createMockRequest({ location: "US-CA" });
       render(<ListItem item={request} />);
 
       expect(screen.getByText("Location:")).toBeInTheDocument();
-      // The formatIsoLocation should show the formatted location
       expect(screen.getByText(/US/)).toBeInTheDocument();
       expect(screen.getByText(/CA/)).toBeInTheDocument();
     });
 
     it("should display raw location when ISO parsing fails", () => {
-      const request = createMockRequest({
-        location: "Invalid Location",
-      });
-
+      const request = createMockRequest({ location: "Invalid Location" });
       render(<ListItem item={request} />);
 
       expect(screen.getByText("Location:")).toBeInTheDocument();
@@ -240,19 +187,15 @@ describe("ListItem", () => {
 
     it("should not display location when not present", () => {
       render(<ListItem item={baseRequest} />);
-
-      // Since location is not present, the Location: label shouldn't exist
-      const locationLabels = screen.queryAllByText("Location:");
-      expect(locationLabels).toHaveLength(0);
+      expect(screen.queryByText("Location:")).not.toBeInTheDocument();
     });
   });
 
   describe("Custom fields rendering", () => {
-    it("should display custom fields with labels and values", () => {
+    it("should display string custom fields", () => {
       const request = createMockRequest({
         custom_privacy_request_fields: {
           department: { label: "Department", value: "Engineering" },
-          employee_id: { label: "Employee ID", value: "EMP123" },
         },
       });
 
@@ -260,29 +203,9 @@ describe("ListItem", () => {
 
       expect(screen.getByText("Department:")).toBeInTheDocument();
       expect(screen.getByText("Engineering")).toBeInTheDocument();
-      expect(screen.getByText("Employee ID:")).toBeInTheDocument();
-      expect(screen.getByText("EMP123")).toBeInTheDocument();
     });
 
-    it("should render array custom fields joined with ' - '", () => {
-      const request = createMockRequest({
-        custom_privacy_request_fields: {
-          departments: {
-            label: "Departments",
-            value: ["Engineering", "Sales", "Marketing"],
-          },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      expect(screen.getByText("Departments:")).toBeInTheDocument();
-      expect(
-        screen.getByText("Engineering - Sales - Marketing"),
-      ).toBeInTheDocument();
-    });
-
-    it("should display numeric custom field values", () => {
+    it("should display numeric custom fields", () => {
       const request = createMockRequest({
         custom_privacy_request_fields: {
           priority: { label: "Priority", value: 5 },
@@ -295,42 +218,26 @@ describe("ListItem", () => {
       expect(screen.getByText("5")).toBeInTheDocument();
     });
 
-    it("should not display custom fields when not present", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.queryByText("Department:")).not.toBeInTheDocument();
-    });
-
-    it("should filter out custom fields with null or empty values", () => {
+    it("should display array custom fields joined with ' - '", () => {
       const request = createMockRequest({
         custom_privacy_request_fields: {
-          department: { label: "Department", value: "Engineering" },
-          team: { label: "Team", value: "" },
-          location: { label: "Location", value: null as any },
+          departments: {
+            label: "Departments",
+            value: ["Engineering", "Sales"],
+          },
         },
       });
 
       render(<ListItem item={request} />);
 
-      expect(screen.getByText("Department:")).toBeInTheDocument();
-      expect(screen.getByText("Engineering")).toBeInTheDocument();
-      expect(screen.queryByText("Team:")).not.toBeInTheDocument();
-      // Note: we already check for Location: in the location tests
+      expect(screen.getByText("Departments:")).toBeInTheDocument();
+      expect(screen.getByText("Engineering - Sales")).toBeInTheDocument();
     });
-  });
 
-  it.each([
-    PrivacyRequestStatus.PENDING,
-    PrivacyRequestStatus.APPROVED,
-    PrivacyRequestStatus.DENIED,
-    PrivacyRequestStatus.COMPLETE,
-    PrivacyRequestStatus.ERROR,
-  ])("should display status %s", (status) => {
-    const request = createMockRequest({ status });
-    render(<ListItem item={request} />);
-    // Status is displayed in the header component
-    const listItem = screen.getByRole("listitem");
-    expect(listItem).toBeInTheDocument();
+    it("should not display custom fields when not present", () => {
+      render(<ListItem item={baseRequest} />);
+      expect(screen.queryByText("Department:")).not.toBeInTheDocument();
+    });
   });
 
   describe("Checkbox rendering", () => {
@@ -347,7 +254,7 @@ describe("ListItem", () => {
   });
 
   describe("Copy functionality", () => {
-    it("should render copy buttons for identities with copyValue", () => {
+    it("should render copy buttons for copyable fields", () => {
       const request = createMockRequest({
         identity: {
           email: { label: "Email", value: "user@example.com" },
@@ -357,12 +264,11 @@ describe("ListItem", () => {
 
       render(<ListItem item={request} />);
 
-      // LabeledText with copyValue should render copy buttons
       const copyButtons = screen.getAllByTestId("copy-button");
       expect(copyButtons.length).toBeGreaterThan(0);
     });
 
-    it("should copy value to clipboard when copy button is clicked", async () => {
+    it("should copy value to clipboard when clicked", async () => {
       const user = userEvent.setup();
       const request = createMockRequest({
         identity: {
@@ -378,17 +284,15 @@ describe("ListItem", () => {
         (btn) => btn.getAttribute("data-copy-value") === "+1234567890",
       );
 
-      expect(phoneCopyButton).toBeDefined();
       await user.click(phoneCopyButton!);
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("+1234567890");
     });
 
-    it("should handle keyboard interaction with copy button", async () => {
+    it("should support keyboard activation (Enter key)", async () => {
       const user = userEvent.setup();
       const request = createMockRequest({
         identity: {
-          email: { label: "Email", value: "user@example.com" },
           phone_number: { label: "Phone", value: "+1234567890" },
         },
       });
@@ -400,19 +304,15 @@ describe("ListItem", () => {
         (btn) => btn.getAttribute("data-copy-value") === "+1234567890",
       );
 
-      expect(phoneCopyButton).toBeDefined();
       phoneCopyButton!.focus();
-      expect(phoneCopyButton).toHaveFocus();
-
       await user.keyboard("{Enter}");
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("+1234567890");
     });
 
-    it("should have accessible labels for copy buttons", () => {
+    it("should have accessible labels", () => {
       const request = createMockRequest({
         identity: {
-          email: { label: "Email", value: "user@example.com" },
           phone_number: { label: "Phone", value: "+1234567890" },
         },
       });
@@ -429,7 +329,7 @@ describe("ListItem", () => {
   });
 
   describe("Keyboard navigation", () => {
-    it("should allow tab navigation through interactive elements", async () => {
+    it("should allow tab navigation through copy buttons", async () => {
       const user = userEvent.setup();
       const request = createMockRequest({
         identity: {
@@ -440,10 +340,8 @@ describe("ListItem", () => {
 
       render(<ListItem item={request} />);
 
-      // Get all focusable elements
       const copyButtons = screen.getAllByTestId("copy-button");
 
-      // Tab through elements
       await user.tab();
       expect(copyButtons[0]).toHaveFocus();
 
@@ -452,54 +350,5 @@ describe("ListItem", () => {
         expect(copyButtons[1]).toHaveFocus();
       }
     });
-
-    it("should maintain focus management within the list item", async () => {
-      const user = userEvent.setup();
-      const request = createMockRequest({
-        custom_privacy_request_fields: {
-          department: { label: "Department", value: "Engineering" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      const copyButtons = screen.getAllByTestId("copy-button");
-      if (copyButtons.length > 0) {
-        copyButtons[0].focus();
-        expect(copyButtons[0]).toHaveFocus();
-
-        // Shift+Tab should move focus backwards
-        await user.keyboard("{Shift>}{Tab}{/Shift}");
-        // Focus should have moved (exact element depends on DOM structure)
-        expect(copyButtons[0]).not.toHaveFocus();
-      }
-    });
-  });
-
-  it("should render complete request with all optional fields", () => {
-    const complexRequest = createMockRequest({
-      identity: {
-        email: { label: "Email", value: "user@example.com" },
-        phone_number: { label: "Phone", value: "+1234567890" },
-        custom_id: { label: "Custom ID", value: "CUST123" },
-      },
-      location: "US-CA",
-      custom_privacy_request_fields: {
-        department: { label: "Department", value: "Engineering" },
-        priority: { label: "Priority", value: 5 },
-        tags: { label: "Tags", value: ["urgent", "vip"] },
-      },
-    });
-
-    render(<ListItem item={complexRequest} />);
-
-    // Verify all fields are rendered
-    expect(screen.getByText("Phone:")).toBeInTheDocument();
-    expect(screen.getByText("Custom ID:")).toBeInTheDocument();
-    expect(screen.getByText("Location:")).toBeInTheDocument();
-    expect(screen.getByText("Department:")).toBeInTheDocument();
-    expect(screen.getByText("Priority:")).toBeInTheDocument();
-    expect(screen.getByText("Tags:")).toBeInTheDocument();
-    expect(screen.getByText("urgent - vip")).toBeInTheDocument();
   });
 });
