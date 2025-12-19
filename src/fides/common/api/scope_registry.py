@@ -65,7 +65,6 @@ SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
-MONITOR_STEWARD = "monitor_steward"
 TAXONOMY = "taxonomy"
 TEST = "test"
 TRANSFER = "transfer"
@@ -231,9 +230,6 @@ SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
 SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
 SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
 
-MONITOR_STEWARD_READ = f"{MONITOR_STEWARD}:{READ}"
-MONITOR_STEWARD_UPDATE = f"{MONITOR_STEWARD}:{UPDATE}"
-MONITOR_STEWARD_DELETE = f"{MONITOR_STEWARD}:{DELETE}"
 
 USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
@@ -364,9 +360,6 @@ SCOPE_DOCS = {
     SYSTEM_MANAGER_READ: "Read systems users can manage",
     SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
     SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
-    MONITOR_STEWARD_READ: "Read monitors users can steward",
-    MONITOR_STEWARD_UPDATE: "Update monitors user can steward",
-    MONITOR_STEWARD_DELETE: "Delete monitors user can steward",
     USER_CREATE: "Create users",
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",
