@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added handling for "page-level" errors [#7144](https://github.com/ethyca/fides/pull/7144)
 - Added gzip compression option for larger consent cookies [#7142](https://github.com/ethyca/fides/pull/7142)
 - Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
+- Added DB models for monitor stewards [#7131](https://github.com/ethyca/fides/pull/7131)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
