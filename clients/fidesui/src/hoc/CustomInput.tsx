@@ -35,7 +35,7 @@ const DEFAULT_DEBOUNCE_DELAY = 500;
  * ```
  */
 const withCustomProps = (WrappedComponent: typeof Input) => {
-  const WrappedInput = React.forwardRef<any, CustomInputProps>(
+  const WrappedInput = React.forwardRef<InputRef, CustomInputProps>(
     ({ debounce: debounceProp, value, onChange, ...props }, ref) => {
       // Determine the actual delay: true -> 500ms, number -> that number, false/undefined -> 0
       let debounceDelay = 0;
@@ -46,7 +46,7 @@ const withCustomProps = (WrappedComponent: typeof Input) => {
       }
 
       // Only use internal state when debouncing
-      const [internalValue, setInternalValue] = useState(value);
+      const [internalValue, setInternalValue] = useState(value ?? "");
 
       // Create debounced handler only when debounce is enabled
       const debouncedOnChange = useMemo(
@@ -60,7 +60,7 @@ const withCustomProps = (WrappedComponent: typeof Input) => {
       // Sync internal state with external value when debouncing
       useEffect(() => {
         if (debounceDelay) {
-          setInternalValue(value);
+          setInternalValue(value ?? "");
         }
       }, [value, debounceDelay]);
 
