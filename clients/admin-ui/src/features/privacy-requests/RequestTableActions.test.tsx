@@ -203,45 +203,39 @@ describe("RequestTableActions", () => {
   describe.each(actionVisibilityByStatus)(
     "Action visibility for $status",
     ({ status, approve, deny, finalize, delete: deleteBtn }) => {
-      const request = { ...baseRequest, status };
-
-      it(`should ${approve ? "show" : "not show"} approve button`, () => {
+      it("should show/hide all action buttons correctly", () => {
+        const request = { ...baseRequest, status };
         render(<RequestTableActions subjectRequest={request} />);
-        const btn = screen.queryByTestId("privacy-request-approve-btn");
+
+        const buttons = {
+          approve: screen.queryByTestId("privacy-request-approve-btn"),
+          deny: screen.queryByTestId("privacy-request-deny-btn"),
+          finalize: screen.queryByTestId("privacy-request-finalize-btn"),
+          delete: screen.queryByTestId("privacy-request-delete-btn"),
+        };
+
         if (approve) {
-          expect(btn).toBeInTheDocument();
+          expect(buttons.approve).toBeInTheDocument();
         } else {
-          expect(btn).not.toBeInTheDocument();
+          expect(buttons.approve).not.toBeInTheDocument();
         }
-      });
 
-      it(`should ${deny ? "show" : "not show"} deny button`, () => {
-        render(<RequestTableActions subjectRequest={request} />);
-        const btn = screen.queryByTestId("privacy-request-deny-btn");
         if (deny) {
-          expect(btn).toBeInTheDocument();
+          expect(buttons.deny).toBeInTheDocument();
         } else {
-          expect(btn).not.toBeInTheDocument();
+          expect(buttons.deny).not.toBeInTheDocument();
         }
-      });
 
-      it(`should ${finalize ? "show" : "not show"} finalize button`, () => {
-        render(<RequestTableActions subjectRequest={request} />);
-        const btn = screen.queryByTestId("privacy-request-finalize-btn");
         if (finalize) {
-          expect(btn).toBeInTheDocument();
+          expect(buttons.finalize).toBeInTheDocument();
         } else {
-          expect(btn).not.toBeInTheDocument();
+          expect(buttons.finalize).not.toBeInTheDocument();
         }
-      });
 
-      it(`should ${deleteBtn ? "show" : "not show"} delete button`, () => {
-        render(<RequestTableActions subjectRequest={request} />);
-        const btn = screen.queryByTestId("privacy-request-delete-btn");
         if (deleteBtn) {
-          expect(btn).toBeInTheDocument();
+          expect(buttons.delete).toBeInTheDocument();
         } else {
-          expect(btn).not.toBeInTheDocument();
+          expect(buttons.delete).not.toBeInTheDocument();
         }
       });
     },

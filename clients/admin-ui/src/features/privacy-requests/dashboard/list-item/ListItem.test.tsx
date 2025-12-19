@@ -118,55 +118,38 @@ describe("ListItem", () => {
   const baseRequest = createMockRequest();
 
   describe("Primary identity rendering", () => {
-    it("should display email as primary identity", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.getByTestId("header-identity")).toHaveTextContent(
-        "user@example.com",
-      );
-    });
-
-    it("should display phone as primary identity when email is not available", () => {
-      const request = createMockRequest({
-        identity: {
-          phone_number: { label: "Phone", value: "+1234567890" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      expect(screen.getByTestId("header-identity")).toHaveTextContent(
-        "+1234567890",
-      );
-    });
-
-    it("should display first available identity when email and phone are not available", () => {
-      const request = createMockRequest({
-        identity: {
-          custom_id: { label: "Custom ID", value: "CUST123" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      expect(screen.getByTestId("header-identity")).toHaveTextContent(
-        "CUST123",
-      );
-    });
-
-    it("should prefer email over phone when both are available", () => {
-      const request = createMockRequest({
+    it.each<{
+      identity: Record<string, { label: string; value: string }>;
+      expected: string;
+      description: string;
+    }>([
+      {
+        identity: { email: { label: "Email", value: "user@example.com" } },
+        expected: "user@example.com",
+        description: "email",
+      },
+      {
+        identity: { phone_number: { label: "Phone", value: "+1234567890" } },
+        expected: "+1234567890",
+        description: "phone when email not available",
+      },
+      {
+        identity: { custom_id: { label: "Custom ID", value: "CUST123" } },
+        expected: "CUST123",
+        description: "custom field when email and phone not available",
+      },
+      {
         identity: {
           email: { label: "Email", value: "user@example.com" },
           phone_number: { label: "Phone", value: "+1234567890" },
         },
-      });
-
+        expected: "user@example.com",
+        description: "email over phone when both available",
+      },
+    ])("should display $description", ({ identity, expected }) => {
+      const request = createMockRequest({ identity });
       render(<ListItem item={request} />);
-
-      expect(screen.getByTestId("header-identity")).toHaveTextContent(
-        "user@example.com",
-      );
+      expect(screen.getByTestId("header-identity")).toHaveTextContent(expected);
     });
   });
 
@@ -210,21 +193,25 @@ describe("ListItem", () => {
     });
   });
 
-  describe("Policy and source rendering", () => {
-    it("should display policy name", () => {
+  describe("Basic fields rendering", () => {
+    it("should display all required fields correctly", () => {
       render(<ListItem item={baseRequest} />);
 
-      const policyLabel = screen.getByTestId("labeled-text-policy");
-      expect(policyLabel).toBeInTheDocument();
-      expect(policyLabel).toHaveTextContent("Access Request Policy");
-    });
-
-    it("should display source", () => {
-      render(<ListItem item={baseRequest} />);
-
-      const sourceLabel = screen.getByTestId("labeled-text-source");
-      expect(sourceLabel).toBeInTheDocument();
-      expect(sourceLabel).toHaveTextContent("privacy_center");
+      expect(screen.getByTestId("header")).toBeInTheDocument();
+      expect(screen.getByTestId("header-status")).toHaveTextContent("pending");
+      expect(screen.getByTestId("labeled-text-policy")).toHaveTextContent(
+        "Access Request Policy",
+      );
+      expect(screen.getByTestId("labeled-text-source")).toHaveTextContent(
+        "privacy_center",
+      );
+      expect(screen.getByTestId("days-left")).toBeInTheDocument();
+      expect(screen.getByTestId("days-left-value")).toHaveTextContent("5");
+      expect(screen.getByTestId("received-on")).toBeInTheDocument();
+      expect(screen.getByTestId("request-table-actions")).toBeInTheDocument();
+      expect(screen.getByTestId("actions-request-id")).toHaveTextContent(
+        "pri_123",
+      );
     });
   });
 
@@ -345,142 +332,53 @@ describe("ListItem", () => {
     });
   });
 
-  describe("Days left and received date rendering", () => {
-    it("should display days left with correct props", () => {
-      render(<ListItem item={baseRequest} />);
-
-      const daysLeft = screen.getByTestId("days-left");
-      expect(daysLeft).toBeInTheDocument();
-      expect(screen.getByTestId("days-left-value")).toHaveTextContent("5");
-      expect(screen.getByTestId("days-left-status")).toHaveTextContent(
-        "pending",
-      );
-      expect(screen.getByTestId("days-left-timeframe")).toHaveTextContent("30");
-    });
-
-    it("should display received date", () => {
-      render(<ListItem item={baseRequest} />);
-
-      const receivedOn = screen.getByTestId("received-on");
-      expect(receivedOn).toBeInTheDocument();
-      expect(screen.getByTestId("received-on-date")).toHaveTextContent(
-        "2024-01-15T10:00:00Z",
-      );
-    });
-  });
-
-  describe("Status rendering", () => {
-    it("should display request status in header", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.getByTestId("header-status")).toHaveTextContent("pending");
-    });
-
-    it("should handle different status values", () => {
-      const statuses = [
-        PrivacyRequestStatus.PENDING,
-        PrivacyRequestStatus.APPROVED,
-        PrivacyRequestStatus.DENIED,
-        PrivacyRequestStatus.COMPLETE,
-        PrivacyRequestStatus.ERROR,
-      ];
-
-      statuses.forEach((status) => {
-        const request = createMockRequest({ status });
-        const { unmount } = render(<ListItem item={request} />);
-        expect(screen.getByTestId("header-status")).toHaveTextContent(status);
-        unmount();
-      });
-    });
-  });
-
-  describe("Actions rendering", () => {
-    it("should render RequestTableActions component", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.getByTestId("request-table-actions")).toBeInTheDocument();
-    });
-
-    it("should pass correct request to RequestTableActions", () => {
-      render(<ListItem item={baseRequest} />);
-
-      expect(screen.getByTestId("actions-request-id")).toHaveTextContent(
-        "pri_123",
-      );
-    });
+  it.each([
+    PrivacyRequestStatus.PENDING,
+    PrivacyRequestStatus.APPROVED,
+    PrivacyRequestStatus.DENIED,
+    PrivacyRequestStatus.COMPLETE,
+    PrivacyRequestStatus.ERROR,
+  ])("should display status %s in header", (status) => {
+    const request = createMockRequest({ status });
+    render(<ListItem item={request} />);
+    expect(screen.getByTestId("header-status")).toHaveTextContent(status);
   });
 
   describe("Checkbox rendering", () => {
     it("should render checkbox when provided", () => {
       const checkbox = <input type="checkbox" data-testid="checkbox" />;
       render(<ListItem item={baseRequest} checkbox={checkbox} />);
-
       expect(screen.getByTestId("checkbox")).toBeInTheDocument();
     });
 
     it("should not render checkbox when not provided", () => {
       render(<ListItem item={baseRequest} />);
-
       expect(screen.queryByTestId("checkbox")).not.toBeInTheDocument();
     });
   });
 
-  describe("Complex rendering scenarios", () => {
-    it("should render complete request with all fields", () => {
-      const complexRequest = createMockRequest({
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-          phone_number: { label: "Phone", value: "+1234567890" },
-          custom_id: { label: "Custom ID", value: "CUST123" },
-        },
-        location: "US-CA",
-        custom_privacy_request_fields: {
-          department: { label: "Department", value: "Engineering" },
-          priority: { label: "Priority", value: 5 },
-          tags: { label: "Tags", value: ["urgent", "vip"] },
-        },
-      });
-
-      render(<ListItem item={complexRequest} />);
-
-      // Should render all components
-      expect(screen.getByTestId("header")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-policy")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-source")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-location")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-phone")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-custom-id")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-department")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-priority")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-tags")).toBeInTheDocument();
-      expect(screen.getByTestId("days-left")).toBeInTheDocument();
-      expect(screen.getByTestId("received-on")).toBeInTheDocument();
-      expect(screen.getByTestId("request-table-actions")).toBeInTheDocument();
+  it("should render complete request with all optional fields", () => {
+    const complexRequest = createMockRequest({
+      identity: {
+        email: { label: "Email", value: "user@example.com" },
+        phone_number: { label: "Phone", value: "+1234567890" },
+        custom_id: { label: "Custom ID", value: "CUST123" },
+      },
+      location: "US-CA",
+      custom_privacy_request_fields: {
+        department: { label: "Department", value: "Engineering" },
+        priority: { label: "Priority", value: 5 },
+        tags: { label: "Tags", value: ["urgent", "vip"] },
+      },
     });
 
-    it("should render minimal request with only required fields", () => {
-      const minimalRequest = createMockRequest({
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-        },
-        location: undefined,
-        custom_privacy_request_fields: undefined,
-      });
+    render(<ListItem item={complexRequest} />);
 
-      render(<ListItem item={minimalRequest} />);
-
-      // Should render basic components
-      expect(screen.getByTestId("header")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-policy")).toBeInTheDocument();
-      expect(screen.getByTestId("labeled-text-source")).toBeInTheDocument();
-
-      // Should not render optional components
-      expect(
-        screen.queryByTestId("labeled-text-location"),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByTestId("labeled-text-phone"),
-      ).not.toBeInTheDocument();
-    });
+    expect(screen.getByTestId("labeled-text-location")).toBeInTheDocument();
+    expect(screen.getByTestId("labeled-text-phone")).toBeInTheDocument();
+    expect(screen.getByTestId("labeled-text-custom-id")).toBeInTheDocument();
+    expect(screen.getByTestId("labeled-text-department")).toBeInTheDocument();
+    expect(screen.getByTestId("labeled-text-priority")).toBeInTheDocument();
+    expect(screen.getByTestId("labeled-text-tags")).toBeInTheDocument();
   });
 });

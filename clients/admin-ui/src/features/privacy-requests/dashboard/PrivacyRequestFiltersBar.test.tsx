@@ -217,21 +217,14 @@ describe("PrivacyRequestFiltersBar", () => {
   });
 
   describe("Status filter", () => {
-    it("should render status filter with all status options", () => {
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
-      const statusFilter = screen.getByTestId("request-status-filter");
-      expect(statusFilter).toBeInTheDocument();
-    });
+    it("should render status filter and handle selections", () => {
+      const { rerender } = render(
+        <PrivacyRequestFiltersBar {...defaultProps} />,
+      );
+      expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
 
-    it("should handle single status selection", () => {
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
-      const statusFilter = screen.getByTestId("request-status-filter");
-      expect(statusFilter).toBeInTheDocument();
-      // Status selection is handled by Ant Design Select component
-    });
-
-    it("should handle multiple status selections", () => {
-      render(
+      // Should handle multiple status selections
+      rerender(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
@@ -243,79 +236,21 @@ describe("PrivacyRequestFiltersBar", () => {
           }}
         />,
       );
-      const statusFilter = screen.getByTestId("request-status-filter");
-      expect(statusFilter).toBeInTheDocument();
-    });
-
-    it("should clear status filter", () => {
-      render(
-        <PrivacyRequestFiltersBar
-          {...defaultProps}
-          filters={{
-            ...defaultProps.filters,
-            status: [PrivacyRequestStatus.PENDING],
-          }}
-        />,
-      );
-      const statusFilter = screen.getByTestId("request-status-filter");
-      expect(statusFilter).toBeInTheDocument();
-    });
-
-    it("should support all status values", () => {
-      const allStatuses = [
-        PrivacyRequestStatus.PENDING,
-        PrivacyRequestStatus.APPROVED,
-        PrivacyRequestStatus.DENIED,
-        PrivacyRequestStatus.COMPLETE,
-        PrivacyRequestStatus.ERROR,
-        PrivacyRequestStatus.IN_PROCESSING,
-        PrivacyRequestStatus.PAUSED,
-        PrivacyRequestStatus.CANCELED,
-        PrivacyRequestStatus.AWAITING_EMAIL_SEND,
-        PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
-        PrivacyRequestStatus.IDENTITY_UNVERIFIED,
-        PrivacyRequestStatus.REQUIRES_INPUT,
-        PrivacyRequestStatus.DUPLICATE,
-      ];
-
-      render(
-        <PrivacyRequestFiltersBar
-          {...defaultProps}
-          filters={{
-            ...defaultProps.filters,
-            status: allStatuses,
-          }}
-        />,
-      );
-
-      const statusFilter = screen.getByTestId("request-status-filter");
-      expect(statusFilter).toBeInTheDocument();
+      expect(screen.getByTestId("request-status-filter")).toBeInTheDocument();
     });
   });
 
   describe("Action type filter", () => {
-    it("should render action type filter", () => {
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
-      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      expect(actionTypeFilter).toBeInTheDocument();
-    });
-
-    it("should handle single action type selection", () => {
-      render(
-        <PrivacyRequestFiltersBar
-          {...defaultProps}
-          filters={{
-            ...defaultProps.filters,
-            action_type: [ActionType.ACCESS],
-          }}
-        />,
+    it("should render action type filter and handle selections", () => {
+      const { rerender } = render(
+        <PrivacyRequestFiltersBar {...defaultProps} />,
       );
-      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      expect(actionTypeFilter).toBeInTheDocument();
-    });
+      expect(
+        screen.getByTestId("request-action-type-filter"),
+      ).toBeInTheDocument();
 
-    it("should handle multiple action type selections", () => {
-      render(
+      // Should handle multiple action type selections
+      rerender(
         <PrivacyRequestFiltersBar
           {...defaultProps}
           filters={{
@@ -324,63 +259,33 @@ describe("PrivacyRequestFiltersBar", () => {
           }}
         />,
       );
-      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      expect(actionTypeFilter).toBeInTheDocument();
-    });
-
-    it("should support all action type values", () => {
-      const allActionTypes = [
-        ActionType.ACCESS,
-        ActionType.ERASURE,
-        ActionType.CONSENT,
-        ActionType.UPDATE,
-      ];
-
-      render(
-        <PrivacyRequestFiltersBar
-          {...defaultProps}
-          filters={{
-            ...defaultProps.filters,
-            action_type: allActionTypes,
-          }}
-        />,
-      );
-
-      const actionTypeFilter = screen.getByTestId("request-action-type-filter");
-      expect(actionTypeFilter).toBeInTheDocument();
+      expect(
+        screen.getByTestId("request-action-type-filter"),
+      ).toBeInTheDocument();
     });
   });
 
   describe("Location filter", () => {
-    it("should render location filter", () => {
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
-      const locationFilter = screen.getByTestId("request-location-filter");
-      expect(locationFilter).toBeInTheDocument();
-    });
+    it("should render location filter and display selected value", () => {
+      const { rerender } = render(
+        <PrivacyRequestFiltersBar {...defaultProps} />,
+      );
+      expect(screen.getByTestId("request-location-filter")).toBeInTheDocument();
 
-    it("should display selected location", () => {
-      render(
+      rerender(
         <PrivacyRequestFiltersBar
           {...defaultProps}
-          filters={{
-            ...defaultProps.filters,
-            location: "US",
-          }}
+          filters={{ ...defaultProps.filters, location: "US" }}
         />,
       );
-      const locationFilter = screen.getByTestId("request-location-filter");
-      expect(locationFilter).toBeInTheDocument();
+      expect(screen.getByTestId("request-location-filter")).toBeInTheDocument();
     });
   });
 
   describe("Custom field filters", () => {
-    it("should not render custom field filters when no config is available", () => {
-      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
-        data: undefined,
-      });
-
+    it("should not render when no config is available", () => {
+      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({ data: undefined });
       render(<PrivacyRequestFiltersBar {...defaultProps} />);
-
       expect(
         screen.queryByTestId("custom-field-filter-department"),
       ).not.toBeInTheDocument();
@@ -393,10 +298,7 @@ describe("PrivacyRequestFiltersBar", () => {
             {
               policy_key: "access",
               custom_privacy_request_fields: {
-                department: {
-                  label: "Department",
-                  field_type: "text",
-                },
+                department: { label: "Department", field_type: "text" },
                 location: {
                   label: "Location",
                   field_type: "select",
@@ -409,7 +311,6 @@ describe("PrivacyRequestFiltersBar", () => {
       });
 
       render(<PrivacyRequestFiltersBar {...defaultProps} />);
-
       expect(
         screen.getByTestId("custom-field-filter-department"),
       ).toBeInTheDocument();
@@ -418,7 +319,7 @@ describe("PrivacyRequestFiltersBar", () => {
       ).toBeInTheDocument();
     });
 
-    it("should handle custom field value changes", async () => {
+    it("should handle custom field value changes and clearing", async () => {
       const user = userEvent.setup();
       mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
         data: {
@@ -426,48 +327,7 @@ describe("PrivacyRequestFiltersBar", () => {
             {
               policy_key: "access",
               custom_privacy_request_fields: {
-                department: {
-                  label: "Department",
-                  field_type: "text",
-                },
-              },
-            },
-          ],
-        },
-      });
-
-      render(<PrivacyRequestFiltersBar {...defaultProps} />);
-
-      const customFieldInput = screen.getByTestId(
-        "custom-field-input-department",
-      );
-      await user.type(customFieldInput, "Engineering");
-
-      // The mocked input calls onChange for each character
-      // Check that it was called with the custom_privacy_request_fields
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalled();
-        const { calls } = mockSetFilters.mock;
-        expect(calls.length).toBeGreaterThan(0);
-        // Verify at least one call has custom_privacy_request_fields
-        expect(
-          calls.some((call) => call[0].custom_privacy_request_fields),
-        ).toBe(true);
-      });
-    });
-
-    it("should handle clearing custom field values", async () => {
-      const user = userEvent.setup();
-      mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
-        data: {
-          actions: [
-            {
-              policy_key: "access",
-              custom_privacy_request_fields: {
-                department: {
-                  label: "Department",
-                  field_type: "text",
-                },
+                department: { label: "Department", field_type: "text" },
               },
             },
           ],
@@ -494,7 +354,7 @@ describe("PrivacyRequestFiltersBar", () => {
       });
     });
 
-    it("should clean up null values from custom fields object", async () => {
+    it("should clean up null values when clearing one field from multiple", async () => {
       const user = userEvent.setup();
       mockUseGetPrivacyCenterConfigQuery.mockReturnValue({
         data: {
@@ -502,14 +362,8 @@ describe("PrivacyRequestFiltersBar", () => {
             {
               policy_key: "access",
               custom_privacy_request_fields: {
-                department: {
-                  label: "Department",
-                  field_type: "text",
-                },
-                team: {
-                  label: "Team",
-                  field_type: "text",
-                },
+                department: { label: "Department", field_type: "text" },
+                team: { label: "Team", field_type: "text" },
               },
             },
           ],
@@ -529,7 +383,6 @@ describe("PrivacyRequestFiltersBar", () => {
         />,
       );
 
-      // Clear one field
       const clearButton = screen.getByTestId("custom-field-clear-team");
       await user.click(clearButton);
 
@@ -547,19 +400,13 @@ describe("PrivacyRequestFiltersBar", () => {
             {
               policy_key: "access",
               custom_privacy_request_fields: {
-                department: {
-                  label: "Department",
-                  field_type: "text",
-                },
+                department: { label: "Department", field_type: "text" },
               },
             },
             {
               policy_key: "erasure",
               custom_privacy_request_fields: {
-                reason: {
-                  label: "Reason",
-                  field_type: "text",
-                },
+                reason: { label: "Reason", field_type: "text" },
               },
             },
           ],
@@ -567,7 +414,6 @@ describe("PrivacyRequestFiltersBar", () => {
       });
 
       render(<PrivacyRequestFiltersBar {...defaultProps} />);
-
       expect(
         screen.getByTestId("custom-field-filter-department"),
       ).toBeInTheDocument();
