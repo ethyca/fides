@@ -200,14 +200,16 @@ describe("New Privacy Requests", () => {
 
   describe("Tab navigation", () => {
     beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
       stubPlus(true);
+      stubTCFConfig();
       cy.visit("/new-privacy-requests");
       cy.wait("@getPrivacyRequests");
     });
 
     it("can switch to Manual Tasks tab", () => {
-      // Click on Manual tasks tab
-      cy.contains(".ant-tabs-tab", "Manual tasks").click();
+      // Click on Manual tasks tab using the custom command
+      cy.clickAntTab("Manual tasks");
 
       // URL should include tab query param
       cy.location("search").should("include", "tab=manual-tasks");
@@ -217,15 +219,21 @@ describe("New Privacy Requests", () => {
     });
 
     it("tab persists in URL", () => {
-      // Navigate to manual tasks
-      cy.contains(".ant-tabs-tab", "Manual tasks").click();
+      // Navigate to manual tasks using the custom command
+      cy.clickAntTab("Manual tasks");
       cy.location("search").should("include", "tab=manual-tasks");
 
       // Reload page
       cy.reload();
 
       // Should still be on manual tasks tab
-      cy.contains(".ant-tabs-tab-active", "Manual tasks").should("exist");
+      cy.getAntTab("Manual tasks").should(($tab) => {
+        const hasActiveClass = $tab.hasClass("ant-menu-item-selected");
+        const parentHasActiveClass = $tab
+          .parent()
+          .hasClass("ant-tabs-tab-active");
+        expect(hasActiveClass || parentHasActiveClass).to.be.true;
+      });
     });
   });
 
