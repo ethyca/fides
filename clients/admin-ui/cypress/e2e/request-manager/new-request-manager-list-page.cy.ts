@@ -259,28 +259,6 @@ describe("New Privacy Requests", () => {
     });
   });
 
-  describe("Permissions", () => {
-    beforeEach(() => {
-      stubPlus(true);
-    });
-
-    it("submit request button visible for OWNER role", () => {
-      cy.assumeRole(RoleRegistryEnum.OWNER);
-      cy.visit("/new-privacy-requests");
-      cy.wait("@getPrivacyRequests");
-
-      cy.getByTestId("submit-request-btn").should("exist");
-    });
-
-    it("submit request button hidden for VIEWER role", () => {
-      cy.assumeRole(RoleRegistryEnum.VIEWER);
-      cy.visit("/new-privacy-requests");
-      cy.wait("@getPrivacyRequests");
-
-      cy.getByTestId("submit-request-btn").should("not.exist");
-    });
-  });
-
   describe("privacy request creation", () => {
     describe("showing button depending on role", () => {
       beforeEach(() => {
