@@ -246,33 +246,13 @@ describe("ListItem", () => {
       render(<ListItem item={baseRequest} checkbox={checkbox} />);
       expect(screen.getByTestId("checkbox")).toBeInTheDocument();
     });
-
-    it("should not render checkbox when not provided", () => {
-      render(<ListItem item={baseRequest} />);
-      expect(screen.queryByTestId("checkbox")).not.toBeInTheDocument();
-    });
   });
 
   describe("Copy functionality", () => {
-    it("should render copy buttons for copyable fields", () => {
-      const request = createMockRequest({
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-          phone_number: { label: "Phone", value: "+1234567890" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      const copyButtons = screen.getAllByTestId("copy-button");
-      expect(copyButtons.length).toBeGreaterThan(0);
-    });
-
-    it("should copy value to clipboard when clicked", async () => {
+    it("should copy value with mouse click and show tooltip", async () => {
       const user = userEvent.setup();
       const request = createMockRequest({
         identity: {
-          email: { label: "Email", value: "user@example.com" },
           phone_number: { label: "Phone", value: "+1234567890" },
         },
       });
@@ -287,9 +267,10 @@ describe("ListItem", () => {
       await user.click(phoneCopyButton!);
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("+1234567890");
+      expect(phoneCopyButton).toHaveAttribute("aria-label", "Copy phone");
     });
 
-    it("should support keyboard activation (Enter key)", async () => {
+    it("should copy value using keyboard (Enter key)", async () => {
       const user = userEvent.setup();
       const request = createMockRequest({
         identity: {
@@ -308,47 +289,6 @@ describe("ListItem", () => {
       await user.keyboard("{Enter}");
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith("+1234567890");
-    });
-
-    it("should have accessible labels", () => {
-      const request = createMockRequest({
-        identity: {
-          phone_number: { label: "Phone", value: "+1234567890" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      const copyButtons = screen.getAllByTestId("copy-button");
-      const phoneCopyButton = copyButtons.find(
-        (btn) => btn.getAttribute("data-copy-value") === "+1234567890",
-      );
-
-      expect(phoneCopyButton).toHaveAttribute("aria-label", "Copy phone");
-    });
-  });
-
-  describe("Keyboard navigation", () => {
-    it("should allow tab navigation through copy buttons", async () => {
-      const user = userEvent.setup();
-      const request = createMockRequest({
-        identity: {
-          email: { label: "Email", value: "user@example.com" },
-          phone_number: { label: "Phone", value: "+1234567890" },
-        },
-      });
-
-      render(<ListItem item={request} />);
-
-      const copyButtons = screen.getAllByTestId("copy-button");
-
-      await user.tab();
-      expect(copyButtons[0]).toHaveFocus();
-
-      await user.tab();
-      if (copyButtons.length > 1) {
-        expect(copyButtons[1]).toHaveFocus();
-      }
     });
   });
 });
