@@ -1,4 +1,4 @@
-import { AntInput as Input, AntInputProps as InputProps } from "fidesui";
+import { Input, InputProps } from "antd/lib";
 import { debounce } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
