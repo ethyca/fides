@@ -44,7 +44,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added reusable animation components to FidesUI [#7125](https://github.com/ethyca/fides/pull/7125)
 - Added test coverage for new request manager page [#7164](https://github.com/ethyca/fides/pull/7164)
 
-
 ### Fixed
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 - Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
