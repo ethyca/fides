@@ -6,7 +6,13 @@ from copy import deepcopy
 from typing import Dict, Optional, cast
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
+from pydantic import (
+    Field,
+    PostgresDsn,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import SettingsConfigDict
 
 from fides.config.utils import get_test_mode
@@ -51,11 +57,11 @@ class DatabaseSettings(FidesSettings):
 
     # Async Engine Settings
     api_async_engine_pool_size: int = Field(
-        default=50,
+        default=5,
         description="Number of concurrent database connections Fides will use for async API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
     )
     api_async_engine_max_overflow: int = Field(
-        default=50,
+        default=10,
         description="Number of additional 'overflow' concurrent database connections Fides will use for async API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
     )
     api_async_engine_keepalives_idle: Optional[int] = Field(
@@ -101,12 +107,26 @@ class DatabaseSettings(FidesSettings):
         default=None,
         description="The hostname of the application read database server.",
     )
-
-    # TODO (LJ-663): add optional readonly_user
-    # TODO (LJ-663): add optional readonly_password
-    # TODO (LJ-663): add optional readonly_port
-    # TODO (LJ-663): add optional readonly_params
-    # TODO (LJ-663): add optional readonly_db
+    readonly_user: Optional[str] = Field(
+        default=None,
+        description="The database user for read-only database connections. If not provided and readonly_server is set, uses 'user'.",
+    )
+    readonly_password: Optional[str] = Field(
+        default=None,
+        description="The password for read-only database connections. If not provided and readonly_server is set, uses 'password'.",
+    )
+    readonly_port: Optional[str] = Field(
+        default=None,
+        description="The port for read-only database connections. If not provided and readonly_server is set, uses 'port'.",
+    )
+    readonly_db: Optional[str] = Field(
+        default=None,
+        description="The database name for read-only database connections. If not provided and readonly_server is set, uses 'db'.",
+    )
+    readonly_params: Dict = Field(
+        default={},
+        description="Additional connection parameters for read-only database connections. If not provided and readonly_server is set, uses 'params'.",
+    )
 
     task_engine_pool_size: int = Field(
         default=50,
@@ -172,6 +192,11 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+    async_readonly_database_uri: Optional[str] = Field(
+        default=None,
+        description="Programmatically created asynchronous connection string for the read-only application database.",
+        exclude=True,
+    )
 
     @field_validator("password", mode="before")
     @classmethod
@@ -180,6 +205,39 @@ class DatabaseSettings(FidesSettings):
         if value and isinstance(value, str):
             return quote_plus(value)
         return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def resolve_readonly_fields(cls, values: Dict) -> Dict:
+        """
+        If readonly_server is set but readonly fields are not provided,
+        fall back to primary database values.
+        """
+        if values.get("readonly_server"):
+            # Fall back to primary user if readonly_user not provided
+            if values.get("readonly_user") is None:
+                values["readonly_user"] = values.get("user")
+
+            # Fall back to primary password if readonly_password not provided
+            if values.get("readonly_password") is None:
+                values["readonly_password"] = values.get("password")
+            # If readonly_password was provided directly, escape it
+            elif isinstance(values.get("readonly_password"), str):
+                values["readonly_password"] = quote_plus(values["readonly_password"])
+
+            # Fall back to primary port if readonly_port not provided
+            if values.get("readonly_port") is None:
+                values["readonly_port"] = values.get("port")
+
+            # Fall back to primary db if readonly_db not provided
+            if values.get("readonly_db") is None:
+                values["readonly_db"] = values.get("db")
+
+            # Fall back to primary params if readonly_params not provided
+            if not values.get("readonly_params"):
+                values["readonly_params"] = values.get("params", {})
+
+        return values
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod
@@ -281,22 +339,65 @@ class DatabaseSettings(FidesSettings):
         if not info.data.get("readonly_server"):
             return None
         port: int = port_integer_converter(info)
+        readonly_port: int = (
+            port_integer_converter(info, "readonly_port")
+            if info.data.get("readonly_port")
+            else port
+        )
         return str(
-            # TODO: support optional readonly params for user, password, etc.
             PostgresDsn.build(  # pylint: disable=no-member
-                scheme="postgresql",
-                username=info.data.get("user"),
-                password=info.data.get("password"),
+                scheme="postgresql+psycopg2",
+                username=info.data.get("readonly_user") or info.data.get("user"),
+                password=info.data.get("readonly_password")
+                or info.data.get("password"),
                 host=info.data.get("readonly_server"),
-                port=port,
-                path=f"{info.data.get('db') or ''}",
+                port=readonly_port,
+                path=f"{info.data.get('readonly_db') or info.data.get('db') or ''}",
                 query=(
                     urlencode(
-                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                        cast(Dict, info.data.get("readonly_params")),
+                        quote_via=quote,
+                        safe="/",
                     )
-                    if info.data.get("params")
+                    if info.data.get("readonly_params")
                     else None
                 ),
+            )
+        )
+
+    @field_validator("async_readonly_database_uri", mode="before")
+    @classmethod
+    def assemble_async_readonly_db_connection(
+        cls, v: Optional[str], info: ValidationInfo
+    ) -> Optional[str]:
+        """Join DB connection credentials into an async read-only connection string."""
+        if isinstance(v, str) and v:
+            return v
+        if not info.data.get("readonly_server"):
+            return None
+
+        # Handle SSL params for asyncpg (same as async_database_uri)
+        params = cast(Dict, deepcopy(info.data.get("readonly_params", {})))
+        if "sslmode" in params:
+            params["ssl"] = params.pop("sslmode")
+        params.pop("sslrootcert", None)
+
+        port: int = port_integer_converter(info)
+        readonly_port: int = (
+            port_integer_converter(info, "readonly_port")
+            if info.data.get("readonly_port")
+            else port
+        )
+        return str(
+            PostgresDsn.build(  # pylint: disable=no-member
+                scheme="postgresql+asyncpg",
+                username=info.data.get("readonly_user") or info.data.get("user"),
+                password=info.data.get("readonly_password")
+                or info.data.get("password"),
+                host=info.data.get("readonly_server"),
+                port=readonly_port,
+                path=f"{info.data.get('readonly_db') or info.data.get('db') or ''}",
+                query=urlencode(params, quote_via=quote, safe="/") if params else None,
             )
         )
 

@@ -37,7 +37,7 @@
   },
   "oktaMonitor": {
     "label": "Okta monitor",
-    "description": "Monitor Okta for activity",
+    "description": "Monitor Okta for activity using OAuth2 authentication and Identity Provider Monitor endpoints",
     "development": true,
     "test": true,
     "production": false

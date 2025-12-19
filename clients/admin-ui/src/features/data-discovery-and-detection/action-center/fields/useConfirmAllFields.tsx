@@ -70,7 +70,7 @@ export const useConfirmAllFields = (monitorId: string) => {
     messageApi.open({
       key,
       type: "success",
-      content: `${count} ${pluralize(count, "field", "fields")} confirmed — stronger governance, less busywork.`,
+      content: `${count} ${pluralize(count, "field", "fields")} approved — stronger governance, less busywork.`,
       duration: 10,
     });
   };
