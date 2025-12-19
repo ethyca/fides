@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Docker Buildx
         id: buildx
@@ -141,7 +141,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -255,7 +255,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -308,7 +308,7 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -375,7 +375,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -440,7 +440,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -510,7 +510,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
@@ -626,7 +626,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Up Python
         uses: actions/setup-python@v5
