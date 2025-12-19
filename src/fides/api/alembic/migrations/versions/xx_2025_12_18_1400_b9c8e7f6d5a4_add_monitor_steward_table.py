@@ -46,14 +46,12 @@ def upgrade():
     op.create_index(
         op.f("ix_monitorsteward_id"), "monitorsteward", ["id"], unique=False
     )
-    # Index for efficient lookup of stewards by monitor (used by GET /{monitor_key}/stewards)
     op.create_index(
         op.f("ix_monitorsteward_monitor_config_id"),
         "monitorsteward",
         ["monitor_config_id"],
         unique=False,
     )
-    # Index for efficient lookup of monitors by steward (used by steward filtering)
     op.create_index(
         op.f("ix_monitorsteward_user_id"),
         "monitorsteward",
