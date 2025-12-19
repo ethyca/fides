@@ -1,10 +1,6 @@
 import classNames from "classnames";
-import {
-  AntInput as Input,
-  AntInputProps as InputProps,
-  Icons,
-  InputRef,
-} from "fidesui";
+import { AntInput as Input, Icons, InputRef } from "fidesui";
+import { CustomInputProps } from "fidesui/src/hoc";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -14,7 +10,7 @@ import styles from "./SearchInput.module.scss";
 export const SEARCH_INPUT_HOTKEY = "/";
 
 export interface SearchInputProps
-  extends Omit<InputProps, "onChange" | "variant"> {
+  extends Omit<CustomInputProps, "onChange" | "variant"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   variant?: "default" | "compact";
