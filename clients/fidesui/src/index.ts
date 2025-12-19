@@ -7,6 +7,8 @@ export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
+export type { DebouncedInputProps } from "./components/data-entry/DebouncedInput";
+export { DebouncedInput } from "./components/data-entry/DebouncedInput";
 export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
 export { LocationSelect } from "./components/data-entry/LocationSelect";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
