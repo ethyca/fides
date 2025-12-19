@@ -49,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added test coverage for new request manager page [#7164](https://github.com/ethyca/fides/pull/7164)
 
 ### Fixed
+- Fixed bulk delete modal not closing after deleting multiple systems
 - Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 - Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
 - Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
