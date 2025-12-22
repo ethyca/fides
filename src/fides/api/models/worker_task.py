@@ -1,5 +1,5 @@
 import enum
-from typing import Any, List
+from typing import Any, List, Set
 
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.sql import text
@@ -19,12 +19,31 @@ class ExecutionLogStatus(enum.Enum):
     skipped = "skipped"
     polling = "polling"
 
+    @classmethod
+    def in_progress_statuses(cls) -> Set["ExecutionLogStatus"]:
+        """
+        Statuses that indicate the task is in progress.
 
-# Statuses that can be resumed
-RESUMABLE_EXECUTION_LOG_STATUSES = [
-    ExecutionLogStatus.pending,
-    ExecutionLogStatus.polling,
-]
+        For now, used only to detect interrupted monitor tasks.
+        """
+        # TODO: update this to be more generic, i.e. used for other task types?
+        return {
+            cls.in_processing,
+            cls.pending,
+        }
+
+    @classmethod
+    def resumable_statuses(cls) -> Set["ExecutionLogStatus"]:
+        """
+        Statuses that can be resumed.
+
+        For now, used only for DSR tasks.
+        """
+        # TODO: update this to be more generic, i.e. used for other task types?
+        return {
+            cls.pending,
+            cls.polling,
+        }
 
 
 class WorkerTask:
