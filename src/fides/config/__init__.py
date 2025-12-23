@@ -33,6 +33,7 @@ from .notification_settings import NotificationSettings
 from .privacy_center_settings import PrivacyCenterSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
+from .tracing_settings import TracingSettings
 from .user_settings import UserSettings
 from .utils import (
     CONFIG_KEY_ALLOWLIST,
@@ -87,6 +88,7 @@ class FidesConfig(FidesSettings):
     redis: RedisSettings
     privacy_center: PrivacyCenterSettings
     security: SecuritySettings
+    tracing: TracingSettings
     user: UserSettings
 
     model_config = SettingsConfigDict(case_sensitive=True)
@@ -116,6 +118,7 @@ class FidesConfig(FidesSettings):
             self.execution,
             self.admin_ui,
             self.privacy_center,
+            self.tracing,
         ]:
             for key, value in settings.model_dump(mode="json").items():  # type: ignore
                 log.debug(
@@ -176,6 +179,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
         "privacy_center": PrivacyCenterSettings,
         "redis": RedisSettings,
         "security": SecuritySettings,
+        "tracing": TracingSettings,
         "user": UserSettings,
     }
 

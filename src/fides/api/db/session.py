@@ -13,6 +13,12 @@ from fides.api.common_exceptions import MissingConfig
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
 from fides.config import FidesConfig
 
+# Import tracing utilities - safe to import even if OpenTelemetry is not installed
+try:
+    from fides.telemetry.tracing import instrument_sqlalchemy
+except ImportError:
+    instrument_sqlalchemy = None  # type: ignore
+
 
 def get_db_engine(
     *,
@@ -66,7 +72,14 @@ def get_db_engine(
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
 
-    return create_engine(database_uri, **engine_args)
+    engine = create_engine(database_uri, **engine_args)
+
+    # Instrument SQLAlchemy engine with OpenTelemetry tracing if available and enabled
+    if instrument_sqlalchemy and config:
+        logger.info("Instrumenting SQLAlchemy engine with OpenTelemetry tracing")
+        instrument_sqlalchemy(engine, config)
+
+    return engine
 
 
 def get_db_session(

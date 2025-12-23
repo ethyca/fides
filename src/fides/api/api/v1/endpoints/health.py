@@ -15,6 +15,7 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
+from fides.telemetry.tracing import trace_span, add_span_event
 
 CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
@@ -132,6 +133,12 @@ async def workers_health() -> Dict:
         workers_enabled=False, workers=[], queue_counts={}
     ).model_dump(mode="json")
 
+    with add_span_event("workers_health_check"):
+        logger.info(
+            "Checking if workers are enabled. CELERY_TASK_ALWAYS_EAGER={}",
+            celery_app.conf["task_always_eager"],
+        )
+
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
         response["workers_enabled"] = True
@@ -174,17 +181,24 @@ async def workers_health() -> Dict:
 )
 async def health() -> Dict:
     """Confirm that the API is running and healthy."""
-    cache_health = get_cache_health()
-    response = CoreHealthCheck(
-        webserver="healthy",
-        version=str(fides.__version__),
-        cache=cache_health,
-    ).model_dump(mode="json")
+    add_span_event("health_check", {"cache_health": "checking"})
+    logger.info("Checking cache health...")
 
-    for _, value in response.items():
-        if value == "unhealthy":
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
-            )
 
-    return response
+    with trace_span("health_check"):
+        with trace_span("cache_health"):
+            cache_health = get_cache_health()
+        with trace_span("core_health"):
+            response = CoreHealthCheck(
+                webserver="healthy",
+                version=str(fides.__version__),
+                cache=cache_health,
+            ).model_dump(mode="json")
+
+        for _, value in response.items():
+            if value == "unhealthy":
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
+                )
+
+        return response
