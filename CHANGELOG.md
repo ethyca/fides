@@ -59,7 +59,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed repeatedly clicking "Delete" on custom fields causing multiple errors [#7115](https://github.com/ethyca/fides/pull/7115)
 
 ### Removed
-- Removed erroneous async engine settings of the form `api_async_engine_keepalives_*` that would cause errors when set []()
+- Removed erroneous async engine settings of the form `api_async_engine_keepalives_*` that would cause errors when set [#7171](https://github.com/ethyca/fides/pull/7171)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
