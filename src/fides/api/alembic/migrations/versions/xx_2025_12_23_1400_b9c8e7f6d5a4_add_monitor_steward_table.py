@@ -1,8 +1,8 @@
 """add monitor steward table
 
 Revision ID: b9c8e7f6d5a4
-Revises: 2c067179b727
-Create Date: 2025-12-18 14:00:00.000000
+Revises: dffb9da00fb1
+Create Date: 2025-12-23 14:00:00.000000
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b9c8e7f6d5a4"
-down_revision = "2c067179b727"
+down_revision = "dffb9da00fb1"
 branch_labels = None
 depends_on = None
 
