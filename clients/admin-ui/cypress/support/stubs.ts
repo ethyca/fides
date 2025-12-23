@@ -1048,6 +1048,17 @@ export const stubCustomFields = () => {
     statusCode: 200,
     fixture: "custom-fields/allow-list.json",
   }).as("upsertAllowList");
+
+  // Get custom field locations
+  cy.intercept("GET", "/api/v1/plus/custom-fields/locations", {
+    body: [
+      "taxonomy:data_category",
+      "taxonomy:data_subject",
+      "taxonomy:data_use",
+      "system:information",
+      "system:data use",
+    ],
+  }).as("getCustomFieldLocations");
 };
 
 export const stubSystemGroups = () => {
@@ -1062,4 +1073,11 @@ export const stubSystemGroups = () => {
   cy.intercept("PUT", "/api/v1/system-groups/*", {
     statusCode: 200,
   }).as("updateSystemGroup");
+};
+
+export const stubOktaApps = () => {
+  // GET - List Okta apps
+  cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results", {
+    fixture: "detection-discovery/results/okta-apps-list.json",
+  }).as("getOktaApps");
 };

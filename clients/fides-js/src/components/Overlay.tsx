@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
+import { getConsentContext } from "../lib/consent-context";
 import {
   FidesCookie,
   FidesInitOptions,
@@ -15,6 +16,7 @@ import {
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
 import { FidesEventOrigin } from "../lib/events";
+import { processGpcConditionals } from "../lib/gpc-utils";
 import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
@@ -83,8 +85,19 @@ const Overlay: FunctionComponent<Props> = ({
   const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
 
   const { i18n } = useI18n();
-  const defaultTitle = i18n.t("exp.title");
-  const defaultDescription = i18n.t("exp.description");
+  const rawDefaultTitle = i18n.t("exp.title");
+  const rawDefaultDescription = i18n.t("exp.description");
+
+  // Process GPC conditionals in modal title and description
+  const { globalPrivacyControl } = getConsentContext();
+  const defaultTitle = processGpcConditionals(
+    rawDefaultTitle,
+    !!globalPrivacyControl,
+  );
+  const defaultDescription = processGpcConditionals(
+    rawDefaultDescription,
+    !!globalPrivacyControl,
+  );
 
   const effectiveHeaderContent = headerContent ?? {
     title: defaultTitle,
@@ -201,7 +214,9 @@ const Overlay: FunctionComponent<Props> = ({
   // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (!disableBanner) {
+      // Use explicit false check to avoid race condition where disableBanner is still null
+      // (!null === true which would incorrectly trigger setBannerIsOpen)
+      if (disableBanner === false) {
         setBannerIsOpen(true);
       }
     }, delayBannerMilliseconds);

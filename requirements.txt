@@ -14,12 +14,13 @@ colorama>=0.4.3
 cryptography==44.0.1
 dask==2022.9.2
 deepdiff==6.3.0
+objgraph==3.6.0
 defusedxml==0.7.1
 types-defusedxml==0.7.0.20240218
 expandvars==0.9.0
 fastapi[all]==0.115.2
 fastapi-pagination[sqlalchemy]==0.12.25
-fideslog==1.2.14
+fideslog==1.2.15
 firebase-admin==5.3.0
 flower==2.0.1
 GitPython==3.1.41
@@ -36,7 +37,6 @@ pg8000==1.31.2
 nh3==0.2.15
 numpy==1.24.4
 oauthlib==3.3.1
-okta==2.7.0
 openpyxl==3.0.9
 networkx==3.1
 packaging==23.0
@@ -56,6 +56,7 @@ python-jose[cryptography]==3.3.0
 pyyaml==6.0.1
 pyahocorasick==2.1.0
 redis==3.5.3
+requests-oauth2client>=1.5.0
 requests-oauthlib==2.0.0
 rich-click==1.6.1
 sendgrid==6.9.7

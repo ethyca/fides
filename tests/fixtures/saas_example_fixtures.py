@@ -391,9 +391,6 @@ def oauth2_authorization_code_connection_config(
     connection_config.delete(db)
 
 
-## TODO: base on the previous connection config to set up a new improved
-
-
 @pytest.fixture(scope="function")
 def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsConfiguration:
     return {

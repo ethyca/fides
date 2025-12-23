@@ -68,7 +68,11 @@ export const DiscoveredSystemAggregateTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex
+        justify="space-between"
+        align="center"
+        className="sticky -top-6 z-10 bg-white py-4"
+      >
         <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedRows.length} />}
@@ -92,7 +96,10 @@ export const DiscoveredSystemAggregateTable = ({
                   onClick: handleBulkAdd,
                   disabled: uncategorizedIsSelected,
                 },
-                !activeParams.diff_status.includes(DiffStatus.MUTED)
+                "diff_status" in activeParams &&
+                !(
+                  activeParams as { diff_status: DiffStatus[] }
+                ).diff_status.includes(DiffStatus.MUTED)
                   ? {
                       key: "ignore",
                       label: "Ignore",

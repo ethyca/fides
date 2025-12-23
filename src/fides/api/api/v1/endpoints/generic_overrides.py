@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Dict, List, Optional, Union
 
-from fastapi import Depends, HTTPException, Query, Response, Security
+from fastapi import Body, Depends, HTTPException, Query, Response, Security
 from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -368,12 +368,12 @@ def create_data_use(
     """
     try:
         return taxonomy_service.create_or_update_element(
-            "data_uses", data_use.model_dump()
+            "data_use", data_use.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
@@ -399,12 +399,12 @@ def create_data_category(
 
     try:
         return taxonomy_service.create_or_update_element(
-            "data_categories", data_category.model_dump()
+            "data_category", data_category.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
@@ -430,12 +430,12 @@ def create_data_subject(
 
     try:
         return taxonomy_service.create_or_update_element(
-            "data_subjects", data_subject.model_dump()
+            "data_subject", data_subject.model_dump()
         )
-    except KeyOrNameAlreadyExists:
+    except KeyOrNameAlreadyExists as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
+            detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
@@ -465,7 +465,7 @@ def update_data_use(
         )
     try:
         result = taxonomy_service.update_element(
-            "data_uses", data_use.fides_key, data_use.model_dump()
+            "data_use", data_use.fides_key, data_use.model_dump()
         )
         if not result:
             raise HTTPException(
@@ -501,12 +501,81 @@ def update_data_category(
         )
     try:
         result = taxonomy_service.update_element(
-            "data_categories", data_category.fides_key, data_category.model_dump()
+            "data_category", data_category.fides_key, data_category.model_dump()
         )
         if not result:
             raise HTTPException(
                 status_code=HTTP_404_NOT_FOUND,
                 detail=f"Data category not found with key: {data_category.fides_key}",
+            )
+        return result
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
+
+@data_category_router.patch(
+    "/data_category/{fides_key}/tagging_instructions",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_UPDATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_200_OK,
+    name="Update tagging instructions",
+)
+async def update_data_category_tagging_instructions(
+    fides_key: str,
+    tagging_instructions: str = Body(..., embed=True),
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
+) -> Dict:
+    """
+    Update or add tagging_instructions for a data category.
+    This is used by LLM-based classification to provide custom instructions for tagging.
+    """
+    try:
+        result = taxonomy_service.update_element(
+            "data_category",
+            fides_key,
+            {"tagging_instructions": tagging_instructions},
+        )
+        if not result:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"Data category not found with key: {fides_key}",
+            )
+        return result
+    except (ValidationError, PydanticValidationError) as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
+
+@data_category_router.delete(
+    "/data_category/{fides_key}/tagging_instructions",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_UPDATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_200_OK,
+    name="Delete tagging instructions",
+)
+async def delete_data_category_tagging_instructions(
+    fides_key: str,
+    taxonomy_service: TaxonomyService = Depends(get_taxonomy_service),
+) -> Dict:
+    """
+    Remove tagging_instructions from a data category.
+    Sets the tagging_instructions field to None.
+    """
+    try:
+        result = taxonomy_service.update_element(
+            "data_category",
+            fides_key,
+            {"tagging_instructions": None},
+        )
+        if not result:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"Data category not found with key: {fides_key}",
             )
         return result
     except (ValidationError, PydanticValidationError) as e:

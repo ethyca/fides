@@ -7,7 +7,7 @@ import {
   NoticeConsent,
 } from "./consent-types";
 import { decodeNoticeConsentString } from "./consent-utils";
-import { getFidesConsentCookie } from "./cookie";
+import { hasFidesConsentCookie } from "./cookie";
 import { decodeFidesString } from "./fides-string";
 import { updateConsent } from "./preferences";
 import {
@@ -57,7 +57,9 @@ export const automaticallyApplyPreferences = async (
   const { consent: migratedConsent, method: migrationMethod } =
     readConsentFromAnyProvider(options);
   const hasMigratedConsent =
-    !!migratedConsent && !!migrationMethod && !getFidesConsentCookie();
+    !!migratedConsent &&
+    !!migrationMethod &&
+    !hasFidesConsentCookie(options.fidesCookieSuffix);
 
   if (
     !context.globalPrivacyControl &&

@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import requests
 import sendgrid
 from loguru import logger
+from requests.exceptions import RequestException, Timeout
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
@@ -53,7 +54,18 @@ EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
+@celery_app.task(
+    base=DatabaseTask,
+    bind=True,
+    autoretry_for=(
+        Timeout,
+        RequestException,
+        TwilioRestException,
+    ),
+    retry_kwargs={"max_retries": 3},
+    retry_backoff=2,
+    retry_jitter=True,
+)
 def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
@@ -62,7 +74,14 @@ def dispatch_message_task(
     property_id: Optional[str],
 ) -> None:
     """
-    A wrapper function to dispatch a message task into the Celery queues
+    A wrapper function to dispatch a message task into the Celery queues.
+
+    This task will automatically retry up to 3 times on transient network failures
+    (timeouts, connection errors, temporary service unavailability) with exponential
+    backoff (2s, 4s, 8s) and jitter to prevent thundering herd issues.
+
+    Permanent errors (missing config, invalid identities, etc.) will fail immediately
+    without retry to provide fast feedback and avoid wasting worker resources.
     """
     schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
@@ -467,7 +486,6 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             ),
         )
     if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
-        base_template = get_email_template(action_type)
         # Generate display name for personalization
         display_name = body_params.username
         if body_params.first_name:
@@ -490,8 +508,26 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "access_token": body_params.access_token,
         }
 
+        # Start with default subject
+        subject = "Welcome to our Privacy Center"
+
+        # If messaging template exists, extract customizable content
+        if messaging_template:
+            # Use custom subject if provided
+            if "subject" in messaging_template.content:
+                subject = _render(messaging_template.content["subject"], variables)
+
+            # Use custom body content to replace the intro text in HTML template
+            custom_body = messaging_template.content.get("body", "")
+            if custom_body.strip():
+                # Replace the default intro text with the custom body content
+                rendered_custom_body = _render(custom_body, variables)
+                variables["custom_intro"] = rendered_custom_body
+
+        # Always use the HTML template
+        base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Welcome to our Privacy Center",
+            subject=subject,
             body=base_template.render(variables),
             template_variables=variables,
         )
@@ -600,6 +636,7 @@ def _mailchimp_transactional_dispatcher(
         "https://mandrillapp.com/api/1.0/messages/send",
         headers={"Content-Type": "application/json"},
         data=data,
+        timeout=10,
     )
     if not response.ok:
         logger.error("Email failed to send with status code: %s", response.status_code)
@@ -647,6 +684,7 @@ def _mailgun_dispatcher(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
             ),
+            timeout=10,
         )
 
         data = {
@@ -671,6 +709,7 @@ def _mailgun_dispatcher(
                     ],
                 ),
                 data=data,
+                timeout=10,
             )
 
             if not response.ok:
@@ -691,6 +730,7 @@ def _mailgun_dispatcher(
                     ],
                 ),
                 data=data,
+                timeout=10,
             )
             if not response.ok:
                 logger.error(

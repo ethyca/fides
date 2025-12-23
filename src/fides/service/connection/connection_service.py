@@ -1,5 +1,6 @@
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Any, Optional, Set, Tuple
 
+import yaml
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -24,6 +25,7 @@ from fides.api.models.manual_task import (
     ManualTaskParentEntityType,
     ManualTaskType,
 )
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_schema,
@@ -62,6 +64,7 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
+from fides.service.connection.merge_configs_util import merge_datasets
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -70,7 +73,7 @@ class ConnectorTemplateNotFound(Exception):
 
 
 def _detect_connection_config_changes(
-    original_config_dict: Dict[str, Any], new_config_dict: Dict[str, Any]
+    original_config_dict: dict[str, Any], new_config_dict: dict[str, Any]
 ) -> Set[str]:
     """
     Detect which fields have changed between two connection configuration dictionaries.
@@ -312,7 +315,7 @@ class ConnectionService:
 
     def instantiate_connection(
         self,
-        saas_connector_type: str,
+        connector_template_type: str,
         template_values: SaasConnectionTemplateValues,
         system: Optional[System] = None,
     ) -> Tuple[ConnectionConfig, DatasetConfig]:
@@ -323,11 +326,11 @@ class ConnectionService:
         fields are provided, persists the associated connection config and dataset to the database.
         """
         connector_template: Optional[ConnectorTemplate] = (
-            ConnectorRegistry.get_connector_template(saas_connector_type)
+            ConnectorRegistry.get_connector_template(connector_template_type)
         )
         if not connector_template:
             raise ConnectorTemplateNotFound(
-                f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+                f"SaaS connector type '{connector_template_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
             )
 
         if DatasetConfig.filter(
@@ -360,13 +363,13 @@ class ConnectionService:
         except Exception:
             connection_config.delete(self.db)
             raise Exception(
-                f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time."
+                f"SaaS Connector could not be created from the '{connector_template_type}' template at this time."
             )
 
         logger.info(
             "SaaS Connector and Dataset {} successfully created from '{}' template.",
             template_values.instance_key,
-            saas_connector_type,
+            connector_template_type,
         )
 
         # Create audit events for connection and secrets creation
@@ -581,7 +584,7 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
         )
 
@@ -609,7 +612,7 @@ class ConnectionService:
         """Creates a SaaS connection config from a template without saving it."""
         # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        config_from_template: Dict = replace_config_placeholders(
+        config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
 
@@ -639,13 +642,69 @@ class ConnectionService:
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
-        dataset_from_template: Dict = replace_dataset_placeholders(
+        upcoming_dataset: dict = replace_dataset_placeholders(
             template.dataset, "<instance_fides_key>", template_values.instance_key
         )
+
+        # Check if there's an existing dataset to merge with
+        customer_dataset_config = DatasetConfig.filter(
+            db=self.db,
+            conditions=(
+                (DatasetConfig.connection_config_id == connection_config.id)
+                & (DatasetConfig.fides_key == template_values.instance_key)
+            ),
+        ).first()
+
+        connector_type = (
+            connection_config.saas_config.get("type")
+            if connection_config.saas_config
+            and isinstance(connection_config.saas_config, dict)
+            else None
+        )
+        stored_dataset_template = (
+            SaasTemplateDataset.get_by(
+                self.db, field="connection_type", value=connector_type
+            )
+            if connector_type
+            else None
+        )
+
+        final_dataset = upcoming_dataset
+        if customer_dataset_config and customer_dataset_config.ctl_dataset:
+            # Get the existing dataset structure
+            # Convert SQLAlchemy model to dict for merging
+            ctl_dataset = customer_dataset_config.ctl_dataset
+            customer_dataset = {
+                "fides_key": ctl_dataset.fides_key,
+                "name": ctl_dataset.name,
+                "description": ctl_dataset.description,
+                "data_categories": ctl_dataset.data_categories,
+                "collections": ctl_dataset.collections,
+                "fides_meta": ctl_dataset.fides_meta,
+            }
+
+            if stored_dataset_template and isinstance(
+                stored_dataset_template.dataset_json, dict
+            ):
+                stored_dataset = stored_dataset_template.dataset_json
+                final_dataset = merge_datasets(
+                    customer_dataset,
+                    stored_dataset,
+                    upcoming_dataset,
+                    template_values.instance_key,
+                )
+
+        # we save the upcoming dataset as the new stored dataset
+        if stored_dataset_template:
+            stored_dataset_template.dataset_json = yaml.safe_load(template.dataset)[
+                "dataset"
+            ][0]
+            stored_dataset_template.save(db=self.db)
+
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": template_values.instance_key,
-            "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
+            "dataset": final_dataset,  # Currently used for upserting a CTL Dataset
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config

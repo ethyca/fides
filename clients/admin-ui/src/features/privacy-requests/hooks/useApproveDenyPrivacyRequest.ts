@@ -1,4 +1,4 @@
-import { AntMessage as message, useDisclosure } from "fidesui";
+import { useDisclosure, useMessage } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -16,10 +16,14 @@ const useApproveDenyPrivacyRequest = ({
     subjectRequest: privacyRequest,
   });
 
+  const message = useMessage();
+
   const isPendingStatus =
     privacyRequest.status === PrivacyRequestStatus.PENDING;
+  const isDuplicateStatus =
+    privacyRequest.status === PrivacyRequestStatus.DUPLICATE;
 
-  const showAction = isPendingStatus;
+  const showAction = isPendingStatus || isDuplicateStatus;
   const modal = useDisclosure();
 
   const performAction = async ({ reason }: { reason: string }) => {

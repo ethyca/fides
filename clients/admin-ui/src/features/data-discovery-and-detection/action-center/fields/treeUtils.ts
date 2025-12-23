@@ -1,0 +1,141 @@
+import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
+
+import { CustomTreeDataNode } from "./types";
+
+/**
+ * Updates a node's status and optionally diffStatus if it exists in the tree
+ * @param list The tree or subtree to update
+ * @param key The key of the node to update
+ * @param status The new update status to set
+ * @param diffStatus The new diff status to set (optional)
+ * @returns The updated tree
+ */
+const updateNodeStatus = (
+  list: CustomTreeDataNode[],
+  key: React.Key,
+  status: TreeResourceChangeIndicator | null | undefined,
+  diffStatus?: DiffStatus | null | undefined,
+): CustomTreeDataNode[] =>
+  list.map((node) => {
+    if (node.key === key) {
+      return {
+        ...node,
+        status,
+        diffStatus,
+      };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: updateNodeStatus(node.children, key, status, diffStatus),
+      };
+    }
+
+    return node;
+  });
+
+/**
+ * Helper function to remove children from a specific node in the tree
+ * @param list The tree or subtree to update
+ * @param key The key of the node to update
+ * @returns The updated tree
+ */
+const removeChildrenFromNode = (
+  list: CustomTreeDataNode[],
+  key: React.Key,
+): CustomTreeDataNode[] =>
+  list.map((node) => {
+    if (node.key === key) {
+      const { children, ...nodeWithoutChildren } = node;
+      return nodeWithoutChildren;
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: removeChildrenFromNode(node.children, key),
+      };
+    }
+
+    return node;
+  });
+
+/**
+ * Recursively collects all descendant URNs from a node
+ * @param node The node to start from
+ * @returns Array of all descendant URNs (including nested children)
+ */
+const collectAllDescendantUrns = (node: CustomTreeDataNode): string[] => {
+  const descendants: string[] = [];
+
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child) => {
+      if (typeof child.key === "string") {
+        descendants.push(child.key);
+        // Recursively collect descendants of this child
+        descendants.push(...collectAllDescendantUrns(child));
+      }
+    });
+  }
+
+  return descendants;
+};
+
+/**
+ * Finds a node in the tree by its URN
+ * @param treeData The tree to search
+ * @param urn The URN to find
+ * @returns The node if found, undefined otherwise
+ */
+const findNodeByUrn = (
+  treeData: CustomTreeDataNode[],
+  urn: string,
+): CustomTreeDataNode | undefined => {
+  // Use for loop for true early termination - unlike reduce() which continues
+  // iterating through all remaining elements even after finding a match,
+  // for loop allows immediate exit when the target is found, improving
+  // performance on large trees by avoiding unnecessary iterations
+  // eslint-disable-next-line no-restricted-syntax
+  for (const node of treeData) {
+    if (node.key === urn) {
+      return node;
+    }
+    if (node.children) {
+      const found = findNodeByUrn(node.children, urn);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Determines if the badge dot should be shown for a tree node
+ * Badge dots are hidden for muted resources
+ * @param treeNode The tree node to check
+ * @returns True if the badge dot should be shown
+ */
+const shouldShowBadgeDot = (treeNode: DatastoreStagedResourceTreeAPIResponse) =>
+  !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
+
+/**
+ * Collects all URNs from nodes including their descendants
+ * Used for tree-level actions that should affect all fields within
+ * @param nodes The nodes to collect URNs from
+ * @returns Array of all URNs including descendants
+ */
+const collectNodeUrns = (nodes: CustomTreeDataNode[]) =>
+  nodes.flatMap((node) => [
+    node.key.toString(),
+    ...collectAllDescendantUrns(node),
+  ]);
+
+export {
+  collectAllDescendantUrns,
+  collectNodeUrns,
+  findNodeByUrn,
+  removeChildrenFromNode,
+  shouldShowBadgeDot,
+  updateNodeStatus,
+};

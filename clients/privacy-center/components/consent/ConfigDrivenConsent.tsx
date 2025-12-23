@@ -54,7 +54,7 @@ const ConfigDrivenConsent = ({
   /**
    * Update the consent choices on the backend.
    */
-  const saveUserConsentOptions = useCallback(() => {
+  const saveUserConsentOptions = useCallback(async () => {
     const newConsent = makeNoticeConsent({
       consentOptions,
       fidesKeyToConsent,
@@ -80,9 +80,9 @@ const ConfigDrivenConsent = ({
         conflicts_with_gpc: gpcStatus === GpcStatus.OVERRIDDEN,
       };
     });
-    const cookie: FidesCookie = getOrMakeFidesCookie();
+    const cookie: FidesCookie = await getOrMakeFidesCookie();
     cookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
-    saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
+    saveFidesCookie({ ...cookie, consent: newConsent }, { base64Cookie });
 
     const executableOptions = consentOptions.map((option) => ({
       data_use: option.fidesDataUseKey,

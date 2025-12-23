@@ -70,11 +70,7 @@ const SelectableIntegrationBox = ({
         className="w-full"
       >
         <Flex flexGrow={1} width="100%">
-          <ConnectionTypeLogo
-            data={logoData}
-            boxSize="40px"
-            className="shrink-0"
-          />
+          <ConnectionTypeLogo data={logoData} size={40} />
           <Flex
             direction="column"
             flexGrow={1}

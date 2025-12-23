@@ -272,7 +272,7 @@ const initializeGppCmpApi = () => {
     }
   });
 
-  window.addEventListener("FidesUpdated", (event) => {
+  window.addEventListener("FidesUpdated", async (event) => {
     // In our flows, whenever FidesUpdated fires, the UI has closed
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
     const tcSet = setTcString(event, cmpApi);
@@ -301,7 +301,7 @@ const initializeGppCmpApi = () => {
       if (window.Fides.cookie) {
         window.Fides.fides_string = fidesString;
         window.Fides.cookie.fides_string = fidesString;
-        saveFidesCookie(window.Fides.cookie, window.Fides.options.base64Cookie);
+        await saveFidesCookie(window.Fides.cookie, window.Fides.options);
         fidesDebugger("GPP: updated fides_string", fidesString);
       }
     }

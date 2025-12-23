@@ -1,4 +1,3 @@
-import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
@@ -39,7 +38,9 @@ const mockUuid = jest.mocked(uuid);
 mockUuid.v4.mockReturnValue(MOCK_UUID);
 
 // Setup mock js-cookie
-const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
+const mockGetCookie = jest.fn(
+  (name: string): string | undefined => `mockGetCookie return ${name}`,
+);
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object) => {
@@ -61,7 +62,7 @@ const mockRemoveCookie = jest.fn(
 
 jest.mock("js-cookie", () => ({
   withConverter: jest.fn(() => ({
-    get: () => mockGetCookie(),
+    get: (name: string) => mockGetCookie(name),
     set: (name: string, value: string, attributes: object) =>
       mockSetCookie(name, value, attributes),
     remove: (name: string, attributes?: CookieAttributes) =>
@@ -72,6 +73,10 @@ jest.mock("js-cookie", () => ({
 describe("cookies", () => {
   beforeAll(() => {
     window.fidesDebugger = () => {};
+  });
+  afterEach(() => {
+    mockGetCookie.mockClear();
+    mockSetCookie.mockClear();
   });
   describe("makeFidesCookie", () => {
     it("generates a v0.9.0 cookie with uuid", () => {
@@ -113,8 +118,8 @@ describe("cookies", () => {
       beforeEach(() => {
         mockGetCookie.mockReturnValue(undefined);
       });
-      it("makes and returns a default cookie", () => {
-        const cookie: FidesCookie = getOrMakeFidesCookie();
+      it("makes and returns a default cookie", async () => {
+        const cookie: FidesCookie = await getOrMakeFidesCookie();
         expect(cookie.consent).toEqual({});
         expect(cookie.fides_meta.consentMethod).toEqual(undefined);
         expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
@@ -141,18 +146,37 @@ describe("cookies", () => {
           tcf_consent: {},
         };
 
-        it("returns the saved cookie", () => {
-          mockGetCookie.mockReturnValue(JSON.stringify(V090_COOKIE_OBJECT));
-          const cookie: FidesCookie = getOrMakeFidesCookie();
-          expect(cookie.consent).toEqual(SAVED_CONSENT);
-          expect(cookie.fides_meta.consentMethod).toEqual(undefined);
-          expect(cookie.fides_meta.createdAt).toEqual(CREATED_DATE);
-          expect(cookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
-          expect(cookie.identity.fides_user_device_id).toEqual(SAVED_UUID);
-          expect(cookie.tcf_consent).toEqual({});
-        });
+        it.each([
+          {
+            description: "with no suffix",
+            suffix: undefined,
+            cookieName: "fides_consent",
+          },
+          {
+            description: "with a suffix",
+            suffix: "TEST_COOKIE_SUFFIX",
+            cookieName: "fides_consent_TEST_COOKIE_SUFFIX",
+          },
+        ])(
+          "returns the saved cookie $description",
+          async ({ suffix, cookieName }) => {
+            mockGetCookie.mockReturnValue(JSON.stringify(V090_COOKIE_OBJECT));
+            const cookie: FidesCookie = await getOrMakeFidesCookie(undefined, {
+              fidesCookieSuffix: suffix,
+            });
+            expect(cookie.consent).toEqual(SAVED_CONSENT);
+            expect(cookie.fides_meta.consentMethod).toEqual(undefined);
+            expect(cookie.fides_meta.createdAt).toEqual(CREATED_DATE);
+            expect(cookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
+            expect(cookie.identity.fides_user_device_id).toEqual(SAVED_UUID);
+            expect(cookie.tcf_consent).toEqual({});
+            expect(mockGetCookie.mock.calls).toHaveLength(1);
+            const [name] = mockGetCookie.mock.calls[0];
+            expect(name).toBe(cookieName);
+          },
+        );
 
-        it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
+        it("returns the saved cookie including optional fides_meta details like consentMethod", async () => {
           // extend the cookie object with some extra details on fides_meta
           const extendedFidesMeta: FidesJSMeta = {
             ...V090_COOKIE_OBJECT.fides_meta,
@@ -163,7 +187,7 @@ describe("cookies", () => {
             ...{ fides_meta: extendedFidesMeta },
           };
           mockGetCookie.mockReturnValue(JSON.stringify(cookieObject));
-          const cookie: FidesCookie = getOrMakeFidesCookie();
+          const cookie: FidesCookie = await getOrMakeFidesCookie();
           expect(cookie.consent).toEqual(SAVED_CONSENT);
           expect(cookie.fides_meta.consentMethod).toEqual("accept");
           expect(cookie.fides_meta.otherMetadata).toEqual("foo");
@@ -179,33 +203,8 @@ describe("cookies", () => {
         const V0_COOKIE = JSON.stringify(SAVED_CONSENT);
         beforeEach(() => mockGetCookie.mockReturnValue(V0_COOKIE));
 
-        it("returns the saved cookie and converts to new 0.9.0 format", () => {
-          const cookie: FidesCookie = getOrMakeFidesCookie();
-          expect(cookie.consent).toEqual(SAVED_CONSENT);
-          expect(cookie.fides_meta.consentMethod).toEqual(undefined);
-          expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
-          expect(cookie.identity.fides_user_device_id).toEqual(MOCK_UUID);
-          expect(cookie.tcf_consent).toEqual({});
-        });
-      });
-      describe("in base64 format", () => {
-        const V090_COOKIE_OBJECT: FidesCookie = {
-          consent: SAVED_CONSENT,
-          identity: { fides_user_device_id: SAVED_UUID },
-          fides_meta: {
-            createdAt: CREATED_DATE,
-            updatedAt: UPDATED_DATE,
-            version: "0.9.0",
-          },
-          tcf_consent: {},
-        };
-        // mock base64 cookie
-        mockGetCookie.mockReturnValue(
-          base64_encode(JSON.stringify(V090_COOKIE_OBJECT)),
-        );
-
-        it("returns the saved cookie and decodes from base64", () => {
-          const cookie: FidesCookie = getOrMakeFidesCookie();
+        it("returns the saved cookie and converts to new 0.9.0 format", async () => {
+          const cookie: FidesCookie = await getOrMakeFidesCookie();
           expect(cookie.consent).toEqual(SAVED_CONSENT);
           expect(cookie.fides_meta.consentMethod).toEqual(undefined);
           expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
@@ -222,19 +221,18 @@ describe("cookies", () => {
         JSON.stringify({ fides_meta: { updatedAt: MOCK_DATE } }),
       ),
     );
-    afterEach(() => mockSetCookie.mockClear());
 
-    it("updates the updatedAt date", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
+    it("updates the updatedAt date", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
       expect(cookie.fides_meta.updatedAt).toEqual("");
-      saveFidesCookie(cookie, false);
+      await saveFidesCookie(cookie, { base64Cookie: false });
       expect(cookie.fides_meta.updatedAt).toEqual(MOCK_DATE);
     });
 
-    it("saves optional fides_meta details like consentMethod", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
+    it("saves optional fides_meta details like consentMethod", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
       cookie.fides_meta.consentMethod = "dismiss";
-      saveFidesCookie(cookie, false);
+      await saveFidesCookie(cookie, { base64Cookie: false });
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       expect(mockSetCookie.mock.calls[0][0]).toEqual("fides_consent"); // name
       const cookieValue = mockSetCookie.mock.calls[0][1];
@@ -243,9 +241,9 @@ describe("cookies", () => {
       expect(cookieParsed.fides_meta.consentMethod).toEqual("dismiss");
     });
 
-    it("sets a cookie on the root domain with 1 year expiry date", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
-      saveFidesCookie(cookie, false);
+    it("sets a cookie on the root domain with 1 year expiry date", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie(undefined);
+      await saveFidesCookie(cookie, { base64Cookie: false });
       const expectedCookieString = JSON.stringify(cookie);
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
@@ -255,13 +253,14 @@ describe("cookies", () => {
       expect(attributes).toHaveProperty("expires", 365);
     });
 
-    it("sets a base64 cookie", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
-      saveFidesCookie(cookie, true);
-      const expectedCookieString = base64_encode(JSON.stringify(cookie));
+    it("allows saves the cookie with a suffix on the cookie name", async () => {
+      const TEST_COOKIE_SUFFIX = "TEST_SUFFIX";
+      const cookie: FidesCookie = await getOrMakeFidesCookie(undefined);
+      await saveFidesCookie(cookie, { fidesCookieSuffix: TEST_COOKIE_SUFFIX });
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
-      expect(name).toEqual("fides_consent");
+      expect(name).toEqual(`fides_consent_${TEST_COOKIE_SUFFIX}`);
+      const expectedCookieString = JSON.stringify(cookie);
       expect(value).toEqual(expectedCookieString);
       expect(attributes).toHaveProperty("domain", "localhost");
       expect(attributes).toHaveProperty("expires", 365);
@@ -286,14 +285,14 @@ describe("cookies", () => {
       },
     ])(
       "calculates the root domain from the hostname ($url)",
-      ({ url, expected }) => {
+      async ({ url, expected }) => {
         const mockUrl = new URL(url);
         Object.defineProperty(window, "location", {
           value: mockUrl,
           writable: true,
         });
-        const cookie: FidesCookie = getOrMakeFidesCookie();
-        saveFidesCookie(cookie);
+        const cookie: FidesCookie = await getOrMakeFidesCookie();
+        await saveFidesCookie(cookie);
         const numCalls = expected.split(".").length;
         expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
         expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
@@ -364,8 +363,8 @@ describe("cookies", () => {
   });
 
   describe("isNewFidesCookie", () => {
-    it("returns true for new cookies", () => {
-      const newCookie: FidesCookie = getOrMakeFidesCookie();
+    it("returns true for new cookies", async () => {
+      const newCookie: FidesCookie = await getOrMakeFidesCookie();
       expect(isNewFidesCookie(newCookie)).toBeTruthy();
     });
 
@@ -389,8 +388,8 @@ describe("cookies", () => {
       const V090_COOKIE = JSON.stringify(V090_COOKIE_OBJECT);
       beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
 
-      it("returns false for saved cookies", () => {
-        const savedCookie: FidesCookie = getOrMakeFidesCookie();
+      it("returns false for saved cookies", async () => {
+        const savedCookie: FidesCookie = await getOrMakeFidesCookie();
         expect(savedCookie.fides_meta.createdAt).toEqual(CREATED_DATE);
         expect(savedCookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
         expect(isNewFidesCookie(savedCookie)).toBeFalsy();

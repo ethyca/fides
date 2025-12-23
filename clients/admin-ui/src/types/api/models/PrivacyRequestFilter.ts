@@ -10,7 +10,7 @@ export type PrivacyRequestFilter = {
   request_id?: string | null;
   identities?: null;
   fuzzy_search_str?: string | null;
-  custom_privacy_request_fields?: null;
+  custom_privacy_request_fields?: Record<string, string | number> | null;
   status?: PrivacyRequestStatus | Array<PrivacyRequestStatus> | null;
   created_lt?: string | null;
   created_gt?: string | null;
@@ -21,12 +21,13 @@ export type PrivacyRequestFilter = {
   errored_lt?: string | null;
   errored_gt?: string | null;
   external_id?: string | null;
-  action_type?: ActionType | null;
+  location?: string | null;
+  action_type?: ActionType[] | null;
   verbose?: boolean | null;
   include_identities?: boolean | null;
   include_custom_privacy_request_fields?: boolean | null;
   include_deleted_requests?: boolean | null;
   download_csv?: boolean | null;
-  sort_field?: string;
-  sort_direction?: ColumnSort;
+  sort_field?: string | null;
+  sort_direction?: ColumnSort | null;
 };

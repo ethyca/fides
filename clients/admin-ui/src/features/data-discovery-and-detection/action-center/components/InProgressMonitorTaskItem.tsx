@@ -2,17 +2,19 @@ import { formatDistanceStrict } from "date-fns";
 import {
   AntButton as Button,
   AntCol as Col,
+  AntDivider as Divider,
   AntListItemProps as ListItemProps,
-  AntPopover as Popover,
   AntRow as Row,
   AntSpace as Space,
+  AntSpin as Spin,
   AntTag as Tag,
   AntTypography as Typography,
-  Spinner,
+  CUSTOM_TAG_COLOR,
   useToast,
 } from "fidesui";
 
-import { capitalize } from "~/features/common/utils";
+import ClipboardButton from "~/features/common/ClipboardButton";
+import { capitalize, pluralize } from "~/features/common/utils";
 import ConnectionTypeLogo, {
   connectionLogoFromMonitor,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -28,7 +30,7 @@ import {
   useRetryMonitorTaskMutation,
 } from "../action-center.slice";
 
-const { Text, Title } = Typography;
+const { Paragraph, Text, Title } = Typography;
 
 // Helper function to format status names for display
 const formatStatusForDisplay = (status: string): string => {
@@ -53,7 +55,7 @@ export const InProgressMonitorTaskItem = ({
     useRetryMonitorTaskMutation();
   const [dismissMonitorTask, { isLoading: isDismissing }] =
     useDismissMonitorTaskMutation();
-  const isDismissed = Boolean(task.dismissed_in_activity_view);
+  const isDismissed = Boolean(task.dismissed);
   const canRetry =
     task.status === "error" && task.action_type !== MonitorTaskType.DETECTION;
 
@@ -112,7 +114,7 @@ export const InProgressMonitorTaskItem = ({
       task.action_type === MonitorTaskType.LLM_CLASSIFICATION
     ) {
       const verb = task.status === "complete" ? "Classified" : "Classifying";
-      return `${verb} ${fieldCount} ${fieldCount === 1 ? "field" : "fields"}`;
+      return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     if (task.action_type === MonitorTaskType.DETECTION) {
       return task.status === "complete"
@@ -120,37 +122,32 @@ export const InProgressMonitorTaskItem = ({
         : "Monitor scanning";
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
-      return task.status === "complete" ? "Promoted" : "Promoting";
+      const verb = task.status === "complete" ? "Approved" : "Approving";
+      return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";
   })();
 
-  const monitorGroupLabel = (() => {
-    const type = (task.connection_type || "").toString().toUpperCase();
-    if (type.includes("WEBSITE")) {
-      return "Product monitor";
-    }
-    return "Analytics monitor";
-  })();
+  const monitorName = task.monitor_name || "Unknown monitor";
 
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "pending":
-        return "orange";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       case "in_processing":
-        return "processing";
+        return CUSTOM_TAG_COLOR.INFO;
       case "complete":
-        return "green";
+        return CUSTOM_TAG_COLOR.SUCCESS;
       case "error":
-        return "red";
+        return CUSTOM_TAG_COLOR.ERROR;
       case "paused": // This is the actual enum value for "awaiting_processing"
-        return "purple";
+        return CUSTOM_TAG_COLOR.MARBLE;
       case "retrying":
-        return "orange";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       case "skipped":
-        return "gray";
+        return CUSTOM_TAG_COLOR.DEFAULT;
       default:
-        return "gray";
+        return CUSTOM_TAG_COLOR.DEFAULT;
     }
   };
 
@@ -198,67 +195,86 @@ export const InProgressMonitorTaskItem = ({
   return (
     <div {...props} className="w-full">
       <Row gutter={12} className="w-full">
-        <Col span={17} className="align-middle">
-          <Space align="center" size={8} wrap>
-            {logoSource && (
-              <ConnectionTypeLogo data={logoSource} boxSize="24px" />
-            )}
-            <Title level={5} className="m-0">
-              {taskTitle}
-            </Title>
-            {!isInProgress && (
-              <Tag color={getStatusColor(task.status)}>
-                {formatText(task.status)}
-              </Tag>
-            )}
+        <Col span={14} className="align-middle">
+          <Space direction="vertical" size={4}>
+            <Space align="center" size={8} wrap>
+              {logoSource && <ConnectionTypeLogo data={logoSource} size={24} />}
+              <Title level={5} className="m-0">
+                {taskTitle}
+              </Title>
+              {!isInProgress && (
+                <Tag color={getStatusColor(task.status)}>
+                  {formatText(task.status)}
+                </Tag>
+              )}
+            </Space>
             {task.status === "error" && (
-              <>
-                {canRetry && (
-                  <Button
-                    size="small"
-                    type="primary"
-                    loading={isRetrying}
-                    onClick={handleRetryTask}
-                  >
-                    Retry
-                  </Button>
-                )}
-                {!isDismissed && (
-                  <Button
-                    size="small"
-                    loading={isDismissing}
-                    onClick={handleDismissTask}
-                  >
-                    Dismiss
-                  </Button>
-                )}
-                <Popover
-                  content={<div className="max-w-[360px]">{task.message}</div>}
-                  title={null}
-                  trigger="click"
+              <Space>
+                <Paragraph
+                  type="secondary"
+                  size="sm"
+                  ellipsis={{
+                    rows: 1,
+                    expandable: true,
+                    symbol: "more",
+                    tooltip: true,
+                  }}
                 >
-                  <Button type="link" size="small">
-                    Failure reason
-                  </Button>
-                </Popover>
-              </>
+                  {task.message || "Unknown error"}
+                </Paragraph>
+                {task.message && (
+                  <ClipboardButton
+                    copyText={task.message}
+                    size="small"
+                    className="ml-1"
+                  />
+                )}
+              </Space>
             )}
           </Space>
         </Col>
         <Col span={4} className="flex items-center justify-end">
           <Text type="secondary" size="sm">
-            {monitorGroupLabel}
+            {monitorName}
           </Text>
         </Col>
         <Col span={3} className="flex items-center justify-end">
           {isInProgress ? (
-            <Spinner size="sm" color="primary" thickness="2px" speed="0.6s" />
+            <Spin size="small" />
           ) : (
             <Text type="secondary" size="sm">
               {formatDistanceStrict(new Date(task.updated_at), new Date(), {
                 addSuffix: true,
               })}
             </Text>
+          )}
+        </Col>
+        <Col span={3} className="flex items-center justify-end">
+          {task.status === "error" && (
+            <Space size={0} split={<Divider type="vertical" />}>
+              {canRetry && (
+                <Button
+                  type="link"
+                  size="small"
+                  loading={isRetrying}
+                  onClick={handleRetryTask}
+                  className="p-0"
+                >
+                  Retry
+                </Button>
+              )}
+              {!isDismissed && (
+                <Button
+                  type="link"
+                  size="small"
+                  loading={isDismissing}
+                  onClick={handleDismissTask}
+                  className="p-0"
+                >
+                  Dismiss
+                </Button>
+              )}
+            </Space>
           )}
         </Col>
       </Row>

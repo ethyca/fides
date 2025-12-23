@@ -2,9 +2,8 @@ name: Frontend Code Checks
 
 on:
   pull_request:
-    paths:
-      - "clients/**"
-      - ".github/workflows/frontend_checks.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -14,7 +13,31 @@ env:
   CI: true
 
 jobs:
+  Check-Frontend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_frontend_changes: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for frontend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            frontend:
+              - 'clients/**'
+              - '.github/workflows/frontend_checks.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.frontend == 'true'
+        run: echo "${{ steps.filter.outputs.frontend_files }}"
+
   Clients-Unit:
+    needs: Check-Frontend-Changes
+    if: needs.Check-Frontend-Changes.outputs.has_frontend_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -68,3 +91,28 @@ jobs:
       - name: Unit test (${{ matrix.clients }})
         working-directory: clients/${{ matrix.clients }}
         run: npm run test:ci
+
+  # Summary job for branch protection - consolidates all frontend checks
+  Frontend-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Clients-Unit
+    steps:
+      - name: Check job results
+        run: |
+          echo "Clients-Unit: ${{ needs.Clients-Unit.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.Clients-Unit.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Clients-Unit.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          echo "✅ All required frontend checks passed or were skipped"

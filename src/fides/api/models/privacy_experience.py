@@ -17,6 +17,7 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.property import Property
@@ -48,6 +49,7 @@ class Layer1ButtonOption(Enum):
     ACKNOWLEDGE = "acknowledge"
     OPT_IN_OPT_OUT = "opt_in_opt_out"
     OPT_IN_ONLY = "opt_in_only"
+    GPC_CONDITIONAL = "gpc_conditional"
 
 
 class RejectAllMechanism(Enum):
@@ -195,11 +197,18 @@ class ExperienceTranslationBase:
         ),
     )
 
+    # GPC (Global Privacy Control) translatable fields
+    gpc_label = Column(String)  # "Global Privacy Control"
+    gpc_description = Column(String)  # Description shown when GPC is honored
+    gpc_status_applied_label = Column(String)  # "Applied"
+    gpc_status_overridden_label = Column(String)  # "Overridden"
+    gpc_title = Column(String)  # "Global Privacy Control detected"
+
+    modal_link_label = Column(String)
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
     purpose_header = Column(String)
-    modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)
     title = Column(String)
@@ -271,6 +280,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         secondary="experiencenotices",
         backref="experience_configs",
         lazy="selectin",
+        order_by="ExperienceNotices.display_order.asc().nullslast()",
     )
 
     translations: RelationshipProperty[List[ExperienceTranslation]] = relationship(
@@ -748,15 +758,19 @@ def link_notices_to_experience_config(
 ) -> List[PrivacyNotice]:
     """
     Link supplied Notices to ExperienceConfig and unlink any notices not supplied.
+
+    Preserves the order of notices by setting display_order on the junction table records.
     """
     new_notices: Query = db.query(PrivacyNotice).filter(
         PrivacyNotice.id.in_(notice_ids)
     )
 
+    # Add new notices
     for notice in new_notices:
         if notice not in experience_config.privacy_notices:
             experience_config.privacy_notices.append(notice)
 
+    # Remove notices that are no longer in the list
     to_remove: Set[PrivacyNotice] = set(
         notice for notice in experience_config.privacy_notices
     ) - set(notice for notice in new_notices)
@@ -765,6 +779,19 @@ def link_notices_to_experience_config(
         experience_config.privacy_notices.remove(privacy_notice)
 
     experience_config.save(db)
+
+    # Update display_order on the junction table records based on the order in notice_ids
+    for index, notice_id in enumerate(notice_ids):
+        db.query(ExperienceNotices).filter(
+            ExperienceNotices.notice_id == notice_id,
+            ExperienceNotices.experience_config_id == experience_config.id,
+        ).update({"display_order": index})
+
+    db.commit()
+
+    # Expire the relationship to force reload with correct ordering
+    db.expire(experience_config, ["privacy_notices"])
+
     return experience_config.privacy_notices
 
 

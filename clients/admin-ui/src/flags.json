@@ -1,5 +1,6 @@
 {
   "messagingConfiguration": {
+    "label": "Messaging configuration",
     "description": "The configuration link in the Privacy Requests sidebar where a user can configure a messaging provider and storage.",
     "development": true,
     "test": false,
@@ -7,61 +8,71 @@
     "userCannotModify": true
   },
   "standaloneConnections": {
+    "label": "Standalone connections",
     "description": "Allow the creation of standalone connections for testing",
     "development": true,
     "test": true,
     "production": false
   },
   "dataCatalog": {
+    "label": "Data catalog",
     "description": "Data catalog view",
     "development": true,
     "test": true,
     "production": false
   },
   "webMonitor": {
+    "label": "Web monitor",
     "description": "Monitor websites for activity",
     "development": true,
     "test": true,
     "production": false
   },
   "assetConsentStatusLabels": {
+    "label": "Asset consent status labels",
     "description": "Consent status labels for assets discovered by the web monitor",
     "development": true,
     "test": true,
     "production": false
   },
   "oktaMonitor": {
-    "description": "Monitor Okta for activity",
+    "label": "Okta monitor",
+    "description": "Monitor Okta for activity using OAuth2 authentication and Identity Provider Monitor endpoints",
     "development": true,
     "test": true,
     "production": false
   },
   "downloadAccessRequestResults": {
+    "label": "Download access request results",
     "description": "Download access data from completed requests",
     "development": true,
     "test": true,
     "production": false
   },
   "publisherRestrictions": {
+    "label": "Publisher restrictions",
     "description": "TCF publisher restrictions",
     "development": true,
     "test": true,
     "production": false
   },
   "newIntegrationManagement": {
+    "label": "New integration management",
     "description": "Shows all integrations (including SaaS) in the integrations page",
     "development": true,
     "test": true,
     "production": false
   },
-  "alphaFullActionCenter": {
-    "description": "Enable additional Action Center features",
+  "heliosV2": {
+    "label": "Helios v2",
+    "description": "Support LLM classifier for Helios datastore monitor and updated Action Center view that replaces Activity, Detection, and Discovery pages",
     "development": true,
-    "test": false,
+    "test": true,
     "production": false
   },
-  "privacyRequestV2": {
-    "description": "Enable new privacy request dashboard",
+  "alphaPrivacyNoticesSandbox": {
+    "label": "Alpha privacy notices sandbox",
+    "description": "Enable privacy notices sandbox page for testing consent v3",
     "development": true,
     "test": false,
     "production": false

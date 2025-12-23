@@ -9,7 +9,6 @@ import {
   ConsentMechanism,
   ConsentMethod,
   EmptyExperience,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
   NoticeConsent,
@@ -24,10 +23,7 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
-import {
-  consentCookieObjHasSomeConsentSet,
-  getFidesConsentCookie,
-} from "../../lib/cookie";
+import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
@@ -37,6 +33,7 @@ import {
 import {
   FetchState,
   useAutoResetFlag,
+  useFidesConsentCookie,
   useNoticesServed,
   useRetryableFetch,
 } from "../../lib/hooks";
@@ -135,7 +132,8 @@ export const TcfOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const parsedCookie = useFidesConsentCookie(options.fidesCookieSuffix);
+
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
   const userlocale = detectUserLocale(
@@ -293,40 +291,69 @@ export const TcfOverlay = () => {
   }, [experienceFull]);
 
   useEffect(() => {
-    if (!experienceFull) {
-      const defaultIds = EMPTY_ENABLED_IDS;
-      if (experienceMinimal?.privacy_notices) {
-        defaultIds.customPurposesConsent = getEnabledIdsNotice(
-          experienceMinimal.privacy_notices,
-        );
-      }
-      setDraftIds(defaultIds);
-    } else {
-      const {
-        tcf_purpose_consents: consentPurposes = [],
-        privacy_notices: customPurposes = [],
-        tcf_purpose_legitimate_interests: legintPurposes = [],
-        tcf_special_purposes: specialPurposes = [],
-        tcf_features: features = [],
-        tcf_special_features: specialFeatures = [],
-        tcf_vendor_consents: consentVendors = [],
-        tcf_vendor_legitimate_interests: legintVendors = [],
-        tcf_system_consents: consentSystems = [],
-        tcf_system_legitimate_interests: legintSystems = [],
-      } = experienceFull as PrivacyExperience;
+    let isMounted = true;
+    const loadDraftIds = async () => {
+      if (!experienceFull) {
+        // Get custom purposes consent if available
+        const customPurposesConsent = experienceMinimal?.privacy_notices
+          ? await getEnabledIdsNotice(
+              experienceMinimal.privacy_notices,
+              options.fidesCookieSuffix,
+            )
+          : [];
 
-      // Vendors and systems are the same to the FE, so we combine them here
-      setDraftIds({
-        purposesConsent: getEnabledIds(consentPurposes),
-        customPurposesConsent: getEnabledIdsNotice(customPurposes),
-        purposesLegint: getEnabledIds(legintPurposes),
-        specialPurposes: getEnabledIds(specialPurposes),
-        features: getEnabledIds(features),
-        specialFeatures: getEnabledIds(specialFeatures),
-        vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
-        vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
-      });
-    }
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setDraftIds({
+            ...EMPTY_ENABLED_IDS,
+            customPurposesConsent,
+          });
+        }
+      } else {
+        const {
+          tcf_purpose_consents: consentPurposes = [],
+          privacy_notices: customPurposes = [],
+          tcf_purpose_legitimate_interests: legintPurposes = [],
+          tcf_special_purposes: specialPurposes = [],
+          tcf_features: features = [],
+          tcf_special_features: specialFeatures = [],
+          tcf_vendor_consents: consentVendors = [],
+          tcf_vendor_legitimate_interests: legintVendors = [],
+          tcf_system_consents: consentSystems = [],
+          tcf_system_legitimate_interests: legintSystems = [],
+        } = experienceFull as PrivacyExperience;
+
+        // Await custom purposes consent
+        const customPurposesConsent = await getEnabledIdsNotice(
+          customPurposes,
+          options.fidesCookieSuffix,
+        );
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          // Vendors and systems are the same to the FE, so we combine them here
+          setDraftIds({
+            purposesConsent: getEnabledIds(consentPurposes),
+            customPurposesConsent,
+            purposesLegint: getEnabledIds(legintPurposes),
+            specialPurposes: getEnabledIds(specialPurposes),
+            features: getEnabledIds(features),
+            specialFeatures: getEnabledIds(specialFeatures),
+            vendorsConsent: getEnabledIds([
+              ...consentVendors,
+              ...consentSystems,
+            ]),
+            vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
+          });
+        }
+      }
+    };
+    loadDraftIds();
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experienceFull, experienceMinimal]);
 

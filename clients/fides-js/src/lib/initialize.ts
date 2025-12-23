@@ -128,13 +128,16 @@ export const getOverridesByType = <T>(
  * Get the initial Fides cookie based on legacy consent values
  * as well as any preferences stored in existing cookies
  */
-export const getInitialCookie = ({ consent, options }: FidesConfig) => {
+export const getInitialCookie = async ({
+  consent,
+  options,
+}: FidesConfig): Promise<FidesCookie> => {
   // Configure the default legacy consent values
   const context = getConsentContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(consentDefaults, options.fidesClearCookie);
+  return getOrMakeFidesCookie(consentDefaults, options);
 };
 
 /**

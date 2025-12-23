@@ -5,6 +5,9 @@ import { User } from "../user-management/types";
 export const capitalize = (text: string): string =>
   text.replace(/^\w/, (c) => c.toUpperCase());
 
+export const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 /**
  * "Fun On A Bun" => "Fun on a bun"
  * "fun on a bun" => "Fun on a bun"
@@ -34,7 +37,7 @@ export const debounce = (fn: (props?: any) => void, ms = 0) => {
 };
 
 export const formatDate = (value: string | number | Date): string =>
-  format(new Date(value), "MMMM d, y, KK:mm:ss aaa z");
+  format(new Date(value), "MMMM d, y, hh:mm:ss aaa z");
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
@@ -63,10 +66,10 @@ export const getFileNameFromContentDisposition = (
  * // returns 'id=1&id=2&id=3'
  */
 export const getQueryParamsFromArray = (
-  valueList: string[],
+  valueList: string[] | undefined,
   queryParam: string,
 ) => {
-  if (valueList.length > 0) {
+  if (valueList && valueList.length > 0) {
     return `${queryParam}=${valueList.join(`&${queryParam}=`)}`;
   }
   return undefined;
@@ -119,7 +122,7 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (domain: string, size = 24) => {
+export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
@@ -269,3 +272,23 @@ export const truncateUrl = (url: string, limit: number): string => {
     return url;
   }
 };
+
+/**
+ * Formats a number with a suffix for large numbers (K, M, etc.)
+ * @param num - The number to format
+ * @param digits - The number of digits to round to (default is 0)
+ * @returns The formatted number as a string
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
+ *
+ * @example
+ * nFormatter(1111); // returns "1K"
+ * nFormatter(1111, 0); // returns "1K"
+ * nFormatter(1111, 1); // returns "1.1K"
+ * nFormatter(1111, 2); // returns "1.11K"
+ */
+export const nFormatter = (num: number = 0, digits: number = 0) =>
+  Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: digits,
+  }).format(num);

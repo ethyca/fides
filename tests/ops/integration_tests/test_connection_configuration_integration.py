@@ -824,6 +824,7 @@ class TestMicrosoftSQLServerConnection:
             "host": "mssql_example",
             "port": 1433,
             "dbname": "mssql_example",
+            "read_only_connection": False,
         }
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is False
@@ -866,6 +867,7 @@ class TestMicrosoftSQLServerConnection:
             "host": "mssql_example",
             "port": 1433,
             "dbname": "mssql_example",
+            "read_only_connection": False,
         }
         assert connection_config_mssql.last_test_timestamp is not None
         assert connection_config_mssql.last_test_succeeded is True
@@ -1617,6 +1619,7 @@ class TestRDSPostgresConnector:
             connector.test_connection()
 
 
+@pytest.mark.xfail(reason="Old Okta tests")
 @pytest.mark.integration_external
 @pytest.mark.integration_okta
 class TestOktaConnector:

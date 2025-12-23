@@ -1,4 +1,4 @@
-import { AntMessage as message } from "fidesui";
+import { useMessage } from "fidesui";
 import { useEffect, useMemo } from "react";
 
 import { isRootUserId } from "~/features/auth";
@@ -14,6 +14,8 @@ import { ManualFieldListItem, ManualFieldStatus } from "~/types/api";
 export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
   const { plus: isPlusEnabled } = useFeatures();
 
+  const message = useMessage();
+
   const {
     data: tasksData,
     isLoading,
@@ -22,9 +24,9 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
     {
       page: 1,
       size: 100,
-      privacyRequestId,
+      privacy_request_id: privacyRequestId,
       status: undefined, // Get all statuses, we'll filter for completed/skipped
-      includeFullSubmissionDetails: true,
+      include_full_submission_details: true,
     },
     { skip: !isPlusEnabled },
   );
@@ -33,7 +35,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
     if (error) {
       message.error("Failed to fetch manual tasks");
     }
-  }, [error]);
+  }, [error, message]);
 
   // Filter and map completed/skipped tasks to ActivityTimelineItem
   const manualTaskItems: ActivityTimelineItem[] = !tasksData

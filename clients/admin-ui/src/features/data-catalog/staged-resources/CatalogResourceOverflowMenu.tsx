@@ -18,7 +18,7 @@ const CatalogResourceOverflowMenu = ({
     <MenuButton
       as={Button}
       size="small"
-      // @ts-ignore: Ant type, not Chakra type
+      // @ts-expect-error - Ant type, not Chakra type because of `as` prop
       type="text"
       icon={<MoreIcon transform="rotate(90deg)" />}
       className="w-6 gap-0"

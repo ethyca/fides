@@ -27,7 +27,7 @@ const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
           ? connectionLogoFromSystemType(connector)
           : connectionLogoFromKey("ethyca")
       }
-      mr={2}
+      className="mr-2"
     />
     <Heading fontSize="md">
       Describe your {connector ? connector.human_readable : "new"} system

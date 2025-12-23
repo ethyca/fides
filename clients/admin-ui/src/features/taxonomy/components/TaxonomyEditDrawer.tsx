@@ -33,7 +33,7 @@ interface TaxonomyEditDrawerProps {
   onClose: () => void;
 }
 
-const TaxonomyEditDrawer = ({
+const TaxonomyItemEditDrawer = ({
   taxonomyItem,
   taxonomyType,
   onClose: closeDrawer,
@@ -55,11 +55,12 @@ const TaxonomyEditDrawer = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const { updateTrigger } = useTaxonomySlices({ taxonomyType });
+  const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
 
+  const resourceType = taxonomyTypeToResourceType(taxonomyType);
   const customFields = useCustomFields({
     resourceFidesKey: taxonomyItem?.fides_key,
-    resourceType: taxonomyTypeToResourceType(taxonomyType)!,
+    resourceType,
   });
 
   const canUserEditTaxonomy = useHasPermission([
@@ -89,12 +90,7 @@ const TaxonomyEditDrawer = ({
   };
 
   const handleDelete = async () => {
-    // For record keeping, we will not actually delete the taxonomy
-    // but rather mark it as disabled and not show it in the UI
-    await updateTrigger({
-      ...taxonomyItem!,
-      active: false,
-    });
+    await deleteTrigger(taxonomyItem!.fides_key);
     onDeleteClose();
     closeDrawer();
   };
@@ -209,4 +205,4 @@ const TaxonomyEditDrawer = ({
     </>
   );
 };
-export default TaxonomyEditDrawer;
+export default TaxonomyItemEditDrawer;

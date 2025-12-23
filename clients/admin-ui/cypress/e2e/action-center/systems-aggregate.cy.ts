@@ -22,7 +22,7 @@ describe("Action center system aggregate results", () => {
     stubPlus(true);
     stubWebsiteMonitor();
     stubTaxonomyEntities();
-    cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+    cy.visit(`${ACTION_CENTER_ROUTE}/website/${webMonitorKey}`);
     cy.wait("@getSystemAggregateResults");
     cy.getByTestId("page-breadcrumb").should("contain", webMonitorKey); // little hack to make sure the webMonitorKey is available before proceeding
   });
@@ -186,7 +186,9 @@ describe("Action center system aggregate results", () => {
 
   describe("tab navigation", () => {
     it("updates URL hash when switching tabs", () => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
+      cy.visit(
+        `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}#attention-required`,
+      );
       cy.location("hash").should("eq", "#attention-required");
 
       cy.clickAntTab("Added");
@@ -216,14 +218,14 @@ describe("Action center system aggregate results", () => {
 
     it("maintains hash when clicking on a row", () => {
       // no hash (default tab)
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+      cy.visit(`${ACTION_CENTER_ROUTE}/website/${webMonitorKey}`);
       cy.wait("@getSystemAggregateResults");
 
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#attention-required`,
         );
       });
 
@@ -233,7 +235,7 @@ describe("Action center system aggregate results", () => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#added`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#added`,
         );
       });
 
@@ -243,7 +245,7 @@ describe("Action center system aggregate results", () => {
         cy.getByTestId("system-name-link").should(
           "have.attr",
           "href",
-          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#ignored`,
+          `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#ignored`,
         );
       });
 
@@ -253,7 +255,7 @@ describe("Action center system aggregate results", () => {
           .should(
             "have.attr",
             "href",
-            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
+            `${ACTION_CENTER_ROUTE}/website/${webMonitorKey}/[undefined]#attention-required`,
           )
           .click();
       });

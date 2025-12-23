@@ -308,13 +308,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.filter((r) => !r.original.linked_system).length;
 
+  const vendorFilter = tableInstance
+    .getState()
+    .columnFilters.find((c) => c.id === "vendor_id");
   const totalFilters =
-    tableInstance.getState().columnFilters.length > 0
-      ? // @ts-ignore
-        (tableInstance
-          .getState()
-          .columnFilters.filter((c) => c.id === "vendor_id")[0].value
-          .length as number)
+    vendorFilter && Array.isArray(vendorFilter.value)
+      ? vendorFilter.value.length
       : 0;
   return (
     <Flex

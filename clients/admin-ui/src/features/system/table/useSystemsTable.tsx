@@ -2,9 +2,10 @@ import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
   AntFlex as Flex,
-  AntMessage as message,
+  AntFlexProps as FlexProps,
   AntTypography as Typography,
   Icons,
+  useMessage,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -124,6 +125,9 @@ const useSystemsTable = () => {
         locale: {
           emptyText: <div>No systems found</div>,
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [systemsResponse, isLoading, isFetching],
@@ -137,7 +141,7 @@ const useSystemsTable = () => {
   const { selectedRowKeys } = selectionProps ?? {};
 
   // utils
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const { plus: plusIsEnabled } = useFeatures();
   const router = useRouter();
 
@@ -222,6 +226,7 @@ const useSystemsTable = () => {
           <LinkCell
             href={`/systems/configure/${record.fides_key}`}
             data-testid={`system-link-${record.fides_key}`}
+            containerProps={{ className: "max-w-96" } as FlexProps}
           >
             {name || record.fides_key}
           </LinkCell>
@@ -302,8 +307,13 @@ const useSystemsTable = () => {
         dataIndex: "data_stewards",
         key: SystemColumnKeys.DATA_STEWARDS,
         render: (dataStewards: string[] | null) => (
-          <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
+          <ListExpandableCell
+            values={dataStewards ?? []}
+            valueSuffix="users"
+            containerProps={{ className: "min-w-36" }}
+          />
         ),
+        width: 200,
         filters: convertToAntFilters(
           allUsers?.items?.map((user) => user.username),
         ),
@@ -394,7 +404,6 @@ const useSystemsTable = () => {
     handleDelete,
     handleBulkAddToGroup,
     // utils
-    messageContext,
     groupMenuItems,
     selectedSystemForDelete,
   };

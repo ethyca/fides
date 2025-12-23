@@ -28,6 +28,7 @@ export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
   | "SERVER_SIDE_FIDES_API_URL"
   | "FIDES_JS_MAX_AGE_SECONDS"
+  | "FIDES_JS_SERVE_STALE_SECONDS"
   | "MISSING_EXPERIENCE_BEHAVIOR"
   | "LOG_LEVEL"
 >;
@@ -70,6 +71,8 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_CONSENT_FLAG_TYPE"
   | "FIDES_INITIALIZED_EVENT_MODE"
   | "FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING"
+  | "FIDES_COOKIE_SUFFIX"
+  | "FIDES_COOKIE_COMPRESSION"
 >;
 
 export type Styles = string;
@@ -288,6 +291,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
     SERVER_SIDE_FIDES_API_URL:
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
+    FIDES_JS_SERVE_STALE_SECONDS: settings.FIDES_JS_SERVE_STALE_SECONDS,
     MISSING_EXPERIENCE_BEHAVIOR: settings.MISSING_EXPERIENCE_BEHAVIOR,
     LOG_LEVEL: settings.LOG_LEVEL,
   };
@@ -342,6 +346,8 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_INITIALIZED_EVENT_MODE: settings.FIDES_INITIALIZED_EVENT_MODE,
     FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING:
       settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
+    FIDES_COOKIE_SUFFIX: settings.FIDES_COOKIE_SUFFIX,
+    FIDES_COOKIE_COMPRESSION: settings.FIDES_COOKIE_COMPRESSION,
   };
 
   return clientSettings;

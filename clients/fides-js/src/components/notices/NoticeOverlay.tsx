@@ -14,7 +14,6 @@ import {
   AssetType,
   ConsentMechanism,
   ConsentMethod,
-  FidesCookie,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -27,15 +26,12 @@ import {
   isConsentOverride,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import {
-  consentCookieObjHasSomeConsentSet,
-  getFidesConsentCookie,
-} from "../../lib/cookie";
+import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsServingComponent,
 } from "../../lib/events";
-import { useNoticesServed } from "../../lib/hooks";
+import { useFidesConsentCookie, useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
@@ -71,7 +67,7 @@ const NoticeOverlay = () => {
     setServingComponent,
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const parsedCookie = useFidesConsentCookie(options.fidesCookieSuffix);
 
   const getEnabledNoticeKeys = useCallback(
     (consent: NoticeConsent) => {
@@ -450,10 +446,15 @@ const NoticeOverlay = () => {
         onClose,
         onManagePreferencesClick,
       }) => {
+        const layer1ButtonOption =
+          experience.experience_config?.layer1_button_options;
+        const consentContext = getConsentContext();
+        const isGpcConditional =
+          layer1ButtonOption === Layer1ButtonOption.GPC_CONDITIONAL;
         const isAcknowledge =
           isAllNoticeOnly ||
-          experience.experience_config?.layer1_button_options ===
-            Layer1ButtonOption.ACKNOWLEDGE;
+          layer1ButtonOption === Layer1ButtonOption.ACKNOWLEDGE ||
+          (isGpcConditional && consentContext.globalPrivacyControl === true);
         return (
           <ConsentBanner
             attributes={attributes}

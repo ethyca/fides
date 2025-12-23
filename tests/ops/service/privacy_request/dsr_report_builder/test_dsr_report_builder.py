@@ -120,7 +120,7 @@ class TestDSRReportBuilderDataStructure:
         # Verify the package structure
         with zipfile.ZipFile(output_file, "r") as zip_file:
             # Check welcome page content
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Dataset-level redaction:
             # "analytics_system" should NOT be redacted (doesn't match "customer.*")
@@ -348,7 +348,7 @@ class TestDSRReportBuilder(TestDSRReportBuilderBase):
 
         with zipfile.ZipFile(report) as zip_file:
             # Check welcome page content
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
             self.assert_html_contains(
                 welcome_content, "Your requested data", "dataset1"
             )
@@ -392,7 +392,7 @@ class TestDSRReportBuilder(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(report) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
             self.assert_html_contains(
                 welcome_content,
                 str(privacy_request.id),
@@ -401,38 +401,34 @@ class TestDSRReportBuilder(TestDSRReportBuilderBase):
             )
 
     def test_attachment_links_in_index(self, privacy_request: PrivacyRequest):
-        """Test that attachment links in the index page correctly match the files"""
-        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data={})
-
+        """Test that attachment links in clickme.html correctly match the files"""
         # Create multiple attachments with the same name but different URLs
-        attachments = [
-            {
-                "file_name": "test.txt",
-                "download_url": "https://example.com/test1.txt",
-                "file_size": 1024,
-            },
-            {
-                "file_name": "test.txt",
-                "download_url": "https://example.com/test2.txt",
-                "file_size": 2048,
-            },
-            {
-                "file_name": "test.txt",
-                "download_url": "https://example.com/test3.txt",
-                "file_size": 3072,
-            },
-        ]
+        dsr_data = {
+            "attachments": [
+                {
+                    "file_name": "test.txt",
+                    "download_url": "https://example.com/test1.txt",
+                    "file_size": 1024,
+                },
+                {
+                    "file_name": "test.txt",
+                    "download_url": "https://example.com/test2.txt",
+                    "file_size": 2048,
+                },
+                {
+                    "file_name": "test.txt",
+                    "download_url": "https://example.com/test3.txt",
+                    "file_size": 3072,
+                },
+            ]
+        }
 
-        # Add attachments using _add_attachments
-        builder._add_attachments(attachments)
-        builder.out.close()
+        builder = DSRReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify index file exists
-            assert "attachments/index.html" in zip_file.namelist()
-
-            # Read and verify the index content
-            html_content = zip_file.read("attachments/index.html").decode("utf-8")
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Read and verify the clickme.html content (attachments are now in clickme.html)
+            html_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Check that all three files are listed with their original names (non-streaming mode)
             TestDSRReportBuilderBase.assert_html_contains(
@@ -530,7 +526,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with missing data
         content = builder._populate_template(
-            "templates/welcome.html",
+            "templates/clickme.html",
             heading=None,
             description=None,
             data={},  # Pass empty dict instead of None
@@ -539,7 +535,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with malformed data
         content = builder._populate_template(
-            "templates/welcome.html",
+            "templates/clickme.html",
             heading=123,  # Non-string heading
             description=["invalid"],  # Non-string description
             data={"invalid": object()},  # Non-serializable data
@@ -548,7 +544,7 @@ class TestDSRReportBuilderContent(TestDSRReportBuilderBase):
 
         # Test with empty strings
         content = builder._populate_template(
-            "templates/welcome.html", heading="", description="", data={}
+            "templates/clickme.html", heading="", description="", data={}
         )
         assert "Your requested data" in content
 
@@ -601,12 +597,12 @@ class TestDSRReportBuilderOrganization(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Find the order of links in the welcome page
             link_order = []
             for line in welcome_content.split("\n"):
-                if 'href="data/' in line or 'href="attachments/' in line:
+                if 'href="data/' in line:
                     if "data/alpha/" in line:
                         link_order.append("alpha")
                     elif "data/beta/" in line:
@@ -617,17 +613,15 @@ class TestDSRReportBuilderOrganization(TestDSRReportBuilderBase):
                         link_order.append("zebra")
                     elif "data/dataset/" in line:
                         link_order.append("Additional Data")
-                    elif "attachments/index.html" in line:
-                        link_order.append("Additional Attachments")
 
-            # Verify the order: regular datasets alphabetically, then Additional Data, then Additional Attachments
+            # Verify the order: regular datasets alphabetically, then Additional Data
+            # Note: Attachments are now shown in clickme.html, not as a separate link
             assert link_order == [
                 "alpha",
                 "beta",
                 "charlie",
                 "zebra",
                 "Additional Data",
-                "Additional Attachments",
             ]
 
             # Verify the dataset directory structure

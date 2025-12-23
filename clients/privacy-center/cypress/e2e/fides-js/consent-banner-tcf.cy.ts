@@ -166,6 +166,23 @@ const assertAcOptIns = ({
 
 const fidesVendorIdToId = (fidesId: string) => +fidesId.split(".")[1];
 
+const assertTcVendorsDisclosed = ({
+  cookie,
+  ids,
+}: {
+  cookie: FidesCookie;
+  ids: number[];
+}) => {
+  const { fides_string: fidesString } = cookie;
+  const tcString = fidesString?.split(FIDES_SEPARATOR)[0];
+  expect(tcString).to.be.a("string");
+  expect(tcString).to.not.equal("");
+  const model = TCString.decode(tcString);
+  expect(model.vendorsDisclosed).to.exist;
+  const values = Array.from(model.vendorsDisclosed.values()).sort();
+  expect(values).to.eql(ids.sort());
+};
+
 const testCustomPurposes = [false, true];
 
 describe("Fides-js TCF", () => {
@@ -485,10 +502,8 @@ describe("Fides-js TCF", () => {
                 .is.eql(ConsentMethod.ACCEPT);
             }
 
-            // Confirm vendors_disclosed section does not exist
-            expect(cookieKeyConsent.fides_string).to.not.contain(
-              vendorsDisclosed,
-            );
+            // Confirm vendors_disclosed section is included
+            expect(cookieKeyConsent.fides_string).to.contain(vendorsDisclosed);
           });
           if (includeCustomPurposes) {
             // verify window object
@@ -748,8 +763,8 @@ describe("Fides-js TCF", () => {
                   .property("consentMethod")
                   .is.eql(ConsentMethod.REJECT);
               }
-              // Confirm vendors_disclosed section does not exist
-              expect(cookieKeyConsent.fides_string).to.not.contain(
+              // Confirm vendors_disclosed section is included
+              expect(cookieKeyConsent.fides_string).to.contain(
                 vendorsDisclosed,
               );
             });
@@ -1104,8 +1119,8 @@ describe("Fides-js TCF", () => {
                 cy.get("input").should("be.checked");
               });
               cy.get("button").contains("Legitimate interest").click();
-              cy.getByTestId(`toggle-${VENDOR_1.name}`).within(() => {
-                cy.get("input").should("not.be.checked");
+              cy.getByTestId(`toggle-${SYSTEM_1.name}`).within(() => {
+                cy.get("input").should("be.checked");
               });
             });
             cy.get("@FidesUIChanged").should("have.been.calledOnce");
@@ -1323,8 +1338,8 @@ describe("Fides-js TCF", () => {
                   .is.eql(ConsentMethod.ACCEPT);
               }
 
-              // Confirm vendors_disclosed section does not exist
-              expect(cookieKeyConsent.fides_string).to.not.contain(
+              // Confirm vendors_disclosed section is included
+              expect(cookieKeyConsent.fides_string).to.contain(
                 vendorsDisclosed,
               );
             });
@@ -1575,8 +1590,8 @@ describe("Fides-js TCF", () => {
                     .is.eql(ConsentMethod.REJECT);
                 }
 
-                // Confirm vendors_disclosed section does not exist
-                expect(cookieKeyConsent.fides_string).to.not.contain(
+                // Confirm vendors_disclosed section is included
+                expect(cookieKeyConsent.fides_string).to.contain(
                   vendorsDisclosed,
                 );
               });
@@ -1742,8 +1757,8 @@ describe("Fides-js TCF", () => {
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
               ).to.eql({});
-              // Confirm vendors_disclosed section does not exist
-              expect(cookieKeyConsent.fides_string).to.not.contain(
+              // Confirm vendors_disclosed section is included
+              expect(cookieKeyConsent.fides_string).to.contain(
                 vendorsDisclosed,
               );
               assertTcOptIns({
@@ -1780,8 +1795,8 @@ describe("Fides-js TCF", () => {
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
               ).to.eql({});
-              // Confirm vendors_disclosed section does not exist
-              expect(cookieKeyConsent.fides_string).to.not.contain(
+              // Confirm vendors_disclosed section is included
+              expect(cookieKeyConsent.fides_string).to.contain(
                 vendorsDisclosed,
               );
             });
@@ -1968,8 +1983,8 @@ describe("Fides-js TCF", () => {
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
               ).to.eql({});
-              // Confirm vendors_disclosed section does not exist
-              expect(cookieKeyConsent.fides_string).to.not.contain(
+              // Confirm vendors_disclosed section is included
+              expect(cookieKeyConsent.fides_string).to.contain(
                 vendorsDisclosed,
               );
             });
@@ -2015,7 +2030,7 @@ describe("Fides-js TCF", () => {
                 expect(args[0]).to.equal(ConsentMethod.REJECT);
                 expect(args[1]).to.be.a("object");
                 // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
-                expect(args[2]).to.contain("AA,2~~dv.");
+                expect(args[2]).to.contain("AA.IABE,2~~dv.");
                 expect(args[3]).to.be.a("object");
                 // timeout means API call not made, which is expected
                 cy.on("fail", (error) => {
@@ -4485,6 +4500,80 @@ describe("Fides-js TCF", () => {
             expect(firstCall.event).to.equal("FidesConsentLoaded");
             expect(secondCall.event).to.equal("FidesInitialized");
           });
+      });
+    });
+  });
+
+  describe("disclosedVendors segment in TC String", () => {
+    beforeEach(() => {
+      stubTCFExperience({});
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("button").contains("Manage preferences").click();
+      });
+    });
+
+    it("includes all disclosed vendors in the TC String", () => {
+      cy.getByTestId("fides-modal-content").within(() => {
+        cy.getByTestId("Opt in to all-btn").click();
+      });
+      cy.wait("@patchPrivacyPreference");
+
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+        const cookieKeyConsent: FidesCookie = JSON.parse(
+          decodeURIComponent(cookie!.value),
+        );
+
+        assertTcVendorsDisclosed({
+          cookie: cookieKeyConsent,
+          ids: [fidesVendorIdToId(VENDOR_1.id)],
+        });
+      });
+    });
+
+    it("includes all disclosed vendors even when user opts out", () => {
+      cy.get("#fides-tab-vendors").click();
+      cy.getByTestId("fides-modal-content").within(() => {
+        cy.getByTestId("Opt out of all-btn").click();
+      });
+      cy.wait("@patchPrivacyPreference");
+
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+        const cookieKeyConsent: FidesCookie = JSON.parse(
+          decodeURIComponent(cookie!.value),
+        );
+
+        // Verify the vendorsDisclosed segment still contains all vendors
+        assertTcVendorsDisclosed({
+          cookie: cookieKeyConsent,
+          ids: [fidesVendorIdToId(VENDOR_1.id)],
+        });
+      });
+    });
+
+    it("verifies TC String contains the VENDORS_DISCLOSED segment", () => {
+      cy.get("#fides-tab-vendors").click();
+      cy.getByTestId("fides-modal-content").within(() => {
+        cy.getByTestId("Opt in to all-btn").click();
+      });
+      cy.wait("@patchPrivacyPreference");
+
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+        const cookieKeyConsent: FidesCookie = JSON.parse(
+          decodeURIComponent(cookie!.value),
+        );
+
+        const { fides_string: fidesString } = cookieKeyConsent;
+        const tcString = fidesString?.split(FIDES_SEPARATOR)[0];
+
+        // TC String should have at least 2 segments separated by a period
+        // [Core segment].[VENDORS_DISCLOSED segment]
+        const segments = tcString.split(".");
+        expect(segments.length).to.be.at.least(2);
+
+        // Decode and verify the segment contains data
+        const model = TCString.decode(tcString);
+        expect(model.vendorsDisclosed).to.exist;
+        expect(model.vendorsDisclosed.size).to.be.greaterThan(0);
       });
     });
   });

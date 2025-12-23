@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  ACTION_CENTER_ROUTE,
+  ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
@@ -177,6 +177,9 @@ export const useDiscoveredAssetsTable = ({
             </div>
           ),
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [activeTab, isLoading, isFetching, data?.items, data?.total],
@@ -208,6 +211,7 @@ export const useDiscoveredAssetsTable = ({
           </Text>
         ),
         fixed: "left",
+        width: 200,
       },
       {
         title: "Type",
@@ -238,6 +242,7 @@ export const useDiscoveredAssetsTable = ({
               }}
             />
           ),
+        width: 200,
       },
       {
         title: "Categories of consent",
@@ -274,6 +279,7 @@ export const useDiscoveredAssetsTable = ({
             }}
           />
         ),
+        width: 200,
       },
       {
         title: "Locations",
@@ -392,6 +398,7 @@ export const useDiscoveredAssetsTable = ({
             stagedResource={record}
           />
         ),
+        width: 160,
       });
     }
 
@@ -615,7 +622,12 @@ export const useDiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      router.push({
+        pathname: ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
+        query: {
+          monitorId: encodeURIComponent(monitorId),
+        },
+      });
       toast(
         successToastParams(
           `${assetCount} assets from ${systemName} have been added to the system inventory.`,

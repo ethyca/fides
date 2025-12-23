@@ -1,69 +1,25 @@
-import { AntButton as Button, AntDropdown, Box, Icons } from "fidesui";
+import { Box } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
 import React from "react";
 
-import { useFeatures } from "~/features/common/features";
-import FixedLayout from "~/features/common/FixedLayout";
-import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
-  ADD_SYSTEMS_MULTIPLE_ROUTE,
-} from "~/features/common/nav/routes";
+import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
+import AddSystemsMenu from "~/features/system/AddSystemsMenu";
 import SystemsTable from "~/features/system/SystemsTable";
 
 const Systems: NextPage = () => {
-  const router = useRouter();
-  const { dictionaryService: isCompassEnabled } = useFeatures();
-
   return (
-    <FixedLayout title="System inventory">
+    <Layout title="System inventory" mainProps={{ w: "calc(100vw - 240px)" }}>
       <Box data-testid="system-management">
         <PageHeader
           heading="System inventory"
           breadcrumbItems={[{ title: "All systems" }]}
-        >
-          {isCompassEnabled && (
-            <AntDropdown
-              trigger={["click"]}
-              menu={{
-                items: [
-                  {
-                    label: "Create new system",
-                    key: "add-system",
-                    onClick: () => router.push(ADD_SYSTEMS_MANUAL_ROUTE),
-                  },
-                  {
-                    label: "Add multiple systems",
-                    key: "add-multiple-systems",
-                    onClick: () => router.push(ADD_SYSTEMS_MULTIPLE_ROUTE),
-                  },
-                ],
-              }}
-            >
-              <Button
-                type="primary"
-                data-testid="add-system-btn"
-                icon={<Icons.ChevronDown />}
-                className="absolute right-8 top-8"
-              >
-                Add system
-              </Button>
-            </AntDropdown>
-          )}
-          {!isCompassEnabled && (
-            <Button
-              type="primary"
-              data-testid="add-system-btn"
-              onClick={() => router.push(ADD_SYSTEMS_MANUAL_ROUTE)}
-            >
-              Add new system
-            </Button>
-          )}
-        </PageHeader>
+          rightContent={<AddSystemsMenu />}
+          isSticky={false}
+        />
         <SystemsTable />
       </Box>
-    </FixedLayout>
+    </Layout>
   );
 };
 

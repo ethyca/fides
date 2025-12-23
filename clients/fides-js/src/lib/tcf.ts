@@ -109,6 +109,11 @@ export const generateFidesString = async ({
       : uniqueGvlVendorIds(experience as PrivacyExperience);
     tcModel.gvl.narrowVendorsTo(gvlUID);
 
+    // All TCF vendors that were shown to the user must be marked as disclosed
+    gvlUID.forEach((vendorId) => {
+      tcModel.vendorsDisclosed.set(vendorId);
+    });
+
     if (tcStringPreferences) {
       // Set vendors on tcModel
       tcStringPreferences.vendorsConsent.forEach((vendorId) => {
@@ -204,6 +209,18 @@ export const generateFidesString = async ({
       ) {
         experience.tcf_publisher_restrictions.forEach(
           (restriction: TcfPublisherRestriction) => {
+            // Skip restrictions with type 3 (undefined/not used per TCF spec)
+            // The backend never sends type 3, but we handle it defensively in case
+            // external data sources include it. Type 3 is not a valid RestrictionType
+            // enum value in the IAB TCF library.
+            if (restriction.restriction_type === 3) {
+              // eslint-disable-next-line no-console
+              console.warn(
+                "Skipping TCF publisher restriction with type 3 (undefined/not used)",
+                restriction,
+              );
+              return;
+            }
             // NOTE: While this documentation https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/TCF-Implementation-Guidelines.md#pubrestrenc
             // mentions "it might be more efficient to encode a small number of range restriction
             // segments using a specific encoding scheme," this is referring to the CMP's interface (Admin UI)
@@ -215,7 +232,8 @@ export const generateFidesString = async ({
             restriction.vendors.forEach((vendorId: number) => {
               const purposeRestriction = new PurposeRestriction();
               purposeRestriction.purposeId = restriction.purpose_id;
-              purposeRestriction.restrictionType = restriction.restriction_type;
+              purposeRestriction.restrictionType =
+                restriction.restriction_type as RestrictionType;
               tcModel.publisherRestrictions.add(vendorId, purposeRestriction);
             });
           },
@@ -223,8 +241,8 @@ export const generateFidesString = async ({
       }
 
       encodedString = TCString.encode(tcModel, {
-        // We do not want to include vendors disclosed or publisher tc at the moment
-        segments: [Segment.CORE],
+        // We do not want to include the Publisher TC segment at the moment.
+        segments: [Segment.CORE, Segment.VENDORS_DISCLOSED],
       });
 
       fidesDebugger(

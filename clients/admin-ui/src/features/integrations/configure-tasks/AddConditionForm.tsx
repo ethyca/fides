@@ -1,59 +1,43 @@
+import { Dayjs } from "dayjs";
 import {
   AntButton as Button,
   AntForm as Form,
-  AntInput as Input,
+  AntRadio as Radio,
   AntSelect as Select,
   Flex,
+  RadioChangeEvent,
 } from "fidesui";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DatasetReferencePicker } from "~/features/common/dataset";
 import { ConditionLeaf, Operator } from "~/types/api";
 
+import { ConditionValueSelector } from "./components/ConditionValueSelector";
 import { OperatorReferenceGuide } from "./components/OperatorReferenceGuide";
+import { PrivacyRequestFieldPicker } from "./components/PrivacyRequestFieldPicker";
+import { useCustomFieldMetadata } from "./hooks/useCustomFieldMetadata";
+import { FieldSource } from "./types";
+import {
+  getFieldType,
+  getInitialFieldSource,
+  getValueTooltip,
+  OPERATOR_OPTIONS,
+  parseConditionValue,
+  parseStoredValueForForm,
+} from "./utils";
 
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string;
+  value?: string | boolean | Dayjs;
 }
-
-// Utility function to parse condition value
-const parseConditionValue = (
-  operator: Operator,
-  rawValue?: string,
-): string | number | boolean | null => {
-  if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
-    return null;
-  }
-
-  if (!rawValue?.trim()) {
-    return null;
-  }
-
-  // Try boolean first
-  if (rawValue.toLowerCase() === "true") {
-    return true;
-  }
-  if (rawValue.toLowerCase() === "false") {
-    return false;
-  }
-
-  // Try number
-  const numValue = Number(rawValue);
-  if (!Number.isNaN(numValue)) {
-    return numValue;
-  }
-
-  // Default to string
-  return rawValue;
-};
 
 interface AddConditionFormProps {
   onAdd: (condition: ConditionLeaf) => void;
   onCancel: () => void;
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
+  connectionKey: string;
 }
 
 const AddConditionForm = ({
@@ -61,34 +45,64 @@ const AddConditionForm = ({
   onCancel,
   editingCondition,
   isSubmitting = false,
+  connectionKey,
 }: AddConditionFormProps) => {
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
 
-  // Operator options for the select dropdown
-  const operatorOptions = [
-    { label: "Equals", value: Operator.EQ },
-    { label: "Not equals", value: Operator.NEQ },
-    { label: "Greater than", value: Operator.GT },
-    { label: "Greater than or equal", value: Operator.GTE },
-    { label: "Less than", value: Operator.LT },
-    { label: "Less than or equal", value: Operator.LTE },
-    { label: "Exists", value: Operator.EXISTS },
-    { label: "Does not exist", value: Operator.NOT_EXISTS },
-    { label: "List contains", value: Operator.LIST_CONTAINS },
-    { label: "Not in list", value: Operator.NOT_IN_LIST },
-    { label: "Starts with", value: Operator.STARTS_WITH },
-    { label: "Contains", value: Operator.CONTAINS },
-  ];
+  const [fieldSource, setFieldSource] = useState<FieldSource>(
+    getInitialFieldSource(editingCondition),
+  );
+
+  // Get custom field metadata hook
+  const { getCustomFieldMetadata } = useCustomFieldMetadata();
+
+  // Watch the selected field to determine its type
+  const selectedFieldAddress = Form.useWatch("fieldAddress", form);
+  const selectedFieldType = selectedFieldAddress
+    ? getFieldType(selectedFieldAddress)
+    : "string";
+
+  // Get custom field metadata for the selected field
+  const customFieldMetadata = selectedFieldAddress
+    ? getCustomFieldMetadata(selectedFieldAddress)
+    : null;
+
+  // Check if operator should be disabled and set to LIST_CONTAINS
+  const isOperatorFixed =
+    selectedFieldType === "location_groups" ||
+    selectedFieldType === "location_regulations";
+
+  // Automatically set operator to LIST_CONTAINS for location_groups and location_regulations
+  useEffect(() => {
+    if (isOperatorFixed) {
+      form.setFieldValue("operator", Operator.LIST_CONTAINS);
+    }
+  }, [isOperatorFixed, form]);
+
+  // Reset value when user changes the field address to prevent type mismatches
+  // (e.g., switching from a string field with "test" to a date field that expects a Dayjs object)
+  // Only clear if the field has been touched to preserve initial values when editing
+  useEffect(() => {
+    if (form.isFieldTouched("fieldAddress")) {
+      form.setFieldValue("value", undefined);
+    }
+  }, [selectedFieldAddress, form]);
 
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
+        fieldSource: getInitialFieldSource(editingCondition),
         fieldAddress: editingCondition.field_address,
         operator: editingCondition.operator,
-        value: editingCondition.value?.toString() || "",
+        value: parseStoredValueForForm(
+          editingCondition.field_address,
+          editingCondition.value,
+        ),
       }
-    : {};
+    : {
+        fieldSource: FieldSource.PRIVACY_REQUEST,
+      };
 
   const handleSubmit = useCallback(
     (values: FormValues) => {
@@ -106,8 +120,24 @@ const AddConditionForm = ({
 
   const handleCancel = useCallback(() => {
     form.resetFields();
+    setFieldSource(FieldSource.DATASET);
     onCancel();
   }, [form, onCancel]);
+
+  // Handle field source change
+  const handleFieldSourceChange = useCallback(
+    (e: RadioChangeEvent) => {
+      const newSource = e.target.value as FieldSource;
+      setFieldSource(newSource);
+      // Clear field address, operator, and value when switching sources
+      form.setFieldsValue({
+        fieldAddress: undefined,
+        operator: undefined,
+        value: "",
+      });
+    },
+    [form],
+  );
 
   // Check if value field should be disabled
   const selectedOperator = Form.useWatch("operator", form);
@@ -130,13 +160,39 @@ const AddConditionForm = ({
       initialValues={initialValues}
     >
       <Form.Item
+        name="fieldSource"
+        label="Field source"
+        rules={[{ required: true, message: "Field source is required" }]}
+      >
+        <Radio.Group onChange={handleFieldSourceChange}>
+          <Radio
+            value={FieldSource.PRIVACY_REQUEST}
+            data-testid="field-source-privacy-request"
+          >
+            Privacy request field
+          </Radio>
+          <Radio value={FieldSource.DATASET} data-testid="field-source-dataset">
+            Dataset field
+          </Radio>
+        </Radio.Group>
+      </Form.Item>
+
+      <Form.Item
         name="fieldAddress"
-        label="Dataset Field"
-        rules={[{ required: true, message: "Dataset field is required" }]}
-        tooltip="Select a field from your datasets to use in the condition"
+        label="Field"
+        rules={[{ required: true, message: "Field is required" }]}
+        tooltip={
+          fieldSource === FieldSource.DATASET
+            ? "Select a field from your datasets to use in the condition"
+            : "Select a privacy request field to use in the condition"
+        }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        <DatasetReferencePicker />
+        {fieldSource === FieldSource.PRIVACY_REQUEST ? (
+          <PrivacyRequestFieldPicker connectionKey={connectionKey} />
+        ) : (
+          <DatasetReferencePicker />
+        )}
       </Form.Item>
 
       <Form.Item
@@ -156,8 +212,9 @@ const AddConditionForm = ({
         <Select
           placeholder="Select operator"
           aria-label="Select operator"
-          options={operatorOptions}
+          options={OPERATOR_OPTIONS}
           data-testid="operator-select"
+          disabled={isOperatorFixed}
         />
       </Form.Item>
 
@@ -170,20 +227,13 @@ const AddConditionForm = ({
             message: "Value is required for this operator",
           },
         ]}
-        tooltip={
-          isValueDisabled
-            ? "Value is not required for exists/not exists operators"
-            : "Enter the value to compare against. Can be text, number, or true/false"
-        }
+        tooltip={getValueTooltip(selectedFieldType, isValueDisabled)}
       >
-        <Input
-          placeholder={
-            isValueDisabled
-              ? "Not required"
-              : "Enter value (text, number, or true/false)"
-          }
+        <ConditionValueSelector
+          fieldType={selectedFieldType}
           disabled={isValueDisabled}
-          data-testid="value-input"
+          fieldAddress={selectedFieldAddress}
+          customFieldMetadata={customFieldMetadata}
         />
       </Form.Item>
 

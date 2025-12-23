@@ -117,7 +117,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       config,
     );
   makeStub({
-    gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
+    gdprAppliesDefault:
+      optionsOverrides?.fidesTcfGdprApplies ??
+      config.options.fidesTcfGdprApplies ??
+      true,
   });
 
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
@@ -139,12 +142,17 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // eslint-disable-next-line no-param-reassign
   config = {
     ...config,
-    options: { ...config.options, ...overrides.optionsOverrides },
+    options: {
+      ...config.options,
+      // For TCF experiences, fidesTcfGdprApplies should default to true
+      // unless explicitly overridden. This ensures the value is always
+      // defined when checking in extractTCStringForCmpApi.
+      fidesTcfGdprApplies: config.options.fidesTcfGdprApplies ?? true,
+      ...overrides.optionsOverrides,
+    },
   };
   this.config = config;
-  this.cookie = {
-    ...getInitialCookie(config),
-  };
+  this.cookie = await getInitialCookie(config);
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.

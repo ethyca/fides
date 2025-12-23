@@ -722,7 +722,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
         cy.getByTestId("input-execution_start_date")
           .should("have.prop", "value")
-          .should("match", /2024-06-04T[0-9][0-9]:11/);
+          .should("match", /2024-06-04 [0-9][0-9]:[0-9][0-9]:11/);
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
@@ -764,6 +764,118 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("toggle-switch").click({ force: true });
         });
         cy.wait("@putMonitor");
+      });
+
+      describe("LLM classifier configuration", () => {
+        beforeEach(() => {
+          // Mock the configuration settings to enable LLM classifier on the server by default
+          cy.intercept("GET", "/api/v1/config?api_set=false", {
+            body: {
+              detection_discovery: {
+                llm_classifier_enabled: true,
+              },
+            },
+          }).as("getConfigSettings");
+        });
+
+        it("can configure a monitor with LLM classifier enabled", () => {
+          cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+            response: 200,
+          }).as("putMonitor");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.wait("@getConfigSettings");
+          cy.getByTestId("add-modal-content").should("be.visible");
+          cy.getByTestId("input-name").type("Monitor with LLM");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+
+          // LLM fields should now exist (not checking visibility due to modal overlay issues)
+          cy.getByTestId("input-llm_model_override").should("exist");
+
+          // Give fields a moment to render before interacting
+          cy.getByTestId("input-llm_model_override").should("have.value", "");
+          cy.getByTestId("input-llm_model_override").type("gpt-4");
+
+          cy.getByTestId("controlled-select-execution_frequency").antSelect(
+            "Daily",
+          );
+          cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+          cy.getByTestId("next-btn").click();
+          cy.wait("@getDatabasesPage1");
+          cy.getByTestId("prj-bigquery-000001-checkbox").click();
+          cy.getByTestId("save-btn").click();
+
+          cy.wait("@putMonitor").then((interception) => {
+            // Verify LLM classifier fields are in the request
+            expect(
+              interception.request.body.classify_params.context_classifier,
+            ).to.equal("llm");
+            expect(
+              interception.request.body.classify_params.llm_model_override,
+            ).to.equal("gpt-4");
+          });
+        });
+
+        it("should hide LLM fields when switch is toggled off", () => {
+          cy.getByTestId("add-monitor-btn").click();
+          cy.wait("@getConfigSettings");
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // Toggle LLM classifier on
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-llm_model_override").should("be.visible");
+
+          // Toggle it back off
+          cy.getByTestId("input-use_llm_classifier").click();
+          cy.getByTestId("input-llm_model_override").should("not.exist");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "not.exist",
+          );
+        });
+
+        it("should disable LLM classifier switch when server does not support it", () => {
+          // Override the beforeEach mock to disable LLM classifier on the server
+          cy.intercept("GET", "/api/v1/config?api_set=false", {
+            body: {
+              detection_discovery: {
+                llm_classifier_enabled: false,
+              },
+            },
+          }).as("getConfigSettingsDisabled");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.wait("@getConfigSettingsDisabled");
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // LLM classifier switch should be disabled
+          cy.getByTestId("input-use_llm_classifier")
+            .should("exist")
+            .should("be.disabled");
+
+          // LLM fields should not exist
+          cy.getByTestId("input-llm_model_override").should("not.exist");
+          cy.getByTestId("controlled-select-prompt_template").should(
+            "not.exist",
+          );
+        });
+
+        it("should disable LLM classifier when server config is unavailable", () => {
+          // Override the beforeEach mock to return empty object (server doesn't provide the config)
+          cy.intercept("GET", "/api/v1/config?api_set=false", {
+            body: {},
+          }).as("getConfigSettingsEmpty");
+
+          cy.getByTestId("add-monitor-btn").click();
+          cy.wait("@getConfigSettingsEmpty");
+          cy.getByTestId("add-modal-content").should("be.visible");
+
+          // LLM classifier switch should be disabled when config is missing
+          cy.getByTestId("input-use_llm_classifier")
+            .should("exist")
+            .should("be.disabled");
+        });
       });
 
       describe("shared monitor configs", () => {

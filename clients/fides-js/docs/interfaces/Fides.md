@@ -99,7 +99,7 @@ User's current consent string(s) combined into a single value. This is used by
 FidesJS to store IAB consent strings from various frameworks such as TCF, GPP,
 and Google's "Additional Consent" string. Additionally, we support passing a
 Notice Consent string, which is a base64 encoded string of the user's Notice
-Consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Consent preferences. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 The string consists of four parts separated by commas in the format:
 `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
@@ -143,7 +143,7 @@ To always return in the default language only, pass the `disableLocalization` op
 
 | Parameter | Type |
 | ------ | ------ |
-| `options`? | `object` |
+| `options`? | \{ `disableLocalization`: `boolean`; \} |
 | `options.disableLocalization`? | `boolean` |
 
 #### Returns
@@ -264,7 +264,7 @@ See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-mana
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options`? | `object` | Optional configuration for the GTM integration |
+| `options`? | \{ `non_applicable_flag_mode`: `"omit"` \| `"include"`; `flag_type`: `"boolean"` \| `"consent_mechanism"`; \} | Optional configuration for the GTM integration |
 | `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
 | `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
 
@@ -297,6 +297,160 @@ With options to include non-applicable notices and use consent mechanism strings
 
 ***
 
+### aep()
+
+> **aep**: (`options`?) => `object`
+
+Enable the Adobe Experience Platform (AEP) integration. This should be called
+immediately after FidesJS is included. Once enabled, FidesJS will automatically
+sync consent to both Adobe Web SDK (Alloy) and Adobe ECID Opt-In Service (AppMeasurement)
+based on the user's consent preferences.
+
+The integration supports custom mappings for both Adobe Web SDK purposes and
+legacy ECID Opt-In categories. If no custom mappings are provided, default
+mappings are used that work for common use cases.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | \{ `purposeMapping`: `Record`\<`string`, `string`[]\>; `ecidMapping`: `Record`\<`string`, `string`[]\>; \} | Optional configuration for the Adobe Experience Platform integration |
+| `options.purposeMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe Web SDK purposes. Default mapping includes: analytics → ['collect', 'measure'], functional → ['personalize'], advertising → ['share', 'personalize'] |
+| `options.ecidMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe ECID Opt-In categories. Default mapping includes: analytics → ['aa'], functional → ['target'], advertising → ['aam'] |
+
+#### Returns
+
+`object`
+
+| Name | Type |
+| ------ | ------ |
+| `consent` | () => `object` |
+
+#### Examples
+
+Basic usage with default mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.aep()</script>
+</head>
+```
+
+With custom Adobe Web SDK purpose mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      }
+    });
+  </script>
+</head>
+```
+
+With custom ECID Opt-In category mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      ecidMapping: {
+        analytics: ['aa', 'mediaaa'],
+        functional: ['target'],
+        advertising: ['aam', 'adcloud']
+      }
+    });
+  </script>
+</head>
+```
+
+With both custom mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    const aep = Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      },
+      ecidMapping: {
+        analytics: ['aa'],
+        marketing: ['target', 'aam']
+      }
+    });
+
+    // Check current Adobe consent state
+    console.log(aep.consent());
+  </script>
+</head>
+```
+
+***
+
+### gcm()
+
+> **gcm**: (`options`?) => `object`
+
+Enable Google Consent Mode v2 integration. This integration automatically
+syncs Fides consent with Google's Consent Mode v2 API via gtag(), enabling
+proper consent management for Google Analytics, Google Ads, and other
+Google services that respect Consent Mode.
+
+This integration uses the gtag() API to update consent for Google's standard
+consent types: ad_storage, ad_personalization, ad_user_data, analytics_storage,
+and optional types like functionality_storage and personalization_storage.
+
+The integration gracefully handles cases where not all mapped consent keys
+are configured in Fides - it will only process consent for keys that exist
+in both the purposeMapping and the Fides consent object.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | \{ `purposeMapping`: `Record`\<`string`, (`"ad_storage"` \| `"ad_personalization"` \| `"ad_user_data"` \| `"analytics_storage"` \| `"functionality_storage"` \| `"personalization_storage"` \| `"security_storage"`)[]\>; \} | Configuration for the Google Consent Mode integration |
+| `options.purposeMapping`? | `Record`\<`string`, (`"ad_storage"` \| `"ad_personalization"` \| `"ad_user_data"` \| `"analytics_storage"` \| `"functionality_storage"` \| `"personalization_storage"` \| `"security_storage"`)[]\> | Maps Fides consent keys to Google consent types. Default mapping includes: analytics → analytics_storage, advertising → [ad_storage, ad_personalization, ad_user_data], functional → [functionality_storage, personalization_storage], data_sales_and_sharing → [ad_storage, ad_personalization, ad_user_data], marketing → [ad_storage, ad_personalization, ad_user_data] |
+
+#### Returns
+
+`object`
+
+| Name | Type |
+| ------ | ------ |
+| `consent` | () => `null` \| `Record`\<`string`, `"granted"` \| `"denied"`\> |
+
+#### Examples
+
+Basic usage with default mapping:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.gcm()</script>
+</head>
+```
+
+With custom consent mapping:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.gcm({
+      purposeMapping: {
+        analytics: ['analytics_storage'],
+        advertising: ['ad_storage', 'ad_personalization', 'ad_user_data'],
+        functional: ['functionality_storage', 'personalization_storage']
+      }
+    });
+  </script>
+</head>
+```
+
+***
+
 ### shopify()
 
 > **shopify**: (`options`?) => `void`
@@ -312,7 +466,7 @@ See the [Shopify installation tutorial](/tutorials/consent-management/consent-ma
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options`? | `object` | Optional configuration for the Shopify integration |
+| `options`? | \{ `sale_of_data_default`: `boolean`; \} | Optional configuration for the Shopify integration |
 | `options.sale_of_data_default`? | `boolean` | Controls the default value for Shopify's "sale of data" consent. If `true`, the user will be opted-in by default. If `false` or omitted, the user will be opted-out by default. |
 
 #### Returns
@@ -491,7 +645,7 @@ preferences) or in the case when the previous consent is no longer valid.
 
 > **encodeNoticeConsentString**: (`consent`) => `string`
 
-Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 #### Parameters
 
@@ -516,7 +670,7 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 
 > **decodeNoticeConsentString**: (`base64String`) => `object`
 
-Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides\_string](FidesOptions.md#fides_string) for more details.
 
 #### Parameters
 
@@ -601,7 +755,7 @@ If both are provided, `fidesString` takes priority.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `options` | `object` | Options for updating consent |
+| `options` | \{ `consent`: `Record`\<`string`, `string` \| `boolean`\>; `fidesString`: `string`; `validation`: `"throw"` \| `"warn"` \| `"ignore"`; \} | Options for updating consent |
 | `options.consent`? | `Record`\<`string`, `string` \| `boolean`\> | Object mapping notice keys to consent values: - Boolean values: `true` (opt-in/consent granted) or `false` (opt-out/consent declined) - String values: - `"opt_in"` - user has explicitly opted in to this notice - `"opt_out"` - user has explicitly opted out of this notice - `"acknowledge"` - ONLY valid for notices with "notice_only" consent mechanism |
 | `options.fidesString`? | `string` | A Fides string containing encoded consent preferences |
 | `options.validation`? | `"throw"` \| `"warn"` \| `"ignore"` | Controls validation behavior: "throw" (default), "warn", or "ignore" - "throw": Throws an error if any consent value is invalid (default) - "warn": Logs a warning if any consent value is invalid, but continues processing - "ignore": Silently accepts invalid values without validation |

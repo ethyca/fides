@@ -6,6 +6,7 @@ import { ConsentContext } from "./consent-context";
 import {
   Cookies as CookiesType,
   FidesCookie,
+  FidesInitOptions,
   LegacyConsentConfig,
   NoticeConsent,
   PrivacyExperience,
@@ -28,6 +29,17 @@ import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
+const getConsentCookieName = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+) => {
+  const safeSuffix = (suffix ?? "").trim();
+
+  if (safeSuffix.length > 0) {
+    return `${CONSENT_COOKIE_NAME}_${safeSuffix}`;
+  }
+
+  return CONSENT_COOKIE_NAME;
+};
 /**
  * The js-cookie default codec has a more conservative strategy in order to
  * comply with the exact requirements of RFC 6265. For ease of use in external pages,
@@ -101,18 +113,132 @@ export const getCookieByName = (cookieName: string): string | undefined =>
   cookies.get(cookieName);
 
 /**
+ * Check if a fides consent cookie exists (sync operation, no decompression)
+ */
+export const hasFidesConsentCookie = (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+): boolean => {
+  const cookieString = getCookieByName(getConsentCookieName(suffix));
+  return !!cookieString;
+};
+
+/**
+ * Compression/decompression helpers
+ */
+const COMPRESSED_COOKIE_PREFIX = "gzip:";
+
+/**
+ * Check if compression APIs are available in the current browser
+ */
+const isCompressionSupported = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return (
+    typeof CompressionStream !== "undefined" &&
+    typeof DecompressionStream !== "undefined"
+  );
+};
+
+const base64UrlEncode = (data: Uint8Array): string => {
+  const base64 = btoa(String.fromCharCode(...data));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+
+const base64UrlDecode = (str: string): Uint8Array => {
+  const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "===".slice(0, (4 - (base64.length % 4)) % 4);
+  const binary = atob(padded);
+  return new Uint8Array([...binary].map((c) => c.charCodeAt(0)));
+};
+
+/**
+ * Compress cookie string using native CompressionStream API
+ * Falls back to uncompressed JSON if compression is not supported
+ */
+const compressCookie = async (jsonString: string): Promise<string> => {
+  if (!isCompressionSupported()) {
+    fidesDebugger(
+      "CompressionStream API not supported in this browser, saving uncompressed cookie",
+    );
+    return jsonString;
+  }
+
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(jsonString);
+    const stream = new Blob([data])
+      .stream()
+      .pipeThrough(new CompressionStream("gzip"));
+    const buffer = await new Response(stream).arrayBuffer();
+    return COMPRESSED_COOKIE_PREFIX + base64UrlEncode(new Uint8Array(buffer));
+  } catch (error) {
+    fidesDebugger(
+      "Failed to compress cookie, falling back to uncompressed",
+      error,
+    );
+    return jsonString;
+  }
+};
+
+/**
+ * Decompress cookie string using native DecompressionStream API
+ * Throws error if decompression fails (caller should handle)
+ */
+const decompressCookie = async (cookieString: string): Promise<string> => {
+  if (!isCompressionSupported()) {
+    throw new Error(
+      "DecompressionStream API not supported, cannot read compressed cookie",
+    );
+  }
+
+  try {
+    const base64 = cookieString.slice(COMPRESSED_COOKIE_PREFIX.length);
+    const compressed = base64UrlDecode(base64);
+    const stream = new Blob([compressed.buffer as ArrayBuffer])
+      .stream()
+      .pipeThrough(new DecompressionStream("gzip"));
+    return await new Response(stream).text();
+  } catch (error) {
+    throw new Error(`Failed to decompress cookie: ${error}`);
+  }
+};
+
+const isCompressedCookie = (cookieString: string): boolean =>
+  cookieString.startsWith(COMPRESSED_COOKIE_PREFIX);
+
+/**
  * Retrieve and decode fides consent cookie
  */
-export const getFidesConsentCookie = (): FidesCookie | undefined => {
-  const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
+export const getFidesConsentCookie = async (
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+): Promise<FidesCookie | undefined> => {
+  const cookieString = getCookieByName(getConsentCookieName(suffix));
   if (!cookieString) {
     return undefined;
   }
-  // For safety, always try JSON decoding, and if that fails use BASE64
+
   try {
+    // Check for compressed format first
+    if (isCompressedCookie(cookieString)) {
+      try {
+        const decompressed = await decompressCookie(cookieString);
+        return JSON.parse(decompressed);
+      } catch (decompressError) {
+        fidesDebugger(
+          `Failed to decompress cookie (browser may not support CompressionStream API)`,
+          decompressError,
+        );
+        // If decompression fails, we cannot read this cookie
+        // Don't try base64 fallback as that's for a different format
+        return undefined;
+      }
+    }
+    // Try JSON decoding
     return JSON.parse(cookieString);
   } catch {
     try {
+      // Fallback: try base64-encoded JSON (legacy format)
       return JSON.parse(base64_decode(cookieString));
     } catch (e) {
       fidesDebugger(`Unable to read consent cookie`, e);
@@ -129,10 +255,15 @@ export const getFidesConsentCookie = (): FidesCookie | undefined => {
  * NOTE: This doesn't *save* the cookie to the browser. To do that, call
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
-export const getOrMakeFidesCookie = (
+export const getOrMakeFidesCookie = async (
   defaults?: NoticeConsent,
-  fidesClearCookie: boolean = false,
-): FidesCookie => {
+  {
+    fidesClearCookie = false,
+    fidesCookieSuffix,
+  }: Partial<
+    Pick<FidesInitOptions, "fidesClearCookie" | "fidesCookieSuffix">
+  > = {},
+): Promise<FidesCookie> => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
   if (typeof document === "undefined") {
@@ -140,13 +271,13 @@ export const getOrMakeFidesCookie = (
   }
 
   if (fidesClearCookie) {
-    document.cookie =
-      "fides_consent=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie = `${getConsentCookieName(fidesCookieSuffix)}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT`;
     return defaultCookie;
   }
 
   // Check for an existing cookie for this device
-  let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  let parsedCookie: FidesCookie | undefined =
+    await getFidesConsentCookie(fidesCookieSuffix);
 
   // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
   if (parsedCookie?.consent) {
@@ -206,9 +337,18 @@ export const getOrMakeFidesCookie = (
  *   example.com -> example.com
  *   localhost -> localhost
  */
-export const saveFidesCookie = (
+export const saveFidesCookie = async (
   cookie: FidesCookie,
-  base64Cookie: boolean = false,
+  {
+    base64Cookie = false,
+    fidesCookieCompression = "none",
+    fidesCookieSuffix,
+  }: Partial<
+    Pick<
+      FidesInitOptions,
+      "base64Cookie" | "fidesCookieCompression" | "fidesCookieSuffix"
+    >
+  > = {},
 ) => {
   if (typeof document === "undefined") {
     return;
@@ -220,8 +360,20 @@ export const saveFidesCookie = (
   // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
+  // Validate compression option and fallback to "none" if invalid
+  let validatedCompression: "gzip" | "none" = "none";
+  if (fidesCookieCompression === "gzip" || fidesCookieCompression === "none") {
+    validatedCompression = fidesCookieCompression;
+  } else if (fidesCookieCompression) {
+    fidesDebugger(
+      `Invalid fidesCookieCompression value: "${fidesCookieCompression}". Expected "gzip" or "none". Defaulting to "none".`,
+    );
+  }
+
   let encodedCookie: string = JSON.stringify(cookie);
-  if (base64Cookie) {
+  if (validatedCompression === "gzip") {
+    encodedCookie = await compressCookie(encodedCookie);
+  } else if (base64Cookie) {
     encodedCookie = base64_encode(encodedCookie);
   }
 
@@ -230,15 +382,20 @@ export const saveFidesCookie = (
   for (let i = 1; i <= hostnameParts.length; i += 1) {
     // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
     topViableDomain = hostnameParts.slice(-i).join(".");
-    const c = cookies.set(CONSENT_COOKIE_NAME, encodedCookie, {
-      // An explicit path ensures this is always set to the entire domain.
-      path: "/",
-      // An explicit domain allows subdomains to access the cookie.
-      domain: topViableDomain,
-      expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-    });
+    const c = cookies.set(
+      getConsentCookieName(fidesCookieSuffix),
+      encodedCookie,
+      {
+        // An explicit path ensures this is always set to the entire domain.
+        path: "/",
+        // An explicit domain allows subdomains to access the cookie.
+        domain: topViableDomain,
+        expires: CONSENT_COOKIE_MAX_AGE_DAYS,
+      },
+    );
     if (c) {
-      const savedCookie = getFidesConsentCookie();
+      // eslint-disable-next-line no-await-in-loop
+      const savedCookie = await getFidesConsentCookie(fidesCookieSuffix);
       // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
       if (
         savedCookie &&

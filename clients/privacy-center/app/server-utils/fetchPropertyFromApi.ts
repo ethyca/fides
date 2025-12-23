@@ -37,7 +37,9 @@ const fetchPropertyFromApi = async ({
       result = await response.json();
     }
   } catch (e) {
-    log.debug(`Request to fetch property failed`, e);
+    log.debug(
+      `Request to fetch property failed: ${e instanceof Error ? e.message : String(e)}`,
+    );
   }
 
   log.debug(`Fetched property id: ${result?.id}`);

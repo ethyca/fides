@@ -1,0 +1,9 @@
+.monitor-result {
+  &__title {
+    white-space: nowrap;
+    font-weight: normal; // overrides Ant default title font weight
+    & a {
+      font-weight: 600; // only use font weight for links
+    }
+  }
+}

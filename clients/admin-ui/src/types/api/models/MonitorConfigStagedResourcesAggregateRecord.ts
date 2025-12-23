@@ -4,7 +4,9 @@
 
 import type { ConnectionType } from "./ConnectionType";
 import type { ConsentAlertInfo } from "./ConsentAlertInfo";
+import type { DatastoreMonitorUpdates } from "./DatastoreMonitorUpdates";
 import type { SaaSConfigBase } from "./SaaSConfigBase";
+import type { WebMonitorUpdates } from "./WebMonitorUpdates";
 
 /**
  * API response model for records of aggregated staged resources by monitor config.
@@ -20,7 +22,9 @@ export type MonitorConfigStagedResourcesAggregateRecord = {
   name: string;
   key?: string | null;
   last_monitored?: string | null;
-  updates?: any;
+  updates?: DatastoreMonitorUpdates | WebMonitorUpdates;
   total_updates?: number;
   consent_status?: ConsentAlertInfo | null;
+  connection_name?: string | null;
+  has_failed_tasks?: boolean | null;
 };

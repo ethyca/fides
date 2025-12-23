@@ -6,10 +6,12 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
+  MonitorFrequency,
   Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
+import { MonitorClassifyParams } from "~/types/api/models/MonitorClassifyParams";
 
 interface State {
   page?: number;
@@ -59,6 +61,48 @@ interface ChangeResourceCategoryQueryParam {
   staged_resource_urn: string;
   user_assigned_data_categories?: string[];
   user_assigned_system_key?: string;
+}
+
+// Identity Provider Monitor interfaces (Okta-specific)
+interface IdentityProviderMonitorConfig {
+  name: string;
+  key?: string;
+  provider: "okta";
+  connection_config_key: string;
+  enabled: boolean;
+  execution_start_date?: string;
+  execution_frequency?: MonitorFrequency;
+  classify_params?: MonitorClassifyParams;
+}
+
+interface IdentityProviderMonitorListQueryParams {
+  page?: number;
+  size?: number;
+  connection_config_key?: string;
+}
+
+interface IdentityProviderMonitorResultsQueryParams {
+  monitor_config_key: string;
+  page?: number;
+  size?: number;
+  search?: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  status?: string | string[];
+  vendor_id?: string | string[];
+}
+
+interface IdentityProviderMonitorExecuteParams {
+  monitor_config_key: string;
+}
+
+interface IdentityProviderResourceActionParam {
+  monitor_config_key: string;
+  urn: string;
+}
+
+interface IdentityProviderResourceBulkActionParam {
+  monitor_config_key: string;
+  urns: string[];
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -166,6 +210,21 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    unmuteResources: build.mutation<any, BulkResourceActionQueryParams>({
+      query: (params) => ({
+        params,
+        method: "POST",
+        url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
+          { staged_resource_urns: params.staged_resource_urns },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
+    }),
     muteResource: build.mutation<any, ResourceActionQueryParams>({
       query: ({ staged_resource_urn }) => ({
         method: "POST",
@@ -186,7 +245,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     muteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -196,7 +259,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           staged_resource_urns,
         },
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
       query: ({ staged_resource_urns }) => ({
@@ -206,7 +273,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
     }),
     updateResourceCategory: build.mutation<
       Array<{
@@ -227,7 +298,150 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         ],
       }),
 
-      invalidatesTags: ["Discovery Monitor Results", "Monitor Field Results"],
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
+    }),
+    reviewStagedResources: build.mutation<
+      any,
+      BulkResourceActionQueryParams & {
+        monitor_config_key: string;
+      }
+    >({
+      query: ({ staged_resource_urns, monitor_config_key }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${monitor_config_key}/review`,
+        body: {
+          staged_resource_urns,
+        },
+      }),
+      invalidatesTags: [
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+      ],
+    }),
+    // Identity Provider Monitor endpoints (Okta-specific)
+    createIdentityProviderMonitor: build.mutation<
+      MonitorConfig,
+      IdentityProviderMonitorConfig
+    >({
+      query: (body) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    putIdentityProviderMonitor: build.mutation<
+      MonitorConfig,
+      IdentityProviderMonitorConfig
+    >({
+      query: (body) => ({
+        method: "PUT",
+        url: `/plus/identity-provider-monitors`,
+        body,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    getIdentityProviderMonitors: build.query<
+      Page_MonitorStatusResponse_,
+      IdentityProviderMonitorListQueryParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/identity-provider-monitors`,
+        params,
+      }),
+      providesTags: ["Discovery Monitor Configs"],
+    }),
+    getIdentityProviderMonitorResults: build.query<
+      Page_StagedResourceAPIResponse_,
+      IdentityProviderMonitorResultsQueryParams
+    >({
+      query: ({ monitor_config_key, ...params }) => ({
+        method: "GET",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
+        params,
+      }),
+      providesTags: () => ["Identity Provider Monitor Results"],
+    }),
+    executeIdentityProviderMonitor: build.mutation<
+      { monitor_execution_id: string; task_id: string | null },
+      IdentityProviderMonitorExecuteParams
+    >({
+      query: ({ monitor_config_key }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/execute`,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    promoteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/${urn}/promote`,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    muteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
+        body: [urn],
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    unmuteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        body: [urn],
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkPromoteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
+        body: urns,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkMuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
+        body: urns,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkUnmuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        body: urns,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
   }),
 });
@@ -247,7 +461,20 @@ export const {
   useMuteResourcesMutation,
   useConfirmResourceMutation,
   useUnmuteResourceMutation,
+  useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
+  useReviewStagedResourcesMutation,
+  useCreateIdentityProviderMonitorMutation,
+  usePutIdentityProviderMonitorMutation,
+  useGetIdentityProviderMonitorsQuery,
+  useGetIdentityProviderMonitorResultsQuery,
+  useExecuteIdentityProviderMonitorMutation,
+  usePromoteIdentityProviderMonitorResultMutation,
+  useMuteIdentityProviderMonitorResultMutation,
+  useUnmuteIdentityProviderMonitorResultMutation,
+  useBulkPromoteIdentityProviderMonitorResultsMutation,
+  useBulkMuteIdentityProviderMonitorResultsMutation,
+  useBulkUnmuteIdentityProviderMonitorResultsMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

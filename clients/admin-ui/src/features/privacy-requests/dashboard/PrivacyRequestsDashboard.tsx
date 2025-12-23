@@ -1,70 +1,81 @@
 import {
   AntButton as Button,
+  AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
-  AntMessage as message,
   AntPagination as Pagination,
   AntSkeleton as Skeleton,
   AntSpin as Spin,
-  Portal,
-  useDisclosure,
+  Icons,
+  useMessage,
 } from "fidesui";
-import { parseAsString, useQueryState } from "nuqs";
-import React, { useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useMemo } from "react";
 
-import { DownloadLightIcon } from "~/features/common/Icon";
-import { GlobalFilterV2, TableActionBar } from "~/features/common/table/v2";
+import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import { useSelection } from "~/features/common/hooks/useSelection";
+import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import {
-  selectPrivacyRequestFilters,
-  useGetAllPrivacyRequestsQuery,
+  useLazyDownloadPrivacyRequestCsvV2Query,
+  useSearchPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
-import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
+import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
+import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
+import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
+import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
-  const [fuzzySearchTerm, setFuzzySearchTerm] = useQueryState(
-    "search",
-    parseAsString.withDefault("").withOptions({ throttleMs: 100 }),
-  );
-  const filters = useSelector(selectPrivacyRequestFilters);
-  const [messageApi, messageContext] = message.useMessage();
-
   const pagination = useAntPagination();
-  const { pageIndex, pageSize, resetPagination } = pagination;
+  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const messageApi = useMessage();
 
-  const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
-    ...filters,
-    page: pageIndex,
-    size: pageSize,
-    fuzzy_search_str: fuzzySearchTerm,
-  });
+  const { data, isLoading, isFetching, refetch } =
+    useSearchPrivacyRequestsQuery({
+      ...filterQueryParams,
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+    });
+
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
+    const itemsWithKeys = results.items.map((item) => ({
+      ...item,
+      key: item.id,
+    }));
 
-    return results;
+    return { ...results, items: itemsWithKeys };
   }, [data]);
 
-  const { downloadReport } = useDownloadPrivacyRequestReport();
+  const {
+    selectedIds,
+    setSelectedIds,
+    clearSelectedIds,
+    checkboxSelectState,
+    handleSelectAll,
+  } = useSelection({
+    currentPageKeys: requests.map((request) => request.id),
+  });
 
-  const handleSearch = useCallback(
-    (searchTerm: string) => {
-      setFuzzySearchTerm(searchTerm ?? "");
-      resetPagination();
-    },
-    [resetPagination, setFuzzySearchTerm],
-  );
+  // Clear selections when requests change
+  // Once we have full support for select all, we can reset this only on filter changes and add a
+  // manual clear selection after a bulk action is performed
+  useEffect(() => {
+    clearSelectedIds();
+  }, [requests, clearSelectedIds]);
+
+  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
   const handleExport = async () => {
     let messageStr;
     try {
-      await downloadReport(filters);
+      await downloadReport(filterQueryParams);
     } catch (error) {
       if (error instanceof Error) {
         messageStr = error.message;
@@ -77,35 +88,68 @@ export const PrivacyRequestsDashboard = () => {
     }
   };
 
+  const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
+    requests,
+    selectedIds,
+  });
+
   return (
     <div>
-      <TableActionBar>
-        <GlobalFilterV2
-          globalFilter={fuzzySearchTerm}
-          setGlobalFilter={handleSearch}
-          placeholder="Search by request ID or identity value"
+      {/* First row: Search and Filters */}
+      <Flex gap="small" align="center" className="mb-4">
+        <PrivacyRequestFiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          sortState={sortState}
+          setSortState={setSortState}
         />
-        <div className="flex items-center gap-2">
-          <Button data-testid="filter-btn" onClick={onOpen}>
-            Filter
-          </Button>
+      </Flex>
+
+      {/* Second row: Actions */}
+      <Flex gap="small" align="center" justify="space-between" className="mb-2">
+        <Flex align="center" gap="small">
+          <Checkbox
+            id="select-all"
+            checked={checkboxSelectState === "checked"}
+            indeterminate={checkboxSelectState === "indeterminate"}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+          />
+          <label htmlFor="select-all" className="cursor-pointer">
+            Select all
+          </label>
+          <div className="ml-3">
+            <ResultsSelectedCount
+              selectedIds={selectedIds}
+              totalResults={totalRows ?? 0}
+            />
+          </div>
+        </Flex>
+        <Flex align="center" gap="small">
+          <DuplicateRequestsButton
+            className="ml-3"
+            currentStatusFilter={filters.status}
+          />
+          <BulkActionsDropdown
+            selectedIds={selectedIds}
+            menuItems={bulkActionMenuItems}
+          />
+          <Button
+            aria-label="Reload"
+            data-testid="reload-btn"
+            icon={<Icons.Renew />}
+            onClick={() => refetch()}
+          />
           <Button
             aria-label="Export report"
             data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
+            icon={<Icons.Download />}
             onClick={handleExport}
           />
-        </div>
-        <Portal>
-          <RequestTableFilterModal
-            isOpen={isOpen}
-            onClose={onClose}
-            onFilterChange={resetPagination}
-          />
-        </Portal>
-      </TableActionBar>
+        </Flex>
+      </Flex>
+
       {isLoading ? (
-        <div className="border p-2">
+        <div className="p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
@@ -118,10 +162,15 @@ export const PrivacyRequestsDashboard = () => {
       ) : (
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
-            <List<PrivacyRequestEntity>
-              bordered
+            <List<PrivacyRequestResponse>
               dataSource={requests}
-              renderItem={(item) => <ListItem item={item} />}
+              rowSelection={{
+                selectedRowKeys: selectedIds,
+                onChange: setSelectedIds,
+              }}
+              renderItem={(item, index, checkbox) => (
+                <ListItem item={item} checkbox={checkbox} />
+              )}
             />
           </Spin>
           <Pagination
@@ -130,11 +179,10 @@ export const PrivacyRequestsDashboard = () => {
               `${range[0]}-${range[1]} of ${total} items`
             }
             total={totalRows ?? 0}
-            align="end"
+            align="start"
           />
         </Flex>
       )}
-      {messageContext}
     </div>
   );
 };

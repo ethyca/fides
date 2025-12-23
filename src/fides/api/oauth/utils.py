@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
@@ -504,6 +504,12 @@ def _has_direct_scopes(
 def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
     return set(endpoint_scopes.scopes).issubset(user_scopes)
+
+
+def roles_have_scopes(roles: List[str], required_scopes: Iterable[str]) -> bool:
+    """Helper to determine whether the provided user roles have the required scopes"""
+    associated_scopes: List[str] = get_scopes_from_roles(roles)
+    return set(required_scopes).issubset(associated_scopes)
 
 
 def get_client_effective_scopes(client: "ClientDetail") -> List[str]:

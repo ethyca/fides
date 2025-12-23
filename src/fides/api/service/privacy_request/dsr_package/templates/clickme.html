@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600"
+    />
+    <link rel="stylesheet" href="data/main.css" />
+    <script>
+      // format the "requested at" datetime with the user's local date format
+      // and timezone if the Intl API is available in their browser, otherwise default to UTC
+      window.onload = function () {
+        var requestedAt = document.getElementById("requestedAt");
+        var dateString = requestedAt.textContent;
+
+        if (window.Intl) {
+          var formattedDate = new Intl.DateTimeFormat(navigator.language, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZoneName: "short",
+          }).format(new Date(dateString));
+
+          requestedAt.textContent = formattedDate;
+        }
+      };
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header"></div>
+      <div class="content">
+        <h1>Your requested data</h1>
+        <div class="info-grid-container">
+          <div class="info-grid">
+            <div>Request ID:</div>
+            <div>{{ request.id }}</div>
+            <div>Request type:</div>
+            <div>{{ request.type }}</div>
+            {% for identity_type, identity_data in request.identity.items() %}
+            <div>{{ identity_data.label }}:</div>
+            <div>{{ identity_data.value }}</div>
+            {% endfor %}
+            <div>Requested at:</div>
+            <div id="requestedAt">{{ request.requested_at }}</div>
+          </div>
+        </div>
+        <div class="dsr-information-text">
+          <p>
+            This web link contains all data requested as part of your Data
+            Subject Request (DSR). Your information has been compiled from the
+            following areas. Unzip the archive, then click on each section to
+            open and view your data.
+          </p>
+        </div>
+        <div class="dataset-list">
+          {% for name, link in data.items() %}
+          <div class="dataset-item">
+            <a href="{{ link }}" class="dataset-link">{{ name }}</a>
+          </div>
+          {% endfor %}
+        </div>
+        {% if attachments %}
+        <h2 style="margin-top: 2rem">Attachments</h2>
+        {% if not enable_streaming %}
+        <p class="expiration-notice">
+          Note: All download links will expire in {{ download_link_ttl_days }}
+          days.
+        </p>
+        {% endif %}
+        <div class="table table-hover">
+          <div class="table-row">
+            <div class="table-cell" style="text-align: left">File Name</div>
+            <div class="table-cell" style="text-align: left">Size</div>
+          </div>
+          {% for name, info in attachments.items() %}
+          <a href="{{ info.url }}" class="table-row" target="_blank">
+            <div class="table-cell" style="text-align: left">
+              {% if enable_streaming %}{{ name }}{% else %}{{ info.original_name
+              }}{% endif %}
+            </div>
+            <div class="table-cell" style="text-align: left">
+              {{ info.size }}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>

@@ -3,6 +3,7 @@ import { TCString } from "@iabtechlabtcf/core";
 import {
   ConsentMechanism,
   FidesCookie,
+  FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -76,7 +77,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
   // First update tcfEntities based on the `cookie.tcf_consent` obj
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey, experienceKey }) => {
     const cookieConsent = cookie.tcf_consent[cookieKey] ?? {};
-    // @ts-ignore the array map should ensure we will get the right record type
+    // @ts-expect-error the array map will ensure we will get the right record type
     tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
       // Object.keys converts keys to strings, so we coerce id to string here
       const preference = Object.keys(cookieConsent).includes(item.id as string)
@@ -278,13 +279,15 @@ export const getEnabledIds = (modelList: TcfModels) => {
  * Retrieves the enabled IDs from the given Notice list. This is used to
  * determine which IDs are currently enabled for the user to display in the UI.
  */
-export const getEnabledIdsNotice = (
+export const getEnabledIdsNotice = async (
   noticeList: PrivacyNoticeWithPreference[],
-) => {
+  suffix: FidesInitOptions["fidesCookieSuffix"],
+): Promise<string[]> => {
   if (!noticeList) {
     return [];
   }
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const parsedCookie: FidesCookie | undefined =
+    await getFidesConsentCookie(suffix);
 
   return noticeList
     .map((notice) => {

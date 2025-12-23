@@ -1,12 +1,14 @@
 import {
   AntButton as Button,
   AntCheckbox as Checkbox,
+  AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
+  AntPagination as Pagination,
   AntPopover as Popover,
-  AntSpace as Space,
+  Icons,
 } from "fidesui";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { MonitorTaskInProgressResponse } from "~/types/api";
@@ -29,6 +31,8 @@ const formatStatusForDisplay = (
 };
 
 export const InProgressMonitorTasksList = () => {
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
+
   const {
     // List state and data
     searchQuery,
@@ -41,14 +45,16 @@ export const InProgressMonitorTasksList = () => {
     updateShowDismissed,
 
     // Filter actions
-    resetToDefault,
-    clearAllFilters,
+    applyFilters,
+    resetAndApplyFilters,
 
     // Available filter options
     availableStatuses,
 
     // Ant Design list integration
     listProps,
+
+    paginationProps,
   } = useInProgressMonitorTasksList();
 
   const handleStatusesChanged = useCallback(
@@ -58,41 +64,58 @@ export const InProgressMonitorTasksList = () => {
     [updateStatusFilters],
   );
 
+  const handleApplyAndClose = useCallback(() => {
+    applyFilters();
+    setFilterPopoverOpen(false);
+  }, [applyFilters]);
+
+  const handleResetAndClose = useCallback(() => {
+    resetAndApplyFilters();
+    setFilterPopoverOpen(false);
+  }, [resetAndApplyFilters]);
+
   const filterContent = (
-    <div className="min-w-[220px] space-y-3 p-2">
-      <Checkbox.Group
-        value={statusFilters}
-        onChange={handleStatusesChanged}
-        className="flex flex-col gap-2"
-      >
-        {availableStatuses.map((status) => (
-          <Checkbox key={status} value={status}>
-            {formatStatusForDisplay(status)}
-          </Checkbox>
-        ))}
-      </Checkbox.Group>
-      <Checkbox
-        checked={showDismissed}
-        onChange={(e) => updateShowDismissed(e.target.checked)}
-        className="mb-2"
-      >
-        Show dismissed tasks
-      </Checkbox>
-      <Space>
-        <Button size="small" onClick={resetToDefault}>
-          Default
+    <Flex vertical className="min-w-[220px]">
+      <Flex vertical className="gap-1.5 px-4 py-2">
+        <Checkbox.Group
+          value={statusFilters}
+          onChange={handleStatusesChanged}
+          className="flex flex-col gap-1.5"
+        >
+          {availableStatuses.map((status) => (
+            <Checkbox key={status} value={status}>
+              {formatStatusForDisplay(status)}
+            </Checkbox>
+          ))}
+        </Checkbox.Group>
+        <Checkbox
+          checked={showDismissed}
+          onChange={(e) => updateShowDismissed(e.target.checked)}
+        >
+          Dismissed
+        </Checkbox>
+      </Flex>
+      <Divider className="m-0" />
+      <Flex justify="space-between" className="px-4 py-2">
+        <Button
+          size="small"
+          type="text"
+          onClick={handleResetAndClose}
+          className="-ml-2"
+        >
+          Reset
         </Button>
-        <Button size="small" onClick={clearAllFilters}>
-          Clear
+        <Button size="small" type="primary" onClick={handleApplyAndClose}>
+          Apply
         </Button>
-      </Space>
-    </div>
+      </Flex>
+    </Flex>
   );
 
   return (
-    <>
+    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
       {/* Search Row */}
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex justify="space-between" align="center">
         <div className="min-w-[300px]">
           <DebouncedSearchInput
             value={searchQuery ?? ""}
@@ -106,19 +129,35 @@ export const InProgressMonitorTasksList = () => {
           content={filterContent}
           trigger="click"
           placement="bottomRight"
+          open={filterPopoverOpen}
+          onOpenChange={setFilterPopoverOpen}
         >
-          <Button className="flex items-center gap-2">Filter</Button>
+          <Button icon={<Icons.ChevronDown />} iconPosition="end">
+            Filter
+          </Button>
         </Popover>
       </Flex>
 
       <List
         {...listProps}
+        className="h-full overflow-scroll"
         renderItem={(task: MonitorTaskInProgressResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
           </List.Item>
         )}
       />
-    </>
+      <Pagination
+        {...paginationProps}
+        showSizeChanger={{
+          suffixIcon: <Icons.ChevronDown />,
+        }}
+        hideOnSinglePage={
+          // if we're on the smallest page size, and there's only one page, hide the pagination
+          paginationProps.pageSize?.toString() ===
+          paginationProps.pageSizeOptions?.[0]
+        }
+      />
+    </Flex>
   );
 };

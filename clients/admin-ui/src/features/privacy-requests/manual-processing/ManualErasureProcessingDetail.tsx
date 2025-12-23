@@ -64,8 +64,7 @@ const ManualErasureProcessingDetail = ({
         validateOnChange={false}
         validationSchema={Yup.object().shape({})}
       >
-        {/* @ts-ignore */}
-        {(_props: FormikProps<Values>) => (
+        {(_props) => (
           <Drawer
             isOpen={isOpen}
             placement="right"

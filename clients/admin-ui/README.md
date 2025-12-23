@@ -47,5 +47,5 @@ To view a production version of this site, including the backend:
 1. Run `turbo prod-export`. This will
    1. Export the static site to `out/`
    1. Copy the build from `out/` to the folder in the backend which will serve static assets at `/`
-1. Run `nox -s api` in the top-level `fides` directory.
-1. Navigate to `http://localhost:8000`
+1. Run `nox -s dev` in the top-level `fides` directory.
+1. Navigate to `http://localhost:8080`

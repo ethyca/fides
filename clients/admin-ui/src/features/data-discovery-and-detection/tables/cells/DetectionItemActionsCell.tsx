@@ -108,7 +108,8 @@ const DetectionItemActionsCell = ({
   const hasClassificationChanges =
     childDiffStatus &&
     (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
-      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
+      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE] ||
+      childDiffStatus[DiffStatus.REVIEWED]);
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||

@@ -54,12 +54,14 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
 
   const itemHasClassificationChanges =
     diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||
-    diffStatus === DiffStatus.CLASSIFICATION_UPDATE;
+    diffStatus === DiffStatus.CLASSIFICATION_UPDATE ||
+    diffStatus === DiffStatus.REVIEWED;
 
   const childItemsHaveClassificationChanges =
     childDiffStatus &&
     (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
-      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
+      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE] ||
+      childDiffStatus[DiffStatus.REVIEWED]);
 
   const showPromoteAction =
     (itemHasClassificationChanges || childItemsHaveClassificationChanges) &&
@@ -166,8 +168,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
             <MenuButton
               as={Button}
               size="small"
-              // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
-              // @ts-ignore
+              // @ts-expect-error - Ant type, not Chakra type because of `as` prop
               type="text"
               icon={<MoreIcon transform="rotate(90deg)" />}
               className="w-6 gap-0"

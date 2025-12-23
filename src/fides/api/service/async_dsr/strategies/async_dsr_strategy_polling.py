@@ -157,6 +157,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             logger.info(
                 f"Creating initial polling sub-requests for task {request_task.id}"
             )
+
             self._handle_polling_initial_request(
                 request_task,
                 query_config,
@@ -309,7 +310,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(f"Prepared requests: {len(prepared_requests)}")
 
         for next_request, param_value_map in prepared_requests:
-            response = client.send(next_request)
+            response = client.send(next_request, read_request.ignore_errors)
 
             if not response.ok:
                 raise FidesopsException(
@@ -363,6 +364,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     row, policy, privacy_request
                 )
                 response = client.send(prepared_request, request.ignore_errors)
+
+                if not response.ok:
+                    raise FidesopsException(
+                        f"Initial erasure request failed with status code {response.status_code}: {response.text}"
+                    )
 
                 # Extract correlation ID from response (required, like access requests)
                 try:
@@ -550,13 +556,20 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 self.result_request.result_path,
             )
 
-        # Ensure we have the expected polling result type
-        if not isinstance(polling_result, PollingResult):
-            raise PrivacyRequestError("Polling result must be PollingResult instance")
+        # Checks if we have a polling result, response could be empty in case there was no data to access
+        if polling_result:
+            # Ensure we have the expected polling result type
+            if not isinstance(polling_result, PollingResult):
+                raise PrivacyRequestError(
+                    "Polling result must be PollingResult instance"
+                )
 
-        # Store results on the sub-request
-        self._store_sub_request_result(polling_result, sub_request, polling_task)
-
+            # Store results on the sub-request
+            self._store_sub_request_result(polling_result, sub_request, polling_task)
+        else:
+            logger.info(
+                f"No result response for sub-request {sub_request.id} for task {polling_task.id}"
+            )
         # Mark as complete using existing method
         sub_request.update_status(self.session, ExecutionLogStatus.complete.value)
 

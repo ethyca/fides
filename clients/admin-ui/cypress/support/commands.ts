@@ -78,6 +78,68 @@ Cypress.Commands.add("assumeRole", (role) => {
   });
 });
 
+Cypress.Commands.add("overrideFeatureFlag", (flagName, value) => {
+  cy.window().then((win) => {
+    // Get or initialize the persisted state from localStorage
+    const storageKey = STORAGE_ROOT_KEY;
+    const persistedStateStr = win.localStorage.getItem(storageKey);
+    const persistedState = persistedStateStr
+      ? JSON.parse(persistedStateStr)
+      : {};
+
+    // Parse the features slice (redux-persist double-stringifies nested objects)
+    const featuresStr = persistedState.features;
+    const features = featuresStr ? JSON.parse(featuresStr) : { flags: {} };
+
+    // Get or create the flag configuration
+    const currentFlag = features.flags[flagName] || {
+      development: value,
+      test: value,
+      production: value,
+    };
+
+    // Update the flag for the current environment
+    const env = process.env.NEXT_PUBLIC_APP_ENV || "test";
+    features.flags[flagName] = {
+      ...currentFlag,
+      [env]: value,
+    };
+
+    // Save back to localStorage
+    persistedState.features = JSON.stringify(features);
+    win.localStorage.setItem(storageKey, JSON.stringify(persistedState));
+
+    // If the Redux store is available (app already loaded), also dispatch to it
+    // eslint-disable-next-line no-underscore-dangle
+    if ((win as any).__REDUX_STORE__) {
+      // eslint-disable-next-line no-underscore-dangle
+      (win as any).__REDUX_STORE__.dispatch({
+        type: "features/override",
+        payload: {
+          flag: flagName,
+          env,
+          value,
+        },
+      });
+    }
+  });
+});
+
+Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      Object.defineProperty(win.navigator, "language", {
+        value: language,
+        writable: true,
+      });
+      Object.defineProperty(win.navigator, "languages", {
+        value: [language],
+        writable: true,
+      });
+    },
+  });
+});
+
 // this prevents an infinite loop that occurs sometimes and causes tests to
 // fail-- see https://github.com/cypress-io/cypress/issues/20341
 Cypress.on("uncaught:exception", (err) => {
@@ -149,6 +211,26 @@ declare global {
        * @example removeMultiValue("input-singlefield");
        */
       clearSingleValue(selectorId: string): void;
+      /**
+       * Override a feature flag value in the Redux store for testing.
+       * This allows you to toggle feature flags on/off during tests
+       * without needing to modify the UI.
+       *
+       * @example cy.overrideFeatureFlag("webMonitor", false)
+       * @example cy.overrideFeatureFlag("dataCatalog", true)
+       */
+      overrideFeatureFlag(
+        flagName: string,
+        value: boolean | string | number,
+      ): void;
+      /**
+       * Visit a URL with a specific language/locale setting.
+       * This sets the browser's navigator.language before loading the page.
+       *
+       * @example cy.visitWithLanguage("/privacy-requests", "en-US")
+       * @example cy.visitWithLanguage("/settings", "es-ES")
+       */
+      visitWithLanguage(url: string, language: string): Chainable<any>;
     }
   }
 }

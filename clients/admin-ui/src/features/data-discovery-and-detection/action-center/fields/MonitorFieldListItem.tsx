@@ -1,48 +1,31 @@
 import {
+  AntBreadcrumb as Breadcrumb,
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntFlex as Flex,
   AntList as List,
+  AntListItemProps as ListItemProps,
   AntListProps as ListProps,
-  AntProgress as Progress,
   AntSelectProps as SelectProps,
   AntTag as Tag,
   AntText as Text,
-  Icons,
+  AntTooltip as Tooltip,
   SparkleIcon,
 } from "fidesui";
+import _ from "lodash";
 
-import { TaxonomySelectProps } from "~/features/common/dropdown/TaxonomySelect";
-import { capitalize } from "~/features/common/utils";
+import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
+import {
+  parseResourceBreadcrumbs,
+  UrnBreadcrumbItem,
+} from "../utils/parseResourceBreadcrumbs";
 import ClassificationSelect from "./ClassificationSelect";
-import { RESOURCE_STATUS } from "./useFilters";
-
-type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
-type ResourceStatusLabelColor = "nectar" | "red" | "orange" | "blue" | "green";
-
-const ResourceStatus: Record<
-  DiffStatus,
-  {
-    label: ResourceStatusLabel;
-    color?: ResourceStatusLabelColor;
-  }
-> = {
-  classifying: { label: "Classifying", color: "blue" },
-  classification_queued: { label: "Classifying", color: "blue" },
-  classification_update: { label: "In Review", color: "nectar" },
-  classification_addition: { label: "In Review", color: "blue" },
-  addition: { label: "Attention Required", color: "blue" },
-  muted: { label: "Unmonitored", color: "nectar" },
-  removal: { label: "Removed", color: "red" },
-  removing: { label: "In Review", color: "nectar" },
-  promoting: { label: "In Review", color: "nectar" },
-  monitored: { label: "Confirmed", color: "nectar" },
-  approved: { label: "Approved", color: "green" },
-} as const;
+import styles from "./MonitorFieldListItem.module.scss";
+import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { MonitorResource } from "./types";
+import { getMaxSeverity, mapConfidenceBucketToSeverity } from "./utils";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -52,7 +35,7 @@ type TagRender = (
   },
 ) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
 
-const tagRender: TagRender = (props) => {
+export const tagRender: TagRender = (props) => {
   const { label, closable, onClose, isFromClassifier } = props;
 
   const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -78,171 +61,155 @@ const tagRender: TagRender = (props) => {
   );
 };
 
-type ListRenderItem = ListProps<
-  Page_DatastoreStagedResourceAPIResponse_["items"][number]
->["renderItem"];
+type ListRenderItem = ListProps<MonitorResource>["renderItem"];
 
 type MonitorFieldListItemRenderParams = Parameters<
   NonNullable<ListRenderItem>
 >[0] & {
   selected?: boolean;
-  onSelect?: (key: string, selected?: boolean) => void;
-  onSetDataUses: (dataUses: string[], urn: string) => void;
-  onIgnore: (urn: string) => void;
+  onSelect?: (key: React.Key, selected: boolean) => void;
+  onNavigate?: (key: string) => void;
+  dataCategoriesDisabled?: boolean;
+  onSetDataCategories: (urn: string, dataCategories: string[]) => void;
 };
 
 type RenderMonitorFieldListItem = (
-  props: MonitorFieldListItemRenderParams,
+  props: MonitorFieldListItemRenderParams & {
+    actions?: ListItemProps["actions"];
+  },
 ) => ReturnType<NonNullable<ListRenderItem>>;
+
+const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
+  const { title, IconComponent } = breadcrumb;
+  return {
+    title: IconComponent ? (
+      <Flex gap={3} align="center">
+        <IconComponent />
+        <span>{title}</span>
+      </Flex>
+    ) : (
+      title
+    ),
+  };
+};
 
 const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
-  classifications,
   name,
   diff_status,
   selected,
   onSelect,
-  onSetDataUses,
-  user_assigned_data_categories,
-  onIgnore,
+  onSetDataCategories,
+  dataCategoriesDisabled,
+  onNavigate,
+  actions,
+  classifications,
+  ...restProps
 }) => {
-  const onChange: TaxonomySelectProps["onChange"] = (values: string[]) => {
-    onSetDataUses(
-      values.flatMap((value) =>
-        !classifications?.find(
-          (classification) => classification.label !== value,
-        )
-          ? [value]
-          : [],
-      ),
-      urn,
-    );
+  const preferredDataCategories =
+    "preferred_data_categories" in restProps
+      ? restProps.preferred_data_categories
+      : [];
+
+  const onSelectDataCategory = (value: string) => {
+    if (!preferredDataCategories?.includes(value)) {
+      onSetDataCategories(urn, [...(preferredDataCategories ?? []), value]);
+    }
   };
+
+  const confidenceBucketSeverity = _(
+    classifications?.flatMap(({ confidence_bucket }) => {
+      const severity = confidence_bucket
+        ? mapConfidenceBucketToSeverity(confidence_bucket)
+        : undefined;
+      return severity ? [severity] : [];
+    }),
+  )
+    .thru(getMaxSeverity)
+    .value();
 
   return (
     <List.Item
       key={urn}
       actions={[
-        classifications && classifications.length > 0 && (
-          <Flex
-            gap="small"
-            align="center"
-            className="pr-[var(--ant-padding-xl)]"
-            key="progress"
-          >
-            <Progress
-              percent={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? 100
-                  : 25
-              }
-              percentPosition={{
-                align: "start",
-                type: "outer",
-              }}
-              strokeColor={
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? "var(--ant-color-success-text)"
-                  : "var(--ant-color-warning-text)"
-              }
-              steps={2}
-              showInfo={false}
-              strokeLinecap="round"
-              size={[24, 8]}
-            />
-            <Text size="sm" type="secondary" className="font-normal">
-              {capitalize(
-                classifications.find(
-                  (classification) =>
-                    classification.confidence_score ===
-                    ConfidenceScoreRange.HIGH,
-                )
-                  ? ConfidenceScoreRange.HIGH
-                  : ConfidenceScoreRange.LOW,
-              )}
-            </Text>
-          </Flex>
+        confidenceBucketSeverity && (
+          <SeverityGauge severity={confidenceBucketSeverity} className="mr-2" />
         ),
-        classifications && classifications.length > 0 && (
-          <Button
-            aria-label="Approve"
-            icon={<Icons.Checkmark />}
-            size="small"
-            key="approve"
-          />
-        ),
-        diff_status !== DiffStatus.MUTED && (
-          <Button
-            icon={<Icons.ViewOff />}
-            size="small"
-            aria-label="Ignore"
-            key="ignore"
-            onClick={() => onIgnore(urn)}
-          />
-        ),
-        <Button
-          aria-label="Reclassify"
-          icon={<SparkleIcon />}
-          size="small"
-          key="reclassify"
-        />,
+        ...(actions ?? []),
       ]}
     >
       <List.Item.Meta
         avatar={
-          <Checkbox
-            checked={selected}
-            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
-          />
+          <div className="ml-2">
+            <Checkbox
+              checked={selected}
+              onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
+            />
+          </div>
         }
         title={
-          <Flex justify="space-between">
-            <Flex gap="small" align="center" className="w-full">
+          <Flex
+            gap={12}
+            align="center"
+            className={styles["monitor-field__title"]}
+          >
+            <Button
+              type="text"
+              size="small"
+              className="-mx-2"
+              onClick={() => onNavigate && onNavigate(urn)}
+            >
               {name}
-              {diff_status && (
-                <Tag
-                  bordered={false}
-                  color={ResourceStatus[diff_status].color}
-                  className="font-normal text-[var(--ant-font-size-sm)]"
-                >
-                  {ResourceStatus[diff_status].label}
-                </Tag>
-              )}
-              <Text
-                size="sm"
-                type="secondary"
-                className="overflow-hidden font-normal"
-                ellipsis={{ tooltip: urn }}
+            </Button>
+            {diff_status && diff_status !== DiffStatus.ADDITION && (
+              <Tag
+                bordered={false}
+                color={
+                  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
+                }
               >
-                {urn}
-              </Text>
-            </Flex>
+                {MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].label}
+              </Tag>
+            )}
+            <Tooltip title={urn} mouseEnterDelay={0.5}>
+              <Breadcrumb
+                className={styles["monitor-field__breadcrumb"]}
+                items={parseResourceBreadcrumbs(urn).map(renderBreadcrumbItem)}
+                // @ts-expect-error - role works here, but Ant's type system doesn't know that
+                role="presentation"
+                style={{
+                  overflow: "hidden",
+                }}
+              />
+            </Tooltip>
           </Flex>
         }
         description={
           <ClassificationSelect
-            mode="tags"
-            value={[
-              ...(classifications?.map(({ label }) => label) ?? []),
-              ...(user_assigned_data_categories?.map((value) => value) ?? []),
-            ]}
-            tagRender={(props) =>
-              tagRender({
+            mode="multiple"
+            value={preferredDataCategories ?? []}
+            urn={urn}
+            tagRender={(props) => {
+              const isFromClassifier = !!classifications?.find(
+                (item) => item.label === props.value,
+              );
+
+              const handleClose = () => {
+                const newDataCategories =
+                  preferredDataCategories?.filter(
+                    (category) => category !== props.value,
+                  ) ?? [];
+                onSetDataCategories(urn, newDataCategories);
+              };
+
+              return tagRender({
                 ...props,
-                isFromClassifier: !!classifications?.find(
-                  (item) => item.label === props.value,
-                ),
-              })
-            }
-            onChange={onChange}
+                isFromClassifier,
+                onClose: handleClose,
+              });
+            }}
+            onSelectDataCategory={onSelectDataCategory}
+            disabled={dataCategoriesDisabled}
           />
         }
       />

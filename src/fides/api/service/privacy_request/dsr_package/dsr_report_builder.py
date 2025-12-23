@@ -45,11 +45,10 @@ class DSRReportBuilder:
     pages to a zip file in a way that the pages can be navigated between.
 
     The zip file is structured as follows:
-    - welcome.html: the main index page
+    - clickme.html: the main index page (includes attachments if present)
     - data/dataset_name/index.html: the index page for the dataset
     - data/dataset_name/collection_name/index.html: the index page for the collection
     - data/dataset_name/collection_name/item_index.html: the detail page for the item
-    - attachments/index.html: the index page for the attachments
 
         Args:
         privacy_request: the privacy request object
@@ -123,6 +122,7 @@ class DSRReportBuilder:
         heading: Optional[str] = None,
         description: Optional[str] = None,
         data: Optional[dict[str, Any]] = None,
+        extra_template_data: Optional[dict[str, Any]] = None,
     ) -> str:
         """
         Populates the template with the given data.
@@ -132,6 +132,7 @@ class DSRReportBuilder:
             heading: the heading to display on the template
             description: the description to display on the template
             data: the data to populate the template with
+            extra_template_data: additional template variables to pass to the template
 
         Returns:
             The rendered template as a string.
@@ -143,6 +144,8 @@ class DSRReportBuilder:
             "request": self.request_data,
         }
         report_data.update(self.template_data)
+        if extra_template_data:
+            report_data.update(extra_template_data)
         template = self.template_loader.get_template(template_path)
         rendered_template = template.render(report_data)
         return rendered_template
@@ -291,17 +294,17 @@ class DSRReportBuilder:
 
         return filtered_list
 
-    def _generate_attachment_url_from_index(
+    def _generate_attachment_url_from_clickme(
         self, context: dict[str, Any], unique_filename: str
     ) -> str:
-        """Generate the correct URL from attachments/index.html to an attachment file.
+        """Generate the correct URL from clickme.html to an attachment file.
 
         Args:
             context: The attachment context information
             unique_filename: The unique filename of the attachment
 
         Returns:
-            The relative URL from attachments/index.html to the attachment file
+            The relative URL from clickme.html to the attachment file
         """
         # URL-encode the filename for proper HTML link functionality when streaming is enabled
         if self.enable_streaming:
@@ -311,14 +314,15 @@ class DSRReportBuilder:
             encoded_filename = unique_filename
 
         if context.get("type") == "top_level":
-            # Top-level attachments are in the same directory as the index
-            return encoded_filename
+            # Top-level attachments are in attachments/ directory
+            # From clickme.html, we need to go to attachments/filename
+            return f"attachments/{encoded_filename}"
         if context.get("type") in ["direct", "nested"]:
             # Dataset attachments are in data/dataset/collection/attachments/
-            # From attachments/index.html, we need to go to ../data/dataset/collection/attachments/filename
+            # From clickme.html, we need to go to data/dataset/collection/attachments/filename
             dataset = context.get("dataset", "unknown")
             collection = context.get("collection", "unknown")
-            return f"../data/{dataset}/{collection}/attachments/{encoded_filename}"
+            return f"data/{dataset}/{collection}/attachments/{encoded_filename}"
         # Fallback for other cases - return just the filename (encoded if streaming)
         return encoded_filename
 
@@ -412,35 +416,13 @@ class DSRReportBuilder:
             ),
         )
 
-    def _add_attachments(self, attachments: list[dict[str, Any]]) -> None:
+    def _get_all_attachments_for_clickme(self) -> dict[str, dict[str, str]]:
         """
-        Adds top-level attachments to the zip file.
+        Collects all attachments from all datasets and top-level attachments,
+        with links pointing to their actual storage locations relative to clickme.html.
 
-        Args:
-            attachments: the attachments to add
-        """
-        if not attachments or not isinstance(attachments, list):
-            return
-
-        # Process attachments and get the links
-        attachment_links = self._write_attachment_content(attachments, "attachments")
-
-        # Generate attachments index page using the attachments index template
-        self._add_file(
-            "attachments/index.html",
-            self._populate_template(
-                "templates/attachments_index.html",
-                "Attachments",
-                "Files attached to this privacy request",
-                attachment_links,
-            ),
-        )
-
-    def _add_comprehensive_attachments_index(self) -> None:
-        """
-        Creates a comprehensive attachments index that includes ALL attachments
-        from all datasets and top-level attachments, with links pointing to their
-        actual storage locations.
+        Returns:
+            Dictionary mapping descriptive keys to attachment info dictionaries
         """
         # Get all processed attachments using shared logic on original DSR data
         processed_attachments_list = self._get_processed_attachments_list(self.dsr_data)
@@ -463,8 +445,8 @@ class DSRReportBuilder:
 
             # Generate the correct URL based on streaming settings
             if self.enable_streaming:
-                # For streaming mode, use local attachment references
-                correct_url = self._generate_attachment_url_from_index(
+                # For streaming mode, use local attachment references relative to clickme.html
+                correct_url = self._generate_attachment_url_from_clickme(
                     context, unique_filename
                 )
             else:
@@ -487,16 +469,7 @@ class DSRReportBuilder:
             )
             all_attachment_links[key] = corrected_attachment_info
 
-        # Generate comprehensive attachments index page
-        self._add_file(
-            "attachments/index.html",
-            self._populate_template(
-                "templates/attachments_index.html",
-                "All Attachments",
-                "All files attached to this privacy request",
-                all_attachment_links,
-            ),
-        )
+        return all_attachment_links
 
     def generate(self) -> BytesIO:
         """
@@ -536,7 +509,7 @@ class DSRReportBuilder:
                 # Use a more friendly name for the link but keep the dataset name for the path
                 self.main_links["Additional Data"] = "data/dataset/index.html"
 
-            # Add comprehensive attachments index that includes ALL attachments
+            # Collect all attachments for the main index page
             # Check if there are any attachments at all (top-level or in datasets)
             has_top_level_attachments = (
                 "attachments" in self.dsr_data and self.dsr_data["attachments"]
@@ -559,15 +532,23 @@ class DSRReportBuilder:
             )
             has_attachments = has_top_level_attachments or has_dataset_attachments
 
+            # Get all attachments if they exist
+            all_attachments = {}
             if has_attachments:
-                self._add_comprehensive_attachments_index()
-                self.main_links["All Attachments"] = "attachments/index.html"
+                all_attachments = self._get_all_attachments_for_clickme()
 
             # create the main index once all the datasets have been added
+            # Pass attachments data to the template
             self._add_file(
-                "welcome.html",
+                "clickme.html",
                 self._populate_template(
-                    "templates/welcome.html", "DSR Report", None, self.main_links
+                    "templates/clickme.html",
+                    "DSR Report",
+                    None,
+                    self.main_links,
+                    extra_template_data=(
+                        {"attachments": all_attachments} if all_attachments else None
+                    ),
                 ),
             )
         finally:

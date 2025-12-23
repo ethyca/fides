@@ -8,14 +8,18 @@ import {
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
 } from "~/features/plus/plus.slice";
-import { CustomFieldWithId, ResourceTypes } from "~/types/api";
+import { CustomFieldWithId } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import { CustomFieldsFormValues, CustomFieldValues } from "./types";
+import {
+  CustomFieldsFormValues,
+  CustomFieldValues,
+  LegacyResourceTypes,
+} from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
-  resourceType: ResourceTypes;
+  resourceType: LegacyResourceTypes | string;
 };
 
 export const useCustomFields = ({
@@ -86,8 +90,7 @@ export const useCustomFields = ({
 
   const definitionIdToCustomField: Map<string, CustomFieldWithId> =
     useMemo(() => {
-      // @ts-ignore
-      if (isError && error?.status === 404) {
+      if (isError && error && "status" in error && error.status === 404) {
         return new Map();
       }
       const newMap = new Map(

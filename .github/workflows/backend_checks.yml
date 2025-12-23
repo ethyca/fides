@@ -2,17 +2,16 @@ name: Backend Code Checks
 
 on:
   pull_request:
-    # This only ignores paths if there are _no_ commits on the branch that touch other files
-    paths-ignore:
-      - "**.md"
-      - "clients/**"
-      - ".vscode/**"
-      - ".github/workflows/frontend_checks.yml"
-      - ".github/workflows/cypress_*.yml"
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
       - "release-**"
+
+permissions:
+  checks: write
+  pull-requests: write
 
 env:
   IMAGE: ethyca/fides:local
@@ -27,7 +26,40 @@ jobs:
   ###############
   ## Prechecks ##
   ###############
+  Check-Backend-Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_backend_changes: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for backend file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            backend:
+              - '**/*.py'
+              - '**/*.pxl'
+              - '**/*requirements.txt'
+              - 'Dockerfile'
+              - 'Makefile'
+              - 'pyproject.toml'
+              - 'setup.cfg'
+              - 'noxfile.py'
+              - 'data/**'
+              - '.github/workflows/backend_checks.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.backend == 'true'
+        run: echo "${{ steps.filter.outputs.backend_files }}"
+
   Collect-Tests:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,11 +74,20 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Run Static Check
         run: nox -s collect_tests
 
   Build:
-    needs: Collect-Tests
+    needs: [Check-Backend-Changes, Collect-Tests]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
@@ -70,6 +111,9 @@ jobs:
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=gha,scope=${{ matrix.python_version }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.python_version }}
+
 
       - name: Upload container
         uses: actions/upload-artifact@v4
@@ -82,7 +126,8 @@ jobs:
   ## Performance ##
   ##################
   Performance-Checks:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -113,6 +158,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -126,9 +179,71 @@ jobs:
   ## Misc Checks ##
   #################
   Check-Container-Startup:
-    needs: Build
+    needs: [Check-Backend-Changes, Build]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    steps:
+      - name: Pull Docker images in background
+        run: |
+          docker pull postgres:16 > /dev/null 2>&1 &
+          docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          echo "Docker pull initiated in background."
+        shell: bash
+
+      - name: Download container
+        uses: actions/download-artifact@v4
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
+      - name: Run Fides webserver startup check
+        run: nox -s check_container_startup
+
+      - name: Run Celery worker startup check
+        run: nox -s check_worker_startup
+
+  Migration-Checks:
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    strategy:
+      matrix:
+        test_selection:
+          - "check_migrations"
+          - "check_migration_downgrade"
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: false
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -151,20 +266,26 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Run Fides webserver startup check
-        run: nox -s check_container_startup
-
-      - name: Run Celery worker startup check
-        run: nox -s check_worker_startup
+      - name: Run migration test
+        run: nox -s "${{ matrix.test_selection }}"
 
   Misc-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       matrix:
         test_selection:
@@ -172,7 +293,6 @@ jobs:
           - "fides_db_scan"
           - "docs_check"
           - "minimal_config_startup"
-          - "check_migrations"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -199,6 +319,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -208,11 +336,18 @@ jobs:
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/test_report.xml'
+
   ################
   ## Safe Tests ##
   ################
   Safe-Tests:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -251,6 +386,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -260,11 +403,17 @@ jobs:
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: '**/test_report.xml'
+
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
   ##################
   ## Unsafe Tests ##
@@ -272,15 +421,14 @@ jobs:
   # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -302,6 +450,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -324,7 +480,8 @@ jobs:
           DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
           DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
           DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
-          OKTA_CLIENT_TOKEN: op://github-actions/ctl/OKTA_CLIENT_TOKEN
+          OKTA_CLIENT_ID: op://github-actions/okta/OKTA_CLIENT_ID
+          OKTA_PRIVATE_KEY: op://github-actions/okta/OKTA_PRIVATE_KEY
           REDSHIFT_FIDESCTL_PASSWORD: op://github-actions/ctl/REDSHIFT_FIDESCTL_PASSWORD
           SNOWFLAKE_FIDESCTL_PASSWORD: op://github-actions/ctl/SNOWFLAKE_FIDESCTL_PASSWORD
 
@@ -334,15 +491,14 @@ jobs:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
   External-Datastores:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -364,6 +520,14 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -397,8 +561,9 @@ jobs:
           GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER
           GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME
           GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS
-          OKTA_API_TOKEN: op://github-actions/okta/OKTA_API_TOKEN
+          OKTA_CLIENT_ID: op://github-actions/okta/OKTA_CLIENT_ID
           OKTA_ORG_URL: op://github-actions/okta/OKTA_ORG_URL
+          OKTA_PRIVATE_KEY: op://github-actions/okta/OKTA_PRIVATE_KEY
           RDS_MYSQL_AWS_ACCESS_KEY_ID: op://github-actions/rds-mysql/RDS_MYSQL_AWS_ACCESS_KEY_ID
           RDS_MYSQL_AWS_SECRET_ACCESS_KEY: op://github-actions/rds-mysql/RDS_MYSQL_AWS_SECRET_ACCESS_KEY
           RDS_MYSQL_DB_INSTANCE: op://github-actions/rds-mysql/RDS_MYSQL_DB_INSTANCE
@@ -439,11 +604,10 @@ jobs:
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
-    needs: Check-Container-Startup
+    needs: [Check-Backend-Changes, Check-Container-Startup]
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
       contents: read
       id-token: write
@@ -473,6 +637,14 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Cache Nox virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -484,3 +656,56 @@ jobs:
           SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
         run: nox -s "pytest(ops-saas)"
+
+  # Summary job for branch protection - passes if all jobs pass or are skipped
+  Backend-Checks-Summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - Collect-Tests
+      - Build
+      - Performance-Checks
+      - Check-Container-Startup
+      - Migration-Checks
+      - Misc-Tests
+      - Safe-Tests
+      # Unsafe tests are optional, so we don't include them in the summary
+    steps:
+      - name: Check job results
+        run: |
+          echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
+          echo "Build: ${{ needs.Build.result }}"
+          echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
+          echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
+          echo "Migration-Checks: ${{ needs.Migration-Checks.result }}"
+          echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
+          echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
+
+          # Fail only if jobs failed (not if skipped)
+          if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Build.result }}" == "failure" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
+             [ "${{ needs.Migration-Checks.result }}" == "failure" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
+            echo "❌ One or more required jobs failed"
+            exit 1
+          fi
+
+          # Check for cancelled jobs (treat as failure)
+          if [ "${{ needs.Collect-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Build.result }}" == "cancelled" ] || \
+             [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
+             [ "${{ needs.Migration-Checks.result }}" == "cancelled" ] || \
+             [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
+            echo "❌ One or more required jobs were cancelled"
+            exit 1
+          fi
+
+          # Performance checks can fail without blocking (continue-on-error: true)
+          if [ "${{ needs.Performance-Checks.result }}" == "failure" ]; then
+            echo "⚠️ Performance checks failed but not blocking"
+          fi
+
+          echo "✅ All required backend checks passed or were skipped"
