@@ -69,6 +69,7 @@ export const CustomFieldFilter = ({
   // Default to text input for text or undefined fieldType
   return (
     <Input
+      debounce
       placeholder={label}
       value={value || ""}
       onChange={(e) => onChange(e.target.value || null)}
