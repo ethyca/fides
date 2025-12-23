@@ -60,6 +60,8 @@ from fides.api.util.rate_limit import (
 from fides.api.util.saas_config_updater import update_saas_configs
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from prometheus_client import Counter, make_asgi_app
+from prometheus_fastapi_instrumentator import Instrumentator
 
 VERSION = fides.__version__
 
@@ -89,6 +91,7 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
+    Instrumentator().instrument(fastapi_app).expose(fastapi_app, endpoint="/metrics")
 
     # Initialize OpenTelemetry tracing early
     logger.info("Setting up tracing")
@@ -119,6 +122,7 @@ def create_fides_app(
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
+
 
     for router in routers:
         fastapi_app.include_router(router)

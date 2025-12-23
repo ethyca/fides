@@ -13,3 +13,7 @@ scrape_configs:
     metrics_path: '/usage_metrics'
     static_configs:
       - targets: ['tempo:3200']
+  - job_name: 'fides'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['slim:8080']

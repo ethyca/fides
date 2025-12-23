@@ -40,6 +40,7 @@ services:
     image: grafana/grafana:12.3.0@sha256:70d9599b186ce287be0d2c5ba9a78acb2e86c1a68c9c41449454d0fc3eeb84e8
     volumes:
       - ./grafana-provisioning:/etc/grafana/provisioning
+      - ./dashboards:/dashboards
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -48,7 +49,41 @@ services:
       - GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-exploretraces-app/grafana-exploretraces-app-latest.zip;grafana-traces-app
     ports:
       - "3010:3000"
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    volumes:
+      - influxdb-storage:/var/lib/influxdbA
+      - ./influxdb/initdb.d:/docker-entrypoint-initdb.d/
+    ports:
+      - '8086:8086'
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=topsekretpassword
+      - DOCKER_INFLUXDB_INIT_ORG=ethyca
+      - DOCKER_INFLUXDB_INIT_BUCKET=fides
+      - DOCKER_INFLUXDB_INIT_RETENTION=8w
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=299f89ed-1f68-445c-b759-8af368904b83
+
+  chronograf:
+    image: chronograf:latest
+    container_name: chronograf
+    ports:
+      - '8888:8888'
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+
  
 volumes:
   tempo-data:
+  influxdb-storage:
+  chronograf-storage:
 

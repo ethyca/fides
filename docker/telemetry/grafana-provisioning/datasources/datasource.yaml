@@ -47,3 +47,44 @@ datasources:
     serviceMap:
       datasourceUid: prometheus
 
+- name: K6 Test Data
+  type: influxdb
+  access: proxy
+  url: http://influxdb:8086
+  jsonData:
+    dbName: k6_tests
+    httpHeaderName1: 'Authorization'
+  secureJsonData:
+    httpHeaderValue1: 'Token 299f89ed-1f68-445c-b759-8af368904b83'
+
+- name: Postgres
+  type: postgres
+  url: host.docker.internal:5432
+  database: fides
+  user: postgres
+  secureJsonData:
+    password: "fides"
+  jsonData:
+    database: fides
+    sslmode: "disable" # disable/require/verify-ca/verify-full
+    maxOpenConns: 0         # Grafana v5.4+
+    maxIdleConns: 2         # Grafana v5.4+
+    connMaxLifetime: 14400  # Grafana v5.4+
+    postgresVersion: 1600 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+    timescaledb: false
+
+- name: Postgres Observability
+  type: postgres
+  url: host.docker.internal:5432
+  database: postgres
+  user: postgres
+  secureJsonData:
+    password: "fides"
+  jsonData:
+    database: postgres
+    sslmode: "disable" # disable/require/verify-ca/verify-full
+    maxOpenConns: 0         # Grafana v5.4+
+    maxIdleConns: 2         # Grafana v5.4+
+    connMaxLifetime: 14400  # Grafana v5.4+
+    postgresVersion: 1600 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+    timescaledb: false
