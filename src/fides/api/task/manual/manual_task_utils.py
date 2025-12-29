@@ -133,7 +133,12 @@ def _create_collection_from_manual_task(
     for dependency in manual_task.conditional_dependencies:
         tree = dependency.condition_tree
         if isinstance(tree, dict) or tree is None:
-            conditional_field_addresses.update(extract_dataset_field_addresses(tree))
+            field_addresses = set(
+                addr
+                for addr in extract_field_addresses(tree)
+                if not addr.startswith("privacy_request.")
+            )
+            conditional_field_addresses.update(field_addresses)
 
     # Create scalar fields for data category fields and conditional dependency field addresses
     fields: list[ScalarField] = []
@@ -227,7 +232,7 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
     return manual_task_graphs
 
 
-def extract_dataset_field_addresses(
+def extract_field_addresses(
     tree: Optional[dict[str, Any]],
 ) -> set[str]:
     """Recursively extract dataset field addresses from a JSONB condition tree.
@@ -246,29 +251,10 @@ def extract_dataset_field_addresses(
 
     # Check if this is a leaf condition (has field_address)
     if "field_address" in tree:
-        field_address = tree["field_address"]
-        if field_address and not field_address.startswith("privacy_request."):
-            field_addresses.add(field_address)
+        field_addresses.add(tree["field_address"])
     # Check if this is a group condition (has conditions list)
     elif "conditions" in tree:
         for condition in tree.get("conditions", []):
-            field_addresses.update(extract_dataset_field_addresses(condition))
+            field_addresses.update(extract_field_addresses(condition))
 
     return field_addresses
-
-
-def extract_privacy_request_field_addresses(tree: dict[str, Any]) -> set[str]:
-    """Recursively extract privacy_request.* field addresses from a condition tree.
-
-    Returns:
-        Set of privacy_request field addresses found in the tree
-    """
-    addresses: set[str] = set()
-    if "field_address" in tree:
-        field_address = tree["field_address"]
-        if field_address and field_address.startswith("privacy_request."):
-            return {field_address}
-    elif "conditions" in tree:
-        for condition in tree.get("conditions", []):
-            addresses.update(extract_privacy_request_field_addresses(condition))
-    return addresses

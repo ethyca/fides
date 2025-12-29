@@ -15,10 +15,7 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 )
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
-from fides.api.task.manual.manual_task_utils import (
-    extract_dataset_field_addresses,
-    extract_privacy_request_field_addresses,
-)
+from fides.api.task.manual.manual_task_utils import extract_field_addresses
 from fides.api.util.collection_util import Row
 
 
@@ -35,6 +32,9 @@ def extract_conditional_dependency_data_from_inputs(
     referenced in manual task conditional dependencies. It extracts the relevant
     field values and makes them available for conditional dependency evaluation.
 
+    Note: For manual tasks, we need to preserve the original field names from dataset
+    conditional dependencies instead of using pre_process_input_data which consolidates fields.
+
     Args:
         *inputs: Input data from upstream nodes (regular tasks)
         manual_task: Manual task to extract conditional dependencies from
@@ -44,49 +44,34 @@ def extract_conditional_dependency_data_from_inputs(
     """
 
     conditional_data: dict[str, Any] = {}
-
-    # Extract all field addresses from condition trees
     all_field_addresses: set[str] = set()
-    privacy_request_field_addresses: set[str] = set()
 
     for dependency in manual_task.conditional_dependencies:
         # condition_tree is always a dict (ConditionLeaf or ConditionGroup), never a list
         tree = dependency.condition_tree
-        if isinstance(tree, dict) or tree is None:
-            # Extract field addresses from the condition_tree JSONB
-            extracted_addresses = extract_dataset_field_addresses(tree)
-            all_field_addresses.update(extracted_addresses)
+        all_field_addresses.update(extract_field_addresses(tree))
 
-            # Also extract privacy_request field addresses separately
-            # (they are excluded from extract_dataset_field_addresses)
-            if tree:
-                privacy_request_field_addresses.update(
-                    extract_privacy_request_field_addresses(tree)
-                )
-
-    # Convert to list for iteration (exclude privacy_request addresses)
-    field_addresses = list(all_field_addresses)
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
+    privacy_request_field_addresses: set[str] = set(
+        address
+        for address in all_field_addresses
+        if address.startswith("privacy_request.")
+    )
     if privacy_request_field_addresses:
-        privacy_request_data_transformer = PrivacyRequestDataTransformer(
+        conditional_privacy_request_data = PrivacyRequestDataTransformer(
             privacy_request
-        )
-        conditional_privacy_request_data = (
-            privacy_request_data_transformer.to_evaluation_data(
-                privacy_request_field_addresses
-            )
-        )
+        ).to_evaluation_data(privacy_request_field_addresses)
         conditional_data = {**conditional_privacy_request_data}
 
+    # Get dataset field addresses (exclude privacy_request addresses)
+    # Convert to list for iteration
     # if no field addresses, return conditional data which may contain privacy request data or be empty
-    # This will allow the manual task to be executed if there are no conditional dependencies
-    if not field_addresses:
+    dataset_field_addresses = list(
+        addr for addr in all_field_addresses if not addr.startswith("privacy_request.")
+    )
+    if not dataset_field_addresses:
         return conditional_data
-
-    # For manual tasks, we need to preserve the original field names from conditional dependencies
-    # Instead of using pre_process_input_data which consolidates fields, we'll extract directly
-    # from the raw input data based on the execution node's input_keys
 
     # Create a mapping between collections and their input data
     # Convert CollectionAddress objects to strings for consistent key types
@@ -96,7 +81,7 @@ def extract_conditional_dependency_data_from_inputs(
     }
 
     # Extract data for each conditional dependency field address
-    for field_address in field_addresses:
+    for field_address in dataset_field_addresses:
         source_collection_key, field_path = parse_field_address(field_address)
 
         # Find the input data for this collection
