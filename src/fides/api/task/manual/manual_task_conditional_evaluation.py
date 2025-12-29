@@ -49,7 +49,8 @@ def extract_conditional_dependency_data_from_inputs(
     for dependency in manual_task.conditional_dependencies:
         # condition_tree is always a dict (ConditionLeaf or ConditionGroup), never a list
         tree = dependency.condition_tree
-        all_field_addresses.update(extract_field_addresses(tree))
+        if isinstance(tree, dict) or tree is None:
+            all_field_addresses.update(extract_field_addresses(tree))
 
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
