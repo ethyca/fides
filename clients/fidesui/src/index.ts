@@ -26,7 +26,7 @@ export type {
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   FormItemProps as AntFormItemProps,
-  InputProps as AntInputProps,
+  InputProps as AntInputPropsOriginal,
   MenuProps as AntMenuProps,
   ModalProps as AntModalProps,
   ProgressProps as AntProgressProps,
@@ -66,7 +66,6 @@ export {
   Flex as AntFlex,
   Form as AntForm,
   Image as AntImage,
-  Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
   Menu as AntMenu,
@@ -104,9 +103,14 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
-export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
+export type {
+  CustomInputProps as AntInputProps,
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
+} from "./hoc";
 export {
   CustomDateRangePicker as AntDateRangePicker,
+  CustomInput as AntInput,
   CustomList as AntList,
   CustomSelect as AntSelect,
   CustomTable as AntTable,

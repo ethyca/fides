@@ -3363,3 +3363,16 @@ dataset:
         data_categories: [system.operations]
       - name: task_id
         data_categories: [system.operations]
+  - name: monitorsteward
+    description: 'Table to link users to monitors as monitor stewards'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [system.operations]
+      - name: monitor_config_id
+        data_categories: [system.operations]
