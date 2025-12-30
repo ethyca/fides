@@ -1136,3 +1136,24 @@ def nested_group_condition(db: Session, manual_task: ManualTask):
     )
     yield root_condition
     root_condition.delete(db)
+
+
+@pytest.fixture()
+def condition_age_range(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with age >= 18 AND age < 65 (same field, multiple conditions)."""
+    condition_tree = {
+        "logical_operator": "and",
+        "conditions": [
+            create_condition_gt_18_tree(),
+            create_condition_age_lt_65_tree(),
+        ],
+    }
+    condition = ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_tree": condition_tree,
+        },
+    )
+    yield condition
+    condition.delete(db)

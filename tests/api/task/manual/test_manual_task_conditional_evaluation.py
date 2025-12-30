@@ -75,6 +75,42 @@ def input_group_conditional_dependency(db, manual_task):
     )
 
 
+@pytest.fixture
+def email_and_city_conditional_dependency(db, manual_task):
+    """Create a single dependency with both email and city conditions."""
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_tree": _input_group_tree(),
+        },
+    )
+
+
+def _email_and_privacy_request_tree():
+    """Return condition tree with email exists AND privacy request conditions."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            _email_exists_tree(),
+            _privacy_request_location_tree(),
+            _privacy_request_access_rule_tree(),
+        ],
+    }
+
+
+@pytest.fixture
+def email_and_privacy_request_conditional_dependency(db, manual_task):
+    """Create a single dependency with email and privacy request conditions."""
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_tree": _email_and_privacy_request_tree(),
+        },
+    )
+
+
 def _privacy_request_location_tree():
     """Return condition tree dict for privacy_request.location == New York."""
     return {
@@ -273,11 +309,7 @@ class TestManualTaskDataExtraction:
 
         self.CollectionAddress = CollectionAddress
 
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency",
-        "privacy_request_location_dependency",
-        "privacy_request_access_rule_dependency",
-    )
+    @pytest.mark.usefixtures("email_and_privacy_request_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_and_privacy_request(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
@@ -444,9 +476,7 @@ class TestManualTaskDataExtraction:
             }
             assert result == expected
 
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency", "city_eq_new_york_conditional_dependency"
-    )
+    @pytest.mark.usefixtures("email_and_city_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):

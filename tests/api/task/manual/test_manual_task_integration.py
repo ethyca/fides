@@ -615,7 +615,7 @@ class TestManualTaskDisabledConnectionConfig:
 class TestManualTaskTraversalExecution:
     """Test that manual task traversal executes correctly with conditional dependencies and upstream data"""
 
-    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    @pytest.mark.usefixtures("group_condition")
     def test_manual_task_traversal_with_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -738,9 +738,7 @@ class TestManualTaskTraversalExecution:
 class TestManualTaskUpstreamDataFlow:
     """Test that manual tasks receive and process upstream data correctly"""
 
-    @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_receives_upstream_data_from_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -816,7 +814,7 @@ class TestManualTaskExecutionOrder:
     """Test that manual tasks execute in the correct order relative to their dependencies"""
 
     @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
+        "group_condition", "privacy_request"
     )
     def test_manual_task_executes_after_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
@@ -881,7 +879,7 @@ class TestManualTaskTraversalIntegration:
     """Integration tests for manual task traversal with real graph execution"""
 
     @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
+        "group_condition", "privacy_request"
     )
     def test_manual_task_traversal_integration_with_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
