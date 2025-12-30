@@ -1,4 +1,4 @@
-import { Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";

@@ -1,4 +1,4 @@
-import { AntCard as Card, AntSteps as Steps, Icons } from "fidesui";
+import { Card, Icons, Steps } from "fidesui";
 import { useMemo } from "react";
 
 import { ConnectionSystemTypeMap } from "~/types/api";

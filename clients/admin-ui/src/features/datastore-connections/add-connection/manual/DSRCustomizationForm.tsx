@@ -1,10 +1,10 @@
 import { useAlert } from "common/hooks";
 import {
-  AntButton as Button,
-  Box,
-  HStack,
+  Button,
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraVStack as VStack,
   TrashCanSolidIcon,
-  VStack,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import { useRouter } from "next/router";

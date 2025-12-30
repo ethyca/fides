@@ -1,8 +1,4 @@
-import {
-  AntSpace as Space,
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
-} from "fidesui";
+import { Space, Tabs, TabsProps } from "fidesui";
 import type { NextPage } from "next";
 import { useEffect, useMemo } from "react";
 

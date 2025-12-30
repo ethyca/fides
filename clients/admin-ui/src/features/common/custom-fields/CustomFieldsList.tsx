@@ -1,4 +1,8 @@
-import { Center, Flex, Spinner } from "fidesui";
+import {
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+} from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
 import {

@@ -2,11 +2,11 @@
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Button,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
   MoreIcon,
 } from "fidesui";
 import { useMemo } from "react";

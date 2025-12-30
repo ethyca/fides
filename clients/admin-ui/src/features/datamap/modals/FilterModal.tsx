@@ -1,16 +1,16 @@
 import { Header } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  Box,
-  Divider,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraHeading as Heading,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
 } from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
 

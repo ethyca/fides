@@ -1,4 +1,9 @@
-import { AntButton as Button, Box, Stack, useToast } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";

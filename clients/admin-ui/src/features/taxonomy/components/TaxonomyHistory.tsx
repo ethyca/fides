@@ -1,12 +1,5 @@
 import { formatDistance } from "date-fns";
-import {
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, List, Pagination, Skeleton, Tooltip, Typography } from "fidesui";
 
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { formatDate, sentenceCase } from "~/features/common/utils";

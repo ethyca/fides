@@ -1,4 +1,4 @@
-import { AntButton as Button, AntModal as Modal, Icons } from "fidesui";
+import { Button, Icons, Modal } from "fidesui";
 import { useState } from "react";
 
 import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm";

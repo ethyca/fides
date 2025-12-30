@@ -1,4 +1,4 @@
-import { AntTag as Tag, CUSTOM_TAG_COLOR } from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag } from "fidesui";
 import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";

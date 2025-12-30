@@ -1,8 +1,8 @@
 import {
-  AntSwitch as Switch,
-  AntSwitchProps as SwitchProps,
-  AntTypography as Typography,
-  useDisclosure,
+  Switch,
+  SwitchProps,
+  Typography,
+  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
 

@@ -1,4 +1,4 @@
-import { AntSelect as Select, AntSelectProps as SelectProps } from "fidesui";
+import { Select, SelectProps } from "fidesui";
 
 export const FilterSelect = ({ ...props }: SelectProps) => (
   <Select

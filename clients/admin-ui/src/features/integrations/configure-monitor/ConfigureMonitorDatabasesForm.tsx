@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
-  Flex,
-  Text,
-  useToast,
+  Button,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";

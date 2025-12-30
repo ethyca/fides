@@ -5,7 +5,12 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Heading, Link, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraLink as Link,
+  ChakraText as Text,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 

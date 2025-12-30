@@ -1,4 +1,4 @@
-import { ListItem } from "fidesui";
+import { ChakraListItem as ListItem } from "fidesui";
 
 import {
   InfoCodeBlock,

@@ -1,14 +1,14 @@
 import {
-  AntBadge as Badge,
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
-  AntTree as Tree,
+  Badge,
+  Button,
+  Dropdown,
+  Flex,
   Icons,
   SparkleIcon,
+  Text,
+  Title,
+  Tooltip,
+  Tree,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {

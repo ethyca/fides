@@ -29,13 +29,13 @@ jest.mock("iso-3166", () => ({
   ],
 }));
 
-// Mock only AntSelect to make it testable with native select interactions
+// Mock only Select to make it testable with native select interactions
 jest.mock(
   "fidesui",
   () =>
     new Proxy(jest.requireActual("fidesui"), {
       get(target, prop) {
-        if (prop === "AntSelect") {
+        if (prop === "Select") {
           const MockAntSelect = ({
             value,
             onChange,

@@ -1,10 +1,10 @@
 import {
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
+  ChakraIconButton as IconButton,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraText as Text,
 } from "fidesui";
 import { useFormikContext } from "formik";
 

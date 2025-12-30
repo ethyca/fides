@@ -1,4 +1,4 @@
-import { HStack } from "fidesui";
+import { ChakraHStack as HStack } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
