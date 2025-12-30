@@ -117,6 +117,7 @@ def upgrade():
     db = Session(op.get_bind())
     migrate_conditions(db, "manual_task_conditional_dependency")
     migrate_conditions(db, "digest_condition")
+    db.commit()
 
 
 def downgrade():
