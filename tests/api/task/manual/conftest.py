@@ -18,9 +18,6 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -49,6 +46,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
+    extract_field_addresses,
     get_manual_task_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
@@ -394,21 +392,25 @@ def _build_request_task(
     incoming_edges = []
 
     if manual_task:
-        # Get conditional dependency field addresses
-        field_addresses = []
+        # Get conditional dependency field addresses from condition_tree
+        all_field_addresses: set[str] = set()
         for dependency in manual_task.conditional_dependencies:
-            if (
-                dependency.condition_type == ConditionalDependencyType.leaf
-                and dependency.field_address
-                and not dependency.field_address.startswith("privacy_request.")
-            ):
-                field_addresses.append(dependency.field_address)
+            tree = dependency.condition_tree
+            if isinstance(tree, dict) or tree is None:
+                addresses = extract_field_addresses(tree)
+                # Filter out privacy_request fields
+                addresses = {
+                    addr
+                    for addr in addresses
+                    if not addr.startswith("privacy_request.")
+                }
+                all_field_addresses.update(addresses)
 
         # For testing, we'll create input keys and edges based on the field addresses
         # In a real scenario, these would be determined by the graph traversal
-        if field_addresses:
+        if all_field_addresses:
             # Use the existing field address parsing utilities to create mappings
-            for field_address in field_addresses:
+            for field_address in all_field_addresses:
                 source_field_address = field_address
                 target_field_address = (
                     f"{connection_config.key}:manual_data:{field_address}"
@@ -983,21 +985,13 @@ def create_condition_gt_18_tree() -> dict:
     }
 
 
-def create_condition_gt_18(
-    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
-):
-    condition_tree = create_condition_gt_18_tree() if parent_id is None else None
+def create_condition_gt_18(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency for age >= 18."""
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "parent_id": parent_id,
-            "field_address": "postgres_example:customer:profile.age",
-            "operator": "gte",
-            "value": 18,
-            "sort_order": sort_order,
-            "condition_tree": condition_tree,
+            "condition_tree": create_condition_gt_18_tree(),
         },
     )
 
@@ -1011,21 +1005,13 @@ def create_condition_age_lt_65_tree() -> dict:
     }
 
 
-def create_condition_age_lt_65(
-    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 2
-):
-    condition_tree = create_condition_age_lt_65_tree() if parent_id is None else None
+def create_condition_age_lt_65(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency for age < 65."""
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "parent_id": parent_id,
-            "field_address": "postgres_example:customer:profile.age",
-            "operator": "lt",
-            "value": 65,
-            "sort_order": sort_order,
-            "condition_tree": condition_tree,
+            "condition_tree": create_condition_age_lt_65_tree(),
         },
     )
 
@@ -1039,21 +1025,13 @@ def create_condition_eq_active_tree() -> dict:
     }
 
 
-def create_condition_eq_active(
-    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
-):
-    condition_tree = create_condition_eq_active_tree() if parent_id is None else None
+def create_condition_eq_active(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency for status == active."""
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "parent_id": parent_id,
-            "field_address": "postgres_example:payment_card:subscription.status",
-            "operator": "eq",
-            "value": "active",
-            "sort_order": sort_order,
-            "condition_tree": condition_tree,
+            "condition_tree": create_condition_eq_active_tree(),
         },
     )
 
@@ -1067,21 +1045,13 @@ def create_condition_eq_admin_tree() -> dict:
     }
 
 
-def create_condition_eq_admin(
-    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
-):
-    condition_tree = create_condition_eq_admin_tree() if parent_id is None else None
+def create_condition_eq_admin(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency for role == admin."""
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "postgres_example:customer:role",
-            "operator": "eq",
-            "value": "admin",
-            "sort_order": sort_order,
-            "parent_id": parent_id,
-            "condition_tree": condition_tree,
+            "condition_tree": create_condition_eq_admin_tree(),
         },
     )
 
@@ -1089,7 +1059,7 @@ def create_condition_eq_admin(
 @pytest.fixture()
 def condition_gt_18(db: Session, manual_task: ManualTask):
     """Create a conditional dependency with field_address 'user.age' and operator 'gte' and value 18"""
-    condition = create_condition_gt_18(db, manual_task, None)
+    condition = create_condition_gt_18(db, manual_task)
     yield condition
     condition.delete(db)
 
@@ -1097,7 +1067,7 @@ def condition_gt_18(db: Session, manual_task: ManualTask):
 @pytest.fixture()
 def condition_age_lt_65(db: Session, manual_task: ManualTask):
     """Create a conditional dependency with field_address 'user.age' and operator 'lt' and value 65"""
-    condition = create_condition_age_lt_65(db, manual_task, None)
+    condition = create_condition_age_lt_65(db, manual_task)
     yield condition
     condition.delete(db)
 
@@ -1105,7 +1075,7 @@ def condition_age_lt_65(db: Session, manual_task: ManualTask):
 @pytest.fixture()
 def condition_eq_active(db: Session, manual_task: ManualTask):
     """Create a conditional dependency with field_address 'billing.subscription.status' and operator 'eq' and value 'active'"""
-    condition = create_condition_eq_active(db, manual_task, None)
+    condition = create_condition_eq_active(db, manual_task)
     yield condition
     condition.delete(db)
 
@@ -1113,7 +1083,7 @@ def condition_eq_active(db: Session, manual_task: ManualTask):
 @pytest.fixture()
 def condition_eq_admin(db: Session, manual_task: ManualTask):
     """Create a conditional dependency with field_address 'user.role' and operator 'eq' and value 'admin'"""
-    condition = create_condition_eq_admin(db, manual_task, None)
+    condition = create_condition_eq_admin(db, manual_task)
     yield condition
     condition.delete(db)
 
@@ -1133,15 +1103,9 @@ def group_condition(db: Session, manual_task: ManualTask):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.group,
-            "logical_operator": "and",
-            "sort_order": 1,
             "condition_tree": condition_tree,
         },
     )
-    # Also create child rows for backward compatibility during transition
-    create_condition_gt_18(db, manual_task, root_condition.id, 2)
-    create_condition_eq_active(db, manual_task, root_condition.id, 3)
     yield root_condition
     root_condition.delete(db)
 
@@ -1167,25 +1131,8 @@ def nested_group_condition(db: Session, manual_task: ManualTask):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.group,
-            "logical_operator": "and",
-            "sort_order": 1,
             "condition_tree": condition_tree,
         },
     )
-    # Also create child rows for backward compatibility during transition
-    nested_group = ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.group,
-            "parent_id": root_condition.id,
-            "logical_operator": "or",
-            "sort_order": 2,
-        },
-    )
-    create_condition_gt_18(db, manual_task, nested_group.id, 3)
-    create_condition_eq_active(db, manual_task, nested_group.id, 4)
-    create_condition_eq_admin(db, manual_task, nested_group.id, 5)
     yield root_condition
     root_condition.delete(db)
