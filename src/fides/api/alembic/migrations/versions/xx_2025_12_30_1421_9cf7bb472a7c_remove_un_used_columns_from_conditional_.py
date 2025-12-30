@@ -19,13 +19,18 @@ depends_on = None
 
 def upgrade():
     # === digest_condition table ===
+    # Delete child rows (non-root) - their data is now in the root's condition_tree JSONB
+    op.execute("DELETE FROM digest_condition WHERE parent_id IS NOT NULL")
+
     # Drop indexes on columns being removed
     op.drop_index("ix_digest_condition_condition_type", table_name="digest_condition")
     op.drop_index("ix_digest_condition_parent_id", table_name="digest_condition")
     op.drop_index("ix_digest_condition_sort_order", table_name="digest_condition")
 
     # Replace partial unique index with a full unique constraint
-    op.drop_index("ix_digest_condition_unique_root_per_type", table_name="digest_condition")
+    op.drop_index(
+        "ix_digest_condition_unique_root_per_type", table_name="digest_condition"
+    )
     op.create_unique_constraint(
         "uq_digest_condition_config_type",
         "digest_condition",
@@ -47,6 +52,11 @@ def upgrade():
     op.drop_column("digest_condition", "field_address")
 
     # === manual_task_conditional_dependency table ===
+    # Delete child rows (non-root) - their data is now in the root's condition_tree JSONB
+    op.execute(
+        "DELETE FROM manual_task_conditional_dependency WHERE parent_id IS NOT NULL"
+    )
+
     # Drop indexes on columns being removed
     op.drop_index(
         "ix_manual_task_conditional_dependency_condition_type",
@@ -96,6 +106,10 @@ def upgrade():
 
 
 def downgrade():
+    # NOTE: Child rows (parent_id IS NOT NULL) that were deleted during upgrade
+    # cannot be recovered. Only the schema is restored, not the hierarchical data.
+    # The condition_tree JSONB column still contains the full tree structure.
+
     # === manual_task_conditional_dependency table ===
     # Re-add columns
     op.add_column(
@@ -104,9 +118,7 @@ def downgrade():
     )
     op.add_column(
         "manual_task_conditional_dependency",
-        sa.Column(
-            "value", postgresql.JSONB(astext_type=sa.Text()), nullable=True
-        ),
+        sa.Column("value", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     )
     op.add_column(
         "manual_task_conditional_dependency",
@@ -181,9 +193,7 @@ def downgrade():
     )
     op.add_column(
         "digest_condition",
-        sa.Column(
-            "value", postgresql.JSONB(astext_type=sa.Text()), nullable=True
-        ),
+        sa.Column("value", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     )
     op.add_column(
         "digest_condition",
@@ -232,9 +242,7 @@ def downgrade():
     op.create_index(
         "ix_digest_condition_sort_order", "digest_condition", ["sort_order"]
     )
-    op.create_index(
-        "ix_digest_condition_parent_id", "digest_condition", ["parent_id"]
-    )
+    op.create_index("ix_digest_condition_parent_id", "digest_condition", ["parent_id"])
     op.create_index(
         "ix_digest_condition_condition_type",
         "digest_condition",
