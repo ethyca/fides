@@ -44,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Renamed staged resource diff status from 'approved' to 'reviewed' in database migration [#7159](https://github.com/ethyca/fides/pull/7159) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
+- Deprecated Chakra UI exports with `Chakra` prefix, removed `Ant` prefix from Ant Design exports [#7173](https://github.com/ethyca/fides/pull/7173)
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
 - Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
 - Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086)
