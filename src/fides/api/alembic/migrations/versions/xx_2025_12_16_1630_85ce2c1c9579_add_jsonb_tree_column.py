@@ -85,7 +85,7 @@ def migrate_conditions(db: Session, table_name: str):
         sa.text(f"SELECT id FROM {table_name} WHERE parent_id IS NULL")
     ).fetchall()
 
-    for root_id, _ in root_rows:
+    for (root_id,) in root_rows:
         tree = build_condition_tree(db, table_name, root_id)
 
         if tree:
