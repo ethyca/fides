@@ -813,9 +813,7 @@ class TestManualTaskUpstreamDataFlow:
 class TestManualTaskExecutionOrder:
     """Test that manual tasks execute in the correct order relative to their dependencies"""
 
-    @pytest.mark.usefixtures(
-        "group_condition", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_executes_after_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -878,9 +876,7 @@ class TestManualTaskExecutionOrder:
 class TestManualTaskTraversalIntegration:
     """Integration tests for manual task traversal with real graph execution"""
 
-    @pytest.mark.usefixtures(
-        "group_condition", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_traversal_integration_with_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
