@@ -39,11 +39,6 @@ def email_exists_conditional_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "exists",
-            "value": None,
-            "sort_order": 1,
             "condition_tree": _email_exists_tree(),
         },
     )
@@ -55,11 +50,6 @@ def city_eq_new_york_conditional_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:address:city",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 2,
             "condition_tree": _city_eq_new_york_tree(),
         },
     )
@@ -74,38 +64,15 @@ def _input_group_tree():
 
 
 @pytest.fixture
-def input_group_conditional_dependency(
-    db,
-    manual_task,
-    email_exists_conditional_dependency,
-    city_eq_new_york_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def input_group_conditional_dependency(db, manual_task):
+    """Create a single dependency with the full input group condition tree."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
             "condition_tree": _input_group_tree(),
         },
     )
-
-    email_exists_conditional_dependency.parent = dependency
-    email_exists_conditional_dependency.sort_order = 3
-    email_exists_conditional_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    city_eq_new_york_conditional_dependency.parent = dependency
-    city_eq_new_york_conditional_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    dependency.children = [
-        email_exists_conditional_dependency,
-        city_eq_new_york_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
 
 
 def _privacy_request_location_tree():
@@ -132,11 +99,6 @@ def privacy_request_location_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.location",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 1,
             "condition_tree": _privacy_request_location_tree(),
         },
     )
@@ -148,11 +110,6 @@ def privacy_request_access_rule_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.has_access_rule",
-            "operator": "eq",
-            "value": True,
-            "sort_order": 1,
             "condition_tree": _privacy_request_access_rule_tree(),
         },
     )
@@ -169,10 +126,6 @@ def privacy_request_policy_id_dependency(db, manual_task, policy):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.id",
-            "operator": "eq",
-            "value": policy.id,
             "condition_tree": condition_tree,
         },
     )
@@ -190,36 +143,15 @@ def _privacy_request_group_tree():
 
 
 @pytest.fixture
-def privacy_request_group_conditional_dependency(
-    db,
-    manual_task,
-    privacy_request_location_dependency,
-    privacy_request_access_rule_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def privacy_request_group_conditional_dependency(db, manual_task):
+    """Create a single dependency with the full privacy request group condition tree."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
             "condition_tree": _privacy_request_group_tree(),
         },
     )
-    privacy_request_location_dependency.parent = dependency
-    privacy_request_location_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    privacy_request_access_rule_dependency.parent = dependency
-    privacy_request_access_rule_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    dependency.children = [
-        privacy_request_location_dependency,
-        privacy_request_access_rule_dependency,
-    ]
-    db.commit()
-    return dependency
 
 
 def _full_group_tree():
@@ -231,36 +163,15 @@ def _full_group_tree():
 
 
 @pytest.fixture
-def group_conditional_dependency(
-    db,
-    manual_task,
-    input_group_conditional_dependency,
-    privacy_request_group_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def group_conditional_dependency(db, manual_task):
+    """Create a single dependency with the full condition tree."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
             "condition_tree": _full_group_tree(),
         },
     )
-    input_group_conditional_dependency.parent = dependency
-    input_group_conditional_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    privacy_request_group_conditional_dependency.parent = dependency
-    privacy_request_group_conditional_dependency.condition_tree = (
-        None  # Clear since parent has full tree
-    )
-    dependency.children = [
-        input_group_conditional_dependency,
-        privacy_request_group_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
 
 
 class TestManualTaskConditionalDependencies:
@@ -479,11 +390,6 @@ class TestManualTaskDataExtraction:
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
-                    "operator": "eq",
-                    "value": "dark",
-                    "sort_order": 1,
                     "condition_tree": condition_tree,
                 },
             )
