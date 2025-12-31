@@ -1203,6 +1203,8 @@ dataset:
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
+    - name: execution_timing
+      data_categories: [system.operations]
     - name: field_key
       data_categories: [system.operations]
     - name: field_metadata

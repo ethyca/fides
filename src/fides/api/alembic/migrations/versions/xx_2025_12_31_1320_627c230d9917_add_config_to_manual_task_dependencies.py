@@ -104,8 +104,16 @@ def upgrade():
     """
     )
 
+    # Add execution_timing to manual_task_config_field for field-level timing override
+    op.add_column(
+        "manual_task_config_field",
+        sa.Column("execution_timing", sa.String(length=32), nullable=True),
+    )
+
 
 def downgrade():
+    # Remove execution_timing from manual_task_config_field
+    op.drop_column("manual_task_config_field", "execution_timing")
     # Revert config_type values from ActionType back to ManualTaskConfigurationType
     op.execute(
         """

@@ -600,6 +600,12 @@ class ManualTaskConfigField(Base):
     field_metadata: dict[str, Any] = cast(
         dict[str, Any], Column(JSONB, nullable=False, default={})
     )
+    # Field-level execution timing override. When NULL, uses config's execution_timing.
+    execution_timing = Column(
+        EnumColumn(ManualTaskExecutionTiming),
+        nullable=True,
+        default=None,
+    )
 
     __table_args__ = (
         UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
