@@ -86,8 +86,8 @@ class TestPrivacyRequestManualTaskInstances:
         yield {
             "connection_config": connection_config,
             "manual_task": manual_task,
-            "access_config": configs["access_privacy_request"],
-            "erasure_config": configs["erasure_privacy_request"],
+            "access_config": configs[ActionType.access],
+            "erasure_config": configs[ActionType.erasure],
         }
 
         # Cleanup

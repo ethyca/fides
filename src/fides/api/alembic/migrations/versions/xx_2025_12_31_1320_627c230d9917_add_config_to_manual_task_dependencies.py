@@ -37,11 +37,21 @@ def upgrade():
         ["manual_task_id"],
         unique=False,
     )
+    # Partial unique index for field-level conditions (when config_field_id IS NOT NULL)
     op.create_index(
         "ix_manual_task_cond_dep_task_field",
         "manual_task_conditional_dependency",
         ["manual_task_id", "config_field_id"],
         unique=True,
+        postgresql_where=sa.text("config_field_id IS NOT NULL"),
+    )
+    # Partial unique index for task-level conditions (when config_field_id IS NULL)
+    op.create_index(
+        "ix_manual_task_cond_dep_task_only",
+        "manual_task_conditional_dependency",
+        ["manual_task_id"],
+        unique=True,
+        postgresql_where=sa.text("config_field_id IS NULL"),
     )
     op.create_index(
         op.f("ix_manual_task_conditional_dependency_config_field_id"),
@@ -149,9 +159,12 @@ def downgrade():
         op.f("ix_manual_task_conditional_dependency_config_field_id"),
         table_name="manual_task_conditional_dependency",
     )
-    op.drop_index(
-        "ix_manual_task_cond_dep_task_field",
-        table_name="manual_task_conditional_dependency",
+    # Drop indexes - handle both old (non-partial) and new (partial) configurations
+    op.execute(
+        """
+        DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_field;
+        DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_only;
+    """
     )
     op.drop_index(
         op.f("ix_manual_task_conditional_dependency_manual_task_id"),

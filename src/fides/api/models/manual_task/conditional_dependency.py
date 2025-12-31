@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy import Column, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -60,12 +60,20 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     config_field = relationship("ManualTaskConfigField")
 
     __table_args__ = (
-        # Unique constraint: one condition per task (when field is NULL) or per field
+        # Unique constraint for field-level conditions: one condition per (task, field) pair
         Index(
             "ix_manual_task_cond_dep_task_field",
             "manual_task_id",
             "config_field_id",
             unique=True,
+            postgresql_where=text("config_field_id IS NOT NULL"),
+        ),
+        # Partial unique index for task-level conditions: one condition per task when field is NULL
+        Index(
+            "ix_manual_task_cond_dep_task_only",
+            "manual_task_id",
+            unique=True,
+            postgresql_where=text("config_field_id IS NULL"),
         ),
     )
 

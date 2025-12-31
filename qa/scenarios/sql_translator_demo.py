@@ -445,7 +445,7 @@ class SQLTranslatorDemo(QATestScenario):
             # Check if config already exists for this task
             existing_config = self.db.query(ManualTaskConfig).filter_by(
                 task_id=self.manual_task.id,
-                config_type=ManualTaskConfigurationType.access_privacy_request,
+                config_type=ActionType.access,
                 is_current=True
             ).first()
 
@@ -456,7 +456,7 @@ class SQLTranslatorDemo(QATestScenario):
 
             config_data = {
                 "task_id": self.manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
                 "execution_timing": ManualTaskExecutionTiming.post_execution
