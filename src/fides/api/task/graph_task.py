@@ -1080,7 +1080,7 @@ def build_consent_dataset_graph(
     # Add manual task graphs if session is provided
     if session:
         manual_task_graphs = create_manual_task_artificial_graphs(
-            session, config_type=ActionType.consent
+            session, config_types=[ActionType.consent]
         )
         consent_datasets.extend(manual_task_graphs)
 

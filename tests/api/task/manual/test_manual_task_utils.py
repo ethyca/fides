@@ -468,7 +468,7 @@ class TestConsentManualTaskUtils:
     ):
         """Test that get_manual_task_addresses with consent filter returns empty when no consent configs exist"""
         # connection_with_manual_access_task has only access configs
-        addresses = get_manual_task_addresses(db, config_type=ActionType.consent)
+        addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
 
         # Should not include the access-only manual task
         assert len(addresses) == 0
@@ -490,7 +490,7 @@ class TestConsentManualTaskUtils:
         )
 
         try:
-            addresses = get_manual_task_addresses(db, config_type=ActionType.consent)
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
 
             # Should include the manual task with consent config
             assert len(addresses) == 1
@@ -516,7 +516,7 @@ class TestConsentManualTaskUtils:
         )
 
         try:
-            addresses = get_manual_task_addresses(db, config_type=ActionType.consent)
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
 
             # Should not include the manual task with non-current consent config
             assert len(addresses) == 0
@@ -529,7 +529,7 @@ class TestConsentManualTaskUtils:
         """Test that create_manual_task_artificial_graphs with consent filter returns empty when no consent configs exist"""
         # connection_with_manual_access_task has only access configs
         graphs = create_manual_task_artificial_graphs(
-            db, config_type=ActionType.consent
+            db, config_types=[ActionType.consent]
         )
 
         # Should not include any graphs
@@ -553,7 +553,7 @@ class TestConsentManualTaskUtils:
 
         try:
             graphs = create_manual_task_artificial_graphs(
-                db, config_type=ActionType.consent
+                db, config_types=[ActionType.consent]
             )
 
             # Should have one graph for the consent manual task

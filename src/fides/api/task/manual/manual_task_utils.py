@@ -24,10 +24,16 @@ PRIVACY_REQUEST_CONFIG_TYPES = {
 
 
 def get_connection_configs_with_manual_tasks(
-    db: Session, config_type: Optional[ActionType] = None
+    db: Session, config_types: Optional[list[ActionType]] = None
 ) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
+
+    Args:
+        db: Database session
+        config_types: Optional list of ActionTypes to filter by. If provided,
+            only returns configs with manual tasks that have at least one
+            current config of the specified types.
     """
     query = (
         db.query(ConnectionConfig)
@@ -36,11 +42,11 @@ def get_connection_configs_with_manual_tasks(
         .filter(ConnectionConfig.disabled.is_(False))
     )
 
-    if config_type:
+    if config_types:
         query = query.join(
             ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id
         ).filter(
-            ManualTaskConfig.config_type == config_type,
+            ManualTaskConfig.config_type.in_(config_types),
             ManualTaskConfig.is_current.is_(True),
         )
 
@@ -48,16 +54,20 @@ def get_connection_configs_with_manual_tasks(
 
 
 def get_manual_task_addresses(
-    db: Session, config_type: Optional[ActionType] = None
+    db: Session, config_types: Optional[list[ActionType]] = None
 ) -> list[CollectionAddress]:
     """
     Get manual task addresses for connection configs that have manual tasks.
+
+    Args:
+        db: Database session
+        config_types: Optional list of ActionTypes to filter by.
 
     Note: Manual tasks should be included in the graph if they exist for any connection config
     that's part of the dataset graph, regardless of specific policy targets. This allows
     manual tasks to collect additional data that may be needed for the privacy request.
     """
-    connection_configs = get_connection_configs_with_manual_tasks(db, config_type)
+    connection_configs = get_connection_configs_with_manual_tasks(db, config_types)
     return [ManualTaskAddress.create(config.key) for config in connection_configs]
 
 
@@ -175,7 +185,7 @@ def create_collection_for_connection_key(
 
 
 def create_manual_task_artificial_graphs(
-    db: Session, config_type: Optional[ActionType] = None
+    db: Session, config_types: Optional[list[ActionType]] = None
 ) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
@@ -187,14 +197,15 @@ def create_manual_task_artificial_graphs(
 
     Args:
         db: Database session
-        config_type: Optional ActionType to filter by (e.g., ActionType.consent).
+        config_types: Optional list of ActionTypes to filter by
+            (e.g., [ActionType.consent] or [ActionType.access, ActionType.erasure]).
             If None, returns graphs for all manual tasks.
 
     Returns:
         List of GraphDataset objects representing manual tasks
     """
     manual_task_graphs: list[GraphDataset] = []
-    manual_addresses = get_manual_task_addresses(db, config_type)
+    manual_addresses = get_manual_task_addresses(db, config_types)
 
     if not manual_addresses:
         return manual_task_graphs

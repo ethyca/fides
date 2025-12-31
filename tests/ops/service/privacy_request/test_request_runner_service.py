@@ -32,6 +32,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
+    ManualTaskConfigField,
     ManualTaskInstance,
 )
 from fides.api.models.manual_webhook import AccessManualWebhook
@@ -1703,6 +1704,21 @@ class TestConsentManualTaskIntegration:
                 "is_current": True,
             },
         )
+        # Must have at least one field for the manual task to be included in the graph
+        consent_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_key": "consent_confirmation",
+                "field_type": "text",
+                "field_metadata": {
+                    "label": "Consent Confirmation",
+                    "required": True,
+                    "data_categories": ["user.consent"],
+                },
+            },
+        )
 
         # Create privacy request with consent policy
         privacy_request = PrivacyRequest.create(
@@ -1743,6 +1759,7 @@ class TestConsentManualTaskIntegration:
             if instance:
                 instance.delete(db)
             privacy_request.delete(db)
+            consent_field.delete(db)
             consent_config.delete(db)
             manual_task.delete(db)
 
