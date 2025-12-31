@@ -43,7 +43,6 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskParentEntityType,
     ManualTaskType,

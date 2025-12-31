@@ -76,22 +76,6 @@ class ManualTaskReferenceType(str, Enum):
     # Add more reference types as needed
 
 
-class ManualTaskConfigurationType(str, Enum):
-    """Enum for manual task configuration types.
-
-    DEPRECATED: This enum is deprecated in favor of ActionType from fides.api.schemas.policy.
-    It is kept for backward compatibility during migration. Use ActionType instead.
-
-    Migration mapping:
-        access_privacy_request -> ActionType.access
-        erasure_privacy_request -> ActionType.erasure
-    """
-
-    access_privacy_request = "access_privacy_request"
-    erasure_privacy_request = "erasure_privacy_request"
-    # DEPRECATED: Use ActionType instead
-
-
 class ManualTaskFieldType(str, Enum):
     """Enum for manual task field types."""
 
