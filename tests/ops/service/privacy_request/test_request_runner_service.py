@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import time
+from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Set
 from unittest import mock
@@ -28,6 +29,11 @@ from fides.api.models.attachment import (
     AttachmentType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskInstance,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
@@ -1665,6 +1671,79 @@ def test_build_consent_dataset_graph(
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
         "saas_connector_example:saas_connector_example"
     ]
+
+
+class TestConsentManualTaskIntegration:
+    """Integration tests for consent manual tasks in the privacy request runner"""
+
+    @pytest.mark.usefixtures("use_dsr_3_0")
+    def test_consent_request_with_manual_task_requires_input(
+        self,
+        db,
+        consent_policy,
+        connection_config,
+        run_privacy_request_task,
+    ):
+        """Test that a consent request with a manual task pauses for input"""
+
+        # Create manual task with consent config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        # Create privacy request with consent policy
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.utcnow(),
+                "policy_id": consent_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        privacy_request.cache_identity(Identity(email="test@example.com"))
+
+        try:
+            # Run privacy request - should pause for manual input
+            run_privacy_request_task.delay(privacy_request.id).get(
+                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+            )
+            db.refresh(privacy_request)
+
+            # Should require input because manual task needs submission
+            assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+            # Verify manual task instance was created
+            instance = (
+                db.query(ManualTaskInstance)
+                .filter(
+                    ManualTaskInstance.task_id == manual_task.id,
+                    ManualTaskInstance.entity_id == privacy_request.id,
+                )
+                .first()
+            )
+            assert instance is not None, "ManualTaskInstance should be created"
+            assert instance.config.config_type == ActionType.consent
+
+        finally:
+            # Cleanup
+            if instance:
+                instance.delete(db)
+            privacy_request.delete(db)
+            consent_config.delete(db)
+            manual_task.delete(db)
 
 
 class TestConsentEmailStep:
