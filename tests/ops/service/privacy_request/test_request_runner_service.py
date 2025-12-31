@@ -1715,6 +1715,7 @@ class TestConsentManualTaskIntegration:
         )
         privacy_request.cache_identity(Identity(email="test@example.com"))
 
+        instance = None
         try:
             # Run privacy request - should pause for manual input
             run_privacy_request_task.delay(privacy_request.id).get(
