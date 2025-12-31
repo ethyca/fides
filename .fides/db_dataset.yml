@@ -1173,6 +1173,8 @@ dataset:
       data_categories: [system.operations]
     - name: reference_type
       data_categories: [system.operations]
+    - name: config_field_id
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
@@ -1264,6 +1266,8 @@ dataset:
     - name: id
       data_categories: [system.operations]
     - name: manual_task_id
+      data_categories: [system.operations]
+    - name: config_field_id
       data_categories: [system.operations]
     - name: condition_tree
       data_categories: [system.operations]

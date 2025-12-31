@@ -13,14 +13,14 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskType,
 )
-from fides.api.models.policy import ActionType, Policy, Rule
+from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 
 
@@ -55,8 +55,8 @@ class TestPrivacyRequestManualTaskInstances:
         # Create access and erasure configs with fields
         configs = {}
         for config_type, field_key in [
-            (ManualTaskConfigurationType.access_privacy_request, "access_field"),
-            (ManualTaskConfigurationType.erasure_privacy_request, "erasure_field"),
+            (ActionType.access, "access_field"),
+            (ActionType.erasure, "erasure_field"),
         ]:
             config = ManualTaskConfig.create(
                 db=db,
@@ -424,7 +424,7 @@ class TestPrivacyRequestManualTaskInstances:
             db=db,
             data={
                 "task_id": manual_task_1.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request.value,
+                "config_type": ActionType.access.value,
                 "is_current": True,
             },
         )
@@ -433,7 +433,7 @@ class TestPrivacyRequestManualTaskInstances:
             db=db,
             data={
                 "task_id": manual_task_2.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request.value,
+                "config_type": ActionType.access.value,
                 "is_current": True,
             },
         )
@@ -487,7 +487,7 @@ class TestPrivacyRequestManualTaskInstances:
             db=db,
             data={
                 "task_id": manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request.value,
+                "config_type": ActionType.access.value,
                 "is_current": True,
             },
         )
@@ -497,7 +497,7 @@ class TestPrivacyRequestManualTaskInstances:
             db=db,
             data={
                 "task_id": manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request.value,
+                "config_type": ActionType.access.value,
                 "is_current": False,
             },
         )

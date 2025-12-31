@@ -27,7 +27,6 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -200,7 +199,7 @@ def manual_task_erasure_config(db: Session, manual_task):
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.erasure_privacy_request,
+            "config_type": ActionType.erasure,
             "version": 1,
             "is_current": True,
         },
@@ -214,7 +213,7 @@ def manual_task_access_config(db: Session, manual_task):
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.access_privacy_request,
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },

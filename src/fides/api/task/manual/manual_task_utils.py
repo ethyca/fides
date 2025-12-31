@@ -12,12 +12,14 @@ from fides.api.graph.config import (
 
 # Import application models
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
+from fides.api.models.manual_task import ManualTask
+from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
-    ManualTaskConfigurationType.access_privacy_request,
-    ManualTaskConfigurationType.erasure_privacy_request,
+    ActionType.access,
+    ActionType.erasure,
+    ActionType.consent,
 }
 
 

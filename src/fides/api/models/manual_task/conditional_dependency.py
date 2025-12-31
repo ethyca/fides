@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -15,14 +15,20 @@ from fides.api.task.conditional_dependencies.schemas import (
 )
 
 if TYPE_CHECKING:
-    from fides.api.models.manual_task.manual_task import ManualTask
+    from fides.api.models.manual_task.manual_task import (
+        ManualTask,
+        ManualTaskConfigField,
+    )
 
 
 class ManualTaskConditionalDependency(ConditionalDependencyBase):
     """Manual task conditional dependency - stores condition tree as JSONB.
 
-    Each manual task can have one condition tree that determines when the task
-    should be created or executed based on privacy request data.
+    Each manual task can have condition trees that determine when the task
+    or specific fields should be created or executed based on privacy request data.
+
+    When config_field_id is NULL, the condition applies to the entire task.
+    When config_field_id is set, the condition applies only to that specific field.
     """
 
     @declared_attr
@@ -31,21 +37,35 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
 
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
-    # Foreign key to parent manual task - one condition tree per task
+    # Foreign key to parent manual task
     manual_task_id = Column(
         String,
         ForeignKey("manual_task.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
+        index=True,
+    )
+
+    # Optional foreign key to config field - when set, condition applies to field only
+    config_field_id = Column(
+        String,
+        ForeignKey("manual_task_config_field.id", ondelete="CASCADE"),
+        nullable=True,
         index=True,
     )
 
     # Relationship to parent manual task
     task = relationship("ManualTask", back_populates="conditional_dependencies")
 
+    # Relationship to config field (optional)
+    config_field = relationship("ManualTaskConfigField")
+
     __table_args__ = (
-        UniqueConstraint(
-            "manual_task_id", name="uq_manual_task_conditional_dependency"
+        # Unique constraint: one condition per task (when field is NULL) or per field
+        Index(
+            "ix_manual_task_cond_dep_task_field",
+            "manual_task_id",
+            "config_field_id",
+            unique=True,
         ),
     )
 
