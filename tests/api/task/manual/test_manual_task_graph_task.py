@@ -608,7 +608,6 @@ class TestManualTaskConditionalDependencies:
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ActionType.access,
-                ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
 
@@ -641,7 +640,6 @@ class TestManualTaskConditionalDependencies:
 
         # Call _run_request which should NOT create instances when conditions are not met
         result = graph_task._run_request(
-            ActionType.access,
             ActionType.access,
             [],  # Empty input data since we're mocking the extraction
         )
@@ -681,7 +679,6 @@ class TestManualTaskConditionalDependencies:
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ActionType.access,
-                ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
 
@@ -716,7 +713,6 @@ class TestManualTaskConditionalDependencies:
         # This should raise AwaitingAsyncTask since no submissions exist yet
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
-                ActionType.access,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
@@ -793,7 +789,6 @@ class TestManualTaskConditionalDependencies:
             # Should return None when conditions are not met
             result = graph_task._run_request(
                 ActionType.access,
-                ActionType.access,
                 [],  # Empty input data - only privacy request conditions
             )
             assert result is None
@@ -845,7 +840,6 @@ class TestManualTaskConditionalDependencies:
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
                 ActionType.access,
-                ActionType.access,
                 [{"email": "test@example.com"}],  # Task input data
             )
 
@@ -880,7 +874,6 @@ class TestManualTaskGraphTaskHelperMethods:
             result = manual_task_graph_task._check_manual_task_configs(
                 manual_task,
                 ActionType.access,
-                ActionType.access,
             )
             assert result is False
             mock_log_end.assert_called_once_with(ActionType.access)
@@ -897,7 +890,6 @@ class TestManualTaskGraphTaskHelperMethods:
 
         result = manual_task_graph_task._check_manual_task_configs(
             manual_task,
-            ActionType.access,
             ActionType.access,
         )
         assert result is True
@@ -1138,7 +1130,6 @@ class TestManualTaskGraphTaskHelperMethods:
         ):
             result = manual_task_graph_task._run_request(
                 ActionType.access,
-                ActionType.access,
                 [],
             )
             assert result is None
@@ -1160,7 +1151,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ),
         ):
             result = manual_task_graph_task._run_request(
-                ActionType.access,
                 ActionType.access,
                 [],
             )
@@ -1209,7 +1199,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ) as mock_cleanup,
         ):
             result = manual_task_graph_task._run_request(
-                ActionType.access,
                 ActionType.access,
                 [],
             )
@@ -1292,7 +1281,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
                     manual_task,
                     ActionType.access,
-                    ActionType.access,
                 )
 
     def test_set_submitted_data_or_raise_awaiting_async_task_callback_with_awaiting_message(
@@ -1317,7 +1305,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
                     manual_task,
-                    ActionType.access,
                     ActionType.access,
                     awaiting_detail_message="Test detail",
                 )
@@ -1461,7 +1448,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 # Should call _set_submitted_data_or_raise_awaiting_async_task_callback with detailed message
                 mock_set_data.assert_called_once_with(
                     manual_task,
-                    ActionType.access,
                     ActionType.access,
                     conditional_data={"test": "data"},
                     awaiting_detail_message="Success message",
