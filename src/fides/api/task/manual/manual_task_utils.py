@@ -12,7 +12,7 @@ from fides.api.graph.config import (
 
 # Import application models
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.manual_task import ManualTask
+from fides.api.models.manual_task import ManualTask, ManualTaskConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
@@ -23,36 +23,42 @@ PRIVACY_REQUEST_CONFIG_TYPES = {
 }
 
 
-def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
+def get_connection_configs_with_manual_tasks(
+    db: Session, config_type: Optional[ActionType] = None
+) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
     """
-    connection_configs = (
+    query = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
         .filter(ConnectionConfig.disabled.is_(False))
-        .all()
     )
-    return connection_configs
+
+    if config_type:
+        query = query.join(
+            ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id
+        ).filter(
+            ManualTaskConfig.config_type == config_type,
+            ManualTaskConfig.is_current.is_(True),
+        )
+
+    return query.distinct().all()
 
 
-def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
+def get_manual_task_addresses(
+    db: Session, config_type: Optional[ActionType] = None
+) -> list[CollectionAddress]:
     """
-    Get manual task addresses for all connection configs that have manual tasks.
+    Get manual task addresses for connection configs that have manual tasks.
 
     Note: Manual tasks should be included in the graph if they exist for any connection config
     that's part of the dataset graph, regardless of specific policy targets. This allows
     manual tasks to collect additional data that may be needed for the privacy request.
     """
-    # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
-
-    # Return addresses for all connections that have manual tasks
-    return [
-        ManualTaskAddress.create(config.key)
-        for config in connection_configs_with_manual_tasks
-    ]
+    connection_configs = get_connection_configs_with_manual_tasks(db, config_type)
+    return [ManualTaskAddress.create(config.key) for config in connection_configs]
 
 
 def get_manual_task_for_connection_config(
@@ -168,23 +174,27 @@ def create_collection_for_connection_key(
     return _create_collection_from_manual_task(manual_task)
 
 
-def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
+def create_manual_task_artificial_graphs(
+    db: Session, config_type: Optional[ActionType] = None
+) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
-    in the main dataset graph during the dataset configuration phase.
+    in a dataset graph.
 
-    Each manual task gets its own collection with its own dependencies based on
-    its specific conditional dependencies. This allows individual manual tasks
-    to receive only the data they need from regular tasks.
+    Each manual task gets its own GraphDataset with a collection. For access/erasure
+    graphs, collections include dependencies based on conditional dependencies. For
+    consent graphs, collections are simpler with no data flow between nodes.
 
     Args:
         db: Database session
+        config_type: Optional ActionType to filter by (e.g., ActionType.consent).
+            If None, returns graphs for all manual tasks.
 
     Returns:
-        List of GraphDataset objects representing manual tasks as individual collections
+        List of GraphDataset objects representing manual tasks
     """
     manual_task_graphs: list[GraphDataset] = []
-    manual_addresses = get_manual_task_addresses(db)
+    manual_addresses = get_manual_task_addresses(db, config_type)
 
     if not manual_addresses:
         return manual_task_graphs
@@ -217,12 +227,10 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         if not manual_task:
             continue
 
-        # Create collection using the helper function to avoid duplication
         collection = _create_collection_from_manual_task(manual_task)
         if not collection:
             continue
 
-        # Create a synthetic GraphDataset with all manual task collections
         graph_dataset = GraphDataset(
             name=connection_key,
             collections=[collection],

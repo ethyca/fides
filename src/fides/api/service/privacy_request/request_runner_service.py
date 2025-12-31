@@ -643,7 +643,7 @@ def run_privacy_request(
                     consent_runner(
                         privacy_request=privacy_request,
                         policy=policy,
-                        graph=build_consent_dataset_graph(datasets),
+                        graph=build_consent_dataset_graph(datasets, session),
                         connection_configs=connection_configs,
                         identity=identity_data,
                         session=session,

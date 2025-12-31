@@ -10,6 +10,7 @@ from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.manual_task import ManualTask, ManualTaskConfig
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -27,6 +28,7 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.api.task.execute_request_tasks import run_access_node
 from fides.api.task.graph_task import build_consent_dataset_graph
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.config import CONFIG
 from tests.conftest import wait_for_tasks_to_complete
 from tests.ops.task.traversal_data import combined_mongo_postgresql_graph
@@ -1255,6 +1257,137 @@ class TestPersistConsentRequestTasks:
 
         # No new consent tasks created
         assert privacy_request.consent_tasks.count() == 3
+
+
+class TestConsentGraphWithManualTasks:
+    """Tests for consent graph including manual tasks with consent configs"""
+
+    def test_build_consent_dataset_graph_includes_manual_tasks_when_session_provided(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph includes manual tasks when session is provided"""
+
+        # Create a manual task with a consent config for the connection
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            # Build consent graph WITH session - should include manual tasks
+            graph = build_consent_dataset_graph([saas_example_dataset_config], db)
+
+            # Verify manual task is included in the graph
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address in graph.nodes
+
+            # Verify the regular SaaS consent node is also included
+            saas_address = next(
+                addr
+                for addr in graph.nodes
+                if not ManualTaskAddress.is_manual_task_address(addr)
+            )
+            assert saas_address is not None
+
+        finally:
+            consent_config.delete(db)
+            manual_task.delete(db)
+
+    def test_build_consent_dataset_graph_excludes_manual_tasks_without_session(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph excludes manual tasks when session is not provided"""
+        from fides.api.models.manual_task import ManualTask, ManualTaskConfig
+
+        # Create a manual task with a consent config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            # Build consent graph WITHOUT session - should not include manual tasks
+            graph = build_consent_dataset_graph([saas_example_dataset_config])
+
+            # Verify manual task is NOT included in the graph
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address not in graph.nodes
+
+        finally:
+            consent_config.delete(db)
+            manual_task.delete(db)
+
+    def test_build_consent_dataset_graph_excludes_manual_tasks_without_consent_config(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph excludes manual tasks without consent configs"""
+        from fides.api.models.manual_task import ManualTask, ManualTaskConfig
+
+        # Create a manual task with only an access config (no consent config)
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        access_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.access,
+                "is_current": True,
+            },
+        )
+
+        try:
+            # Build consent graph with session
+            graph = build_consent_dataset_graph([saas_example_dataset_config], db)
+
+            # Verify manual task is NOT included (no consent config)
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address not in graph.nodes
+
+        finally:
+            access_config.delete(db)
+            manual_task.delete(db)
 
 
 class TestGetExistingReadyTasks:

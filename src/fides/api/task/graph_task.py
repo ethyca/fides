@@ -47,6 +47,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
+from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
@@ -1042,11 +1043,22 @@ def build_affected_field_logs(
         return ret
 
 
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+def build_consent_dataset_graph(
+    datasets: List[DatasetConfig], session: Optional[Session] = None
+) -> DatasetGraph:
     """
     Build the starting DatasetGraph for consent requests.
 
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    Consent Graph has one node per dataset. Nodes must be of saas type and have consent
+    requests defined, or be manual tasks with consent configurations.
+
+    Args:
+        datasets: List of DatasetConfig objects to build the graph from
+        session: Optional database session for loading manual task graphs.
+            If provided, manual tasks with consent configs will be included.
+
+    Returns:
+        DatasetGraph containing all consent-capable nodes
     """
     consent_datasets: List[GraphDataset] = []
 
@@ -1064,5 +1076,12 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             consent_datasets.append(
                 dataset_config.get_dataset_with_stubbed_collection()
             )
+
+    # Add manual task graphs if session is provided
+    if session:
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            session, config_type=ActionType.consent
+        )
+        consent_datasets.extend(manual_task_graphs)
 
     return DatasetGraph(*consent_datasets)
