@@ -10,7 +10,7 @@ from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.manual_task import ManualTask, ManualTaskConfig
+from fides.api.models.manual_task import ManualTask, ManualTaskConfig, ManualTaskConfigField
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
@@ -1289,6 +1289,22 @@ class TestConsentGraphWithManualTasks:
             },
         )
 
+        # Must have at least one field for the manual task to be included in the graph
+        consent_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_key": "consent_confirmation",
+                "field_type": "text",
+                "field_metadata": {
+                    "label": "Consent Confirmation",
+                    "required": True,
+                    "data_categories": ["user.consent"],
+                },
+            },
+        )
+
         try:
             # Build consent graph WITH session - should include manual tasks
             graph = build_consent_dataset_graph([saas_example_dataset_config], db)
@@ -1306,6 +1322,7 @@ class TestConsentGraphWithManualTasks:
             assert saas_address is not None
 
         finally:
+            consent_field.delete(db)
             consent_config.delete(db)
             manual_task.delete(db)
 
