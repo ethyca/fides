@@ -46,8 +46,7 @@ jobs:
               core.setFailed(
                 '❌ No changelog entry file found!\n\n' +
                 'Please add a changelog entry file in the changelog/ directory.\n' +
-                'See changelog/README.md for instructions on creating changelog entries.\n' +
-                'Note: TEMPLATE.yaml does not count as a changelog entry.'
+                'See changelog/README.md for instructions on creating changelog entries.\n'
               );
             } else {
               const fileNames = changelogFiles.map(f => f.filename).join(', ');
