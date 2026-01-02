@@ -120,9 +120,6 @@ class PolicyFields(Enum):
 class ConsentPolicyFields(Enum):
     """Policy fields available for consent privacy request conditions.
 
-    This is a subset of PolicyFields that excludes fields not meaningful
-    for consent requests:
-    - execution_timeframe: Consent requests don't use execution timeframes
     """
 
     id = "privacy_request.policy.id"
