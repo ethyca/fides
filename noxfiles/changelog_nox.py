@@ -1,7 +1,6 @@
 """Contains nox sessions for managing changelog fragments."""
 
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -36,12 +35,12 @@ class ChangelogEntry:
 
     def __init__(
         self,
-        type: str,
+        entry_type: str,
         description: str,
         pr: Optional[int] = None,
         labels: Optional[List[str]] = None,
     ):
-        self.type = type
+        self.type = entry_type
         self.description = description
         self.pr = pr
         self.labels = labels or []
@@ -80,8 +79,18 @@ def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
                 continue
 
             # Validate required fields
-            if "type" not in data or "description" not in data:
-                errors.append(f"Missing required fields in {yaml_file.name}")
+            missing = []
+            if "type" not in data:
+                missing.append("type")
+            if "description" not in data:
+                missing.append("description")
+            if "pr" not in data:
+                missing.append("pr")
+
+            if missing:
+                errors.append(
+                    f"Missing required fields in {yaml_file.name}: {', '.join(missing)}"
+                )
                 continue
 
             entry_type = data["type"]
@@ -93,7 +102,7 @@ def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
                 continue
 
             entry = ChangelogEntry(
-                type=entry_type,
+                entry_type=entry_type,
                 description=data["description"],
                 pr=data.get("pr"),
                 labels=data.get("labels", []),
@@ -161,7 +170,7 @@ def find_unreleased_section(content: str) -> tuple[int, int]:
 def insert_entries_into_changelog(content: str, new_entries: str) -> str:
     """Insert new entries into the Unreleased section of CHANGELOG.md."""
     lines = content.split("\n")
-    start_idx, end_idx = find_unreleased_section(content)
+    _, end_idx = find_unreleased_section(content)
 
     # Insert new entries at the end of the Unreleased section (before the next release section)
     # If there's existing content, add a blank line separator
@@ -246,15 +255,18 @@ def finalize_release(content: str, version: str) -> str:
         nox.param("write", id="write"),
     ],
 )
-def changelog(session: nox.Session, action: str) -> None:
+def changelog(  # pylint: disable=too-many-branches,too-many-statements
+    session: nox.Session, action: str
+) -> None:
     """
     Compile changelog fragments into CHANGELOG.md.
 
     Parameters:
         - changelog(dry) = Preview the changelog that would be generated without making changes
-        - changelog(write) = Compile fragments and update CHANGELOG.md, then delete fragment files
-        - changelog(write) -- --release VERSION = Also finalize the release (create new version section)
-        - changelog(write) -- --prs PR1,PR2,PR3 = Only include fragments with these PR numbers (for patch releases)
+        - changelog(dry) -- --release VERSION = Preview with release finalization
+        - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
+        - changelog(write) -- --release VERSION = Compile fragments and create new version section (--release required)
+        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Only include specific PRs (for patch releases)
     """
     session.install("pyyaml")
 
@@ -266,6 +278,12 @@ def changelog(session: nox.Session, action: str) -> None:
             release_version = session.posargs[release_idx + 1]
         else:
             session.error("--release flag requires a version number")
+
+    # Require --release for write action
+    if action == "write" and not release_version:
+        session.error(
+            "changelog(write) requires --release VERSION flag (e.g., --release 2.77.0)"
+        )
 
     # Check for PR filter flag (for patch releases)
     pr_filter = None

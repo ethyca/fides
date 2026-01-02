@@ -3,5 +3,5 @@
 
 type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
 description: Short description of the change
-pr: 1234 # PR number (optional if not yet known)
+pr: 1234 # PR number
 labels: [] # Optional: ["high-risk", "db-migration"]
