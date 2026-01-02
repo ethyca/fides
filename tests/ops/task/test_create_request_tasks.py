@@ -10,7 +10,11 @@ from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.manual_task import ManualTask, ManualTaskConfig, ManualTaskConfigField
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigField,
+)
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
