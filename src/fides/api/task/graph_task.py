@@ -283,8 +283,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:
-        """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
+        """Checks if the relevant ConnectionConfig has been granted "write" access to its data.
+
+        Manual task connections always return True since they don't actually write to
+        external systems - humans manually record/confirm actions instead.
+        """
         connection_config: ConnectionConfig = self.connector.configuration
+        # Manual tasks don't connect to external systems, so the write access
+        # concept doesn't apply. Humans manually record erasure confirmations
+        # or consent preferences.
+        if connection_config.connection_type == ConnectionType.manual_task:
+            return True
         return connection_config.access == AccessLevel.write
 
     def _combine_seed_data(

@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from loguru import logger
 from pydantic.v1.utils import deep_update
 from sqlalchemy.orm import Session
 
@@ -13,7 +14,16 @@ from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
     PrivacyRequestDataTransformer,
 )
-from fides.api.task.conditional_dependencies.schemas import EvaluationResult
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    CONSENT_UNAVAILABLE_FIELDS,
+    get_consent_unavailable_field_message,
+)
+from fides.api.task.conditional_dependencies.schemas import (
+    Condition,
+    ConditionGroup,
+    ConditionLeaf,
+    EvaluationResult,
+)
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 from fides.api.task.manual.manual_task_utils import extract_field_addresses
 from fides.api.util.collection_util import Row
@@ -56,6 +66,42 @@ def has_non_privacy_request_conditions(manual_task: ManualTask) -> bool:
 
     # Check if any field address does NOT start with "privacy_request."
     return any(not addr.startswith("privacy_request.") for addr in all_field_addresses)
+
+
+def get_consent_unavailable_conditions(
+    manual_task: ManualTask,
+) -> list[tuple[str, str]]:
+    """
+    Get a list of conditional dependency fields that are not available for consent requests.
+
+    This is useful for validation and providing helpful error messages when configuring
+    consent manual tasks.
+
+    Args:
+        manual_task: The manual task to check
+
+    Returns:
+        List of (field_path, message) tuples for unavailable fields
+    """
+    all_field_addresses = get_all_field_addresses_from_manual_task(manual_task)
+    unavailable: list[tuple[str, str]] = []
+
+    for addr in all_field_addresses:
+        # Check for dataset fields (non-privacy_request)
+        if not addr.startswith("privacy_request."):
+            unavailable.append(
+                (
+                    addr,
+                    f"{addr} is a dataset field (not available for consent requests)",
+                )
+            )
+        # Check for unavailable privacy_request fields
+        elif addr in CONSENT_UNAVAILABLE_FIELDS:
+            message = get_consent_unavailable_field_message(addr)
+            if message:
+                unavailable.append((addr, message))
+
+    return unavailable
 
 
 def extract_privacy_request_only_conditional_data(
@@ -222,8 +268,118 @@ def set_nested_value(field_address: str, value: Any) -> dict[str, Any]:
     return {field_address: value}
 
 
+class ConsentConditionFilterResult:
+    """Result of filtering conditions for consent evaluation."""
+
+    def __init__(self) -> None:
+        self.filtered_condition: Optional[Condition] = None
+        self.skipped_dataset_fields: list[str] = []
+        self.unavailable_privacy_request_fields: list[tuple[str, str]] = (
+            []
+        )  # (field, message) pairs
+
+    @property
+    def has_skipped_conditions(self) -> bool:
+        return len(self.skipped_dataset_fields) > 0
+
+    @property
+    def has_unavailable_fields(self) -> bool:
+        return len(self.unavailable_privacy_request_fields) > 0
+
+    def get_skip_message(self) -> str:
+        """Get a human-readable message about skipped conditions."""
+        if not self.skipped_dataset_fields:
+            return ""
+        fields = ", ".join(self.skipped_dataset_fields)
+        return (
+            f"Note: {len(self.skipped_dataset_fields)} condition(s) referencing dataset fields "
+            f"were skipped for consent evaluation (consent requests don't have data flow): {fields}"
+        )
+
+    def get_unavailable_fields_message(self) -> str:
+        """Get a human-readable message about unavailable privacy request fields."""
+        if not self.unavailable_privacy_request_fields:
+            return ""
+        messages = [msg for _, msg in self.unavailable_privacy_request_fields]
+        return (
+            f"Warning: {len(self.unavailable_privacy_request_fields)} condition(s) reference "
+            f"privacy request fields not available for consent: {'; '.join(messages)}"
+        )
+
+
+def _filter_condition_tree_for_privacy_request_only(
+    condition: Condition,
+    filter_result: Optional[ConsentConditionFilterResult] = None,
+) -> Optional[Condition]:
+    """
+    Filter a condition tree to only include privacy_request.* conditions
+    that are available for consent requests.
+
+    For consent tasks:
+    - Dataset field conditions are removed (consent DSRs don't have data flow)
+    - Privacy request fields not captured for consent are tracked with warnings
+      (e.g., due_date, location_country)
+
+    Args:
+        condition: The condition (ConditionLeaf or ConditionGroup) to filter
+        filter_result: Optional result object to track what was filtered
+
+    Returns:
+        Filtered condition with only available privacy_request.* conditions,
+        or None if no conditions remain after filtering
+    """
+    if isinstance(condition, ConditionLeaf):
+        field_address = condition.field_address
+
+        # Check if it's a privacy_request field
+        if field_address.startswith("privacy_request."):
+            # Check if this specific field is available for consent
+            if field_address in CONSENT_UNAVAILABLE_FIELDS:
+                # Track unavailable privacy request fields with helpful message
+                if filter_result is not None:
+                    message = get_consent_unavailable_field_message(field_address)
+                    if message:
+                        filter_result.unavailable_privacy_request_fields.append(
+                            (field_address, message)
+                        )
+                return None
+            # Field is available for consent
+            return condition
+
+        # Track skipped dataset field conditions
+        if filter_result is not None:
+            filter_result.skipped_dataset_fields.append(field_address)
+        return None
+
+    # Filter all child conditions
+    filtered_conditions: list[Condition] = []
+    for child in condition.conditions:
+        filtered_child = _filter_condition_tree_for_privacy_request_only(
+            child, filter_result
+        )
+        if filtered_child is not None:
+            filtered_conditions.append(filtered_child)
+
+    # If no conditions remain after filtering, return None
+    if not filtered_conditions:
+        return None
+
+    # If only one condition remains, return it directly (no need for group)
+    if len(filtered_conditions) == 1:
+        return filtered_conditions[0]
+
+    # Return a new group with filtered conditions
+    return ConditionGroup(
+        logical_operator=condition.logical_operator,
+        conditions=filtered_conditions,
+    )
+
+
 def evaluate_conditional_dependencies(
-    db: Session, manual_task: ManualTask, conditional_data: dict[str, Any]
+    db: Session,
+    manual_task: ManualTask,
+    conditional_data: dict[str, Any],
+    privacy_request_only: bool = False,
 ) -> Optional[EvaluationResult]:
     """
     Evaluate conditional dependencies for a manual task using data from regular tasks.
@@ -234,6 +390,8 @@ def evaluate_conditional_dependencies(
     Args:
         manual_task: The manual task to evaluate
         conditional_data: Data from regular tasks for conditional dependency fields
+        privacy_request_only: If True, only evaluate privacy_request.* conditions
+            (used for consent tasks which don't have dataset data flow)
 
     Returns:
         EvaluationResult object containing detailed information about which conditions
@@ -248,6 +406,38 @@ def evaluate_conditional_dependencies(
         # No conditional dependencies - always execute
         return None
 
+    # For consent tasks, filter out dataset field conditions and unavailable fields
+    condition_tree: Optional[Condition] = root_condition
+    filter_result: Optional[ConsentConditionFilterResult] = None
+    if privacy_request_only:
+        filter_result = ConsentConditionFilterResult()
+        condition_tree = _filter_condition_tree_for_privacy_request_only(
+            root_condition, filter_result
+        )
+        # Log skipped dataset conditions for visibility
+        if filter_result.has_skipped_conditions:
+            logger.info(filter_result.get_skip_message())
+
+        # Warn about unavailable privacy request fields
+        if filter_result.has_unavailable_fields:
+            logger.warning(filter_result.get_unavailable_fields_message())
+
+        if condition_tree is None:
+            # No evaluable conditions remain - always execute
+            if filter_result.has_unavailable_fields:
+                logger.info(
+                    "All conditions for consent manual task referenced unavailable fields "
+                    "and were skipped. Task will execute unconditionally."
+                )
+            else:
+                logger.info(
+                    "All conditions for consent manual task referenced dataset fields "
+                    "and were skipped. Task will execute unconditionally."
+                )
+            return None
+
     # Evaluate the condition using the data from regular tasks
+    # At this point condition_tree cannot be None (early return above handles that case)
+    assert condition_tree is not None
     evaluator = ConditionEvaluator(db)
-    return evaluator.evaluate_rule(root_condition, conditional_data)
+    return evaluator.evaluate_rule(condition_tree, conditional_data)
