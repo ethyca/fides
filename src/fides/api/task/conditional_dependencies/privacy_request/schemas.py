@@ -54,9 +54,6 @@ class PrivacyRequestConvenienceFields(Enum):
 class ConsentPrivacyRequestConvenienceFields(Enum):
     """Convenience fields available for consent privacy request conditions.
 
-    This is a subset of PrivacyRequestConvenienceFields that excludes fields
-    not available for consent requests:
-    - location_country, location_groups, location_regulations: Not captured in consent workflow
     """
 
     # Policy convenience fields (all available for consent)
