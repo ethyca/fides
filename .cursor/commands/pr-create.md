@@ -17,9 +17,16 @@ Use the template found in `.github/pull_request_template.md` to create a pull re
       - title= - URL-encoded PR title
       - body= - URL-encoded PR description (supports markdown with %0A for newlines)
 
-## Add the changelog
-In addition to returning that markdown response, provide a concise, one-liner summary for the CHANGELOG no longer than about 85 characters or about 15 words max.
-- It's ok to suggest multiple entries for large PRs, but each entry should be a short one-liner.
-- Do not prefix the changelog entry with anything, start with a verb in the past tense (eg. "Added...", "Updated..." etc.)
-- Add the changelog to the appropriate spot in the CHANGELOG.md file in the root. Make sure it always ends up in the "Unreleased" section.
-- If `gh` is used to create the PR, include a link to it following the same format as other changelog entries. If a URL was created instead, do not put placeholders or anything for the PR link, it will be added manually once the PR is created.
+## Add the changelog entry
+In addition to returning that markdown response, create a changelog fragment file for the PR.
+
+- Create a YAML file in the `changelog/` directory (use `.yaml` or `.yml` extension)
+- Name the file using the PR number (e.g., `1234.yaml` or `pr-1234.yaml`) or a descriptive slug (e.g., `add-feature-name.yaml`)
+- Use `changelog/TEMPLATE.yaml` as a reference for the format
+- Provide a concise, one-liner description no longer than about 85 characters or about 15 words max
+- Start the description with a verb in the past tense (e.g., "Added...", "Updated...", "Fixed..." etc.)
+- Choose the appropriate `type` from: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+- If `gh` is used to create the PR, include the PR number in the `pr` field. If a URL was created instead, leave `pr` empty or omit it (it can be added later)
+- Add `labels` if applicable: `["high-risk"]` for high-risk changes, `["db-migration"]` for database migrations, or `["high-risk", "db-migration"]` for both
+- The changelog entry will be automatically compiled into `CHANGELOG.md` during the release process
+- It's ok to suggest multiple fragment files for large PRs, but each entry should be a short one-liner
