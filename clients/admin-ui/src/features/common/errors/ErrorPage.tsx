@@ -3,30 +3,40 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton,
   AntButtonProps,
+  AntCollapse,
   AntFlex,
   AntResult,
   AntTypography,
 } from "fidesui";
+import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
 import { getErrorMessage } from "~/features/common/helpers";
 
-type ActionProps = AntButtonProps & { label: ReactNode };
+type ActionProps = Omit<AntButtonProps, "children"> & { label: ReactNode };
 
 const ErrorPage = ({
   error,
+  defaultMessage,
   actions,
+  showReload = true,
 }: {
   error: FetchBaseQueryError | SerializedError;
-  actions: ActionProps[];
+  defaultMessage?: string;
+  actions?: ActionProps[];
+  showReload?: boolean;
 }) => {
-  const errorMessage = getErrorMessage(error);
+  const errorMessage = getErrorMessage(error, defaultMessage);
   // handle both FetchBaseQueryError and SerializedError
   const dataString =
     "data" in error ? JSON.stringify(error.data) : JSON.stringify(error);
   const status = "status" in error ? error.status : undefined;
+
+  const router = useRouter();
+
+  const showActions = (actions && actions.length > 0) || showReload;
 
   return (
     <AntFlex vertical align="center" justify="center" className="h-screen">
@@ -39,23 +49,47 @@ const ErrorPage = ({
             <AntTypography.Paragraph type="secondary">
               {errorMessage}
             </AntTypography.Paragraph>
-            <AntTypography.Text type="secondary">
-              {dataString}
-            </AntTypography.Text>
-            <ClipboardButton copyText={dataString} />
+            <AntFlex justify="start" className="max-w-96">
+              <AntCollapse
+                ghost
+                size="small"
+                items={[
+                  {
+                    key: "1",
+                    label: "Show details",
+                    classNames: {
+                      header: "w-fit",
+                    },
+                    children: (
+                      <>
+                        <AntTypography.Text type="secondary">
+                          {dataString}
+                        </AntTypography.Text>
+                        <ClipboardButton copyText={dataString} />
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            </AntFlex>
           </>
         }
         extra={
-          actions.length > 0 ? (
+          showActions && (
             <AntFlex gap="small" justify="center">
-              {actions.map((action, index) => (
+              {actions?.map((action, index) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <AntButton key={index} {...action}>
                   {action.label}
                 </AntButton>
               ))}
+              {showReload && (
+                <AntButton onClick={() => router.reload()} type="primary">
+                  Reload
+                </AntButton>
+              )}
             </AntFlex>
-          ) : undefined
+          )
         }
       />
     </AntFlex>
