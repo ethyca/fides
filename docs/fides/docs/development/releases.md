@@ -174,7 +174,7 @@ It may be necessary for a patch release to contain only select commits to the `m
 1. Compile changelog fragments for the patch release:
    ```sh
    # Preview what will be generated (dry run)
-   nox -s changelog(dry) -- --prs 1234,5678
+   nox -s "changelog(dry)" -- --prs 1234,5678
 
    # Compile fragments and finalize for patch release (only selected PRs)
    nox -s "changelog(write)" -- --release 1.2.4 --prs 1234,5678
