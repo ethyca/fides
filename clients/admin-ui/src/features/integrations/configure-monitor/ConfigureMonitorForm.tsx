@@ -1,14 +1,7 @@
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import {
-  AntButton as Button,
-  AntDatePicker as DatePicker,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSwitch as Switch,
-} from "fidesui";
+import { Button, DatePicker, Form, Input, Select, Switch } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 

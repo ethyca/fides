@@ -1,11 +1,6 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntSkeleton as Skeleton,
-  AntText as Text,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Flex, Icons, Skeleton, Text } from "fidesui";
+
+import { DiffStatus } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -86,9 +81,16 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
+  const isMuted = node.diffStatus === DiffStatus.MUTED;
+
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
-    <Flex gap={4} align="center" className="group ml-1 flex grow">
+    <Flex
+      gap={4}
+      align="center"
+      className={`group ml-1 flex grow ${isMuted ? "opacity-40" : ""}`}
+      aria-label={isMuted ? `${node.title} (ignored)` : undefined}
+    >
       <Text ellipsis={{ tooltip: node.title }} className="grow select-none">
         {node.title}
       </Text>

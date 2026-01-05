@@ -1,4 +1,4 @@
-import { Text } from "fidesui";
+import { ChakraText as Text } from "fidesui";
 import React from "react";
 
 type TestConnectionMessageProps = {

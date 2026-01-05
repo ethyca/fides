@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntPopover as Popover,
+  Button,
+  Checkbox,
+  Divider,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Popover,
 } from "fidesui";
 import { useCallback, useState } from "react";
 

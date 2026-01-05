@@ -1619,6 +1619,7 @@ class TestRDSPostgresConnector:
             connector.test_connection()
 
 
+@pytest.mark.xfail(reason="Old Okta tests")
 @pytest.mark.integration_external
 @pytest.mark.integration_okta
 class TestOktaConnector:

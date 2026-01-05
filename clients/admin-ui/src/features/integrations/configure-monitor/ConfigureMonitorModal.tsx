@@ -1,6 +1,8 @@
-import { UseDisclosureReturn, useToast } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  useChakraToast as useToast,
+} from "fidesui";
 
-import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -52,9 +54,7 @@ const ConfigureMonitorModal = ({
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
-  const { flags } = useFlags();
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
-  const useNewOktaEndpoints = flags.oktaMonitor && isOktaIntegration;
 
   const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
@@ -70,7 +70,7 @@ const ConfigureMonitorModal = ({
   ] = usePutIdentityProviderMonitorMutation();
 
   let isSubmitting: boolean;
-  if (useNewOktaEndpoints) {
+  if (isOktaIntegration) {
     isSubmitting = isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate;
   } else {
     isSubmitting = isSubmittingRegular;
@@ -101,8 +101,8 @@ const ConfigureMonitorModal = ({
       }
     }, TIMEOUT_DELAY);
 
-    // Use Identity Provider Monitor endpoint for Okta with new auth, otherwise use regular endpoint
-    if (useNewOktaEndpoints) {
+    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+    if (isOktaIntegration) {
       // Transform MonitorConfig to IdentityProviderMonitorConfig format
       const oktaPayload = {
         name: values.name,

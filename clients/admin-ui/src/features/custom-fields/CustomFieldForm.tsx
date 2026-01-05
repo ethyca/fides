@@ -1,16 +1,16 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  AntAutoComplete as AutoComplete,
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSkeleton as Skeleton,
-  AntTypography as Typography,
+  AutoComplete,
+  Button,
+  Flex,
+  Form,
   Icons,
-  useAntModal,
+  Input,
+  Select,
+  Skeleton,
+  Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
 
@@ -79,7 +79,7 @@ const CustomFieldForm = ({
   const { resource_type: queryResourceType } = router.query;
 
   const messageApi = useMessage();
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
@@ -99,7 +99,16 @@ const CustomFieldForm = ({
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
 
   const handleDelete = async () => {
-    const result = await deleteCustomField({ id: initialField?.id as string });
+    if (!initialField) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { id, resource_type, field_type } = initialField;
+    const result = await deleteCustomField({
+      id: id!,
+      resource_type,
+      field_type,
+    });
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
       return;

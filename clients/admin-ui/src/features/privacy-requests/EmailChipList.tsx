@@ -1,14 +1,14 @@
 import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  forwardRef,
-  Input,
-  Tag,
-  TagCloseButton,
-  TagLabel,
-  VStack,
-  Wrap,
+  ChakraFormControl as FormControl,
+  ChakraFormErrorMessage as FormErrorMessage,
+  ChakraFormLabel as FormLabel,
+  chakraForwardRef as forwardRef,
+  ChakraInput as Input,
+  ChakraTag as Tag,
+  ChakraTagCloseButton as TagCloseButton,
+  ChakraTagLabel as TagLabel,
+  ChakraVStack as VStack,
+  ChakraWrap as Wrap,
 } from "fidesui";
 import { FieldArrayRenderProps } from "formik";
 import React, { useState } from "react";

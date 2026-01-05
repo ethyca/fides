@@ -50,9 +50,9 @@ export const privacyCenterPagesCspHeader = (args: {
   flattenHeader(`
     default-src 'self';
     script-src 'self' 'nonce-${args.nonce}' 'strict-dynamic' ${args.isDev ? "'unsafe-eval'" : ""};
-    style-src 'self' ${args.isDev ? "'unsafe-inline'" : `'nonce-${args.nonce}'`};
+    style-src 'self' 'unsafe-inline';
     connect-src 'self' ${args.fidesApiHost} ${args.geolocationApiHost};
-    img-src 'self' blob: data:;
+    img-src * blob: data:;
     font-src 'self';
     object-src 'none';
     base-uri 'self';

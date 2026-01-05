@@ -6,15 +6,15 @@ import {
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
 import {
-  AntButton as Button,
-  Box,
-  Center,
-  Flex,
-  Input,
-  InputGroup,
-  InputLeftElement,
+  Button,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraInput as Input,
+  ChakraInputGroup as InputGroup,
+  ChakraInputLeftElement as InputLeftElement,
+  ChakraSpinner as Spinner,
   SearchLineIcon,
-  Spinner,
 } from "fidesui";
 import React, {
   useCallback,

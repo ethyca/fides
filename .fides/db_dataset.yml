@@ -1189,28 +1189,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-  - name: manual_task_log
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: task_id
-      data_categories: [system.operations]
-    - name: config_id
-      data_categories: [system.operations]
-    - name: instance_id
-      data_categories: [system.operations]
-    - name: status
-      data_categories: [system.operations]
-    - name: message
-      data_categories: [system.operations]
-    - name: details
-      data_categories: [system.operations]
-    - name: user_id
-      data_categories: [user.unique_id]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
   - name: manual_task_config
     fields:
     - name: config_type
@@ -3380,4 +3358,17 @@ dataset:
       - name: diff_status
         data_categories: [system.operations]
       - name: task_id
+        data_categories: [system.operations]
+  - name: monitorsteward
+    description: 'Table to link users to monitors as monitor stewards'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [system.operations]
+      - name: monitor_config_id
         data_categories: [system.operations]

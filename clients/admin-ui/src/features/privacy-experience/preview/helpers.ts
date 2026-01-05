@@ -27,6 +27,13 @@ const defaultTranslation: ExperienceTranslation = {
   save_button_label: "Save",
   title: "Manage your consent preferences",
   is_default: true,
+  // GPC fields
+  gpc_label: "Global Privacy Control",
+  gpc_description:
+    "Your global privacy control preference has been honored. You have been automatically opted out of data use cases which adhere to global privacy control.",
+  gpc_title: "Global Privacy Control detected",
+  gpc_status_applied_label: "Applied",
+  gpc_status_overridden_label: "Overridden",
 };
 
 export const buildExperienceTranslation = (

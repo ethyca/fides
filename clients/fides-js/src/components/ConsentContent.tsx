@@ -31,8 +31,8 @@ const ConsentContent = ({
   const { title, description } = headerContent;
   const { i18n } = useI18n();
   const gpcEnabled = getConsentContext().globalPrivacyControl;
-  const gpcTitle = i18n.t("static.gpc.title");
-  const gpcDescription = i18n.t("static.gpc.description");
+  const gpcTitle = i18n.t("exp.gpc_title");
+  const gpcDescription = i18n.t("exp.gpc_description");
 
   return (
     <Fragment>

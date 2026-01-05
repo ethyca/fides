@@ -1,4 +1,4 @@
-import { useAntModal, useMessage } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
@@ -24,7 +24,7 @@ export const useBulkActions = (
   const [bulkAction] = useFieldActionsMutation();
 
   const messageApi = useMessage();
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   const handleBulkAction =
     (actionType: FieldActionType) =>
@@ -86,10 +86,10 @@ export const useBulkActions = (
       // Refresh the tree to reflect updated status
       // Note: For bulk actions we can't get the specific URNs affected,
       // so we pass the staged_resource_urn filter if available.
-      // If the action is APPROVE, the indicators are not refreshed because the
-      // resource approved by the approve action had already been classified,
+      // If the action is REVIEW, the indicators are not refreshed because the
+      // resource reviewed by the review action had already been classified,
       // and its parent already had the "change" indicator.
-      if (onRefreshTree && actionType !== FieldActionType.APPROVE) {
+      if (onRefreshTree && actionType !== FieldActionType.REVIEW) {
         const resources = filterParams.query.staged_resource_urn || [];
         await onRefreshTree(resources);
       }
@@ -98,9 +98,9 @@ export const useBulkActions = (
   return {
     "assign-categories": handleBulkAction(FieldActionType.ASSIGN_CATEGORIES),
     "promote-removals": handleBulkAction(FieldActionType.PROMOTE_REMOVALS),
-    "un-approve": handleBulkAction(FieldActionType.UN_APPROVE),
+    "un-review": handleBulkAction(FieldActionType.UN_REVIEW),
     "un-mute": handleBulkAction(FieldActionType.UN_MUTE),
-    approve: handleBulkAction(FieldActionType.APPROVE),
+    review: handleBulkAction(FieldActionType.REVIEW),
     classify: handleBulkAction(FieldActionType.CLASSIFY),
     mute: handleBulkAction(FieldActionType.MUTE),
     promote: handleBulkAction(FieldActionType.PROMOTE),

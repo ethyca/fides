@@ -1,11 +1,11 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntDefaultOptionType as DefaultOptionType,
-  AntSpace as Space,
-  AntText as Text,
+  ColumnsType,
+  DefaultOptionType,
   formatIsoLocation,
   isoStringToEntry,
-  useToast,
+  Space,
+  Text,
+  useChakraToast as useToast,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";

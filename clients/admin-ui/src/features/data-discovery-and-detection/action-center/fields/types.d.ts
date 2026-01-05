@@ -1,10 +1,11 @@
-import { AntTreeDataNode as TreeDataNode } from "fidesui";
+import { TreeDataNode } from "fidesui";
 
 import { Node } from "~/features/common/hooks/useNodeMap";
 import {
   ConfidenceBucket,
   Database,
   DatastoreStagedResource,
+  DiffStatus,
   Field,
   Schema,
   Table,
@@ -28,6 +29,7 @@ export type MonitorResource =
 export interface CustomTreeDataNode extends TreeDataNode {
   title?: string | null;
   status?: TreeResourceChangeIndicator | null;
+  diffStatus?: DiffStatus | null;
   children?: CustomTreeDataNode[];
   classifyable?: boolean;
 }

@@ -11,12 +11,12 @@
  */
 
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntMenuProps as MenuProps,
-  AntSpace as Space,
+  Button,
+  Dropdown,
   Icons,
-  useDisclosure,
+  MenuProps,
+  Space,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import {

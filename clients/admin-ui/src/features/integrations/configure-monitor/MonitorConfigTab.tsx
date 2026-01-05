@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTable as Table,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  useDisclosure,
+  Button,
+  Flex,
+  Table,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useState } from "react";
 

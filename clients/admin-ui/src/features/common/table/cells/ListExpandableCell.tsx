@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntList as List,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, FlexProps, List, Typography } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { COLLAPSE_BUTTON_TEXT } from "./constants";

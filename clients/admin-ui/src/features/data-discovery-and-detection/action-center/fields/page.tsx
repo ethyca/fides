@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSplitter as Splitter,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
+  Button,
+  Checkbox,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Splitter,
+  Text,
+  Title,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 import { NextPage } from "next";
@@ -55,6 +55,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { collectNodeUrns } from "./treeUtils";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -272,7 +273,11 @@ const ActionCenterFields: NextPage = () => {
                             node.status ===
                               TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
-                            node.classifyable)
+                            node.classifyable) ||
+                          (action === FieldActionType.MUTE &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.UN_MUTE &&
+                            node.diffStatus === DiffStatus.MUTED)
                         ) {
                           return false;
                         }
@@ -280,7 +285,10 @@ const ActionCenterFields: NextPage = () => {
                         return true;
                       })
                       .some((d) => d === true),
-                  callback: (keys) => fieldActions[action](keys, false),
+                  callback: (keys, nodes) => {
+                    const allUrns = collectNodeUrns(nodes);
+                    fieldActions[action](allUrns, false);
+                  },
                 },
               ]),
             )}
