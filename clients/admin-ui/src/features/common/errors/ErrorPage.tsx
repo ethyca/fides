@@ -19,7 +19,7 @@ type ActionProps = Omit<AntButtonProps, "children"> & { label: ReactNode };
 
 const ErrorPage = ({
   error,
-  defaultMessage,
+  defaultMessage = "An unexpected error occurred.  Please try again",
   actions,
   showReload = true,
 }: {
@@ -44,6 +44,7 @@ const ErrorPage = ({
         status="error"
         icon={<ErrorImage status={status} />}
         title={`Error ${status}`}
+        data-testid="error-page-result"
         subTitle={
           <>
             <AntTypography.Paragraph type="secondary">

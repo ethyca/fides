@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import {
   ACTION_CENTER_ROUTE,
@@ -10,6 +11,7 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { useDiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredAssetsTable";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
@@ -40,6 +42,20 @@ const MonitorResultAssets: NextPage = () => {
       });
     }
   }, [systemResults, router, monitorId]);
+
+  const { error } = useDiscoveredAssetsTable({
+    monitorId,
+    systemId,
+  });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your assets"
+      />
+    );
+  }
 
   return (
     <FixedLayout title="Action center - Discovered assets">

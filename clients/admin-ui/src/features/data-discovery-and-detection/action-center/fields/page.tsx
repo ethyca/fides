@@ -20,6 +20,7 @@ import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useSearch } from "~/features/common/hooks";
 import {
@@ -233,6 +234,15 @@ const ActionCenterFields: NextPage = () => {
     !!detailsUrn,
     () => listQueryMeta.refetch(),
   );
+
+  if (listQueryMeta.error) {
+    return (
+      <ErrorPage
+        error={listQueryMeta.error}
+        defaultMessage="A problem occurred while fetching your monitor results"
+      />
+    );
+  }
 
   return (
     <FixedLayout
