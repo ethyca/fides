@@ -2,9 +2,11 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import nox
+
+from utils_nox import install_requirements
 
 # Valid changelog types in order
 CHANGELOG_TYPES = [
@@ -38,7 +40,7 @@ class ChangelogEntry:
         entry_type: str,
         description: str,
         pr: Optional[int] = None,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
     ):
         self.type = entry_type
         self.description = description
@@ -54,6 +56,11 @@ class ChangelogEntry:
             if label in LABEL_URLS:
                 entry += f" {LABEL_URLS[label]}"
         return entry
+
+
+# =============================================================================
+# Fragment Loading and Validation
+# =============================================================================
 
 
 def validate_fragment_data(
@@ -100,7 +107,7 @@ def validate_fragment_data(
     return entry, None
 
 
-def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
+def load_fragments() -> list[tuple[Path, ChangelogEntry]]:
     """Load all changelog fragment files and return list of (path, entry) tuples."""
     import yaml  # Import here since it's installed by the nox session
 
@@ -137,17 +144,90 @@ def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
     return entries
 
 
+def validate_fragment_files(
+    file_paths: list[str],
+) -> list[tuple[Path, ChangelogEntry]]:
+    """
+    Validate specific changelog fragment files.
+
+    Args:
+        file_paths: List of file paths (relative or absolute) to validate
+
+    Returns:
+        List of (path, entry) tuples for valid entries
+
+    Raises:
+        ValueError: If any validation errors are found
+    """
+    import yaml  # Import here since it's installed by the nox session
+
+    entries = []
+    errors = []
+
+    for file_path in file_paths:
+        path = Path(file_path)
+
+        # Handle relative paths - check both as-is and in changelog dir
+        if not path.exists():
+            # Try as relative to changelog dir
+            alt_path = CHANGELOG_DIR / path.name
+            if alt_path.exists():
+                path = alt_path
+            else:
+                errors.append(f"File not found: {file_path}")
+                continue
+
+        # Skip template file
+        if path.name == TEMPLATE_FILE_NAME:
+            continue
+
+        # Check file extension
+        if path.suffix not in {".yaml", ".yml"}:
+            errors.append(
+                f"Invalid file extension for {path.name}: must be .yaml or .yml"
+            )
+            continue
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            entry, error = validate_fragment_data(data, path.name)
+            if error:
+                errors.append(error)
+                continue
+            if entry:
+                entries.append((path, entry))
+        except Exception as e:
+            errors.append(f"Error parsing {path.name}: {e}")
+
+    if errors:
+        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
+            f"  - {err}" for err in errors
+        )
+        raise ValueError(error_msg)
+
+    return entries
+
+
+# =============================================================================
+# Changelog Generation
+# =============================================================================
+
+
 def group_entries_by_type(
-    entries: List[ChangelogEntry],
-) -> Dict[str, List[ChangelogEntry]]:
+    entries: list[ChangelogEntry],
+) -> dict[str, list[ChangelogEntry]]:
     """Group entries by their type."""
-    grouped = {entry_type: [] for entry_type in CHANGELOG_TYPES}
+    grouped: dict[str, list[ChangelogEntry]] = {
+        entry_type: [] for entry_type in CHANGELOG_TYPES
+    }
     for entry in entries:
         grouped[entry.type].append(entry)
     return grouped
 
 
-def generate_changelog_section(grouped_entries: Dict[str, List[ChangelogEntry]]) -> str:
+def generate_changelog_section(grouped_entries: dict[str, list[ChangelogEntry]]) -> str:
     """Generate markdown section for changelog entries."""
     lines = []
     for entry_type in CHANGELOG_TYPES:
@@ -264,98 +344,140 @@ def finalize_release(content: str, version: str) -> str:
     return "\n".join(new_lines)
 
 
-def validate_fragment_files(
-    file_paths: List[str],
-) -> List[tuple[Path, ChangelogEntry]]:
-    """
-    Validate specific changelog fragment files.
+# =============================================================================
+# Action Handlers
+# =============================================================================
 
-    Args:
-        file_paths: List of file paths (relative or absolute) to validate
+
+def _handle_validate(session: nox.Session) -> None:
+    """Handle the validate action."""
+    # Check for files filter flag
+    files_filter = None
+    if "--files" in session.posargs:
+        files_idx = session.posargs.index("--files")
+        if files_idx + 1 < len(session.posargs):
+            files_list_str = session.posargs[files_idx + 1]
+            files_filter = [f.strip() for f in files_list_str.split(",")]
+        else:
+            session.error("--files flag requires a comma-separated list of file paths")
+
+    try:
+        if files_filter:
+            # Validate specific files
+            validated = validate_fragment_files(files_filter)
+            session.log(f"✅ Validated {len(validated)} changelog fragment(s):")
+            for path, entry in validated:
+                session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+        else:
+            # Validate all fragments in changelog/ directory
+            validated = load_fragments()
+            if not validated:
+                session.log("No changelog fragments found in changelog/ directory")
+                return
+            session.log(f"✅ All {len(validated)} changelog fragment(s) are valid:")
+            for path, entry in validated:
+                session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+    except ValueError as e:
+        session.error(str(e))
+
+
+def _handle_dry(
+    session: nox.Session,
+    fragment_paths: tuple[Path, ...],
+    entries: tuple[ChangelogEntry, ...],
+    new_section: str,
+    pr_filter: Optional[list[int]],
+    all_fragment_paths: set[Path],
+    release_version: Optional[str],
+) -> None:
+    """Handle the dry run action."""
+    session.log("=" * 60)
+    session.log("DRY RUN - No changes will be made")
+    session.log("=" * 60)
+    session.log(f"\nFound {len(entries)} changelog fragment(s):")
+    for path in fragment_paths:
+        session.log(f"  - {path}")
+    if pr_filter:
+        session.log(f"\nFiltered to PRs: {', '.join(map(str, pr_filter))}")
+    session.log("\nGenerated changelog section:")
+    session.log("-" * 60)
+    print(new_section)
+    session.log("-" * 60)
+    session.log(f"\nFiles that would be deleted: {len(fragment_paths)}")
+    if pr_filter:
+        # Show which files would remain
+        remaining = [f for f in all_fragment_paths if f not in fragment_paths]
+        if remaining:
+            session.log(f"Files that would remain in changelog/: {len(remaining)}")
+            for f in remaining:
+                session.log(f"  - {f.name}")
+    if release_version:
+        session.log(f"Would finalize release as version: {release_version}")
+
+
+def _handle_write(
+    session: nox.Session,
+    fragment_paths: tuple[Path, ...],
+    entries: tuple[ChangelogEntry, ...],
+    new_section: str,
+    pr_filter: Optional[list[int]],
+    all_fragment_paths: set[Path],
+    release_version: Optional[str],
+) -> None:
+    """Handle the write action."""
+    # Read current CHANGELOG.md
+    if not CHANGELOG_FILE.exists():
+        session.error(f"{CHANGELOG_FILE} does not exist")
+
+    with open(CHANGELOG_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Insert new entries
+    try:
+        updated_content = insert_entries_into_changelog(content, new_section)
+    except ValueError as e:
+        session.error(str(e))
+
+    # Finalize release if requested
+    if release_version:
+        try:
+            updated_content = finalize_release(updated_content, release_version)
+            session.log(f"Finalized release as version {release_version}")
+        except ValueError as e:
+            session.error(str(e))
+
+    # Write updated CHANGELOG.md
+    with open(CHANGELOG_FILE, "w", encoding="utf-8") as f:
+        f.write(updated_content)
+    session.log(f"Updated {CHANGELOG_FILE}")
+
+    # Delete fragment files (only the ones that were processed)
+    for fragment_path in fragment_paths:
+        fragment_path.unlink()
+        session.log(f"Deleted {fragment_path}")
+
+    # Show remaining files if using PR filter
+    if pr_filter:
+        remaining = [f for f in all_fragment_paths if f not in fragment_paths]
+        if remaining:
+            session.log(
+                f"\nRemaining fragments in changelog/ (not included in this release): {len(remaining)}"
+            )
+            for f in remaining:
+                session.log(f"  - {f.name}")
+
+    session.log(f"Successfully compiled {len(entries)} changelog entries")
+
+
+def _parse_args(
+    session: nox.Session, action: str
+) -> tuple[Optional[str], Optional[list[int]]]:
+    """
+    Parse command line arguments for the changelog session.
 
     Returns:
-        List of (path, entry) tuples for valid entries
-
-    Raises:
-        ValueError: If any validation errors are found
+        Tuple of (release_version, pr_filter)
     """
-    import yaml  # Import here since it's installed by the nox session
-
-    entries = []
-    errors = []
-
-    for file_path in file_paths:
-        path = Path(file_path)
-
-        # Handle relative paths - check both as-is and in changelog dir
-        if not path.exists():
-            # Try as relative to changelog dir
-            alt_path = CHANGELOG_DIR / path.name
-            if alt_path.exists():
-                path = alt_path
-            else:
-                errors.append(f"File not found: {file_path}")
-                continue
-
-        # Skip template file
-        if path.name == TEMPLATE_FILE_NAME:
-            continue
-
-        # Check file extension
-        if path.suffix not in {".yaml", ".yml"}:
-            errors.append(
-                f"Invalid file extension for {path.name}: must be .yaml or .yml"
-            )
-            continue
-
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-
-            entry, error = validate_fragment_data(data, path.name)
-            if error:
-                errors.append(error)
-                continue
-            if entry:
-                entries.append((path, entry))
-        except Exception as e:
-            errors.append(f"Error parsing {path.name}: {e}")
-
-    if errors:
-        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
-            f"  - {err}" for err in errors
-        )
-        raise ValueError(error_msg)
-
-    return entries
-
-
-@nox.session()
-@nox.parametrize(
-    "action",
-    [
-        nox.param("dry", id="dry"),
-        nox.param("write", id="write"),
-        nox.param("validate", id="validate"),
-    ],
-)
-def changelog(  # pylint: disable=too-many-branches,too-many-statements
-    session: nox.Session, action: str
-) -> None:
-    """
-    Compile changelog fragments into CHANGELOG.md.
-
-    Parameters:
-        - changelog(dry) = Preview the changelog that would be generated without making changes
-        - changelog(dry) -- --release VERSION = Preview with release finalization
-        - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
-        - changelog(write) -- --release VERSION = Compile fragments and create new version section (--release required)
-        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Only include specific PRs (for patch releases)
-        - changelog(validate) = Validate all changelog fragments in the changelog/ directory
-        - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
-    """
-    session.install("pyyaml")
-
     # Check for release flag
     release_version = None
     if "--release" in session.posargs:
@@ -386,6 +508,23 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
         else:
             session.error("--prs flag requires a comma-separated list of PR numbers")
 
+    return release_version, pr_filter
+
+
+def _load_and_filter_fragments(
+    session: nox.Session, pr_filter: Optional[list[int]]
+) -> tuple[
+    list[tuple[Path, ChangelogEntry]],
+    tuple[Path, ...],
+    tuple[ChangelogEntry, ...],
+    set[Path],
+]:
+    """
+    Load fragments and apply PR filtering if specified.
+
+    Returns:
+        Tuple of (fragment_data, fragment_paths, entries, all_fragment_paths)
+    """
     # Load fragments
     try:
         all_fragment_data = load_fragments()
@@ -394,7 +533,7 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
 
     if not all_fragment_data:
         session.log("No changelog fragments found in changelog/ directory")
-        return
+        return [], (), (), set()
 
     # Filter by PR numbers if specified
     fragment_data = all_fragment_data
@@ -418,10 +557,58 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
             f"Filtering to {len(fragment_data)} fragment(s) matching PR numbers: {', '.join(map(str, pr_filter))}"
         )
 
-    fragment_paths, entries = zip(*fragment_data) if fragment_data else ([], [])
+    fragment_paths, entries = zip(*fragment_data) if fragment_data else ((), ())
 
     # Get all fragment paths for comparison (when using --prs)
     all_fragment_paths = {path for path, _ in all_fragment_data} if pr_filter else set()
+
+    return fragment_data, fragment_paths, entries, all_fragment_paths
+
+
+# =============================================================================
+# Main Nox Session
+# =============================================================================
+
+
+@nox.session()
+@nox.parametrize(
+    "action",
+    [
+        nox.param("dry", id="dry"),
+        nox.param("write", id="write"),
+        nox.param("validate", id="validate"),
+    ],
+)
+def changelog(session: nox.Session, action: str) -> None:
+    """
+    Compile changelog fragments into CHANGELOG.md.
+
+    Parameters:
+        - changelog(dry) = Preview the changelog that would be generated without making changes
+        - changelog(dry) -- --release VERSION = Preview with release finalization
+        - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
+        - changelog(write) -- --release VERSION = Compile fragments and create new version section (--release required)
+        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Only include specific PRs (for patch releases)
+        - changelog(validate) = Validate all changelog fragments in the changelog/ directory
+        - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
+    """
+    install_requirements(session)
+
+    # Handle validate action separately (has its own flow)
+    if action == "validate":
+        _handle_validate(session)
+        return
+
+    # Parse arguments for dry/write actions
+    release_version, pr_filter = _parse_args(session, action)
+
+    # Load and filter fragments
+    fragment_data, fragment_paths, entries, all_fragment_paths = (
+        _load_and_filter_fragments(session, pr_filter)
+    )
+
+    if not fragment_data:
+        return
 
     # Validate all entries have valid types (double-check)
     invalid_entries = [
@@ -435,108 +622,30 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
             error_msg += f"  - {path.name}: type '{entry.type}' is not valid. Must be one of: {', '.join(CHANGELOG_TYPES)}\n"
         session.error(error_msg)
 
+    # Generate the changelog section
     grouped = group_entries_by_type(list(entries))
     new_section = generate_changelog_section(grouped)
 
+    # Dispatch to appropriate handler
     if action == "dry":
-        session.log("=" * 60)
-        session.log("DRY RUN - No changes will be made")
-        session.log("=" * 60)
-        session.log(f"\nFound {len(entries)} changelog fragment(s):")
-        for path in fragment_paths:
-            session.log(f"  - {path}")
-        if pr_filter:
-            session.log(f"\nFiltered to PRs: {', '.join(map(str, pr_filter))}")
-        session.log("\nGenerated changelog section:")
-        session.log("-" * 60)
-        print(new_section)
-        session.log("-" * 60)
-        session.log(f"\nFiles that would be deleted: {len(fragment_paths)}")
-        if pr_filter:
-            # Show which files would remain
-            remaining = [f for f in all_fragment_paths if f not in fragment_paths]
-            if remaining:
-                session.log(f"Files that would remain in changelog/: {len(remaining)}")
-                for f in remaining:
-                    session.log(f"  - {f.name}")
-        if release_version:
-            session.log(f"Would finalize release as version: {release_version}")
-
+        _handle_dry(
+            session,
+            fragment_paths,
+            entries,
+            new_section,
+            pr_filter,
+            all_fragment_paths,
+            release_version,
+        )
     elif action == "write":
-        # Read current CHANGELOG.md
-        if not CHANGELOG_FILE.exists():
-            session.error(f"{CHANGELOG_FILE} does not exist")
-
-        with open(CHANGELOG_FILE, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        # Insert new entries
-        try:
-            updated_content = insert_entries_into_changelog(content, new_section)
-        except ValueError as e:
-            session.error(str(e))
-
-        # Finalize release if requested
-        if release_version:
-            try:
-                updated_content = finalize_release(updated_content, release_version)
-                session.log(f"Finalized release as version {release_version}")
-            except ValueError as e:
-                session.error(str(e))
-
-        # Write updated CHANGELOG.md
-        with open(CHANGELOG_FILE, "w", encoding="utf-8") as f:
-            f.write(updated_content)
-        session.log(f"Updated {CHANGELOG_FILE}")
-
-        # Delete fragment files (only the ones that were processed)
-        for fragment_path in fragment_paths:
-            fragment_path.unlink()
-            session.log(f"Deleted {fragment_path}")
-
-        # Show remaining files if using PR filter
-        if pr_filter:
-            remaining = [f for f in all_fragment_paths if f not in fragment_paths]
-            if remaining:
-                session.log(
-                    f"\nRemaining fragments in changelog/ (not included in this release): {len(remaining)}"
-                )
-                for f in remaining:
-                    session.log(f"  - {f.name}")
-
-        session.log(f"Successfully compiled {len(entries)} changelog entries")
-
-    elif action == "validate":
-        # Check for files filter flag
-        files_filter = None
-        if "--files" in session.posargs:
-            files_idx = session.posargs.index("--files")
-            if files_idx + 1 < len(session.posargs):
-                files_list_str = session.posargs[files_idx + 1]
-                files_filter = [f.strip() for f in files_list_str.split(",")]
-            else:
-                session.error(
-                    "--files flag requires a comma-separated list of file paths"
-                )
-
-        try:
-            if files_filter:
-                # Validate specific files
-                validated = validate_fragment_files(files_filter)
-                session.log(f"✅ Validated {len(validated)} changelog fragment(s):")
-                for path, entry in validated:
-                    session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
-            else:
-                # Validate all fragments in changelog/ directory
-                validated = load_fragments()
-                if not validated:
-                    session.log("No changelog fragments found in changelog/ directory")
-                    return
-                session.log(f"✅ All {len(validated)} changelog fragment(s) are valid:")
-                for path, entry in validated:
-                    session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
-        except ValueError as e:
-            session.error(str(e))
-
+        _handle_write(
+            session,
+            fragment_paths,
+            entries,
+            new_section,
+            pr_filter,
+            all_fragment_paths,
+            release_version,
+        )
     else:
         session.error(f"Invalid action: {action}")
