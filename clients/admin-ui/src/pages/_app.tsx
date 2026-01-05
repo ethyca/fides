@@ -7,7 +7,7 @@ import "fidesui/src/ant-theme/global.scss";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { defaultAntTheme, FidesUIProvider, Flex } from "fidesui";
+import { ChakraFlex as Flex, defaultAntTheme, FidesUIProvider } from "fidesui";
 import type { AppProps } from "next/app";
 import { NuqsAdapter } from "nuqs/adapters/next/pages";
 import React, { ReactNode } from "react";

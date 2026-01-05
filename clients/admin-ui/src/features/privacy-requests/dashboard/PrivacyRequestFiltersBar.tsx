@@ -1,10 +1,10 @@
 import dayjs from "dayjs";
 import {
-  AntDatePicker as DatePicker,
-  AntDisplayValueType as DisplayValueType,
-  AntFlex as Flex,
-  AntSelect as Select,
+  DatePicker,
+  DisplayValueType,
+  Flex,
   LocationSelect,
+  Select,
 } from "fidesui";
 import { useMemo } from "react";
 

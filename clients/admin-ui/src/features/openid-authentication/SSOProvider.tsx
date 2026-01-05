@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  Box,
+  Button,
+  ChakraBox as Box,
+  ChakraImage as Image,
+  ChakraText as Text,
   ConfirmationModal,
-  Image,
-  Text,
-  useDisclosure,
-  useToast,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";

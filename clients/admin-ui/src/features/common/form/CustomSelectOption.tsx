@@ -1,11 +1,11 @@
-import { AntButton as Button, AntButtonProps as ButtonProps } from "fidesui";
+import { Button, ButtonProps } from "fidesui";
 
 interface CustomSelectOptionProps extends Omit<ButtonProps, "type"> {}
 
 /**
  * A button that looks like an Ant Select Option for use in custom dropdowns.
  * NOTE: Use with caution, as this option will not be keyboard accessible. Ideally use the Ant Select component's native menu or have a fallback for keyboard users.
- * @params extend AntButton
+ * @params extend Button
  */
 export const CustomSelectOption = ({
   children,

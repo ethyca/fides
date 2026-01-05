@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntTypography as Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Form, Input, Typography, useMessage } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";

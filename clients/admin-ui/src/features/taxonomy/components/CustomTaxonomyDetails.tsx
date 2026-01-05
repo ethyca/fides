@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  AntDescriptions as Descriptions,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntList as List,
-  AntModal as Modal,
-  AntSelect as Select,
+  Button,
+  Descriptions,
+  Flex,
+  Form,
   Icons,
+  Input,
+  List,
+  Modal,
+  Select,
   useMessage,
 } from "fidesui";
 import { useState } from "react";

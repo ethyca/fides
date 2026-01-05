@@ -1,10 +1,10 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Stack,
+  ChakraAccordion as Accordion,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraStack as Stack,
 } from "fidesui";
 import { Form, Formik } from "formik";
 

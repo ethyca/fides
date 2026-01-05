@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTable as Table,
-} from "fidesui";
+import { Button, Flex, Table } from "fidesui";
 import { useRouter } from "next/router";
 
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";

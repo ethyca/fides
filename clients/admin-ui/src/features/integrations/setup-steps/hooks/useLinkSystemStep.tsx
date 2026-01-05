@@ -1,5 +1,5 @@
-import { AntLink } from "fidesui";
-import Link from "next/link";
+import { Link as FidesLink } from "fidesui";
+import NextLink from "next/link";
 
 import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { ConnectionType } from "~/types/api";
@@ -27,17 +27,17 @@ export const useLinkSystemStep = ({
     title: "Link system",
     description: isComplete ? (
       <>
-        <Link href={linkUrl} passHref>
-          <AntLink>System linked</AntLink>
-        </Link>{" "}
+        <NextLink href={linkUrl} passHref>
+          <FidesLink>System linked</FidesLink>
+        </NextLink>{" "}
         successfully
       </>
     ) : (
       <>
         Link this integration in the{" "}
-        <Link href={linkUrl} passHref>
-          <AntLink>system inventory</AntLink>
-        </Link>
+        <NextLink href={linkUrl} passHref>
+          <FidesLink>system inventory</FidesLink>
+        </NextLink>
         . Navigate to the appropriate system and within the integration tab
         select &quot;Link integration&quot;.
       </>

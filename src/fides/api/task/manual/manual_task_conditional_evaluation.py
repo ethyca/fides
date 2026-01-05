@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from pydantic.v1.utils import deep_update
 from sqlalchemy.orm import Session
@@ -47,10 +47,9 @@ def extract_conditional_dependency_data_from_inputs(
     all_field_addresses: set[str] = set()
 
     for dependency in manual_task.conditional_dependencies:
-        # condition_tree is always a dict (ConditionLeaf or ConditionGroup), never a list
-        tree = dependency.condition_tree
-        if isinstance(tree, dict) or tree is None:
-            all_field_addresses.update(extract_field_addresses(tree))
+        # condition_tree is always a dict or None; cast to satisfy mypy's JSONB typing
+        tree = cast(Optional[dict[str, Any]], dependency.condition_tree)
+        all_field_addresses.update(extract_field_addresses(tree))
 
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation

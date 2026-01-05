@@ -180,25 +180,6 @@ def receiver_digest_condition_leaf(
 
 
 @pytest.fixture
-def content_digest_condition_leaf(
-    db: Session,
-    digest_config: DigestConfig,
-    content_condition_leaf: ConditionLeaf,
-) -> DigestCondition:
-    """Create a content condition in the database."""
-    condition = DigestCondition.create(
-        db=db,
-        data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
-            "condition_tree": content_condition_leaf.model_dump(),
-        },
-    )
-    yield condition
-    condition.delete(db)
-
-
-@pytest.fixture
 def priority_digest_condition_leaf(
     db: Session,
     digest_config: DigestConfig,

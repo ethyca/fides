@@ -1,17 +1,17 @@
 // External libraries
 import {
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  AntButton as Button,
-  Flex,
-  Spacer,
-  Stack,
-  Tag,
-  Text,
-  useDisclosure,
-  useToast,
+  Button,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  ChakraStack as Stack,
+  ChakraTag as Tag,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";

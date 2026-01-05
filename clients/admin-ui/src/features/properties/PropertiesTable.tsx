@@ -17,7 +17,12 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Flex, HStack, Text, VStack } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+} from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
