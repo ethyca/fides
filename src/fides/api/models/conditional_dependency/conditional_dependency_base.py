@@ -92,8 +92,6 @@ class ConditionalDependencyBase(Base):
     __abstract__ = True
 
     # JSONB storage for full condition tree
-    # Contains the entire condition tree as a single JSONB object.
-    # Format matches Condition schema: either ConditionLeaf or ConditionGroup structure.
     condition_tree = Column(JSONB, nullable=True)
 
     # Tree structure - parent_id defined in concrete classes for proper foreign keys

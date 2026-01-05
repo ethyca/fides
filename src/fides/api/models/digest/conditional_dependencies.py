@@ -244,7 +244,6 @@ class DigestCondition(ConditionalDependencyBase):
                 "digest_config_id and digest_condition_type are required keyword arguments"
             )
 
-        # Filter for root condition (parent_id IS NULL) since child rows don't have condition_tree
         condition_row = (
             db.query(cls)
             .filter(
