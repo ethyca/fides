@@ -273,7 +273,8 @@ const ActionCenterFields: NextPage = () => {
                             node.status ===
                               TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
-                            node.classifyable) ||
+                            node.classifyable &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
                           (action === FieldActionType.MUTE &&
                             node.diffStatus !== DiffStatus.MUTED) ||
                           (action === FieldActionType.UN_MUTE &&
