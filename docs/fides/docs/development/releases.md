@@ -31,7 +31,7 @@ When creating a PR, add a changelog entry file:
 1. Copy `changelog/TEMPLATE.yaml` to a new file in the `changelog/` directory
 2. Name the file using your PR number (e.g., `7137.yaml`) or a descriptive slug (e.g., `add-gpc-fields.yaml`)
 3. Fill in the required fields:
-   - `type`: One of: Added, Changed, Developer Experience, Deprecated, Docs, Removed, Fixed, Security
+   - `type`: One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
    - `description`: Short description of the change (without the leading `-`)
    - `pr`: PR number (optional if not yet known)
    - `labels`: Optional list of labels: `high-risk`, `db-migration`
@@ -177,7 +177,7 @@ It may be necessary for a patch release to contain only select commits to the `m
    nox -s changelog(dry) -- --prs 1234,5678
 
    # Compile fragments and finalize for patch release (only selected PRs)
-   nox -s changelog(write) -- --release 1.2.4 --prs 1234,5678
+   nox -s "changelog(write)" -- --release 1.2.4 --prs 1234,5678
    ```
    This will:
    - Compile only the YAML fragments matching the specified PR numbers (comma-separated list)
