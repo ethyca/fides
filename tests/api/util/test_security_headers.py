@@ -1,22 +1,11 @@
 import re
 
-import pytest
 
 from fides.api.util.security_headers import (
     HeaderRule,
     get_applicable_header_rules,
     is_exact_match,
 )
-from fides.config import CONFIG
-
-
-@pytest.fixture(scope="function")
-def set_security_headers(db):
-    """Enable recommended security header mode"""
-    original_value = CONFIG.security.headers_mode
-    CONFIG.security.headers_mode = "recommended"
-    yield
-    CONFIG.security.headers_mode = original_value
 
 
 class TestSecurityHeaders:
