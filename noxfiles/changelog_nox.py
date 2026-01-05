@@ -6,8 +6,6 @@ from typing import Optional
 
 import nox
 
-from utils_nox import install_requirements
-
 # Valid changelog types in order
 CHANGELOG_TYPES = [
     "Added",
@@ -592,7 +590,6 @@ def changelog(session: nox.Session, action: str) -> None:
         - changelog(validate) = Validate all changelog fragments in the changelog/ directory
         - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
     """
-    install_requirements(session)
 
     # Handle validate action separately (has its own flow)
     if action == "validate":

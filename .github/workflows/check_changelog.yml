@@ -79,6 +79,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nox-changelog-
 
+      - name: Install Dev Requirements
+        if: success()
+        run: pip install -r dev-requirements.txt
+
       - name: Validate changelog entries
         if: success()
         run: |
