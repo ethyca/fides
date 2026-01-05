@@ -1,10 +1,11 @@
 import re
+
 import pytest
 
 from fides.api.util.security_headers import (
     HeaderRule,
-    is_exact_match,
     get_applicable_header_rules,
+    is_exact_match,
 )
 from fides.config import CONFIG
 
