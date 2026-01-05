@@ -26,7 +26,7 @@ LABEL_URLS = {
 
 CHANGELOG_DIR = Path("changelog")
 CHANGELOG_FILE = Path("CHANGELOG.md")
-TEMPLATE_FILE = CHANGELOG_DIR / "TEMPLATE.yaml"
+TEMPLATE_FILE_NAME = "TEMPLATE.yaml"
 GITHUB_REPO = "https://github.com/ethyca/fides"
 
 
@@ -68,7 +68,7 @@ def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
     # Look for both .yaml and .yml files
     yaml_files = list(CHANGELOG_DIR.glob("*.yaml")) + list(CHANGELOG_DIR.glob("*.yml"))
     for yaml_file in yaml_files:
-        if yaml_file.name == "TEMPLATE.yaml":
+        if yaml_file.name == TEMPLATE_FILE_NAME:
             continue
 
         try:
