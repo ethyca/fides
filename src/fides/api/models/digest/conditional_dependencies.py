@@ -220,6 +220,7 @@ class DigestCondition(ConditionalDependencyBase):
 
         Returns:
             Optional[Union[ConditionLeaf, ConditionGroup]]: Condition tree for the specified
+                type, or None if no conditions exist
 
         Raises:
             ValueError: If required parameters are missing

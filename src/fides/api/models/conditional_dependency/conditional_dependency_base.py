@@ -46,8 +46,8 @@ class ConditionalDependencyBase(Base):
     """Abstract base class for all conditional dependency models.
 
     This class provides a common structure for building hierarchical condition trees
-    or storing condition trees as a single JSONB object.
-    that can be evaluated to determine when certain actions should be taken.
+    or storing condition trees as a single JSONB object that can be evaluated to
+    determine when certain actions should be taken.
 
     Architecture:
         - JSONB Storage: Full condition tree stored as a single JSONB object

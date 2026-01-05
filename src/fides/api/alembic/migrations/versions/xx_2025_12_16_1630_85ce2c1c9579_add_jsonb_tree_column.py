@@ -80,7 +80,7 @@ def build_condition_tree(
 
 
 def migrate_conditions(db: Session, table_name: str):
-    """Migrate manual_task_conditional_dependency rows to JSONB trees."""
+    """Migrate existing row-based condition trees to JSONB format for the given table."""
     root_rows = db.execute(
         sa.text(f"SELECT id FROM {table_name} WHERE parent_id IS NULL")
     ).fetchall()
