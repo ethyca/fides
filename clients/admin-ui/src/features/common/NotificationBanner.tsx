@@ -1,10 +1,10 @@
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  Box,
-  CloseButton,
-  useDisclosure,
+  ChakraAlert as Alert,
+  ChakraAlertDescription as AlertDescription,
+  ChakraAlertIcon as AlertIcon,
+  ChakraBox as Box,
+  ChakraCloseButton as CloseButton,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

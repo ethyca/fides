@@ -1,4 +1,4 @@
-import { AntDrawer as Drawer, Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, Drawer } from "fidesui";
 import React, { useMemo } from "react";
 
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";

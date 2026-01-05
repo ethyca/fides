@@ -1,4 +1,8 @@
-import { Center, Spinner, Text } from "fidesui";
+import {
+  ChakraCenter as Center,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

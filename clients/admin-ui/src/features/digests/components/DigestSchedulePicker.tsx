@@ -2,13 +2,7 @@ import { format } from "date-fns-tz";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import {
-  AntAlert as Alert,
-  AntInputNumber as InputNumber,
-  AntSelect as Select,
-  AntSpace as Space,
-  AntTypography as Typography,
-} from "fidesui";
+import { Alert, InputNumber, Select, Space, Typography } from "fidesui";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {

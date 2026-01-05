@@ -1,4 +1,4 @@
-import { useDisclosure, useMessage } from "fidesui";
+import { useChakraDisclosure as useDisclosure, useMessage } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 

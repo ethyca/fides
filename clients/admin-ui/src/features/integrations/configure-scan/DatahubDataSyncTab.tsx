@@ -1,6 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Button, Link, Text, useToast, VStack } from "fidesui";
+import {
+  ChakraButton as Button,
+  ChakraLink as Link,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  useChakraToast as useToast,
+} from "fidesui";
 
 import { successToastParams } from "~/features/common/toast";
 import { pluralize } from "~/features/common/utils";

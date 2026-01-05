@@ -1,19 +1,19 @@
 import { debounce } from "common/utils";
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
   ArrowDownLineIcon,
-  Box,
-  Flex,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraInput as Input,
+  ChakraInputGroup as InputGroup,
+  ChakraInputLeftElement as InputLeftElement,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraText as Text,
   SearchLineIcon,
-  Text,
+  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 

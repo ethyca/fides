@@ -1,4 +1,9 @@
-import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
+import {
+  ChakraText as Text,
+  ConfirmationModal,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 

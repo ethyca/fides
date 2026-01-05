@@ -4,7 +4,7 @@ import {
   RecordsServedResponse,
   UserGeolocation,
 } from "fides-js";
-import { iso31661, ISO31661Entry, ISO31662Entry, iso31662 } from "iso-3166";
+import { iso31662 } from "fidesui";
 
 import type { RootState } from "~/app/store";
 import { VerificationType } from "~/components/modals/types";

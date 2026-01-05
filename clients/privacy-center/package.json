@@ -10,7 +10,7 @@
     "start": "next start",
     "start:test": "FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL=true next start -p 3001",
     "lint": "next lint && eslint ./cypress/**/*.ts",
-    "lint:fix": "next lint --fix && eslint --fix ./cypress/**/*.ts",
+    "lint:fix": "eslint --fix . && eslint --fix ./cypress/**/*.ts",
     "lint-staged:fix": "lint-staged --diff=main",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",

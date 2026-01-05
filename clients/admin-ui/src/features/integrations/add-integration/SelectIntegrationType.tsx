@@ -1,4 +1,4 @@
-import { AntInput as Input, AntSelect as Select } from "fidesui";
+import { Input, Select } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
