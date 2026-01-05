@@ -134,23 +134,25 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
 app = create_fides_app(lifespan=lifespan)  # type: ignore
 
 
-if CONFIG.dev_mode:
+# PERF: Middleware disabled for performance testing
+# if CONFIG.dev_mode:
+#
+#     @app.middleware("http")
+#     async def profile_request(request: Request, call_next: Callable) -> Response:
+#         profiling = request.headers.get("profile-request", False)
+#         if profiling:
+#             profiler = Profiler(interval=0.001, async_mode="enabled")
+#             profiler.start()
+#             await call_next(request)
+#             profiler.stop()
+#             logger.debug("Request Profiled!")
+#             return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
+#
+#         return await call_next(request)
 
-    @app.middleware("http")
-    async def profile_request(request: Request, call_next: Callable) -> Response:
-        profiling = request.headers.get("profile-request", False)
-        if profiling:
-            profiler = Profiler(interval=0.001, async_mode="enabled")
-            profiler.start()
-            await call_next(request)
-            profiler.stop()
-            logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
 
-        return await call_next(request)
-
-
-@app.middleware("http")
+# PERF: Middleware disabled for performance testing
+# @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     """
     HTTP Middleware that logs analytics events for each call to Fides endpoints.
@@ -229,30 +231,31 @@ async def prepare_and_log_request(
     )
 
 
-@app.middleware("http")
-async def log_request(request: Request, call_next: Callable) -> Response:
-    """Log basic information about every request handled by the server."""
-    start = datetime.now()
-
-    # If the request fails, we still want to log it
-    try:
-        response = await call_next(request)
-    except Exception as e:  # pylint: disable=bare-except
-        logger.exception(f"Unhandled exception processing request: '{e}'")
-        response = Response(status_code=500)
-
-    handler_time = datetime.now() - start
-
-    # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
-    total_time = round(handler_time.total_seconds() * 1000, 3)
-    logger.bind(
-        method=request.method,
-        status_code=response.status_code,
-        handler_time=f"{total_time}ms",
-        path=request.url.path,
-        fides_client=request.headers.get("Fides-Client", "unknown"),
-    ).info("Request received")
-    return response
+# PERF: Middleware disabled for performance testing
+# @app.middleware("http")
+# async def log_request(request: Request, call_next: Callable) -> Response:
+#     """Log basic information about every request handled by the server."""
+#     start = datetime.now()
+#
+#     # If the request fails, we still want to log it
+#     try:
+#         response = await call_next(request)
+#     except Exception as e:  # pylint: disable=bare-except
+#         logger.exception(f"Unhandled exception processing request: '{e}'")
+#         response = Response(status_code=500)
+#
+#     handler_time = datetime.now() - start
+#
+#     # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
+#     total_time = round(handler_time.total_seconds() * 1000, 3)
+#     logger.bind(
+#         method=request.method,
+#         status_code=response.status_code,
+#         handler_time=f"{total_time}ms",
+#         path=request.url.path,
+#         fides_client=request.headers.get("Fides-Client", "unknown"),
+#     ).info("Request received")
+#     return response
 
 
 # Configure the static file paths last since otherwise it will take over all paths
@@ -360,23 +363,24 @@ def start_webserver(port: int = 8080) -> None:
     server.run()
 
 
-@app.middleware("http")
-async def action_to_audit_log(
-    request: Request,
-    call_next: Callable,
-) -> Response:
-    """Log basic information about every non-GET request handled by the server."""
-
-    if (
-        request.method != "GET"
-        and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
-        and CONFIG.security.enable_audit_log_resource_middleware
-    ):
-        try:
-            await handle_audit_log_resource(request)
-        except Exception as exc:
-            logger.debug(exc)
-    return await call_next(request)
+# PERF: Middleware disabled for performance testing
+# @app.middleware("http")
+# async def action_to_audit_log(
+#     request: Request,
+#     call_next: Callable,
+# ) -> Response:
+#     """Log basic information about every non-GET request handled by the server."""
+#
+#     if (
+#         request.method != "GET"
+#         and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
+#         and CONFIG.security.enable_audit_log_resource_middleware
+#     ):
+#         try:
+#             await handle_audit_log_resource(request)
+#         except Exception as exc:
+#             logger.debug(exc)
+#     return await call_next(request)
 
 
 @app.exception_handler(RequestValidationError)
