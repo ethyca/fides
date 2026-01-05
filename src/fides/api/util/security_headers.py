@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from fastapi import Request
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from fides.config import CONFIG
@@ -81,6 +81,14 @@ def get_applicable_header_rules(
     return header_definitions
 
 
+def apply_headers_to_response(request: Request, response: Response) -> None:
+    applicable_headers = get_applicable_header_rules(
+        request.url.path, recommended_headers
+    )
+    for [header_name, header_value] in applicable_headers:
+        response.headers.append(header_name, header_value)
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
     Controls what security headers are included in Fides API responses
@@ -90,10 +98,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         if apply_recommended_headers:
-            applicable_headers = get_applicable_header_rules(
-                request.url.path, recommended_headers
-            )
-            for [header_name, header_value] in applicable_headers:
-                response.headers.append(header_name, header_value)
+            apply_headers_to_response(request, response)
 
         return response
