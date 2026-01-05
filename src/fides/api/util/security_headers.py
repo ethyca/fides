@@ -11,11 +11,9 @@ apply_recommended_headers = CONFIG.security.headers_mode == "recommended"
 
 def is_exact_match(matcher: re.Pattern[str], path_name: str) -> bool:
     matched_content = re.match(matcher, path_name)
-    is_included_path = matched_content is not None and len(
-        matched_content.string
-    ) == len(path_name)
-
-    return is_included_path
+    if matched_content is None:
+        return False
+    return len(matched_content.group(0)) == len(path_name)
 
 
 HeaderDefinition = tuple[str, str]
@@ -74,7 +72,7 @@ def get_applicable_header_rules(
         if is_exact_match(rule.matcher, path):
             for header in rule.headers:
                 [header_name, _] = header
-                if not header_name in header_names:
+                if header_name not in header_names:
                     header_names.add(header_name)
                     header_definitions.append(header)
 

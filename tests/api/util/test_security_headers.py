@@ -26,11 +26,22 @@ class TestSecurityHeaders:
             is_exact_match(
                 re.compile(r"\/example-path"), "/example-path/with-more-content"
             )
+            is False
+        )
+        assert (
+            is_exact_match(
+                re.compile(r"\/example-path/?(.*)"), "/example-path/with-more-content"
+            )
             is True
         )
         assert (
             is_exact_match(re.compile(r"\/example-path"), "/anti-example-path") is False
         )
+        assert (
+            is_exact_match(
+                re.compile(r"\/example-path"), "/completely-disparate-no-match"
+            )
+        ) is False
 
     def test_get_applicable_header_rules_returns_first_matching_rule_for_path(self):
         expected_headers: tuple[str, str] = ("header-1", "value-1")
