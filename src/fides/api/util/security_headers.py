@@ -34,7 +34,7 @@ recommended_headers: list[HeaderRule] = [
         ],
     ),
     HeaderRule(
-        matcher=re.compile(r"/((?!api|health).*)"),
+        matcher=re.compile(r"^/((?!api|health).*)"),
         headers=[
             (
                 "Content-Security-Policy",
