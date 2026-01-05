@@ -454,7 +454,9 @@ class StagedResourceAncestor(Base):
         Index("ix_staged_resource_ancestor_pkey", "id", unique=True),
         Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
         Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
-        Index("ix_staged_resource_ancestor_ancestor_distance", "ancestor_urn", "distance"),
+        Index(
+            "ix_staged_resource_ancestor_ancestor_distance", "ancestor_urn", "distance"
+        ),
     )
 
     @classmethod
@@ -490,9 +492,13 @@ class StagedResourceAncestor(Base):
 
         for descendant_urn, ancestor_urns in ancestor_links.items():
             if ancestor_urns:  # Only create links if there are ancestors
-                for (ancestor_urn, distance) in ancestor_urns:
+                for ancestor_urn, distance in ancestor_urns:
                     current_batch.append(
-                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn, "distance": distance}
+                        {
+                            "ancestor_urn": ancestor_urn,
+                            "descendant_urn": descendant_urn,
+                            "distance": distance,
+                        }
                     )
 
                     # Execute batch when it reaches the desired size
