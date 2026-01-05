@@ -55,7 +55,6 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
-import { collectNodeUrns } from "./treeUtils";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -123,9 +122,11 @@ const ActionCenterFields: NextPage = () => {
   const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
     await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
   });
+
   const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
     await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
   });
+
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -286,9 +287,8 @@ const ActionCenterFields: NextPage = () => {
                         return true;
                       })
                       .some((d) => d === true),
-                  callback: (keys, nodes) => {
-                    const allUrns = collectNodeUrns(nodes);
-                    fieldActions[action](allUrns, false);
+                  callback: (keys) => {
+                    fieldActions[action](keys, false);
                   },
                 },
               ]),
