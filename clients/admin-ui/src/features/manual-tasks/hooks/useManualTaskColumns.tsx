@@ -102,10 +102,14 @@ export const useManualTaskColumns = ({
       key: "request_type",
       width: 80,
       render: (type: ManualFieldRequestType) => {
-        const actionType =
-          type === ManualFieldRequestType.ACCESS
-            ? ActionType.ACCESS
-            : ActionType.ERASURE;
+        // Map request type to ActionType for display
+        const requestTypeToActionType: Record<ManualFieldRequestType, ActionType> =
+          {
+            [ManualFieldRequestType.ACCESS]: ActionType.ACCESS,
+            [ManualFieldRequestType.ERASURE]: ActionType.ERASURE,
+            [ManualFieldRequestType.CONSENT]: ActionType.CONSENT,
+          };
+        const actionType = requestTypeToActionType[type];
         const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
         return (
           <Typography.Text ellipsis={{ tooltip: displayName }}>
