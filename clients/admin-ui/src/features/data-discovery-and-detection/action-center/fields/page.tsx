@@ -55,6 +55,7 @@ import {
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
+import { collectNodeUrns } from "./treeUtils";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
@@ -272,7 +273,11 @@ const ActionCenterFields: NextPage = () => {
                             node.status ===
                               TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
-                            node.classifyable)
+                            node.classifyable) ||
+                          (action === FieldActionType.MUTE &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.UN_MUTE &&
+                            node.diffStatus === DiffStatus.MUTED)
                         ) {
                           return false;
                         }
@@ -280,7 +285,10 @@ const ActionCenterFields: NextPage = () => {
                         return true;
                       })
                       .some((d) => d === true),
-                  callback: (keys) => fieldActions[action](keys, false),
+                  callback: (keys, nodes) => {
+                    const allUrns = collectNodeUrns(nodes);
+                    fieldActions[action](allUrns, false);
+                  },
                 },
               ]),
             )}
@@ -413,13 +421,13 @@ const ActionCenterFields: NextPage = () => {
                           image={Empty.PRESENTED_IMAGE_SIMPLE}
                           description={
                             <>
-                              <div>All resources have been confirmed.</div>
+                              <div>All resources have been approved.</div>
                               <div>
                                 {`You'll now find this data in Managed Datasets
                                 view.`}
                               </div>
                               <div>
-                                {`To see confirmed or ignored resources, adjust
+                                {`To see approved or ignored resources, adjust
                                 your filters`}
                               </div>
                             </>

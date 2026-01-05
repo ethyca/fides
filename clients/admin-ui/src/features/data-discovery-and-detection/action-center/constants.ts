@@ -88,10 +88,10 @@ export const MONITOR_UPDATE_NAMES = new Map<
   ["iframe", ["iFrame", "iFrames"]],
   ["javascript_tag", ["JavaScript tag", "JavaScript tags"]],
   ["unlabeled", ["Unlabeled", "Unlabeled"]],
-  ["in_review", ["In review", "In review"]],
+  ["in_review", ["Classified", "Classified"]],
   ["classifying", ["Classifying", "Classifying"]],
   ["removals", ["Removal", "Removals"]],
-  ["approved", ["Approved", "Approved"]],
+  ["reviewed", ["Reviewed", "Reviewed"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [
@@ -103,7 +103,7 @@ export const MONITOR_UPDATE_ORDER = [
   "unlabeled",
   "classifying",
   "in_review",
-  "approved",
+  "reviewed",
   "removals",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates

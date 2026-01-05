@@ -29,9 +29,10 @@ import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const { filterQueryParams, filters, setFilters } = usePrivacyRequestsFilters({
-    pagination,
-  });
+  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
 
   const messageApi = useMessage();
 
@@ -96,7 +97,12 @@ export const PrivacyRequestsDashboard = () => {
     <div>
       {/* First row: Search and Filters */}
       <Flex gap="small" align="center" className="mb-4">
-        <PrivacyRequestFiltersBar filters={filters} setFilters={setFilters} />
+        <PrivacyRequestFiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          sortState={sortState}
+          setSortState={setSortState}
+        />
       </Flex>
 
       {/* Second row: Actions */}
