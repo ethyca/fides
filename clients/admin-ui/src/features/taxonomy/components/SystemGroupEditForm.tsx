@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSpace as Space,
+  Form,
+  FormInstance,
   Icons,
+  Input,
+  Select,
+  Space,
   SparkleIcon,
 } from "fidesui";
 import { isEmpty, uniq, unset } from "lodash";

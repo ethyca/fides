@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntTypography as Typography } from "fidesui";
+import { Flex, Typography } from "fidesui";
 import React from "react";
 
 const { Text } = Typography;

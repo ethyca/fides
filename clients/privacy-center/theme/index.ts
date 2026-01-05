@@ -1,4 +1,4 @@
-import { extendTheme } from "fidesui";
+import { extendChakraTheme as extendTheme } from "fidesui";
 
 const theme = extendTheme({
   styles: {

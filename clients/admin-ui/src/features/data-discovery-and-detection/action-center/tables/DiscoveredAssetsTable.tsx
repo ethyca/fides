@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  AntDefaultOptionType as DefaultOptionType,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntMenu as Menu,
-  AntSpace as Space,
-  AntTable as Table,
-  AntTooltip as Tooltip,
+  Button,
+  DefaultOptionType,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  Menu,
+  Space,
+  Table,
+  Tooltip,
 } from "fidesui";
 import { useState } from "react";
 

@@ -1,9 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntTag as Tag,
-  AntTypography as Typography,
-  CopyTooltip,
-} from "fidesui";
+import { CopyTooltip, Flex, Tag, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 

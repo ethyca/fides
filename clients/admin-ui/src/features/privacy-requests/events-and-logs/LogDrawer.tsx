@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  ArrowBackIcon,
+  Button,
+  ChakraArrowBackIcon as ArrowBackIcon,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
+  ChakraFlex as Flex,
+  ChakraText as Text,
   CloseSolidIcon,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
-  Flex,
-  Text,
 } from "fidesui";
 import {
   ExecutionLog,

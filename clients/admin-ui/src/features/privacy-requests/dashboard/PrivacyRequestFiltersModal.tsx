@@ -1,11 +1,5 @@
 import dayjs from "dayjs";
-import {
-  AntButton as Button,
-  AntDatePicker as DatePicker,
-  AntForm as Form,
-  AntModal as Modal,
-  AntSelect as Select,
-} from "fidesui";
+import { Button, DatePicker, Form, Modal, Select } from "fidesui";
 
 import {
   SubjectRequestActionTypeOptions,

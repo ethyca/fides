@@ -1,16 +1,16 @@
 import {
   ArrowDownLineIcon,
-  Box,
-  Button,
-  ButtonProps,
-  Menu,
-  MenuButton,
-  MenuButtonProps,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  MenuOptionGroup,
-  Text,
+  ChakraBox as Box,
+  ChakraButton as Button,
+  ChakraButtonProps as ButtonProps,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuButtonProps as MenuButtonProps,
+  ChakraMenuDivider as MenuDivider,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraMenuOptionGroup as MenuOptionGroup,
+  ChakraText as Text,
 } from "fidesui";
 import React, { useMemo } from "react";
 

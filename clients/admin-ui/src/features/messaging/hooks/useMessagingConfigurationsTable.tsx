@@ -2,14 +2,14 @@ import type { ColumnsType } from "antd/es/table";
 import { isErrorResult } from "common/helpers";
 import { useAPIHelper } from "common/hooks";
 import {
-  AntButton as Button,
-  AntModal as Modal,
-  AntSpace as Space,
-  AntSwitch as Switch,
-  AntTooltip as Tooltip,
-  HStack,
+  Button,
+  ChakraHStack as HStack,
+  ChakraText as Text,
   Icons,
-  Text,
+  Modal,
+  Space,
+  Switch,
+  Tooltip,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";

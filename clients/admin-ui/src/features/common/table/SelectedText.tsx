@@ -1,4 +1,4 @@
-import { AntTypography as Typography } from "fidesui";
+import { Typography } from "fidesui";
 
 const { Text } = Typography;
 

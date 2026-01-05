@@ -1,9 +1,4 @@
-import {
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntSelect as Select,
-} from "fidesui";
+import { Form, FormInstance, Input, Select } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";

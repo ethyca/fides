@@ -1,6 +1,6 @@
 import {
-  AntForm as Form,
-  AntFormItemProps as FormItemProps,
+  Form,
+  FormItemProps,
   LocationSelect,
   LocationSelectProps,
 } from "fidesui";

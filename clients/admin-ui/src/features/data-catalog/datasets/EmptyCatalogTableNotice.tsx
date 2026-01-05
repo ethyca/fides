@@ -1,4 +1,4 @@
-import { Text, VStack } from "fidesui";
+import { ChakraText as Text, ChakraVStack as VStack } from "fidesui";
 
 const EmptyCatalogTableNotice = () => (
   <VStack

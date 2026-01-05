@@ -1,4 +1,8 @@
-import { ConfirmationModal, Text, useDisclosure } from "fidesui";
+import {
+  ChakraText as Text,
+  ConfirmationModal,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { cloneDeep, set, update } from "lodash";
 
 import EditDrawer, {

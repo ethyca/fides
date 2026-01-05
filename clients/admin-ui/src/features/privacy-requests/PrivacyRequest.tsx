@@ -1,4 +1,4 @@
-import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
+import { Tabs, TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";

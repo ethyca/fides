@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  ArrowBackIcon,
-  Flex,
-  FlexProps,
-  Text,
+  Button,
+  ChakraArrowBackIcon as ArrowBackIcon,
+  ChakraFlex as Flex,
+  ChakraFlexProps as FlexProps,
+  ChakraText as Text,
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";

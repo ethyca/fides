@@ -1,7 +1,7 @@
 import {
-  AntButtonProps as ButtonProps,
-  forwardRef,
-  useDisclosure,
+  ButtonProps,
+  chakraForwardRef as forwardRef,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { ReactNode } from "react";
 

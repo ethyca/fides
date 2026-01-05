@@ -1,9 +1,9 @@
 import {
-  AntDescriptions as Descriptions,
-  AntModal as Modal,
-  AntModalProps as ModalProps,
-  AntTypography as Typography,
+  Descriptions,
   LIST_HOTKEYS,
+  Modal,
+  ModalProps,
+  Typography,
 } from "fidesui";
 
 import { SEARCH_INPUT_HOTKEY } from "~/features/common/SearchInput";

@@ -1,12 +1,4 @@
-import {
-  AntAvatar as Avatar,
-  AntButton as Button,
-  AntCard as Card,
-  AntSpace as Space,
-  AntText as Text,
-  Icons,
-  SparkleIcon,
-} from "fidesui";
+import { Avatar, Button, Card, Icons, Space, SparkleIcon, Text } from "fidesui";
 import NextLink from "next/link";
 import { ReactNode } from "react";
 

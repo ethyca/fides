@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType } from "fidesui";
+import { ColumnsType } from "fidesui";
 
 import { NO_VALUE } from "~/constants";
 import { VendorMatchBadge } from "~/features/data-discovery-and-detection/components/VendorMatchBadge";

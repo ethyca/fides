@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntTooltip as Tooltip,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Icons, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";

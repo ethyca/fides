@@ -1,4 +1,10 @@
-import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 

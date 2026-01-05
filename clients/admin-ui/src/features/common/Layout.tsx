@@ -1,4 +1,4 @@
-import { Flex, FlexProps } from "fidesui";
+import { ChakraFlex as Flex, ChakraFlexProps as FlexProps } from "fidesui";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React from "react";

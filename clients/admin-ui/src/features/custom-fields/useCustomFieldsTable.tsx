@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, ColumnsType, Flex, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
