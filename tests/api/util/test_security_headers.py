@@ -1,6 +1,5 @@
 import re
 
-
 from fides.api.util.security_headers import (
     HeaderRule,
     get_applicable_header_rules,
