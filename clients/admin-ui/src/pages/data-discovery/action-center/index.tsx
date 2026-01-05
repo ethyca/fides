@@ -1,10 +1,10 @@
 import {
-  AntFlex as Flex,
-  AntList as List,
-  AntMenu as Menu,
-  AntPagination as Pagination,
+  Flex,
   Icons,
-  useToast,
+  List,
+  Menu,
+  Pagination,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useEffect, useState } from "react";
 

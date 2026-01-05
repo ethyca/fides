@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { AntInput as Input, Icons, InputRef } from "fidesui";
+import { Icons, Input, InputRef } from "fidesui";
 import { CustomInputProps } from "fidesui/src/hoc";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRef } from "react";

@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { AntTooltip as Tooltip, Tr } from "fidesui";
+import { ChakraTr as Tr, Tooltip } from "fidesui";
 
 import {
   FidesCell,

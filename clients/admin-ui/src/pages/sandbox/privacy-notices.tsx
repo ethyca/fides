@@ -1,4 +1,4 @@
-import { AntLayout as Layout } from "fidesui";
+import { Layout } from "fidesui";
 import type { NextPage } from "next";
 
 import PageHeader from "~/features/common/PageHeader";

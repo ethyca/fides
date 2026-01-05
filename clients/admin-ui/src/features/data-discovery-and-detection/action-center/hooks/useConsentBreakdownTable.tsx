@@ -1,10 +1,10 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
+  Tag,
+  Tooltip,
+  Typography,
 } from "fidesui";
 import { useMemo } from "react";
 

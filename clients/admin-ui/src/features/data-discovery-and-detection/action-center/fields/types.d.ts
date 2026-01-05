@@ -1,4 +1,4 @@
-import { AntTreeDataNode as TreeDataNode } from "fidesui";
+import { TreeDataNode } from "fidesui";
 
 import { Node } from "~/features/common/hooks/useNodeMap";
 import {

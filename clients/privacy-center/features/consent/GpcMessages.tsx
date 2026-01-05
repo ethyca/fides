@@ -1,12 +1,12 @@
 import { GpcStatus } from "fides-js";
 import {
-  AntTag as Tag,
-  Box,
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
   CUSTOM_TAG_COLOR,
-  HStack,
-  Stack,
-  Text,
-  WarningTwoIcon,
+  Tag,
 } from "fidesui";
 
 import useI18n from "~/common/hooks/useI18n";

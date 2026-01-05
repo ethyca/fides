@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntTypography as Typography,
-  Box,
-  DeleteIcon,
-  Flex,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraDeleteIcon as DeleteIcon,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  Typography,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";

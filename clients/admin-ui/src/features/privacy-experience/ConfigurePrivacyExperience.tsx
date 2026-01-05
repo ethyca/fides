@@ -1,13 +1,13 @@
 import {
-  AntFlex as Flex,
-  AntSegmented as Segmented,
-  AntSwitch as Switch,
-  AntTooltip as Tooltip,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
+  Flex,
   Icons,
-  Spacer,
-  Text,
+  Segmented,
+  Switch,
   theme,
-  useToast,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";

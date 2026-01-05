@@ -1,11 +1,11 @@
 import {
-  Box,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
 } from "fidesui";
 
 type DataUseFormModalProps = {

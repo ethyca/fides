@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntTag as Tag,
+  Button,
+  ColumnsType,
+  Flex,
   Icons,
-  useDisclosure,
+  Tag,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
 
