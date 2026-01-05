@@ -16,7 +16,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton as Button, Flex, HStack } from "fidesui";
+import { Button, ChakraFlex as Flex, ChakraHStack as HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

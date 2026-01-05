@@ -1,4 +1,4 @@
-import { Heading } from "fidesui";
+import { ChakraHeading as Heading } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";

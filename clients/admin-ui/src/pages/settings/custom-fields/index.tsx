@@ -1,5 +1,5 @@
 import Layout from "common/Layout";
-import { AntTypography } from "fidesui";
+import { Typography } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
@@ -12,9 +12,9 @@ const CUSTOM_FIELDS_COPY =
 const CustomFields: NextPage = () => (
   <Layout title="Custom fields">
     <PageHeader heading="Custom fields" isSticky={false} className="pb-0">
-      <AntTypography.Paragraph className="max-w-screen-md">
+      <Typography.Paragraph className="max-w-screen-md">
         {CUSTOM_FIELDS_COPY}
-      </AntTypography.Paragraph>
+      </Typography.Paragraph>
     </PageHeader>
     <CustomFieldsTable />
   </Layout>

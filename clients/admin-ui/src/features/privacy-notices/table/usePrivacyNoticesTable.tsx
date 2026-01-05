@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTag as Tag,
+  Button,
+  ColumnsType,
+  Empty,
+  Flex,
   formatIsoLocation,
   Icons,
   isoStringToEntry,
+  Tag,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";

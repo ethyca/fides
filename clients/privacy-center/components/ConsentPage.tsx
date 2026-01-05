@@ -10,7 +10,7 @@ import {
   saveFidesCookie,
   setupI18n,
 } from "fides-js";
-import { Stack, useToast } from "fidesui";
+import { ChakraStack as Stack, useChakraToast as useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";

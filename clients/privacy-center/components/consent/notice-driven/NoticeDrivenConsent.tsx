@@ -16,7 +16,13 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "fides-js";
-import { Accordion, Box, Stack, StackDivider, useToast } from "fidesui";
+import {
+  ChakraAccordion as Accordion,
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  ChakraStackDivider as StackDivider,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 

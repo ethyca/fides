@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntSpin as Spin,
+  Button,
+  Checkbox,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Skeleton,
+  Spin,
   useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";

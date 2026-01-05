@@ -1,4 +1,4 @@
-import { AntCheckboxProps as CheckboxProps } from "fidesui";
+import { CheckboxProps } from "fidesui";
 import _ from "lodash";
 import { Key, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
