@@ -19,7 +19,7 @@ This directory contains changelog entry fragments that are compiled into `CHANGE
 nox -s "changelog(dry)" -- --release 2.77.0
 ```
 
-**Compile and create release:**
+**Compile and create release section:**
 ```sh
 nox -s "changelog(write)" -- --release 2.77.0
 ```
