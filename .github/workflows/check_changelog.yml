@@ -68,7 +68,16 @@ jobs:
 
       - name: Install nox
         if: success()
-        run: pip install nox
+        run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        if: success()
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-changelog-${{ hashFiles('noxfiles/changelog_nox.py') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-changelog-
 
       - name: Validate changelog entries
         if: success()
