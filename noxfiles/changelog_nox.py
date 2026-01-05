@@ -56,6 +56,50 @@ class ChangelogEntry:
         return entry
 
 
+def validate_fragment_data(
+    data: Optional[dict], filename: str
+) -> tuple[Optional[ChangelogEntry], Optional[str]]:
+    """
+    Validate a parsed changelog fragment and return a ChangelogEntry or an error.
+
+    Args:
+        data: Parsed YAML data from the fragment file
+        filename: Name of the file being validated (for error messages)
+
+    Returns:
+        Tuple of (ChangelogEntry or None, error message or None)
+    """
+    if not data:
+        return None, f"Empty or invalid YAML in {filename}"
+
+    # Validate required fields (must exist and have a value)
+    missing = []
+    if "type" not in data or not data["type"]:
+        missing.append("type")
+    if "description" not in data or not data["description"]:
+        missing.append("description")
+    if "pr" not in data or data["pr"] is None:
+        missing.append("pr")
+
+    if missing:
+        return None, f"Missing required fields in {filename}: {', '.join(missing)}"
+
+    entry_type = data["type"]
+    if entry_type not in CHANGELOG_TYPES:
+        return None, (
+            f"Invalid type '{entry_type}' in {filename}. "
+            f"Must be one of: {', '.join(CHANGELOG_TYPES)}"
+        )
+
+    entry = ChangelogEntry(
+        entry_type=entry_type,
+        description=data["description"],
+        pr=data.get("pr"),
+        labels=data.get("labels", []),
+    )
+    return entry, None
+
+
 def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
     """Load all changelog fragment files and return list of (path, entry) tuples."""
     import yaml  # Import here since it's installed by the nox session
@@ -75,39 +119,12 @@ def load_fragments() -> List[tuple[Path, ChangelogEntry]]:
             with open(yaml_file, "r", encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
-            if not data:
+            entry, error = validate_fragment_data(data, yaml_file.name)
+            if error:
+                errors.append(error)
                 continue
-
-            # Validate required fields
-            missing = []
-            if "type" not in data:
-                missing.append("type")
-            if "description" not in data:
-                missing.append("description")
-            if "pr" not in data:
-                missing.append("pr")
-
-            if missing:
-                errors.append(
-                    f"Missing required fields in {yaml_file.name}: {', '.join(missing)}"
-                )
-                continue
-
-            entry_type = data["type"]
-            if entry_type not in CHANGELOG_TYPES:
-                errors.append(
-                    f"Invalid type '{entry_type}' in {yaml_file.name}. "
-                    f"Must be one of: {', '.join(CHANGELOG_TYPES)}"
-                )
-                continue
-
-            entry = ChangelogEntry(
-                entry_type=entry_type,
-                description=data["description"],
-                pr=data.get("pr"),
-                labels=data.get("labels", []),
-            )
-            entries.append((yaml_file, entry))
+            if entry:
+                entries.append((yaml_file, entry))
         except Exception as e:
             errors.append(f"Error parsing {yaml_file.name}: {e}")
 
@@ -247,12 +264,79 @@ def finalize_release(content: str, version: str) -> str:
     return "\n".join(new_lines)
 
 
+def validate_fragment_files(
+    file_paths: List[str],
+) -> List[tuple[Path, ChangelogEntry]]:
+    """
+    Validate specific changelog fragment files.
+
+    Args:
+        file_paths: List of file paths (relative or absolute) to validate
+
+    Returns:
+        List of (path, entry) tuples for valid entries
+
+    Raises:
+        ValueError: If any validation errors are found
+    """
+    import yaml  # Import here since it's installed by the nox session
+
+    entries = []
+    errors = []
+
+    for file_path in file_paths:
+        path = Path(file_path)
+
+        # Handle relative paths - check both as-is and in changelog dir
+        if not path.exists():
+            # Try as relative to changelog dir
+            alt_path = CHANGELOG_DIR / path.name
+            if alt_path.exists():
+                path = alt_path
+            else:
+                errors.append(f"File not found: {file_path}")
+                continue
+
+        # Skip template file
+        if path.name == TEMPLATE_FILE_NAME:
+            continue
+
+        # Check file extension
+        if path.suffix not in {".yaml", ".yml"}:
+            errors.append(
+                f"Invalid file extension for {path.name}: must be .yaml or .yml"
+            )
+            continue
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            entry, error = validate_fragment_data(data, path.name)
+            if error:
+                errors.append(error)
+                continue
+            if entry:
+                entries.append((path, entry))
+        except Exception as e:
+            errors.append(f"Error parsing {path.name}: {e}")
+
+    if errors:
+        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
+            f"  - {err}" for err in errors
+        )
+        raise ValueError(error_msg)
+
+    return entries
+
+
 @nox.session()
 @nox.parametrize(
     "action",
     [
         nox.param("dry", id="dry"),
         nox.param("write", id="write"),
+        nox.param("validate", id="validate"),
     ],
 )
 def changelog(  # pylint: disable=too-many-branches,too-many-statements
@@ -267,6 +351,8 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
         - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
         - changelog(write) -- --release VERSION = Compile fragments and create new version section (--release required)
         - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Only include specific PRs (for patch releases)
+        - changelog(validate) = Validate all changelog fragments in the changelog/ directory
+        - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
     """
     session.install("pyyaml")
 
@@ -419,6 +505,38 @@ def changelog(  # pylint: disable=too-many-branches,too-many-statements
                     session.log(f"  - {f.name}")
 
         session.log(f"Successfully compiled {len(entries)} changelog entries")
+
+    elif action == "validate":
+        # Check for files filter flag
+        files_filter = None
+        if "--files" in session.posargs:
+            files_idx = session.posargs.index("--files")
+            if files_idx + 1 < len(session.posargs):
+                files_list_str = session.posargs[files_idx + 1]
+                files_filter = [f.strip() for f in files_list_str.split(",")]
+            else:
+                session.error(
+                    "--files flag requires a comma-separated list of file paths"
+                )
+
+        try:
+            if files_filter:
+                # Validate specific files
+                validated = validate_fragment_files(files_filter)
+                session.log(f"✅ Validated {len(validated)} changelog fragment(s):")
+                for path, entry in validated:
+                    session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+            else:
+                # Validate all fragments in changelog/ directory
+                validated = load_fragments()
+                if not validated:
+                    session.log("No changelog fragments found in changelog/ directory")
+                    return
+                session.log(f"✅ All {len(validated)} changelog fragment(s) are valid:")
+                for path, entry in validated:
+                    session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+        except ValueError as e:
+            session.error(str(e))
 
     else:
         session.error(f"Invalid action: {action}")
