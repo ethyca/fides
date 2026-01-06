@@ -26,7 +26,7 @@ class TestSecurityHeaders:
         ],
     )
     def test_is_exact_match(self, pattern, path, expected):
-        assert (is_exact_match(pattern, path)) is expected
+        assert (is_exact_match(re.compile(pattern), path)) is expected
 
     def test_get_applicable_header_rules_returns_first_matching_rule_for_path(self):
         expected_headers: tuple[str, str] = ("header-1", "value-1")
