@@ -87,7 +87,6 @@ def apply_headers_to_response(
     applicable_headers = get_applicable_header_rules(request.url.path, headers)
     for [header_name, header_value] in applicable_headers:
         response.headers.append(header_name, header_value)
-        response.headers.keys()
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
