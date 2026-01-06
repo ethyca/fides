@@ -26,9 +26,6 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_conditional_evaluation import (
     evaluate_conditional_dependencies,
     extract_conditional_dependency_data_from_inputs,
-    extract_privacy_request_only_conditional_data,
-    get_all_field_addresses_from_manual_task,
-    has_non_privacy_request_conditions,
 )
 from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
@@ -123,127 +120,39 @@ class ManualTaskGraphTask(GraphTask):
         self.log_end(ActionType.erasure, record_count=0)
         return 0
 
+    # Provide consent support for manual tasks
     @retry(action_type=ActionType.consent, default_return=False)
     def consent_request(self, identity: dict[str, Any]) -> bool:
-        """Execute manual task consent logic.
+        """Execute manual-task-driven consent logic.
+        Calls _run_request with CONSENT configs.
 
-        For consent requests, manual tasks:
-        - Can ONLY use privacy_request.* conditional dependencies (no dataset field conditions)
-        - Do not receive access data from upstream tasks
-        - Return True on success, False if task should be skipped
+        For consent manual tasks, conditions are evaluated based on privacy_request.*
+        fields since consent DSRs don't have data flow through datasets.
 
-        Args:
-            identity: Identity data from the privacy request (e.g., email, phone)
-
-        Returns:
-            True if consent task completed successfully, False if skipped
-
-        Raises:
-            AwaitingAsyncTask: If manual input is required
+        Returns True if consent task is completed, False otherwise.
+        Raises AwaitingAsyncTask if user input is required.
         """
-        result = self._run_consent_request(identity)
+        # For consent, we don't have upstream data inputs like access/erasure
+        # Conditions should be based on privacy_request.* fields
+        result = self._run_request(
+            ActionType.consent,
+        )
         if result is None:
-            # Conditional skip or not applicable already logged upstream; do not mark complete here
-            return False
+            # Conditional skip or not applicable already logged upstream
+            # For consent, return True to indicate "done" (nothing to do)
+            return True
 
-        # Mark consent task complete
+        # Mark consent_sent = True for DSR 3.0
         if self.request_task.id:
             self.request_task.consent_sent = True
+
+        # Picking up after awaiting input, mark consent node complete
         self.log_end(ActionType.consent)
         return True
 
     # ------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------
-
-    def _run_consent_request(
-        self,
-        identity: dict[str, Any],
-    ) -> Optional[list[Row]]:
-        """
-        Execute consent manual task logic.
-
-        Similar to _run_request but specifically for consent:
-        1. Validates that no dataset field conditions are used (only privacy_request.* allowed)
-        2. Extracts only privacy request data for conditional evaluation
-        3. Creates ManualTaskInstances if they don't exist
-        4. Returns data if submitted, raises AwaitingAsyncTask if not
-        """
-        manual_task = self._get_manual_task_or_none()
-        if manual_task is None:
-            return None
-
-        # Check if any eligible manual tasks have applicable configs
-        if not self._check_manual_task_configs(manual_task, ActionType.consent):
-            return None
-
-        # Check if there are any rules for consent action type
-        if not self.resources.request.policy.get_rules_for_action(
-            action_type=ActionType.consent
-        ):
-            return None
-
-        # Validate that consent manual tasks only use privacy_request.* conditions
-        # Dataset field conditions are not allowed because consent graph has no access data
-        if has_non_privacy_request_conditions(manual_task):
-            logger.warning(
-                "Consent manual task {} has dataset field conditions which are not supported. "
-                "Only privacy_request.* conditions are allowed for consent manual tasks.",
-                self.connection_key,
-            )
-            self.update_status(
-                "Consent manual task has unsupported dataset field conditions. "
-                "Only privacy_request.* conditions are allowed.",
-                [],
-                ActionType.consent,
-                ExecutionLogStatus.error,
-            )
-            return None
-
-        # Extract conditional dependency data from privacy request only
-        # (consent tasks don't receive upstream access data)
-        field_addresses = get_all_field_addresses_from_manual_task(manual_task)
-        conditional_data = extract_privacy_request_only_conditional_data(
-            field_addresses=field_addresses,
-            privacy_request=self.resources.request,
-        )
-
-        # Evaluate conditional dependencies
-        evaluation_result = evaluate_conditional_dependencies(
-            self.resources.session, manual_task, conditional_data=conditional_data
-        )
-        detailed_message: Optional[str] = None
-
-        # If there were conditional dependencies and they were not met,
-        # clean up any existing ManualTaskInstances and return None to cause a skip
-        if evaluation_result is not None and not evaluation_result.result:
-            self._cleanup_manual_task_instances(manual_task, self.resources.request)
-            detailed_message = format_evaluation_failure_message(evaluation_result)
-            self.update_status(
-                f"Consent manual task conditional dependencies not met. {detailed_message}",
-                [],
-                ActionType.consent,
-                ExecutionLogStatus.skipped,
-            )
-            return None
-
-        # Check/Create manual task instances for applicable configs only
-        self._ensure_manual_task_instances(
-            manual_task,
-            self.resources.request,
-            ActionType.consent,
-        )
-
-        # Check if all manual task instances have submissions for applicable configs only
-        if evaluation_result:
-            detailed_message = format_evaluation_success_message(evaluation_result)
-        result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
-            manual_task,
-            ActionType.consent,
-            conditional_data=conditional_data,
-            awaiting_detail_message=detailed_message,
-        )
-        return result
 
     def _run_request(
         self,
@@ -281,8 +190,13 @@ class ManualTaskGraphTask(GraphTask):
             privacy_request=self.resources.request,
         )
         # Evaluate conditional dependencies
+        # For consent tasks, only evaluate privacy_request.* conditions since
+        # consent DSRs don't have data flow through datasets
         evaluation_result = evaluate_conditional_dependencies(
-            self.resources.session, manual_task, conditional_data=conditional_data
+            self.resources.session,
+            manual_task,
+            conditional_data=conditional_data,
+            privacy_request_only=(action_type == ActionType.consent),
         )
         detailed_message: Optional[str] = None
         # if there were conditional dependencies and they were not met,
