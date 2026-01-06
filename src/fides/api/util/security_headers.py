@@ -39,7 +39,7 @@ recommended_csp_header_value = re.sub(
         frame-ancestors 'self';
         upgrade-insecure-requests;
     """,
-)
+).strip()
 
 recommended_headers: list[HeaderRule] = [
     HeaderRule(
