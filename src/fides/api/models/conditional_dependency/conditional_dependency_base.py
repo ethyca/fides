@@ -71,21 +71,29 @@ class ConditionalDependencyBase(Base):
         1. Inherit from this base class
         2. Define your table name with @declared_attr
         3. Add foreign key relationships (parent_id, entity_id)
-        4. Implement get_root_condition() classmethod
+        4. Implement get_condition_tree() classmethod
         5. Add any domain-specific columns
 
-    Example Tree Structure:
-        Root Group (AND)
-        ├── Leaf: user.role == "admin"
-        ├── Leaf: request.priority >= 3
-        └── Child Group (OR)
-            ├── Leaf: user.department == "security"
-            └── Leaf: user.department == "compliance"
+    Example Tree Structure (stored in condition_tree JSONB):
+        {
+            "logical_operator": "and",
+            "conditions": [
+                {"field_address": "user.role", "operator": "eq", "value": "admin"},
+                {"field_address": "request.priority", "operator": "gte", "value": 3},
+                {
+                    "logical_operator": "or",
+                    "conditions": [
+                        {"field_address": "user.department", "operator": "eq", "value": "security"},
+                        {"field_address": "user.department", "operator": "eq", "value": "compliance"}
+                    ]
+                }
+            ]
+        }
 
     Note:
         - This is a SQLAlchemy abstract model (__abstract__ = True)
         - No database table is created for this base class
-        - Subclasses must implement get_root_condition()
+        - Subclasses must implement get_condition_tree()
         - The 'children' relationship must be defined in concrete subclasses
     """
 
@@ -205,7 +213,7 @@ class ConditionalDependencyBase(Base):
         )
 
     @classmethod
-    def get_root_condition(cls, db: Session, **kwargs: Any) -> Optional[Condition]:
+    def get_condition_tree(cls, db: Session, **kwargs: Any) -> Optional[Condition]:
         """Get the condition tree for a parent entity.
 
         This abstract method must be implemented by concrete subclasses to define
@@ -229,8 +237,7 @@ class ConditionalDependencyBase(Base):
 
         """
         raise NotImplementedError(
-            f"Subclasses of {cls.__name__} must implement get_root_condition(). "
-            f"This method should query for the root condition (parent_id=None) "
-            f"and return it as a Condition schema object, or None if not found. "
+            f"Subclasses of {cls.__name__} must implement get_condition_tree(). "
+            f"This method should query for the condition tree and return it as a Condition schema object, or None if not found. "
             f"See the docstring for implementation guidelines and examples."
         )

@@ -572,7 +572,7 @@ class TestManualTaskConditionalDependencyConversion:
 class TestManualTaskConditionalDependencyClassMethods:
     """Test class methods for ManualTaskConditionalDependency"""
 
-    def test_get_root_condition_leaf(
+    def test_get_condition_tree_leaf(
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
         """Test getting root condition when it's a leaf condition"""
@@ -596,7 +596,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         )
 
         # Get root condition
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 
@@ -606,10 +606,10 @@ class TestManualTaskConditionalDependencyClassMethods:
         assert root_condition.operator == sample_condition_leaf.operator
         assert root_condition.value == sample_condition_leaf.value
 
-    def test_get_root_condition_group(
+    def test_get_condition_tree_group(
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
-        """Test getting root condition when it's a group condition"""
+        """Test getting condition tree when it's a group condition"""
         # Build condition_tree for JSONB storage
         condition_tree = {
             "logical_operator": "and",
@@ -648,7 +648,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         )
 
         # Get root condition
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 
@@ -664,20 +664,20 @@ class TestManualTaskConditionalDependencyClassMethods:
         assert root_condition.conditions[0].operator == sample_condition_leaf.operator
         assert root_condition.conditions[0].value == sample_condition_leaf.value
 
-    def test_get_root_condition_none(self, db: Session, manual_task: ManualTask):
+    def test_get_condition_tree_none(self, db: Session, manual_task: ManualTask):
         """Test getting root condition when none exists"""
         # Get root condition for a task with no dependencies
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 
         # Should return None
         assert root_condition is None
 
-    def test_get_root_condition_complex_hierarchy(
+    def test_get_condition_tree_complex_hierarchy(
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
-        """Test getting root condition with complex hierarchy"""
+        """Test getting condition tree with complex hierarchy"""
         # Build condition_tree for JSONB storage
         condition_tree = {
             "logical_operator": "and",
@@ -730,8 +730,8 @@ class TestManualTaskConditionalDependencyClassMethods:
                 },
             )
 
-        # Get root condition
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        # Get condition tree
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 

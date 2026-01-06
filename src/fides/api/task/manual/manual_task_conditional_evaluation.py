@@ -179,15 +179,15 @@ def evaluate_conditional_dependencies(
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
-    # Get the root condition for this manual task
-    root_condition = ManualTaskConditionalDependency.get_root_condition(
+    # Get the condition tree for this manual task
+    condition_tree = ManualTaskConditionalDependency.get_condition_tree(
         db, manual_task_id=manual_task.id
     )
 
-    if not root_condition:
+    if not condition_tree:
         # No conditional dependencies - always execute
         return None
 
     # Evaluate the condition using the data from regular tasks
     evaluator = ConditionEvaluator(db)
-    return evaluator.evaluate_rule(root_condition, conditional_data)
+    return evaluator.evaluate_rule(condition_tree, conditional_data)

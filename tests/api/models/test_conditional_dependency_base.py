@@ -89,13 +89,13 @@ class MockConditionalDependency:
         return temp.to_condition_group()
 
     @classmethod
-    def get_root_condition(cls, db: Session, *, parent_id: str, **kwargs: Any):
+    def get_condition_tree(cls, db: Session, *, parent_id: str, **kwargs: Any):
         """Mock implementation."""
         temp = ConditionalDependencyBase()
         temp.condition_type = cls.condition_type
         temp.parent_id = parent_id
         temp.parent = getattr(cls, "parent", None)
-        return temp.get_root_condition(db, parent_id=parent_id)
+        return temp.get_condition_tree(db, parent_id=parent_id)
 
 
 @pytest.fixture
@@ -193,15 +193,15 @@ class TestConditionalDependencyBase:
         """Test that the abstract base class has the SQLAlchemy abstract flag."""
         assert ConditionalDependencyBase.__abstract__ is True
 
-    def test_get_root_condition_not_implemented(self):
-        """Test that get_root_condition raises NotImplementedError in base class."""
+    def test_get_condition_tree_not_implemented(self):
+        """Test that get_condition_tree raises NotImplementedError in base class."""
         db = create_autospec(Session)
 
         with pytest.raises(
             NotImplementedError,
-            match="Subclasses of ConditionalDependencyBase must implement get_root_condition",
+            match="Subclasses of ConditionalDependencyBase must implement get_condition_tree",
         ):
-            ConditionalDependencyBase.get_root_condition(db, test_id="test_id")
+            ConditionalDependencyBase.get_condition_tree(db, test_id="test_id")
 
     def test_abstract_class_attributes(self):
         """Test that the abstract class has the required attributes."""
@@ -230,7 +230,7 @@ class TestConditionalDependencyBase:
             "to_correct_condition_type",
             "to_condition_leaf",
             "to_condition_group",
-            "get_root_condition",
+            "get_condition_tree",
         ]
         assert all(
             attr in ConditionalDependencyBase.__dict__ for attr in common_functions

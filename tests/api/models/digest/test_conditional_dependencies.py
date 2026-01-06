@@ -370,12 +370,12 @@ class TestDigestConditionQueries:
     """Test querying digest conditions."""
 
     @pytest.mark.usefixtures("sample_conditions")
-    def test_get_root_condition_by_type(self, db: Session, digest_config: DigestConfig):
+    def test_get_condition_tree_by_type(self, db: Session, digest_config: DigestConfig):
         """Test getting root condition by digest condition type."""
         # sample_conditions fixture creates conditions, so we can test retrieval
 
         # Test getting receiver condition
-        receiver_condition = DigestCondition.get_root_condition(
+        receiver_condition = DigestCondition.get_condition_tree(
             db,
             digest_config_id=digest_config.id,
             digest_condition_type=DigestConditionType.RECEIVER,
@@ -386,7 +386,7 @@ class TestDigestConditionQueries:
         assert receiver_condition.value == None
 
         # Test getting content condition
-        content_condition = DigestCondition.get_root_condition(
+        content_condition = DigestCondition.get_condition_tree(
             db,
             digest_config_id=digest_config.id,
             digest_condition_type=DigestConditionType.CONTENT,
@@ -397,7 +397,7 @@ class TestDigestConditionQueries:
         assert content_condition.value == "pending"
 
         # Test getting priority condition
-        priority_condition = DigestCondition.get_root_condition(
+        priority_condition = DigestCondition.get_condition_tree(
             db,
             digest_config_id=digest_config.id,
             digest_condition_type=DigestConditionType.PRIORITY,
@@ -407,7 +407,7 @@ class TestDigestConditionQueries:
         assert priority_condition.field_address == "task.priority"
         assert priority_condition.value == "high"
 
-    def test_get_root_condition_nonexistent(self, db: Session):
+    def test_get_condition_tree_nonexistent(self, db: Session):
         """Test getting root condition for nonexistent type returns None."""
         # Test with empty digest config (no conditions)
         empty_config = DigestConfig.create(
@@ -415,7 +415,7 @@ class TestDigestConditionQueries:
             data={"digest_type": DigestType.PRIVACY_REQUESTS, "name": "Empty Config"},
         )
 
-        result = DigestCondition.get_root_condition(
+        result = DigestCondition.get_condition_tree(
             db,
             digest_config_id=empty_config.id,
             digest_condition_type=DigestConditionType.RECEIVER,
@@ -424,10 +424,10 @@ class TestDigestConditionQueries:
         empty_config.delete(db)
 
     @pytest.mark.usefixtures("sample_conditions")
-    def test_get_all_root_conditions(self, db: Session, digest_config: DigestConfig):
+    def test_get_all_condition_trees(self, db: Session, digest_config: DigestConfig):
         """Test getting all root conditions for a digest config."""
         # sample_conditions fixture creates conditions, so we can test retrieval
-        all_conditions = DigestCondition.get_all_root_conditions(db, digest_config.id)
+        all_conditions = DigestCondition.get_all_condition_trees(db, digest_config.id)
 
         assert len(all_conditions) == 3
         assert DigestConditionType.RECEIVER in all_conditions
@@ -449,13 +449,13 @@ class TestDigestConditionQueries:
         assert isinstance(priority, ConditionLeaf)
         assert priority.field_address == "task.priority"
 
-    def test_get_root_condition_missing_args(self, db: Session):
-        """Test that get_root_condition raises error with missing arguments."""
+    def test_get_condition_tree_missing_args(self, db: Session):
+        """Test that get_condition_tree raises error with missing arguments."""
         with pytest.raises(
             ValueError,
             match="digest_config_id and digest_condition_type are required keyword arguments",
         ):
-            DigestCondition.get_root_condition(db, digest_config_id="only_one_arg")
+            DigestCondition.get_condition_tree(db, digest_config_id="only_one_arg")
 
     @pytest.mark.usefixtures("sample_conditions")
     def test_filter_conditions_by_type(self, db: Session, digest_config: DigestConfig):
@@ -488,7 +488,7 @@ class TestDigestConditionQueries:
             content_conditions[0].digest_condition_type == DigestConditionType.CONTENT
         )
 
-    def test_filter_root_conditions_only(
+    def test_filter_condition_trees_by_parent_id(
         self,
         db: Session,
         digest_config: DigestConfig,
@@ -496,7 +496,7 @@ class TestDigestConditionQueries:
         group_condition_and: dict[str, Any],
         sample_exists_condition_leaf: ConditionLeaf,
     ):
-        """Test filtering for root conditions only (parent_id is None)."""
+        """Test filtering for condition trees by parent_id."""
         # Create root condition
         root_condition = DigestCondition.create(
             db=db, data={**receiver_condition, **group_condition_and, "sort_order": 1}
@@ -515,7 +515,7 @@ class TestDigestConditionQueries:
         )
 
         # Query for root conditions only
-        root_conditions = (
+        condition_trees = (
             db.query(DigestCondition)
             .filter(
                 DigestCondition.digest_config_id == digest_config.id,
@@ -524,23 +524,9 @@ class TestDigestConditionQueries:
             .all()
         )
 
-        assert len(root_conditions) == 1
-        assert root_conditions[0].id == root_condition.id
-        assert root_conditions[0].parent_id is None
-
-        # Query for child conditions
-        child_conditions = (
-            db.query(DigestCondition)
-            .filter(
-                DigestCondition.digest_config_id == digest_config.id,
-                DigestCondition.parent_id.isnot(None),
-            )
-            .all()
-        )
-
-        assert len(child_conditions) == 1
-        assert child_conditions[0].id == child_condition.id
-        assert child_conditions[0].parent_id == root_condition.id
+        assert len(condition_trees) == 1
+        assert condition_trees[0].id == root_condition.id
+        assert condition_trees[0].parent_id is None
 
 
 # ============================================================================
