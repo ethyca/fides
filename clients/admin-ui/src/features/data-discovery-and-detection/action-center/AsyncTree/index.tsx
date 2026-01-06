@@ -24,19 +24,19 @@ export const AsyncTree = ({
 
   /* Storing lookup data as normalized nodes */
   const [asyncNodes, setAsyncNodes] = useState<
-    Map<Key, AsyncTreeNode & PaginationState>
-  >(new Map());
+   AsyncTreeNode & PaginationState
+  >();
 
   /* Mapping of nodes for tree traversal */
   const [nodeMap, setNodeMap] = useState<
-    Map<Key, AsyncTreeNode & PaginationState>
-  >(new Map());
+    AsyncTreeNode & PaginationState
+  >();
 
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
 
   const recBuildTree = (node: TreeDataNode): TreeDataNode => ({
     ...node,
-    children: Array.from(asyncNodes?.values())?.flatMap(
+    children: asyncNodes?.flatMap(
       (child) => child.parent === node.key ? [recBuildTree(child)] : []
     )
   });
