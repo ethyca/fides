@@ -34,9 +34,6 @@ class LoggerContextKeys(StrEnum):
     privacy_request_source = "privacy_request_source"
 
 
-from enum import StrEnum
-
-
 class ErrorGroup(StrEnum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 

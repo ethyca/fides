@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
@@ -15,8 +15,6 @@ from fides.api.db.base_class import Base, FidesBase
 if TYPE_CHECKING:
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
-from enum import StrEnum
-
 
 class TCFRestrictionType(StrEnum):
     """Enum for TCF restriction types"""
@@ -24,9 +22,6 @@ class TCFRestrictionType(StrEnum):
     purpose_restriction = "purpose_restriction"
     require_consent = "require_consent"
     require_legitimate_interest = "require_legitimate_interest"
-
-
-from enum import StrEnum
 
 
 class TCFVendorRestriction(StrEnum):

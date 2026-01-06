@@ -40,9 +40,6 @@ class ValidateRequest(BaseModel):
     target: ValidationTarget
 
 
-from enum import StrEnum
-
-
 class ValidationStatus(StrEnum):
     """
     Validate endpoint response status

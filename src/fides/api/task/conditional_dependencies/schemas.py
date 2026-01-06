@@ -68,9 +68,6 @@ class Operator(StrEnum):
     contains = "contains"
 
 
-from enum import StrEnum
-
-
 class GroupOperator(StrEnum):
     and_ = "and"
     or_ = "or"

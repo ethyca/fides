@@ -8,9 +8,6 @@ class Event(StrEnum):
     endpoint_call = "endpoint_call"
 
 
-from enum import StrEnum
-
-
 class ExtraData(StrEnum):
     """Enum to hold keys for extra data"""
 

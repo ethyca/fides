@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
@@ -34,9 +34,6 @@ if TYPE_CHECKING:
 # ------------------------------------------------------------
 
 
-from enum import StrEnum
-
-
 class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
@@ -45,17 +42,11 @@ class ManualTaskExecutionTiming(StrEnum):
     parallel = "parallel"  # Execute in parallel with the main DAG
 
 
-from enum import StrEnum
-
-
 class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
     # Add more task types as needed
-
-
-from enum import StrEnum
 
 
 class ManualTaskParentEntityType(StrEnum):
@@ -67,17 +58,11 @@ class ManualTaskParentEntityType(StrEnum):
     # Add more parent entity types as needed
 
 
-from enum import StrEnum
-
-
 class ManualTaskEntityType(StrEnum):
     """Enum for manual task entity types."""
 
     privacy_request = "privacy_request"
     # Add more entity types as needed
-
-
-from enum import StrEnum
 
 
 class ManualTaskReferenceType(StrEnum):
@@ -88,9 +73,6 @@ class ManualTaskReferenceType(StrEnum):
     manual_task_config = "manual_task_config"
     assigned_user = "assigned_user"  # Reference to the user assigned to the task
     # Add more reference types as needed
-
-
-from enum import StrEnum
 
 
 class ManualTaskLogStatus(StrEnum):
@@ -106,18 +88,12 @@ class ManualTaskLogStatus(StrEnum):
     awaiting_input = "awaiting_input"
 
 
-from enum import StrEnum
-
-
 class ManualTaskConfigurationType(StrEnum):
     """Enum for manual task configuration types."""
 
     access_privacy_request = "access_privacy_request"
     erasure_privacy_request = "erasure_privacy_request"
     # Add more configuration types as needed
-
-
-from enum import StrEnum
 
 
 class ManualTaskFieldType(StrEnum):
@@ -127,9 +103,6 @@ class ManualTaskFieldType(StrEnum):
     checkbox = "checkbox"  # Boolean value
     attachment = "attachment"  # File upload
     # Add more field types as needed
-
-
-from enum import StrEnum
 
 
 class StatusType(StrEnum):

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
@@ -49,9 +49,6 @@ class FileBasedStorageDetails(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-from enum import StrEnum
-
-
 class AWSAuthMethod(StrEnum):
     AUTOMATIC = "automatic"
     SECRET_KEYS = "secret_keys"
@@ -66,9 +63,6 @@ class StorageDetailsS3(FileBasedStorageDetails):
     enable_streaming: Optional[bool] = False
     enable_access_package_redirect: Optional[bool] = False
     model_config = ConfigDict(use_enum_values=True)
-
-
-from enum import StrEnum
 
 
 class GCSAuthMethod(StrEnum):
