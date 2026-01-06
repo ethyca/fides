@@ -26,7 +26,7 @@ class HeaderRule:
 recommended_csp_header_value = re.sub(
     r"\s{2,}",
     " ",
-    """"
+    """
         default-src 'self';
         script-src 'self' 'unsafe-inline';
         style-src 'self' 'unsafe-inline';
