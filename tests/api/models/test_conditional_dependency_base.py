@@ -203,58 +203,6 @@ class TestConditionalDependencyBase:
         ):
             ConditionalDependencyBase.get_root_condition(db, test_id="test_id")
 
-    @pytest.mark.skip("Fails in 3.13 and can probably be removed anyway.")
-    def test_abstract_class_attributes(self):
-        """Test that the abstract class has the required attributes."""
-        # Test the abstract class attributes are present
-        abstract_class_attributes = ["__module__", "__doc__", "__abstract__"]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__
-            for attr in abstract_class_attributes
-        )
-
-        # Test the attributes that are common to all conditional dependency models
-        common_attributes = [
-            "condition_type",
-            "field_address",
-            "operator",
-            "value",
-            "logical_operator",
-            "sort_order",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in common_attributes
-        )
-
-        # Test the functions that are common to all conditional dependency models
-        common_functions = [
-            "to_correct_condition_type",
-            "to_condition_leaf",
-            "to_condition_group",
-            "get_root_condition",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in common_functions
-        )
-
-        # Test the new helper functions we added
-        new_helper_functions = [
-            "get_depth",
-            "get_tree_summary",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in new_helper_functions
-        )
-
-        # Test that all expected attributes and functions are present
-        all_attributes = (
-            abstract_class_attributes
-            + common_attributes
-            + common_functions
-            + new_helper_functions
-        )
-        assert len(all_attributes) == len(ConditionalDependencyBase.__dict__)
-
 
 class TestConditionalDependencyBaseMethods:
     """Test the shared methods in ConditionalDependencyBase."""
