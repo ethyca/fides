@@ -4,9 +4,6 @@ import pytest
 from pytest import param
 
 from fides.api.common_exceptions import AwaitingAsyncTask
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskFieldType,
@@ -764,11 +761,6 @@ class TestManualTaskConditionalDependencies:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": privacy_request_field_address,
-                "operator": "eq",
-                "value": privacy_request_value,
-                "sort_order": 1,
                 "condition_tree": condition_tree,
             },
         )

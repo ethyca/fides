@@ -5,9 +5,6 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.digest import DigestConfig, DigestType
 from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
@@ -51,44 +48,6 @@ def priority_condition(digest_config: DigestConfig) -> dict[str, Any]:
     }
 
 
-@pytest.fixture
-def group_condition_or() -> dict[str, Any]:
-    """Basis for a group condition with OR logical operator."""
-    return {
-        "condition_type": ConditionalDependencyType.group,
-        "logical_operator": GroupOperator.or_,
-    }
-
-
-@pytest.fixture
-def group_condition_and() -> dict[str, Any]:
-    """Basis for a group condition with AND logical operator."""
-    return {
-        "condition_type": ConditionalDependencyType.group,
-        "logical_operator": GroupOperator.and_,
-    }
-
-
-@pytest.fixture
-def receiver_group(
-    db: Session,
-    group_condition_and: dict[str, Any],
-    digest_config: DigestConfig,
-):
-    """Create a receiver group condition using separate digest config."""
-    group = DigestCondition.create(
-        db=db,
-        data={
-            **group_condition_and,
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.RECEIVER,
-            "sort_order": 1,
-        },
-    )
-    yield group
-    group.delete(db)
-
-
 # ============================================================================
 # Base Digest Config Fixtures
 # ============================================================================
@@ -97,7 +56,7 @@ def receiver_group(
 @pytest.fixture
 def digest_config(db: Session) -> DigestConfig:
     """Create a test digest configuration."""
-    config = DigestConfig.create(
+    return DigestConfig.create(
         db=db,
         data={
             "digest_type": DigestType.MANUAL_TASKS,
@@ -106,8 +65,6 @@ def digest_config(db: Session) -> DigestConfig:
             "enabled": True,
         },
     )
-    yield config
-    config.delete(db)
 
 
 # ============================================================================
@@ -172,38 +129,29 @@ def sample_conditions(
 ):
     """Create sample conditions for all types."""
 
-    # Receiver condition
+    # Receiver condition with condition_tree
     receiver_cond = DigestCondition.create(
         db=db,
         data={
             **receiver_condition,
-            **receiver_condition_leaf.model_dump(),
-            "condition_type": ConditionalDependencyType.leaf,
-            "sort_order": 1,
             "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
 
-    # Content condition - with condition_tree for JSONB storage
+    # Content condition with condition_tree
     content_cond = DigestCondition.create(
         db=db,
         data={
             **content_condition,
-            **content_condition_leaf.model_dump(),
-            "condition_type": ConditionalDependencyType.leaf,
-            "sort_order": 1,
             "condition_tree": content_condition_leaf.model_dump(),
         },
     )
 
-    # Priority condition - with condition_tree for JSONB storage
+    # Priority condition with condition_tree
     priority_cond = DigestCondition.create(
         db=db,
         data={
             **priority_condition,
-            **priority_condition_leaf.model_dump(),
-            "condition_type": ConditionalDependencyType.leaf,
-            "sort_order": 1,
             "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
@@ -216,20 +164,15 @@ def receiver_digest_condition_leaf(
     digest_config: DigestConfig,
     receiver_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
-    """Create a receiver condition in the database using separate digest config."""
-    condition = DigestCondition.create(
+    """Create a receiver condition in the database."""
+    return DigestCondition.create(
         db=db,
         data={
             "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.RECEIVER,
-            "condition_type": ConditionalDependencyType.leaf,
-            **receiver_condition_leaf.model_dump(),
-            "sort_order": 1,
             "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
-    yield condition
-    condition.delete(db)
 
 
 @pytest.fixture
@@ -238,60 +181,53 @@ def priority_digest_condition_leaf(
     digest_config: DigestConfig,
     priority_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
-    """Create a priority condition in the database using separate digest config."""
-    condition = DigestCondition.create(
+    """Create a priority condition in the database."""
+    return DigestCondition.create(
         db=db,
         data={
             "digest_config_id": digest_config.id,
             "digest_condition_type": DigestConditionType.PRIORITY,
-            **priority_condition_leaf.model_dump(),
-            "condition_type": ConditionalDependencyType.leaf,
-            "sort_order": 1,
             "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
-    yield condition
-    condition.delete(db)
 
 
 @pytest.fixture
 def complex_condition_tree(
     db: Session,
     content_condition: dict[str, Any],
-    group_condition_or: dict[str, Any],
-    group_condition_and: dict[str, Any],
 ):
     """Create a complex condition tree for testing."""
     # Build full condition_tree for JSONB storage: (A AND B) OR (C AND D)
     condition_tree = {
-        "logical_operator": "or",
+        "logical_operator": GroupOperator.or_,
         "conditions": [
             {
-                "logical_operator": "and",
+                "logical_operator": GroupOperator.and_,
                 "conditions": [
                     {
                         "field_address": "task.assignee",
-                        "operator": "eq",
+                        "operator": Operator.eq,
                         "value": "user123",
                     },
                     {
                         "field_address": "task.due_date",
-                        "operator": "lte",
+                        "operator": Operator.lte,
                         "value": "2024-01-01",
                     },
                 ],
             },
             {
-                "logical_operator": "and",
+                "logical_operator": GroupOperator.and_,
                 "conditions": [
                     {
                         "field_address": "task.category",
-                        "operator": "eq",
+                        "operator": Operator.eq,
                         "value": "urgent",
                     },
                     {
                         "field_address": "task.created_at",
-                        "operator": "gte",
+                        "operator": Operator.gte,
                         "value": "2024-01-01T00:00:00Z",
                     },
                 ],
@@ -299,96 +235,11 @@ def complex_condition_tree(
         ],
     }
 
-    # Create root group: (A AND B) OR (C AND D)
-    root_group = DigestCondition.create(
+    # Create root condition with full tree
+    return DigestCondition.create(
         db=db,
         data={
             **content_condition,
-            **group_condition_or,
-            "sort_order": 1,
             "condition_tree": condition_tree,
         },
     )
-
-    # Create first nested group: (A AND B) - for backward compatibility
-    nested_group1 = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            **group_condition_and,
-            "parent_id": root_group.id,
-            "sort_order": 1,
-        },
-    )
-
-    # Create second nested group: (C AND D) - for backward compatibility
-    nested_group2 = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            **group_condition_and,
-            "parent_id": root_group.id,
-            "sort_order": 2,
-        },
-    )
-
-    # Create leaf conditions for first group - for backward compatibility
-    leaf_a = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            "parent_id": nested_group1.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.assignee",
-            "operator": Operator.eq,
-            "value": "user123",
-            "sort_order": 1,
-        },
-    )
-
-    leaf_b = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            "parent_id": nested_group1.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.due_date",
-            "operator": Operator.lte,
-            "value": "2024-01-01",
-            "sort_order": 2,
-        },
-    )
-
-    # Create leaf conditions for second group - for backward compatibility
-    leaf_c = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            "parent_id": nested_group2.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.category",
-            "operator": Operator.eq,
-            "value": "urgent",
-            "sort_order": 1,
-        },
-    )
-
-    leaf_d = DigestCondition.create(
-        db=db,
-        data={
-            **content_condition,
-            "parent_id": nested_group2.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "task.created_at",
-            "operator": Operator.gte,
-            "value": "2024-01-01T00:00:00Z",
-            "sort_order": 2,
-        },
-    )
-
-    yield {
-        "root": root_group,
-        "nested_groups": [nested_group1, nested_group2],
-        "leaves": [leaf_a, leaf_b, leaf_c, leaf_d],
-    }
-    root_group.delete(db)
