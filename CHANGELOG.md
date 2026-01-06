@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
 
+### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed classification message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added
