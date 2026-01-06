@@ -47,6 +47,7 @@ class DigestCondition(ConditionalDependencyBase):
 
     Each digest_config can have up to three independent condition trees,
     one per digest_condition_type (RECEIVER, CONTENT, PRIORITY).
+    Within each tree, all nodes must have the same digest_condition_type
     This enables separate condition logic for different aspects of digest processing.
 
     Example Tree Structure:
@@ -105,7 +106,7 @@ class DigestCondition(ConditionalDependencyBase):
             raise ConditionalDependencyError(str(e))
 
     @classmethod
-    def get_root_condition(
+    def get_condition_tree(
         cls,
         db: Session,
         **kwargs: Any,
@@ -130,12 +131,12 @@ class DigestCondition(ConditionalDependencyBase):
 
         Example:
             >>> # Get receiver conditions for a digest
-            >>> receiver_conditions = DigestCondition.get_root_condition(
+            >>> receiver_conditions = DigestCondition.get_condition_tree(
             ...     db, digest_config_id=digest_config.id,
             ...     digest_condition_type=DigestConditionType.RECEIVER
             ... )
             >>> # Get content conditions for the same digest
-            >>> content_conditions = DigestCondition.get_root_condition(
+            >>> content_conditions = DigestCondition.get_condition_tree(
             ...     db, digest_config_id=digest_config.id,
             ...     digest_condition_type=DigestConditionType.CONTENT
             ... )
@@ -163,12 +164,12 @@ class DigestCondition(ConditionalDependencyBase):
         return ConditionTypeAdapter.validate_python(condition_row.condition_tree)
 
     @classmethod
-    def get_all_root_conditions(
+    def get_all_condition_trees(
         cls, db: Session, digest_config_id: str
     ) -> dict[DigestConditionType, Optional[Condition]]:
         """Get condition trees for all digest condition types"""
         return {
-            condition_type: cls.get_root_condition(
+            condition_type: cls.get_condition_tree(
                 db,
                 digest_config_id=digest_config_id,
                 digest_condition_type=condition_type,
