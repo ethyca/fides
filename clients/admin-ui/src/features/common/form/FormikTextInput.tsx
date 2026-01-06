@@ -1,9 +1,4 @@
-import {
-  AntForm as Form,
-  AntFormItemProps as FormItemProps,
-  AntInput as Input,
-  AntInputProps as InputProps,
-} from "fidesui";
+import { Form, FormItemProps, Input, InputProps } from "fidesui";
 import React from "react";
 
 export const FormikTextInput = ({

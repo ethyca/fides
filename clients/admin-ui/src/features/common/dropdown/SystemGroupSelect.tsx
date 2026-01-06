@@ -1,4 +1,4 @@
-import { AntSelect as Select, AntSelectProps as SelectProps } from "fidesui";
+import { Select, SelectProps } from "fidesui";
 
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 

@@ -6,7 +6,11 @@ import {
   resolveLegacyConsentValue,
   saveFidesCookie,
 } from "fides-js";
-import { Divider, Stack, useToast } from "fidesui";
+import {
+  ChakraDivider as Divider,
+  ChakraStack as Stack,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo } from "react";
 

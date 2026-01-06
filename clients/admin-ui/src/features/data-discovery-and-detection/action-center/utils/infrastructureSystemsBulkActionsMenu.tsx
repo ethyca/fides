@@ -1,4 +1,4 @@
-import { AntMenuProps as MenuProps } from "fidesui";
+import { MenuProps } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 

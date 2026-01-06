@@ -1,4 +1,9 @@
-import { AntButton as Button, Heading, Text, useDisclosure } from "fidesui";
+import {
+  Button,
+  ChakraHeading as Heading,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";

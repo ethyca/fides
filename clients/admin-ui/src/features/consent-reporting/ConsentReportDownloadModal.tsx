@@ -1,14 +1,14 @@
 import { Dayjs } from "dayjs";
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTypography as Typography,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Flex,
+  Typography,
 } from "fidesui";
 
 import useConsentReportingDownload from "./hooks/useConsentReportingDownload";

@@ -1,4 +1,4 @@
-import { Box, Link } from "fidesui";
+import { ChakraBox as Box, ChakraLink as Link } from "fidesui";
 
 import EmptyTableState from "~/features/common/table/EmptyTableState";
 

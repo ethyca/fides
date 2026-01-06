@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTable as Table,
-} from "fidesui";
+import { Button, Flex, Table } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import useCustomFieldsTable from "~/features/custom-fields/useCustomFieldsTable";

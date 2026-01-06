@@ -1,9 +1,4 @@
-import {
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  AntTooltip as Tooltip,
-  CUSTOM_TAG_COLOR,
-} from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag, TagProps, Tooltip } from "fidesui";
 
 interface TagCellProps extends TagProps {
   value: string;

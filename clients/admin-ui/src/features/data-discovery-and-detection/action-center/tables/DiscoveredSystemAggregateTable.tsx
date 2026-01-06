@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntMenu as Menu,
-  AntSpace as Space,
-  AntTable as Table,
-  AntTooltip as Tooltip,
+  Button,
+  Dropdown,
+  Flex,
   Icons,
+  Menu,
+  Space,
+  Table,
+  Tooltip,
 } from "fidesui";
 
 import { SelectedText } from "~/features/common/table/SelectedText";

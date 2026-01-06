@@ -1,4 +1,4 @@
-import { AntTag as Tag } from "fidesui";
+import { Tag } from "fidesui";
 
 interface ConnectionBadgeProps {
   disabled: boolean;

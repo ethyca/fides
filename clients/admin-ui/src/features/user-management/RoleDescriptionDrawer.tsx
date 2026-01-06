@@ -1,4 +1,4 @@
-import { Box, VStack } from "fidesui";
+import { ChakraBox as Box, ChakraVStack as VStack } from "fidesui";
 
 import { ROLES } from "~/features/user-management/constants";
 

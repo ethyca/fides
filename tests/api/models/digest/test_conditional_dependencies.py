@@ -50,14 +50,13 @@ class TestDigestConditionType:
 class TestDigestConditionCRUD:
     """Test basic CRUD operations for DigestCondition."""
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    DIGEST_CONDITION_TYPES = [
+        DigestConditionType.RECEIVER,
+        DigestConditionType.CONTENT,
+        DigestConditionType.PRIORITY,
+    ]
+
+    @pytest.mark.parametrize("digest_condition_type", DIGEST_CONDITION_TYPES)
     def test_create_leaf_condition_types(
         self,
         db: Session,
@@ -66,33 +65,24 @@ class TestDigestConditionCRUD:
         sample_eq_condition_leaf: ConditionLeaf,
     ):
         """Test creating a leaf condition for different types."""
-        condition_tree = sample_eq_condition_leaf.model_dump()
         condition = DigestCondition.create(
             db=db,
             data={
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": digest_condition_type,
-                "condition_tree": condition_tree,
+                "condition_tree": sample_eq_condition_leaf.model_dump(),
             },
         )
 
         assert condition.id is not None
         assert condition.digest_config_id == digest_config.id
         assert condition.digest_condition_type == digest_condition_type
-        assert condition.condition_tree == condition_tree
+        assert condition.condition_tree == sample_eq_condition_leaf.model_dump()
 
         # Test relationship
         assert condition.digest_config == digest_config
-        condition.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", DIGEST_CONDITION_TYPES)
     @pytest.mark.parametrize(
         "logical_operator", [GroupOperator.or_, GroupOperator.and_]
     )
@@ -120,36 +110,29 @@ class TestDigestConditionCRUD:
 
         assert condition.digest_condition_type == digest_condition_type
         assert condition.condition_tree["logical_operator"] == logical_operator
-        condition.delete(db)
 
     def test_required_fields_validation(self, db: Session, digest_config: DigestConfig):
         """Test that required fields are validated."""
+        data = {
+            "condition_tree": {
+                "field_address": "test",
+                "operator": "eq",
+                "value": 1,
+            },
+        }
         # Missing digest_config_id
         with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
-                data={
-                    "digest_condition_type": DigestConditionType.RECEIVER,
-                    "condition_tree": {
-                        "field_address": "test",
-                        "operator": "eq",
-                        "value": 1,
-                    },
-                },
+                data=data.update(
+                    {"digest_condition_type": DigestConditionType.RECEIVER}
+                ),
             )
-
         # Missing digest_condition_type
         with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "condition_tree": {
-                        "field_address": "test",
-                        "operator": "eq",
-                        "value": 1,
-                    },
-                },
+                data=data.update({"digest_config_id": digest_config.id}),
             )
 
     def test_cascade_delete_with_digest_config(
@@ -184,27 +167,23 @@ class TestDigestConditionCRUD:
         sample_eq_condition_leaf: ConditionLeaf,
     ):
         """Test that only one condition per (digest_config_id, digest_condition_type) is allowed."""
-        condition_tree = sample_eq_condition_leaf.model_dump()
+        data = {
+            "digest_config_id": digest_config.id,
+            "digest_condition_type": DigestConditionType.RECEIVER,
+            "condition_tree": sample_eq_condition_leaf.model_dump(),
+        }
 
         # Create first condition
         DigestCondition.create(
             db=db,
-            data={
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_tree": condition_tree,
-            },
+            data=data,
         )
 
         # Try to create second condition with same config and type
         with pytest.raises(Exception):  # Should raise unique constraint violation
             DigestCondition.create(
                 db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.RECEIVER,
-                    "condition_tree": condition_tree,
-                },
+                data=data,
             )
 
 
@@ -232,7 +211,7 @@ class TestDigestConditionTrees:
             ],
         }
 
-        root_group = DigestCondition.create(
+        group = DigestCondition.create(
             db=db,
             data={
                 **content_condition,
@@ -241,36 +220,28 @@ class TestDigestConditionTrees:
         )
 
         # Verify tree structure
-        assert root_group.condition_tree["logical_operator"] == GroupOperator.and_
-        assert len(root_group.condition_tree["conditions"]) == 2
-        assert (
-            root_group.condition_tree["conditions"][0]["field_address"] == "task.status"
-        )
-        assert (
-            root_group.condition_tree["conditions"][1]["field_address"]
-            == "task.priority"
-        )
-
-        root_group.delete(db)
+        assert group.condition_tree["logical_operator"] == GroupOperator.and_
+        assert len(group.condition_tree["conditions"]) == 2
+        assert group.condition_tree["conditions"][0]["field_address"] == "task.status"
+        assert group.condition_tree["conditions"][1]["field_address"] == "task.priority"
 
     def test_complex_nested_tree(self, complex_condition_tree: dict[str, Any]):
         """Test creating complex nested group condition trees."""
-        root_group = complex_condition_tree["root"]
         tree = complex_condition_tree["condition_tree"]
 
         # Verify root structure
-        assert root_group.condition_tree["logical_operator"] == GroupOperator.or_
-        assert len(root_group.condition_tree["conditions"]) == 2
+        assert tree["logical_operator"] == GroupOperator.or_
+        assert len(tree["conditions"]) == 2
 
         # Verify first nested group
-        first_group = root_group.condition_tree["conditions"][0]
+        first_group = tree["conditions"][0]
         assert first_group["logical_operator"] == GroupOperator.and_
         assert len(first_group["conditions"]) == 2
         assert first_group["conditions"][0]["field_address"] == "task.assignee"
         assert first_group["conditions"][1]["field_address"] == "task.due_date"
 
         # Verify second nested group
-        second_group = root_group.condition_tree["conditions"][1]
+        second_group = tree["conditions"][1]
         assert second_group["logical_operator"] == GroupOperator.and_
         assert len(second_group["conditions"]) == 2
         assert second_group["conditions"][0]["field_address"] == "task.category"

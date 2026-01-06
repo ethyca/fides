@@ -1,4 +1,4 @@
-import { AntTreeDataNode as DataNode, Filter } from "fidesui";
+import { Filter, TreeDataNode as DataNode } from "fidesui";
 import { uniq } from "lodash";
 import { useEffect, useMemo, useRef, useState } from "react";
 

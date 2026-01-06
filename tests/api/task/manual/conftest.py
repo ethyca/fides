@@ -263,60 +263,6 @@ def connection_with_manual_access_task(
     yield connection_config, manual_task, manual_task_access_config, field
 
 
-@pytest.fixture()
-def manual_setup(
-    db: Session,
-    connection_config,
-    manual_task,
-    manual_task_access_config,
-    manual_task_erasure_config,
-):
-    """Create a connection config, manual task and two configs (access & erasure)."""
-    # Create access config field
-    access_field_data = {
-        "field_key": "user_email",
-        "field_type": ManualTaskFieldType.text,
-        "field_metadata": {
-            "label": "Access Confirmation",
-            "required": True,
-            "data_categories": ["user.contact.email"],
-        },
-    }
-    _create_manual_task_config_field(
-        db, manual_task, manual_task_access_config, access_field_data
-    )
-
-    # Create erasure config field
-    erasure_field_data = {
-        "field_key": "confirm_erasure",
-        "field_type": ManualTaskFieldType.text,
-        "field_metadata": {
-            "label": "Erasure Confirmation",
-            "required": True,
-            "data_categories": ["user.contact.email"],
-        },
-    }
-    _create_manual_task_config_field(
-        db, manual_task, manual_task_erasure_config, erasure_field_data
-    )
-
-    yield {
-        "connection_config": connection_config,
-        "manual_task": manual_task,
-        "access_config": manual_task_access_config,
-        "erasure_config": manual_task_erasure_config,
-    }
-
-    # Cleanup
-    try:
-        for config in [manual_task_access_config, manual_task_erasure_config]:
-            config.delete(db)
-        manual_task.delete(db)
-        connection_config.delete(db)
-    except Exception as e:
-        print(f"Error deleting manual task: {e}")
-
-
 # =============================================================================
 # Privacy Request Fixtures
 # =============================================================================
@@ -333,8 +279,6 @@ def mixed_privacy_request(db: Session, mixed_policy):
             "status": PrivacyRequestStatus.pending,
         },
     )
-    yield pr
-    pr.delete(db)
 
 
 @pytest.fixture()
@@ -816,28 +760,6 @@ def complete_manual_task_setup(
     }
 
 
-@pytest.fixture()
-def complete_manual_task_setup_with_attachment(
-    db: Session,
-    connection_with_manual_access_task,
-    manual_task_instance,
-    manual_task_submission_attachment,
-    attachment_for_access_package,
-):
-    """Create a complete manual task setup with instance, submission, and attachment."""
-    connection_config, manual_task, config, field = connection_with_manual_access_task
-
-    return {
-        "connection_config": connection_config,
-        "manual_task": manual_task,
-        "config": config,
-        "field": field,
-        "instance": manual_task_instance,
-        "submission": manual_task_submission_attachment,
-        "attachment": attachment_for_access_package,
-    }
-
-
 # =============================================================================
 # Manual Task Conditional Dependency Fixtures
 # =============================================================================
@@ -984,17 +906,6 @@ def create_condition_gt_18_tree() -> dict:
     }
 
 
-def create_condition_gt_18(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency for age >= 18."""
-    return ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_tree": create_condition_gt_18_tree(),
-        },
-    )
-
-
 def create_condition_age_lt_65_tree() -> dict:
     """Return the condition tree dict for age < 65."""
     return {
@@ -1024,17 +935,6 @@ def create_condition_eq_active_tree() -> dict:
     }
 
 
-def create_condition_eq_active(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency for status == active."""
-    return ManualTaskConditionalDependency.create(
-        db=db,
-        data={
-            "manual_task_id": manual_task.id,
-            "condition_tree": create_condition_eq_active_tree(),
-        },
-    )
-
-
 def create_condition_eq_admin_tree() -> dict:
     """Return the condition tree dict for role == admin."""
     return {
@@ -1044,115 +944,75 @@ def create_condition_eq_admin_tree() -> dict:
     }
 
 
-def create_condition_eq_admin(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency for role == admin."""
+@pytest.fixture()
+def condition_gt_18(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with field_address 'user.age' and operator 'gte' and value 18"""
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_tree": create_condition_eq_admin_tree(),
+            "condition_tree": create_condition_gt_18_tree(),
         },
     )
-
-
-@pytest.fixture()
-def condition_gt_18(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency with field_address 'user.age' and operator 'gte' and value 18"""
-    condition = create_condition_gt_18(db, manual_task)
-    yield condition
-    condition.delete(db)
-
-
-@pytest.fixture()
-def condition_age_lt_65(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency with field_address 'user.age' and operator 'lt' and value 65"""
-    condition = create_condition_age_lt_65(db, manual_task)
-    yield condition
-    condition.delete(db)
-
-
-@pytest.fixture()
-def condition_eq_active(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency with field_address 'billing.subscription.status' and operator 'eq' and value 'active'"""
-    condition = create_condition_eq_active(db, manual_task)
-    yield condition
-    condition.delete(db)
-
-
-@pytest.fixture()
-def condition_eq_admin(db: Session, manual_task: ManualTask):
-    """Create a conditional dependency with field_address 'user.role' and operator 'eq' and value 'admin'"""
-    condition = create_condition_eq_admin(db, manual_task)
-    yield condition
-    condition.delete(db)
 
 
 @pytest.fixture()
 def group_condition(db: Session, manual_task: ManualTask):
     """Create a group conditional dependency with logical_operator 'and'"""
     # Build the full condition tree for JSONB storage
-    condition_tree = {
-        "logical_operator": "and",
-        "conditions": [
-            create_condition_gt_18_tree(),
-            create_condition_eq_active_tree(),
-        ],
-    }
-    root_condition = ManualTaskConditionalDependency.create(
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_tree": condition_tree,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    create_condition_gt_18_tree(),
+                    create_condition_eq_active_tree(),
+                ],
+            },
         },
     )
-    yield root_condition
-    root_condition.delete(db)
 
 
 @pytest.fixture()
 def nested_group_condition(db: Session, manual_task: ManualTask):
-    """Create a nested group conditional dependency with logical_operator 'or'"""
+    """Create a nested group conditional dependency: (age >= 18 OR status == active) AND role == admin"""
     # Build the full condition tree for JSONB storage
-    condition_tree = {
-        "logical_operator": "and",
-        "conditions": [
-            {
-                "logical_operator": "or",
-                "conditions": [
-                    create_condition_gt_18_tree(),
-                    create_condition_eq_active_tree(),
-                    create_condition_eq_admin_tree(),
-                ],
-            }
-        ],
-    }
-    root_condition = ManualTaskConditionalDependency.create(
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_tree": condition_tree,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    {
+                        "logical_operator": "or",
+                        "conditions": [
+                            create_condition_gt_18_tree(),
+                            create_condition_eq_active_tree(),
+                        ],
+                    },
+                    create_condition_eq_admin_tree(),
+                ],
+            },
         },
     )
-    yield root_condition
-    root_condition.delete(db)
 
 
 @pytest.fixture()
 def condition_age_range(db: Session, manual_task: ManualTask):
     """Create a conditional dependency with age >= 18 AND age < 65 (same field, multiple conditions)."""
-    condition_tree = {
-        "logical_operator": "and",
-        "conditions": [
-            create_condition_gt_18_tree(),
-            create_condition_age_lt_65_tree(),
-        ],
-    }
-    condition = ManualTaskConditionalDependency.create(
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_tree": condition_tree,
+            "condition_tree": {
+                "logical_operator": "and",
+                "conditions": [
+                    create_condition_gt_18_tree(),
+                    create_condition_age_lt_65_tree(),
+                ],
+            },
         },
     )
-    yield condition
-    condition.delete(db)

@@ -1,9 +1,4 @@
-import {
-  AntColumnsType as ColumnsType,
-  AntTag as Tag,
-  AntTypography as Typography,
-  SelectInline,
-} from "fidesui";
+import { ColumnsType, SelectInline, Tag, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { formatUser } from "~/features/common/utils";

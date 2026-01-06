@@ -56,7 +56,7 @@ def priority_condition(digest_config: DigestConfig) -> dict[str, Any]:
 @pytest.fixture
 def digest_config(db: Session) -> DigestConfig:
     """Create a test digest configuration."""
-    config = DigestConfig.create(
+    return DigestConfig.create(
         db=db,
         data={
             "digest_type": DigestType.MANUAL_TASKS,
@@ -65,8 +65,6 @@ def digest_config(db: Session) -> DigestConfig:
             "enabled": True,
         },
     )
-    yield config
-    config.delete(db)
 
 
 # ============================================================================
@@ -167,7 +165,7 @@ def receiver_digest_condition_leaf(
     receiver_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
     """Create a receiver condition in the database."""
-    condition = DigestCondition.create(
+    return DigestCondition.create(
         db=db,
         data={
             "digest_config_id": digest_config.id,
@@ -175,27 +173,6 @@ def receiver_digest_condition_leaf(
             "condition_tree": receiver_condition_leaf.model_dump(),
         },
     )
-    yield condition
-    condition.delete(db)
-
-
-@pytest.fixture
-def content_digest_condition_leaf(
-    db: Session,
-    digest_config: DigestConfig,
-    content_condition_leaf: ConditionLeaf,
-) -> DigestCondition:
-    """Create a content condition in the database."""
-    condition = DigestCondition.create(
-        db=db,
-        data={
-            "digest_config_id": digest_config.id,
-            "digest_condition_type": DigestConditionType.CONTENT,
-            "condition_tree": content_condition_leaf.model_dump(),
-        },
-    )
-    yield condition
-    condition.delete(db)
 
 
 @pytest.fixture
@@ -205,7 +182,7 @@ def priority_digest_condition_leaf(
     priority_condition_leaf: ConditionLeaf,
 ) -> DigestCondition:
     """Create a priority condition in the database."""
-    condition = DigestCondition.create(
+    return DigestCondition.create(
         db=db,
         data={
             "digest_config_id": digest_config.id,
@@ -213,8 +190,6 @@ def priority_digest_condition_leaf(
             "condition_tree": priority_condition_leaf.model_dump(),
         },
     )
-    yield condition
-    condition.delete(db)
 
 
 @pytest.fixture
@@ -261,16 +236,10 @@ def complex_condition_tree(
     }
 
     # Create root condition with full tree
-    root_group = DigestCondition.create(
+    return DigestCondition.create(
         db=db,
         data={
             **content_condition,
             "condition_tree": condition_tree,
         },
     )
-
-    yield {
-        "root": root_group,
-        "condition_tree": condition_tree,
-    }
-    root_group.delete(db)

@@ -8,7 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Text, VStack } from "fidesui";
+import { ChakraText as Text, ChakraVStack as VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 

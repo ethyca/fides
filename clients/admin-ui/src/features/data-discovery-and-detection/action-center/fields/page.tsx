@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSplitter as Splitter,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
+  Button,
+  Checkbox,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Splitter,
+  Text,
+  Title,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 import { NextPage } from "next";

@@ -1,9 +1,9 @@
 import {
-  AntSelect as Select,
-  Flex,
-  FormControl,
-  FormLabel,
-  Text,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraText as Text,
+  Select,
 } from "fidesui";
 import { useState } from "react";
 

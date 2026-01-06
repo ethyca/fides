@@ -1,5 +1,5 @@
 import PaginationFooter from "common/PaginationFooter";
-import { Box, SimpleGrid } from "fidesui";
+import { ChakraBox as Box, ChakraSimpleGrid as SimpleGrid } from "fidesui";
 import { chunk } from "lodash";
 import React from "react";
 import { useDispatch } from "react-redux";

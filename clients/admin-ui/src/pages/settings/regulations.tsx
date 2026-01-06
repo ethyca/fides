@@ -1,4 +1,9 @@
-import { Box, Link, Spinner, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraLink as Link,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 

@@ -1,4 +1,4 @@
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+import { Tag, Typography } from "fidesui";
 
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {

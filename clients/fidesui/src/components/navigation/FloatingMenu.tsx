@@ -1,5 +1,5 @@
 // import { Menu } from "antd/lib";
-import { AntMenu as Menu } from "fidesui";
+import { Menu } from "fidesui";
 import { ComponentProps } from "react";
 
 import styles from "./FloatingMenu.module.scss";

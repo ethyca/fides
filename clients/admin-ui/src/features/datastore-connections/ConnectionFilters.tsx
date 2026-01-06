@@ -1,8 +1,8 @@
 import {
-  Flex,
-  Input,
-  InputGroup,
-  InputLeftElement,
+  ChakraFlex as Flex,
+  ChakraInput as Input,
+  ChakraInputGroup as InputGroup,
+  ChakraInputLeftElement as InputLeftElement,
   SearchLineIcon,
 } from "fidesui";
 import React from "react";

@@ -1,4 +1,4 @@
-import { AntTypography as Typography, GetProps } from "fidesui";
+import { GetProps, Typography } from "fidesui";
 
 const { Text } = Typography;
 
