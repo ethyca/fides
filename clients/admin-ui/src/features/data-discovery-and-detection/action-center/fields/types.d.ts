@@ -54,7 +54,7 @@ export interface MonitorFieldParameters {
 export type NodeAction<N extends Node> = {
   label: string;
   /** TODO: should be generically typed * */
-  callback: (key: Key, nodes: N[]) => void;
+  callback: (key: Key[], nodes: N[]) => void;
   disabled: (nodes: N[]) => boolean;
 };
 
