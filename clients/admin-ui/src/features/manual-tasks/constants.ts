@@ -31,4 +31,5 @@ export const STATUS_FILTER_OPTIONS = [
 export const REQUEST_TYPE_FILTER_OPTIONS = [
   { text: "Access", value: ManualFieldRequestType.ACCESS },
   { text: "Erasure", value: ManualFieldRequestType.ERASURE },
+  { text: "Consent", value: ManualFieldRequestType.CONSENT },
 ];

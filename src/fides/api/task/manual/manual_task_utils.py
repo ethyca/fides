@@ -128,11 +128,35 @@ def create_conditional_dependency_scalar_fields(
 
 def _create_collection_from_manual_task(
     manual_task: ManualTask,
+    config_types: Optional[list[ActionType]] = None,
 ) -> Optional[Collection]:
-    """Create a Collection from a ManualTask. Helper function to avoid duplication."""
+    """Create a Collection from a ManualTask. Helper function to avoid duplication.
+
+    Args:
+        manual_task: The manual task to create a collection from
+        config_types: Optional list of config types to filter dependencies by.
+            For consent tasks, dataset field references are excluded since
+            consent DSRs don't have data flow through datasets.
+    """
+    # Determine if we should exclude dataset field references
+    # Consent tasks don't have data flow, so they shouldn't reference dataset fields
+    is_consent_only = (
+        config_types is not None
+        and len(config_types) == 1
+        and ActionType.consent in config_types
+    )
+
     # Get conditional dependency field addresses from JSONB condition_tree
     conditional_field_addresses: set[str] = set()
     for dependency in manual_task.conditional_dependencies:
+        # Filter field-level dependencies by config type
+        if dependency.config_field_id is not None and config_types is not None:
+            # Get the config type for this field's config
+            config_field = dependency.config_field
+            if config_field and config_field.config:
+                if config_field.config.config_type not in config_types:
+                    continue
+
         tree = dependency.condition_tree
         if isinstance(tree, dict) or tree is None:
             field_addresses = set(
@@ -140,6 +164,12 @@ def _create_collection_from_manual_task(
                 for addr in extract_field_addresses(tree)
                 if not addr.startswith("privacy_request.")
             )
+
+            # For consent-only tasks, skip dataset field references entirely
+            # since consent DSRs don't have data flow through datasets
+            if is_consent_only:
+                continue
+
             conditional_field_addresses.update(field_addresses)
 
     # Create scalar fields for data category fields and conditional dependency field addresses
@@ -168,7 +198,9 @@ def create_collection_for_connection_key(
     return _create_collection_from_manual_task(manual_task)
 
 
-def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
+def create_manual_task_artificial_graphs(
+    db: Session, config_types: Optional[list[ActionType]] = None
+) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
@@ -179,6 +211,9 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
 
     Args:
         db: Database session
+        config_types: Optional list of ActionType values to filter manual tasks by.
+            Only tasks with configs matching these types will be included.
+            If None, all manual tasks are included.
 
     Returns:
         List of GraphDataset objects representing manual tasks as individual collections
@@ -217,8 +252,19 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         if not manual_task:
             continue
 
+        # Filter by config_types if specified
+        if config_types is not None:
+            # Check if any config matches the requested types
+            has_matching_config = any(
+                config.config_type in config_types for config in manual_task.configs
+            )
+            if not has_matching_config:
+                continue
+
         # Create collection using the helper function to avoid duplication
-        collection = _create_collection_from_manual_task(manual_task)
+        # Pass config_types to filter dependencies appropriately (e.g., consent tasks
+        # should not include dataset field references since they don't have data flow)
+        collection = _create_collection_from_manual_task(manual_task, config_types)
         if not collection:
             continue
 

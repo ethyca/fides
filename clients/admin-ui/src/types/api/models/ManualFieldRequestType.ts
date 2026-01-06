@@ -8,4 +8,5 @@
 export enum ManualFieldRequestType {
   ACCESS = "access",
   ERASURE = "erasure",
+  CONSENT = "consent",
 }
