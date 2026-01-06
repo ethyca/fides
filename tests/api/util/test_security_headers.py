@@ -91,6 +91,18 @@ class TestSecurityHeaders:
                     ("X-Frame-Options", "SAMEORIGIN"),
                 ],
             ),
+            (
+                "/",
+                [
+                    ("X-Content-Type-Options", "nosniff"),
+                    ("Strict-Transport-Security", "max-age=31536000"),
+                    (
+                        "Content-Security-Policy",
+                        recommended_csp_header_value,
+                    ),
+                    ("X-Frame-Options", "SAMEORIGIN"),
+                ],
+            ),
         ],
     )
     def test_recommended_headers_api_route(self, path, expected):
