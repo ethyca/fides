@@ -10,10 +10,8 @@ apply_recommended_headers = CONFIG.security.headers_mode == "recommended"
 
 
 def is_exact_match(matcher: re.Pattern[str], path_name: str) -> bool:
-    matched_content = re.match(matcher, path_name)
-    if matched_content is None:
-        return False
-    return len(matched_content.group(0)) == len(path_name)
+    matched_content = re.fullmatch(matcher, path_name)
+    return matched_content is not None
 
 
 HeaderDefinition = tuple[str, str]
