@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 
 import pytest
@@ -271,10 +271,10 @@ def connection_with_manual_access_task(
 @pytest.fixture()
 def mixed_privacy_request(db: Session, mixed_policy):
     """Minimal PrivacyRequest for testing with mixed policy."""
-    pr = PrivacyRequest.create(
+    return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": mixed_policy.id,
             "status": PrivacyRequestStatus.pending,
         },
@@ -284,31 +284,27 @@ def mixed_privacy_request(db: Session, mixed_policy):
 @pytest.fixture()
 def access_privacy_request(db: Session, access_policy):
     """Privacy request with access-only policy."""
-    pr = PrivacyRequest.create(
+    return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": access_policy.id,
             "status": PrivacyRequestStatus.pending,
         },
     )
-    yield pr
-    pr.delete(db)
 
 
 @pytest.fixture()
 def erasure_privacy_request(db: Session, erasure_policy):
     """Privacy request with erasure-only policy."""
-    pr = PrivacyRequest.create(
+    return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": erasure_policy.id,
             "status": PrivacyRequestStatus.pending,
         },
     )
-    yield pr
-    pr.delete(db)
 
 
 # =============================================================================
