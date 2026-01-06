@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useCallback } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";

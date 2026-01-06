@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from pydantic.v1.utils import deep_update
 from sqlalchemy.orm import Session

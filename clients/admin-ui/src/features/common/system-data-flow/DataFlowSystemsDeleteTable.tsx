@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
+  Button,
+  ChakraTable as Table,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";

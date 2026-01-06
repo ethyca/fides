@@ -1,4 +1,4 @@
-import { useAntModal, useMessage } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
@@ -58,7 +58,7 @@ export const useFieldActions = (
   const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
 
   const messageApi = useMessage();
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   const handleAction =
     (

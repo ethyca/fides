@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntMenuProps as MenuProps,
-  AntModal as Modal,
-  AntSpace as Space,
-  AntTypography as Typography,
+  Button,
+  Flex,
   FloatingMenu,
-  useAntModal,
+  Input,
+  MenuProps,
+  Modal,
+  Space,
+  Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { filter } from "lodash";
 import { useRouter } from "next/router";
@@ -94,7 +94,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
     null,
   );
 
-  const modal = useAntModal();
+  const modal = useModal();
 
   const [deleteCustomTaxonomy] = useDeleteCustomTaxonomyMutation();
 

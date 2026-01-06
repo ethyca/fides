@@ -1,4 +1,4 @@
-import { AntButton as Button, Box, EditIcon } from "fidesui";
+import { Button, ChakraBox as Box, ChakraEditIcon as EditIcon } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 

@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType } from "fidesui";
+import { ColumnsType } from "fidesui";
 
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";

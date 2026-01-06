@@ -29,14 +29,7 @@ GET_BY_TYPE = {
 class TestDigestConfigConditionMethods:
     """Test DigestConfig methods for retrieving conditions."""
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_leaf(
         self,
         db: Session,
@@ -67,14 +60,7 @@ class TestDigestConfigConditionMethods:
         assert conditions.value == None
         condition.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_group(
         self,
         db: Session,
@@ -125,14 +111,7 @@ class TestDigestConfigConditionMethods:
         )
         root_group.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_none(
         self,
         db: Session,
@@ -152,12 +131,11 @@ class TestDigestConfigConditionMethods:
 
         # Test getting all conditions
         all_conditions = digest_config.get_all_conditions(db)
-        assert len(all_conditions) == 3
-        assert DigestConditionType.RECEIVER in all_conditions
-        assert DigestConditionType.CONTENT in all_conditions
-        assert DigestConditionType.PRIORITY in all_conditions
+        expected_conditions = sorted(list(GET_BY_TYPE.keys()))
+        assert len(all_conditions) == len(expected_conditions)
+        assert sorted(all_conditions) == expected_conditions
 
-        # Test receiver condition
+        # Test conditions
         receiver = all_conditions[DigestConditionType.RECEIVER]
         assert isinstance(receiver, ConditionLeaf)
         assert receiver.field_address == "user.email"
@@ -296,10 +274,6 @@ class TestDigestConfigConditionIntegration:
         assert config1_all[DigestConditionType.RECEIVER].value == "alpha"
         assert config2_all[DigestConditionType.RECEIVER].value == "beta"
 
-        # Clean up
-        config1.delete(db)
-        config2.delete(db)
-
     def test_condition_updates_reflected_immediately(
         self, db: Session, digest_config: DigestConfig
     ):
@@ -389,5 +363,3 @@ class TestDigestConfigConditionIntegration:
                 assert isinstance(leaf, ConditionLeaf)
                 assert leaf.field_address == f"task.field_{i}_{j}"
                 assert leaf.value == f"value_{i}_{j}"
-
-        root_group.delete(db)

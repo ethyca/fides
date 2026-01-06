@@ -1,9 +1,9 @@
 import {
-  AntFlex as Flex,
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntParagraph as Paragraph,
+  Flex,
+  Form,
+  FormInstance,
+  Input,
+  Paragraph,
   useFormModal,
 } from "fidesui";
 import React, { useCallback } from "react";

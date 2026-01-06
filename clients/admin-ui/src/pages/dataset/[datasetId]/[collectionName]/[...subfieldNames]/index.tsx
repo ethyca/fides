@@ -8,12 +8,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  Box,
-  EditIcon,
-  HStack,
-  Text,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraEditIcon as EditIcon,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { cloneDeep, set } from "lodash";
 import type { NextPage } from "next";

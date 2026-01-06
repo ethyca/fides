@@ -1,4 +1,10 @@
-import { AntCard as Card, Box, Heading, Spinner, Text } from "fidesui";
+import {
+  Card,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 import { useEffect } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";

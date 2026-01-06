@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntModal as Modal,
-  AntSpace as Space,
-  useMessage,
-} from "fidesui";
+import { Button, Form, Input, Modal, Space, useMessage } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DigestType } from "~/types/api";

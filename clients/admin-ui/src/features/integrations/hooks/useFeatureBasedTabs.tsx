@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntTabsProps as TabsProps,
-  Box,
-  Flex,
-  Spacer,
-  useDisclosure,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  TabsProps,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
 

@@ -8,7 +8,12 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {

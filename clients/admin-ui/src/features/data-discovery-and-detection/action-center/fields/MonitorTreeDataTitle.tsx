@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntSkeleton as Skeleton,
-  AntText as Text,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Flex, Icons, Skeleton, Text } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 

@@ -1,4 +1,9 @@
-import { AntFlex as Flex, CheckIcon, Text, ViewOffIcon } from "fidesui";
+import {
+  ChakraCheckIcon as CheckIcon,
+  ChakraText as Text,
+  ChakraViewOffIcon as ViewOffIcon,
+  Flex,
+} from "fidesui";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {

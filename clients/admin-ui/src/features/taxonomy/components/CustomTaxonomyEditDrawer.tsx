@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTabs as Tabs,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Tabs, useMessage } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";

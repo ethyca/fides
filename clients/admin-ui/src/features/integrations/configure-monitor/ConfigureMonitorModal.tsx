@@ -1,4 +1,7 @@
-import { UseDisclosureReturn, useToast } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  useChakraToast as useToast,
+} from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";

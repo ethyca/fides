@@ -2,12 +2,12 @@
  * A component for choosing a role, meant to be embedded in a Formik form
  */
 import {
-  AntButton as Button,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  ChakraStack as Stack,
+  ChakraText as Text,
   GreenCheckCircleIcon,
-  Stack,
-  Text,
-  useDisclosure,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";

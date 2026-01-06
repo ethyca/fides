@@ -1,4 +1,4 @@
-import { Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";

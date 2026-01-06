@@ -21,12 +21,12 @@ def sample_condition_leaf() -> ConditionLeaf:
 
 
 @pytest.fixture
-def sample_condition_group() -> ConditionGroup:
+def sample_condition_group(sample_condition_leaf: ConditionLeaf) -> ConditionGroup:
     """Create a sample group condition"""
     return ConditionGroup(
         logical_operator=GroupOperator.and_,
         conditions=[
-            ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18),
+            sample_condition_leaf,
             ConditionLeaf(
                 field_address="user.active", operator=Operator.eq, value=True
             ),
@@ -41,57 +41,15 @@ class TestManualTaskConditionalDependencyCRUD:
         self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
     ):
         """Test creating a conditional dependency with a leaf condition tree"""
-        condition_tree = sample_condition_leaf.model_dump()
         dependency = ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "condition_tree": condition_tree,
+                "condition_tree": sample_condition_leaf.model_dump(),
             },
         )
 
         assert dependency.id is not None
-        assert dependency.manual_task_id == manual_task.id
-        assert dependency.condition_tree == condition_tree
-        assert dependency.created_at is not None
-        assert dependency.updated_at is not None
-
-    def test_manual_task_conditional_dependency_with_group_tree(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        sample_condition_group: ConditionGroup,
-    ):
-        """Test creating a conditional dependency with a group condition tree"""
-        condition_tree = sample_condition_group.model_dump()
-        dependency = ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_tree": condition_tree,
-            },
-        )
-
-        assert dependency.condition_tree == condition_tree
-        assert dependency.condition_tree["logical_operator"] == GroupOperator.and_
-        assert len(dependency.condition_tree["conditions"]) == 2
-
-
-class TestManualTaskConditionalDependencyRelationships:
-    """Test relationships and foreign key constraints"""
-
-    def test_manual_task_conditional_dependency_relationship(
-        self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
-    ):
-        """Test the relationship between ManualTask and ManualTaskConditionalDependency"""
-        condition_tree = sample_condition_leaf.model_dump()
-        dependency = ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_tree": condition_tree,
-            },
-        )
 
         # Test the relationship from dependency to task
         assert dependency.task.id == manual_task.id
@@ -100,6 +58,31 @@ class TestManualTaskConditionalDependencyRelationships:
         db.refresh(manual_task)
         assert len(manual_task.conditional_dependencies) == 1
         assert manual_task.conditional_dependencies[0].id == dependency.id
+
+        assert dependency.condition_tree == sample_condition_leaf.model_dump()
+
+    def test_manual_task_conditional_dependency_with_group_tree(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        sample_condition_group: ConditionGroup,
+    ):
+        """Test creating a conditional dependency with a group condition tree"""
+        dependency = ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_tree": sample_condition_group.model_dump(),
+            },
+        )
+
+        assert dependency.condition_tree == sample_condition_group.model_dump()
+        assert dependency.condition_tree["logical_operator"] == GroupOperator.and_
+        assert len(dependency.condition_tree["conditions"]) == 2
+
+
+class TestManualTaskConditionalDependencyRelationships:
+    """Test relationships and foreign key constraints"""
 
     def test_manual_task_conditional_dependency_foreign_key_constraint(
         self, db: Session, sample_condition_leaf: ConditionLeaf
@@ -204,9 +187,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionLeaf)
-        assert root_condition.field_address == sample_condition_leaf.field_address
-        assert root_condition.operator == sample_condition_leaf.operator
-        assert root_condition.value == sample_condition_leaf.value
+        assert root_condition.model_dump() == sample_condition_leaf.model_dump()
 
     def test_get_root_condition_group(
         self,
@@ -231,10 +212,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionGroup)
-        assert root_condition.logical_operator == GroupOperator.and_
-        assert len(root_condition.conditions) == 2
-        assert isinstance(root_condition.conditions[0], ConditionLeaf)
-        assert root_condition.conditions[0].field_address == "user.age"
+        assert root_condition.model_dump() == sample_condition_group.model_dump()
 
     def test_get_root_condition_none(self, db: Session, manual_task: ManualTask):
         """Test getting root condition when none exists"""
@@ -280,18 +258,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionGroup)
-        assert root_condition.logical_operator == GroupOperator.and_
-        assert len(root_condition.conditions) == 2
-
-        # First condition is a nested group
-        nested_group = root_condition.conditions[0]
-        assert isinstance(nested_group, ConditionGroup)
-        assert nested_group.logical_operator == GroupOperator.or_
-        assert len(nested_group.conditions) == 2
-
-        # Second condition is a leaf
-        assert isinstance(root_condition.conditions[1], ConditionLeaf)
-        assert root_condition.conditions[1].field_address == "user.active"
+        assert root_condition.model_dump() == condition_tree
 
     def test_get_root_condition_missing_manual_task_id(self, db: Session):
         """Test that get_root_condition raises error when manual_task_id is missing"""

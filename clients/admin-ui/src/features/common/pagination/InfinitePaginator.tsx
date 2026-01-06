@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntSelect as Select,
-  Icons,
-} from "fidesui";
+import { Button, Flex, Icons, Select } from "fidesui";
 import React from "react";
 
 import { usePagination } from "./usePagination";

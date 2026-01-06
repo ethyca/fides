@@ -1,4 +1,4 @@
-import { AntTag as Tag, Box, Icons } from "fidesui";
+import { ChakraBox as Box, Icons, Tag } from "fidesui";
 import { useState } from "react";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
