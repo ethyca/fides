@@ -75,17 +75,6 @@ class ManualTaskReferenceType(StrEnum):
     # Add more reference types as needed
 
 
-class ManualTaskLogStatus(StrEnum):
-    """Enum for manual task log status."""
-
-    created = "created"
-    updated = "updated"
-    in_progress = "in_progress"
-    complete = "complete"
-    error = "error"
-    retrying = "retrying"
-    paused = "paused"
-    awaiting_input = "awaiting_input"
 
 
 class ManualTaskConfigurationType(StrEnum):
