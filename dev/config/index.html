@@ -1609,7 +1609,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">494</span>
 <span class="normal">495</span>
 <span class="normal">496</span>
-<span class="normal">497</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1650,7 +1654,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;43a3239a44e2139cf5cb92d88fe7ca85&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;930982b3c839fbdc072e7e0b7166bbfb&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2043,6 +2047,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The prefix given to keys in the Redis cache used by the rate limiter.</span>
 <span class="n">rate_limit_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;rate-limit&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Controls what security headers are included in Fides server</span>
+<span class="c1"># responses.</span>
+<span class="n">headers_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The number of requests from a single IP address allowed to hit an</span>
 <span class="c1"># endpoint within a rolling 60 second period.</span>

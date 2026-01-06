@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "43a3239a44e2139cf5cb92d88fe7ca85" # string
+analytics_id = "930982b3c839fbdc072e7e0b7166bbfb" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -432,6 +432,10 @@ oauth_client_secret_length_bytes = 16 # integer
 
 # The prefix given to keys in the Redis cache used by the rate limiter.
 rate_limit_prefix = "rate-limit" # string
+
+# Controls what security headers are included in Fides server
+# responses.
+headers_mode = "none" # string
 
 # The number of requests from a single IP address allowed to hit an
 # endpoint within a rolling 60 second period.
