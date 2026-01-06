@@ -75,6 +75,7 @@ const useConsentReportingTableColumns = ({
               closeIcon={<Icons.Information />}
               closeButtonLabel="View details"
               onClose={() => onTcfDetailViewClick(record.tcf_preferences!)}
+              data-testid="tcf-badge"
             >
               {preferenceLabel}
             </Tag>

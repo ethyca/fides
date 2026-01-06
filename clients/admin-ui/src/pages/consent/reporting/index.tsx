@@ -86,12 +86,12 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <Flex vertical gap="middle" data-testid="consent-reporting">
+      <Flex vertical gap="middle">
         <Flex justify="space-between">
           <DateRangePicker
             placeholder={["From", "To"]}
             maxDate={today}
-            data-testid="input-date-range-ant"
+            data-testid="input-date-range"
             onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
               setStartDate(dates && dates[0]);
               setEndDate(dates && dates[1]);
@@ -100,7 +100,7 @@ const ConsentReportingPage = () => {
           <Flex gap={12}>
             <Button
               icon={<Icons.Download />}
-              data-testid="download-btn-ant"
+              data-testid="download-btn"
               onClick={() => setIsDownloadReportModalOpen(true)}
               aria-label="Download Consent Report"
             />
@@ -110,7 +110,7 @@ const ConsentReportingPage = () => {
                   {
                     key: "1",
                     label: (
-                      <span data-testid="consent-preference-lookup-btn-ant">
+                      <span data-testid="consent-preference-lookup-btn">
                         Consent preference lookup
                       </span>
                     ),
@@ -124,7 +124,7 @@ const ConsentReportingPage = () => {
               <Button
                 aria-label="Menu"
                 icon={<Icons.OverflowMenuVertical />}
-                data-testid="consent-reporting-dropdown-btn-ant"
+                data-testid="consent-reporting-dropdown-btn"
               />
             </Dropdown>
           </Flex>
@@ -135,6 +135,7 @@ const ConsentReportingPage = () => {
           rowKey="id"
           loading={isLoading}
           pagination={false}
+          data-testid="consent-reporting-table"
         />
         <InfinitePaginator
           disableNext={(data?.items?.length ?? 0) < pageSize}
