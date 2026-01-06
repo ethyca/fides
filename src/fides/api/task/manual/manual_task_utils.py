@@ -13,6 +13,9 @@ from fides.api.graph.config import (
 # Import application models
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestTopLevelFields,
+)
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
@@ -136,7 +139,9 @@ def _create_collection_from_manual_task(
             field_addresses = set(
                 addr
                 for addr in extract_field_addresses(tree)
-                if not addr.startswith("privacy_request.")
+                if not addr.startswith(
+                    PrivacyRequestTopLevelFields.privacy_request.value
+                )
             )
             conditional_field_addresses.update(field_addresses)
 

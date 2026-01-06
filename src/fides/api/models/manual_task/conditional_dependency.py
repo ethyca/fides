@@ -50,7 +50,7 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     )
 
     @classmethod
-    def get_root_condition(
+    def get_condition_tree(
         cls, db: Session, **kwargs: Any
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get the condition tree for a manual task

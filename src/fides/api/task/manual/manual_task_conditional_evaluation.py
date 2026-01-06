@@ -13,6 +13,9 @@ from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
     PrivacyRequestDataTransformer,
 )
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestTopLevelFields,
+)
 from fides.api.task.conditional_dependencies.schemas import EvaluationResult
 from fides.api.task.conditional_dependencies.util import extract_nested_field_value
 from fides.api.task.manual.manual_task_utils import extract_field_addresses
@@ -56,7 +59,7 @@ def extract_conditional_dependency_data_from_inputs(
     privacy_request_field_addresses: set[str] = set(
         address
         for address in all_field_addresses
-        if address.startswith("privacy_request.")
+        if address.startswith(PrivacyRequestTopLevelFields.privacy_request.value)
     )
     if privacy_request_field_addresses:
         conditional_privacy_request_data = PrivacyRequestDataTransformer(
@@ -68,7 +71,9 @@ def extract_conditional_dependency_data_from_inputs(
     # Convert to list for iteration
     # if no field addresses, return conditional data which may contain privacy request data or be empty
     dataset_field_addresses = list(
-        addr for addr in all_field_addresses if not addr.startswith("privacy_request.")
+        addr
+        for addr in all_field_addresses
+        if not addr.startswith(PrivacyRequestTopLevelFields.privacy_request.value)
     )
     if not dataset_field_addresses:
         return conditional_data
@@ -179,15 +184,15 @@ def evaluate_conditional_dependencies(
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
-    # Get the root condition for this manual task
-    root_condition = ManualTaskConditionalDependency.get_root_condition(
+    # Get the condition tree for this manual task
+    condition_tree = ManualTaskConditionalDependency.get_condition_tree(
         db, manual_task_id=manual_task.id
     )
 
-    if not root_condition:
+    if not condition_tree:
         # No conditional dependencies - always execute
         return None
 
     # Evaluate the condition using the data from regular tasks
     evaluator = ConditionEvaluator(db)
-    return evaluator.evaluate_rule(root_condition, conditional_data)
+    return evaluator.evaluate_rule(condition_tree, conditional_data)

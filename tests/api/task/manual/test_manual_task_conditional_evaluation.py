@@ -694,17 +694,17 @@ class TestManualTaskDataExtraction:
         result = set_nested_value(field_address, value)
         assert result == expected_result
 
-    def test_evaluate_conditional_dependencies_no_root_condition(self, db, manual_task):
+    def test_evaluate_conditional_dependencies_no_condition_tree(self, db, manual_task):
         """Test evaluating conditional dependencies when no root condition exists"""
         with patch.object(
-            ManualTaskConditionalDependency, "get_root_condition", return_value=None
+            ManualTaskConditionalDependency, "get_condition_tree", return_value=None
         ):
             result = evaluate_conditional_dependencies(
                 db, manual_task, {"test": "data"}
             )
             assert result is None
 
-    def test_evaluate_conditional_dependencies_with_root_condition(
+    def test_evaluate_conditional_dependencies_with_condition_tree(
         self, db, manual_task
     ):
         """Test evaluating conditional dependencies with existing root condition"""
@@ -714,7 +714,7 @@ class TestManualTaskDataExtraction:
         with (
             patch.object(
                 ManualTaskConditionalDependency,
-                "get_root_condition",
+                "get_condition_tree",
                 return_value=mock_root_condition,
             ),
             patch(
