@@ -4,6 +4,7 @@ import {
   List,
   Menu,
   Pagination,
+  Select,
   useChakraToast as useToast,
 } from "fidesui";
 import { useEffect, useState } from "react";
@@ -31,25 +32,41 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
 
-  // Build monitor_type filter based on enabled feature flags
-  const monitorTypes: MONITOR_TYPES[] = [
-    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
-  ];
+  // Build monitor_type filter based on selected filter
+  const getMonitorTypesFromFilter = (filter: string): MONITOR_TYPES[] | undefined => {
+    if (filter === "all") {
+      // Return all enabled monitor types
+      const enabledTypes: MONITOR_TYPES[] = [
+        ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+        ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+      ];
+      return enabledTypes.length > 0 ? enabledTypes : undefined;
+    }
+    if (filter === "datastore") {
+      return [MONITOR_TYPES.DATASTORE];
+    }
+    if (filter === "website") {
+      return [MONITOR_TYPES.WEBSITE];
+    }
+    return undefined;
+  };
+
+  const monitorTypes = getMonitorTypesFromFilter(selectedFilter);
 
   const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+    monitor_type: monitorTypes,
   });
 
   useEffect(() => {
     resetPagination();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [searchQuery, selectedFilter]);
 
   useEffect(() => {
     if (isError) {
@@ -108,10 +125,25 @@ const ActionCenterPage = () => {
           gap="middle"
           vertical
         >
-          <Flex className="justify-between ">
+          <Flex className="justify-between items-center">
             <DebouncedSearchInput
               value={searchQuery}
               onChange={setSearchQuery}
+            />
+            <Select
+              value={selectedFilter}
+              onChange={(value) => {
+                if (typeof value === "string") {
+                  setSelectedFilter(value);
+                }
+              }}
+              options={[
+                { value: "all", label: "All monitors" },
+                { value: "datastore", label: "Data store monitors" },
+                { value: "website", label: "Website monitors" },
+              ]}
+              className="w-auto min-w-[200px]"
+              data-testid="monitor-type-filter"
             />
           </Flex>
           <List
