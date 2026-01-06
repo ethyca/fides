@@ -113,7 +113,7 @@ export const MonitorTreeDataTitle = ({
           onClick: ({ key, domEvent }) => {
             domEvent.preventDefault();
             domEvent.stopPropagation();
-            actions[key]?.callback(node.key, [node]);
+            actions[key]?.callback([node.key], [node]);
           },
         }}
         destroyOnHidden
