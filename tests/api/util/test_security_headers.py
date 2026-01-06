@@ -15,28 +15,18 @@ from fides.api.util.security_headers import (
 
 
 class TestSecurityHeaders:
-    def test_is_exact_match(self):
-        assert is_exact_match(re.compile(r"\/example-path"), "/example-path") is True
-        assert (
-            is_exact_match(
-                re.compile(r"\/example-path"), "/example-path/with-more-content"
-            )
-            is False
-        )
-        assert (
-            is_exact_match(
-                re.compile(r"\/example-path/?(.*)"), "/example-path/with-more-content"
-            )
-            is True
-        )
-        assert (
-            is_exact_match(re.compile(r"\/example-path"), "/anti-example-path") is False
-        )
-        assert (
-            is_exact_match(
-                re.compile(r"\/example-path"), "/completely-disparate-no-match"
-            )
-        ) is False
+    @pytest.mark.parametrize(
+        "pattern,path,expected",
+        [
+            (r"\/example-path", "/example-path", True),
+            (r"\/example-path", "/example-path/with-more-content", False),
+            (r"\/example-path/?(.*)", "/example-path/with-more-content", True),
+            (r"\/example-path", "/anti-example-path", False),
+            (r"\/example-path", "/completely-disparate-no-match", False),
+        ],
+    )
+    def test_is_exact_match(self, pattern, path, expected):
+        assert (is_exact_match(pattern, path)) is expected
 
     def test_get_applicable_header_rules_returns_first_matching_rule_for_path(self):
         expected_headers: tuple[str, str] = ("header-1", "value-1")
