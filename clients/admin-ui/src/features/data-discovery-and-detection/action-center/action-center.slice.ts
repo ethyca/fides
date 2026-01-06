@@ -51,6 +51,61 @@ interface DiscoveredAssetsFilterValues {
   consent_aggregated?: string[];
 }
 
+// Classification report types
+interface CategoryDistribution {
+  category: string;
+  count: number;
+  percentage: number;
+}
+
+interface ConfidenceDistribution {
+  score: number;
+  count: number;
+  percentage: number;
+}
+
+interface VendorMatchStats {
+  total_with_vendor_name: number;
+  matched_to_compass: number;
+  match_rate: number;
+  unregistered_ad_vendors: number;
+  top_unmatched_vendors: string[];
+}
+
+interface ClassificationCoverage {
+  total_resources: number;
+  classified_by_compass: number;
+  classified_by_llm: number;
+  unclassified: number;
+  coverage_rate: number;
+}
+
+interface LlmClassificationSample {
+  urn: string;
+  domain: string;
+  name?: string;
+  resource_type: string;
+  vendor_name?: string;
+  category?: string;
+  confidence?: number;
+  rationale?: string;
+  compass_matched: boolean;
+  flagged: boolean;
+  flag_reason?: string;
+}
+
+export interface WebsiteClassificationReport {
+  monitor_config_key: string;
+  generated_at: string;
+  coverage: ClassificationCoverage;
+  category_distribution: CategoryDistribution[];
+  confidence_distribution: ConfidenceDistribution[];
+  vendor_stats: VendorMatchStats;
+  by_resource_type: Record<string, number>;
+  sample_classifications: LlmClassificationSample[];
+  flagged_resources: LlmClassificationSample[];
+}
+
 const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAggregateMonitorResults: build.query<
@@ -572,6 +627,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    getClassificationReport: build.query<
+      WebsiteClassificationReport,
+      { monitor_config_key: string; sample_size?: number }
+    >({
+      query: ({ monitor_config_key, sample_size = 10 }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/classification-report`,
+        params: { sample_size },
+      }),
+      providesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -603,4 +668,5 @@ export const {
   useLazyGetStagedResourceDetailsQuery,
   usePromoteRemovalStagedResourcesMutation,
   useClassifyWebsiteAssetsMutation,
+  useGetClassificationReportQuery,
 } = actionCenterApi;

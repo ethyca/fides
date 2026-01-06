@@ -23,6 +23,7 @@ import {
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
+import { ClassificationReportModal } from "../ClassificationReportModal";
 import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
@@ -49,6 +50,8 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [consentBreakdownModalData, setConsentBreakdownModalData] =
     useState<StagedResourceAPIResponse | null>(null);
+  const [isClassificationReportOpen, setIsClassificationReportOpen] =
+    useState<boolean>(false);
 
   const handleShowBreakdown = (stagedResource: StagedResourceAPIResponse) => {
     setConsentBreakdownModalData(stagedResource);
@@ -225,14 +228,22 @@ export const DiscoveredAssetsTable = ({
             </Dropdown>
 
             {showLlmClassification && (
-              <Button
-                onClick={handleClassifyWithAI}
-                loading={isClassifyingAssets}
-                disabled={anyBulkActionIsLoading || actionsDisabled}
-                data-testid="classify-ai"
-              >
-                Classify with AI
-              </Button>
+              <>
+                <Button
+                  onClick={handleClassifyWithAI}
+                  loading={isClassifyingAssets}
+                  disabled={anyBulkActionIsLoading || actionsDisabled}
+                  data-testid="classify-ai"
+                >
+                  Classify with AI
+                </Button>
+                <Button
+                  onClick={() => setIsClassificationReportOpen(true)}
+                  data-testid="classification-report"
+                >
+                  Report
+                </Button>
+              </>
             )}
             <Tooltip
               title={
@@ -291,6 +302,13 @@ export const DiscoveredAssetsTable = ({
           isOpen={!!consentBreakdownModalData}
           stagedResource={consentBreakdownModalData}
           onCancel={handleCloseBreakdown}
+        />
+      )}
+      {showLlmClassification && (
+        <ClassificationReportModal
+          monitorId={monitorId}
+          open={isClassificationReportOpen}
+          onClose={() => setIsClassificationReportOpen(false)}
         />
       )}
     </>
