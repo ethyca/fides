@@ -37,7 +37,9 @@ class TestConditionTreeValidation:
         """Test updating a condition tree to None."""
         assert receiver_digest_condition_leaf.condition_tree is not None
 
-        updated = receiver_digest_condition_leaf.update(db, data={"condition_tree": None})
+        updated = receiver_digest_condition_leaf.update(
+            db, data={"condition_tree": None}
+        )
         assert updated.condition_tree is None
 
     def test_update_from_leaf_to_group(
@@ -55,7 +57,9 @@ class TestConditionTreeValidation:
                 priority_condition_leaf.model_dump(),
             ],
         }
-        updated = receiver_digest_condition_leaf.update(db, data={"condition_tree": group_tree})
+        updated = receiver_digest_condition_leaf.update(
+            db, data={"condition_tree": group_tree}
+        )
 
         assert updated.condition_tree["logical_operator"] == GroupOperator.and_
         assert len(updated.condition_tree["conditions"]) == 2
