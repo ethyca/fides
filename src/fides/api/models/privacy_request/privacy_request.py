@@ -1380,7 +1380,6 @@ class PrivacyRequest(
             return []
 
         # Build configuration types using list comprehension
-        # ActionType values are used directly as config_type
         config_types = [
             action_type for action_type, has_rules in policy_rules.items() if has_rules
         ]

@@ -54,9 +54,6 @@ class PrivacyRequestConvenienceFields(Enum):
 class ConsentPrivacyRequestConvenienceFields(Enum):
     """Convenience fields available for consent privacy request conditions.
 
-    This is a subset of PrivacyRequestConvenienceFields that excludes fields
-    not available for consent requests:
-    - location_country, location_groups, location_regulations: Not captured in consent workflow
     """
 
     # Policy convenience fields (all available for consent)
@@ -88,10 +85,6 @@ class PrivacyRequestFields(Enum):
 class ConsentPrivacyRequestFields(Enum):
     """Fields available for consent privacy request conditions.
 
-    This is a subset of PrivacyRequestFields that excludes fields not available
-    for consent requests:
-    - due_date: Consent requests don't have due dates (no execution_timeframe)
-    - location: Not captured in consent request workflow
     """
 
     created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
@@ -120,9 +113,6 @@ class PolicyFields(Enum):
 class ConsentPolicyFields(Enum):
     """Policy fields available for consent privacy request conditions.
 
-    This is a subset of PolicyFields that excludes fields not meaningful
-    for consent requests:
-    - execution_timeframe: Consent requests don't use execution timeframes
     """
 
     id = "privacy_request.policy.id"
