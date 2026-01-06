@@ -1,4 +1,4 @@
-import { AntTree as Tree, AntTreeProps as TreeProps, AntTreeDataNode as TreeDataNode, } from "fidesui";
+import { Tree, TreeProps, TreeDataNode } from "fidesui";
 import { Key, useEffect, useState } from "react";
 
 import { PaginationState } from "~/features/common/pagination";
@@ -85,7 +85,7 @@ export const AsyncTree = ({
       const parentNode = result?.items ? {
         key: key,
         children: result?.items.map((item) => item.key),
-        
+
       } : {
         key: key
       }
@@ -122,7 +122,7 @@ export const AsyncTree = ({
   }, []);
 
   return (
-    <Tree
+    <Tree.DirectoryTree
       {...props}
       loadData={loadData}
       treeData={treeData}

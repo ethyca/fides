@@ -1,8 +1,8 @@
 import {
-  AntLayout as Layout,
-  AntRow as Row,
-  AntTreeDataNode as TreeDataNode,
-  AntTypography as Typography,
+  Layout,
+  Row,
+  TreeDataNode,
+  Typography,
 } from "fidesui";
 import AsyncTree, {
   AsyncTreeProps,
@@ -45,6 +45,7 @@ export const FormsPOC = () => {
           total: data?.total ?? 0,
           size: data?.size ?? 0,
           pages: data?.pages ?? 0,
+          page
         });
       });
 
