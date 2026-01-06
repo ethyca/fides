@@ -48,6 +48,7 @@ class DigestCondition(ConditionalDependencyBase):
 
     Each digest_config can have up to three independent condition trees,
     one per digest_condition_type (RECEIVER, CONTENT, PRIORITY).
+    Within each tree, all nodes must have the same digest_condition_type
     This enables separate condition logic for different aspects of digest processing.
 
 

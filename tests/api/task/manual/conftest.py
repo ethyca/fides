@@ -47,6 +47,9 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestTopLevelFields,
+)
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
@@ -400,7 +403,9 @@ def _build_request_task(
             if (
                 dependency.condition_type == ConditionalDependencyType.leaf
                 and dependency.field_address
-                and not dependency.field_address.startswith("privacy_request.")
+                and not dependency.field_address.startswith(
+                    PrivacyRequestTopLevelFields.privacy_request.value
+                )
             ):
                 field_addresses.append(dependency.field_address)
 
