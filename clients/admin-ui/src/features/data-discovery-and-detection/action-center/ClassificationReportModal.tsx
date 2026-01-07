@@ -1,6 +1,4 @@
 import {
-  AntTag as Tag,
-  AntTooltip as Tooltip,
   Alert,
   Card,
   Collapse,
@@ -9,8 +7,9 @@ import {
   Modal,
   Progress,
   Space,
-  Statistic,
   Table,
+  Tag,
+  Tooltip,
   Typography,
 } from "fidesui";
 
@@ -101,25 +100,22 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       {/* Coverage Overview */}
       <Card size="small" title="Classification coverage">
         <Flex gap="large" wrap>
-          <Statistic
-            title="Total resources"
-            value={coverage.total_resources}
-          />
-          <Statistic
-            title="Classified by Compass"
-            value={coverage.classified_by_compass}
-            valueStyle={{ color: "#52c41a" }}
-          />
-          <Statistic
-            title="Classified by LLM"
-            value={coverage.classified_by_llm}
-            valueStyle={{ color: "#1890ff" }}
-          />
-          <Statistic
-            title="Unclassified"
-            value={coverage.unclassified}
-            valueStyle={{ color: coverage.unclassified > 0 ? "#faad14" : undefined }}
-          />
+          <div>
+            <Text type="secondary">Total resources</Text>
+            <div><Text strong style={{ fontSize: 24 }}>{coverage.total_resources}</Text></div>
+          </div>
+          <div>
+            <Text type="secondary">Classified by Compass</Text>
+            <div><Text strong style={{ fontSize: 24, color: "#52c41a" }}>{coverage.classified_by_compass}</Text></div>
+          </div>
+          <div>
+            <Text type="secondary">Classified by LLM</Text>
+            <div><Text strong style={{ fontSize: 24, color: "#1890ff" }}>{coverage.classified_by_llm}</Text></div>
+          </div>
+          <div>
+            <Text type="secondary">Unclassified</Text>
+            <div><Text strong style={{ fontSize: 24, color: coverage.unclassified > 0 ? "#faad14" : undefined }}>{coverage.unclassified}</Text></div>
+          </div>
         </Flex>
         <Progress
           percent={Math.round(coverage.coverage_rate * 100)}
