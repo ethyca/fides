@@ -99,6 +99,8 @@ class UserResponse(FidesSchema):
     last_name: Optional[str] = None
     disabled: Optional[bool] = False
     disabled_reason: Optional[str] = None
+    has_invite: Optional[bool] = None
+    invite_expired: Optional[bool] = None
 
 
 class UserLoginResponse(FidesSchema):
