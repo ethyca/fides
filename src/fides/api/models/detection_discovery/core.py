@@ -588,6 +588,8 @@ class StagedResource(Base):
     )
     parent = Column(String, nullable=True)
 
+    is_leaf = Column(Boolean, nullable=False, default=False)
+
     # diff-related fields
     diff_status = Column(String, nullable=True, index=True)
 
@@ -688,6 +690,11 @@ class StagedResource(Base):
             "idx_stagedresource_user_categories_gin",
             "user_assigned_data_categories",
             postgresql_using="gin",
+        ),
+        Index(
+            "ix_stagedresource_monitor_config_is_leaf",
+            "monitor_config_id",
+            "is_leaf",
         ),
     )
 
