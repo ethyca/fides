@@ -9,12 +9,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  Box,
-  EditIcon,
-  HStack,
-  Text,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraEditIcon as EditIcon,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraVStack as VStack,
 } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";

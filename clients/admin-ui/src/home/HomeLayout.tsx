@@ -1,4 +1,4 @@
-import { Flex } from "fidesui";
+import { ChakraFlex as Flex } from "fidesui";
 import Head from "next/head";
 import * as React from "react";
 import { ReactNode } from "react";

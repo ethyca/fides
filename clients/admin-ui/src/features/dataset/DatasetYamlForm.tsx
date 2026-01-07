@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  Box,
-  Divider,
-  Flex,
-  useToast,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraFlex as Flex,
+  ChakraVStack as VStack,
+  useChakraToast as useToast,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";

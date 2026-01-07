@@ -1,8 +1,4 @@
-import {
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-} from "fidesui";
+import { Form, FormInstance, Input } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";

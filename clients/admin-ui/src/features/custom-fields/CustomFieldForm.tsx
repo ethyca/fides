@@ -1,16 +1,16 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  AntAutoComplete as AutoComplete,
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSkeleton as Skeleton,
-  AntTypography as Typography,
+  AutoComplete,
+  Button,
+  Flex,
+  Form,
   Icons,
-  useAntModal,
+  Input,
+  Select,
+  Skeleton,
+  Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
 
@@ -79,7 +79,7 @@ const CustomFieldForm = ({
   const { resource_type: queryResourceType } = router.query;
 
   const messageApi = useMessage();
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 

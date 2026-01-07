@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntList as List,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  useDisclosure,
+  Button,
+  Flex,
+  List,
+  Tag,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
   useMessage,
   WarningIcon,
 } from "fidesui";

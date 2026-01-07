@@ -1,4 +1,4 @@
-import { createIcon } from "fidesui";
+import { createChakraIcon as createIcon } from "fidesui";
 
 const OktaLogo = createIcon({
   displayName: "OktaLogo",

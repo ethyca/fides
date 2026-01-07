@@ -1,4 +1,4 @@
-import { AntSelectProps } from "fidesui";
+import { SelectProps } from "fidesui";
 
 import { useFeatures } from "~/features/common/features";
 import {
@@ -14,7 +14,7 @@ const useCustomFieldValueTypeOptions = () => {
       skip: !isPlusEnabled,
     });
 
-  const valueTypeOptions: AntSelectProps["options"] = [
+  const valueTypeOptions: SelectProps["options"] = [
     {
       label: CoreTaxonomiesEnum.DATA_CATEGORIES,
       value: TaxonomyTypeEnum.DATA_CATEGORY,

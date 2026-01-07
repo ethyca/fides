@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntSpace as Space,
-  AntTooltip as Tooltip,
+  Button,
   Icons,
-  useToast,
+  Space,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 import React from "react";
 

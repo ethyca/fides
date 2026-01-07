@@ -1,16 +1,16 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntButton as Button,
-  AntCol as Col,
-  AntDivider as Divider,
-  AntListItemProps as ListItemProps,
-  AntRow as Row,
-  AntSpace as Space,
-  AntSpin as Spin,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Button,
+  Col,
   CUSTOM_TAG_COLOR,
-  useToast,
+  Divider,
+  ListItemProps,
+  Row,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";

@@ -1,19 +1,19 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntButton as Button,
-  AntCol as Col,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntList as List,
-  AntListItemProps as ListItemProps,
-  AntRow as Row,
-  AntSpace as Space,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  Col,
+  Divider,
   ExpandCollapse,
+  Flex,
+  List,
+  ListItemProps,
   OpenCloseArrow,
+  Row,
+  Space,
   SparkleIcon,
+  Tag,
+  Tooltip,
+  Typography,
 } from "fidesui";
 import NextLink from "next/link";
 import { useState } from "react";

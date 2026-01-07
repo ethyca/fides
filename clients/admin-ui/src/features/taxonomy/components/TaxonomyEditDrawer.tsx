@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraStack as Stack,
+  ChakraText as Text,
   ConfirmationModal,
-  DrawerFooter,
   EyeIcon,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
+  Form,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";

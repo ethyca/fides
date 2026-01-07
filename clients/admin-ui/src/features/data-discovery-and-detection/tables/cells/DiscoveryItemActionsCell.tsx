@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  CheckIcon,
-  HStack,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Button,
+  ChakraCheckIcon as CheckIcon,
+  ChakraHStack as HStack,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraRepeatIcon as RepeatIcon,
+  ChakraSpacer as Spacer,
+  ChakraViewOffIcon as ViewOffIcon,
   MoreIcon,
-  RepeatIcon,
-  Spacer,
-  ViewOffIcon,
 } from "fidesui";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";

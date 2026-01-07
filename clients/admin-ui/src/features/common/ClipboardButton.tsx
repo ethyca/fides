@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntButtonProps as ButtonProps,
-  AntTooltip as Tooltip,
+  Button,
+  ButtonProps,
   Icons,
-  useClipboard,
+  Tooltip,
+  useChakraClipboard as useClipboard,
 } from "fidesui";
 import React, { useState } from "react";
 
