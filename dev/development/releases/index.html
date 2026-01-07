@@ -639,6 +639,26 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#changelog-entries" class="md-nav__link">
+    Changelog Entries
+  </a>
+  
+    <nav class="md-nav" aria-label="Changelog Entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-changelog-entry" class="md-nav__link">
+    Creating a Changelog Entry
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#release-steps" class="md-nav__link">
     Release Steps
   </a>
@@ -921,6 +941,26 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
+  <a href="#changelog-entries" class="md-nav__link">
+    Changelog Entries
+  </a>
+  
+    <nav class="md-nav" aria-label="Changelog Entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#creating-a-changelog-entry" class="md-nav__link">
+    Creating a Changelog Entry
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#release-steps" class="md-nav__link">
     Release Steps
   </a>
@@ -983,14 +1023,54 @@ You're not viewing the latest version.
 <p>When it comes times to prepare for a new release, a release branch is created for stability and thoroughly tested.</p>
 <p>When releasing, a new tag is created on the release branch and the release process proceeds automatically.</p>
 <p>In the case of patches, a branch is created from the relevant tag. Commits are then cherry-picked into this branch, and a new patch version tag is created.</p>
+<h2 id="changelog-entries">Changelog Entries</h2>
+<p>To avoid merge conflicts in <code>CHANGELOG.md</code>, we use a fragment-based system where each PR adds a YAML file describing the change.</p>
+<h3 id="creating-a-changelog-entry">Creating a Changelog Entry</h3>
+<p>When creating a PR, add a changelog entry file:</p>
+<ol>
+<li>Copy <code>changelog/TEMPLATE.yaml</code> to a new file in the <code>changelog/</code> directory</li>
+<li>Name the file using your PR number (e.g., <code>7137.yaml</code>) or a descriptive slug (e.g., <code>add-gpc-fields.yaml</code>)</li>
+<li>Fill in the required fields:</li>
+<li><code>type</code>: One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security</li>
+<li><code>description</code>: Short description of the change (without the leading <code>-</code>)</li>
+<li><code>pr</code>: PR number (optional if not yet known)</li>
+<li><code>labels</code>: Optional list of labels: <code>high-risk</code>, <code>db-migration</code></li>
+</ol>
+<p>Example (<code>changelog/7137.yaml</code>):</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Added</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Added editable GPC translation fields to privacy experience configuration</span>
+<span class="nt">pr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7137</span>
+<span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</code></pre></div></td></tr></table></div>
+<p>The changelog entry will be automatically compiled into <code>CHANGELOG.md</code> during the release process.</p>
 <h2 id="release-steps">Release Steps</h2>
-<p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a <code>CHANGELOG.md</code> to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:</p>
+<p>We use GitHub's <code>release</code> feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a <code>CHANGELOG.md</code> to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:</p>
 <h3 id="major-and-minor">Major and Minor</h3>
 <ol>
-<li>Open a PR that is titled the version of the release (i.e. <code>1.6.0</code>)<ul>
-<li>Rename the <code>Unreleased</code> section of <code>CHANGELOG.md</code> to the new version number and put a date next to it</li>
-<li>Update the <code>compare</code> links for both the new version and for the new <code>Unreleased</code> section</li>
-</ul>
+<li>Compile changelog fragments into <code>CHANGELOG.md</code>:
+   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Preview what will be generated (dry run)</span>
+nox<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;changelog(dry)&quot;</span>
+
+<span class="c1"># Compile fragments and finalize for release</span>
+nox<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;changelog(write)&quot;</span><span class="w"> </span>--<span class="w"> </span>--release<span class="w"> </span><span class="m">2</span>.76.0
+</code></pre></div></td></tr></table></div>
+   This will:</li>
+<li>Compile all YAML fragments from <code>changelog/</code> into the Unreleased section</li>
+<li>Create a new version section with all Unreleased content</li>
+<li>Leave the <code>Unreleased</code> section empty at the top (ready for new entries)</li>
+<li>Update the <code>compare</code> links for both the new version and the <code>Unreleased</code> section</li>
+<li>
+<p>Delete the processed fragment files</p>
+</li>
+<li>
+<p>Open a PR that is titled the version of the release (i.e. <code>2.76.0</code>) with the updated <code>CHANGELOG.md</code></p>
 </li>
 <li>Once approved, merge the PR</li>
 <li>Create a new release, ensuring that the last PR to get merged is the aforementioned <code>CHANGELOG.md</code> update PR</li>
@@ -1144,55 +1224,75 @@ git<span class="w"> </span>cherry-pick<span class="w"> </span>&lt;commit&gt;...
 </code></pre></div></td></tr></table></div>
 </li>
 <li>
-<p>Copy the <code>Unreleased</code> section of <code>CHANGELOG.md</code> and paste above the release being patched</p>
-<ol>
-<li>Rename <code>Unreleased</code> to the new version number and put a date next to it</li>
-<li>Cut and paste the documented changes that are now included in the patch release to the correct section</li>
-<li>Commit these changes</li>
-</ol>
-</li>
-<li>Open a pull request to incorporate any cherry-picked commits and the <code>CHANGELOG.md</code> changes into the release branch<ol>
-<li>Set the base branch of this pull request to the release branch</li>
-<li>Once approved, merge the pull request into the release branch</li>
-</ol>
-</li>
-<li>Create a new release from the release branch<ol>
-<li>Add the new version as the tag (i.e. <code>1.2.4</code>)</li>
-<li>Title the release with the version number, prefixed with a <code>v</code> (i.e. <code>v1.2.4</code>)</li>
-<li>Add a link to the <code>CHANGELOG.md</code></li>
-<li>Auto-populate the release notes</li>
-</ol>
-</li>
-<li>Publish the release</li>
-<li>
-<p>Merge the new release tag into <code>main</code></p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Pushing commits (including merge commits) to the <code>main</code> branch requires admin-level repository permissions.</p>
-</div>
-<ol>
-<li>
-<p>Checkout the <code>main</code> branch, and update the local repository:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<p>Compile changelog fragments for the patch release:
+   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
-<span class="c1">#=&gt; Switched to branch &#39;main&#39;...</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Preview what will be generated (dry run)</span>
+nox<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;changelog(dry)&quot;</span><span class="w"> </span>--<span class="w"> </span>--prs<span class="w"> </span><span class="m">1234</span>,5678
 
-git<span class="w"> </span>pull
+<span class="c1"># Compile fragments and finalize for patch release (only selected PRs)</span>
+nox<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;changelog(write)&quot;</span><span class="w"> </span>--<span class="w"> </span>--release<span class="w"> </span><span class="m">1</span>.2.4<span class="w"> </span>--prs<span class="w"> </span><span class="m">1234</span>,5678
 </code></pre></div></td></tr></table></div>
+   This will:</p>
 </li>
-<li>
-<p>Merge the new release tag into <code>main</code>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>merge<span class="w"> </span>tags/1.2.4
+<li>Compile only the YAML fragments matching the specified PR numbers (comma-separated list)</li>
+<li>Create a new version section from those entries</li>
+<li>Leave the <code>Unreleased</code> section empty at the top</li>
+<li>Delete only the processed fragment files (matching PRs)</li>
+<li>Leave other fragment files in <code>changelog/</code> for future releases</li>
+<li>Update compare links appropriately</li>
+</ol>
+<p><strong>Note:</strong> For patch releases, you typically only want to include specific PRs. Use the <code>--prs</code> flag to specify which PR numbers to include. Fragments without PR numbers will be skipped when using this flag.
+1. Open a pull request to incorporate any cherry-picked commits and the <code>CHANGELOG.md</code> changes into the release branch
+    1. Set the base branch of this pull request to the release branch
+    1. Once approved, merge the pull request into the release branch
+1. Create a new release from the release branch
+    1. Add the new version as the tag (i.e. <code>1.2.4</code>)
+    1. Title the release with the version number, prefixed with a <code>v</code> (i.e. <code>v1.2.4</code>)
+    1. Add a link to the <code>CHANGELOG.md</code>
+    1. Auto-populate the release notes
+1. Publish the release
+1. Merge the new release tag into <code>main</code></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>!!! warning
+    Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
+
+1. Checkout the `main` branch, and update the local repository:
+
+    ```sh
+    git checkout main
+    #=&gt; Switched to branch &#39;main&#39;...
+
+    git pull
+    ```
+
+1. Merge the new release tag into `main`:
+
+    ```sh
+    git merge tags/1.2.4
+    ```
+
+1. Handle any merge conflicts, and push to the remote `main` branch
 </code></pre></div></td></tr></table></div>
-</li>
-<li>
-<p>Handle any merge conflicts, and push to the remote <code>main</code> branch</p>
-</li>
-</ol>
-</li>
-</ol>
 <h2 id="release-checklist">Release Checklist</h2>
 <p>Please use the <a href="https://github.com/ethyca/fides/blob/HEAD/.github/PULL_REQUEST_TEMPLATE/release_pull_request_template.md">checklist defined in <code>.github/PULL_REQUEST_TEMPLATE/release_pull_request.md</code></a> as a release checklist. This should be put in the description for PRs of release branches.</p>
 
