@@ -259,6 +259,10 @@ const ActionCenterFields: NextPage = () => {
             setSelectedNodeKeys={setSelectedNodeKeys}
             selectedNodeKeys={selectedNodeKeys}
             primaryAction={FieldActionType.CLASSIFY}
+            filters={{
+              diffStatus: baseMonitorFilters.query.diff_status,
+              confidenceBucket: baseMonitorFilters.query.confidence_bucket,
+            }}
             nodeActions={Object.fromEntries(
               RESOURCE_ACTIONS.map((action) => [
                 action,
