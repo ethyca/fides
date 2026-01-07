@@ -1,0 +1,728 @@
+"""Contains nox sessions for managing changelog fragments."""
+
+import re
+from pathlib import Path
+from typing import Optional
+
+import nox
+
+# Valid changelog types in order
+CHANGELOG_TYPES = [
+    "Added",
+    "Changed",
+    "Developer Experience",
+    "Deprecated",
+    "Docs",
+    "Fixed",
+    "Removed",
+    "Security",
+]
+
+# Label URLs mapping
+LABEL_URLS = {
+    "high-risk": "https://github.com/ethyca/fides/labels/high-risk",
+    "db-migration": "https://github.com/ethyca/fides/labels/db-migration",
+}
+
+CHANGELOG_DIR = Path("changelog")
+CHANGELOG_FILE = Path("CHANGELOG.md")
+TEMPLATE_FILE_NAME = "TEMPLATE.yaml"
+GITHUB_REPO = "https://github.com/ethyca/fides"
+
+
+class ChangelogEntry:
+    """Represents a single changelog entry from a YAML fragment."""
+
+    def __init__(
+        self,
+        entry_type: str,
+        description: str,
+        pr: Optional[int] = None,
+        labels: Optional[list[str]] = None,
+    ):
+        self.type = entry_type
+        self.description = description
+        self.pr = pr
+        self.labels = labels or []
+
+    def to_markdown(self) -> str:
+        """Convert entry to markdown format."""
+        entry = f"- {self.description}"
+        if self.pr:
+            entry += f" [#{self.pr}]({GITHUB_REPO}/pull/{self.pr})"
+        for label in self.labels:
+            if label in LABEL_URLS:
+                entry += f" {LABEL_URLS[label]}"
+        return entry
+
+
+# =============================================================================
+# Fragment Loading and Validation
+# =============================================================================
+
+
+def validate_fragment_data(
+    data: Optional[dict], filename: str
+) -> tuple[Optional[ChangelogEntry], Optional[str]]:
+    """
+    Validate a parsed changelog fragment and return a ChangelogEntry or an error.
+
+    Args:
+        data: Parsed YAML data from the fragment file
+        filename: Name of the file being validated (for error messages)
+
+    Returns:
+        Tuple of (ChangelogEntry or None, error message or None)
+    """
+    if not data:
+        return None, f"Empty or invalid YAML in {filename}"
+
+    # Validate required fields (must exist and have a value)
+    missing = []
+    if "type" not in data or not data["type"]:
+        missing.append("type")
+    if "description" not in data or not data["description"]:
+        missing.append("description")
+    if "pr" not in data or data["pr"] is None:
+        missing.append("pr")
+
+    if missing:
+        return None, f"Missing required fields in {filename}: {', '.join(missing)}"
+
+    entry_type = data["type"]
+    if entry_type not in CHANGELOG_TYPES:
+        return None, (
+            f"Invalid type '{entry_type}' in {filename}. "
+            f"Must be one of: {', '.join(CHANGELOG_TYPES)}"
+        )
+
+    entry = ChangelogEntry(
+        entry_type=entry_type,
+        description=data["description"],
+        pr=data.get("pr"),
+        labels=data.get("labels", []),
+    )
+    return entry, None
+
+
+def load_fragments() -> list[tuple[Path, ChangelogEntry]]:
+    """Load all changelog fragment files and return list of (path, entry) tuples."""
+    import yaml  # Import here since it's installed by the nox session
+
+    if not CHANGELOG_DIR.exists():
+        return []
+
+    entries = []
+    errors = []
+    # Look for both .yaml and .yml files
+    yaml_files = list(CHANGELOG_DIR.glob("*.yaml")) + list(CHANGELOG_DIR.glob("*.yml"))
+    for yaml_file in yaml_files:
+        if yaml_file.name == TEMPLATE_FILE_NAME:
+            continue
+
+        try:
+            with open(yaml_file, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            entry, error = validate_fragment_data(data, yaml_file.name)
+            if error:
+                errors.append(error)
+                continue
+            if entry:
+                entries.append((yaml_file, entry))
+        except Exception as e:
+            errors.append(f"Error parsing {yaml_file.name}: {e}")
+
+    if errors:
+        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
+            f"  - {err}" for err in errors
+        )
+        raise ValueError(error_msg)
+
+    return entries
+
+
+def validate_fragment_files(
+    file_paths: list[str],
+) -> list[tuple[Path, ChangelogEntry]]:
+    """
+    Validate specific changelog fragment files.
+
+    Args:
+        file_paths: List of file paths (relative or absolute) to validate
+
+    Returns:
+        List of (path, entry) tuples for valid entries
+
+    Raises:
+        ValueError: If any validation errors are found
+    """
+    import yaml  # Import here since it's installed by the nox session
+
+    entries = []
+    errors = []
+
+    for file_path in file_paths:
+        path = Path(file_path)
+
+        # Handle relative paths - check both as-is and in changelog dir
+        if not path.exists():
+            # Try as relative to changelog dir
+            alt_path = CHANGELOG_DIR / path.name
+            if alt_path.exists():
+                path = alt_path
+            else:
+                errors.append(f"File not found: {file_path}")
+                continue
+
+        # Skip template file
+        if path.name == TEMPLATE_FILE_NAME:
+            continue
+
+        # Check file extension
+        if path.suffix not in {".yaml", ".yml"}:
+            errors.append(
+                f"Invalid file extension for {path.name}: must be .yaml or .yml"
+            )
+            continue
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            entry, error = validate_fragment_data(data, path.name)
+            if error:
+                errors.append(error)
+                continue
+            if entry:
+                entries.append((path, entry))
+        except Exception as e:
+            errors.append(f"Error parsing {path.name}: {e}")
+
+    if errors:
+        error_msg = "Found errors in changelog fragments:\n" + "\n".join(
+            f"  - {err}" for err in errors
+        )
+        raise ValueError(error_msg)
+
+    return entries
+
+
+# =============================================================================
+# Changelog Generation
+# =============================================================================
+
+
+def group_entries_by_type(
+    entries: list[ChangelogEntry],
+) -> dict[str, list[ChangelogEntry]]:
+    """Group entries by their type."""
+    grouped: dict[str, list[ChangelogEntry]] = {
+        entry_type: [] for entry_type in CHANGELOG_TYPES
+    }
+    for entry in entries:
+        grouped[entry.type].append(entry)
+    return grouped
+
+
+def generate_changelog_section(grouped_entries: dict[str, list[ChangelogEntry]]) -> str:
+    """Generate markdown section for changelog entries."""
+    lines = []
+    for entry_type in CHANGELOG_TYPES:
+        entries = grouped_entries[entry_type]
+        if entries:
+            lines.append(f"### {entry_type}")
+            for entry in entries:
+                lines.append(entry.to_markdown())
+            lines.append("")  # Empty line after section
+
+    return "\n".join(lines).rstrip()
+
+
+def find_unreleased_section(content: str) -> tuple[int, int]:
+    """Find the start and end line numbers of the Unreleased section."""
+    lines = content.split("\n")
+    start_idx = None
+    end_idx = None
+
+    for i, line in enumerate(lines):
+        if line.startswith("## [Unreleased]"):
+            start_idx = i
+        elif start_idx is not None and line.startswith("## ["):
+            # Found next release section
+            end_idx = i
+            break
+
+    if start_idx is None:
+        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
+
+    if end_idx is None:
+        end_idx = len(lines)
+
+    return start_idx, end_idx
+
+
+def insert_entries_into_changelog(content: str, new_entries: str) -> str:
+    """Insert new entries into the Unreleased section of CHANGELOG.md."""
+    lines = content.split("\n")
+    _, end_idx = find_unreleased_section(content)
+
+    # Insert new entries at the end of the Unreleased section (before the next release section)
+    # If there's existing content, add a blank line separator
+    new_lines = lines[:end_idx]
+    if new_lines and new_lines[-1].strip() != "":
+        new_lines.append("")
+    new_lines.extend(new_entries.split("\n"))
+    if new_lines[-1] != "":
+        new_lines.append("")
+    new_lines.extend(lines[end_idx:])
+
+    return "\n".join(new_lines)
+
+
+def finalize_release(content: str, version: str) -> str:
+    """Create a new version section from Unreleased content and leave Unreleased empty."""
+    lines = content.split("\n")
+
+    # Find Unreleased section boundaries
+    unreleased_start = None
+    unreleased_end = None
+    prev_version = None
+
+    for i, line in enumerate(lines):
+        if line.startswith("## [Unreleased]"):
+            unreleased_start = i
+            # Find the end of Unreleased section (next release section)
+            for j in range(i + 1, len(lines)):
+                if lines[j].startswith("## ["):
+                    unreleased_end = j
+                    # Extract version from next release line for compare link
+                    match = re.search(r"## \[([\d.]+)\]", lines[j])
+                    if match:
+                        prev_version = match.group(1)
+                    break
+            if unreleased_end is None:
+                unreleased_end = len(lines)
+            break
+
+    if unreleased_start is None:
+        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
+
+    if prev_version is None:
+        raise ValueError("Could not find previous version for compare link")
+
+    # Extract Unreleased content (skip the header line)
+    unreleased_content = lines[unreleased_start + 1 : unreleased_end]
+    # Remove leading empty lines
+    while unreleased_content and unreleased_content[0].strip() == "":
+        unreleased_content = unreleased_content[1:]
+    # Remove trailing empty lines
+    while unreleased_content and unreleased_content[-1].strip() == "":
+        unreleased_content = unreleased_content[:-1]
+
+    # Build new content:
+    # 1. Everything before Unreleased section
+    # 2. Empty Unreleased section header
+    # 3. New version section with the extracted content
+    # 4. Everything after Unreleased section
+
+    new_lines = lines[:unreleased_start]
+    # Add empty Unreleased section
+    new_lines.append(f"## [Unreleased]({GITHUB_REPO}/compare/{version}..main)")
+    new_lines.append("")
+    # Add new version section with the content
+    new_lines.append(f"## [{version}]({GITHUB_REPO}/compare/{prev_version}..{version})")
+    if unreleased_content:
+        new_lines.append("")
+        new_lines.extend(unreleased_content)
+    new_lines.append("")
+    # Add everything after Unreleased section
+    new_lines.extend(lines[unreleased_end:])
+
+    return "\n".join(new_lines)
+
+
+def finalize_patch_release(content: str, version: str, new_section: str) -> str:
+    """
+    Create a new version section with only the new entries, keeping existing Unreleased content.
+
+    This is used for patch releases (--prs flag) where we only want to release specific PRs,
+    not all the Unreleased content.
+    """
+    lines = content.split("\n")
+
+    # Find Unreleased section boundaries
+    unreleased_start = None
+    unreleased_end = None
+    prev_version = None
+
+    for i, line in enumerate(lines):
+        if line.startswith("## [Unreleased]"):
+            unreleased_start = i
+            # Find the end of Unreleased section (next release section)
+            for j in range(i + 1, len(lines)):
+                if lines[j].startswith("## ["):
+                    unreleased_end = j
+                    # Extract version from next release line for compare link
+                    match = re.search(r"## \[([\d.]+)\]", lines[j])
+                    if match:
+                        prev_version = match.group(1)
+                    break
+            if unreleased_end is None:
+                unreleased_end = len(lines)
+            break
+
+    if unreleased_start is None:
+        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
+
+    if prev_version is None:
+        raise ValueError("Could not find previous version for compare link")
+
+    # Build new content:
+    # 1. Everything before Unreleased section (including Unreleased header and existing content)
+    # 2. Update Unreleased compare link to point to new version
+    # 3. Insert new version section with only the new entries
+    # 4. Everything after Unreleased section
+
+    new_lines = lines[:unreleased_start]
+    # Update Unreleased section header to point to new version
+    new_lines.append(f"## [Unreleased]({GITHUB_REPO}/compare/{version}..main)")
+    # Keep existing Unreleased content (everything between header and next release)
+    new_lines.extend(lines[unreleased_start + 1 : unreleased_end])
+    # Add new version section with only the new entries
+    new_lines.append(f"## [{version}]({GITHUB_REPO}/compare/{prev_version}..{version})")
+    new_lines.append("")
+    new_lines.extend(new_section.split("\n"))
+    new_lines.append("")
+    # Add everything after old Unreleased section
+    new_lines.extend(lines[unreleased_end:])
+
+    return "\n".join(new_lines)
+
+
+# =============================================================================
+# Action Handlers
+# =============================================================================
+
+
+def _handle_validate(session: nox.Session) -> None:
+    """Handle the validate action."""
+    # Check for files filter flag
+    files_filter = None
+    if "--files" in session.posargs:
+        files_idx = session.posargs.index("--files")
+        if files_idx + 1 < len(session.posargs):
+            files_list_str = session.posargs[files_idx + 1]
+            files_filter = [f.strip() for f in files_list_str.split(",")]
+        else:
+            session.error("--files flag requires a comma-separated list of file paths")
+
+    try:
+        if files_filter:
+            # Validate specific files
+            validated = validate_fragment_files(files_filter)
+            session.log(f"✅ Validated {len(validated)} changelog fragment(s):")
+            for path, entry in validated:
+                session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+        else:
+            # Validate all fragments in changelog/ directory
+            validated = load_fragments()
+            if not validated:
+                session.log("No changelog fragments found in changelog/ directory")
+                return
+            session.log(f"✅ All {len(validated)} changelog fragment(s) are valid:")
+            for path, entry in validated:
+                session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
+    except ValueError as e:
+        session.error(str(e))
+
+
+def _handle_dry(
+    session: nox.Session,
+    fragment_paths: tuple[Path, ...],
+    entries: tuple[ChangelogEntry, ...],
+    new_section: str,
+    pr_filter: Optional[list[int]],
+    all_fragment_paths: set[Path],
+    release_version: Optional[str],
+) -> None:
+    """Handle the dry run action."""
+    session.log("=" * 60)
+    session.log("DRY RUN - No changes will be made")
+    session.log("=" * 60)
+    session.log(f"\nFound {len(entries)} changelog fragment(s):")
+    for path in fragment_paths:
+        session.log(f"  - {path}")
+    if pr_filter:
+        session.log(f"\nFiltered to PRs: {', '.join(map(str, pr_filter))}")
+    session.log("\nGenerated changelog section:")
+    session.log("-" * 60)
+    print(new_section)
+    session.log("-" * 60)
+    session.log(f"\nFiles that would be deleted: {len(fragment_paths)}")
+    if pr_filter:
+        # Show which files would remain
+        remaining = [f for f in all_fragment_paths if f not in fragment_paths]
+        if remaining:
+            session.log(f"Files that would remain in changelog/: {len(remaining)}")
+            for f in remaining:
+                session.log(f"  - {f.name}")
+    if release_version:
+        if pr_filter:
+            session.log(f"Would finalize PATCH release as version: {release_version}")
+            session.log("Existing Unreleased content will remain in Unreleased section")
+        else:
+            session.log(f"Would finalize release as version: {release_version}")
+            session.log(
+                "All Unreleased content (existing + new) will be moved to the new version"
+            )
+
+
+def _handle_write(
+    session: nox.Session,
+    fragment_paths: tuple[Path, ...],
+    entries: tuple[ChangelogEntry, ...],
+    new_section: str,
+    pr_filter: Optional[list[int]],
+    all_fragment_paths: set[Path],
+    release_version: Optional[str],
+) -> None:
+    """Handle the write action."""
+    # Read current CHANGELOG.md
+    if not CHANGELOG_FILE.exists():
+        session.error(f"{CHANGELOG_FILE} does not exist")
+
+    with open(CHANGELOG_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Finalize release if requested
+    if release_version:
+        try:
+            if pr_filter:
+                # Patch release: Only release the specific PRs, keep existing Unreleased content
+                updated_content = finalize_patch_release(
+                    content, release_version, new_section
+                )
+                session.log(
+                    f"Finalized patch release as version {release_version} with specific PRs"
+                )
+            else:
+                # Normal release: Add new entries to Unreleased, then move ALL to new version
+                updated_content = insert_entries_into_changelog(content, new_section)
+                updated_content = finalize_release(updated_content, release_version)
+                session.log(f"Finalized release as version {release_version}")
+        except ValueError as e:
+            session.error(str(e))
+    else:
+        # No release version: just add entries to Unreleased
+        try:
+            updated_content = insert_entries_into_changelog(content, new_section)
+        except ValueError as e:
+            session.error(str(e))
+
+    # Write updated CHANGELOG.md
+    with open(CHANGELOG_FILE, "w", encoding="utf-8") as f:
+        f.write(updated_content)
+    session.log(f"Updated {CHANGELOG_FILE}")
+
+    # Delete fragment files (only the ones that were processed)
+    for fragment_path in fragment_paths:
+        fragment_path.unlink()
+        session.log(f"Deleted {fragment_path}")
+
+    # Show remaining files if using PR filter
+    if pr_filter:
+        remaining = [f for f in all_fragment_paths if f not in fragment_paths]
+        if remaining:
+            session.log(
+                f"\nRemaining fragments in changelog/ (not included in this release): {len(remaining)}"
+            )
+            for f in remaining:
+                session.log(f"  - {f.name}")
+
+    session.log(f"Successfully compiled {len(entries)} changelog entries")
+
+
+def _parse_args(
+    session: nox.Session, action: str
+) -> tuple[Optional[str], Optional[list[int]]]:
+    """
+    Parse command line arguments for the changelog session.
+
+    Returns:
+        Tuple of (release_version, pr_filter)
+    """
+    # Check for release flag
+    release_version = None
+    if "--release" in session.posargs:
+        release_idx = session.posargs.index("--release")
+        if release_idx + 1 < len(session.posargs):
+            release_version = session.posargs[release_idx + 1]
+        else:
+            session.error("--release flag requires a version number")
+
+    # Require --release for write action
+    if action == "write" and not release_version:
+        session.error(
+            "changelog(write) requires --release VERSION flag (e.g., --release 2.77.0)"
+        )
+
+    # Check for PR filter flag (for patch releases)
+    pr_filter = None
+    if "--prs" in session.posargs:
+        pr_idx = session.posargs.index("--prs")
+        if pr_idx + 1 < len(session.posargs):
+            pr_list_str = session.posargs[pr_idx + 1]
+            try:
+                pr_filter = [int(pr.strip()) for pr in pr_list_str.split(",")]
+            except ValueError:
+                session.error(
+                    "--prs flag requires a comma-separated list of PR numbers (e.g., --prs 1234,5678)"
+                )
+        else:
+            session.error("--prs flag requires a comma-separated list of PR numbers")
+
+    return release_version, pr_filter
+
+
+def _load_and_filter_fragments(
+    session: nox.Session, pr_filter: Optional[list[int]]
+) -> tuple[
+    list[tuple[Path, ChangelogEntry]],
+    tuple[Path, ...],
+    tuple[ChangelogEntry, ...],
+    set[Path],
+]:
+    """
+    Load fragments and apply PR filtering if specified.
+
+    Returns:
+        Tuple of (fragment_data, fragment_paths, entries, all_fragment_paths)
+    """
+    # Load fragments
+    try:
+        all_fragment_data = load_fragments()
+    except ValueError as e:
+        session.error(str(e))
+
+    if not all_fragment_data:
+        session.log("No changelog fragments found in changelog/ directory")
+        return [], (), (), set()
+
+    # Filter by PR numbers if specified
+    fragment_data = all_fragment_data
+    if pr_filter:
+        filtered_data = []
+        for path, entry in all_fragment_data:
+            if entry.pr and entry.pr in pr_filter:
+                filtered_data.append((path, entry))
+            elif not entry.pr:
+                session.warn(
+                    f"Fragment {path.name} has no PR number and will be skipped (--prs filter active)"
+                )
+
+        if not filtered_data:
+            session.error(
+                f"No fragments found matching PR numbers: {', '.join(map(str, pr_filter))}"
+            )
+
+        fragment_data = filtered_data
+        session.log(
+            f"Filtering to {len(fragment_data)} fragment(s) matching PR numbers: {', '.join(map(str, pr_filter))}"
+        )
+
+    fragment_paths, entries = zip(*fragment_data) if fragment_data else ((), ())
+
+    # Get all fragment paths for comparison (when using --prs)
+    all_fragment_paths = {path for path, _ in all_fragment_data} if pr_filter else set()
+
+    return fragment_data, fragment_paths, entries, all_fragment_paths
+
+
+# =============================================================================
+# Main Nox Session
+# =============================================================================
+
+
+@nox.session()
+@nox.parametrize(
+    "action",
+    [
+        nox.param("dry", id="dry"),
+        nox.param("write", id="write"),
+        nox.param("validate", id="validate"),
+    ],
+)
+def changelog(session: nox.Session, action: str) -> None:
+    """
+    Compile changelog fragments into CHANGELOG.md.
+
+    Parameters:
+        - changelog(dry) = Preview the changelog that would be generated without making changes
+        - changelog(dry) -- --release VERSION = Preview with release finalization
+        - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
+        - changelog(write) -- --release VERSION = Compile fragments and create new version section (also includes entries already in the Unreleased section)
+        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Patch release with specific PRs only
+        - changelog(validate) = Validate all changelog fragments in the changelog/ directory
+        - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
+
+    Note on release behavior:
+        - Normal release (no --prs): All existing Unreleased content + new fragments are moved to the new version
+        - Patch release (with --prs): Only the specified PR fragments are released, existing Unreleased content remains in Unreleased section
+    """
+
+    # Handle validate action separately (has its own flow)
+    if action == "validate":
+        _handle_validate(session)
+        return
+
+    # Parse arguments for dry/write actions
+    release_version, pr_filter = _parse_args(session, action)
+
+    # Load and filter fragments
+    fragment_data, fragment_paths, entries, all_fragment_paths = (
+        _load_and_filter_fragments(session, pr_filter)
+    )
+
+    if not fragment_data:
+        return
+
+    # Validate all entries have valid types (double-check)
+    invalid_entries = [
+        (path, entry)
+        for path, entry in fragment_data
+        if entry.type not in CHANGELOG_TYPES
+    ]
+    if invalid_entries:
+        error_msg = "Found entries with invalid types:\n"
+        for path, entry in invalid_entries:
+            error_msg += f"  - {path.name}: type '{entry.type}' is not valid. Must be one of: {', '.join(CHANGELOG_TYPES)}\n"
+        session.error(error_msg)
+
+    # Generate the changelog section
+    grouped = group_entries_by_type(list(entries))
+    new_section = generate_changelog_section(grouped)
+
+    # Dispatch to appropriate handler
+    if action == "dry":
+        _handle_dry(
+            session,
+            fragment_paths,
+            entries,
+            new_section,
+            pr_filter,
+            all_fragment_paths,
+            release_version,
+        )
+    elif action == "write":
+        _handle_write(
+            session,
+            fragment_paths,
+            entries,
+            new_section,
+            pr_filter,
+            all_fragment_paths,
+            release_version,
+        )
+    else:
+        session.error(f"Invalid action: {action}")

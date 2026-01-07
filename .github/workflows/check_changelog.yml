@@ -1,0 +1,89 @@
+name: Check Changelog Entry
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for changelog entry
+        id: check-changelog-files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Fetch all files changed in the PR
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+
+            // Check for changelog entry files (excluding TEMPLATE.yaml)
+            const changelogFiles = files.filter(file => {
+              const filename = file.filename;
+              // Check if file is in changelog/ directory
+              if (!filename.startsWith('changelog/')) {
+                return false;
+              }
+              // Check if it's a YAML file
+              if (!filename.endsWith('.yaml') && !filename.endsWith('.yml')) {
+                return false;
+              }
+              // Exclude TEMPLATE.yaml
+              if (filename === 'changelog/TEMPLATE.yaml' || filename === 'changelog/TEMPLATE.yml') {
+                return false;
+              }
+              // Only count added or modified files (not deleted)
+              return file.status === 'added' || file.status === 'modified';
+            });
+
+            if (changelogFiles.length === 0) {
+              core.setFailed(
+                '❌ No changelog entry file found!\n\n' +
+                'Please add a changelog entry file in the changelog/ directory.\n' +
+                'See changelog/README.md for instructions on creating changelog entries.\n'
+              );
+            } else {
+              const fileNames = changelogFiles.map(f => f.filename).join(', ');
+              console.log(`✅ Found changelog entry file(s): ${fileNames}`);
+              // Set output for validation step
+              core.setOutput('changelog_files', fileNames);
+            }
+
+      - name: Checkout repository
+        if: success()
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: success()
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install nox
+        if: success()
+        run: pip install nox>=2022
+
+      - name: Cache Nox virtual environment
+        if: success()
+        uses: actions/cache@v4
+        with:
+          path: .nox/
+          key: ${{ runner.os }}-nox-changelog-${{ hashFiles('noxfiles/changelog_nox.py') }}
+          restore-keys: |
+            ${{ runner.os }}-nox-changelog-
+
+      - name: Install Dev Requirements
+        if: success()
+        run: pip install -r dev-requirements.txt
+
+      - name: Validate changelog entries
+        if: success()
+        run: |
+          nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"

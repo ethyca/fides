@@ -14,6 +14,7 @@ import nox
 
 sys.path.append("noxfiles")
 # pylint: disable=unused-wildcard-import, wildcard-import, wrong-import-position
+from changelog_nox import *
 from ci_nox import *
 from dev_nox import *
 from docker_nox import *

@@ -20,15 +20,55 @@ When releasing, a new tag is created on the release branch and the release proce
 
 In the case of patches, a branch is created from the relevant tag. Commits are then cherry-picked into this branch, and a new patch version tag is created.
 
+## Changelog Entries
+
+To avoid merge conflicts in `CHANGELOG.md`, we use a fragment-based system where each PR adds a YAML file describing the change.
+
+### Creating a Changelog Entry
+
+When creating a PR, add a changelog entry file:
+
+1. Copy `changelog/TEMPLATE.yaml` to a new file in the `changelog/` directory
+2. Name the file using your PR number (e.g., `7137.yaml`) or a descriptive slug (e.g., `add-gpc-fields.yaml`)
+3. Fill in the required fields:
+   - `type`: One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+   - `description`: Short description of the change (without the leading `-`)
+   - `pr`: PR number (optional if not yet known)
+   - `labels`: Optional list of labels: `high-risk`, `db-migration`
+
+Example (`changelog/7137.yaml`):
+
+```yaml
+type: Added
+description: Added editable GPC translation fields to privacy experience configuration
+pr: 7137
+labels: []
+```
+
+The changelog entry will be automatically compiled into `CHANGELOG.md` during the release process.
+
 ## Release Steps
 
-We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a `CHANGELOG.md` to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:
+We use GitHub's `release` feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions. We also use a `CHANGELOG.md` to mitigate surprises to our users and help them plan updates accordingly. The release steps are as follows:
 
 ### Major and Minor
 
-1. Open a PR that is titled the version of the release (i.e. `1.6.0`)
-    * Rename the `Unreleased` section of `CHANGELOG.md` to the new version number and put a date next to it
-    * Update the `compare` links for both the new version and for the new `Unreleased` section
+1. Compile changelog fragments into `CHANGELOG.md`:
+   ```sh
+   # Preview what will be generated (dry run)
+   nox -s "changelog(dry)"
+
+   # Compile fragments and finalize for release
+   nox -s "changelog(write)" -- --release 2.76.0
+   ```
+   This will:
+   - Compile all YAML fragments from `changelog/` into the Unreleased section
+   - Create a new version section with all Unreleased content
+   - Leave the `Unreleased` section empty at the top (ready for new entries)
+   - Update the `compare` links for both the new version and the `Unreleased` section
+   - Delete the processed fragment files
+
+1. Open a PR that is titled the version of the release (i.e. `2.76.0`) with the updated `CHANGELOG.md`
 1. Once approved, merge the PR
 1. Create a new release, ensuring that the last PR to get merged is the aforementioned `CHANGELOG.md` update PR
 1. Add the new version as the tag (i.e. `1.6.0`)
@@ -131,10 +171,23 @@ It may be necessary for a patch release to contain only select commits to the `m
     git cherry-pick <commit>...
     ```
 
-1. Copy the `Unreleased` section of `CHANGELOG.md` and paste above the release being patched
-    1. Rename `Unreleased` to the new version number and put a date next to it
-    1. Cut and paste the documented changes that are now included in the patch release to the correct section
-    1. Commit these changes
+1. Compile changelog fragments for the patch release:
+   ```sh
+   # Preview what will be generated (dry run)
+   nox -s "changelog(dry)" -- --prs 1234,5678
+
+   # Compile fragments and finalize for patch release (only selected PRs)
+   nox -s "changelog(write)" -- --release 1.2.4 --prs 1234,5678
+   ```
+   This will:
+   - Compile only the YAML fragments matching the specified PR numbers (comma-separated list)
+   - Create a new version section from those entries
+   - Leave the `Unreleased` section empty at the top
+   - Delete only the processed fragment files (matching PRs)
+   - Leave other fragment files in `changelog/` for future releases
+   - Update compare links appropriately
+
+   **Note:** For patch releases, you typically only want to include specific PRs. Use the `--prs` flag to specify which PR numbers to include. Fragments without PR numbers will be skipped when using this flag.
 1. Open a pull request to incorporate any cherry-picked commits and the `CHANGELOG.md` changes into the release branch
     1. Set the base branch of this pull request to the release branch
     1. Once approved, merge the pull request into the release branch
