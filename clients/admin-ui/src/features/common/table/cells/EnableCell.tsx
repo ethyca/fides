@@ -1,9 +1,9 @@
 import {
-  AntMessage as message,
-  AntSwitch as Switch,
-  AntSwitchProps as SwitchProps,
-  AntTypography as Typography,
-  useDisclosure,
+  Switch,
+  SwitchProps,
+  Typography,
+  useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -30,7 +30,7 @@ export const EnableCell = ({
   ...props
 }: EnableCellProps) => {
   const modal = useDisclosure();
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
     const result = await onToggle(enable);
     if (isErrorResult(result)) {
@@ -48,7 +48,6 @@ export const EnableCell = ({
 
   return (
     <>
-      {messageContext}
       <Switch
         checked={enabled}
         onChange={handleToggle}

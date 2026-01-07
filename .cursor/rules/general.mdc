@@ -1,0 +1,10 @@
+---
+description: "general instructions"
+alwaysApply: true
+---
+
+- Follow the user's requirements carefully and to the letter.
+- First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
+- Confirm, then write code!
+- Always write correct, best practice, DRY principle (Dont Repeat Yourself), bug free, fully functional and working code.
+- If you think there might not be a correct answer, you say so. If you do not know the answer, say so, instead of guessing. Ask me to help you understand.

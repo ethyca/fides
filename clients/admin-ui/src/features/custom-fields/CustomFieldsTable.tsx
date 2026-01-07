@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTable as Table,
-} from "fidesui";
+import { Button, Flex, Table } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import useCustomFieldsTable from "~/features/custom-fields/useCustomFieldsTable";
@@ -12,8 +8,11 @@ const CustomFieldsTable = () => {
     useCustomFieldsTable();
 
   return (
-    <Flex vertical gap="middle">
-      <Flex justify="space-between">
+    <Flex vertical gap="middle" data-testid="custom-fields-management">
+      <Flex
+        justify="space-between"
+        className="sticky -top-6 z-10 bg-white py-4"
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
@@ -27,7 +26,7 @@ const CustomFieldsTable = () => {
           Add custom field
         </Button>
       </Flex>
-      <Table {...tableProps} columns={columns} />
+      <Table {...tableProps} columns={columns} className="-mt-4" />
     </Flex>
   );
 };

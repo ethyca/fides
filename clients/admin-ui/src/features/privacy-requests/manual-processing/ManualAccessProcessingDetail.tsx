@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  AntButton as Button,
-  Box,
-  Divider,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  FormControl,
-  FormLabel,
-  HStack,
-  Input,
-  Text,
-  useDisclosure,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerCloseButton as DrawerCloseButton,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraHStack as HStack,
+  ChakraInput as Input,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
@@ -64,8 +64,7 @@ const ManualAccessProcessingDetail = ({
         validateOnChange={false}
         validationSchema={Yup.object().shape({})}
       >
-        {/* @ts-ignore */}
-        {(_props: FormikProps<Values>) => (
+        {(_props) => (
           <Drawer
             isOpen={isOpen}
             placement="right"

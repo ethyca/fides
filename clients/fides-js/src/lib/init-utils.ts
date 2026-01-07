@@ -1,4 +1,6 @@
+import { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
+import { gcm } from "../integrations/gcm";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
@@ -115,6 +117,7 @@ export const getCoreFides = ({
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,
       fidesInitializedEventMode: "once",
+      fidesCookieCompression: "none",
     },
     fides_meta: {},
     identity: {},
@@ -124,7 +127,9 @@ export const getCoreFides = ({
     config: undefined,
     initialized: false,
     onFidesEvent,
+    aep,
     blueconic,
+    gcm,
     gtm,
     meta,
     shopify,

@@ -1,18 +1,18 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDivider as Divider,
-  AntInput as Input,
-  AntMessage as message,
-  AntSpace as Space,
-  AntTypography as Typography,
-  AntUpload as Upload,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Checkbox,
+  Divider,
+  Input,
+  Space,
+  Typography,
+  Upload,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
@@ -37,6 +37,8 @@ export const CompleteTaskModal = ({
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
   const [fileList, setFileList] = useState<any[]>([]);
+
+  const message = useMessage();
 
   const handleSave = async () => {
     try {

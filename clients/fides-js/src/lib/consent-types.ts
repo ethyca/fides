@@ -4,7 +4,9 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import type { aep } from "../integrations/aep";
 import { blueconic } from "../integrations/blueconic";
+import type { gcm } from "../integrations/gcm";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -193,6 +195,11 @@ export interface FidesInitOptions {
   fidesUnsupportedRepeatedScriptLoading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  fidesCookieSuffix?: string | null;
+
+  // Cookie compression method to reduce cookie size
+  fidesCookieCompression: "gzip" | "none";
 }
 
 /**
@@ -228,7 +235,9 @@ export interface FidesGlobal
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   version: string;
+  aep: typeof aep;
   blueconic: typeof blueconic;
+  gcm: typeof gcm;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
@@ -652,6 +661,12 @@ export type ExperienceConfigTranslation = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
   banner_title?: string;
+  // GPC (Global Privacy Control) translatable fields
+  gpc_label?: string;
+  gpc_description?: string;
+  gpc_status_applied_label?: string;
+  gpc_status_overridden_label?: string;
+  gpc_title?: string;
   is_default?: boolean;
   privacy_policy_link_label?: string;
   privacy_policy_url?: string;
@@ -872,6 +887,8 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
   | "fidesUnsupportedRepeatedScriptLoading"
+  | "fidesCookieSuffix"
+  | "fidesCookieCompression"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -903,6 +920,7 @@ export enum Layer1ButtonOption {
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
   OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+  GPC_CONDITIONAL = "gpc_conditional", // show acknowledge when GPC is on, opt in/opt out when GPC is off
 }
 
 export enum RejectAllMechanism {

@@ -404,6 +404,8 @@ export default async function handler(
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
       fidesUnsupportedRepeatedScriptLoading:
         environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
+      fidesCookieSuffix: environment.settings.FIDES_COOKIE_SUFFIX,
+      fidesCookieCompression: environment.settings.FIDES_COOKIE_COMPRESSION,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -550,10 +552,12 @@ async function fetchCustomFidesCss(
           }
           if (!assetResponse.ok) {
             log.debug(
-              "Error fetching custom-fides.css:",
-              assetResponse.status,
-              assetResponse.statusText,
-              data,
+              {
+                status: assetResponse.status,
+                statusText: assetResponse.statusText,
+                data,
+              },
+              "Error fetching custom-fides.css",
             );
             throw new Error(
               `HTTP error occurred. Status: ${assetResponse.status}`,

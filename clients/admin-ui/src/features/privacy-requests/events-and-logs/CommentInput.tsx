@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntMessage as message,
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
-} from "fidesui";
+import { Button, Flex, Input, Tabs, TabsProps, useMessage } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import { CommentType } from "~/types/api/models/CommentType";
@@ -24,6 +17,8 @@ export const CommentInput = ({
   const [commentText, setCommentText] = useState("");
   const textAreaRef = useRef<any>(null);
   const [createComment, { isLoading }] = useCreateCommentMutation();
+
+  const message = useMessage();
 
   // Focus the textarea when the component mounts
   useEffect(() => {

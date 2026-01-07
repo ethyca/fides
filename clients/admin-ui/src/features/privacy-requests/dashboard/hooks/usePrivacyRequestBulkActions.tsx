@@ -1,12 +1,8 @@
-import {
-  AntMenuProps as MenuProps,
-  AntMessage as message,
-  AntModal as modal,
-  Icons,
-} from "fidesui";
-import { useCallback, useEffect, useMemo } from "react";
+import { Icons, MenuProps, useMessage, useModal } from "fidesui";
+import { useCallback, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import {
   BulkActionType,
@@ -19,17 +15,10 @@ import {
   useBulkDenyRequestMutation,
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
-import { PrivacyRequestEntity } from "../../types";
-
-type MessageInstance = ReturnType<typeof message.useMessage>[0];
-type ModalInstance = ReturnType<typeof modal.useModal>[0];
 
 interface UsePrivacyRequestBulkActionsProps {
-  requests: PrivacyRequestEntity[];
+  requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
-  clearSelectedIds: () => void;
-  messageApi: MessageInstance;
-  modalApi: ModalInstance;
 }
 
 const ACTION_PAST_TENSE: Record<BulkActionType, string> = {
@@ -90,19 +79,14 @@ const formatResultMessage = (
 export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
-  clearSelectedIds,
-  messageApi,
-  modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
     [requests, selectedIds],
   );
 
-  // Clear selected requests when the data changes. eg. with pagination, filters or actions performed
-  useEffect(() => {
-    clearSelectedIds();
-  }, [requests, clearSelectedIds]);
+  const messageApi = useMessage();
+  const modalApi = useModal();
 
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
@@ -110,9 +94,7 @@ export const usePrivacyRequestBulkActions = ({
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
   // Use the deny modal hook
-  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal(
-    modalApi as any,
-  );
+  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal();
 
   const handleAction = useCallback(
     async (action: BulkActionType) => {

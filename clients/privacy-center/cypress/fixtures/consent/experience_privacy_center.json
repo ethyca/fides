@@ -20,7 +20,12 @@
             "reject_button_label": "Opt out of all",
             "save_button_label": "Save",
             "title": "Manage your consent preferences",
-            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-en-000"
+            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-en-000",
+            "gpc_label": "Global Privacy Control",
+            "gpc_title": "Global Privacy Control detected",
+            "gpc_description": "Your global privacy control preference has been honored.",
+            "gpc_status_applied_label": "Applied",
+            "gpc_status_overridden_label": "Overridden"
           },
           {
             "language": "es",
@@ -37,7 +42,12 @@
             "reject_button_label": "No participar en nada",
             "save_button_label": "Guardar",
             "title": "Administrar sus preferencias de consentimiento",
-            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-es-000"
+            "privacy_experience_config_history_id": "pri_exp-history-privacy-center-es-000",
+            "gpc_label": "Control de privacidad global",
+            "gpc_title": "Control de privacidad global detectado",
+            "gpc_description": "Su preferencia de control de privacidad global se ha respetado.",
+            "gpc_status_applied_label": "Aplicado",
+            "gpc_status_overridden_label": "Anulado"
           },
           {
             "language": "fr-CA",
@@ -53,7 +63,12 @@
             "reject_button_label": "Tout désactiver",
             "save_button_label": "Sauvegarder",
             "title": "Gestion de vos préférences de consentement",
-            "privacy_experience_config_history_id": "pri_exp-history-banner-modal-fr-ca-000"
+            "privacy_experience_config_history_id": "pri_exp-history-banner-modal-fr-ca-000",
+            "gpc_label": "Contrôle mondial de confidentialité",
+            "gpc_title": "Contrôle de la confidentialité global détecté",
+            "gpc_description": "Votre préférence en matière de contrôle mondial de confidentialité a été honorée.",
+            "gpc_status_applied_label": "Appliqué",
+            "gpc_status_overridden_label": "Annulé"
           }
         ],
         "language": "en",

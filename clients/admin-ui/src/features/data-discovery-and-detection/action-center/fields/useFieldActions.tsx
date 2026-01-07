@@ -1,35 +1,41 @@
-import { AntMessage as Message, AntModal as Modal } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
-import { useClassifyStagedResourcesMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
-  useApproveStagedResourcesMutation,
+  useClassifyStagedResourcesMutation,
+  usePromoteRemovalStagedResourcesMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
   useMuteResourcesMutation,
   usePromoteResourcesMutation,
+  useReviewStagedResourcesMutation,
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { Field } from "~/types/api";
+import { DiffStatus, Field } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
 import {
-  AVAILABLE_ACTIONS,
+  ACTION_ALLOWED_STATUSES,
   FIELD_ACTION_CONFIRMATION_MESSAGE,
   FIELD_ACTION_INTERMEDIATE,
   FIELD_ACTION_LABEL,
 } from "./FieldActions.const";
-import { ResourceStatusLabel } from "./MonitorFields.const";
 import {
   getActionErrorMessage,
   getActionModalProps,
   getActionSuccessMessage,
 } from "./utils";
 
-export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
-  const [init, ...availableActions] = statusList.map(
-    (status) => AVAILABLE_ACTIONS[status],
+export const getAvailableActions = (statusList: DiffStatus[]) => {
+  const [init, ...availableActions] = statusList.map((status) =>
+    Object.values(FieldActionType).flatMap((actionType) =>
+      ACTION_ALLOWED_STATUSES[actionType].some((s) => s === status)
+        ? [actionType]
+        : [],
+    ),
   );
 
   return availableActions.reduce<Readonly<Array<FieldActionType>>>(
@@ -40,17 +46,19 @@ export const getAvailableActions = (statusList: ResourceStatusLabel[]) => {
 
 export const useFieldActions = (
   monitorId: string,
-  modalApi: ReturnType<typeof Modal.useModal>[0],
-  messageApi: ReturnType<typeof Message.useMessage>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
-  const [approveStagedResourcesMutation] = useApproveStagedResourcesMutation();
+  const [reviewStagedResourcesMutation] = useReviewStagedResourcesMutation();
   const [classifyStagedResourcesMutation] =
     useClassifyStagedResourcesMutation();
   const [ignoreMonitorResultAssetsMutation] = useMuteResourcesMutation();
   const [promoteResourcesMutation] = usePromoteResourcesMutation();
   const [unMuteMonitorResultAssetsMutation] = useUnmuteResourcesMutation();
   const [updateResourcesCategoryMutation] = useUpdateResourceCategoryMutation();
+  const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
+
+  const messageApi = useMessage();
+  const modalApi = useModal();
 
   const handleAction =
     (
@@ -60,10 +68,10 @@ export const useFieldActions = (
         field?: Partial<Field>,
       ) => Promise<RTKResult>,
     ) =>
-    async (urns: string[], field?: Partial<Field>) => {
+    async (urns: string[], primitive = true, field?: Partial<Field>) => {
       const key = Date.now();
       const confirmed =
-        urns.length === 1 ||
+        (urns.length === 1 && primitive) ||
         (await modalApi.confirm(
           getActionModalProps(
             FIELD_ACTION_LABEL[actionType],
@@ -103,7 +111,8 @@ export const useFieldActions = (
 
       // Refresh the tree to reflect updated status
       // An indicator may change to empty if there are no child resources that the user is expected to act upon.
-      if (onRefreshTree) {
+      // Note: this does not belong here. Cache invalidation should handle resource refresh
+      if (actionType !== FieldActionType.PROMOTE_REMOVALS && onRefreshTree) {
         await onRefreshTree(urns);
       }
     };
@@ -146,8 +155,15 @@ export const useFieldActions = (
     });
   };
 
-  const handleApprove = async (urns: string[]) => {
-    return approveStagedResourcesMutation({
+  const handleReview = async (urns: string[]) => {
+    return reviewStagedResourcesMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: urns,
+    });
+  };
+
+  const handlePromoteRemoval = async (urns: string[]) => {
+    return promoteRemovalMutation({
       monitor_config_key: monitorId,
       staged_resource_urns: urns,
     });
@@ -158,10 +174,13 @@ export const useFieldActions = (
       FieldActionType.ASSIGN_CATEGORIES,
       handleSetDataCategories,
     ),
-    "promote-removals": () => {},
-    "un-approve": () => {},
+    "promote-removals": handleAction(
+      FieldActionType.PROMOTE_REMOVALS,
+      handlePromoteRemoval,
+    ),
+    "un-review": () => {},
     "un-mute": handleAction(FieldActionType.UN_MUTE, handleUnMute),
-    approve: handleAction(FieldActionType.APPROVE, handleApprove),
+    review: handleAction(FieldActionType.REVIEW, handleReview),
     classify: handleAction(
       FieldActionType.CLASSIFY,
       handleClassifyStagedResources,
@@ -170,6 +189,10 @@ export const useFieldActions = (
     promote: handleAction(FieldActionType.PROMOTE, handlePromote),
   } satisfies Record<
     FieldActionType,
-    (urns: string[], field?: Partial<Field>) => Promise<void> | void
+    (
+      urns: string[],
+      primitive?: boolean,
+      field?: Partial<Field>,
+    ) => Promise<void> | void
   >;
 };

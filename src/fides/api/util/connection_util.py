@@ -55,9 +55,8 @@ def requeue_requires_input_requests(db: Session) -> None:
     lingering in a "requires_input" state.
     """
     if not AccessManualWebhook.get_enabled(db):
-        for pr in PrivacyRequest.filter(
-            db=db,
-            conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
+        for pr in PrivacyRequest.query_without_large_columns(db).filter(
+            PrivacyRequest.status == PrivacyRequestStatus.requires_input
         ):
             logger.info(
                 "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
@@ -203,7 +202,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
+    logger.debug("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

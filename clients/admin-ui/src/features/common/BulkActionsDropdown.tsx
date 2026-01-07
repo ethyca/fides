@@ -1,14 +1,5 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntMenuProps as MenuProps,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
 import React from "react";
-
-const { Text } = Typography;
 
 interface BulkActionsDropdownProps {
   selectedIds: React.Key[];
@@ -22,18 +13,11 @@ export const BulkActionsDropdown = ({
   const hasSelections = selectedIds.length > 0;
 
   return (
-    <Flex gap={8} align="center">
-      {hasSelections && (
-        <Text type="secondary" data-testid="selected-count">
-          {selectedIds.length} selected
-        </Text>
-      )}
-      <Dropdown menu={{ items: menuItems }} disabled={!hasSelections}>
-        <Button data-testid="bulk-actions-btn" disabled={!hasSelections}>
-          Actions
-          <Icons.ChevronDown />
-        </Button>
-      </Dropdown>
-    </Flex>
+    <Dropdown menu={{ items: menuItems }} disabled={!hasSelections}>
+      <Button data-testid="bulk-actions-btn" disabled={!hasSelections}>
+        Actions
+        <Icons.ChevronDown />
+      </Button>
+    </Dropdown>
   );
 };

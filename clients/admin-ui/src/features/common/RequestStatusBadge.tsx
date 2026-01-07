@@ -1,8 +1,4 @@
-import {
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  CUSTOM_TAG_COLOR,
-} from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag, TagProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -59,6 +55,10 @@ export const statusPropMap: {
   requires_manual_finalization: {
     color: CUSTOM_TAG_COLOR.MINOS,
     label: "Requires Finalization",
+  },
+  duplicate: {
+    color: CUSTOM_TAG_COLOR.DEFAULT,
+    label: "Duplicate",
   },
 };
 

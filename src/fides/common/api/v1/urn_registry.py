@@ -87,6 +87,7 @@ PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_FINALIZE = "/privacy-request/bulk/finalize"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_BULK_SOFT_DELETE = "/privacy-request/bulk/soft-delete"
+PRIVACY_REQUEST_CANCEL = "/privacy-request/administrate/cancel"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 PRIVACY_REQUEST_SOFT_DELETE = "/privacy-request/{privacy_request_id}/soft-delete"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
@@ -190,13 +191,21 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
-SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
+SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
+
+# Connector Template URLs
+CONNECTOR_TEMPLATES = "/connector-templates"
+CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
+CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
+CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
+
+# Deprecated: Old connector template register URL
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
 
 # System Connections
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
 INSTANTIATE_SYSTEM_CONNECTION = (
-    "/system/{fides_key}/connection/instantiate/{saas_connector_type}"
+    "/system/{fides_key}/connection/instantiate/{connector_template_type}"
 )
 
 # User URLs

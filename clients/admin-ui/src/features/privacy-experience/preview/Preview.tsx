@@ -1,9 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import {
-  AntFlex as Flex,
-  AntNotification as notification,
-  Text,
-} from "fidesui";
+import { ChakraText as Text, Flex, notification } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -31,6 +27,9 @@ import { COMPONENT_MAP } from "../constants";
 declare global {
   interface Window {
     Fides: FidesGlobal;
+  }
+  interface Navigator {
+    globalPrivacyControl?: boolean;
   }
 }
 
@@ -67,11 +66,13 @@ const Preview = ({
   initialValues,
   translation,
   isMobilePreview,
+  mockGpcEnabled,
 }: {
   allPrivacyNotices: Partial<LimitedPrivacyNoticeResponseSchema[]>;
   initialValues: Partial<ExperienceConfigCreate>;
   translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
+  mockGpcEnabled: boolean | "disabled";
 }) => {
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
@@ -188,6 +189,7 @@ const Preview = ({
     ) {
       return;
     }
+
     const updatedConfig = baseConfig;
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
     if (values.component === ComponentType.MODAL) {
@@ -249,6 +251,7 @@ const Preview = ({
     values.dismissable,
     initialValues,
     noticesOnConfig,
+    mockGpcEnabled,
   ]);
 
   const modal = document.getElementById("fides-modal");

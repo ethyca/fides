@@ -27,7 +27,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
           size = 20,
           search,
           diff_status,
-          confidence_score,
+          confidence_bucket,
           ...arrayQueryParams
         },
       }) => {
@@ -35,7 +35,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
           ...arrayQueryParams,
           ...(search ? { search: [search] } : {}),
           ...(diff_status ? { diff_status } : {}),
-          ...(confidence_score ? { confidence_score } : {}),
+          ...(confidence_bucket ? { confidence_bucket } : {}),
         });
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/fields?${queryParams?.toString()}`,
@@ -57,23 +57,26 @@ const monitorFieldApi = baseApi.injectEndpoints({
     >({
       query: ({
         path: { monitor_config_id, action_type },
-        query: { search, diff_status, confidence_score, ...arrayQueryParams },
-        ...body
+        query: { search, diff_status, confidence_bucket, ...arrayQueryParams },
+        body,
       }) => {
         const queryParams = buildArrayQueryParams({
           ...arrayQueryParams,
           ...(search ? { search: [search] } : {}),
           ...(diff_status ? { diff_status } : {}),
-          ...(confidence_score ? { confidence_score } : {}),
+          ...(confidence_bucket ? { confidence_bucket } : {}),
         });
-
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/fields/${action_type}?${queryParams.toString()}`,
           method: "POST",
           body,
         };
       },
-      invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
+      invalidatesTags: [
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Discovery Monitor Results",
+      ],
     }),
     getAllowedActions: build.query<
       AllowedActionsResponse,
@@ -83,14 +86,14 @@ const monitorFieldApi = baseApi.injectEndpoints({
     >({
       query: ({
         path: { monitor_config_id },
-        query: { search, diff_status, confidence_score, ...arrayQueryParams },
+        query: { search, diff_status, confidence_bucket, ...arrayQueryParams },
         ...body
       }) => {
         const queryParams = buildArrayQueryParams({
           ...arrayQueryParams,
           ...(search ? { search: [search] } : {}),
           ...(diff_status ? { diff_status } : {}),
-          ...(confidence_score ? { confidence_score } : {}),
+          ...(confidence_bucket ? { confidence_bucket } : {}),
         });
 
         return {

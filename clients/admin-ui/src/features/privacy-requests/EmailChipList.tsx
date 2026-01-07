@@ -1,14 +1,14 @@
 import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  forwardRef,
-  Input,
-  Tag,
-  TagCloseButton,
-  TagLabel,
-  VStack,
-  Wrap,
+  ChakraFormControl as FormControl,
+  ChakraFormErrorMessage as FormErrorMessage,
+  ChakraFormLabel as FormLabel,
+  chakraForwardRef as forwardRef,
+  ChakraInput as Input,
+  ChakraTag as Tag,
+  ChakraTagCloseButton as TagCloseButton,
+  ChakraTagLabel as TagLabel,
+  ChakraVStack as VStack,
+  ChakraWrap as Wrap,
 } from "fidesui";
 import { FieldArrayRenderProps } from "formik";
 import React, { useState } from "react";
@@ -70,7 +70,6 @@ const EmailChipList = forwardRef(
           Email
         </FormLabel>
         <VStack align="flex-start" w="inherit">
-          {/* @ts-ignore */}
           <Input
             autoComplete="off"
             placeholder="Type or paste email addresses separated by commas and press `Enter` or `Tab`..."

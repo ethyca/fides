@@ -201,6 +201,7 @@ const userApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Managed Systems" as const, id: arg.userId },
+        "System", // Invalidate system cache to refresh data stewards
       ],
     }),
   }),

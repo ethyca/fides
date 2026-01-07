@@ -1,4 +1,7 @@
-import { UseDisclosureReturn, useToast } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  useChakraToast as useToast,
+} from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -6,8 +9,10 @@ import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
+  useCreateIdentityProviderMonitorMutation,
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
+  usePutIdentityProviderMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
@@ -15,6 +20,7 @@ import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -48,8 +54,27 @@ const ConfigureMonitorModal = ({
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
-  const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
+  const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
+
+  const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
+
+  const [
+    createIdentityProviderMonitorTrigger,
+    { isLoading: isSubmittingOktaCreate },
+  ] = useCreateIdentityProviderMonitorMutation();
+
+  const [
+    putIdentityProviderMonitorTrigger,
+    { isLoading: isSubmittingOktaUpdate },
+  ] = usePutIdentityProviderMonitorMutation();
+
+  let isSubmitting: boolean;
+  if (isOktaIntegration) {
+    isSubmitting = isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate;
+  } else {
+    isSubmitting = isSubmittingRegular;
+  }
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -75,7 +100,30 @@ const ConfigureMonitorModal = ({
         onClose();
       }
     }, TIMEOUT_DELAY);
-    result = await putMonitorMutationTrigger(values);
+
+    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+    if (isOktaIntegration) {
+      // Transform MonitorConfig to IdentityProviderMonitorConfig format
+      const oktaPayload = {
+        name: values.name,
+        key: values.key ?? undefined,
+        provider: "okta" as const,
+        connection_config_key: integration.key,
+        enabled: values.enabled ?? true,
+        execution_start_date: values.execution_start_date ?? undefined,
+        execution_frequency: values.execution_frequency ?? undefined,
+        classify_params: values.classify_params ?? {},
+      };
+      // Use PUT for editing, POST for creating
+      if (isEditing) {
+        result = await putIdentityProviderMonitorTrigger(oktaPayload);
+      } else {
+        result = await createIdentityProviderMonitorTrigger(oktaPayload);
+      }
+    } else {
+      result = await putMonitorMutationTrigger(values);
+    }
+
     if (result) {
       clearTimeout(timeout);
       if (isErrorResult(result)) {
@@ -114,8 +162,7 @@ const ConfigureMonitorModal = ({
       >
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
-          // @ts-ignore - "secrets" is typed as "null"
-          url={integration.secrets!.url as string}
+          url={(integration.secrets as unknown as { url: string })?.url ?? ""}
           onClose={onClose}
           onSubmit={handleSubmit}
         />

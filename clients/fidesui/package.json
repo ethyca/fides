@@ -20,8 +20,9 @@
     "@chakra-ui/react": "^2.8.2",
     "antd": "^5.26.2",
     "iso-3166": "^4.3.0",
+    "motion": "^12.23.26",
     "react-hotkeys-hook": "^5.2.1",
-    "typescript": "^4.9.5"
+    "typescript": "^5.7.2"
   },
   "peerDependencies": {
     "react": "^18.3.1",
@@ -36,12 +37,12 @@
     "@storybook/react-vite": "^9.1.15",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^5.13.0",
-    "@typescript-eslint/parser": "^5.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.17.0",
+    "@typescript-eslint/parser": "^7.17.0",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-next": "13.2.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.27.5",

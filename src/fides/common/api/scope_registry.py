@@ -76,6 +76,7 @@ VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
 WORKER_STATS = "worker-stats"
+HEAP_DUMP = "heap_dump"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -146,6 +147,8 @@ DATASET_TEST = f"{DATASET}:{TEST}"
 
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
+HEAP_DUMP_EXEC = f"{HEAP_DUMP}:{EXEC}"
+
 EVALUATION_CREATE = f"{EVALUATION}:{CREATE}"
 EVALUATION_READ = f"{EVALUATION}:{READ}"
 EVALUATION_UPDATE = f"{EVALUATION}:{UPDATE}"
@@ -209,6 +212,7 @@ SAAS_CONFIG_READ = f"{SAAS_CONFIG}:{READ}"
 
 SAAS_CONNECTION_INSTANTIATE = f"{CONNECTION}:{INSTANTIATE}"
 CONNECTOR_TEMPLATE_REGISTER = f"{CONNECTOR_TEMPLATE}:{REGISTER}"
+CONNECTOR_TEMPLATE_READ = f"{CONNECTOR_TEMPLATE}:{READ}"
 
 SCOPE_READ = f"{SCOPE}:{READ}"
 
@@ -263,6 +267,7 @@ SCOPE_DOCS = {
     CONNECTION_AUTHORIZE: "OAuth2 Authorization",
     CONNECTION_TYPE_READ: "View types of connections",
     CONNECTOR_TEMPLATE_REGISTER: "Register a connector template",
+    CONNECTOR_TEMPLATE_READ: "View connector template configurations",
     CONSENT_READ: "Read consent preferences",
     CONSENT_SETTINGS_READ: "Read org-wide consent settings",
     CONSENT_SETTINGS_UPDATE: "Update org-wide consent settings",
@@ -295,6 +300,7 @@ SCOPE_DOCS = {
     DATASET_READ: "View datasets",
     DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
+    HEAP_DUMP_EXEC: "Execute a heap dump for memory diagnostics",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",

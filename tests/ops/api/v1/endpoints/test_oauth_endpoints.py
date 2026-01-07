@@ -440,6 +440,10 @@ class TestAcquireAccessToken:
 
         assert extracted_token[JWE_PAYLOAD_ROLES] == [OWNER]
 
+        # Check token type
+        token_type = json.loads(response.text).get("token_type")
+        assert token_type == "Bearer"
+
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
@@ -467,6 +471,9 @@ class TestAcquireAccessToken:
             ]
             == []
         )
+
+        token_type = json.loads(response.text).get("token_type")
+        assert token_type == "Bearer"
 
         new_client.delete(db)
 

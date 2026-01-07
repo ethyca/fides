@@ -1,16 +1,15 @@
 import {
-  AntButton as Button,
-  AntSelectProps as SelectProps,
-  ArrowForwardIcon,
-  Box,
-  Collapse,
-  Divider,
-  Flex,
+  Button,
+  ChakraArrowForwardIcon as ArrowForwardIcon,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraFlex as Flex,
+  ChakraFormLabel as FormLabel,
+  ChakraHeading as Heading,
+  ChakraText as Text,
   formatIsoLocation,
-  FormLabel,
-  Heading,
   isoStringToEntry,
-  Text,
+  SelectProps,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
@@ -115,7 +114,13 @@ const bannerButtonOptions: SelectProps["options"] = [
     label: "Acknowledge",
     value: Layer1ButtonOption.ACKNOWLEDGE,
   },
+  {
+    label: "GPC adaptive",
+    value: Layer1ButtonOption.GPC_CONDITIONAL,
+  },
 ];
+
+const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`;
 
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 
@@ -342,79 +347,58 @@ export const PrivacyExperienceForm = ({
         onChange={handleComponentChange}
         isRequired
       />
-      <Collapse
-        in={
-          values.component === ComponentType.TCF_OVERLAY &&
-          isPublisherRestrictionsFlagEnabled
-        }
-        animateOpacity
-      >
-        {values.component === ComponentType.TCF_OVERLAY &&
-          isPublisherRestrictionsFlagEnabled && (
-            <TCFConfigSelect
-              overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+      {values.component === ComponentType.TCF_OVERLAY &&
+        isPublisherRestrictionsFlagEnabled && (
+          <TCFConfigSelect
+            overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+          />
+        )}
+      {values.component === ComponentType.TCF_OVERLAY && (
+        <ControlledSelect
+          name="reject_all_mechanism"
+          id="reject_all_mechanism"
+          options={tcfRejectAllMechanismOptions}
+          defaultValue={RejectAllMechanism.REJECT_ALL}
+          label="Reject all behavior"
+          layout="stacked"
+          tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
+        />
+      )}
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.TCF_OVERLAY) && (
+        <ControlledSelect
+          name="layer1_button_options"
+          id="layer1_button_options"
+          defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
+          options={
+            values.component === ComponentType.TCF_OVERLAY
+              ? tcfBannerButtonOptions
+              : bannerButtonOptions
+          }
+          label={
+            values.component === ComponentType.TCF_OVERLAY
+              ? "Reject all visibility"
+              : "Banner options"
+          }
+          layout="stacked"
+          tooltip={
+            values.component === ComponentType.BANNER_AND_MODAL
+              ? GPC_ADAPTIVE_TOOLTIP
+              : undefined
+          }
+        />
+      )}
+      {values.component !== ComponentType.PRIVACY_CENTER &&
+        values.component !== ComponentType.HEADLESS && (
+          <Box p="1px">
+            <CustomSwitch
+              name="dismissable"
+              id="dismissable"
+              label="Allow user to dismiss"
+              variant="stacked"
             />
-          )}
-      </Collapse>
-      <Collapse
-        in={values.component === ComponentType.TCF_OVERLAY}
-        animateOpacity
-      >
-        {values.component === ComponentType.TCF_OVERLAY && (
-          <ControlledSelect
-            name="reject_all_mechanism"
-            id="reject_all_mechanism"
-            options={tcfRejectAllMechanismOptions}
-            defaultValue={RejectAllMechanism.REJECT_ALL}
-            label="Reject all behavior"
-            layout="stacked"
-            tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
-          />
+          </Box>
         )}
-      </Collapse>
-      <Collapse
-        in={
-          values.component === ComponentType.BANNER_AND_MODAL ||
-          values.component === ComponentType.TCF_OVERLAY
-        }
-        animateOpacity
-      >
-        {(values.component === ComponentType.BANNER_AND_MODAL ||
-          values.component === ComponentType.TCF_OVERLAY) && (
-          <ControlledSelect
-            name="layer1_button_options"
-            id="layer1_button_options"
-            defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
-            options={
-              values.component === ComponentType.TCF_OVERLAY
-                ? tcfBannerButtonOptions
-                : bannerButtonOptions
-            }
-            label={
-              values.component === ComponentType.TCF_OVERLAY
-                ? "Reject all visibility"
-                : "Banner options"
-            }
-            layout="stacked"
-          />
-        )}
-      </Collapse>
-      <Collapse
-        in={
-          values.component !== ComponentType.PRIVACY_CENTER &&
-          values.component !== ComponentType.HEADLESS
-        }
-        animateOpacity
-      >
-        <Box p="1px">
-          <CustomSwitch
-            name="dismissable"
-            id="dismissable"
-            label="Allow user to dismiss"
-            variant="stacked"
-          />
-        </Box>
-      </Collapse>
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Privacy notices
@@ -455,14 +439,8 @@ export const PrivacyExperienceForm = ({
           baseTestId="privacy-notice"
         />
       )}
-      <Collapse
-        in={
-          values.component === ComponentType.BANNER_AND_MODAL &&
-          !!values.privacy_notice_ids?.length
-        }
-        animateOpacity
-      >
-        {values.component === ComponentType.BANNER_AND_MODAL && (
+      {values.component === ComponentType.BANNER_AND_MODAL &&
+        !!values.privacy_notice_ids?.length && (
           <Box p="1px">
             <CustomSwitch
               name="show_layer1_notices"
@@ -472,7 +450,6 @@ export const PrivacyExperienceForm = ({
             />
           </Box>
         )}
-      </Collapse>
       <Divider />
       <Text as="h2" fontWeight="600">
         Locations & Languages
@@ -560,13 +537,8 @@ export const PrivacyExperienceForm = ({
       <Heading fontSize="md" fontWeight="semibold">
         Vendors & Assets
       </Heading>
-      <Collapse
-        in={
-          values.component === ComponentType.BANNER_AND_MODAL ||
-          values.component === ComponentType.MODAL
-        }
-        animateOpacity
-      >
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.MODAL) && (
         <Box p="1px">
           <CustomSwitch
             name="allow_vendor_asset_disclosure"
@@ -591,51 +563,46 @@ export const PrivacyExperienceForm = ({
             }}
           />
         </Box>
-      </Collapse>
-      <Collapse
-        in={
-          (values.component === ComponentType.BANNER_AND_MODAL ||
-            values.component === ComponentType.MODAL) &&
-          !!values.allow_vendor_asset_disclosure
-        }
-        animateOpacity
-      >
-        <ControlledSelect
-          name="asset_disclosure_include_types"
-          id="asset_disclosure_include_types"
-          mode="multiple"
-          label="Asset types to disclose"
-          layout="stacked"
-          tooltip="Select the asset types to disclose. Only cookies are currently supported."
-          options={[
-            {
-              label: StagedResourceTypeValue.COOKIE,
-              value: StagedResourceTypeValue.COOKIE,
-              disabled: false,
-            },
-            {
-              label: StagedResourceTypeValue.BROWSER_REQUEST,
-              value: StagedResourceTypeValue.BROWSER_REQUEST,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.I_FRAME,
-              value: StagedResourceTypeValue.I_FRAME,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.JAVASCRIPT_TAG,
-              value: StagedResourceTypeValue.JAVASCRIPT_TAG,
-              disabled: true,
-            },
-            {
-              label: StagedResourceTypeValue.IMAGE,
-              value: StagedResourceTypeValue.IMAGE,
-              disabled: true,
-            },
-          ]}
-        />
-      </Collapse>
+      )}
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.MODAL) &&
+        !!values.allow_vendor_asset_disclosure && (
+          <ControlledSelect
+            name="asset_disclosure_include_types"
+            id="asset_disclosure_include_types"
+            mode="multiple"
+            label="Asset types to disclose"
+            layout="stacked"
+            tooltip="Select the asset types to disclose. Only cookies are currently supported."
+            options={[
+              {
+                label: StagedResourceTypeValue.COOKIE,
+                value: StagedResourceTypeValue.COOKIE,
+                disabled: false,
+              },
+              {
+                label: StagedResourceTypeValue.BROWSER_REQUEST,
+                value: StagedResourceTypeValue.BROWSER_REQUEST,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.I_FRAME,
+                value: StagedResourceTypeValue.I_FRAME,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.JAVASCRIPT_TAG,
+                value: StagedResourceTypeValue.JAVASCRIPT_TAG,
+                disabled: true,
+              },
+              {
+                label: StagedResourceTypeValue.IMAGE,
+                value: StagedResourceTypeValue.IMAGE,
+                disabled: true,
+              },
+            ]}
+          />
+        )}
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Cookie Deletion

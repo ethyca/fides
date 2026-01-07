@@ -1,8 +1,11 @@
 import {
   ConsentStatus,
   DatastoreMonitorUpdates,
+  DiffStatus,
   WebMonitorUpdates,
 } from "~/types/api";
+
+import { ActionCenterTabHash } from "./hooks/useActionCenterTabs";
 
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]: "Consent respected",
@@ -64,6 +67,7 @@ export enum ConsentBreakdownColumnKeys {
 
 export const MONITOR_UPDATES_TO_IGNORE = [
   "classified_low_confidence",
+  "classified_medium_confidence",
   "classified_high_confidence",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
@@ -76,18 +80,18 @@ export const MONITOR_UPDATE_NAMES = new Map<
       DatastoreMonitorUpdates,
       (typeof MONITOR_UPDATES_TO_IGNORE)[number]
     >,
-  string
+  [string, string]
 >([
-  ["cookie", "Cookie"],
-  ["browser_request", "Browser request"],
-  ["image", "Image"],
-  ["iframe", "iFrame"],
-  ["javascript_tag", "JavaScript tag"],
-  ["unlabeled", "Unlabeled"],
-  ["in_review", "In review"],
-  ["classifying", "Classifying"],
-  ["removals", "Removals"],
-  ["approved", "Approved"],
+  ["cookie", ["Cookie", "Cookies"]],
+  ["browser_request", ["Browser request", "Browser requests"]],
+  ["image", ["Image", "Images"]],
+  ["iframe", ["iFrame", "iFrames"]],
+  ["javascript_tag", ["JavaScript tag", "JavaScript tags"]],
+  ["unlabeled", ["Unlabeled", "Unlabeled"]],
+  ["in_review", ["Classified", "Classified"]],
+  ["classifying", ["Classifying", "Classifying"]],
+  ["removals", ["Removal", "Removals"]],
+  ["reviewed", ["Reviewed", "Reviewed"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [
@@ -99,9 +103,99 @@ export const MONITOR_UPDATE_ORDER = [
   "unlabeled",
   "classifying",
   "in_review",
-  "approved",
+  "reviewed",
   "removals",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
 )[];
+
+export enum ConfidenceLevelLabel {
+  HIGH = "High confidence",
+  MEDIUM = "Medium confidence",
+  LOW = "Low confidence",
+}
+
+export enum InfrastructureSystemBulkActionType {
+  ADD = "add",
+  IGNORE = "ignore",
+  RESTORE = "restore",
+}
+
+export const INFRASTRUCTURE_SYSTEMS_TABS = [
+  {
+    key: ActionCenterTabHash.ATTENTION_REQUIRED,
+    label: "Attention required",
+  },
+  {
+    key: ActionCenterTabHash.ADDED,
+    label: "Activity",
+  },
+  {
+    key: ActionCenterTabHash.IGNORED,
+    label: "Ignored",
+  },
+] as const;
+
+export const INFRASTRUCTURE_SYSTEM_FILTERS = [
+  "all",
+  "new",
+  "active",
+  "inactive",
+  "known",
+  "unknown",
+  "removed",
+] as const;
+
+export type InfrastructureSystemFilterLabel =
+  (typeof INFRASTRUCTURE_SYSTEM_FILTERS)[number];
+
+export const INFRASTRUCTURE_SYSTEM_FILTER_LABELS: Record<
+  InfrastructureSystemFilterLabel,
+  string
+> = {
+  all: "All apps",
+  new: "New apps",
+  active: "Active",
+  inactive: "Inactive",
+  known: "Known Vendors",
+  unknown: "Unknown Vendors",
+  removed: "Removed",
+} as const;
+
+export const INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS = {
+  STATUS: "status-section",
+  VENDOR: "vendor-section",
+} as const;
+
+/**
+ * Maps infrastructure system filter labels to API parameters
+ */
+export const mapStatusFilterToDiffStatus = (
+  filter: InfrastructureSystemFilterLabel,
+): DiffStatus | null => {
+  switch (filter) {
+    case "new":
+      return DiffStatus.ADDITION;
+    case "removed":
+      return DiffStatus.REMOVAL;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Maps infrastructure system filter labels to status values for metadata
+ */
+export const mapStatusFilterToMetadataStatus = (
+  filter: InfrastructureSystemFilterLabel,
+): string | null => {
+  switch (filter) {
+    case "active":
+      return "ACTIVE";
+    case "inactive":
+      return "INACTIVE";
+    default:
+      return null;
+  }
+};

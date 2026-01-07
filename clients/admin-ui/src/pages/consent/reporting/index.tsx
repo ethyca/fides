@@ -2,13 +2,13 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs, { Dayjs } from "dayjs";
 import {
-  AntButton as Button,
-  AntDateRangePicker as DateRangePicker,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
+  Button,
+  DateRangePicker,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
-  useToast,
+  useChakraToast as useToast,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 

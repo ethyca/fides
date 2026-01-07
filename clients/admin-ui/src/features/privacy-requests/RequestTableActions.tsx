@@ -1,26 +1,30 @@
 import {
-  AntButton as Button,
-  HStack,
+  Button,
+  ChakraHStack as HStack,
+  ChakraPortal as Portal,
+  ChakraStackProps as StackProps,
+  ChakraText as Text,
   Icons,
-  Portal,
-  StackProps,
-  Text,
-  useDisclosure,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
-import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
+import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
-import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
+import {
+  PrivacyRequestResponse,
+  PrivacyRequestStatus,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
-import { useGetActiveMessagingProviderQuery } from "../messaging/messaging.slice";
+import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
+import { useMutations } from "./hooks/useMutations";
+import { PrivacyRequestEntity } from "./types";
 
 interface RequestTableActionsProps extends StackProps {
-  subjectRequest: PrivacyRequestEntity;
+  subjectRequest: PrivacyRequestResponse | PrivacyRequestEntity;
 }
 
 export const RequestTableActions = ({
@@ -50,7 +54,10 @@ export const RequestTableActions = ({
     config?.notifications?.send_request_completion_notification;
 
   const renderApproveButton = () => {
-    if (subjectRequest.status !== "pending") {
+    if (
+      subjectRequest.status !== "pending" &&
+      subjectRequest.status !== "duplicate"
+    ) {
       return null;
     }
 
@@ -69,7 +76,10 @@ export const RequestTableActions = ({
   };
 
   const renderDenyButton = () => {
-    if (subjectRequest.status !== "pending") {
+    if (
+      subjectRequest.status !== "pending" &&
+      subjectRequest.status !== "duplicate"
+    ) {
       return null;
     }
 

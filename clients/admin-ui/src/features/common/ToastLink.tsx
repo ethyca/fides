@@ -1,4 +1,4 @@
-import { AntButton as Button } from "fidesui";
+import { Button } from "fidesui";
 import { ReactNode } from "react";
 
 import styles from "~/features/ToastLink.module.scss";

@@ -1,58 +1,47 @@
 import {
-  AntBadge as Badge,
-  AntButton as Button,
-  AntFlex as Flex,
-  AntList as List,
-  AntMessage as message,
-  AntModal as modal,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntSpin as Spin,
-  Portal,
-  useDisclosure,
+  Button,
+  Checkbox,
+  Flex,
+  Icons,
+  List,
+  Pagination,
+  Skeleton,
+  Spin,
+  useMessage,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
-import { DownloadLightIcon } from "~/features/common/Icon";
-import { GlobalFilterV2 } from "~/features/common/table/v2";
-import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
+import {
+  useLazyDownloadPrivacyRequestCsvV2Query,
+  useSearchPrivacyRequestsQuery,
+} from "~/features/privacy-requests/privacy-requests.slice";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
-import useDownloadPrivacyRequestReport from "../hooks/useDownloadPrivacyRequestReport";
+import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
-import { PrivacyRequestFiltersModal } from "./PrivacyRequestFiltersModal";
+import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const {
-    filterQueryParams,
-    fuzzySearchTerm,
-    setFuzzySearchTerm,
-    modalFilters,
-    modalFiltersCount,
-    setModalFilters,
-  } = usePrivacyRequestsFilters({
-    pagination,
-  });
+  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
 
-  const [messageApi, messageContext] = message.useMessage();
-  const [modalApi, modalContext] = modal.useModal();
+  const messageApi = useMessage();
 
-  const { selectedIds, setSelectedIds, clearSelectedIds } = useSelection();
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const { data, isLoading, isFetching } = useGetAllPrivacyRequestsQuery({
-    ...filterQueryParams,
-    page: pagination.pageIndex,
-    size: pagination.pageSize,
-  });
+  const { data, isLoading, isFetching, refetch } =
+    useSearchPrivacyRequestsQuery({
+      ...filterQueryParams,
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+    });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -64,7 +53,24 @@ export const PrivacyRequestsDashboard = () => {
     return { ...results, items: itemsWithKeys };
   }, [data]);
 
-  const { downloadReport } = useDownloadPrivacyRequestReport();
+  const {
+    selectedIds,
+    setSelectedIds,
+    clearSelectedIds,
+    checkboxSelectState,
+    handleSelectAll,
+  } = useSelection({
+    currentPageKeys: requests.map((request) => request.id),
+  });
+
+  // Clear selections when requests change
+  // Once we have full support for select all, we can reset this only on filter changes and add a
+  // manual clear selection after a bulk action is performed
+  useEffect(() => {
+    clearSelectedIds();
+  }, [requests, clearSelectedIds]);
+
+  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
 
   const handleExport = async () => {
     let messageStr;
@@ -85,50 +91,65 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    clearSelectedIds,
-    messageApi,
-    modalApi,
   });
 
   return (
     <div>
-      <Flex justify="space-between" align="center" className="my-2">
-        <GlobalFilterV2
-          globalFilter={fuzzySearchTerm}
-          setGlobalFilter={setFuzzySearchTerm}
-          placeholder="Search by request ID or identity value"
+      {/* First row: Search and Filters */}
+      <Flex gap="small" align="center" className="mb-4">
+        <PrivacyRequestFiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          sortState={sortState}
+          setSortState={setSortState}
         />
-        <div className="flex items-center gap-2">
+      </Flex>
+
+      {/* Second row: Actions */}
+      <Flex gap="small" align="center" justify="space-between" className="mb-2">
+        <Flex align="center" gap="small">
+          <Checkbox
+            id="select-all"
+            checked={checkboxSelectState === "checked"}
+            indeterminate={checkboxSelectState === "indeterminate"}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+          />
+          <label htmlFor="select-all" className="cursor-pointer">
+            Select all
+          </label>
+          <div className="ml-3">
+            <ResultsSelectedCount
+              selectedIds={selectedIds}
+              totalResults={totalRows ?? 0}
+            />
+          </div>
+        </Flex>
+        <Flex align="center" gap="small">
+          <DuplicateRequestsButton
+            className="ml-3"
+            currentStatusFilter={filters.status}
+          />
           <BulkActionsDropdown
             selectedIds={selectedIds}
             menuItems={bulkActionMenuItems}
           />
-          <Button data-testid="filter-btn" onClick={onOpen}>
-            Filter
-            <Badge
-              size="small"
-              color={palette.FIDESUI_MINOS}
-              count={modalFiltersCount}
-            />
-          </Button>
+          <Button
+            aria-label="Reload"
+            data-testid="reload-btn"
+            icon={<Icons.Renew />}
+            onClick={() => refetch()}
+          />
           <Button
             aria-label="Export report"
             data-testid="export-btn"
-            icon={<DownloadLightIcon ml="1.5px" />}
+            icon={<Icons.Download />}
             onClick={handleExport}
           />
-        </div>
-        <Portal>
-          <PrivacyRequestFiltersModal
-            open={isOpen}
-            onClose={onClose}
-            modalFilters={modalFilters}
-            setModalFilters={setModalFilters}
-          />
-        </Portal>
+        </Flex>
       </Flex>
+
       {isLoading ? (
-        <div className=" p-2">
+        <div className="p-2">
           <List
             dataSource={Array(25).fill({})} // Is there a better way to do this?
             renderItem={() => (
@@ -141,7 +162,7 @@ export const PrivacyRequestsDashboard = () => {
       ) : (
         <Flex vertical gap="middle">
           <Spin spinning={isFetching}>
-            <List<PrivacyRequestEntity>
+            <List<PrivacyRequestResponse>
               dataSource={requests}
               rowSelection={{
                 selectedRowKeys: selectedIds,
@@ -162,8 +183,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {messageContext}
-      {modalContext}
     </div>
   );
 };

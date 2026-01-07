@@ -1,5 +1,5 @@
 import Restrict from "common/Restrict";
-import { Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 import type { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";

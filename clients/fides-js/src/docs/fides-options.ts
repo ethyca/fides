@@ -58,9 +58,10 @@
  */
 export interface FidesOptions {
   /**
-   * When `true`, deletes the `fides_consent` cookie when FidesJS is
+   * When `true`, deletes the `fides_consent` or `fides_consent_suffix` cookie when FidesJS is
    * initialized, to clear any previously saved consent preferences from the
-   * user's device.
+   * user's device. This option will only clear the cookie for the matching cookie name suffix or `fides_consent`
+   * if no suffix is provided.
    *
    * Defaults to `false`.
    */
@@ -333,4 +334,27 @@ export interface FidesOptions {
   fides_unsupported_repeated_script_loading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
+
+  /**
+   * Adds a suffix to the name of the cookie that Fides uses to store consent preferences.
+   *
+   * If provided, the cookie name will be `fides_consent_{suffix}`. For example, if set to
+   * `"mycompany"`, the cookie will be named `fides_consent_mycompany`. This allows multiple
+   * Fides instances on the same domain to maintain separate consent cookies.
+   *
+   * Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
+   */
+  fides_cookie_suffix?: string;
+
+  /**
+   * Specifies the compression method to use for the consent cookie. When set to "gzip",
+   * compression is always applied regardless of cookie size. This can help reduce cookie
+   * size when storing consent preferences with TCF strings or many vendors.
+   *
+   * - "none" = No compression applied (default)
+   * - "gzip" = Always apply gzip compression to the cookie value
+   *
+   * Defaults to `"none"`.
+   */
+  fides_cookie_compression: "gzip" | "none";
 }

@@ -1,20 +1,20 @@
 import { useAlert, useAPIHelper } from "common/hooks";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  AntButton as Button,
-  Box,
-  Center,
-  Spinner,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraSpinner as Spinner,
+  ChakraTable as Table,
+  ChakraTableContainer as TableContainer,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTfoot as Tfoot,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
+  ChakraVStack as VStack,
 } from "fidesui";
 import {
   privacyRequestApi,
@@ -34,7 +34,11 @@ import { ActionType } from "~/types/api";
 
 import ManualAccessProcessingDetail from "./ManualAccessProcessingDetail";
 import ManualErasureProcessingDetail from "./ManualErasureProcessingDetail";
-import { ManualInputData, ManualProcessingDetailProps } from "./types";
+import {
+  ManualInputData,
+  ManualInputDataFieldMap,
+  ManualProcessingDetailProps,
+} from "./types";
 
 type ActionConfig = {
   ProcessingDetailComponent: (
@@ -125,10 +129,9 @@ const ManualProcessingList = ({
       await uploadMutation(params).unwrap();
       const response = {
         connection_key: params.connection_key,
-        fields: {},
+        fields: {} as ManualInputDataFieldMap,
       };
       Object.entries(params.body).forEach(([key, value]) => {
-        // @ts-ignore
         response.fields[key] = value || "";
       });
       // Update the manual input data state
@@ -179,7 +182,6 @@ const ManualProcessingList = ({
               privacy_request_id: result.value.originalArgs.privacy_request_id,
             } as ManualInputData;
             Object.entries(result.value.data.fields).forEach(([key, value]) => {
-              // @ts-ignore
               item.fields[key] = value || "";
             });
             list.push(item);

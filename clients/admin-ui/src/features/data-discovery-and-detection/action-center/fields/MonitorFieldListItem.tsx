@@ -1,22 +1,21 @@
 import {
-  AntBreadcrumb as Breadcrumb,
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntListItemProps as ListItemProps,
-  AntListProps as ListProps,
-  AntSelectProps as SelectProps,
-  AntTag as Tag,
-  AntText as Text,
-  AntTooltip as Tooltip,
+  Breadcrumb,
+  Button,
+  Checkbox,
+  Flex,
+  List,
+  ListItemProps,
+  ListProps,
+  SelectProps,
   SparkleIcon,
+  Tag,
+  Text,
+  Tooltip,
 } from "fidesui";
+import _ from "lodash";
 
-import { ClassifierProgress } from "~/features/classifier/ClassifierProgress";
+import { SeverityGauge } from "~/features/common/progress/SeverityGauge";
 import { DiffStatus } from "~/types/api";
-import { ConfidenceScoreRange } from "~/types/api/models/ConfidenceScoreRange";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
 
 import {
   parseResourceBreadcrumbs,
@@ -25,6 +24,8 @@ import {
 import ClassificationSelect from "./ClassificationSelect";
 import styles from "./MonitorFieldListItem.module.scss";
 import { MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL } from "./MonitorFields.const";
+import { MonitorResource } from "./types";
+import { getMaxSeverity, mapConfidenceBucketToSeverity } from "./utils";
 
 type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
 
@@ -60,9 +61,7 @@ export const tagRender: TagRender = (props) => {
   );
 };
 
-type ListRenderItem = ListProps<
-  Page_DatastoreStagedResourceAPIResponse_["items"][number]
->["renderItem"];
+type ListRenderItem = ListProps<MonitorResource>["renderItem"];
 
 type MonitorFieldListItemRenderParams = Parameters<
   NonNullable<ListRenderItem>
@@ -96,7 +95,6 @@ const renderBreadcrumbItem = (breadcrumb: UrnBreadcrumbItem) => {
 
 const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   urn,
-  classifications,
   name,
   diff_status,
   selected,
@@ -104,40 +102,50 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
   onSetDataCategories,
   dataCategoriesDisabled,
   onNavigate,
-  preferred_data_categories,
   actions,
+  classifications,
+  ...restProps
 }) => {
+  const preferredDataCategories =
+    "preferred_data_categories" in restProps
+      ? restProps.preferred_data_categories
+      : [];
+
   const onSelectDataCategory = (value: string) => {
-    if (!preferred_data_categories?.includes(value)) {
-      onSetDataCategories(urn, [...(preferred_data_categories ?? []), value]);
+    if (!preferredDataCategories?.includes(value)) {
+      onSetDataCategories(urn, [...(preferredDataCategories ?? []), value]);
     }
   };
+
+  const confidenceBucketSeverity = _(
+    classifications?.flatMap(({ confidence_bucket }) => {
+      const severity = confidence_bucket
+        ? mapConfidenceBucketToSeverity(confidence_bucket)
+        : undefined;
+      return severity ? [severity] : [];
+    }),
+  )
+    .thru(getMaxSeverity)
+    .value();
 
   return (
     <List.Item
       key={urn}
       actions={[
-        classifications && classifications.length > 0 && (
-          <ClassifierProgress
-            percent={
-              classifications.find(
-                (classification) =>
-                  classification.confidence_score === ConfidenceScoreRange.HIGH,
-              )
-                ? 100
-                : 25
-            }
-          />
+        confidenceBucketSeverity && (
+          <SeverityGauge severity={confidenceBucketSeverity} className="mr-2" />
         ),
         ...(actions ?? []),
       ]}
     >
       <List.Item.Meta
         avatar={
-          <Checkbox
-            checked={selected}
-            onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
-          />
+          <div className="ml-2">
+            <Checkbox
+              checked={selected}
+              onChange={(e) => onSelect && onSelect(urn, e.target.checked)}
+            />
+          </div>
         }
         title={
           <Flex
@@ -179,7 +187,8 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
         description={
           <ClassificationSelect
             mode="multiple"
-            value={preferred_data_categories ?? []}
+            value={preferredDataCategories ?? []}
+            urn={urn}
             tagRender={(props) => {
               const isFromClassifier = !!classifications?.find(
                 (item) => item.label === props.value,
@@ -187,7 +196,7 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
 
               const handleClose = () => {
                 const newDataCategories =
-                  preferred_data_categories?.filter(
+                  preferredDataCategories?.filter(
                     (category) => category !== props.value,
                   ) ?? [];
                 onSetDataCategories(urn, newDataCategories);

@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntMessage as message,
-  AntModal as Modal,
-  VStack,
+  Button,
+  ChakraVStack as VStack,
+  Form,
+  Input,
+  Modal,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
@@ -31,6 +31,8 @@ export const SendTestMessageModal = ({
   const [createTestMessage] = useCreateTestConnectionMessageMutation();
   const [isLoading, setIsLoading] = useState(false);
   const [form] = Form.useForm();
+
+  const message = useMessage();
 
   const isSMSProvider = serviceType === messagingProviders.twilio_text;
 

@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntButtonProps as ButtonProps,
-  Box,
-  useDisclosure,
-  useToast,
-  VStack,
+  Button,
+  ButtonProps,
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useRef } from "react";
@@ -109,8 +109,7 @@ const AddVendor = ({
 
   const formRef = useRef(null);
   const selectedVendorId = formRef.current
-    ? // @ts-ignore
-      formRef.current.values.vendor_id
+    ? (formRef.current as { values: FormValues }).values.vendor_id
     : undefined;
   const dictEntry = useAppSelector(selectDictEntry(selectedVendorId || ""));
 

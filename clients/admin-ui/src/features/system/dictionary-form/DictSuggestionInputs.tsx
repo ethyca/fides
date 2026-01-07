@@ -1,16 +1,16 @@
 import {
-  AntSwitch as Switch,
-  Box,
-  Flex,
-  FormControl,
-  HStack,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Textarea,
-  VStack,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraHStack as HStack,
+  ChakraNumberDecrementStepper as NumberDecrementStepper,
+  ChakraNumberIncrementStepper as NumberIncrementStepper,
+  ChakraNumberInput as NumberInput,
+  ChakraNumberInputField as NumberInputField,
+  ChakraNumberInputStepper as NumberInputStepper,
+  ChakraTextarea as Textarea,
+  ChakraVStack as VStack,
+  Switch,
 } from "fidesui";
 import { Field, FieldProps, useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
@@ -52,7 +52,7 @@ const useDictSuggestion = (
   const { vendor_id: vendorId } = values;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (isShowingSuggestions === "showing") {
@@ -76,7 +76,6 @@ const useDictSuggestion = (
         // timing issue with the ref not being ready yet.
         setTimeout(() => {
           setTouched(true);
-          // @ts-ignore
           inputRef.current?.blur();
         }, 300);
       }

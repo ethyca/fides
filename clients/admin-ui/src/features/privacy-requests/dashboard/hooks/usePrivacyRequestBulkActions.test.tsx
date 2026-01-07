@@ -1,10 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
-import { AntMenuProps as MenuProps } from "fidesui";
+import { MenuProps } from "fidesui";
 
-import { PrivacyRequestStatus } from "~/types/api";
+import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
 import { BulkActionType } from "../../helpers";
-import { PrivacyRequestEntity } from "../../types";
 import { usePrivacyRequestBulkActions } from "./usePrivacyRequestBulkActions";
 
 const mockBulkApproveRequest = jest.fn();
@@ -29,7 +28,7 @@ const mockMessageApi = {
   success: jest.fn(),
   error: jest.fn(),
   warning: jest.fn(),
-} as any;
+};
 
 const mockModalApi = {
   confirm: jest.fn(),
@@ -39,31 +38,41 @@ const mockModalApi = {
   warning: jest.fn(),
 } as any;
 
+jest.mock("fidesui", () => ({
+  useMessage: jest.fn(() => mockMessageApi),
+  useModal: jest.fn(() => mockModalApi),
+  Icons: {
+    Checkmark: () => null,
+    Close: () => null,
+    TrashCan: () => null,
+  },
+}));
+
 describe("usePrivacyRequestBulkActions", () => {
   // Shared test data
-  const pendingRequest1: PrivacyRequestEntity = {
+  const pendingRequest1: PrivacyRequestResponse = {
     id: "1",
     status: PrivacyRequestStatus.PENDING,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const pendingRequest2: PrivacyRequestEntity = {
+  const pendingRequest2: PrivacyRequestResponse = {
     id: "2",
     status: PrivacyRequestStatus.PENDING,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const completeRequest: PrivacyRequestEntity = {
+  const completeRequest: PrivacyRequestResponse = {
     id: "3",
     status: PrivacyRequestStatus.COMPLETE,
-  } as PrivacyRequestEntity;
+  } as PrivacyRequestResponse;
 
-  const mockRequests: PrivacyRequestEntity[] = [
+  const mockRequests: PrivacyRequestResponse[] = [
     pendingRequest1,
     completeRequest,
   ];
-  const mockClearSelectedIds = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockMessageApi.loading.mockReturnValue(jest.fn());
   });
 
   it("returns correct menu items with proper disabled states", () => {
@@ -71,9 +80,6 @@ describe("usePrivacyRequestBulkActions", () => {
       usePrivacyRequestBulkActions({
         requests: mockRequests,
         selectedIds: ["1", "3"],
-        clearSelectedIds: mockClearSelectedIds,
-        messageApi: mockMessageApi,
-        modalApi: mockModalApi,
       }),
     );
 
@@ -111,9 +117,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 
@@ -142,10 +145,6 @@ describe("usePrivacyRequestBulkActions", () => {
       expect(mockBulkApproveRequest).toHaveBeenCalledWith({
         request_ids: ["1", "2"],
       });
-      expect(mockMessageApi.success).toHaveBeenCalledWith(
-        "Successfully approved 2 privacy requests",
-        5,
-      );
     });
 
     it("delete: shows confirmation modal with danger type and calls API successfully", async () => {
@@ -160,9 +159,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 
@@ -190,10 +186,6 @@ describe("usePrivacyRequestBulkActions", () => {
       expect(mockBulkSoftDeleteRequest).toHaveBeenCalledWith({
         request_ids: ["1", "2"],
       });
-      expect(mockMessageApi.success).toHaveBeenCalledWith(
-        "Successfully deleted 2 privacy requests",
-        5,
-      );
     });
 
     it("deny: calls API with reason and passes warning message for partial support", async () => {
@@ -211,9 +203,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 
@@ -233,10 +222,6 @@ describe("usePrivacyRequestBulkActions", () => {
         request_ids: ["1"],
         reason: "User requested withdrawal",
       });
-      expect(mockMessageApi.success).toHaveBeenCalledWith(
-        "Successfully denied 1 privacy request",
-        5,
-      );
     });
 
     it("shows warning when only partial requests support the action", async () => {
@@ -251,9 +236,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 
@@ -288,9 +270,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 
@@ -314,9 +293,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          clearSelectedIds: mockClearSelectedIds,
-          messageApi: mockMessageApi,
-          modalApi: mockModalApi,
         }),
       );
 

@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useCallback } from "react";
@@ -63,7 +63,7 @@ export const useVerificationForm = ({
           `${settings.FIDES_API_URL}/${verificationType}/${requestId}/verify`,
           {
             method: "POST",
-            headers,
+            headers: headers as unknown as HeadersInit,
             body: JSON.stringify(body),
           },
         );

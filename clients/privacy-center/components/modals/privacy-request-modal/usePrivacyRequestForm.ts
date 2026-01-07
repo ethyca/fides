@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
@@ -200,7 +200,7 @@ const usePrivacyRequestForm = ({
           `${settings.FIDES_API_URL}/privacy-request`,
           {
             method: "POST",
-            headers,
+            headers: headers as unknown as HeadersInit,
             body: JSON.stringify(body),
           },
         );
@@ -220,9 +220,11 @@ const usePrivacyRequestForm = ({
             ...SuccessToastOptions,
           });
         } else if (
-          isVerificationRequired &&
-          data.succeeded.length &&
-          data.succeeded[0].status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
+          (isVerificationRequired &&
+            data.succeeded.length &&
+            data.succeeded[0].status ===
+              PrivacyRequestStatus.IDENTITY_UNVERIFIED) ||
+          data.succeeded[0].status === PrivacyRequestStatus.DUPLICATE
         ) {
           setPrivacyRequestId(data.succeeded[0].id);
           setCurrentView(ModalViews.IdentityVerification);

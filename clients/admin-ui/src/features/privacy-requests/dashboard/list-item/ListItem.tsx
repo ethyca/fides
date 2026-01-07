@@ -1,14 +1,8 @@
-import {
-  AntFlex as Flex,
-  AntList as List,
-  AntTag as Tag,
-  formatIsoLocation,
-  isoStringToEntry,
-} from "fidesui";
+import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray, toString } from "lodash";
 import React from "react";
 
-import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { PrivacyRequestResponse } from "~/types/api";
 
 import { RequestTableActions } from "../../RequestTableActions";
 import {
@@ -19,7 +13,7 @@ import {
 import { DaysLeft, Header, LabeledText, ReceivedOn } from "./components";
 
 interface ListItemProps {
-  item: PrivacyRequestEntity;
+  item: PrivacyRequestResponse;
   checkbox?: React.ReactNode;
 }
 
@@ -44,21 +38,16 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
   return (
     <List.Item>
       <div className="pr-4">{checkbox}</div>
-      <div className="grow pr-8">
-        <Header privacyRequest={item} />
-        <Flex vertical gap="small" wrap className="pt-1">
+      <Flex vertical gap="small" className="grow pr-8">
+        <Header privacyRequest={item} primaryIdentity={primaryIdentity} />
+        <Flex vertical gap="small" wrap>
           <Flex gap="small" wrap>
-            {primaryIdentity && (
-              <LabeledText label={primaryIdentity.label}>
-                {primaryIdentity.value}
-              </LabeledText>
-            )}
-            <Tag>{item.policy.name}</Tag>
-            <Tag>{item.source}</Tag>
+            <LabeledText label="Policy">{item.policy.name}</LabeledText>
+            <LabeledText label="Source">{item.source}</LabeledText>
           </Flex>
 
           {hasExtraDetails && (
-            <Flex wrap gap="middle">
+            <Flex wrap className="gap-x-3 gap-y-2">
               {item.location && (
                 <LabeledText key="location" label="Location">
                   {locationIsoEntry
@@ -70,21 +59,32 @@ export const ListItem = ({ item, checkbox }: ListItemProps) => {
                 </LabeledText>
               )}
               {otherIdentities.map((identity) => (
-                <LabeledText key={identity.key} label={identity.label}>
+                <LabeledText
+                  key={identity.key}
+                  label={identity.label}
+                  copyValue={identity.value}
+                >
                   {identity.value}
                 </LabeledText>
               ))}
-              {customFields.map((field) => (
-                <LabeledText key={field.key} label={field.label}>
-                  {isArray(field.value)
-                    ? field.value.join(" - ")
-                    : toString(field.value)}
-                </LabeledText>
-              ))}
+              {customFields.map((field) => {
+                const valueString = isArray(field.value)
+                  ? field.value.join(" - ")
+                  : toString(field.value);
+                return (
+                  <LabeledText
+                    key={field.key}
+                    label={field.label}
+                    copyValue={valueString}
+                  >
+                    {valueString}
+                  </LabeledText>
+                );
+              })}
             </Flex>
           )}
         </Flex>
-      </div>
+      </Flex>
       <div className="flex shrink-0 flex-col items-end gap-2 pr-2 2xl:flex-row 2xl:gap-4">
         <DaysLeft
           daysLeft={item.days_left}

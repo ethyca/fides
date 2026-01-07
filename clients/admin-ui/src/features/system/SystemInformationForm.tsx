@@ -1,13 +1,12 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntButton as Button,
-  Box,
-  Collapse,
-  Heading,
-  Stack,
-  Text,
-  useToast,
+  Button,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
@@ -18,7 +17,9 @@ import {
   CustomFieldsList,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { useFeatures } from "~/features/common/features/features.slice";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
@@ -52,25 +53,29 @@ import {
   transformFormValuesToSystem,
   transformSystemToFormValues,
 } from "~/features/system/form";
+import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import {
+  useBulkAssignStewardMutation,
   useCreateSystemMutation,
   useGetAllSystemsQuery,
+  useLazyGetSystemByFidesKeyQuery,
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { useGetAllSystemGroupsQuery } from "~/features/system/system-groups.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
-import VendorSelector from "~/features/system/VendorSelector";
-import { ResourceTypes, SystemResponse } from "~/types/api";
-
-import { ControlledSelect } from "../common/form/ControlledSelect";
-import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
   legalBasisForTransferOptions,
   responsibilityOptions,
-} from "./SystemInformationFormSelectOptions";
+} from "~/features/system/SystemInformationFormSelectOptions";
+import VendorSelector from "~/features/system/VendorSelector";
+import {
+  useGetAllUsersQuery,
+  useRemoveUserManagedSystemMutation,
+} from "~/features/user-management";
+import { SystemResponse } from "~/types/api";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -102,8 +107,25 @@ const SystemInformationForm = ({
   const { plus: systemGroupsEnabled } = useFeatures();
 
   const dispatch = useAppDispatch();
+
+  // Fetch eligible users for data stewards (exclude approvers and external respondents)
+  const { data: eligibleUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+    exclude_approvers: true,
+  });
+
+  // Transform users to options for the select dropdown
+  const dataStewardOptions = useMemo(() => {
+    const users = eligibleUsersData?.items || [];
+    return users.map((user) => ({
+      label: user.username,
+      value: user.username,
+    }));
+  }, [eligibleUsersData]);
   const customFields = useCustomFields({
-    resourceType: ResourceTypes.SYSTEM,
+    resourceType: LegacyResourceTypes.SYSTEM,
     resourceFidesKey: passedInSystem?.fides_key,
   });
 
@@ -159,7 +181,10 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const [bulkAssignSteward] = useBulkAssignStewardMutation();
   const [populateSystemAssets] = usePopulateSystemAssetsMutation();
+  const [getSystemByFidesKey] = useLazyGetSystemByFidesKeyQuery();
+  const [removeUserManagedSystem] = useRemoveUserManagedSystemMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -266,7 +291,9 @@ const SystemInformationForm = ({
       }
     };
 
-    let result;
+    let result:
+      | { data: SystemResponse }
+      | { error: FetchBaseQueryError | SerializedError };
     if (isEditing) {
       result = await updateSystemMutationTrigger(systemBody);
     } else {
@@ -275,7 +302,12 @@ const SystemInformationForm = ({
 
     await customFields.upsertCustomFields(values);
 
-    if (!isEditing && values.vendor_id && result.data?.fides_key) {
+    if (
+      !isEditing &&
+      values.vendor_id &&
+      !isErrorResult(result) &&
+      result.data?.fides_key
+    ) {
       const assetResult = await populateSystemAssets({
         systemKey: result.data.fides_key,
       });
@@ -285,6 +317,100 @@ const SystemInformationForm = ({
             "An unexpected error occurred while populating the system assets from Compass. Please try again.",
           ),
         );
+      }
+    }
+
+    // Handle data stewards assignment after system is created/updated
+    if (!isErrorResult(result) && result.data?.fides_key) {
+      const systemData = result.data;
+      // Get current stewards from the system response (with both username and id)
+      const currentStewardsMap = new Map(
+        (systemData.data_stewards || []).map(
+          (user: { username: string; id: string }) => [user.username, user.id],
+        ),
+      );
+      const currentStewards = Array.from(currentStewardsMap.keys());
+      const desiredStewards = values.data_stewards || [];
+
+      // Find stewards that need to be added (not already assigned)
+      const stewardsToAdd = desiredStewards.filter(
+        (steward) => !currentStewards.includes(steward),
+      );
+
+      // Find stewards that need to be removed (no longer in desired list)
+      const stewardsToRemove = currentStewards.filter(
+        (steward: string) => !desiredStewards.includes(steward),
+      );
+
+      // Assign each new steward to the system
+      await Promise.all(
+        stewardsToAdd.map(async (steward) => {
+          const assignResult = await bulkAssignSteward({
+            data_steward: steward,
+            system_keys: [systemData.fides_key],
+          });
+          if (isErrorResult(assignResult)) {
+            toast({
+              status: "warning",
+              description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
+                assignResult.error,
+                "Please try again.",
+              )}`,
+            });
+          }
+        }),
+      );
+
+      // Remove stewards that are no longer selected
+      // Use the user ID from the current stewards map to call the remove endpoint
+      await Promise.all(
+        stewardsToRemove
+          .map((steward) => {
+            const stewardId = currentStewardsMap.get(steward);
+            if (!stewardId) {
+              toast({
+                status: "warning",
+                description: `Could not find user ID for ${steward}. Skipping removal.`,
+              });
+              return null;
+            }
+            return { steward, stewardId };
+          })
+          .filter(
+            (item): item is { steward: string; stewardId: string } =>
+              item !== null,
+          )
+          .map(async ({ steward, stewardId }) => {
+            const removeResult = await removeUserManagedSystem({
+              userId: stewardId,
+              systemKey: systemData.fides_key,
+            });
+            if (isErrorResult(removeResult)) {
+              toast({
+                status: "warning",
+                description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
+                  removeResult.error,
+                  "Please try again.",
+                )}`,
+              });
+            }
+          }),
+      );
+
+      // Refetch the system to get updated data stewards
+      if (stewardsToAdd.length > 0 || stewardsToRemove.length > 0) {
+        const refreshedSystemResult = await getSystemByFidesKey(
+          systemData.fides_key,
+        );
+        if (
+          refreshedSystemResult &&
+          "data" in refreshedSystemResult &&
+          refreshedSystemResult.data &&
+          !("error" in refreshedSystemResult)
+        ) {
+          // Update the result with the refreshed system data
+          result.data = refreshedSystemResult.data as SystemResponse;
+        }
       }
     }
 
@@ -427,10 +553,7 @@ const SystemInformationForm = ({
                       tooltip="Is this system exempt from privacy regulations?"
                       disabled={!values.processes_personal_data || lockedForGVL}
                     />
-                    <Collapse
-                      in={values.exempt_from_privacy_regulations}
-                      animateOpacity
-                    >
+                    {values.exempt_from_privacy_regulations && (
                       <Box mt={4}>
                         <CustomTextInput
                           name="reason_for_exemption"
@@ -441,234 +564,216 @@ const SystemInformationForm = ({
                           disabled={lockedForGVL}
                         />
                       </Box>
-                    </Collapse>
+                    )}
                   </Stack>
                 </Box>
-                <Collapse
-                  in={
-                    values.processes_personal_data &&
-                    !values.exempt_from_privacy_regulations
-                  }
-                  style={{
-                    overflow: "visible",
-                  }}
-                  animateOpacity
-                >
-                  <Stack spacing={4} mt={4}>
-                    <Stack spacing={0}>
-                      <DictSuggestionSwitch
-                        name="uses_profiling"
-                        label="This system performs profiling"
-                        tooltip="Does this system perform profiling that could have a legal effect?"
-                        disabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.uses_profiling}
-                        animateOpacity
-                        style={{
-                          overflow: "visible",
-                        }}
-                      >
-                        <Box mt={4}>
-                          <ControlledSelect
-                            mode="multiple"
-                            layout="stacked"
-                            name="legal_basis_for_profiling"
-                            label="Legal basis for profiling"
-                            options={legalBasisForProfilingOptions}
-                            tooltip="What is the legal basis under which profiling is performed?"
-                            disabled={lockedForGVL}
-                            isRequired={values.uses_profiling}
-                          />
-                        </Box>
-                      </Collapse>
+                {values.processes_personal_data &&
+                  !values.exempt_from_privacy_regulations && (
+                    <Stack spacing={4} mt={4}>
+                      <Stack spacing={0}>
+                        <DictSuggestionSwitch
+                          name="uses_profiling"
+                          label="This system performs profiling"
+                          tooltip="Does this system perform profiling that could have a legal effect?"
+                          disabled={lockedForGVL}
+                        />
+                        {values.uses_profiling && (
+                          <Box mt={4}>
+                            <ControlledSelect
+                              mode="multiple"
+                              layout="stacked"
+                              name="legal_basis_for_profiling"
+                              label="Legal basis for profiling"
+                              options={legalBasisForProfilingOptions}
+                              tooltip="What is the legal basis under which profiling is performed?"
+                              disabled={lockedForGVL}
+                              isRequired={values.uses_profiling}
+                            />
+                          </Box>
+                        )}
+                      </Stack>
+                      <Stack spacing={0}>
+                        <DictSuggestionSwitch
+                          name="does_international_transfers"
+                          label="This system transfers data"
+                          tooltip="Does this system transfer data to other countries or international organizations?"
+                          disabled={lockedForGVL}
+                        />
+                        {values.does_international_transfers && (
+                          <Box mt={4}>
+                            <ControlledSelect
+                              mode="multiple"
+                              layout="stacked"
+                              name="legal_basis_for_transfers"
+                              label="Legal basis for transfer"
+                              options={legalBasisForTransferOptions}
+                              tooltip="What is the legal basis under which the data is transferred?"
+                              isRequired={values.does_international_transfers}
+                              disabled={lockedForGVL}
+                            />
+                          </Box>
+                        )}
+                      </Stack>
+                      <Stack spacing={0}>
+                        <CustomSwitch
+                          name="requires_data_protection_assessments"
+                          label="This system requires Data Privacy Assessments"
+                          tooltip="Does this system require (DPA/DPIA) assessments?"
+                          variant="stacked"
+                          isDisabled={lockedForGVL}
+                        />
+                        {values.requires_data_protection_assessments && (
+                          <Box mt={4}>
+                            <CustomTextInput
+                              label="DPIA/DPA location"
+                              name="dpa_location"
+                              tooltip="Where is the DPA/DPIA stored?"
+                              variant="stacked"
+                              disabled={lockedForGVL}
+                              isRequired={
+                                values.requires_data_protection_assessments
+                              }
+                            />
+                          </Box>
+                        )}
+                      </Stack>
                     </Stack>
-                    <Stack spacing={0}>
-                      <DictSuggestionSwitch
-                        name="does_international_transfers"
-                        label="This system transfers data"
-                        tooltip="Does this system transfer data to other countries or international organizations?"
-                        disabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.does_international_transfers}
-                        animateOpacity
-                        style={{
-                          overflow: "visible",
-                        }}
-                      >
-                        <Box mt={4}>
-                          <ControlledSelect
-                            mode="multiple"
-                            layout="stacked"
-                            name="legal_basis_for_transfers"
-                            label="Legal basis for transfer"
-                            options={legalBasisForTransferOptions}
-                            tooltip="What is the legal basis under which the data is transferred?"
-                            isRequired={values.does_international_transfers}
-                            disabled={lockedForGVL}
-                          />
-                        </Box>
-                      </Collapse>
-                    </Stack>
-                    <Stack spacing={0}>
-                      <CustomSwitch
-                        name="requires_data_protection_assessments"
-                        label="This system requires Data Privacy Assessments"
-                        tooltip="Does this system require (DPA/DPIA) assessments?"
-                        variant="stacked"
-                        isDisabled={lockedForGVL}
-                      />
-                      <Collapse
-                        in={values.requires_data_protection_assessments}
-                        animateOpacity
-                      >
-                        <Box mt={4}>
-                          <CustomTextInput
-                            label="DPIA/DPA location"
-                            name="dpa_location"
-                            tooltip="Where is the DPA/DPIA stored?"
-                            variant="stacked"
-                            disabled={lockedForGVL}
-                            isRequired={
-                              values.requires_data_protection_assessments
-                            }
-                          />
-                        </Box>
-                      </Collapse>
-                    </Stack>
-                  </Stack>
-                </Collapse>
+                  )}
               </Stack>
             </SystemFormInputGroup>
-            <Collapse
-              in={
-                values.processes_personal_data &&
-                !values.exempt_from_privacy_regulations
-              }
-              animateOpacity
-            >
-              <SystemFormInputGroup heading="Cookie properties">
-                <DictSuggestionSwitch
-                  name="uses_cookies"
-                  label="This system uses cookies"
-                  tooltip="Does this system use cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="cookie_refresh"
-                  label="This system refreshes cookies"
-                  tooltip="Does this system automatically refresh cookies?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionSwitch
-                  name="uses_non_cookie_access"
-                  label="This system uses non-cookie trackers"
-                  tooltip="Does this system use other types of trackers?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionNumberInput
-                  name="cookie_max_age_seconds"
-                  label="Maximum duration (seconds)"
-                  tooltip="What is the maximum amount of time a cookie will live?"
-                  disabled={lockedForGVL}
-                />
-              </SystemFormInputGroup>
-              <SystemFormInputGroup heading="Administrative properties">
-                <CustomTextInput
-                  label="Data stewards"
-                  name="data_stewards"
-                  tooltip="Who are the stewards assigned to the system?"
-                  variant="stacked"
-                  disabled
-                />
-                <DictSuggestionTextInput
-                  id="privacy_policy"
-                  name="privacy_policy"
-                  label="Privacy policy URL"
-                  tooltip="Where can the privacy policy be located?"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionTextInput
-                  id="legal_name"
-                  name="legal_name"
-                  label="Legal name"
-                  tooltip="What is the legal name of the business?"
-                />
-                <DictSuggestionTextArea
-                  id="legal_address"
-                  name="legal_address"
-                  label="Legal address"
-                  tooltip="What is the legal address for the business?"
-                />
-                <CustomTextInput
-                  label="Department"
-                  name="administrating_department"
-                  tooltip="Which department is concerned with this system?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <ControlledSelect
-                  mode="multiple"
-                  layout="stacked"
-                  label="Responsibility"
-                  name="responsibility"
-                  options={responsibilityOptions}
-                  tooltip="What is the role of the business with regard to data processing?"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <DictSuggestionTextInput
-                  name="dpo"
-                  id="dpo"
-                  label="Legal contact (DPO)"
-                  tooltip="What is the official privacy contact information?"
-                  disabled={lockedForGVL}
-                />
-                <CustomTextInput
-                  label="Joint controller"
-                  name="joint_controller_info"
-                  tooltip="Who are the party or parties that share responsibility for processing data?"
-                  variant="stacked"
-                  disabled={
-                    !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations
-                  }
-                />
-                <DictSuggestionTextInput
-                  label="Data security practices"
-                  name="data_security_practices"
-                  id="data_security_practices"
-                  tooltip="Which data security practices are employed to keep the data safe?"
-                />
-                <DictSuggestionTextInput
-                  label="Legitimate interest disclosure URL"
-                  name="legitimate_interest_disclosure_url"
-                  id="legitimate_interest_disclosure_url"
-                  disabled={lockedForGVL}
-                />
-                <DictSuggestionTextInput
-                  label="Vendor deleted date"
-                  name="vendor_deleted_date"
-                  id="vendor_deleted_date"
-                  tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
-                  // disable this field for editing:
-                  // deleted date is populated by the GVL and should not be editable by users
-                  disabled
-                />
-              </SystemFormInputGroup>
-              {values.fides_key ? (
-                <CustomFieldsList
-                  resourceType={ResourceTypes.SYSTEM}
-                  resourceFidesKey={values.fides_key}
-                />
-              ) : null}
-            </Collapse>
+            {values.processes_personal_data &&
+              !values.exempt_from_privacy_regulations && (
+                <>
+                  <SystemFormInputGroup heading="Cookie properties">
+                    <DictSuggestionSwitch
+                      name="uses_cookies"
+                      label="This system uses cookies"
+                      tooltip="Does this system use cookies?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionSwitch
+                      name="cookie_refresh"
+                      label="This system refreshes cookies"
+                      tooltip="Does this system automatically refresh cookies?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionSwitch
+                      name="uses_non_cookie_access"
+                      label="This system uses non-cookie trackers"
+                      tooltip="Does this system use other types of trackers?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionNumberInput
+                      name="cookie_max_age_seconds"
+                      label="Maximum duration (seconds)"
+                      tooltip="What is the maximum amount of time a cookie will live?"
+                      disabled={lockedForGVL}
+                    />
+                  </SystemFormInputGroup>
+                  <SystemFormInputGroup heading="Administrative properties">
+                    <ControlledSelect
+                      mode="multiple"
+                      layout="stacked"
+                      label="Data stewards"
+                      name="data_stewards"
+                      tooltip="Who are the stewards assigned to the system?"
+                      options={dataStewardOptions}
+                      showSearch
+                      filterOption={(input, option) =>
+                        String(option?.label ?? "")
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                      }
+                      placeholder="Select data stewards"
+                    />
+                    <DictSuggestionTextInput
+                      id="privacy_policy"
+                      name="privacy_policy"
+                      label="Privacy policy URL"
+                      tooltip="Where can the privacy policy be located?"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionTextInput
+                      id="legal_name"
+                      name="legal_name"
+                      label="Legal name"
+                      tooltip="What is the legal name of the business?"
+                    />
+                    <DictSuggestionTextArea
+                      id="legal_address"
+                      name="legal_address"
+                      label="Legal address"
+                      tooltip="What is the legal address for the business?"
+                    />
+                    <CustomTextInput
+                      label="Department"
+                      name="administrating_department"
+                      tooltip="Which department is concerned with this system?"
+                      variant="stacked"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <ControlledSelect
+                      mode="multiple"
+                      layout="stacked"
+                      label="Responsibility"
+                      name="responsibility"
+                      options={responsibilityOptions}
+                      tooltip="What is the role of the business with regard to data processing?"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <DictSuggestionTextInput
+                      name="dpo"
+                      id="dpo"
+                      label="Legal contact (DPO)"
+                      tooltip="What is the official privacy contact information?"
+                      disabled={lockedForGVL}
+                    />
+                    <CustomTextInput
+                      label="Joint controller"
+                      name="joint_controller_info"
+                      tooltip="Who are the party or parties that share responsibility for processing data?"
+                      variant="stacked"
+                      disabled={
+                        !values.processes_personal_data ||
+                        values.exempt_from_privacy_regulations
+                      }
+                    />
+                    <DictSuggestionTextInput
+                      label="Data security practices"
+                      name="data_security_practices"
+                      id="data_security_practices"
+                      tooltip="Which data security practices are employed to keep the data safe?"
+                    />
+                    <DictSuggestionTextInput
+                      label="Legitimate interest disclosure URL"
+                      name="legitimate_interest_disclosure_url"
+                      id="legitimate_interest_disclosure_url"
+                      disabled={lockedForGVL}
+                    />
+                    <DictSuggestionTextInput
+                      label="Vendor deleted date"
+                      name="vendor_deleted_date"
+                      id="vendor_deleted_date"
+                      tooltip="If this vendor is no longer active, it will be 'soft' deleted. When that occurs, it's deleted date will be recorded here for reporting."
+                      // disable this field for editing:
+                      // deleted date is populated by the GVL and should not be editable by users
+                      disabled
+                    />
+                  </SystemFormInputGroup>
+                  {values.fides_key ? (
+                    <CustomFieldsList
+                      resourceType={LegacyResourceTypes.SYSTEM}
+                      resourceFidesKey={values.fides_key}
+                    />
+                  ) : null}
+                </>
+              )}
           </Stack>
           <Box mt={6}>
             <Button

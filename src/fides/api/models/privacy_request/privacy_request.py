@@ -4,15 +4,22 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
+from sqlalchemy.orm import (
+    Query,
+    RelationshipProperty,
+    Session,
+    backref,
+    defer,
+    relationship,
+)
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -133,6 +140,16 @@ class PrivacyRequest(
     A privacy request is a database record representing the request's
     progression within the Fides system.
     """
+
+    __table_args__ = (
+        # Composite index for duplicate detection queries
+        # Optimizes filtering by policy_id and created_at time window
+        Index(
+            "ix_privacyrequest_policy_created",
+            "policy_id",
+            "created_at",
+        ),
+    )
 
     external_id = Column(String, index=True)
     # When the request was dispatched into the Fides pipeline
@@ -374,6 +391,29 @@ class PrivacyRequest(
 
         return super().create(db=db, data=data, check_name=check_name)
 
+    @classmethod
+    def query_without_large_columns(cls, db: Session) -> Query:
+        """
+        Returns a query for PrivacyRequest with large columns deferred to prevent OOM errors.
+
+        This excludes the large columns (_filtered_final_upload and access_result_urls)
+        which can be very large (MBs per request). Use this method for list views, bulk
+        operations, and background tasks that don't need the filtered results.
+
+        The large columns can still be accessed later if needed by accessing them directly
+        on individual PrivacyRequest instances.
+
+        Args:
+            db: Database session
+
+        Returns:
+            Query with large columns deferred
+        """
+        return db.query(cls).options(
+            defer(cls._filtered_final_upload),
+            defer(cls.access_result_urls),
+        )
+
     def to_safe_dict(self) -> Dict[str, Any]:
         """
         Return a dict representation of the PrivacyRequest, excluding any fields
@@ -614,7 +654,10 @@ class PrivacyRequest(
         """Verify the identification code supplied by the user
         If verified, change the status of the request to "pending", and set the datetime the identity was verified.
         """
-        if not self.status == PrivacyRequestStatus.identity_unverified:
+        if not self.status in [
+            PrivacyRequestStatus.identity_unverified,
+            PrivacyRequestStatus.duplicate,
+        ]:
             raise IdentityVerificationException(
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
@@ -692,12 +735,29 @@ class PrivacyRequest(
                 },
             )
 
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache"""
+    def identity_prefix_cache_and_keys(self) -> Tuple[str, FidesopsRedis, List[str]]:
+        """Returns the prefix and cache keys for the identity data for this request"""
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+        return prefix, cache, keys
+
+    def verify_cache_for_identity_data(self) -> bool:
+        """Verifies if the identity data is cached for this request"""
+        _, _, keys = self.identity_prefix_cache_and_keys()
+        return len(keys) > 0
+
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
+        prefix, cache, keys = self.identity_prefix_cache_and_keys()
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            identity = self.get_persisted_identity()
+            self.cache_identity(identity)
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:
@@ -715,10 +775,25 @@ class PrivacyRequest(
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
+        result: Dict[str, Any] = {}
         prefix = f"id-{self.id}-custom-privacy-request-field-*"
+
         cache: FidesopsRedis = get_cache()
         keys = cache.keys(prefix)
-        result = {}
+
+        if not keys:
+            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+            custom_privacy_request_fields = (
+                self.get_persisted_custom_privacy_request_fields()
+            )
+            self.cache_custom_privacy_request_fields(
+                {
+                    key: CustomPrivacyRequestFieldSchema(**value)
+                    for key, value in custom_privacy_request_fields.items()
+                }
+            )
+            keys = cache.keys(prefix)
+
         for key in keys:
             value = cache.get(key)
             if value:

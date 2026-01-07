@@ -697,7 +697,7 @@ class TestWriteToInMemoryBuffer:
             "data/mongo/index.html",
             "data/mysql/customer/index.html",
             "data/mysql/index.html",
-            "welcome.html",
+            "clickme.html",
         ]
 
     def test_not_implemented(self, data, privacy_request):

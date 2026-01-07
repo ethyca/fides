@@ -12,11 +12,45 @@ describe("Integration Management - Manual Task Conditions", () => {
       body: {},
     }).as("getConfig");
 
+    // Mock privacy center config for custom fields
+    cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+      fixture: "privacy-requests/privacy-center-config.json",
+    }).as("getPrivacyCenterConfig");
+
+    // Mock locations and regulations for privacy request fields
+    cy.intercept("GET", "/api/v1/plus/locations?all_locations=true", {
+      fixture: "locations/list.json",
+    }).as("getLocations");
+
+    // Mock policies for privacy request fields
+    cy.intercept("GET", "/api/v1/policy*", {
+      fixture: "policies/list.json",
+    }).as("getPolicies");
+
+    // Mock privacy request fields endpoint
+    cy.intercept(
+      "GET",
+      "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+      {
+        fixture: "integration-management/privacy-request-fields.json",
+      },
+    ).as("getPrivacyRequestFields");
+
     // Mock connection endpoint
     cy.intercept("GET", "/api/v1/connection/demo_manual_task_integration", {
       fixture:
         "integration-management/manual-tasks/manual-task-connection.json",
     }).as("getConnection");
+
+    // Mock connection types endpoint
+    cy.intercept("GET", "/api/v1/connection_type?page=1&size=100", {
+      body: { items: [], total: 0, page: 1, size: 100 },
+    }).as("getConnectionTypes");
+
+    // Mock manual fields endpoint
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields", {
+      body: { items: [], total: 0, page: 1, size: 25 },
+    }).as("getManualFields");
 
     // Mock manual task config endpoint with conditions
     cy.intercept("GET", "/api/v1/plus/connection/*/manual-task", {
@@ -46,8 +80,9 @@ describe("Integration Management - Manual Task Conditions", () => {
     }).as("getDatasetByKey");
 
     // Navigate directly to conditions tab
-    cy.visit(
+    cy.visitWithLanguage(
       `${INTEGRATION_MANAGEMENT_ROUTE}/demo_manual_task_integration#conditions`,
+      "en-US",
     );
     cy.wait("@getConnection");
   });
@@ -72,6 +107,9 @@ describe("Integration Management - Manual Task Conditions", () => {
   describe("Add New Condition", () => {
     it("should handle exists/not exists operators correctly (value input disabled)", () => {
       cy.getByTestId("add-condition-btn").click();
+
+      // Select dataset field source
+      cy.getByTestId("field-source-dataset").click();
 
       // Fill in the dataset reference picker
       cy.getByTestId("dataset-reference-picker").pickDatasetReference(
@@ -114,6 +152,9 @@ describe("Integration Management - Manual Task Conditions", () => {
 
     it("should successfully add a new condition", () => {
       cy.getByTestId("add-condition-btn").click();
+
+      // Select dataset field source
+      cy.getByTestId("field-source-dataset").click();
 
       // Fill in the dataset reference picker
       cy.getByTestId("dataset-reference-picker").pickDatasetReference(
@@ -270,6 +311,129 @@ describe("Integration Management - Manual Task Conditions", () => {
       cy.contains(
         "No conditions configured. Manual tasks will be created for all privacy requests.",
       ).should("be.visible");
+    });
+  });
+
+  describe("Privacy Request Field Conditions", () => {
+    it("should add condition with privacy request location field", () => {
+      cy.getByTestId("add-condition-btn").click();
+
+      // Privacy request field should be selected by default
+      cy.getByTestId("field-source-privacy-request").should("be.checked");
+
+      // Select location field
+      cy.getByTestId("privacy-request-field-select").antSelect("Location");
+
+      // Select operator
+      cy.getByTestId("operator-select").antSelect("Equals");
+
+      // Verify LocationSelect component appears
+      cy.getByTestId("value-location-input").should("exist");
+
+      // Select a location
+      cy.getByTestId("value-location-input").type("New York");
+      cy.contains("New York").click();
+
+      // Submit the form
+      cy.getByTestId("save-btn").click();
+
+      // Verify API call was made with correct parameters
+      cy.wait("@updateDependencyConditions").then((interception) => {
+        const conditions = interception.request.body[0].conditions;
+        const newCondition = conditions[conditions.length - 1];
+        expect(newCondition.field_address).to.equal("privacy_request.location");
+        expect(newCondition.operator).to.equal("eq");
+        expect(newCondition.value).to.equal("US-NY");
+      });
+
+      // Verify success message
+      cy.contains("Condition added successfully!").should("be.visible");
+    });
+
+    it("should add condition with privacy request policy field", () => {
+      cy.getByTestId("add-condition-btn").click();
+
+      // Select policy has_access_rule field
+      cy.getByTestId("privacy-request-field-select").antSelect(
+        "Has access rule",
+      );
+
+      // Select operator
+      cy.getByTestId("operator-select").antSelect("Equals");
+
+      // Verify boolean input appears (since has_access_rule is a boolean field)
+      cy.getByTestId("value-boolean-input").should("exist");
+
+      // Select True
+      cy.getByTestId("value-boolean-input")
+        .find('input[value="true"]')
+        .check({ force: true });
+
+      // Submit the form
+      cy.getByTestId("save-btn").click();
+
+      // Verify API call was made with correct parameters
+      cy.wait("@updateDependencyConditions").then((interception) => {
+        const conditions = interception.request.body[0].conditions;
+        const newCondition = conditions[conditions.length - 1];
+        expect(newCondition.field_address).to.equal(
+          "privacy_request.policy.has_access_rule",
+        );
+        expect(newCondition.operator).to.equal("eq");
+        expect(newCondition.value).to.equal(true);
+      });
+
+      // Verify success message
+      cy.contains("Condition added successfully!").should("be.visible");
+    });
+  });
+
+  describe("Custom Field Conditions", () => {
+    it("should display custom fields in privacy request field picker", () => {
+      cy.getByTestId("add-condition-btn").click();
+
+      // Open the field picker dropdown
+      cy.getByTestId("privacy-request-field-select").click();
+
+      // Verify custom fields section appears
+      cy.contains("Custom fields").should("be.visible");
+
+      // Verify specific custom field appears with correct label
+      cy.contains("Department").should("be.visible");
+    });
+
+    it("should add condition with custom select field", () => {
+      cy.getByTestId("add-condition-btn").click();
+
+      // Select custom select field
+      cy.getByTestId("privacy-request-field-select").antSelect("Department");
+
+      // Select operator
+      cy.getByTestId("operator-select").antSelect("Equals");
+
+      // Verify custom select component appears with options
+      cy.getByTestId("value-custom-select-input").should("exist");
+      cy.getByTestId("value-custom-select-input").should("not.be.disabled");
+
+      // Select an option using antSelect
+      cy.getByTestId("value-custom-select-input").antSelect("Engineering");
+
+      // Submit the form
+      cy.getByTestId("save-btn").click();
+
+      // Verify API call was made with correct parameters
+      cy.wait("@updateDependencyConditions").then((interception) => {
+        const conditions = interception.request.body[0].conditions;
+        const newCondition = conditions[conditions.length - 1];
+        expect(newCondition.field_address).to.equal(
+          "privacy_request.custom_privacy_request_fields.department",
+        );
+        expect(newCondition.operator).to.equal("eq");
+        expect(newCondition.value).to.equal("Engineering");
+      });
+
+      // Verify success message
+      cy.contains("Condition added successfully!").should("be.visible");
     });
   });
 });

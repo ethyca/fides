@@ -30,17 +30,17 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  Box,
-  Flex,
-  HStack,
-  Spinner,
-  Text,
-  useDisclosure,
-  useToast,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  Tag,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -308,13 +308,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.filter((r) => !r.original.linked_system).length;
 
+  const vendorFilter = tableInstance
+    .getState()
+    .columnFilters.find((c) => c.id === "vendor_id");
   const totalFilters =
-    tableInstance.getState().columnFilters.length > 0
-      ? // @ts-ignore
-        (tableInstance
-          .getState()
-          .columnFilters.filter((c) => c.id === "vendor_id")[0].value
-          .length as number)
+    vendorFilter && Array.isArray(vendorFilter.value)
+      ? vendorFilter.value.length
       : 0;
   return (
     <Flex

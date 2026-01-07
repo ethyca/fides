@@ -1,10 +1,13 @@
 import {
-  AntFlex as Flex,
-  AntRadio as Radio,
-  Spacer,
-  Text,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
+  Flex,
+  Icons,
+  Segmented,
+  Switch,
   theme,
-  useToast,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -13,8 +16,6 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
-import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
-import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
@@ -112,6 +113,8 @@ const ConfigurePrivacyExperience = ({
   const toast = useToast();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [mockGpcEnabled, setMockGpcEnabled] = useState(false);
+  const isBrowserGpcEnabled = window.navigator?.globalPrivacyControl === true;
 
   const router = useRouter();
 
@@ -253,23 +256,59 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <Radio.Group
-                onChange={(e) => setIsMobilePreview(e.target.value)}
-                defaultValue={false}
-              >
-                <Radio.Button value title="View mobile preview">
-                  <MobileIcon />
-                </Radio.Button>
-                <Radio.Button value={false} title="View desktop preview">
-                  <DesktopIcon />
-                </Radio.Button>
-              </Radio.Group>
+              <Flex className="flex-row items-center gap-2">
+                <Tooltip
+                  title={
+                    isBrowserGpcEnabled
+                      ? "GPC is enabled at the browser level. Disable it to use this toggle."
+                      : undefined
+                  }
+                >
+                  <Switch
+                    aria-label="Toggle GPC preview mode"
+                    checkedChildren="GPC"
+                    unCheckedChildren="GPC"
+                    checked={
+                      !isBrowserGpcEnabled
+                        ? mockGpcEnabled
+                        : isBrowserGpcEnabled
+                    }
+                    onChange={(value) => {
+                      setMockGpcEnabled(value);
+                      router.replace({
+                        pathname: router.pathname,
+                        query: {
+                          ...router.query,
+                          globalPrivacyControl: value.toString(),
+                        },
+                      });
+                    }}
+                    data-testid="gpc-preview-toggle"
+                    disabled={isBrowserGpcEnabled}
+                  />
+                </Tooltip>
+                <Segmented
+                  options={[
+                    {
+                      value: "mobile",
+                      icon: <Icons.Mobile title="Mobile" />,
+                    },
+                    {
+                      value: "desktop",
+                      icon: <Icons.Screen title="Desktop" />,
+                    },
+                  ]}
+                  defaultValue="desktop"
+                  onChange={(value) => setIsMobilePreview(value === "mobile")}
+                />
+              </Flex>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}
               initialValues={initialValues}
               translation={translationToEdit}
               isMobilePreview={isMobilePreview}
+              mockGpcEnabled={mockGpcEnabled}
             />
           </Flex>
         </Flex>

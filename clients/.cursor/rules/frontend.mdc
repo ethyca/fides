@@ -1,0 +1,58 @@
+---
+description: "Front-end developer rules"
+alwaysApply: true
+---
+# Working with the front-end monorepo
+
+While working in this `clients` directory, you are a Senior Front-End Developer and an Expert in ReactJS, NextJS, JavaScript, TypeScript, HTML, CSS and modern UI/UX frameworks (e.g., Ant Design, Chakra, Redux, TailwindCSS).
+
+## Environment
+
+- This `clients` directory is a monorepo, managed by Turborepo which is set up for the 3 main apps: admin-ui, fides-js, and privacy-center.
+- The `clients/admin-ui` directory contains the Admin UI React/NextJS app
+- The `clients/privacy-center` directory contains the Privacy Center React/NextJS app
+- The `clients/fides-js` directory contains the Fides CMP Preact SDK, sometimes referred to as FidesJS, Fides.js, Fides SDK, or Janus. Both the Admin UI and the Privacy Center import a compiled version of the SDK.
+- The `clients/fidesui` directory is a design system which exports both Chakra and Ant Design components, however we are migrating to Ant from Chakra so Ant components are always preferred if possible. Only Admin UI and Privacy center use this design system, never try to use it in fides-js code.
+- The `clients/cypress-e2e` directory is a specific set of tests and can mostly be ignored while working in the 3 main apps
+- The `clients/sample-app` directory is a demo app and can mostly be ignored while working in the 3 main apps.
+- The rest of the codebase is considered the "backend" of fides which also gets wrapped by another repository called `fidesplus` which manages other backend code not found in this repo but is definitely utilized by the fides frontend.
+- The `clients/fides-js/docs` directory gets auto-generated from the jsdocs in `clients/fides-js/src/docs` and should never be updated manually. Always add to the `clients/fides-js/src/docs` instead. The types specified in `clients/fides-js/src/docs` do get imported and used in the codebase.
+- The Type definitions in the `clients/admin-ui/src/types/api` directory files get auto-generated from the fidesplus backend endpoints and should not be updated manually.
+- Lazy loading scripts is not an option in FidesJS since this gets deployed on 3rd party sites as a single package and as an exported module.
+
+
+## Code Implementation Guidelines
+
+Follow these rules when you write code:
+- Always prefer `try/catch` over `.then/.catch`.
+- Generally prefer TS `interface` over `type` when it makes sense to do so.
+- Avoid `any` types and `@ts-expect-error`, especially when it's related to the current task. Suggest ways to get the typing correct instead.
+- Never omit curly braces around blocks.
+- Only use tailwindcss for layout and animation classes, no colors, fonts, borders, etc.
+- FidesDebugger is a global that never needs to be imported; It should never be used for error handling.
+- Any time we import a Chakra component with prefix "Chakra" it has been imported "as" the suffix: For example `ChakraBox as Box`. However, as previously stated, we should not be adding Chakra components to new code. We keep those clearly marked for deprecation.
+- Titles, heading text, and buttons in the HTML/JSX should be sentence-cased, not title-cased.
+- When adding a property as a spread operator, favor the name `...props` over the name `...rest`
+- Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator (`||` where `""` is possible, favor `??` elsewhere)
+
+### Styling
+
+When we’re styling components we should use this sequence of steps in this order:
+1. Ant Design default theme
+2. FidesUI palette colors
+3. Ant Design custom theme file (which also includes some custom override colors not found in the palette)
+4. global CSS variables (as a last resort when styling Ant components, should rely on the palette vars)
+5. tailwindcss is used for layout and spacing only. Ant's layout components (Flex, Space, etc.) should take priority.
+6. SCSS modules (for custom-component-specific styles) named after the component
+7. Style prop (last resort, only when it’s not possible to style with SCSS module)
+
+### Layout
+
+- Use Ant’s layout components for layout and add tailwind as necessary. It’s better to wrap a component in a wrapping div or layout component than to add tailwind classes to the component itself. A scalable layout means components can come and go without tweaking the layout and if we add layout classes to the components themselves, this becomes broken.
+- Avoid arbitrary sizing values (eg. min-w-[<value>])!
+
+### Component Prop Customization
+
+- For modifying a component prop on a global scale, create a Higher Order Component (HOC) in FidesUI with the re-exported component+prop config. These live in the `fidesui/src/hoc` directory. Use other HOC's from that directory as examples.
+- For modifying a component prop for some specific instances of the component, just add the prop to each of the relevant instances without worrying too much about being DRY.
+- For a truly custom component, where we are combining multiple Ant components to create something reusable, use your best judgement whether add that to the custom components in the Design System as a global component. If it seems only applicable to AdminUI, keep it in that project. Global reusable components live in the `fidesui/src/components` directory. This directory is broken down in sub-directory categories meant to mimic Ant's internal directory structure.

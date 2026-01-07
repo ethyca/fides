@@ -6,10 +6,7 @@ import {
 import {
   ConnectionType,
   ConsentStatus,
-  Database,
-  DatastoreStagedResource,
   DiffStatus,
-  Field,
   MonitorConfig,
   MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
@@ -18,7 +15,6 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
-  Table,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
@@ -26,6 +22,7 @@ import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesR
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
+import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginatedResponse,
@@ -35,6 +32,7 @@ import {
 } from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
+import { MonitorResource } from "./fields/types";
 import {
   MonitorAggregatedResults,
   MonitorSummaryPaginatedResponse,
@@ -89,7 +87,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           monitorType: getMonitorType(monitor.connection_type),
           isTestMonitor:
             monitor.connection_type === ConnectionType.TEST_WEBSITE ||
-            monitor.connection_type === ConnectionType.FIDES,
+            monitor.connection_type === ConnectionType.TEST_DATASTORE,
         })),
       }),
       providesTags: ["Discovery Monitor Results"],
@@ -235,7 +233,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      PromoteResourcesResponse,
+      MonitorActionResponse,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -268,7 +266,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<
-      PromoteResourcesResponse,
+      MonitorActionResponse,
       { urnList?: string[] }
     >({
       query: (params) => {
@@ -388,14 +386,15 @@ const actionCenterApi = baseApi.injectEndpoints({
         };
       },
     }),
+    /* stagedResourceUrn is required by the API. This is made optional as a convenience but should not be expected to return a successful response unless a valid value is passed */
     getStagedResourceDetails: build.query<
-      DatastoreStagedResource | Database | Schema | Table | Field,
-      { stagedResourceUrn: string }
+      MonitorResource,
+      { stagedResourceUrn?: string }
     >({
       query: ({ stagedResourceUrn }) => ({
-        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
-          stagedResourceUrn,
-        )}`,
+        url: `/plus/discovery-monitor/staged_resource/${
+          stagedResourceUrn ? encodeURIComponent(stagedResourceUrn) : ""
+        }`,
       }),
       providesTags: ["Monitor Field Details"],
     }),
@@ -545,6 +544,21 @@ const actionCenterApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: [
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Discovery Monitor Results",
+      ],
+    }),
+    promoteRemovalStagedResources: build.mutation<
+      PromoteResourcesResponse,
+      BaseStagedResourcesRequest & { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key, ...body }) => ({
+        url: `/plus/discovery-monitor/${monitor_config_key}/promote-removal`,
+        method: "POST",
+        body,
+      }),
       invalidatesTags: ["Monitor Field Results", "Monitor Field Details"],
     }),
   }),
@@ -576,4 +590,5 @@ export const {
   useClassifyStagedResourcesMutation,
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
+  usePromoteRemovalStagedResourcesMutation,
 } = actionCenterApi;

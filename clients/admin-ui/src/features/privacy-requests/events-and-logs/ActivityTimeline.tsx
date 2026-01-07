@@ -1,8 +1,8 @@
 import {
-  AntList as List,
-  AntSkeleton as Skeleton,
-  Box,
-  useDisclosure,
+  ChakraBox as Box,
+  List,
+  Skeleton,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 

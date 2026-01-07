@@ -7,6 +7,7 @@ import pytest
 
 from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.enums.connection_category import ConnectionCategory
 from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
@@ -305,6 +306,7 @@ class TestCustomConnectorTemplateLoader:
             strategy.name for strategy in authentication_strategies
         ]
 
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
@@ -315,14 +317,19 @@ class TestCustomConnectorTemplateLoader:
         self,
         mock_all: MagicMock,
         mock_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
         hubspot_config,
         hubspot_dataset,
     ):
         """
         Verify that an existing connector template flagged as replaceable is
         deleted when a newer version of the connector template is found in
-        the FileConnectorTemplateLoader.
+        the FileConnectorTemplateLoader. Also verify that the corresponding
+        SaasTemplateDataset record is deleted.
         """
+        # Create a mock SaasTemplateDataset instance
+        mock_saas_dataset = MagicMock()
+        mock_saas_get_by.return_value = mock_saas_dataset
 
         mock_all.return_value = [
             CustomConnectorTemplate(
@@ -341,8 +348,17 @@ class TestCustomConnectorTemplateLoader:
             saas_config["version"] == load_config_from_string(hubspot_config)["version"]
         )
         assert CustomConnectorTemplateLoader.get_connector_templates() == {}
+
+        # Verify template deletion
         mock_delete.assert_called_once()
 
+        # Verify SaasTemplateDataset deletion
+        mock_saas_get_by.assert_called_once_with(
+            db=mock.ANY, field="connection_type", value="hubspot"
+        )
+        mock_saas_dataset.delete.assert_called_once()
+
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
@@ -353,13 +369,15 @@ class TestCustomConnectorTemplateLoader:
         self,
         mock_all: MagicMock,
         mock_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
         planet_express_config,
         planet_express_dataset,
     ):
         """
         Verify that an existing connector template flagged as replaceable is
         not deleted if a newer version of the connector template is not found
-        in the FileConnectorTemplateLoader.
+        in the FileConnectorTemplateLoader. Also verify that no SaasTemplateDataset
+        deletion occurs.
         """
         planet_express_config = replace_version(planet_express_config, "0.0.0")
 
@@ -387,8 +405,14 @@ class TestCustomConnectorTemplateLoader:
                 supported_actions=[ActionType.access],
             )
         }
+
+        # Verify no template deletion
         mock_delete.assert_not_called()
 
+        # Verify no SaasTemplateDataset deletion attempt
+        mock_saas_get_by.assert_not_called()
+
+    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
     )
@@ -399,13 +423,15 @@ class TestCustomConnectorTemplateLoader:
         self,
         mock_all: MagicMock,
         mock_delete: MagicMock,
+        mock_saas_get_by: MagicMock,
         hubspot_config,
         hubspot_dataset,
     ):
         """
         Verify that an existing custom connector template flagged as not replaceable is
         not deleted even if a newer version of the connector template is found
-        in the FileConnectorTemplateLoader.
+        in the FileConnectorTemplateLoader. Also verify that no SaasTemplateDataset
+        deletion occurs.
         """
         hubspot_config = replace_version(hubspot_config, "0.0.0")
 
@@ -436,7 +462,12 @@ class TestCustomConnectorTemplateLoader:
                 enabled_features=[IntegrationFeature.DSR_AUTOMATION],
             )
         }
+
+        # Verify no template deletion
         mock_delete.assert_not_called()
+
+        # Verify no SaasTemplateDataset deletion attempt
+        mock_saas_get_by.assert_not_called()
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"

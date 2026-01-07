@@ -1,13 +1,13 @@
 import { formatDistance } from "date-fns";
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntMessage as message,
-  Box,
+  Button,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  Form,
   GreenCheckCircleIcon,
-  Heading,
-  HStack,
+  Input,
+  useMessage,
 } from "fidesui";
 import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
@@ -50,6 +50,8 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
     useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
+
+  const message = useMessage();
 
   const isEditMode = !!configKey;
 

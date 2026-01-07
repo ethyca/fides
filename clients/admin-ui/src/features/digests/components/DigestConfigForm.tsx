@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntMessage as message,
-  AntSelect as Select,
-  AntSpace as Space,
+  Button,
+  Form,
+  Input,
+  Select,
+  Space,
+  useMessage,
   WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -37,7 +37,7 @@ const DigestConfigForm = ({
 }: DigestConfigFormProps) => {
   const [form] = Form.useForm<DigestConfigFormValues>();
   const router = useRouter();
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [timezone, setTimezone] = useState<string>(
@@ -159,7 +159,6 @@ const DigestConfigForm = ({
 
   return (
     <>
-      {messageContext}
       <Form
         form={form}
         layout="vertical"

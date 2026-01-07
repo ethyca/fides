@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
@@ -16,7 +11,7 @@ const AddSystemsMenu = () => {
   const { dictionaryService: isCompassEnabled } = useFeatures();
   const router = useRouter();
   return (
-    <Flex className="absolute right-8 top-8">
+    <Flex>
       {isCompassEnabled && (
         <Dropdown
           trigger={["click"]}

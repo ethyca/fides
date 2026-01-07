@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntText as Text,
-} from "fidesui";
+import { Button, Flex, Form, Input, Text } from "fidesui";
 import React, { useEffect } from "react";
 
 import CustomFieldRenderer, {
@@ -15,7 +9,7 @@ import { PhoneInput } from "~/components/phone-input";
 import { useConfig } from "~/features/common/config.slice";
 import { CustomConfigField } from "~/types/config";
 
-import useConsentRequestForm from "./useConsentReuestForm";
+import useConsentRequestForm from "./useConsentRequestForm";
 
 type ConsentRequestFormProps = {
   isOpen: boolean;

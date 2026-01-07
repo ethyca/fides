@@ -1,9 +1,14 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTitle as Title,
-  AntTree as Tree,
+  Badge,
+  Button,
+  Dropdown,
+  Flex,
+  Icons,
   SparkleIcon,
+  Text,
+  Title,
+  Tooltip,
+  Tree,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -18,7 +23,9 @@ import {
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { Node } from "~/features/common/hooks/useNodeMap";
 import { PaginationState } from "~/features/common/pagination";
+import { pluralize } from "~/features/common/utils";
 import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
@@ -30,19 +37,22 @@ import {
 
 import {
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
+  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_LOAD_MORE_TEXT,
   TREE_NODE_SKELETON_KEY_PREFIX,
   TREE_PAGE_SIZE,
 } from "./MonitorFields.const";
+import styles from "./MonitorTree.module.scss";
 import { MonitorTreeDataTitle } from "./MonitorTreeDataTitle";
 import {
   collectAllDescendantUrns,
   findNodeByUrn,
   removeChildrenFromNode,
+  shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode } from "./types";
+import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -54,17 +64,41 @@ const mapResponseToTreeData = (
           treeNode.resource_type as StagedResourceTypeValue
         ]
       : undefined;
+    const statusInfo = treeNode.update_status
+      ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[
+          treeNode.update_status
+        ]
+      : undefined;
+
     return {
       title: treeNode.name,
       key: treeNode.urn,
       selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
       icon: IconComponent
-        ? () => <IconComponent className="h-full" />
+        ? () => (
+            <Tooltip title={statusInfo?.tooltip}>
+              <Badge
+                className="h-full"
+                offset={[0, 5]}
+                color={statusInfo?.color}
+                dot={shouldShowBadgeDot(treeNode)}
+              >
+                <IconComponent className="h-full" />
+              </Badge>
+            </Tooltip>
+          )
         : undefined,
       status: treeNode.update_status,
+      diffStatus: treeNode.diff_status,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
+      classifyable: [
+        StagedResourceTypeValue.SCHEMA,
+        StagedResourceTypeValue.TABLE,
+        StagedResourceTypeValue.ENDPOINT,
+        StagedResourceTypeValue.FIELD,
+      ].includes(treeNode.resource_type as StagedResourceTypeValue),
     };
   });
 
@@ -82,7 +116,7 @@ const mapResponseToTreeData = (
 };
 
 const appendTreeNodeData = (
-  list: CustomTreeDataNode[],
+  list: Node<CustomTreeDataNode>[],
   key: React.Key,
   children: CustomTreeDataNode[],
 ): CustomTreeDataNode[] =>
@@ -198,14 +232,22 @@ export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
 
-interface MonitorTreeProps {
-  selectedNodeKeys: Key[];
+interface NodeActions<Action, ActionDict extends Record<string, Action>> {
+  nodeActions: ActionDict;
+  primaryAction: keyof ActionDict;
+}
+
+interface MonitorTreeProps
+  extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
-  onClickClassifyButton: () => void;
+  selectedNodeKeys: Key[];
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
-  ({ selectedNodeKeys, setSelectedNodeKeys, onClickClassifyButton }, ref) => {
+  (
+    { setSelectedNodeKeys, selectedNodeKeys, nodeActions, primaryAction },
+    ref,
+  ) => {
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
@@ -469,7 +511,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               });
             }
 
-            // Update the status of each ancestor node
+            // Update the status and diffStatus of each ancestor node
             setTreeData((origin) =>
               ancestorsData.reduce(
                 (tree, ancestorNode) =>
@@ -477,6 +519,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
                     tree,
                     ancestorNode.urn,
                     ancestorNode.update_status,
+                    ancestorNode.diff_status,
                   ),
                 origin,
               ),
@@ -522,6 +565,10 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       [onLoadData],
     );
 
+    const handleSelect = (keys: Key[]) => {
+      setSelectedNodeKeys(keys);
+    };
+
     // Expose the function through the ref
     useImperativeHandle(ref, () => ({
       refreshResourcesAndAncestors,
@@ -551,39 +598,92 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
 
     return (
       <Flex gap="middle" vertical className="h-full">
-        <Title level={3} className="sticky top-0">
+        <Title level={3} className="sticky top-0" ellipsis>
           Schema explorer
         </Title>
-        <Tree
+        <Tree.DirectoryTree
           loadData={onLoadData}
           treeData={treeData}
           expandedKeys={expandedKeys}
           onExpand={handleExpand}
-          onSelect={(_, info) =>
-            setSelectedNodeKeys(info.selectedNodes.map(({ key }) => key))
-          }
+          onSelect={handleSelect}
           showIcon
           showLine
           blockNode
-          rootClassName="h-full overflow-x-hidden"
+          multiple
+          rootClassName={`h-full overflow-x-hidden ${styles["monitor-tree"]} group/monitor-tree ${selectedNodeKeys.length > 1 ? "multi-select" : ""}`}
+          expandAction="doubleClick"
           // eslint-disable-next-line react/no-unstable-nested-components
           titleRender={(node) => (
             <MonitorTreeDataTitle
               node={node}
               treeData={treeData}
               onLoadMore={onLoadMore}
+              actions={nodeActions}
             />
           )}
         />
         {selectedNodeKeys.length > 0 && (
-          <Flex justify="space-between" align="center">
-            <span>{selectedNodeKeys.length} selected</span>
+          <Flex justify="space-between" align="center" gap="small">
             <Button
               aria-label={`Classify ${selectedNodeKeys.length} Selected Nodes`}
               icon={<SparkleIcon size={12} />}
               size="small"
-              onClick={onClickClassifyButton}
+              onClick={() =>
+                nodeActions[primaryAction]?.callback(
+                  selectedNodeKeys,
+                  selectedNodeKeys.flatMap((nodeKey) => {
+                    const node = findNodeByUrn(treeData, nodeKey.toString());
+                    return node ? [node] : [];
+                  }),
+                )
+              }
+              className="flex-none"
             />
+            <Text
+              ellipsis
+            >{`${selectedNodeKeys.length} ${pluralize(selectedNodeKeys.length, "resource", "resources")} selected`}</Text>
+            <Dropdown
+              menu={{
+                items: nodeActions
+                  ? Object.entries(nodeActions).map(
+                      ([key, { label, disabled }]) => ({
+                        key,
+                        label,
+                        disabled: disabled(
+                          selectedNodeKeys.flatMap((nodeKey) => {
+                            const node = findNodeByUrn(
+                              treeData,
+                              nodeKey.toString(),
+                            );
+                            return node ? [node] : [];
+                          }),
+                        ),
+                      }),
+                    )
+                  : [],
+                onClick: ({ key, domEvent }) => {
+                  domEvent.preventDefault();
+                  domEvent.stopPropagation();
+                  nodeActions[key]?.callback(
+                    selectedNodeKeys,
+                    selectedNodeKeys.flatMap((nodeKey) => {
+                      const node = findNodeByUrn(treeData, nodeKey.toString());
+                      return node ? [node] : [];
+                    }),
+                  );
+                },
+              }}
+              destroyOnHidden
+              className="group mr-1 flex-none"
+            >
+              <Button
+                aria-label="Show More Resource Actions"
+                icon={<Icons.OverflowMenuVertical />}
+                size="small"
+                className="self-end"
+              />
+            </Dropdown>
           </Flex>
         )}
       </Flex>

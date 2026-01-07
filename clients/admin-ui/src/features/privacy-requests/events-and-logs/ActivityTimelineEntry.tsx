@@ -1,10 +1,5 @@
 import classNames from "classnames";
-import {
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { Icons, Tag, Tooltip, Typography } from "fidesui";
 import React from "react";
 
 import { formatDate } from "~/features/common/utils";

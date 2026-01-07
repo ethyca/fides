@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntMessage as message,
-  AntSelect as Select,
-  AntTag as Tag,
+  Button,
+  Flex,
+  FlexProps,
   Icons,
+  Select,
+  Tag,
+  useMessage,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useState } from "react";
@@ -39,7 +39,7 @@ const SystemGroupCell = ({
     selectedGroups.map((group) => group.fides_key),
   );
 
-  const [messageApi, contextHolder] = message.useMessage();
+  const messageApi = useMessage();
 
   const [updateSystemMutation] = useUpdateSystemMutation();
 
@@ -85,7 +85,6 @@ const SystemGroupCell = ({
 
   return (
     <Flex gap="small" {...props}>
-      {contextHolder}
       {!isAdding && (
         <>
           <Tag

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  AntAlert as Alert,
-  AntSpace as Space,
-  AntTypography as Typography,
-} from "fidesui";
+import { Alert, Space, Typography } from "fidesui";
 import React from "react";
 
 /**

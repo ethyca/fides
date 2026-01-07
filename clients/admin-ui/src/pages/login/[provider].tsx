@@ -1,4 +1,8 @@
-import { Center, Spinner, useToast } from "fidesui";
+import {
+  ChakraCenter as Center,
+  ChakraSpinner as Spinner,
+  useChakraToast as useToast,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";

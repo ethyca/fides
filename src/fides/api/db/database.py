@@ -193,7 +193,7 @@ def check_missing_migrations(database_url: str) -> None:
         for item in result:
             log.error(f"  - {item}")
         raise SystemExit("Migration needs to be generated!")
-    print("No migrations need to be generated.")
+    log.info("No migrations need to be generated.")
 
 
 def _get_base_branch_for_comparison() -> str:
@@ -387,7 +387,7 @@ def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
 
         if not migration_files:
             log.info("No new migration files detected in current branch")
-            print("No new migrations to test.")
+            log.info("No new migrations to test.")
             return
 
         log.info(f"Detected {len(migration_files)} new migration(s) to test")
@@ -408,11 +408,13 @@ def check_new_migrations_upgrade_downgrade(database_url: str) -> None:
         # Test all migrations in sequence
         _test_migrations_upgrade_downgrade_sequence(alembic_config, migrations)
 
-        print(
+        log.info(
             f"All {len(migration_files)} new migration(s) passed upgrade/downgrade tests."
         )
 
     except subprocess.CalledProcessError as error:
         # Git command failed - might not be in a git repo or no origin/main
         log.warning(f"Could not detect new migrations via git: {error}")
-        print("Skipping migration upgrade/downgrade check (git detection failed).")
+        log.warning(
+            "Skipping migration upgrade/downgrade check (git detection failed)."
+        )

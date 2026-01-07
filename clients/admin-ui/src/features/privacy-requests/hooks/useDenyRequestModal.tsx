@@ -1,10 +1,9 @@
-import type { ModalStaticFunctions } from "antd/es/modal/confirm";
 import {
-  AntFlex as Flex,
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntParagraph as Paragraph,
+  Flex,
+  Form,
+  FormInstance,
+  Input,
+  Paragraph,
   useFormModal,
 } from "fidesui";
 import React, { useCallback } from "react";
@@ -27,8 +26,8 @@ const DenyRequestForm = ({ form }: { form: FormInstance }) => {
   );
 };
 
-export const useDenyPrivacyRequestModal = (modalApi: ModalStaticFunctions) => {
-  const { openFormModal } = useFormModal<{ denialReason: string }>(modalApi);
+export const useDenyPrivacyRequestModal = () => {
+  const { openFormModal } = useFormModal<{ denialReason: string }>();
 
   const openDenyPrivacyRequestModal = useCallback(
     async (warningMessage?: string) => {

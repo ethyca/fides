@@ -162,11 +162,18 @@ describe("Consent reporting", () => {
         const { url: requestUrl } = interception.request;
         let url = new URL(requestUrl);
         let params = new URLSearchParams(url.search);
+
+        // Calculate expected timestamps accounting for local timezone
+        const startDate = new Date("2023-11-01T00:00:00");
+        const endDate = new Date("2023-11-07T23:59:59.999");
+        const expectedStartTimestamp = startDate.toISOString();
+        const expectedEndTimestamp = endDate.toISOString();
+
         expect(params.get("request_timestamp_gt")).to.equal(
-          "2023-11-01T00:00:00.000Z",
+          expectedStartTimestamp,
         );
         expect(params.get("request_timestamp_lt")).to.equal(
-          "2023-11-07T23:59:59.999Z",
+          expectedEndTimestamp,
         );
       });
 

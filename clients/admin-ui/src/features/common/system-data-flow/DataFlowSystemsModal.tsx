@@ -1,20 +1,20 @@
 import {
-  AntButton as Button,
-  AntSwitch as Switch,
-  AntTag as Tag,
-  Box,
-  Flex,
-  FormControl,
-  FormLabel,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  ModalProps,
-  Stack,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraModalProps as ModalProps,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  Switch,
+  Tag,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
@@ -136,7 +136,6 @@ const DataFlowSystemsModal = ({
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"
-                withIcon
               />
               <DataFlowSystemsTable
                 flowType={flowType}

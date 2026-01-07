@@ -2,7 +2,11 @@ import { CustomTextInput, Option } from "common/form/inputs";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
-import { AntButton as Button, Spacer, VStack } from "fidesui";
+import {
+  Button,
+  ChakraSpacer as Spacer,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
 import React from "react";
@@ -104,7 +108,6 @@ export const ConnectorParametersForm = ({
         connectionConfig.enabled_actions || []
       ).map((action) => action.toString());
 
-      // @ts-ignore
       initialValues.secrets = connectionConfig.secrets
         ? _.cloneDeep(connectionConfig.secrets)
         : {};

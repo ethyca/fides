@@ -17,22 +17,25 @@ export const FIELD_PAGE_SIZE = 25;
 
 export const RESOURCE_STATUS = [
   "Unlabeled",
-  "Classifying",
-  "In Review",
+  "Classifying...",
+  "Classified",
+  "Reviewed",
+  "Approving...",
   "Approved",
-  "Confirming...",
-  "Confirmed",
   "Removed",
   "Ignored",
+  "Error",
+  "Removing...",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
 
 // Statuses to exclude from filters by default
 export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
-  "Confirmed",
+  "Approved",
   "Ignored",
-  "Confirming...",
+  "Approving...",
+  "Removing...",
 ];
 
 /**
@@ -46,16 +49,19 @@ export const getFilterableStatuses = (
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
     addition: "Unlabeled",
-    approved: "Approved",
-    classification_addition: "In Review",
-    classification_queued: "Classifying",
-    classification_update: "In Review",
-    classifying: "Classifying",
-    monitored: "Confirmed",
+    reviewed: "Reviewed",
+    classification_addition: "Classified",
+    classification_error: "Error",
+    classification_queued: "Classifying...",
+    classification_update: "Classified",
+    classifying: "Classifying...",
+    monitored: "Approved",
     muted: "Ignored",
-    promoting: "Confirming...",
+    promoting: "Approving...",
+    promotion_error: "Error",
     removal: "Removed",
-    removing: "In Review",
+    removing: "Removing...",
+    removal_promotion_error: "Error",
   } as const;
 
 export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
@@ -66,22 +72,37 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   }
 > = {
   addition: { label: "Unlabeled" }, // No tag for this status
-  approved: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
+  reviewed: { label: "Reviewed", color: CUSTOM_TAG_COLOR.ALERT },
   classification_addition: {
-    label: "In Review",
+    label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
-  classification_queued: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
+  classification_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
+  classification_queued: {
+    label: "Classifying...",
+    color: CUSTOM_TAG_COLOR.INFO,
+  },
   classification_update: {
-    label: "In Review",
+    label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
-  classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
-  monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
+  classifying: { label: "Classifying...", color: CUSTOM_TAG_COLOR.INFO },
+  monitored: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
-  promoting: { label: "Confirming...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promoting: { label: "Approving...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promotion_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "In Review", color: CUSTOM_TAG_COLOR.CAUTION },
+  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  removal_promotion_error: {
+    label: "Error",
+    color: CUSTOM_TAG_COLOR.ERROR,
+  },
 } as const;
 
 // Map resource type to icon

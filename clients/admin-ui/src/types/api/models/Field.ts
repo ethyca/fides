@@ -2,8 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from "./Classification";
+import type { ClassificationWithConfidence } from "./ClassificationWithConfidence";
 import type { DiffStatus } from "./DiffStatus";
+import type { ResourceError } from "./ResourceError";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
@@ -38,8 +39,12 @@ export type Field = {
    * The data uses associated with the staged resource
    */
   data_uses?: Array<string> | null;
+  /**
+   * List of errors encountered during processing
+   */
+  errors?: Array<ResourceError>;
   source_modified?: string | null;
-  classifications?: Array<Classification>;
+  classifications?: Array<ClassificationWithConfidence>;
   database_name?: string | null;
   schema_name: string;
   parent_table_urn: string;
@@ -51,4 +56,5 @@ export type Field = {
   top_level_field_urn?: string | null;
   source_data_type?: string | null;
   sub_fields?: Array<Field> | null;
+  preferred_data_categories?: Array<string> | null;
 };

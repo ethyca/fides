@@ -10,7 +10,7 @@ import {
   saveFidesCookie,
   setupI18n,
 } from "fides-js";
-import { Stack, useToast } from "fidesui";
+import { ChakraStack as Stack, useChakraToast as useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -116,10 +116,13 @@ const ConsentPage: NextPage = () => {
    * Notice driven consent does not need to set a new consent object
    */
   useEffect(() => {
-    const cookie: FidesCookie = getOrMakeFidesCookie();
-    if (isNoticeDriven) {
-      saveFidesCookie(cookie, BASE_64_COOKIE);
-    }
+    const updateCookie = async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
+      if (isNoticeDriven) {
+        await saveFidesCookie(cookie, { base64Cookie: BASE_64_COOKIE });
+      }
+    };
+    updateCookie();
   }, [
     consentOptions,
     persistedFidesKeyToConsent,

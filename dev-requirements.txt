@@ -1,7 +1,7 @@
 black==24.3.0
 debugpy==1.6.3
 Faker==14.1.0
-freezegun==1.5.1
+freezegun==1.0.0
 GitPython==3.1.41
 isort==5.12.0
 moto[s3]==5.1.0
@@ -16,6 +16,7 @@ pytest-mock==3.14.0
 pytest-rerunfailures==14.0
 pytest-xdist==3.6.1
 pytest==7.2.2
+pyyaml==6.0.1
 requests-mock==1.10.0
 setuptools>=64.0.2
 sqlalchemy-stubs==0.4

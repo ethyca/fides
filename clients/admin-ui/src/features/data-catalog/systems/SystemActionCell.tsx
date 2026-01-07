@@ -1,9 +1,9 @@
 import {
-  AntButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Button,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
   MoreIcon,
 } from "fidesui";
 
@@ -15,11 +15,9 @@ const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
   return (
     <Menu>
       <MenuButton
-        as={AntButton}
+        as={Button}
         size="small"
-        // Chakra is expecting the Chakra "type" prop, i.e. HTML type,
-        // but Ant buttons use "type" for styling
-        // @ts-ignore
+        // @ts-expect-error - Ant type, not Chakra type because of `as` prop
         type="text"
         className="max-w-4"
         icon={<MoreIcon transform="rotate(90deg)" ml={2} />}

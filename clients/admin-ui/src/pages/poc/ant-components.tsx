@@ -1,30 +1,31 @@
 /* eslint-disable no-console */
 import {
-  AntAlert as Alert,
-  AntButton as Button,
-  AntCard as Card,
-  AntCheckbox as Checkbox,
-  AntCol as Col,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntLayout as Layout,
-  AntList as List,
-  AntRadio as Radio,
-  AntRow as Row,
-  AntSelect as Select,
-  AntSpace as Space,
-  AntSwitch as Switch,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  Divider,
+  Flex,
   Icons,
+  Input,
+  Layout,
+  List,
+  Radio,
+  Row,
+  Select,
+  Space,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
+import MessageDemoCard from "~/features/poc/MessageDemoCard";
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";
 import { ModalMethodsCard } from "~/features/poc/ModalMethodsCard";
@@ -490,8 +491,13 @@ const AntPOC: NextPage = () => {
         </Row>
         <br />
         <Row gutter={16}>
-          <Col span={24}>
+          <Col span={12}>
             <ModalMethodsCard />
+          </Col>
+          <Col span={12}>
+            <Card title="Toasting" variant="borderless" className="h-full">
+              <MessageDemoCard />
+            </Card>
           </Col>
         </Row>
       </Content>

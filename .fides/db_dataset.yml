@@ -1189,28 +1189,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-  - name: manual_task_log
-    fields:
-    - name: id
-      data_categories: [system.operations]
-    - name: task_id
-      data_categories: [system.operations]
-    - name: config_id
-      data_categories: [system.operations]
-    - name: instance_id
-      data_categories: [system.operations]
-    - name: status
-      data_categories: [system.operations]
-    - name: message
-      data_categories: [system.operations]
-    - name: details
-      data_categories: [system.operations]
-    - name: user_id
-      data_categories: [user.unique_id]
-    - name: created_at
-      data_categories: [system.operations]
-    - name: updated_at
-      data_categories: [system.operations]
   - name: manual_task_config
     fields:
     - name: config_type
@@ -1538,6 +1516,16 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
+      data_categories: [system.operations]
     - name: show_layer1_notices
       data_categories: [ system.operations ]
     - name: layer1_button_options
@@ -1649,6 +1637,8 @@ dataset:
     - name: origin
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: display_order
       data_categories: [system.operations]
   - name: privacynoticehistory
     description: For auditing purposes, a record of how a privacy notice and a translation has changed
@@ -2402,6 +2392,16 @@ dataset:
       data_categories: [system.operations]
     - name: experience_config_id
       data_categories: [system.operations]
+    - name: gpc_description
+      data_categories: [system.operations]
+    - name: gpc_label
+      data_categories: [system.operations]
+    - name: gpc_status_applied_label
+      data_categories: [system.operations]
+    - name: gpc_status_overridden_label
+      data_categories: [system.operations]
+    - name: gpc_title
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: is_default
@@ -2492,6 +2492,8 @@ dataset:
     - name: notice_id
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: display_order
       data_categories: [system.operations]
   - name: plus_property
     fields:
@@ -3323,3 +3325,50 @@ dataset:
         data_categories: [system.operations]
       - name: created_by
         data_categories: [user.unique_id]
+      - name: is_default
+        data_categories: [system.operations]
+  - name: saas_template_dataset
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: connection_type
+        data_categories: [system.operations]
+      - name: dataset_json
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: stagedresourceerror
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: message
+        data_categories: [system.operations]
+      - name: staged_resource_urn
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: timestamp
+        data_categories: [system.operations]
+      - name: error_type
+        data_categories: [system.operations]
+      - name: diff_status
+        data_categories: [system.operations]
+      - name: task_id
+        data_categories: [system.operations]
+  - name: monitorsteward
+    description: 'Table to link users to monitors as monitor stewards'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: user_id
+        data_categories: [system.operations]
+      - name: monitor_config_id
+        data_categories: [system.operations]

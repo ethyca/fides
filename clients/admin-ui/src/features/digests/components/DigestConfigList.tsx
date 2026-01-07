@@ -1,20 +1,20 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntList as List,
-  AntMessage as message,
-  AntPagination as Pagination,
-  AntSpace as Space,
-  AntSwitch as Switch,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Button,
+  Flex,
+  List,
+  Pagination,
+  Space,
+  Switch,
+  Tag,
+  Typography,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { NOTIFICATIONS_ADD_DIGEST_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
+import SearchInput from "~/features/common/SearchInput";
 import { DigestType, ScopeRegistryEnum } from "~/types/api";
 
 import { DIGEST_TYPE_LABELS, MESSAGING_METHOD_LABELS } from "../constants";
@@ -22,11 +22,9 @@ import { useUpdateDigestConfigMutation } from "../digest-config.slice";
 import { getFrequencyLabel } from "../helpers/cronHelpers";
 import { useDigestConfigList } from "../hooks/useDigestConfigList";
 
-const { Search } = Input;
-
 const DigestConfigList = () => {
   const router = useRouter();
-  const [messageApi, messageContext] = message.useMessage();
+  const messageApi = useMessage();
   const {
     data,
     total,
@@ -77,16 +75,12 @@ const DigestConfigList = () => {
 
   return (
     <div>
-      {messageContext}
       {/* Header with search and add button */}
       <Flex justify="space-between" align="center" className="mb-4">
         <div className="w-1/3">
-          <Search
-            placeholder="Search digests..."
-            allowClear
+          <SearchInput
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            data-testid="search-input"
+            onChange={(value) => setSearchQuery(value)}
           />
         </div>
         {canCreate && (

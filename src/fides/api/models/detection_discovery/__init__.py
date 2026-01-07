@@ -9,6 +9,7 @@ from .core import (
     StagedResourceAncestor,
     fetch_staged_resources_by_type_query,
 )
+from .monitor_steward import MonitorSteward
 from .monitor_task import (
     MonitorTask,
     MonitorTaskExecutionLog,
@@ -17,6 +18,7 @@ from .monitor_task import (
     create_monitor_task_with_execution_log,
     update_monitor_task_with_execution_log,
 )
+from .staged_resource_error import StagedResourceError
 
 __all__ = [
     "ClassificationBenchmark",
@@ -24,9 +26,11 @@ __all__ = [
     "MonitorConfig",
     "MonitorExecution",
     "MonitorFrequency",
+    "MonitorSteward",
     "SharedMonitorConfig",
     "StagedResource",
     "StagedResourceAncestor",
+    "StagedResourceError",
     "fetch_staged_resources_by_type_query",
     "MonitorTask",
     "MonitorTaskExecutionLog",

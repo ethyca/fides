@@ -2,7 +2,13 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
-import { Box, Center, Flex, SlideFade, Spinner, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 
@@ -102,12 +108,9 @@ export const ConnectorParameters = ({
         {getComponent()}
       </VStack>
       {response && (
-        <SlideFade in>
-          {" "}
-          <Box mt="16px" maxW="528px" w="fit-content">
-            <TestConnection response={response} />
-          </Box>
-        </SlideFade>
+        <Box mt="16px" maxW="528px" w="fit-content">
+          <TestConnection response={response} />
+        </Box>
       )}
     </Flex>
   );

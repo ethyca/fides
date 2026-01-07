@@ -1,4 +1,4 @@
-import { AntButton as Button, AntButtonProps as ButtonProps } from "fidesui";
+import { Button, ButtonProps } from "fidesui";
 import { ReactElement } from "react";
 
 interface ActionButtonProps extends ButtonProps {

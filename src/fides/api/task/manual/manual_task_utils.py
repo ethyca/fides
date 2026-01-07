@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from fides.api.graph.config import (
     Collection,
@@ -65,6 +65,12 @@ def get_manual_task_for_connection_config(
     return (
         db.query(ManualTask)
         .join(ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id)
+        .options(
+            selectinload(ManualTask.configs).selectinload(
+                "field_definitions"
+            ),  # type: ignore[attr-defined]
+            selectinload(ManualTask.conditional_dependencies),
+        )
         .filter(
             ConnectionConfig.key == connection_config_key,
             ManualTask.parent_entity_type == "connection_config",
@@ -121,21 +127,17 @@ def create_conditional_dependency_scalar_fields(
     return fields
 
 
-def create_collection_for_connection_key(
-    db: Session, connection_key: str
+def _create_collection_from_manual_task(
+    manual_task: ManualTask,
 ) -> Optional[Collection]:
-    # Get the manual task for this connection config
-    manual_task = get_manual_task_for_connection_config(db, connection_key)
-
-    if not manual_task:
-        return None
-
+    """Create a Collection from a ManualTask. Helper function to avoid duplication."""
     # Get conditional dependency field addresses - raw field data
     conditional_field_addresses: set[str] = {
         dependency.field_address
         for dependency in manual_task.conditional_dependencies
         if dependency.condition_type == ConditionalDependencyType.leaf
         and dependency.field_address is not None
+        and not dependency.field_address.startswith("privacy_request.")
     }
 
     # Create scalar fields for data category fields and conditional dependency field addresses
@@ -150,6 +152,18 @@ def create_collection_for_connection_key(
         return None
 
     return Collection(name=ManualTaskAddress.MANUAL_DATA_COLLECTION, fields=fields)
+
+
+def create_collection_for_connection_key(
+    db: Session, connection_key: str
+) -> Optional[Collection]:
+    # Get the manual task for this connection config
+    manual_task = get_manual_task_for_connection_config(db, connection_key)
+
+    if not manual_task:
+        return None
+
+    return _create_collection_from_manual_task(manual_task)
 
 
 def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
@@ -167,23 +181,52 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
     Returns:
         List of GraphDataset objects representing manual tasks as individual collections
     """
-    manual_task_graphs = []
+    manual_task_graphs: list[GraphDataset] = []
     manual_addresses = get_manual_task_addresses(db)
+
+    if not manual_addresses:
+        return manual_task_graphs
+
+    # Batch load all manual tasks with their relationships to avoid N+1 queries
+    connection_keys = [address.dataset for address in manual_addresses]
+    manual_tasks = (
+        db.query(ManualTask, ConnectionConfig.key)
+        .join(ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id)
+        .options(
+            selectinload(ManualTask.configs).selectinload(
+                "field_definitions"
+            ),  # type: ignore[attr-defined]
+            selectinload(ManualTask.conditional_dependencies),
+        )
+        .filter(
+            ConnectionConfig.key.in_(connection_keys),
+            ManualTask.parent_entity_type == "connection_config",
+        )
+        .all()
+    )
+
+    # Create a lookup map by connection key
+    manual_task_map = {connection_key: task for task, connection_key in manual_tasks}
 
     for address in manual_addresses:
         connection_key = address.dataset
+        manual_task = manual_task_map.get(connection_key)
 
-        # Get the collection for this connection config using the reusable function
-        collection = create_collection_for_connection_key(db, connection_key)
+        if not manual_task:
+            continue
 
-        if collection:  # Only create graph if there are collections
-            # Create a synthetic GraphDataset with all manual task collections
-            graph_dataset = GraphDataset(
-                name=connection_key,
-                collections=[collection],
-                connection_key=connection_key,
-            )
+        # Create collection using the helper function to avoid duplication
+        collection = _create_collection_from_manual_task(manual_task)
+        if not collection:
+            continue
 
-            manual_task_graphs.append(graph_dataset)
+        # Create a synthetic GraphDataset with all manual task collections
+        graph_dataset = GraphDataset(
+            name=connection_key,
+            collections=[collection],
+            connection_key=connection_key,
+        )
+
+        manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs

@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntList as List,
-  AntTypography as Typography,
-  WarningIcon,
-} from "fidesui";
+import { Button, Flex, List, Typography, WarningIcon } from "fidesui";
 import { useCallback, useState } from "react";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";

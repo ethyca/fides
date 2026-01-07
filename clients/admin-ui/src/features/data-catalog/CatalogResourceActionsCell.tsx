@@ -1,4 +1,4 @@
-import { AntButton as Button, Flex, Spacer } from "fidesui";
+import { Button, ChakraFlex as Flex, ChakraSpacer as Spacer } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import CatalogResourceOverflowMenu from "~/features/data-catalog/staged-resources/CatalogResourceOverflowMenu";
@@ -71,7 +71,7 @@ const CatalogResourceActionsCell = ({
           Classify
         </Button>
       )}
-      {status === CatalogResourceStatus.IN_REVIEW && (
+      {status === CatalogResourceStatus.CLASSIFIED && (
         <Button
           size="small"
           onClick={approveResource}

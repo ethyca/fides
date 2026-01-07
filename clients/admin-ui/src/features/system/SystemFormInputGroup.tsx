@@ -1,4 +1,9 @@
-import { Box, Heading, Spacer, Stack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSpacer as Spacer,
+  ChakraStack as Stack,
+} from "fidesui";
 
 const SystemFormInputGroup = ({
   heading,
@@ -32,13 +37,12 @@ const SystemFormInputGroup = ({
         <Heading as="h3" size="xs">
           {heading}
         </Heading>
-        {HeadingButton ? (
+        {HeadingButton && (
           <>
             <Spacer />
-            {/* @ts-ignore */}
-            <HeadingButton />
+            {HeadingButton}
           </>
-        ) : null}
+        )}
       </Box>
 
       <Stack spacing={4} px={6} py={6}>

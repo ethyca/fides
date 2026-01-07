@@ -1,10 +1,29 @@
-import { PrivacyRequestEntity } from "../types";
+import { isEmpty, isNil, pickBy } from "lodash";
+import { createParser } from "nuqs";
 
-interface IdentityWithKey {
-  key: string;
-  label: string;
-  value: string | null;
-}
+import {
+  IdentityValue,
+  PrivacyRequestOption,
+  PrivacyRequestResponse,
+} from "~/types/api";
+
+import { CustomFieldDefinition } from "./CustomFieldFilter";
+
+/**
+ * Custom nuqs parser for custom_privacy_request_fields
+ * Serializes as JSON string in URL query params
+ * Throttled to prevent URL updates on every keystroke for text inputs
+ */
+export const parseAsCustomFields = createParser({
+  parse: (value: string) => {
+    try {
+      return JSON.parse(value) as Record<string, string | null>;
+    } catch {
+      return null;
+    }
+  },
+  serialize: (value: Record<string, string | null>) => JSON.stringify(value),
+}).withOptions({ throttleMs: 500 });
 
 interface CustomFieldWithKey {
   key: string;
@@ -12,55 +31,139 @@ interface CustomFieldWithKey {
   value: unknown;
 }
 
+export interface IdentityValueWithKey extends IdentityValue {
+  key: string;
+}
+
+const getIdentityValues = (
+  key: string,
+  identity: string | IdentityValue | null,
+): IdentityValueWithKey | null => {
+  if (!identity) {
+    return null;
+  }
+  // compatible with old string identity value
+  if (typeof identity === "string" && identity.length > 0) {
+    return { value: identity, label: key, key };
+  }
+
+  // compatible with new object identity value with label and value
+  if (typeof identity === "object" && !isEmpty(identity.value)) {
+    return { value: identity.value, label: identity.label, key };
+  }
+
+  return null;
+};
+
 export const getPrimaryIdentity = (
-  identity: PrivacyRequestEntity["identity"],
-): IdentityWithKey | null => {
+  identity: PrivacyRequestResponse["identity"],
+): IdentityValueWithKey | null => {
+  if (!identity) {
+    return null;
+  }
+
   // email is the primary identity by default
-  if (identity.email && identity.email.value) {
-    return { key: "email", ...identity.email };
+  const emailIdentity = getIdentityValues("email", identity.email);
+  if (emailIdentity) {
+    return emailIdentity;
   }
 
   // then we check for phone number
-  if (identity.phone_number && identity.phone_number.value) {
-    return { key: "phone_number", ...identity.phone_number };
+  const phoneNumberIdentity = getIdentityValues(
+    "phone_number",
+    identity.phone_number,
+  );
+  if (phoneNumberIdentity) {
+    return phoneNumberIdentity;
   }
 
   // finally, we'll use the first identity
   const keys = Object.keys(identity);
   if (keys.length > 0) {
-    return { key: keys[0], ...identity[keys[0]] };
+    return getIdentityValues(keys[0], identity[keys[0]]);
   }
 
   return null;
 };
 
 export const getOtherIdentities = (
-  allIdentities: PrivacyRequestEntity["identity"],
-  primaryIdentity: IdentityWithKey | null,
-): IdentityWithKey[] => {
+  allIdentities: PrivacyRequestResponse["identity"],
+  primaryIdentity: IdentityValueWithKey | null,
+): IdentityValueWithKey[] => {
+  if (!allIdentities) {
+    return [];
+  }
+
   return Object.entries(allIdentities)
-    .filter(([key, identity]) => identity.value && key !== primaryIdentity?.key)
-    .map(([key, identity]) => ({
-      key,
-      ...identity,
-    }));
+    .map(([key, identity]) => getIdentityValues(key, identity))
+    .filter((identity): identity is IdentityValueWithKey => Boolean(identity))
+    .filter((identity) => identity.key !== primaryIdentity?.key);
 };
 
 export const getCustomFields = (
-  customFields: PrivacyRequestEntity["custom_privacy_request_fields"],
+  customFields: PrivacyRequestResponse["custom_privacy_request_fields"],
 ): CustomFieldWithKey[] => {
+  if (!customFields) {
+    return [];
+  }
+
   return customFields
     ? Object.entries(customFields)
-        .filter(
-          ([, field]) =>
-            field.value !== null &&
-            field.value !== undefined &&
-            field.value !== "",
-        )
+        .filter(([, field]) => !isNil(field.value) && field.value !== "")
         .map(([key, field]) => ({
           key,
           label: field.label,
           value: field.value,
         }))
     : [];
+};
+
+/**
+ * Extracts all unique custom fields from the privacy center config actions.
+ * Returns a map of field_name -> field_definition for all unique custom fields.
+ */
+export const extractUniqueCustomFields = (
+  actions: PrivacyRequestOption[] | undefined,
+): Record<string, CustomFieldDefinition> => {
+  if (!actions) {
+    return {};
+  }
+
+  const uniqueFields: Record<string, CustomFieldDefinition> = {};
+
+  actions.forEach((action) => {
+    if (action.custom_privacy_request_fields) {
+      Object.entries(action.custom_privacy_request_fields).forEach(
+        ([fieldName, fieldInfo]) => {
+          // Only add if not already present (first occurrence wins)
+          if (!uniqueFields[fieldName]) {
+            // Cast to our extended type that includes field_type and options
+            uniqueFields[fieldName] = fieldInfo as CustomFieldDefinition;
+          }
+        },
+      );
+    }
+  });
+
+  return uniqueFields;
+};
+
+/**
+ * Filters out null values from custom privacy request fields.
+ * The backend API expects Record<string, string | number> and doesn't accept null values.
+ * Returns null if the input is null or if all values are filtered out.
+ */
+export const filterNullCustomFields = (
+  customFields: Record<string, string | null> | null,
+): Record<string, string | number> | null => {
+  if (!customFields) {
+    return null;
+  }
+
+  const filtered = pickBy(customFields, (value) => value !== null) as Record<
+    string,
+    string | number
+  >;
+
+  return Object.keys(filtered).length > 0 ? filtered : null;
 };

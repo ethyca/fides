@@ -14,7 +14,7 @@ import {
   CreateSaasConnectionConfigRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -118,7 +118,6 @@ export const ConnectorParameters = ({
           params.secrets[key[0]] = values[key[0]];
         });
 
-        // @ts-ignore
         const payload = await createSassConnectionConfig(params).unwrap();
         dispatch(setConnection(payload.connection));
         successAlert(`Connector successfully added!`);
