@@ -8,7 +8,7 @@ Use the template found in `.github/pull_request_template.md` to create a pull re
 - In the description and code changes sections, do not include information about code formatting or general code clean up changes.
 - Do not include running tests as part of the Steps to Confirm, those will run automatically as part of the PR.
 - The issue can usually be derived from the current branch name, it's a Jira ticket with prefix "ENG-" (eg. `Ticket [ENG-1234]`)
-- If `acli` is available, use `acli jira workitem view [key]` cli command to get more information about the issue.
+- If `acli` is available, use `acli jira workitem view [key]` cli command to get more information about the issue. Full permissions must be used for the acli credentials to work, even when in sandbox mode.
 - If `gh` is available, use `gh pr create -d --title "[title]" --body "[body]"` cli command to create the PR in draft mode. The body should be in Markdown code format, patterned after the template.  Full permissions must be used for the `gh` credentials to work, even when in sandbox mode.
 - If `gh` is not available, provide a link to a GitHub URL with the body of the PR template and title as query parameters.
   - The format is: `https://github.com/ethyca/fides/compare/main...{branch}?quick_pull=1&title={title}&body={body}`. Make this link clickable, not copyable. Take care to ensure the URL encoding doesn't get mangled in the link. Be sure to include backticks encoded as %60 instead of stripping them from the description.
