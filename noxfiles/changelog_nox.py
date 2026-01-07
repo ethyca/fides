@@ -342,6 +342,64 @@ def finalize_release(content: str, version: str) -> str:
     return "\n".join(new_lines)
 
 
+def finalize_patch_release(content: str, version: str, new_section: str) -> str:
+    """
+    Create a new version section with only the new entries, keeping existing Unreleased content.
+
+    This is used for patch releases (--prs flag) where we only want to release specific PRs,
+    not all the Unreleased content.
+    """
+    lines = content.split("\n")
+
+    # Find Unreleased section boundaries
+    unreleased_start = None
+    unreleased_end = None
+    prev_version = None
+
+    for i, line in enumerate(lines):
+        if line.startswith("## [Unreleased]"):
+            unreleased_start = i
+            # Find the end of Unreleased section (next release section)
+            for j in range(i + 1, len(lines)):
+                if lines[j].startswith("## ["):
+                    unreleased_end = j
+                    # Extract version from next release line for compare link
+                    match = re.search(r"## \[([\d.]+)\]", lines[j])
+                    if match:
+                        prev_version = match.group(1)
+                    break
+            if unreleased_end is None:
+                unreleased_end = len(lines)
+            break
+
+    if unreleased_start is None:
+        raise ValueError("Could not find [Unreleased] section in CHANGELOG.md")
+
+    if prev_version is None:
+        raise ValueError("Could not find previous version for compare link")
+
+    # Build new content:
+    # 1. Everything before Unreleased section (including Unreleased header and existing content)
+    # 2. Update Unreleased compare link to point to new version
+    # 3. Insert new version section with only the new entries
+    # 4. Everything after Unreleased section
+
+    new_lines = lines[:unreleased_start]
+    # Update Unreleased section header to point to new version
+    new_lines.append(f"## [Unreleased]({GITHUB_REPO}/compare/{version}..main)")
+    # Keep existing Unreleased content (everything between header and next release)
+    new_lines.extend(lines[unreleased_start + 1 : unreleased_end])
+    # Add new version section with only the new entries
+    new_lines.append(f"## [{version}]({GITHUB_REPO}/compare/{prev_version}..{version})")
+    new_lines.append("")
+    new_lines.extend(new_section.split("\n"))
+    new_lines.append("")
+    # Add everything after old Unreleased section
+    new_lines.extend(lines[unreleased_end:])
+
+    return "\n".join(new_lines)
+
+
 # =============================================================================
 # Action Handlers
 # =============================================================================
@@ -410,7 +468,14 @@ def _handle_dry(
             for f in remaining:
                 session.log(f"  - {f.name}")
     if release_version:
-        session.log(f"Would finalize release as version: {release_version}")
+        if pr_filter:
+            session.log(f"Would finalize PATCH release as version: {release_version}")
+            session.log("Existing Unreleased content will remain in Unreleased section")
+        else:
+            session.log(f"Would finalize release as version: {release_version}")
+            session.log(
+                "All Unreleased content (existing + new) will be moved to the new version"
+            )
 
 
 def _handle_write(
@@ -430,17 +495,28 @@ def _handle_write(
     with open(CHANGELOG_FILE, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # Insert new entries
-    try:
-        updated_content = insert_entries_into_changelog(content, new_section)
-    except ValueError as e:
-        session.error(str(e))
-
     # Finalize release if requested
     if release_version:
         try:
-            updated_content = finalize_release(updated_content, release_version)
-            session.log(f"Finalized release as version {release_version}")
+            if pr_filter:
+                # Patch release: Only release the specific PRs, keep existing Unreleased content
+                updated_content = finalize_patch_release(
+                    content, release_version, new_section
+                )
+                session.log(
+                    f"Finalized patch release as version {release_version} with specific PRs"
+                )
+            else:
+                # Normal release: Add new entries to Unreleased, then move ALL to new version
+                updated_content = insert_entries_into_changelog(content, new_section)
+                updated_content = finalize_release(updated_content, release_version)
+                session.log(f"Finalized release as version {release_version}")
+        except ValueError as e:
+            session.error(str(e))
+    else:
+        # No release version: just add entries to Unreleased
+        try:
+            updated_content = insert_entries_into_changelog(content, new_section)
         except ValueError as e:
             session.error(str(e))
 
@@ -585,10 +661,14 @@ def changelog(session: nox.Session, action: str) -> None:
         - changelog(dry) = Preview the changelog that would be generated without making changes
         - changelog(dry) -- --release VERSION = Preview with release finalization
         - changelog(dry) -- --prs PR1,PR2,PR3 = Preview with PR filtering
-        - changelog(write) -- --release VERSION = Compile fragments and create new version section (--release required)
-        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Only include specific PRs (for patch releases)
+        - changelog(write) -- --release VERSION = Compile fragments and create new version section (also includes entries already in the Unreleased section)
+        - changelog(write) -- --release VERSION --prs PR1,PR2,PR3 = Patch release with specific PRs only
         - changelog(validate) = Validate all changelog fragments in the changelog/ directory
         - changelog(validate) -- --files FILE1,FILE2 = Validate specific changelog fragment files
+
+    Note on release behavior:
+        - Normal release (no --prs): All existing Unreleased content + new fragments are moved to the new version
+        - Patch release (with --prs): Only the specified PR fragments are released, existing Unreleased content remains in Unreleased section
     """
 
     # Handle validate action separately (has its own flow)
