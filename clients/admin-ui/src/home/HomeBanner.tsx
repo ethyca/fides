@@ -1,4 +1,4 @@
-import { Flex, Text } from "fidesui";
+import { ChakraFlex as Flex, ChakraText as Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import * as React from "react";
 

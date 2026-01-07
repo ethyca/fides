@@ -1,28 +1,24 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntModal as modal,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntSpin as Spin,
+  Button,
+  Checkbox,
+  Flex,
   Icons,
-  useMessage,
+  List,
+  Pagination,
+  Skeleton,
+  Spin,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
-import {
-  useLazyDownloadPrivacyRequestCsvV2Query,
-  useSearchPrivacyRequestsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -30,12 +26,10 @@ import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const { filterQueryParams, filters, setFilters } = usePrivacyRequestsFilters({
-    pagination,
-  });
-
-  const messageApi = useMessage();
-  const [modalApi, modalContext] = modal.useModal();
+  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
 
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
@@ -71,35 +65,24 @@ export const PrivacyRequestsDashboard = () => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
 
-  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
-
-  const handleExport = async () => {
-    let messageStr;
-    try {
-      await downloadReport(filterQueryParams);
-    } catch (error) {
-      if (error instanceof Error) {
-        messageStr = error.message;
-      } else {
-        messageStr = "Unknown error occurred";
-      }
-    }
-    if (messageStr) {
-      messageApi.error(messageStr, 5000);
-    }
-  };
+  const { downloadReport, isDownloadingReport } =
+    useDownloadPrivacyRequestReport();
 
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    modalApi,
   });
 
   return (
     <div>
       {/* First row: Search and Filters */}
       <Flex gap="small" align="center" className="mb-4">
-        <PrivacyRequestFiltersBar filters={filters} setFilters={setFilters} />
+        <PrivacyRequestFiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          sortState={sortState}
+          setSortState={setSortState}
+        />
       </Flex>
 
       {/* Second row: Actions */}
@@ -140,7 +123,8 @@ export const PrivacyRequestsDashboard = () => {
             aria-label="Export report"
             data-testid="export-btn"
             icon={<Icons.Download />}
-            onClick={handleExport}
+            onClick={() => downloadReport(filterQueryParams)}
+            loading={isDownloadingReport}
           />
         </Flex>
       </Flex>
@@ -180,7 +164,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {modalContext}
     </div>
   );
 };

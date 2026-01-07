@@ -1,8 +1,8 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntSpace as Space,
+  ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
+  Space,
 } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -60,6 +60,7 @@ const buildBaseColumns = ({
     title: "Assets",
     dataIndex: "total_updates",
     key: DiscoveredSystemAggregateColumnKeys.TOTAL_UPDATES,
+    width: 100,
   },
   {
     title: "Categories of consent",

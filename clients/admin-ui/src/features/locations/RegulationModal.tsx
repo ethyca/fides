@@ -1,10 +1,10 @@
 import {
-  Checkbox,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalOverlay,
-  SimpleGrid,
+  ChakraCheckbox as Checkbox,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
 import { useState } from "react";
 

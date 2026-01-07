@@ -1,8 +1,4 @@
-import {
-  AntCard as Card,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Card, Flex, Typography } from "fidesui";
 import type { ReactNode } from "react";
 
 interface PreviewCardProps {

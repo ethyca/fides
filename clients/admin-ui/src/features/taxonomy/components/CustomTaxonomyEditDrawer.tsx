@@ -1,16 +1,19 @@
-import { AntButton as Button, AntFlex as Flex, useMessage } from "fidesui";
+import { Button, Flex, Tabs, useMessage } from "fidesui";
 
+import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import CustomTaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
+import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
+import { CustomFieldDefinitionWithId } from "~/types/api";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
 interface CustomTaxonomyEditDrawerProps
   extends Omit<DetailsDrawerProps, "itemKey"> {
-  taxonomy?: TaxonomyResponse | null;
+  taxonomy: TaxonomyResponse;
   onDelete: () => void;
 }
 
@@ -26,9 +29,22 @@ const CustomTaxonomyEditDrawer = ({
     useUpdateCustomTaxonomyMutation();
 
   const messageApi = useMessage();
+  const { sortedCustomFieldDefinitionIds, idToCustomFieldDefinition } =
+    useCustomFields({
+      resourceType: taxonomy.fides_key,
+    });
+
+  const customFields = sortedCustomFieldDefinitionIds
+    .map(
+      (id) =>
+        idToCustomFieldDefinition.get(id) as CustomFieldDefinitionWithId & {
+          created_at: string;
+        },
+    )
+    .sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
 
   const handleUpdate = async (values: TaxonomyUpdate) => {
-    if (!taxonomy?.fides_key) {
+    if (!taxonomy.fides_key) {
       messageApi.error("Taxonomy not found");
       return;
     }
@@ -65,10 +81,26 @@ const CustomTaxonomyEditDrawer = ({
         </Flex>
       }
     >
-      <CustomTaxonomyDetails
-        taxonomy={taxonomy}
-        onSubmit={handleUpdate}
-        formId={FORM_ID}
+      <Tabs
+        items={[
+          {
+            label: "Details",
+            key: "details",
+            children: (
+              <CustomTaxonomyDetails
+                taxonomy={taxonomy}
+                onSubmit={handleUpdate}
+                formId={FORM_ID}
+                customFields={customFields}
+              />
+            ),
+          },
+          {
+            label: "History",
+            key: "history",
+            children: <TaxonomyHistory taxonomyKey={taxonomy.fides_key} />,
+          },
+        ]}
       />
     </DetailsDrawer>
   );

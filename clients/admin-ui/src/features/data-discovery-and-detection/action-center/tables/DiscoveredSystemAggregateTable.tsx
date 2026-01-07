@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntMenu as Menu,
-  AntSpace as Space,
-  AntTable as Table,
-  AntTooltip as Tooltip,
+  Button,
+  Dropdown,
+  Flex,
   Icons,
+  Menu,
+  Space,
+  Table,
+  Tooltip,
 } from "fidesui";
 
 import { SelectedText } from "~/features/common/table/SelectedText";
@@ -68,7 +68,11 @@ export const DiscoveredSystemAggregateTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex
+        justify="space-between"
+        align="center"
+        className="sticky -top-6 z-10 bg-white py-4"
+      >
         <DebouncedSearchInput value={searchQuery} onChange={updateSearch} />
         <Space size="large">
           {hasSelectedRows && <SelectedText count={selectedRows.length} />}

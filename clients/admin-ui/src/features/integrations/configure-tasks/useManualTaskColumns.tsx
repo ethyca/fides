@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { Button, Flex, Icons, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";

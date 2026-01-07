@@ -1,4 +1,4 @@
-import { Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
@@ -10,7 +10,7 @@ const NewPrivacyNoticePage = () => (
     <PageHeader
       heading="Privacy Notices"
       breadcrumbItems={[
-        { title: "All privacy Notices", href: PRIVACY_NOTICES_ROUTE },
+        { title: "All privacy notices", href: PRIVACY_NOTICES_ROUTE },
         { title: "New privacy notice" },
       ]}
     />

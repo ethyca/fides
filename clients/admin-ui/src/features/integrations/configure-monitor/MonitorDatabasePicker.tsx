@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton as Button, Flex, Text } from "fidesui";
+import { Button, ChakraFlex as Flex, ChakraText as Text } from "fidesui";
 import { useMemo } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -100,7 +100,7 @@ const MonitorDatabasePicker = ({
   });
 
   return (
-    <Flex w="full" direction="column" maxH="lg">
+    <Flex w="full" direction="column" maxH="lg" overflow="auto">
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={(row) => handleToggleSelection(row.id)}

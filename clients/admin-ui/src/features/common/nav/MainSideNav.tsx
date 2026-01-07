@@ -1,4 +1,9 @@
-import { AntButton as Button, Box, Icons, VStack } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  Icons,
+} from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";

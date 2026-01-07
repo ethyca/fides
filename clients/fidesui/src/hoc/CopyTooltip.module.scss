@@ -1,0 +1,17 @@
+.tooltipButton {
+  --ant-button-text-text-color: rgba(255, 255, 255, 0.85) !important;
+  --ant-button-text-text-hover-color: rgba(255, 255, 255, 1) !important;
+  --ant-color-text-disabled: rgba(255, 255, 255, 1) !important;
+
+  &:disabled {
+    cursor: default !important;
+  }
+}
+
+.tooltip {
+  max-width: 400px !important;
+}
+
+.keyboardAccessibleButton {
+  cursor: default;
+}

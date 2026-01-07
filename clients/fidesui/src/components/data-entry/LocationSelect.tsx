@@ -1,5 +1,5 @@
 import { DefaultOptionType } from "antd/es/select";
-import { AntSelect as Select } from "fidesui";
+import { Select } from "fidesui";
 import type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 import { iso31661, iso31662 } from "iso-3166";
 import { useMemo } from "react";
@@ -59,15 +59,20 @@ interface IsoOption extends DefaultOptionType {
 const mapIsoObjects = (
   countries: ISO31661Entry[],
   subdivisions: ISO31662Entry[],
+  includeCountryOnlyOptions: boolean = false,
 ): [ISO31661Entry, ISO31662Entry | null][] => {
   const mapped = countries.map((country) => {
     const children: [ISO31661Entry, ISO31662Entry][] = subdivisions
       .filter(({ parent }) => country.alpha2 === parent)
       .map((child) => [country, child]);
 
-    return children.length > 0
-      ? children
-      : [[country, null] as [ISO31661Entry, null]];
+    if (children.length > 0) {
+      return includeCountryOnlyOptions
+        ? [[country, null] as [ISO31661Entry, null], ...children]
+        : children;
+    }
+
+    return [[country, null] as [ISO31661Entry, null]];
   });
 
   return mapped.flat();
@@ -83,11 +88,13 @@ export type LocationSelectProps = (
   | ILocationMultiSelectProps
 ) & {
   options?: LocationOptions;
+  includeCountryOnlyOptions?: boolean;
 };
 
 export const LocationSelect = (props: LocationSelectProps) => {
   const {
     mode,
+    includeCountryOnlyOptions = false,
     options: { countries, regions } = {
       countries: iso31661,
       regions: iso31662,
@@ -100,6 +107,11 @@ export const LocationSelect = (props: LocationSelectProps) => {
     allowClear: true,
     showSearch: true,
     optionFilterProp: "label",
+    /**
+     * @description defaults to true. a number can be passed to override this.
+     * false will disable virtual scrolling and have a performance impact.
+     */
+    popupMatchSelectWidth: true,
     filterSort: (left: IsoOption, right: IsoOption) =>
       (left?.label ?? "")
         .toLowerCase()
@@ -117,23 +129,25 @@ export const LocationSelect = (props: LocationSelectProps) => {
 
   const isoSelectOptions = useMemo(
     () =>
-      mapIsoObjects(countries, regions).map(([country, subdivision]) => ({
-        value: subdivision?.code ?? country.alpha2,
-        label: formatIsoLocation({
-          userTranslation,
-          isoEntry: subdivision ?? country,
-          showFlag: true,
+      mapIsoObjects(countries, regions, includeCountryOnlyOptions).map(
+        ([country, subdivision]) => ({
+          value: subdivision?.code ?? country.alpha2,
+          label: formatIsoLocation({
+            userTranslation,
+            isoEntry: subdivision ?? country,
+            showFlag: true,
+          }),
+          title: formatIsoLocation({
+            userTranslation,
+            isoEntry: subdivision ?? country,
+            showFlag: false,
+          }),
+          country: formatIsoLocation({ userTranslation, isoEntry: country }),
+          subdivision: subdivision?.name,
+          flag: isoCodeToFlag(country.alpha2),
         }),
-        title: formatIsoLocation({
-          userTranslation,
-          isoEntry: subdivision ?? country,
-          showFlag: false,
-        }),
-        country: formatIsoLocation({ userTranslation, isoEntry: country }),
-        subdivision: subdivision?.name,
-        flag: isoCodeToFlag(country.alpha2),
-      })),
-    [countries, regions, navigator.language],
+      ),
+    [countries, regions, includeCountryOnlyOptions, navigator.language],
   );
 
   return (
@@ -142,10 +156,6 @@ export const LocationSelect = (props: LocationSelectProps) => {
       {...defaultProps}
       {...props}
       options={isoSelectOptions}
-      /**
-       * @description this must be set to true to prevent performance issues
-       */
-      popupMatchSelectWidth
     />
   );
 };

@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  Center,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  SimpleGrid,
+  Button,
+  ChakraCenter as Center,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
 import { ReactNode } from "react";
 

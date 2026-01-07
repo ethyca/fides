@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraStack as Stack,
+  ChakraText as Text,
   ConfirmationModal,
-  DrawerFooter,
   EyeIcon,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
+  Form,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
@@ -55,7 +55,7 @@ const TaxonomyItemEditDrawer = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const { updateTrigger } = useTaxonomySlices({ taxonomyType });
+  const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
 
   const resourceType = taxonomyTypeToResourceType(taxonomyType);
   const customFields = useCustomFields({
@@ -77,7 +77,7 @@ const TaxonomyItemEditDrawer = ({
       return;
     }
 
-    if (customFields.isEnabled && resourceType) {
+    if (customFields.isEnabled) {
       const customFieldValues = customFieldsForm.getFieldsValue();
       await customFields.upsertCustomFields({
         fides_key: taxonomyItem?.fides_key!,
@@ -90,12 +90,7 @@ const TaxonomyItemEditDrawer = ({
   };
 
   const handleDelete = async () => {
-    // For record keeping, we will not actually delete the taxonomy
-    // but rather mark it as disabled and not show it in the UI
-    await updateTrigger({
-      ...taxonomyItem!,
-      active: false,
-    });
+    await deleteTrigger(taxonomyItem!.fides_key);
     onDeleteClose();
     closeDrawer();
   };
@@ -181,7 +176,7 @@ const TaxonomyItemEditDrawer = ({
             isDisabled={!canUserEditTaxonomy}
           />
         )}
-        {customFields.isEnabled && !customFields.isLoading && resourceType && (
+        {customFields.isEnabled && !customFields.isLoading && (
           <TaxonomyCustomFieldsForm
             form={customFieldsForm}
             formId={CUSTOM_FIELDS_FORM_ID}

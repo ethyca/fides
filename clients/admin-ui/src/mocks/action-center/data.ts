@@ -15,7 +15,7 @@ export const mockOktaMonitor = {
     in_review: 15,
     classifying: 0,
     removals: 0,
-    approved: 5,
+    reviewed: 5,
     classified_low_confidence: null,
     classified_high_confidence: null,
   },

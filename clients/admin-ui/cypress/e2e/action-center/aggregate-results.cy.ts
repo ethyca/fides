@@ -69,7 +69,7 @@ describe("Action center", () => {
           .find(".ant-list-item-meta-description")
           .should(
             "have.text",
-            "216 Unlabeled, 22 Classifying, 13 In review, 2 Removals",
+            "216 Unlabeled, 22 Classifying, 13 Classified, 2 Removals",
           );
         // date tooltip
         cy.getByTestId(`monitor-result-${results[0].key}`).within(() => {

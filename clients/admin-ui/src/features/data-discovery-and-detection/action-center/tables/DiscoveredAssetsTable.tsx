@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  AntDefaultOptionType as DefaultOptionType,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntMenu as Menu,
-  AntSpace as Space,
-  AntTable as Table,
-  AntTooltip as Tooltip,
+  Button,
+  DefaultOptionType,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  Menu,
+  Space,
+  Table,
+  Tooltip,
 } from "fidesui";
 import { useState } from "react";
 
@@ -134,7 +134,11 @@ export const DiscoveredAssetsTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex
+        justify="space-between"
+        align="center"
+        className="sticky -top-6 z-10 mb-4 bg-white py-4"
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}

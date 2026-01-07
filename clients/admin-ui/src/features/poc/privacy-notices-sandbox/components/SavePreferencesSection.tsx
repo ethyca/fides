@@ -1,10 +1,5 @@
 import type { Key } from "antd/es/table/interface";
-import {
-  AntButton as Button,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Empty, Flex, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
@@ -127,10 +122,10 @@ const SavePreferencesSection = ({
           value: isChecked
             ? UserConsentPreference.OPT_IN
             : UserConsentPreference.OPT_OUT,
-          experience_config_history_id: experienceConfigHistoryId,
+          collected_at: new Date().toISOString(),
           meta: {
             fides: {
-              collected_at: new Date().toISOString().replace("Z", "+00:00"),
+              experience_config_history_id: experienceConfigHistoryId,
             },
           },
         };

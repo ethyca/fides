@@ -1,4 +1,4 @@
-import { AntEmpty as Empty, useToast } from "fidesui";
+import { Empty, useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -107,6 +107,9 @@ export const useDiscoveredSystemAggregateTable = ({
               description="All caught up!"
             />
           ),
+        },
+        sticky: {
+          offsetHeader: 40,
         },
       },
     }),

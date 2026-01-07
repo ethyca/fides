@@ -1,9 +1,4 @@
-import {
-  AntMenuProps as MenuProps,
-  AntModal as modal,
-  Icons,
-  useMessage,
-} from "fidesui";
+import { Icons, MenuProps, useMessage, useModal } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
@@ -21,12 +16,9 @@ import {
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
 
-type ModalInstance = ReturnType<typeof modal.useModal>[0];
-
 interface UsePrivacyRequestBulkActionsProps {
   requests: PrivacyRequestResponse[];
   selectedIds: React.Key[];
-  modalApi: ModalInstance;
 }
 
 const ACTION_PAST_TENSE: Record<BulkActionType, string> = {
@@ -87,7 +79,6 @@ const formatResultMessage = (
 export const usePrivacyRequestBulkActions = ({
   requests,
   selectedIds,
-  modalApi,
 }: UsePrivacyRequestBulkActionsProps) => {
   const selectedRequests = useMemo(
     () => requests.filter((request) => selectedIds.includes(request.id)),
@@ -95,6 +86,7 @@ export const usePrivacyRequestBulkActions = ({
   );
 
   const messageApi = useMessage();
+  const modalApi = useModal();
 
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
@@ -102,9 +94,7 @@ export const usePrivacyRequestBulkActions = ({
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
   // Use the deny modal hook
-  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal(
-    modalApi as any,
-  );
+  const { openDenyPrivacyRequestModal } = useDenyPrivacyRequestModal();
 
   const handleAction = useCallback(
     async (action: BulkActionType) => {

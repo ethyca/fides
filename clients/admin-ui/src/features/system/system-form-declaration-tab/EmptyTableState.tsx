@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  Box,
-  HStack,
-  SmallAddIcon,
-  Stack,
-  Text,
-  WarningTwoIcon,
+  Button,
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraSmallAddIcon as SmallAddIcon,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
 } from "fidesui";
 import { ReactNode } from "react";
 

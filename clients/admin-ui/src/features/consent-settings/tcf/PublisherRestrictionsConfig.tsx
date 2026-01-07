@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntSpace as Space,
-  Skeleton,
-  Text,
+  Button,
+  ChakraSkeleton as Skeleton,
+  ChakraText as Text,
+  Space,
 } from "fidesui";
 import { useEffect, useState } from "react";
 

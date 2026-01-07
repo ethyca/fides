@@ -125,6 +125,21 @@ Cypress.Commands.add("overrideFeatureFlag", (flagName, value) => {
   });
 });
 
+Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      Object.defineProperty(win.navigator, "language", {
+        value: language,
+        writable: true,
+      });
+      Object.defineProperty(win.navigator, "languages", {
+        value: [language],
+        writable: true,
+      });
+    },
+  });
+});
+
 // this prevents an infinite loop that occurs sometimes and causes tests to
 // fail-- see https://github.com/cypress-io/cypress/issues/20341
 Cypress.on("uncaught:exception", (err) => {
@@ -208,6 +223,14 @@ declare global {
         flagName: string,
         value: boolean | string | number,
       ): void;
+      /**
+       * Visit a URL with a specific language/locale setting.
+       * This sets the browser's navigator.language before loading the page.
+       *
+       * @example cy.visitWithLanguage("/privacy-requests", "en-US")
+       * @example cy.visitWithLanguage("/settings", "es-ES")
+       */
+      visitWithLanguage(url: string, language: string): Chainable<any>;
     }
   }
 }

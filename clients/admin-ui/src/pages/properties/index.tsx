@@ -1,4 +1,4 @@
-import { Text } from "fidesui";
+import { ChakraText as Text } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";

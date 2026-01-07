@@ -2,7 +2,13 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import { AntButton as Button, Box, Flex, Spacer, Stack } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  ChakraStack as Stack,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -13,6 +19,7 @@ import {
   CustomFieldValues,
   useCustomFields,
 } from "~/features/common/custom-fields";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
@@ -26,7 +33,6 @@ import {
   DataSubject,
   DataUse,
   PrivacyDeclarationResponse,
-  ResourceTypes,
 } from "~/types/api";
 
 export const ValidationSchema = Yup.object().shape({
@@ -287,7 +293,7 @@ export const PrivacyDeclarationFormComponents = ({
       </SystemFormInputGroup>
       {includeCustomFields ? (
         <CustomFieldsList
-          resourceType={ResourceTypes.PRIVACY_DECLARATION}
+          resourceType={LegacyResourceTypes.PRIVACY_DECLARATION}
           resourceFidesKey={privacyDeclarationId}
         />
       ) : null}
@@ -317,7 +323,7 @@ export const usePrivacyDeclarationForm = ({
   privacyDeclarationId,
 }: Omit<Props, "onDelete"> & Pick<DataProps, "allDataUses">) => {
   const { customFieldValues, upsertCustomFields } = useCustomFields({
-    resourceType: ResourceTypes.PRIVACY_DECLARATION,
+    resourceType: LegacyResourceTypes.PRIVACY_DECLARATION,
     resourceFidesKey: privacyDeclarationId,
   });
 

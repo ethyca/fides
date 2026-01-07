@@ -1,4 +1,4 @@
-import { AntResult as Result } from "fidesui";
+import { Result } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -28,6 +28,7 @@ const MonitorResultSystems: NextPage = () => {
           { title: "All activity", href: ACTION_CENTER_ROUTE },
           { title: monitorId },
         ]}
+        isSticky={false}
       />
       <DiscoveredSystemAggregateTable monitorId={monitorId} />
     </FixedLayout>
