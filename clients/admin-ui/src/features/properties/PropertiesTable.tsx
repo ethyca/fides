@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -69,7 +71,11 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-export const PropertiesTable = () => {
+export const PropertiesTable = ({
+  onError,
+}: {
+  onError: (error: FetchBaseQueryError | SerializedError) => void;
+}) => {
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   const userCanUpdate = useHasPermission([ScopeRegistryEnum.PROPERTY_UPDATE]);
@@ -102,12 +108,19 @@ export const PropertiesTable = () => {
   const {
     isFetching,
     isLoading,
+    error,
     data: properties,
   } = useGetAllPropertiesQuery({
     page: pageIndex,
     size: pageSize,
     search: globalFilter,
   });
+
+  useEffect(() => {
+    if (error) {
+      onError(error);
+    }
+  }, [error, onError]);
 
   const {
     items: data,
