@@ -11,7 +11,9 @@ describe("Smoke test", () => {
     cy.intercept("PATCH", `${API_URL}/privacy-request/administrate/approve`).as(
       "patchRequest",
     );
-    cy.intercept("GET", `${API_URL}/privacy-request*`).as("getRequests");
+    cy.intercept("POST", `${API_URL}/privacy-request/search*`).as(
+      "getRequests",
+    );
     cy.intercept("POST", `${API_URL}/privacy-request`).as("postPrivacyRequest");
 
     // Submit the access request from the privacy center
@@ -72,8 +74,10 @@ describe("Smoke test", () => {
         ).id;
       });
 
-      cy.get(`tr[data-testid^='row-pending-']`)
+      cy.get('[data-testid="request-status-badge"]')
+        .filter(':contains("New")')
         .first()
+        .closest(".ant-list-item")
         .within(() => {
           cy.getByTestId("privacy-request-approve-btn").click();
         });
@@ -85,10 +89,12 @@ describe("Smoke test", () => {
       cy.wait("@getRequests");
 
       // Make sure there is one more completed request than originally
-      cy.get(`tr[data-testid^='row-complete-']`).then((rows) => {
-        expect(rows.length).to.eql(numCompletedRequests + 1);
-        cy.readFile(`../../fides_uploads/${mostRecentPrivacyRequestId}.zip`);
-      });
+      cy.get('[data-testid="request-status-badge"]')
+        .filter(':contains("Completed")')
+        .then((badges) => {
+          expect(badges.length).to.eql(numCompletedRequests + 1);
+          cy.readFile(`../../fides_uploads/${mostRecentPrivacyRequestId}.zip`);
+        });
     });
   });
 
