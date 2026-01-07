@@ -66,12 +66,13 @@ const ConfigureAlerts = () => {
   useEffect(() => {
     if (isOpen) {
       setSkip(false);
-      // Reset to defaults when drawer opens
-      setEmails([]);
-      setNotify(false);
-      setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
     }
-  }, [isOpen]);
+    if (data) {
+      setEmails(data.email_addresses);
+      setNotify(data.notify_after_failures !== 0);
+      setMinErrorCount(data.notify_after_failures || DEFAULT_MIN_ERROR_COUNT);
+    }
+  }, [data, isOpen]);
 
   return (
     <>
