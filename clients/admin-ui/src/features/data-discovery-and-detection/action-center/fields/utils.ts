@@ -28,10 +28,12 @@ export const getActionSuccessMessage = (
   `${FIELD_ACTION_COMPLETED[actionType]}${pluralize(itemCount ?? 0, "", `${actionType === FieldActionType.ASSIGN_CATEGORIES ? " for" : ""} ${itemCount?.toLocaleString()} resources`)}`;
 
 export const getActionErrorMessage = (actionType: FieldActionType) => {
-  const actionLabel = actionType === FieldActionType.CLASSIFY
-    ? "Classification"
-    : FIELD_ACTION_COMPLETED[actionType];
-  return `${actionLabel} failed${actionType === FieldActionType.CLASSIFY || actionType === FieldActionType.PROMOTE ? ": View summary in the activity tab" : ""}`;
+  const activityTabSuffix =
+    actionType === FieldActionType.CLASSIFY ||
+    actionType === FieldActionType.PROMOTE
+      ? ": View summary in the activity tab"
+      : "";
+  return `Action failed${activityTabSuffix}`;
 };
 
 const CONFIDENCE_BUCKET_TO_SEVERITY: Record<
