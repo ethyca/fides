@@ -16,6 +16,7 @@ import {
   ConsentReportingSchema,
   PrivacyNoticeRegion,
   RequestOrigin,
+  TCFPreferences,
   UserConsentPreference,
 } from "~/types/api";
 
@@ -29,7 +30,7 @@ import {
 const useConsentReportingTableColumns = ({
   onTcfDetailViewClick,
 }: {
-  onTcfDetailViewClick: (preferences: UserConsentPreference) => void;
+  onTcfDetailViewClick: (preferences: TCFPreferences) => void;
 }) => {
   const columns: ColumnsType<ConsentReportingSchema> = useMemo(
     () => [
@@ -74,7 +75,9 @@ const useConsentReportingTableColumns = ({
               color={badgeColor}
               closeIcon={<Icons.Information />}
               closeButtonLabel="View details"
-              onClose={() => onTcfDetailViewClick(record.tcf_preferences!)}
+              onClose={() =>
+                onTcfDetailViewClick(record.tcf_preferences as TCFPreferences)
+              }
               data-testid="tcf-badge"
             >
               {preferenceLabel}
