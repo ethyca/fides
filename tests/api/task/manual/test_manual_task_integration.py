@@ -14,7 +14,6 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -24,6 +23,7 @@ from fides.api.models.manual_task import (
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
@@ -268,8 +268,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == access_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -279,8 +278,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == access_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -321,8 +319,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == erasure_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -332,8 +329,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == erasure_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -424,8 +420,7 @@ class TestManualTaskGraphTaskInstanceCreation:
         access_config = next(
             config
             for config in access_manual_task.configs
-            if config.config_type == ManualTaskConfigurationType.access_privacy_request
-            and config.is_current
+            if config.config_type == ActionType.access and config.is_current
         )
         ManualTaskInstance.create(
             db=db,
@@ -442,8 +437,7 @@ class TestManualTaskGraphTaskInstanceCreation:
         erasure_config = next(
             config
             for config in erasure_manual_task.configs
-            if config.config_type == ManualTaskConfigurationType.erasure_privacy_request
-            and config.is_current
+            if config.config_type == ActionType.erasure and config.is_current
         )
         ManualTaskInstance.create(
             db=db,
@@ -462,8 +456,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == mixed_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -473,8 +466,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == mixed_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -516,7 +508,7 @@ class TestManualTaskDisabledConnectionConfig:
             db=db,
             data={
                 "task_id": manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
