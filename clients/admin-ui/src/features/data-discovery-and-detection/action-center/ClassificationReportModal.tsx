@@ -282,4 +282,3 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
 };
 
 export default ClassificationReportModal;
-
