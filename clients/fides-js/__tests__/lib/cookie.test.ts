@@ -73,7 +73,7 @@ jest.mock("js-cookie", () => ({
 
 describe("cookies", () => {
   beforeAll(() => {
-    window.fidesDebugger = () => { };
+    window.fidesDebugger = () => {};
   });
   afterEach(() => {
     mockGetCookie.mockClear();
@@ -505,9 +505,9 @@ describe("cookies", () => {
         cookies.forEach((cookie, cookieIdx) => {
           const calls = removeSubdomainCookies
             ? mockRemoveCookie.mock.calls.slice(
-              cookieIdx * 2,
-              cookieIdx * 2 + 2,
-            )
+                cookieIdx * 2,
+                cookieIdx * 2 + 2,
+              )
             : mockRemoveCookie.mock.calls.slice(cookieIdx, cookieIdx + 1);
           calls.forEach((call, i) => {
             const [name, attributes] = call;

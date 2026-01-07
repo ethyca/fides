@@ -443,9 +443,9 @@ export const updateExperienceFromCookieConsentNotices = ({
 
       const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
-          Boolean(cookie.consent[notice.notice_key]),
-          notice.consent_mechanism,
-        )
+            Boolean(cookie.consent[notice.notice_key]),
+            notice.consent_mechanism,
+          )
         : undefined;
       return { ...notice, current_preference: preference };
     });
