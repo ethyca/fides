@@ -8,6 +8,7 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -19,9 +20,18 @@ import RegulationManagement from "~/features/locations/RegulationManagement";
 
 const RegulationsPage: NextPage = () => {
   // Subscribe to locations/regulations endpoint
-  const { isLoading } = useGetLocationsRegulationsQuery();
+  const { isLoading, error } = useGetLocationsRegulationsQuery();
 
   const locationsRegulations = useAppSelector(selectLocationsRegulations);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching regulations settings"
+      />
+    );
+  }
 
   return (
     <Layout title="Regulations">

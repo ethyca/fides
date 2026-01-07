@@ -200,6 +200,9 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     isFetching: oktaIsFetching,
     refetch: refetchOktaData,
 
+    // Errors
+    error: oktaDataQuery.error,
+
     // Search
     searchQuery: search.searchQuery,
     updateSearch: search.updateSearch,

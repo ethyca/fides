@@ -1,14 +1,8 @@
-import {
-  Flex,
-  Icons,
-  List,
-  Menu,
-  Pagination,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Flex, Icons, List, Menu, Pagination } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
@@ -25,7 +19,6 @@ import { MonitorResult } from "~/features/data-discovery-and-detection/action-ce
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
 const ActionCenterPage = () => {
-  const toast = useToast();
   const { tabs, activeTab, onTabChange } = useTopLevelActionCenterTabs();
   const { flags } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -39,7 +32,7 @@ const ActionCenterPage = () => {
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
   ];
 
-  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
+  const { data, error, isLoading } = useGetAggregateMonitorResultsQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
@@ -51,24 +44,23 @@ const ActionCenterPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (isError) {
-      toast({
-        title: "Error fetching data",
-        description: "Please try again later",
-        status: "error",
-      });
-    }
-  }, [isError, toast]);
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your monitor results"
+      />
+    );
+  }
+
+  if (!webMonitorEnabled && !heliosV2Enabled) {
+    return <DisabledMonitorsPage />;
+  }
 
   const results =
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  if (!webMonitorEnabled && !heliosV2Enabled) {
-    return <DisabledMonitorsPage />;
-  }
 
   return (
     <FixedLayout

@@ -19,6 +19,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
@@ -56,7 +57,11 @@ const FieldsDetailPage: NextPage = () => {
     router.query.collectionName as string,
   );
 
-  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
+  const {
+    isLoading,
+    data: dataset,
+    error,
+  } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
   const collection = collections.find((c) => c.name === collectionName);
 
@@ -273,6 +278,21 @@ const FieldsDetailPage: NextPage = () => {
       },
     ];
   }, [datasetId, collectionName]);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching fields for collection ${collectionName}`}
+        actions={[
+          {
+            label: "Return to datasets",
+            onClick: () => router.push(DATASET_ROUTE),
+          },
+        ]}
+      />
+    );
+  }
 
   return (
     <Layout title={`Dataset - ${datasetId}`}>

@@ -39,7 +39,11 @@ export const useDatamapTable = () => {
    * better way to share code to the plus ui.
    */
   const columnData = useAppSelector(selectColumns);
-  const { data: responseData, isLoading } = useGetDatamapQuery({
+  const {
+    data: responseData,
+    isLoading,
+    error,
+  } = useGetDatamapQuery({
     organizationName: "default_organization",
   });
 
@@ -119,5 +123,6 @@ export const useDatamapTable = () => {
   return {
     ...tableInstance,
     isLoading,
+    error,
   };
 };

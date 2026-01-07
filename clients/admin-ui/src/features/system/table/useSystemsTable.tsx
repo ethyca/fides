@@ -101,6 +101,7 @@ const useSystemsTable = () => {
 
   const {
     data: systemsResponse,
+    error,
     isLoading,
     isFetching,
   } = useGetSystemsQuery({
@@ -385,6 +386,7 @@ const useSystemsTable = () => {
     tableProps,
     selectionProps,
     columns,
+    error,
     // search
     searchQuery,
     updateSearch,
