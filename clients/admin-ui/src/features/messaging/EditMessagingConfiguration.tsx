@@ -1,4 +1,9 @@
-import { Box, Heading, Spinner, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 
 import { messagingProviders } from "./constants";
 import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";

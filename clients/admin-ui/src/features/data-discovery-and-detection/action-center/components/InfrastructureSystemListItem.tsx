@@ -1,14 +1,14 @@
 import {
-  AntAvatar as Avatar,
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntSelectProps as SelectProps,
-  AntTag as Tag,
-  AntText as Text,
+  Avatar,
+  Button,
+  Checkbox,
+  Flex,
   Icons,
+  List,
+  SelectProps,
   SparkleIcon,
+  Tag,
+  Text,
 } from "fidesui";
 import { useMemo } from "react";
 

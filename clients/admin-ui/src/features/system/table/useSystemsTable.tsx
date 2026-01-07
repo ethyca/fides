@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
+  Flex,
+  FlexProps,
   Icons,
+  Typography,
   useMessage,
 } from "fidesui";
 import { uniq } from "lodash";

@@ -7,31 +7,31 @@ import {
   Table as TableInstance,
 } from "@tanstack/react-table";
 import {
-  AntSpin as Spin,
-  ArrowDownIcon,
-  ArrowUpIcon,
-  Box,
-  Button,
-  Checkbox,
-  HStack,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
+  ChakraArrowDownIcon as ArrowDownIcon,
+  ChakraArrowUpIcon as ArrowUpIcon,
+  ChakraBox as Box,
+  ChakraButton as Button,
+  ChakraCheckbox as Checkbox,
+  ChakraHStack as HStack,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuDivider as MenuDivider,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraPortal as Portal,
+  ChakraSmallCloseIcon as SmallCloseIcon,
+  ChakraTable as Table,
+  ChakraTableCellProps as TableCellProps,
+  ChakraTableContainer as TableContainer,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
   MoreIcon,
-  Portal,
-  SmallCloseIcon,
-  Table,
-  TableCellProps,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
+  Spin,
   theme,
-  Tr,
 } from "fidesui";
 import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -109,7 +109,7 @@ const HeaderContent = <T,>({
   if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
       // TODO PROD-2567 - leaving this as a Chakra button for now, but should
-      // be migrated to AntButton as part of table migration
+      // be migrated to Button as part of table migration
       return (
         <Button
           data-testid={`${header.id}-header-sort`}

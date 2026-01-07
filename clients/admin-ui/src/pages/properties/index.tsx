@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { Text } from "fidesui";
+import { ChakraText as Text } from "fidesui";
 import type { NextPage } from "next";
 import { useCallback, useState } from "react";
 

@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntFilterValue as FilterValue,
-  AntTable as Table,
-  AntTablePaginationConfig as TablePaginationConfig,
-  AntTypography as Typography,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  FilterValue,
   Icons,
+  Table,
+  TablePaginationConfig,
+  Typography,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Flex, Typography } from "antd";
 import type { TreeProps } from "antd/lib";
-import { notification as AntNotification } from "antd/lib";
+import { notification } from "antd/lib";
 import { useState } from "react";
 
 import { Filter } from "./Filter";
@@ -108,7 +108,7 @@ export const Primary: Story = {
           treeData: sampleTreeData,
         }}
         onApply={() => {
-          AntNotification.success({
+          notification.success({
             message: "Filters applied",
             description: `${checkedKeys.length} filter(s) applied`,
             placement: "topRight",
@@ -117,7 +117,7 @@ export const Primary: Story = {
         onReset={() => {
           setCheckedKeys(initialCheckedKeys);
           setExpandedKeys(initialExpandedKeys);
-          AntNotification.info({
+          notification.info({
             message: "Filters reset",
             description: "All filters have been reset to default",
             placement: "topRight",
@@ -125,7 +125,7 @@ export const Primary: Story = {
         }}
         onClear={() => {
           setCheckedKeys([]);
-          AntNotification.info({
+          notification.info({
             message: "Filters cleared",
             description: "All selections have been cleared",
             placement: "topRight",
@@ -164,7 +164,7 @@ export const NoFiltersActive: Story = {
           treeData: sampleTreeData,
         }}
         onApply={() => {
-          AntNotification.success({
+          notification.success({
             message: "Filters applied",
             description: `${checkedKeys.length} filter(s) applied`,
             placement: "topRight",
@@ -173,7 +173,7 @@ export const NoFiltersActive: Story = {
         onReset={() => {
           setCheckedKeys(initialCheckedKeys);
           setExpandedKeys(initialExpandedKeys);
-          AntNotification.info({
+          notification.info({
             message: "Filters reset",
             description: "All filters have been reset to default",
             placement: "topRight",
@@ -181,7 +181,7 @@ export const NoFiltersActive: Story = {
         }}
         onClear={() => {
           setCheckedKeys([]);
-          AntNotification.info({
+          notification.info({
             message: "Filters cleared",
             description: "All selections have been cleared",
             placement: "topRight",
@@ -229,7 +229,7 @@ export const ControlledOpen: Story = {
             }}
             onApply={() => {
               setOpen(false);
-              AntNotification.success({
+              notification.success({
                 message: "Filters applied",
                 description: `${checkedKeys.length} filter(s) applied`,
                 placement: "topRight",
@@ -238,7 +238,7 @@ export const ControlledOpen: Story = {
             onReset={() => {
               setCheckedKeys(initialCheckedKeys);
               setExpandedKeys(initialExpandedKeys);
-              AntNotification.info({
+              notification.info({
                 message: "Filters reset",
                 description: "All filters have been reset to default",
                 placement: "topRight",
@@ -246,7 +246,7 @@ export const ControlledOpen: Story = {
             }}
             onClear={() => {
               setCheckedKeys([]);
-              AntNotification.info({
+              notification.info({
                 message: "Filters cleared",
                 description: "All selections have been cleared",
                 placement: "topRight",
@@ -292,7 +292,7 @@ export const WithSearch: Story = {
               treeData: sampleTreeData,
             }}
             onApply={() => {
-              AntNotification.success({
+              notification.success({
                 message: "Filters applied",
                 description: `${checkedKeys.length} filter(s) applied`,
                 placement: "topRight",
@@ -301,7 +301,7 @@ export const WithSearch: Story = {
             onReset={() => {
               setCheckedKeys(initialCheckedKeys);
               setExpandedKeys(initialExpandedKeys);
-              AntNotification.info({
+              notification.info({
                 message: "Filters reset",
                 description: "All filters have been reset to default",
                 placement: "topRight",
@@ -309,7 +309,7 @@ export const WithSearch: Story = {
             }}
             onClear={() => {
               setCheckedKeys([]);
-              AntNotification.info({
+              notification.info({
                 message: "Filters cleared",
                 description: "All selections have been cleared",
                 placement: "topRight",
@@ -354,7 +354,7 @@ export const WithoutSearch: Story = {
               treeData: sampleTreeData,
             }}
             onApply={() => {
-              AntNotification.success({
+              notification.success({
                 message: "Filters applied",
                 description: `${checkedKeys.length} filter(s) applied`,
                 placement: "topRight",
@@ -363,7 +363,7 @@ export const WithoutSearch: Story = {
             onReset={() => {
               setCheckedKeys(initialCheckedKeys);
               setExpandedKeys(initialExpandedKeys);
-              AntNotification.info({
+              notification.info({
                 message: "Filters reset",
                 description: "All filters have been reset to default",
                 placement: "topRight",
@@ -371,7 +371,7 @@ export const WithoutSearch: Story = {
             }}
             onClear={() => {
               setCheckedKeys([]);
-              AntNotification.info({
+              notification.info({
                 message: "Filters cleared",
                 description: "All selections have been cleared",
                 placement: "topRight",

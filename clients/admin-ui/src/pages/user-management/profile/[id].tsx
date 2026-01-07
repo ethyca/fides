@@ -1,4 +1,4 @@
-import { AntAlert as Alert, AntFlex as Flex, Spinner } from "fidesui";
+import { Alert, ChakraSpinner as Spinner, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";

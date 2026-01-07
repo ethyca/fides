@@ -1,15 +1,15 @@
 import {
-  Box,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalContentProps,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  ModalProps,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalContentProps as ModalContentProps,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraModalProps as ModalProps,
 } from "fidesui";
 import { ReactNode } from "react";
 

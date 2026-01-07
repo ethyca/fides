@@ -1,10 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntList as List,
-  AntMenu as Menu,
-  AntPagination as Pagination,
-  Icons,
-} from "fidesui";
+import { Flex, Icons, List, Menu, Pagination } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";

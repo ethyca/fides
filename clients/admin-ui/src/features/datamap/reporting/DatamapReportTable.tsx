@@ -16,17 +16,17 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import {
-  AntButton as Button,
-  ChevronDownIcon,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItemOption,
-  MenuList,
+  Button,
+  ChakraChevronDownIcon as ChevronDownIcon,
+  ChakraFlex as Flex,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuItemOption as MenuItemOption,
+  ChakraMenuList as MenuList,
   MoreIcon,
-  useDisclosure,
-  useToast,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";

@@ -1,11 +1,11 @@
 import { getErrorMessage } from "common/helpers";
 import {
-  Box,
+  ChakraBox as Box,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
   ConfirmationModal,
-  Spinner,
-  Text,
-  useDisclosure,
-  useToast,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

@@ -1,4 +1,4 @@
-import { AntSpace as Space, AntTag as Tag } from "fidesui";
+import { Space, Tag } from "fidesui";
 import { truncate } from "lodash";
 import { useEffect, useState } from "react";
 

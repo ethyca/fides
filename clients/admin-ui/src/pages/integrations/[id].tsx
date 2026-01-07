@@ -1,9 +1,4 @@
-import {
-  AntCol as Col,
-  AntRow as Row,
-  AntTabs as Tabs,
-  Spinner,
-} from "fidesui";
+import { ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 

@@ -1,10 +1,10 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import {
-  AntTag as Tag,
-  AntTypography as Typography,
   formatIsoLocation,
   Icons,
   isoStringToEntry,
+  Tag,
+  Typography,
 } from "fidesui";
 import { useMemo } from "react";
 

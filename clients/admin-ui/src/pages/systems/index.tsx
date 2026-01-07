@@ -1,4 +1,4 @@
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 

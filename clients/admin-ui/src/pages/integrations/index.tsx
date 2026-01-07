@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntTable as Table,
-  AntTableProps as TableProps,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
   CUSTOM_TAG_COLOR,
-  useDisclosure,
+  Table,
+  TableProps,
+  Tag,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

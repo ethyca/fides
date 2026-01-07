@@ -19,7 +19,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.76.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
+
+## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added
 - Added editable GPC translation fields to privacy experience configuration [#7137](https://github.com/ethyca/fides/pull/7137)
@@ -44,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Renamed staged resource diff status from 'approved' to 'reviewed' in database migration [#7159](https://github.com/ethyca/fides/pull/7159) https://github.com/ethyca/fides/labels/db-migration
 
 ### Developer Experience
+- Deprecated Chakra UI exports with `Chakra` prefix, removed `Ant` prefix from Ant Design exports [#7173](https://github.com/ethyca/fides/pull/7173)
 - Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
 - Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
 - Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086)
@@ -57,6 +60,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
 - Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
 - Fixed repeatedly clicking "Delete" on custom fields causing multiple errors [#7115](https://github.com/ethyca/fides/pull/7115)
+- Fixed multi-select tree action counts [7182](https://github.com/ethyca/fides/pull/7182)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)

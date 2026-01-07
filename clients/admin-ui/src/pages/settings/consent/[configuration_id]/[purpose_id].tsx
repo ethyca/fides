@@ -1,4 +1,9 @@
-import { AntFlex as Flex, AntSpace as Space, Skeleton, Text } from "fidesui";
+import {
+  ChakraSkeleton as Skeleton,
+  ChakraText as Text,
+  Flex,
+  Space,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo } from "react";

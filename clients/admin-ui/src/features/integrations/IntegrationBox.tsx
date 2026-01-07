@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  Box,
-  Flex,
-  Text,
-  Wrap,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraWrap as Wrap,
+  Tag,
 } from "fidesui";
 import { ReactNode } from "react";
 

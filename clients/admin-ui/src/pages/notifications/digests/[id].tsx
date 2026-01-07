@@ -1,4 +1,4 @@
-import { Box, Spinner } from "fidesui";
+import { ChakraBox as Box, ChakraSpinner as Spinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

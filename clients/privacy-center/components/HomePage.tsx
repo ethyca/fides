@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  Flex,
-  Heading,
-  Link,
-  Stack,
-  Text,
-  TextProps,
-  useDisclosure,
-  useToast,
+  ChakraFlex as Flex,
+  ChakraHeading as Heading,
+  ChakraLink as Link,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  ChakraTextProps as TextProps,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";

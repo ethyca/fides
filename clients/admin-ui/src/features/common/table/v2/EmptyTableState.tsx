@@ -1,4 +1,9 @@
-import { Box, HStack, Text, WarningTwoIcon } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
+} from "fidesui";
 import { ReactNode } from "react";
 
 type Props = {

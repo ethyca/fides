@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntSkeleton as Skeleton,
-  AntText as Text,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Flex, Icons, Skeleton, Text } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 
@@ -113,7 +106,7 @@ export const MonitorTreeDataTitle = ({
           onClick: ({ key, domEvent }) => {
             domEvent.preventDefault();
             domEvent.stopPropagation();
-            actions[key]?.callback(node.key, [node]);
+            actions[key]?.callback([node.key], [node]);
           },
         }}
         destroyOnHidden

@@ -1,4 +1,4 @@
-import { AntResult as Result } from "fidesui";
+import { Result } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 

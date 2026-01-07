@@ -1,8 +1,4 @@
-import {
-  AntTooltip as Tooltip,
-  AntTooltipProps as TooltipProps,
-  Icons,
-} from "fidesui";
+import { Icons, Tooltip, TooltipProps } from "fidesui";
 
 interface InfoTooltipProps extends Omit<TooltipProps, "children" | "title"> {
   label: string | null | undefined;
