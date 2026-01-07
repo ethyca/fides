@@ -11,16 +11,11 @@ from sqlalchemy import (  # type: ignore[attr-defined]
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.cryptography.cryptographic_util import hash_value_with_salt
 from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.db.base_class import Base
 from fides.api.schemas.redis_cache import MultiValue
-from fides.config import CONFIG
 
 
 class PrivacyPreferences(Base):
@@ -47,16 +42,8 @@ class PrivacyPreferences(Base):
     # Searchable/queryable data stored as JSONB
     search_data = Column(JSONB, nullable=True)
 
-    # Full record data stored as encrypted text (contains PII)
-    record_data = Column(
-        StringEncryptedType(
-            type_in=Text(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-        nullable=True,
-    )
+    # Full record data stored as text (contains PII)
+    record_data = Column(Text, nullable=True)
 
     # Partition key - determines if record goes to _current or _historic partition
     is_latest = Column(
