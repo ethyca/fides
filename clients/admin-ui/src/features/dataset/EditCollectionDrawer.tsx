@@ -1,5 +1,10 @@
 import { errorToastParams, successToastParams } from "common/toast";
-import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
+import {
+  ChakraText as Text,
+  ConfirmationModal,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useMemo } from "react";
 
 import EditDrawer, {

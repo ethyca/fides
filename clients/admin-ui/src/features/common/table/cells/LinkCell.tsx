@@ -1,8 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, FlexProps, Typography } from "fidesui";
 import NextLink from "next/link";
 import { ComponentProps } from "react";
 

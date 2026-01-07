@@ -1,9 +1,10 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntTag as Tag,
+  Button,
+  ColumnsType,
+  Flex,
   Icons,
-  useDisclosure,
+  Tag,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -134,7 +135,7 @@ const useUserManagementTable = () => {
           const canEditUser = canUserUpdate || isOwnProfile;
 
           return (
-            <>
+            <Flex gap="small">
               <LinkCell
                 href={
                   canEditUser
@@ -150,7 +151,7 @@ const useUserManagementTable = () => {
                   Invite sent
                 </Tag>
               )}
-            </>
+            </Flex>
           );
         },
       },

@@ -200,6 +200,10 @@ h6 {
 
   .ant-tree-treenode {
     --ant-tree-node-selected-bg: var(--fidesui-neutral-100);
+    --ant-tree-directory-node-selected-color: var(
+      --ant-tree-node-selected-color
+    );
+    --ant-tree-directory-node-selected-bg: var(--fidesui-neutral-100);
   }
 
   .ant-tree-title {

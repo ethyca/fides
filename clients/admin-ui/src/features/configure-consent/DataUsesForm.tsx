@@ -1,4 +1,8 @@
-import { AntButton as Button, Spinner, VStack } from "fidesui";
+import {
+  Button,
+  ChakraSpinner as Spinner,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 

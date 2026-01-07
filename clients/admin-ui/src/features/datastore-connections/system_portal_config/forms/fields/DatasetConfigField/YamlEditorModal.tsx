@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 
 import FormModal from "~/features/common/modals/FormModal";
 import { Dataset } from "~/types/api";

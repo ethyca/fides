@@ -1,13 +1,13 @@
 import { useHasPermission } from "common/Restrict";
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
-  Flex,
-  Spinner,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
+  Button,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";

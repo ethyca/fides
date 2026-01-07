@@ -1,4 +1,8 @@
-import { Divider, Stack, Text } from "fidesui";
+import {
+  ChakraDivider as Divider,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 

@@ -1,6 +1,6 @@
 import { ModalFuncProps } from "antd/es/modal";
-import type { ModalStaticFunctions } from "antd/es/modal/confirm";
 import { Form, FormInstance } from "antd/lib";
+import { useModal } from "fidesui";
 import React from "react";
 
 /**
@@ -18,10 +18,10 @@ export type UseFormModalOptions = Omit<
 
 /**
  * Generic hook for opening a modal with a form, validating and getting the result of the form
- * @param modalApi - The modal API from useModal
  * @returns openFormModal function and form instance
  */
-export const useFormModal = <T = any,>(modalApi: ModalStaticFunctions) => {
+export const useFormModal = <T = any,>() => {
+  const modalApi = useModal();
   const [form] = Form.useForm();
 
   const openFormModal = React.useCallback(

@@ -1,10 +1,10 @@
 import {
-  CloseButton,
-  HStack,
-  Spinner,
-  Stack,
-  Text,
-  useDisclosure,
+  ChakraCloseButton as CloseButton,
+  ChakraHStack as HStack,
+  ChakraSpinner as Spinner,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import WarningModal from "~/features/common/modals/WarningModal";

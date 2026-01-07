@@ -1,13 +1,12 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntModal as modal,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntSpin as Spin,
+  Button,
+  Checkbox,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Skeleton,
+  Spin,
   useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
@@ -30,12 +29,12 @@ import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
-  const { filterQueryParams, filters, setFilters } = usePrivacyRequestsFilters({
-    pagination,
-  });
+  const { filterQueryParams, filters, setFilters, sortState, setSortState } =
+    usePrivacyRequestsFilters({
+      pagination,
+    });
 
   const messageApi = useMessage();
-  const [modalApi, modalContext] = modal.useModal();
 
   const { data, isLoading, isFetching, refetch } =
     useSearchPrivacyRequestsQuery({
@@ -92,14 +91,18 @@ export const PrivacyRequestsDashboard = () => {
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
-    modalApi,
   });
 
   return (
     <div>
       {/* First row: Search and Filters */}
       <Flex gap="small" align="center" className="mb-4">
-        <PrivacyRequestFiltersBar filters={filters} setFilters={setFilters} />
+        <PrivacyRequestFiltersBar
+          filters={filters}
+          setFilters={setFilters}
+          sortState={sortState}
+          setSortState={setSortState}
+        />
       </Flex>
 
       {/* Second row: Actions */}
@@ -180,7 +183,6 @@ export const PrivacyRequestsDashboard = () => {
           />
         </Flex>
       )}
-      {modalContext}
     </div>
   );
 };

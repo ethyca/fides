@@ -1,17 +1,16 @@
 import { useAPIHelper } from "common/hooks";
 import {
-  Box,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  VStack,
+  ChakraBox as Box,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraVStack as VStack,
 } from "fidesui";
 import React, { useState } from "react";
 
-import { useFlags } from "~/features/common/features/features.slice";
 import { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";
@@ -33,11 +32,8 @@ const AddEditConditionModal = ({
 }: Props) => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { flags } = useFlags();
 
   const isEditing = !!editingCondition;
-  const privacyRequestFieldConditionsEnabled =
-    flags.alphaPrivacyRequestFieldConditions ?? false;
 
   const handleSubmit = async (condition: ConditionLeaf) => {
     try {
@@ -75,7 +71,7 @@ const AddEditConditionModal = ({
             <Box color="gray.700" fontSize="14px">
               {isEditing
                 ? "Update the condition settings for task creation."
-                : `Configure a new condition that must be met before a task is created. Select a field from your datasets${privacyRequestFieldConditionsEnabled ? " or from the privacy request" : ""} to create the condition.`}
+                : "Configure a new condition that must be met before a task is created. Select a field from your datasets or from the privacy request to create the condition."}
             </Box>
             <AddConditionForm
               onAdd={handleSubmit}

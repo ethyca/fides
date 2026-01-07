@@ -1,4 +1,4 @@
-import { AntSpace as Space, AntTooltip as Tooltip } from "fidesui";
+import { Space, Tooltip } from "fidesui";
 
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";

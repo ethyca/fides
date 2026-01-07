@@ -1,18 +1,12 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntSkeleton as Skeleton,
-  AntText as Text,
-  Icons,
-} from "fidesui";
-import { Key } from "react";
+import { Button, Dropdown, Flex, Icons, Skeleton, Text } from "fidesui";
+
+import { DiffStatus } from "~/types/api";
 
 import {
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_SKELETON_KEY_PREFIX,
 } from "./MonitorFields.const";
-import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import { CustomTreeDataNode, NodeAction } from "./types";
 
 const findNodeParent = (data: CustomTreeDataNode[], key: string) => {
   return data.find((node) => {
@@ -47,7 +41,7 @@ export type TreeNodeProps = {
   node: CustomTreeDataNode;
   treeData: CustomTreeDataNode[];
   onLoadMore: (key: string) => void;
-  actions: Map<Key, TreeNodeAction>;
+  actions: Record<string, NodeAction<CustomTreeDataNode>>;
 };
 
 export const MonitorTreeDataTitle = ({
@@ -87,29 +81,36 @@ export const MonitorTreeDataTitle = ({
     );
   }
 
+  const isMuted = node.diffStatus === DiffStatus.MUTED;
+
   return (
     /** TODO: migrate group class to semantic dom after upgrading ant */
-    <Flex gap={4} align="center" className="group ml-1 flex grow">
-      <Text ellipsis={{ tooltip: node.title }} className="grow">
+    <Flex
+      gap={4}
+      align="center"
+      className={`group ml-1 flex grow ${isMuted ? "opacity-40" : ""}`}
+      aria-label={isMuted ? `${node.title} (ignored)` : undefined}
+    >
+      <Text ellipsis={{ tooltip: node.title }} className="grow select-none">
         {node.title}
       </Text>
       <Dropdown
         menu={{
           items: actions
-            ? [...actions.entries()].map(([key, { disabled, ...rest }]) => ({
+            ? Object.entries(actions).map(([key, { disabled, ...rest }]) => ({
                 key,
-                disabled: disabled(node),
+                disabled: disabled([node]),
                 ...rest,
               }))
             : [],
           onClick: ({ key, domEvent }) => {
             domEvent.preventDefault();
             domEvent.stopPropagation();
-            actions.get(key)?.callback(node.key, node);
+            actions[key]?.callback([node.key], [node]);
           },
         }}
         destroyOnHidden
-        className="group mr-1 flex-none"
+        className="group mr-1 flex-none group-[.multi-select]/monitor-tree:pointer-events-none group-[.multi-select]/monitor-tree:opacity-0"
       >
         <Button
           aria-label="Show More Resource Actions"

@@ -1,4 +1,8 @@
-import { EthycaLogo, Link, LinkProps } from "fidesui";
+import {
+  ChakraLink as Link,
+  ChakraLinkProps as LinkProps,
+  EthycaLogo,
+} from "fidesui";
 
 import { useSettings } from "~/features/common/settings.slice";
 

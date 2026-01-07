@@ -1,4 +1,4 @@
-import { AntModal as Modal, useMessage } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 import _ from "lodash";
 
 import { pluralize } from "~/features/common/utils";
@@ -7,9 +7,9 @@ import {
   usePromoteRemovalStagedResourcesMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
-  useApproveStagedResourcesMutation,
   useMuteResourcesMutation,
   usePromoteResourcesMutation,
+  useReviewStagedResourcesMutation,
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -46,10 +46,9 @@ export const getAvailableActions = (statusList: DiffStatus[]) => {
 
 export const useFieldActions = (
   monitorId: string,
-  modalApi: ReturnType<typeof Modal.useModal>[0],
   onRefreshTree?: (urns: string[]) => Promise<void>,
 ) => {
-  const [approveStagedResourcesMutation] = useApproveStagedResourcesMutation();
+  const [reviewStagedResourcesMutation] = useReviewStagedResourcesMutation();
   const [classifyStagedResourcesMutation] =
     useClassifyStagedResourcesMutation();
   const [ignoreMonitorResultAssetsMutation] = useMuteResourcesMutation();
@@ -59,6 +58,7 @@ export const useFieldActions = (
   const [promoteRemovalMutation] = usePromoteRemovalStagedResourcesMutation();
 
   const messageApi = useMessage();
+  const modalApi = useModal();
 
   const handleAction =
     (
@@ -155,8 +155,8 @@ export const useFieldActions = (
     });
   };
 
-  const handleApprove = async (urns: string[]) => {
-    return approveStagedResourcesMutation({
+  const handleReview = async (urns: string[]) => {
+    return reviewStagedResourcesMutation({
       monitor_config_key: monitorId,
       staged_resource_urns: urns,
     });
@@ -178,9 +178,9 @@ export const useFieldActions = (
       FieldActionType.PROMOTE_REMOVALS,
       handlePromoteRemoval,
     ),
-    "un-approve": () => {},
+    "un-review": () => {},
     "un-mute": handleAction(FieldActionType.UN_MUTE, handleUnMute),
-    approve: handleAction(FieldActionType.APPROVE, handleApprove),
+    review: handleAction(FieldActionType.REVIEW, handleReview),
     classify: handleAction(
       FieldActionType.CLASSIFY,
       handleClassifyStagedResources,

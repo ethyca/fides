@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraStack as Stack,
+  ChakraText as Text,
   ConfirmationModal,
-  DrawerFooter,
   EyeIcon,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
+  Form,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
@@ -55,7 +55,7 @@ const TaxonomyItemEditDrawer = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const { updateTrigger } = useTaxonomySlices({ taxonomyType });
+  const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
 
   const resourceType = taxonomyTypeToResourceType(taxonomyType);
   const customFields = useCustomFields({
@@ -90,12 +90,7 @@ const TaxonomyItemEditDrawer = ({
   };
 
   const handleDelete = async () => {
-    // For record keeping, we will not actually delete the taxonomy
-    // but rather mark it as disabled and not show it in the UI
-    await updateTrigger({
-      ...taxonomyItem!,
-      active: false,
-    });
+    await deleteTrigger(taxonomyItem!.fides_key);
     onDeleteClose();
     closeDrawer();
   };

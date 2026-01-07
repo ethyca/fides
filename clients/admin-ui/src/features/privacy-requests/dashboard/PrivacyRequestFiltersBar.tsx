@@ -1,9 +1,10 @@
 import dayjs from "dayjs";
 import {
-  AntDatePicker as DatePicker,
-  AntDisplayValueType as DisplayValueType,
-  AntFlex as Flex,
-  AntSelect as Select,
+  DatePicker,
+  DisplayValueType,
+  Flex,
+  LocationSelect,
+  Select,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -12,6 +13,9 @@ import {
   SubjectRequestActionTypeOptions,
   SubjectRequestStatusOptions,
 } from "~/features/privacy-requests/constants";
+import PrivacyRequestSortMenu, {
+  SortParams,
+} from "~/features/privacy-requests/dashboard/PrivacyRequestSortMenu";
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -25,6 +29,7 @@ interface PrivacyRequestFiltersBarProps {
     to: string | null;
     status: PrivacyRequestStatus[] | null;
     action_type: ActionType[] | null;
+    location: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   };
   setFilters: (filters: {
@@ -33,13 +38,18 @@ interface PrivacyRequestFiltersBarProps {
     to?: string | null;
     status?: PrivacyRequestStatus[] | null;
     action_type?: ActionType[] | null;
+    location?: string | null;
     custom_privacy_request_fields?: Record<string, string | null> | null;
   }) => void;
+  sortState: SortParams;
+  setSortState: (sortState: SortParams) => void;
 }
 
 export const PrivacyRequestFiltersBar = ({
   filters,
   setFilters,
+  sortState,
+  setSortState,
 }: PrivacyRequestFiltersBarProps) => {
   // Fetch privacy center config to get custom fields
   const { data: config } = useGetPrivacyCenterConfigQuery();
@@ -77,6 +87,12 @@ export const PrivacyRequestFiltersBar = ({
   const handleActionTypeChange = (value: ActionType[]) => {
     setFilters({
       action_type: value.length > 0 ? value : null,
+    });
+  };
+
+  const handleLocationChange = (value: string | null | undefined) => {
+    setFilters({
+      location: value ?? null,
     });
   };
 
@@ -147,6 +163,17 @@ export const PrivacyRequestFiltersBar = ({
         className="w-44"
         maxTagPlaceholder={maxTagPlaceholder}
       />
+      <LocationSelect
+        placeholder="Location"
+        value={filters.location || null}
+        onChange={handleLocationChange}
+        allowClear
+        data-testid="request-location-filter"
+        aria-label="Location"
+        className="w-44"
+        popupMatchSelectWidth={300}
+        includeCountryOnlyOptions
+      />
       {/* Custom fields filters */}
       {Object.entries(uniqueCustomFields).map(
         ([fieldName, fieldDefinition]) => (
@@ -159,6 +186,10 @@ export const PrivacyRequestFiltersBar = ({
           />
         ),
       )}
+      <PrivacyRequestSortMenu
+        sortState={sortState}
+        setSortState={setSortState}
+      />
     </Flex>
   );
 };

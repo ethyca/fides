@@ -1,4 +1,4 @@
-import { Box, SimpleGrid } from "fidesui";
+import { ChakraBox as Box, ChakraSimpleGrid as SimpleGrid } from "fidesui";
 import { chunk } from "lodash";
 import { ReactNode } from "react";
 

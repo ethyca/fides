@@ -87,7 +87,7 @@ export const useFieldActionHotkeys = (
   // Helper to handle hotkey actions on focused item
   const handleHotkeyAction = (
     actionType:
-      | FieldActionType.APPROVE
+      | FieldActionType.REVIEW
       | FieldActionType.PROMOTE
       | FieldActionType.MUTE
       | FieldActionType.UN_MUTE,
@@ -110,8 +110,8 @@ export const useFieldActionHotkeys = (
   };
 
   useHotkeys(
-    FIELD_ACTION_HOTKEYS.APPROVE,
-    () => handleHotkeyAction(FieldActionType.APPROVE),
+    FIELD_ACTION_HOTKEYS.REVIEW,
+    () => handleHotkeyAction(FieldActionType.REVIEW),
     [activeListItem, fieldActions],
   );
 
@@ -124,6 +124,12 @@ export const useFieldActionHotkeys = (
   useHotkeys(
     FIELD_ACTION_HOTKEYS.MUTE,
     () => handleHotkeyAction(FieldActionType.MUTE),
+    [activeListItem, fieldActions],
+  );
+
+  useHotkeys(
+    FIELD_ACTION_HOTKEYS.UN_MUTE,
+    () => handleHotkeyAction(FieldActionType.UN_MUTE),
     [activeListItem, fieldActions],
   );
 

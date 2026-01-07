@@ -1,5 +1,11 @@
 import { formatDate } from "common/utils";
-import { AntButton as Button, Box, Flex, Spacer, Text } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
+} from "fidesui";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";

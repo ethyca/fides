@@ -1,16 +1,16 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntButton as Button,
-  AntCol as Col,
-  AntDivider as Divider,
-  AntListItemProps as ListItemProps,
-  AntRow as Row,
-  AntSpace as Space,
-  AntSpin as Spin,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Button,
+  Col,
   CUSTOM_TAG_COLOR,
-  useToast,
+  Divider,
+  ListItemProps,
+  Row,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -122,7 +122,7 @@ export const InProgressMonitorTaskItem = ({
         : "Monitor scanning";
     }
     if (task.action_type === MonitorTaskType.PROMOTION) {
-      const verb = task.status === "complete" ? "Confirmed" : "Confirming";
+      const verb = task.status === "complete" ? "Approved" : "Approving";
       return `${verb} ${fieldCount} ${pluralize(fieldCount, "field", "fields")}`;
     }
     return task.action_type ? task.action_type.replace(/_/g, " ") : "Task";

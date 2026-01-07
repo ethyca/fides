@@ -1,17 +1,16 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntList as List,
-  AntModal as modal,
-  AntPagination as Pagination,
-  AntSplitter as Splitter,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
+  Button,
+  Checkbox,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Splitter,
+  Text,
+  Title,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 import { NextPage } from "next";
@@ -76,7 +75,6 @@ const ActionCenterFields: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
-  const [modalApi, modalContext] = modal.useModal();
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -121,20 +119,14 @@ const ActionCenterFields: NextPage = () => {
     { data: allowedActionsResult, isFetching: isFetchingAllowedActions },
   ] = useLazyGetAllowedActionsQuery();
 
-  const bulkActions = useBulkActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
-  const fieldActions = useFieldActions(
-    monitorId,
-    modalApi,
-    async (urns: string[]) => {
-      await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
-    },
-  );
+  const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+
+  const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
+    await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
+  });
+
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -266,38 +258,50 @@ const ActionCenterFields: NextPage = () => {
           <MonitorTree
             ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
-            nodeActions={
-              new Map(
-                RESOURCE_ACTIONS.map((action) => [
-                  action,
-                  {
-                    label: FIELD_ACTION_LABEL[action],
-                    disabled: (node) => {
-                      /** Logic for this should exist on the BE */
-                      if (
-                        (action === FieldActionType.PROMOTE_REMOVALS &&
-                          node.status ===
-                            TreeResourceChangeIndicator.REMOVAL) ||
-                        (action === FieldActionType.CLASSIFY &&
-                          node.classifyable)
-                      ) {
-                        return false;
-                      }
+            selectedNodeKeys={selectedNodeKeys}
+            primaryAction={FieldActionType.CLASSIFY}
+            nodeActions={Object.fromEntries(
+              RESOURCE_ACTIONS.map((action) => [
+                action,
+                {
+                  label: FIELD_ACTION_LABEL[action],
+                  /** Logic for this should exist on the BE */
+                  disabled: (nodes) =>
+                    _(nodes)
+                      .map((node) => {
+                        if (
+                          (action === FieldActionType.PROMOTE_REMOVALS &&
+                            node.status ===
+                              TreeResourceChangeIndicator.REMOVAL) ||
+                          (action === FieldActionType.CLASSIFY &&
+                            node.classifyable &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.MUTE &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.UN_MUTE &&
+                            node.diffStatus === DiffStatus.MUTED)
+                        ) {
+                          return false;
+                        }
 
-                      return true;
-                    },
-                    callback: (key) => fieldActions[action]([key], false),
+                        return true;
+                      })
+                      .some((d) => d === true),
+                  callback: (keys) => {
+                    fieldActions[action](keys, false);
                   },
-                ]),
-              )
-            }
+                },
+              ]),
+            )}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
         <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
-              <Title level={2}>Monitor results</Title>
+              <Title level={2} ellipsis>
+                Monitor results
+              </Title>
               <Flex align="center">
                 {monitorConfigData?.last_monitored && (
                   <Text type="secondary">
@@ -309,7 +313,7 @@ const ActionCenterFields: NextPage = () => {
                 )}
               </Flex>
             </Flex>
-            <Flex justify="space-between">
+            <Flex justify="space-between" wrap="wrap" gap="small">
               <Flex gap="small">
                 <DebouncedSearchInput
                   value={search.searchQuery}
@@ -418,13 +422,13 @@ const ActionCenterFields: NextPage = () => {
                           image={Empty.PRESENTED_IMAGE_SIMPLE}
                           description={
                             <>
-                              <div>All resources have been confirmed.</div>
+                              <div>All resources have been approved.</div>
                               <div>
                                 {`You'll now find this data in Managed Datasets
                                 view.`}
                               </div>
                               <div>
-                                {`To see confirmed or ignored resources, adjust
+                                {`To see approved or ignored resources, adjust
                                 your filters`}
                               </div>
                             </>
@@ -572,7 +576,6 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-      {modalContext}
     </FixedLayout>
   );
 };

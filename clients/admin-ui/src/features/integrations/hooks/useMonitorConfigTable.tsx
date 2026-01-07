@@ -1,8 +1,8 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntTypography as Typography,
+  ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
+  Typography,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -256,7 +256,7 @@ export const useMonitorConfigTable = ({
       statusColumn,
       actionsColumn,
     ];
-  }, [integration.secrets, isWebsiteMonitor, onEditMonitor]);
+  }, [integration.secrets, isWebsiteMonitor, onEditMonitor, isOktaIntegration]);
 
   return {
     // Table state and data

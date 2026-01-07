@@ -137,17 +137,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Request manager (new)",
-        path: routes.PRIVACY_REQUESTS_ROUTE_NEW,
-        requiresFlag: "privacyRequestV2",
-        scopes: [
-          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
-          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
-          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
-          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
-        ],
-      },
-      {
         title: "Connection manager",
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
@@ -359,6 +348,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Table Migration POC",
         path: routes.TABLE_MIGRATION_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Error Test",
+        path: routes.ERRORS_POC_ROUTE,
         scopes: [],
       },
     ],

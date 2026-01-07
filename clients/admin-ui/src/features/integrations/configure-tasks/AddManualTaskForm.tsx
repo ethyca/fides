@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntTooltip as Tooltip,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  Form,
   Icons,
+  Input,
+  Select,
+  Tooltip,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useEffect } from "react";
