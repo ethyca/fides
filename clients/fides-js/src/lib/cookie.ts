@@ -405,12 +405,7 @@ export const removeCookiesFromBrowser = (
   const { hostname } = window.location;
   const wildcardCookies: CookiesType[] = [];
 
-  cookiesToRemove.forEach((cookie) => {
-    if (isWildcardCookie(cookie)) {
-      wildcardCookies.push(cookie);
-      return;
-    }
-
+  function removeCookie(cookie: CookiesType) {
     const domainToUse = cookieDeletionBasedOnHostDomain
       ? hostname
       : cookie.domain;
@@ -421,23 +416,28 @@ export const removeCookiesFromBrowser = (
     if (removeSubdomainCookies) {
       cookies.remove(cookie.name, { domain: `.${hostname}` });
     }
+  }
+
+  cookiesToRemove.forEach((cookie) => {
+    if (isWildcardCookie(cookie)) {
+      wildcardCookies.push(cookie);
+    } else {
+      removeCookie(cookie);
+    }
   });
 
   if (wildcardCookies.length > 0) {
-    const pattern = new RegExp(
-      `^(${wildcardCookies
-        .map(
-          (cookie) =>
-            cookie.name
-              .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
-              .replace(/\\\[id\\\]/g, ".+?"), // Replace \[id\] with non-greedy wildcard
-        )
-        .join("|")})$`,
-    );
-    Object.keys(cookies.get()).forEach((name) => {
-      if (pattern.test(name)) {
-        cookies.remove(name);
-      }
+    const allCookies = cookies.get();
+    wildcardCookies.forEach((wCookie) => {
+      const namePattern = wCookie.name
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&") // Escape special regex chars
+        .replace(/\\\[id\\\]/g, ".+?"); // Replace \[id\] with non-greedy wildcard
+      const pattern = new RegExp(`^(${namePattern})$`);
+      Object.keys(allCookies).forEach((name) => {
+        if (pattern.test(name)) {
+          removeCookie({ name, domain: wCookie.domain, path: wCookie.path });
+        }
+      });
     });
   }
 };

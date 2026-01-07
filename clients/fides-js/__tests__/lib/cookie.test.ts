@@ -557,16 +557,33 @@ describe("cookies", () => {
     );
 
     describe("wildcard cookies", () => {
-      it("should remove cookies matching the wildcards", () => {
+      it("should remove cookies with provided domain", () => {
         mockGetCookie.mockReturnValue({
           _ga123: "test_value",
-          _ga456: "test_value_2",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: "_ga[id]" }]);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          false,
+          false,
+        );
         expect(mockRemoveCookie.mock.calls).toEqual([
-          ["_ga123", undefined],
-          ["_ga456", undefined],
+          ["_ga123", { domain: "foo.com", path: "/bar" }],
+        ]);
+      });
+      it("should remove cookies with host domain and subdomains", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          true,
+          true,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { domain: "example.co.jp", path: "/bar" }],
+          ["_ga123", { domain: ".example.co.jp" }],
         ]);
       });
       it("should remove cookies matching multiple wildcards", () => {
@@ -574,10 +591,14 @@ describe("cookies", () => {
           _ga123: "test_value",
           foo_abc: "test_value_2",
         } as any);
-        removeCookiesFromBrowser([{ name: "_ga[id]" }, { name: "foo_[id]" }]);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]" }, { name: "foo_[id]" }],
+          false,
+          false,
+        );
         expect(mockRemoveCookie.mock.calls).toEqual([
-          ["_ga123", undefined],
-          ["foo_abc", undefined],
+          ["_ga123", { path: "/" }],
+          ["foo_abc", { path: "/" }],
         ]);
       });
       it("should handle the wildcard anchors correctly", () => {
@@ -585,20 +606,20 @@ describe("cookies", () => {
           ab123: "",
           cab123: "",
         } as any);
-        removeCookiesFromBrowser([
-          { name: "x[id]" },
-          { name: "ab[id]" },
-          { name: "y[id]" },
-        ]);
-        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", undefined]]);
+        removeCookiesFromBrowser(
+          [{ name: "x[id]" }, { name: "ab[id]" }, { name: "y[id]" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
       });
       it("should handle prefix-only cookies correctly", () => {
         mockGetCookie.mockReturnValue({
           ab: "",
           ab123: "",
         } as any);
-        removeCookiesFromBrowser([{ name: "ab[id]" }]);
-        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", undefined]]);
+        removeCookiesFromBrowser([{ name: "ab[id]" }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
       });
       it("should handle wildcard cookies with special characters", () => {
         const prefix = "^$[](){}\\|.*?-";
@@ -606,9 +627,9 @@ describe("cookies", () => {
           [`${prefix}123`]: "test_value",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: `${prefix}[id]` }]);
+        removeCookiesFromBrowser([{ name: `${prefix}[id]` }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
-          [`${prefix}123`, undefined],
+          [`${prefix}123`, { path: "/" }],
         ]);
       });
       it("should handle cookies with multiple wildcards", () => {
@@ -617,9 +638,9 @@ describe("cookies", () => {
           "_ga_789.101": "test_value_2",
           other_cookie: "other_value",
         } as any);
-        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }]);
+        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }], false, false);
         expect(mockRemoveCookie.mock.calls).toEqual([
-          ["_ga_123_456", undefined],
+          ["_ga_123_456", { path: "/" }],
         ]);
       });
     });
