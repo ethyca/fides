@@ -1,7 +1,4 @@
-import { AntCard as Card, Box, Heading, Spinner, Text } from "fidesui";
-import { useEffect } from "react";
-
-import { useAPIHelper } from "~/features/common/hooks";
+import { Box, Heading, Spinner, Text } from "fidesui";
 
 import { messagingProviders } from "./constants";
 import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
@@ -14,19 +11,8 @@ interface EditMessagingConfigurationProps {
 export const EditMessagingConfiguration = ({
   configKey,
 }: EditMessagingConfigurationProps) => {
-  const { handleError } = useAPIHelper();
-
-  const {
-    data: messagingConfig,
-    isLoading,
-    error,
-  } = useGetMessagingConfigurationByKeyQuery({ key: configKey });
-
-  useEffect(() => {
-    if (error) {
-      handleError(error);
-    }
-  }, [error, handleError]);
+  const { data: messagingConfig, isLoading } =
+    useGetMessagingConfigurationByKeyQuery({ key: configKey });
 
   if (isLoading) {
     return (
@@ -38,16 +24,6 @@ export const EditMessagingConfiguration = ({
       >
         <Spinner />
       </Box>
-    );
-  }
-
-  if (!messagingConfig) {
-    return (
-      <Card>
-        <Text color="red.500">
-          Messaging configuration not found for key: {configKey}
-        </Text>
-      </Card>
     );
   }
 

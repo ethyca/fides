@@ -2,6 +2,7 @@ import { Box, Spinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -14,10 +15,11 @@ const EditDigestPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data: digestConfig, isLoading } = useGetDigestConfigByIdQuery(
-    { config_id: id as string },
-    { skip: !id },
-  );
+  const {
+    data: digestConfig,
+    isLoading,
+    error,
+  } = useGetDigestConfigByIdQuery({ config_id: id as string }, { skip: !id });
 
   if (isLoading) {
     return (
@@ -26,6 +28,21 @@ const EditDigestPage: NextPage = () => {
           <Spinner />
         </Box>
       </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching the digest ${id}`}
+        actions={[
+          {
+            label: "Return to digests",
+            onClick: () => router.push(NOTIFICATIONS_DIGESTS_ROUTE),
+          },
+        ]}
+      />
     );
   }
 

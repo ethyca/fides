@@ -22,6 +22,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
@@ -82,6 +83,7 @@ const NotificationTemplatesPage: NextPage = () => {
 
   const {
     data: templateResponse,
+    error,
     isLoading,
     isFetching,
   } = useGetSummaryMessagingTemplatesQuery({
@@ -172,6 +174,15 @@ const NotificationTemplatesPage: NextPage = () => {
     data: sortedData,
     columnResizeMode: "onChange",
   });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your messaging templates"
+      />
+    );
+  }
 
   return (
     <FixedLayout title="Notifications">

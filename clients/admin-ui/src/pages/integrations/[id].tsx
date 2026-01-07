@@ -7,6 +7,7 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -29,12 +30,13 @@ const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
-    id,
-    {
-      skip: !id,
-    },
-  );
+  const {
+    data: connection,
+    isLoading,
+    error,
+  } = useGetDatastoreConnectionByKeyQuery(id, {
+    skip: !id,
+  });
 
   // Fetch connection types for SAAS integration generation
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -94,6 +96,21 @@ const IntegrationDetailView: NextPage = () => {
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),
   });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching the integration ${id}`}
+        actions={[
+          {
+            label: "Return to integrations",
+            onClick: () => router.push(INTEGRATION_MANAGEMENT_ROUTE),
+          },
+        ]}
+      />
+    );
+  }
 
   return (
     <FixedLayout title="Integrations">

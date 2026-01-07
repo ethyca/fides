@@ -4,7 +4,9 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
+import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
@@ -19,20 +21,38 @@ const ConsentConfigurationPage: NextPage = () => {
   );
   const purposeId = decodeURIComponent(router.query.purpose_id as string);
 
-  const { data: purposes, isLoading: isPurposesLoading } =
-    useGetPurposesQuery();
+  const {
+    data: purposes,
+    isLoading: isPurposesLoading,
+    error: purposesError,
+  } = useGetPurposesQuery();
   const { data: configuration } = useGetTCFConfigurationQuery(configurationId);
 
   const purpose = useMemo(() => {
     return purposes?.purposes[purposeId];
   }, [purposes, purposeId]);
 
+  if (purposesError) {
+    return (
+      <ErrorPage
+        error={purposesError}
+        defaultMessage="A problem occurred while fetching TCF purposes"
+        actions={[
+          {
+            label: "Return to consent settings",
+            onClick: () => router.push(GLOBAL_CONSENT_CONFIG_ROUTE),
+          },
+        ]}
+      />
+    );
+  }
+
   return (
     <FixedLayout title="Consent Configuration">
       <PageHeader
         heading="Consent configuration"
         breadcrumbItems={[
-          { title: "Consent settings", href: "/settings/consent" },
+          { title: "Consent settings", href: GLOBAL_CONSENT_CONFIG_ROUTE },
           {
             title: configuration?.name || "Configuration",
           },

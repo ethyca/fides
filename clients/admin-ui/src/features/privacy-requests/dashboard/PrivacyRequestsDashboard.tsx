@@ -26,6 +26,7 @@ import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActio
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
 import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
@@ -36,12 +37,17 @@ export const PrivacyRequestsDashboard = () => {
 
   const messageApi = useMessage();
 
-  const { data, isLoading, isFetching, refetch } =
-    useSearchPrivacyRequestsQuery({
-      ...filterQueryParams,
-      page: pagination.pageIndex,
-      size: pagination.pageSize,
-    });
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch,
+    error: dataError,
+  } = useSearchPrivacyRequestsQuery({
+    ...filterQueryParams,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+  });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -92,6 +98,15 @@ export const PrivacyRequestsDashboard = () => {
     requests,
     selectedIds,
   });
+
+  if (dataError) {
+    return (
+      <ErrorPage
+        error={dataError}
+        defaultMessage="A problem occurred while fetching your privacy requests"
+      />
+    );
+  }
 
   return (
     <div>

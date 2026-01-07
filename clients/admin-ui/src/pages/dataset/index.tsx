@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
@@ -89,6 +90,7 @@ const DataSets: NextPage = () => {
 
   const {
     data: datasetResponse,
+    error,
     isLoading,
     isFetching,
   } = useGetDatasetsQuery({
@@ -196,6 +198,15 @@ const DataSets: NextPage = () => {
     data,
     columnResizeMode: "onChange",
   });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your datasets"
+      />
+    );
+  }
 
   return (
     <Layout title="Datasets">

@@ -2,6 +2,7 @@ import { Box, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
@@ -18,7 +19,7 @@ const EditPropertyPage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
   const { id: propertyId } = router.query;
-  const { data } = useGetPropertyByIdQuery(propertyId as string);
+  const { data, error } = useGetPropertyByIdQuery(propertyId as string);
   const [updateProperty] = useUpdatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {
@@ -37,12 +38,17 @@ const EditPropertyPage: NextPage = () => {
     toast(successToastParams(`Property ${values.name} updated successfully`));
   };
 
-  if (!data) {
-    return null;
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching the property"
+      />
+    );
   }
 
   return (
-    <Layout title={data.name}>
+    <Layout title={data?.name ?? "Property"}>
       <PageHeader
         heading="Properties"
         breadcrumbItems={[
@@ -51,7 +57,7 @@ const EditPropertyPage: NextPage = () => {
             href: PROPERTIES_ROUTE,
           },
           {
-            title: data.name,
+            title: data?.name ?? "Property",
           },
         ]}
       />
