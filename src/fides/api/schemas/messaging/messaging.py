@@ -117,6 +117,7 @@ class ErrorNotificationBodyParams(BaseModel):
     """Body params required for privacy request error notifications."""
 
     unsent_errors: int
+    is_test: Optional[bool] = False
 
 
 class SubjectIdentityVerificationBodyParams(BaseModel):

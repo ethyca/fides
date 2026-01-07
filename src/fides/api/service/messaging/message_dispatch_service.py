@@ -450,9 +450,18 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
         # This action type does not use the default templates that are configurable in the Admin-UI.
         # They are instead hard-coded in fides, which we retrieve using get_email_template(action_type)
         base_template = get_email_template(action_type)
+        is_test = getattr(body_params, "is_test", False)
+        variables = {
+            "unsent_errors": body_params.unsent_errors,
+            "organization_name": getattr(body_params, "organization_name", None),
+            "company_logo_url": getattr(body_params, "company_logo_url", None),
+            "is_test": is_test,
+        }
+        subject = "Test: Privacy Request Error Alert" if is_test else "Privacy Request Error Alert"
         return EmailForActionType(
-            subject="Privacy Request Error Alert",
-            body=base_template.render(),
+            subject=subject,
+            body=base_template.render(variables),
+            template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         return EmailForActionType(
