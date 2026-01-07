@@ -10,7 +10,6 @@ import {
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { EllipsisCell } from "~/features/common/table/cells";
 import {
   ConsentMethod,
   ConsentReportingSchema,
@@ -38,12 +37,13 @@ const useConsentReportingTableColumns = ({
         title: "User device ID",
         dataIndex: "fides_user_device_id",
         key: "fides_user_device_id",
-        render: (value: string) => <EllipsisCell>{value}</EllipsisCell>,
+        ellipsis: true,
       },
       {
         title: "User geography",
         dataIndex: "user_geography",
         key: "user_geography",
+        ellipsis: true,
         render: (region: PrivacyNoticeRegion | null | undefined) => {
           const isoEntry = region && isoStringToEntry(region);
           const legacyEntry =
@@ -51,13 +51,14 @@ const useConsentReportingTableColumns = ({
           const regionLabel = isoEntry
             ? formatIsoLocation({ isoEntry })
             : legacyEntry;
-          return <EllipsisCell>{regionLabel}</EllipsisCell>;
+          return regionLabel;
         },
       },
       {
         title: "Preference",
         dataIndex: "preference",
         key: "preference",
+        width: 130,
         render: (
           preference: UserConsentPreference,
           record: ConsentReportingSchema,
@@ -91,15 +92,17 @@ const useConsentReportingTableColumns = ({
         title: "Privacy notice",
         dataIndex: "notice_name",
         key: "notice_name",
+        ellipsis: true,
         render: (value: string) => {
           const label = value === "tcf" ? value.toUpperCase() : value;
-          return <EllipsisCell>{label}</EllipsisCell>;
+          return label;
         },
       },
       {
         title: "Method",
         dataIndex: "method",
         key: "method",
+        width: 130,
         render: (method: ConsentMethod) => {
           const methodLabel = method ? CONSENT_METHOD_LABELS[method] : method;
           return methodLabel;
@@ -109,6 +112,7 @@ const useConsentReportingTableColumns = ({
         title: "Request origin",
         dataIndex: "request_origin",
         key: "request_origin",
+        width: 150,
         render: (requestOrigin: RequestOrigin) => {
           const requestOriginLabel = requestOrigin
             ? REQUEST_ORIGIN_LABELS[requestOrigin]
@@ -120,6 +124,7 @@ const useConsentReportingTableColumns = ({
         title: "Request timestamp",
         dataIndex: "request_timestamp",
         key: "request_timestamp",
+        width: 150,
         render: (timestamp: string) => {
           if (!timestamp) {
             return "N/A";
@@ -133,34 +138,29 @@ const useConsentReportingTableColumns = ({
         title: "Recorded URL",
         dataIndex: "url_recorded",
         key: "url_recorded",
-        render: (url: string) => <EllipsisCell>{url}</EllipsisCell>,
+        ellipsis: true,
       },
       {
         title: "External ID",
         dataIndex: "external_id",
         key: "external_id",
-        render: (externalId: string) => (
-          <EllipsisCell>{externalId}</EllipsisCell>
-        ),
+        ellipsis: true,
       },
       {
         title: "Email",
         dataIndex: "email",
         key: "email",
+        ellipsis: true,
         render: (email: string) =>
           email ? (
-            <Typography.Link href={`mailto:${email}`}>
-              <EllipsisCell className="w-36 hover:underline">
-                {email}
-              </EllipsisCell>
-            </Typography.Link>
+            <Typography.Link href={`mailto:${email}`}>{email}</Typography.Link>
           ) : null,
       },
       {
         title: "Preference ID",
         dataIndex: "id",
         key: "id",
-        render: (id: string) => <EllipsisCell>{id}</EllipsisCell>,
+        ellipsis: true,
       },
     ],
     [onTcfDetailViewClick],

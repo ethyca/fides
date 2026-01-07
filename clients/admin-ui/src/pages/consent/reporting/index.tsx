@@ -136,6 +136,8 @@ const ConsentReportingPage = () => {
           loading={isLoading}
           pagination={false}
           data-testid="consent-reporting-table"
+          scroll={{ x: 1590 }}
+          tableLayout="fixed"
         />
         <InfinitePaginator
           disableNext={(data?.items?.length ?? 0) < pageSize}
