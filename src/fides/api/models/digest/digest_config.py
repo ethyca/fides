@@ -74,7 +74,7 @@ class DigestConfig(Base):
         self, db: Session
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get receiver conditions for this digest config."""
-        return DigestCondition.get_root_condition(
+        return DigestCondition.get_condition_tree(
             db,
             digest_config_id=self.id,
             digest_condition_type=DigestConditionType.RECEIVER,
@@ -85,7 +85,7 @@ class DigestConfig(Base):
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get content conditions for this digest config."""
 
-        return DigestCondition.get_root_condition(
+        return DigestCondition.get_condition_tree(
             db,
             digest_config_id=self.id,
             digest_condition_type=DigestConditionType.CONTENT,
@@ -96,7 +96,7 @@ class DigestConfig(Base):
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get priority conditions for this digest config."""
 
-        return DigestCondition.get_root_condition(
+        return DigestCondition.get_condition_tree(
             db,
             digest_config_id=self.id,
             digest_condition_type=DigestConditionType.PRIORITY,
@@ -107,4 +107,4 @@ class DigestConfig(Base):
     ) -> dict["DigestConditionType", Optional[Condition]]:
         """Get all condition types for this digest config."""
 
-        return DigestCondition.get_all_root_conditions(db, self.id)
+        return DigestCondition.get_all_condition_trees(db, self.id)

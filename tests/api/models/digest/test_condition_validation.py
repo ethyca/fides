@@ -19,7 +19,7 @@ from fides.api.task.conditional_dependencies.schemas import ConditionLeaf, Opera
 class TestDigestConditionValidation:
     """Test DigestCondition validation for mixed condition types."""
 
-    def test_create_root_condition_no_validation(self, sample_conditions):
+    def test_create_condition_tree_no_validation(self, sample_conditions):
         """Test that root conditions don't require validation."""
         # sample_conditions fixture creates root conditions of different types
         receiver_condition, content_condition, priority_condition = sample_conditions
@@ -163,7 +163,7 @@ class TestDigestConditionValidation:
         assert updated_leaf.value == "updated_value"
         assert updated_leaf.digest_condition_type == original_type  # Type unchanged
 
-    def test_update_root_condition_type_succeeds(
+    def test_update_condition_tree_type_succeeds(
         self, db: Session, receiver_digest_condition_leaf: DigestCondition
     ):
         """Test that updating root condition type succeeds (no parent to validate against)."""
