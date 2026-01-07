@@ -45,7 +45,7 @@ const ActionCenterPage = () => {
       ];
       return enabledTypes.length > 0 ? enabledTypes : undefined;
     }
-    if (filter === "datastore") {
+    if (filter === MONITOR_TYPES.DATASTORE) {
       return [MONITOR_TYPES.DATASTORE];
     }
     if (filter === "website") {
