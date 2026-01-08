@@ -1,140 +1,142 @@
-import { Tree, TreeProps, TreeDataNode } from "fidesui";
 import { Key, useEffect, useState } from "react";
+
+import { Tree, TreeProps, TreeDataNode } from "fidesui";
+import _ from "lodash";
 
 import { PaginationState } from "~/features/common/pagination";
 import { DEFAULT_PAGE_SIZE } from "~/features/common/table/constants";
-import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
-
-import { AsyncTreeNode, MapNode, ParentMapNode } from "./types";
-
-export type AsyncTreeProps = Omit<TreeProps, "loadData"> & {
-  pageSize?: number;
-  loadData: (
-    pagination: PaginationQueryParams,
-    key?: Key,
-  ) => Promise<PaginatedResponse<TreeDataNode> | undefined>;
-};
-
-const ROOT_NODE_KEY = "ROOT_NODE";
+import { AsyncTreeNode, AsyncTreeProps } from "./types";
+import { ROOT_NODE_KEY, DEFAULT_ROOT_NODE, DEFAULT_ROOT_NODE_STATE } from './const'
+import { AsyncTreeDataLink } from "./AsyncTreeLinkNode";
+import { AsyncTreeDataTitle } from "./AsyncNodeTitle";
 
 export const AsyncTree = ({
   pageSize = DEFAULT_PAGE_SIZE,
+  loadMoreText = "Load More",
+  actions,
   ...props
 }: AsyncTreeProps) => {
-
   /* Storing lookup data as normalized nodes */
-  const [asyncNodes, setAsyncNodes] = useState<
-   AsyncTreeNode & PaginationState
-  >();
+  const [asyncNodes, _setAsyncNodes] = useState<{
+    keys: Key[],
+    nodes: Array<AsyncTreeNode & PaginationState>
+  }>(DEFAULT_ROOT_NODE_STATE);
 
-  /* Mapping of nodes for tree traversal */
-  const [nodeMap, setNodeMap] = useState<
-    AsyncTreeNode & PaginationState
-  >();
+  const setAsyncNodes = (nodes: Array<AsyncTreeNode & PaginationState>) => {
+    _setAsyncNodes({
+      keys: nodes.flatMap(({ key }) => key),
+      nodes
+    })
+  }
+
+  const updateAsyncNodes = (next: Array<AsyncTreeNode & PaginationState>) => {
+    _setAsyncNodes((prev) => {
+      const nextKeys = _.uniq([
+        ...(prev?.nodes ?? []),
+        ...next
+      ].flatMap(({ key }) => key))
+
+      return {
+        keys: nextKeys,
+        nodes: nextKeys.flatMap((nextKey) => {
+          const target = next.find(({ key }) => nextKey === key) ??
+            prev?.nodes.find(({ key }) => nextKey === key)
+
+          return target ? [target] : []
+        }
+        )
+      }
+    }
+    )
+  }
 
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
 
-  const recBuildTree = (node: TreeDataNode): TreeDataNode => ({
+  /**
+   * @description This is the heart of the component that builds the tree data from our async state
+   */
+  const recBuildTree = (node: AsyncTreeNode): TreeDataNode => ({
     ...node,
-    children: asyncNodes?.flatMap(
-      (child) => child.parent === node.key ? [recBuildTree(child)] : []
-    )
+    children: [
+      ...asyncNodes?.nodes?.flatMap(
+        (child) => child.parent === node.key ? [recBuildTree(child)] : []
+      ),
+      ...(node.total > node.pageIndex * node.pageSize ?
+        [{
+          key: `SHOW_MORE__${node.key}`,
+          title: () => <AsyncTreeDataLink
+            node={{ ...node, title: loadMoreText }}
+            buttonProps={{ onClick: () => _loadData(node.key) }}
+          />,
+          icon: () => null,
+          isLeaf: true
+        }] :
+        [])
+    ]
   });
 
-  /* Building tree from async data */
-  const rootNode = asyncNodes?.get(ROOT_NODE_KEY)
-  const treeData: TreeProps["treeData"] = rootNode ? [recBuildTree(rootNode)] : []
+  /**
+  * @description initiates the tree construction
+  */
+  const treeData: TreeProps["treeData"] = recBuildTree(
+    asyncNodes.nodes.find(({ key }) => key === ROOT_NODE_KEY) ??
+    DEFAULT_ROOT_NODE
+  ).children
 
-
-
-  // /**
-  //  * Handles tree expansion - if a node without children is being expanded, load its data
-  //  */
-  // const onExpand = (
-  //   newExpandedKeys: Key[],
-  //   info: { expanded: boolean; node: AsyncTreeNode },
-  // ) => {
-  //   setExpandedKeys(newExpandedKeys);
-  //
-  // };
-
-  // const onSelect = (
-  //   _: Key[],
-  //   info: { selectedNodes: CustomTreeDataNode[] },
-  // ) => {
-  //   const classifyableKeys = info.selectedNodes
-  //     .filter((node) => node.classifyable)
-  //     .map((node) => node.key);
-  //   setSelectedNodeKeys(classifyableKeys);
-  // };
   const _loadData = (key?: Key) => {
     return new Promise(async (resolve) => {
-      const node = asyncNodes.get(key ?? ROOT_NODE_KEY);
-      console.log(node)
+      const node = asyncNodes?.nodes.find((node) => node.key === (key ?? ROOT_NODE_KEY));
+      const pageIndex = (node?.pageIndex ?? 0) + 1
+
       const result = await props.loadData(
-        { page: node?.pageIndex ?? 1, size: pageSize },
+        { page: pageIndex, size: pageSize },
         key,
       );
 
-      const mapNodes: MapNode[] = result ? result.items.map((item) => ({ key: item.key, parent: key })) : []
-      const dataNodes = result ? result.items.map((item) => ({ ...item })) : []
-      const newAsyncNodes = dataNodes.flatMap(
-        (n) => n.key ? [[n.key, n] as const] : []
-      )
+      const dataNodes = result?.items.flatMap((dn) => ([{
+        ...dn,
+        title: () => <AsyncTreeDataTitle node={dn} actions={actions.nodeActions} />,
+        parent: key ?? ROOT_NODE_KEY,
+        pageIndex: 0,
+        pageSize,
+        
+      }])) ?? []
 
-      const parentNode = result?.items ? {
-        key: key,
-        children: result?.items.map((item) => item.key),
-
-      } : {
-        key: key
-      }
-
-      setAsyncNodes(
-        new Map(
-          [
-            ...asyncNodes, ...newAsyncNodes
-          ]
-        )
-          .set(key ?? ROOT_NODE_KEY, parentNode),
-      );
+      updateAsyncNodes([
+        ...dataNodes,
+        ...(node ? [{ // update parent node's pagination
+          ...node,
+          pageIndex,
+          pageSize,
+          total: result?.total
+        }] : [])
+      ])
       resolve(result);
     });
   };
 
   const loadData: TreeProps["loadData"] = (args) => _loadData(args.key);
 
-  const onExpand: TreeProps["onExpand"] = (args) => {
-    return new Promise(async (resolve) => {
-      const expandResult = args.map(async (key) => {
-        const result = await _loadData(key)
-        return result
-      })
-      resolve(expandResult)
-    });
-  };
-
   useEffect(() => {
-    const initialize = async () => {
-      await _loadData();
-    };
+    const initialize = async () => await _loadData();
     initialize();
+
+    return () => setAsyncNodes(DEFAULT_ROOT_NODE.nodes)
   }, []);
 
-  return (
-    <Tree.DirectoryTree
-      {...props}
-      loadData={loadData}
-      treeData={treeData}
-      expandedKeys={expandedKeys}
-      onExpand={onExpand}
-      // onSelect={onSelect}
-      showIcon
-      showLine
-      blockNode
-      rootClassName="h-full overflow-x-hidden"
-    />
-  );
+  return <Tree.DirectoryTree
+    {...props}
+    loadData={loadData}
+    treeData={treeData}
+    expandedKeys={expandedKeys}
+    onExpand={(newExpandedKeys) => setExpandedKeys(newExpandedKeys)}
+    // onSelect={onSelect}
+    showIcon
+    showLine
+    blockNode
+    rootClassName="h-full overflow-x-hidden"
+    expandAction="doubleClick"
+  />
 };
 
 export default AsyncTree;

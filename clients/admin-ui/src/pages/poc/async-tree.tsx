@@ -5,20 +5,17 @@ import {
   Typography,
 } from "fidesui";
 import AsyncTree, {
-  AsyncTreeProps,
 } from "~/features/data-discovery-and-detection/action-center/AsyncTree";
+import { AsyncTreeProps } from "~/features/data-discovery-and-detection/action-center/AsyncTree/types"
 import { useLazyGetMonitorTreeQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
-import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
-import { Page_DatastoreStagedResourceAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceAPIResponse_";
-import { Page_DatastoreStagedResourceTreeAPIResponse_, StagedResourceTypeValue } from "~/types/api";
+import { DiffStatus, Page_DatastoreStagedResourceTreeAPIResponse_, StagedResourceTypeValue } from "~/types/api";
 
 const { Content } = Layout;
 const { Title } = Typography;
 
 export const FormsPOC = () => {
   const [trigger, _result] = useLazyGetMonitorTreeQuery();
-  const MONITOR_CONFIG_ID = "mypizzatest";
+  const MONITOR_CONFIG_ID = "Custom_Structure_Monitor_41";
 
   const transformResponseToNode = (
     response: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -26,7 +23,10 @@ export const FormsPOC = () => {
     response.items.map((item) => ({
       key: item.urn,
       title: item.name,
-      isLeaf: item.resource_type === StagedResourceTypeValue.FIELD || !item.has_grandchildren
+      disabled: item.diff_status === DiffStatus.MUTED,
+      isLeaf: item.resource_type === StagedResourceTypeValue.FIELD
+      // ||
+      // !item.has_grandchildren,
     }));
 
   const loadData: AsyncTreeProps["loadData"] =
@@ -35,7 +35,7 @@ export const FormsPOC = () => {
         const { data } = await trigger({
           monitor_config_id: MONITOR_CONFIG_ID,
           staged_resource_urn: key?.toString(),
-          include_descendant_details: true,
+          // include_descendant_details: true,
           page,
           size,
         });
@@ -54,7 +54,17 @@ export const FormsPOC = () => {
       <Row>
         <Title>Async Tree POC</Title>
       </Row>
-      <AsyncTree loadData={loadData} />
+      <AsyncTree loadData={loadData}
+        actions={{
+          nodeActions: {
+            "Copy": {
+              label: "Copy",
+              callback: (keys) => alert(keys),
+              disabled: () => false
+            }
+          },
+          primaryAction: "Copy"
+        }} pageSize={5} />
     </Content>
   );
 };
