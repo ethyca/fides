@@ -536,7 +536,7 @@ export const removeCookiesFromBrowser = (
   const { hostname } = window.location;
   const wildcardCookies: CookiesType[] = [];
 
-  function removeCookie(cookie: CookiesType) {
+  const removeCookie = (cookie: CookiesType) => {
     const domainToUse = cookieDeletionBasedOnHostDomain
       ? hostname
       : cookie.domain;
