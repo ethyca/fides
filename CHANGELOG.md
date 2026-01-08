@@ -86,6 +86,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
 - Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
 - Fixed repeatedly clicking "Delete" on custom fields causing multiple errors [#7115](https://github.com/ethyca/fides/pull/7115)
+- Fixed multi-select tree action counts [7182](https://github.com/ethyca/fides/pull/7182)
 
 
 ## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
