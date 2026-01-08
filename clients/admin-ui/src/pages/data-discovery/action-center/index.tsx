@@ -71,7 +71,7 @@ const ActionCenterPage = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
-  if (!webMonitorEnabled && !heliosV2Enabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 
