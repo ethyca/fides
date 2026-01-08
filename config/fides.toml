@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "d44055ed53ab8a2795f80a208e4af788" # string
+analytics_id = "d18300b86a4689d7977061ee5abde1c3" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -108,6 +108,17 @@ api_engine_keepalives_count = 5 # integer
 # still valid before using them.
 api_engine_pool_pre_ping = true # boolean
 
+# Number of concurrent database connections Fides will use for async
+# API requests. Note that the pool begins with no connections, but as
+# they are requested the connections are maintained and reused up to
+# this limit.
+api_async_engine_pool_size = 5 # integer
+
+# Number of additional 'overflow' concurrent database connections Fides
+# will use for async API requests if the pool reaches the limit. These
+# overflow connections are discarded afterwards and not maintained.
+api_async_engine_max_overflow = 10 # integer
+
 # If true, the async engine will pre-ping connections to ensure they
 # are still valid before using them.
 api_async_engine_pool_pre_ping = true # boolean
@@ -128,6 +139,10 @@ port = "5432" # string
 
 # The hostname of the application database server.
 server = "default-db" # string
+
+# Additional connection parameters for read-only database connections.
+# If not provided and readonly_server is set, uses 'params'.
+readonly_params = {} # object
 
 # Number of concurrent database connections Fides will use for
 # executing privacy request tasks, either locally or on each worker.
@@ -417,6 +432,10 @@ oauth_client_secret_length_bytes = 16 # integer
 
 # The prefix given to keys in the Redis cache used by the rate limiter.
 rate_limit_prefix = "rate-limit" # string
+
+# Controls what security headers are included in Fides server
+# responses.
+headers_mode = "none" # string
 
 # The number of requests from a single IP address allowed to hit an
 # endpoint within a rolling 60 second period.

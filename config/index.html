@@ -1106,7 +1106,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="credentials">Credentials</h3>
-<p>The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like <code>fides scan dataset db --credentials-id app_postgres</code>. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if <code>fides scan system okta</code> is used, it will expect the object to contain orgUrl and token key/value pairs. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:</p>
+<p>The credentials section uses custom keys which can be referenced in specific commands that take the --credentials-id option. For example, a command that uses a credential might look like <code>fides scan dataset db --credentials-id app_postgres</code>. The credential object itself will be validated at the time of use depending on what type of credential is required. For instance if <code>fides scan system okta</code> is used, it will expect the object to contain orgUrl, clientId, and privateKey key/value pairs for OAuth2 authentication. In the case of a typical database like postgres, it will only expect a connection_string. The following is an example of what a credentials section might look like in a given deployment with various applications:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example Credentials Section</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[credentials]</span>
 <span class="n">app_postgres</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">connection_string</span><span class="p">=</span><span class="s2">&quot;postgresql+psycopg2://postgres:fides@fides-db:5432/fides&quot;</span><span class="p">}</span>
@@ -1594,7 +1594,26 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1635,7 +1654,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d44055ed53ab8a2795f80a208e4af788&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d18300b86a4689d7977061ee5abde1c3&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1704,6 +1723,17 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># still valid before using them.</span>
 <span class="n">api_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
+<span class="c1"># Number of concurrent database connections Fides will use for async</span>
+<span class="c1"># API requests. Note that the pool begins with no connections, but as</span>
+<span class="c1"># they are requested the connections are maintained and reused up to</span>
+<span class="c1"># this limit.</span>
+<span class="n">api_async_engine_pool_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Number of additional &#39;overflow&#39; concurrent database connections Fides</span>
+<span class="c1"># will use for async API requests if the pool reaches the limit. These</span>
+<span class="c1"># overflow connections are discarded afterwards and not maintained.</span>
+<span class="n">api_async_engine_max_overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
+
 <span class="c1"># If true, the async engine will pre-ping connections to ensure they</span>
 <span class="c1"># are still valid before using them.</span>
 <span class="n">api_async_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
@@ -1724,6 +1754,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The hostname of the application database server.</span>
 <span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default-db&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Additional connection parameters for read-only database connections.</span>
+<span class="c1"># If not provided and readonly_server is set, uses &#39;params&#39;.</span>
+<span class="n">readonly_params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1"># object</span>
 
 <span class="c1"># Number of concurrent database connections Fides will use for</span>
 <span class="c1"># executing privacy request tasks, either locally or on each worker.</span>
@@ -2013,6 +2047,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The prefix given to keys in the Redis cache used by the rate limiter.</span>
 <span class="n">rate_limit_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;rate-limit&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Controls what security headers are included in Fides server</span>
+<span class="c1"># responses.</span>
+<span class="n">headers_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The number of requests from a single IP address allowed to hit an</span>
 <span class="c1"># endpoint within a rolling 60 second period.</span>

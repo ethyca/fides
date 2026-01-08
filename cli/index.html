@@ -2085,25 +2085,33 @@ tracked resource.
 <h5 id="fides-generate-system-okta">fides generate system okta</h5>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates systems from your Okta applications. Connects via
-an Okta admin account.
+OAuth2 client credentials.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate system okta [OPTIONS] OUTPUT_FILENAME
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials keys defined within Fides config.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials keys defined within Fides config.
   --org-url TEXT         Connect to Okta using an &#39;Org URL&#39;. _Requires options
-                         `--org-url` &amp; `--token`._
-  --token TEXT           Connect to Okta using a token. _Requires options
-                         `--org-url` and `--token`._
+                         `--org-url`, `--client-id` &amp; `--private-key`._
+  --client-id TEXT       Connect to Okta using an OAuth2 Client ID. _Requires
+                         options `--org-url`, `--client-id` &amp; `--private-
+                         key`._
+  --private-key TEXT     Connect to Okta using a private key (JWK JSON
+                         format). _Requires options `--org-url`, `--client-id`
+                         &amp; `--private-key`._
   --include-null         Include null attributes.
   -k, --org-key TEXT     The `organization_fides_key` of the `Organization`
                          you want to specify.  [default: default_organization]
@@ -2381,12 +2389,22 @@ _Scannable resources: [Redshift, RDS, DynamoDb, S3]_
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
                                   config.
   --org-url TEXT                  Connect to Okta using an &#39;Org URL&#39;.
-                                  _Requires options `--org-url` &amp; `--token`._
-  --token TEXT                    Connect to Okta using a token. _Requires
-                                  options `--org-url` and `--token`._
+                                  _Requires options `--org-url`, `--client-id`
+                                  &amp; `--private-key`._
+  --client-id TEXT                Connect to Okta using an OAuth2 Client ID.
+                                  _Requires options `--org-url`, `--client-id`
+                                  &amp; `--private-key`._
+  --private-key TEXT              Connect to Okta using a private key (JWK
+                                  JSON format). _Requires options `--org-url`,
+                                  `--client-id` &amp; `--private-key`._
   -k, --org-key TEXT              The `organization_fides_key` of the
                                   `Organization` you want to specify.
                                   [default: default_organization]
