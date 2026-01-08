@@ -56,12 +56,36 @@ const ActionCenterPage = () => {
 
   const monitorTypes = getMonitorTypesFromFilter(selectedFilter);
 
+  // Build filter options based on enabled monitor types
+  const filterOptions = [
+    ...(webMonitorEnabled || heliosV2Enabled
+      ? [{ value: "all", label: "All monitors" }]
+      : []),
+    ...(heliosV2Enabled
+      ? [{ value: "datastore", label: "Data store monitors" }]
+      : []),
+    ...(webMonitorEnabled
+      ? [{ value: "website", label: "Website monitors" }]
+      : []),
+  ];
+
   const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
     monitor_type: monitorTypes,
   });
+
+  // Reset filter if selected option is no longer available
+  useEffect(() => {
+    const isValidFilter = filterOptions.some(
+      (option) => option.value === selectedFilter,
+    );
+    if (!isValidFilter && filterOptions.length > 0) {
+      setSelectedFilter(filterOptions[0].value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webMonitorEnabled, heliosV2Enabled]);
 
   useEffect(() => {
     resetPagination();
@@ -137,11 +161,7 @@ const ActionCenterPage = () => {
                   setSelectedFilter(value);
                 }
               }}
-              options={[
-                { value: "all", label: "All monitors" },
-                { value: "datastore", label: "Data store monitors" },
-                { value: "website", label: "Website monitors" },
-              ]}
+              options={filterOptions}
               className="w-auto min-w-[200px]"
               data-testid="monitor-type-filter"
             />
