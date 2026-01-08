@@ -38,12 +38,7 @@ const ActionCenterPage = () => {
   // Build monitor_type filter based on selected filter
   const getMonitorTypesFromFilter = (filter: string): MONITOR_TYPES[] | undefined => {
     if (filter === "all") {
-      // Return all enabled monitor types
-      const enabledTypes: MONITOR_TYPES[] = [
-        ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-        ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
-      ];
-      return enabledTypes.length > 0 ? enabledTypes : undefined;
+      return undefined;
     }
     if (filter === MONITOR_TYPES.DATASTORE) {
       return [MONITOR_TYPES.DATASTORE];
