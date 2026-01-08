@@ -31,7 +31,7 @@ COPY . .
 RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
 
 
-FROM python:3.12-slim-bookworm AS docs
+FROM python:3.13-slim-bookworm AS docs
 
 # Add the fidesuser user
 RUN addgroup --system --gid 1001 fidesgroup
