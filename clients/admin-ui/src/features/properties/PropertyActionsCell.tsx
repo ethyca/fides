@@ -30,7 +30,7 @@ const PropertyActions = ({ property }: Props) => {
           data-testid="edit-property-button"
           size="small"
           icon={<Icons.Edit />}
-          onClick={() => handleEdit()}
+          onClick={handleEdit}
         />
       </Restrict>
       <DeletePropertyModal
