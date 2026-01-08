@@ -77,9 +77,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Run Static Check
         run: nox -s collect_tests
@@ -156,9 +156,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -210,9 +210,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -264,9 +264,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -317,9 +317,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-qq
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-qq
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -390,9 +390,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.test_selection }}
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -453,9 +453,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -521,9 +521,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -635,9 +635,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
