@@ -1,4 +1,6 @@
-import { TreeDataNode } from "fidesui"
+import { Key } from 'react'
+import { TreeDataNode, TreeProps } from "fidesui"
+
 import { PaginatedResponse, PaginationQueryParams } from "~/types/query-params";
 
 export type ReactDataNode<T> = T & {
@@ -6,14 +8,18 @@ export type ReactDataNode<T> = T & {
   children?: ReactDataNode<T>[];
 };
 
-export type AsyncTreeNode = Omit<PaginatedResponse, 'items'> & ReactDataNode<TreeDataNode> & {
+export type AsyncTreeNode = Omit<PaginatedResponse<unknown>, 'items'> & ReactDataNode<TreeDataNode> & {
   parent?: Key;
 }
 
+export type Plural = [string, string]
+
 export type AsyncTreeProps = Omit<TreeProps, "loadData"> & {
   pageSize?: number;
-  actions: TreeActions<TreeNodeAction, ActionDict<TreeNodeAction>>,
+  actions: TreeActions<ActionDict>,
   loadMoreText?: string,
+  showFooter?: boolean,
+  taxonomy?: Plural,
   loadData: (
     pagination: PaginationQueryParams,
     key?: Key,
@@ -25,7 +31,7 @@ export type AsyncTreeNodeComponentProps = {
   actions: ActionDict;
 };
 
-export type ParentMapNode = Omit<PaginatedResponse, 'items'> & {
+export type ParentMapNode = Omit<PaginatedResponse<unknown>, 'items'> & {
   key: Key;
   parent?: Key,
   children: Key[];
@@ -40,16 +46,16 @@ export type MapNode = ParentMapNode | LeafMapNode
 
 export type ActionDict = Record<string, NodeAction<AsyncTreeNode>>
 
-export interface TreeActions<Action, AD extends ActionDict<Action>> {
+export type TreeActions<AD extends ActionDict> = {
   nodeActions: AD;
   primaryAction: keyof AD;
 }
 
-export type NodeAction<N extends ReactDataNode> = {
+export type NodeAction<N> = {
   label: string;
   /** TODO: should be generically typed * */
-  callback: (key: Key[], nodes: N[]) => void;
+  callback: (keys: Key[], nodes: N[]) => void;
   disabled: (nodes: N[]) => boolean;
 };
 
-export type TreeNodeAction = NodeAction<CustomTreeDataNode>;
+export type TreeNodeAction = NodeAction<AsyncTreeNode>;

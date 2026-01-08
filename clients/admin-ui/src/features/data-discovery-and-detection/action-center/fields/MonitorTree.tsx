@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  TreeDataNode,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -52,8 +53,7 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode, TreeNodeAction } from "./types";
-import { TreeActions } from "../AsyncTree/types";
+import { CustomTreeDataNode, NodeAction, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -233,8 +233,13 @@ export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
 
+type TreeActions<AD extends Record<string, NodeAction<TreeDataNode>>> = {
+  nodeActions: AD;
+  primaryAction: keyof AD;
+}
+
 interface MonitorTreeProps
-  extends TreeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
+  extends TreeActions<Record<string, NodeAction<TreeDataNode>>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
   selectedNodeKeys: Key[];
 }

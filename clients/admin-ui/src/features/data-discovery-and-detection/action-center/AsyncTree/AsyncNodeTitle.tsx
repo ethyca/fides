@@ -23,7 +23,7 @@ export const AsyncTreeDataTitle = ({ node, actions }: AsyncTreeNodeComponentProp
       <Dropdown
         menu={{
           items: actions
-            ? Object.entries(actions).map(([key, { disabled, label, }]) => ({
+            ? Object.entries(actions).map(([key, { disabled, label }]) => ({
               key,
               disabled: disabled([node]),
               label

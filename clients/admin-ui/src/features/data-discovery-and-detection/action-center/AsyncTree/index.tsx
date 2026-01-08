@@ -6,14 +6,18 @@ import _ from "lodash";
 import { PaginationState } from "~/features/common/pagination";
 import { DEFAULT_PAGE_SIZE } from "~/features/common/table/constants";
 import { AsyncTreeNode, AsyncTreeProps } from "./types";
-import { ROOT_NODE_KEY, DEFAULT_ROOT_NODE, DEFAULT_ROOT_NODE_STATE } from './const'
+import { ROOT_NODE_KEY, DEFAULT_ROOT_NODE, DEFAULT_ROOT_NODE_STATE, DEFAULT_TREE_PROPS } from './const'
 import { AsyncTreeDataLink } from "./AsyncTreeLinkNode";
 import { AsyncTreeDataTitle } from "./AsyncNodeTitle";
+import { AsyncTreeFooter } from "./AsyncTreeFooter";
 
 export const AsyncTree = ({
   pageSize = DEFAULT_PAGE_SIZE,
   loadMoreText = "Load More",
+  showFooter = false,
+  taxonomy = ["item", "items"],
   actions,
+  selectedKeys,
   ...props
 }: AsyncTreeProps) => {
   /* Storing lookup data as normalized nodes */
@@ -61,7 +65,7 @@ export const AsyncTree = ({
       ...asyncNodes?.nodes?.flatMap(
         (child) => child.parent === node.key ? [recBuildTree(child)] : []
       ),
-      ...(node.total > node.pageIndex * node.pageSize ?
+      ...(node.total > node?.page * node.size ?
         [{
           key: `SHOW_MORE__${node.key}`,
           title: () => <AsyncTreeDataLink
@@ -95,11 +99,22 @@ export const AsyncTree = ({
 
       const dataNodes = result?.items.flatMap((dn) => ([{
         ...dn,
-        title: () => <AsyncTreeDataTitle node={dn} actions={actions.nodeActions} />,
+        title: () => <AsyncTreeDataTitle node={{
+          ...dn,
+          parent: key ?? ROOT_NODE_KEY,
+          total: 0,
+          size: 0,
+          page: 0,
+          pages: 0
+
+        }} actions={actions.nodeActions} />,
         parent: key ?? ROOT_NODE_KEY,
         pageIndex: 0,
         pageSize,
-        
+        total: 0,
+        size: 0,
+        page: 0,
+        pages: 0
       }])) ?? []
 
       updateAsyncNodes([
@@ -108,7 +123,10 @@ export const AsyncTree = ({
           ...node,
           pageIndex,
           pageSize,
-          total: result?.total
+          total: result?.total ?? 0,
+          size: result?.size ?? 0,
+          page: result?.page ?? 0,
+          pages: result?.pages ?? 0
         }] : [])
       ])
       resolve(result);
@@ -121,22 +139,26 @@ export const AsyncTree = ({
     const initialize = async () => await _loadData();
     initialize();
 
-    return () => setAsyncNodes(DEFAULT_ROOT_NODE.nodes)
+    return () => {
+      console.log('cleaned up')
+      setAsyncNodes([DEFAULT_ROOT_NODE])
+    }
   }, []);
 
-  return <Tree.DirectoryTree
-    {...props}
-    loadData={loadData}
-    treeData={treeData}
-    expandedKeys={expandedKeys}
-    onExpand={(newExpandedKeys) => setExpandedKeys(newExpandedKeys)}
-    // onSelect={onSelect}
-    showIcon
-    showLine
-    blockNode
-    rootClassName="h-full overflow-x-hidden"
-    expandAction="doubleClick"
-  />
+  return <>
+    <Tree.DirectoryTree
+      {...DEFAULT_TREE_PROPS}
+      {...props}
+      loadData={loadData}
+      treeData={treeData}
+      expandedKeys={expandedKeys}
+      onExpand={(newExpandedKeys) => setExpandedKeys(newExpandedKeys)}
+      // onSelect={onSelect}
+      selectedKeys={selectedKeys}
+      rootClassName="h-full overflow-x-hidden"
+    />
+    {showFooter ? <AsyncTreeFooter selectedKeys={selectedKeys ?? []} actions={actions} taxonomy={taxonomy} /> : null}
+  </>
 };
 
 export default AsyncTree;
