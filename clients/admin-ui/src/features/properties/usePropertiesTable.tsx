@@ -62,6 +62,7 @@ const usePropertiesTable = () => {
                 </div>
               </Flex>
             }
+            data-testid="no-results-notice"
           />
         ),
       },

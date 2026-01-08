@@ -25,12 +25,13 @@ const PropertiesTable = () => {
           <Button
             type="primary"
             onClick={() => router.push(ADD_PROPERTY_ROUTE)}
+            data-testid="add-property-button"
           >
             Add a property
           </Button>
         </Restrict>
       </Flex>
-      <Table {...tableProps} columns={columns} />
+      <Table {...tableProps} columns={columns} data-testid="properties-table" />
     </Flex>
   );
 };
