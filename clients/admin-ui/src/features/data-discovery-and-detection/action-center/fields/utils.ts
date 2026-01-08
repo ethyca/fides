@@ -27,8 +27,14 @@ export const getActionSuccessMessage = (
 ) =>
   `${FIELD_ACTION_COMPLETED[actionType]}${pluralize(itemCount ?? 0, "", `${actionType === FieldActionType.ASSIGN_CATEGORIES ? " for" : ""} ${itemCount?.toLocaleString()} resources`)}`;
 
-export const getActionErrorMessage = (actionType: FieldActionType) =>
-  `${FIELD_ACTION_COMPLETED[actionType]} failed${actionType === FieldActionType.CLASSIFY || actionType === FieldActionType.PROMOTE ? ": View summary in the activity tab" : ""}`;
+export const getActionErrorMessage = (actionType: FieldActionType) => {
+  const activityTabSuffix =
+    actionType === FieldActionType.CLASSIFY ||
+    actionType === FieldActionType.PROMOTE
+      ? ": View summary in the activity tab"
+      : "";
+  return `Action failed${activityTabSuffix}`;
+};
 
 const CONFIDENCE_BUCKET_TO_SEVERITY: Record<
   ConfidenceBucket,
