@@ -277,7 +277,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Domain verification",
         path: routes.DOMAIN_RECORDS_ROUTE,
         requiresPlus: true,
-        requiresFidesCloud: true,
+        requiresFidesCloud: false,
         scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
       },
       {
