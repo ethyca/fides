@@ -1,4 +1,4 @@
-import { Button, ChakraBox as Box, ChakraEditIcon as EditIcon } from "fidesui";
+import { Button, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -22,19 +22,15 @@ const PropertyActions = ({ property }: Props) => {
   };
 
   return (
-    <Box py={2}>
+    <Flex gap="small">
       <NewJavaScriptTag property={property} />
       <Restrict scopes={[ScopeRegistryEnum.PROPERTY_UPDATE]}>
         <Button
           aria-label="Edit property"
           data-testid="edit-property-button"
           size="small"
-          className="mr-[10px]"
-          icon={<EditIcon />}
-          onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-            e.stopPropagation();
-            handleEdit();
-          }}
+          icon={<Icons.Edit />}
+          onClick={() => handleEdit()}
         />
       </Restrict>
       <DeletePropertyModal
@@ -44,12 +40,11 @@ const PropertyActions = ({ property }: Props) => {
             aria-label="Delete property"
             data-testid="delete-property-button"
             size="small"
-            className="mr-[10px]"
             icon={<TrashCanOutlineIcon />}
           />
         }
       />
-    </Box>
+    </Flex>
   );
 };
 
