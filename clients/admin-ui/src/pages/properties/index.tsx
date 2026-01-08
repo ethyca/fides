@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { PropertiesTable } from "~/features/properties/PropertiesTable";
+import PropertiesTable from "~/features/properties/PropertiesTable";
 
 const PropertiesPage: NextPage = () => (
   <Layout title="Properties">
