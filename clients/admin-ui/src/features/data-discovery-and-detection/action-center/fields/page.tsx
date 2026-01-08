@@ -430,7 +430,9 @@ const ActionCenterFields: NextPage = () => {
                                 Approved resources can be found in the manage
                                 datasets view.
                               </div>
-                              <div>To see ignored resources, adjust your filters.</div>
+                              <div>
+                                To see ignored resources, adjust your filters.
+                              </div>
                             </>
                           }
                         >
