@@ -2115,6 +2115,7 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.secrets == {
             "url": "example.com",
             "authorization": "test_authorization123",
+            "headers": None,
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
@@ -2542,7 +2543,8 @@ class TestPatchConnectionConfigSecrets:
         db.refresh(https_connection_config)
         assert https_connection_config.secrets == {
             "url": "http://example.com",  # original value
-            "authorization": "test_authorization123",  # new value
+            "authorization": "test_authorization123",  # new value,
+            "headers": None,
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
