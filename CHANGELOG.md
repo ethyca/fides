@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
 
+### Added
+- Monitor scoped activity tab for datastore monitors in the action center [#7162](https://github.com/ethyca/fides/pull/7162)
+
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added
