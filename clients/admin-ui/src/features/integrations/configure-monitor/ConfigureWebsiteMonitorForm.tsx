@@ -1,12 +1,12 @@
 import { format, parseISO } from "date-fns";
 import dayjs from "dayjs";
 import {
-  AntTooltip as Tooltip,
   Button,
   ChakraText as Text,
   Flex,
   Form,
   isoCodesToOptions,
+  Tooltip,
 } from "fidesui";
 import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
