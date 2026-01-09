@@ -1,10 +1,11 @@
-import { Button, ColumnsType, Flex, Typography } from "fidesui";
+import { Button, ColumnsType, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldCell";
@@ -55,9 +56,7 @@ const useCustomFieldsTable = () => {
         dataIndex: "description",
         key: "description",
         render: (text: string) => (
-          <Typography.Text ellipsis={{ tooltip: text }} className="w-96">
-            {text}
-          </Typography.Text>
+          <EllipsisCell className="w-96">{text}</EllipsisCell>
         ),
         width: 384,
       },
