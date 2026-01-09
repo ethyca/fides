@@ -25,7 +25,10 @@ class ConditionalDependencyError(Exception):
         super().__init__(self.message)
 
 
-class ConditionalDependencyType(str, Enum):
+from enum import StrEnum
+
+
+class ConditionalDependencyType(StrEnum):
     """Shared enum for conditional dependency node types.
 
     Attributes:

@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class Operator(str, Enum):
+class Operator(StrEnum):
     # Basic comparison operators
     # Column value equals user input (e.g., user.role eq "admin")
     eq = "eq"
@@ -68,7 +68,7 @@ class Operator(str, Enum):
     contains = "contains"
 
 
-class GroupOperator(str, Enum):
+class GroupOperator(StrEnum):
     and_ = "and"
     or_ = "or"
 
