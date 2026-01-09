@@ -7,21 +7,18 @@ import {
   Pagination,
   Skeleton,
   Spin,
-  useMessage,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
-import {
-  useLazyDownloadPrivacyRequestCsvV2Query,
-  useSearchPrivacyRequestsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -34,8 +31,6 @@ export const PrivacyRequestsDashboard = () => {
     usePrivacyRequestsFilters({
       pagination,
     });
-
-  const messageApi = useMessage();
 
   const {
     data,
@@ -76,23 +71,8 @@ export const PrivacyRequestsDashboard = () => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
 
-  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
-
-  const handleExport = async () => {
-    let messageStr;
-    try {
-      await downloadReport(filterQueryParams);
-    } catch (error) {
-      if (error instanceof Error) {
-        messageStr = error.message;
-      } else {
-        messageStr = "Unknown error occurred";
-      }
-    }
-    if (messageStr) {
-      messageApi.error(messageStr, 5000);
-    }
-  };
+  const { downloadReport, isDownloadingReport } =
+    useDownloadPrivacyRequestReport();
 
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
@@ -158,7 +138,8 @@ export const PrivacyRequestsDashboard = () => {
             aria-label="Export report"
             data-testid="export-btn"
             icon={<Icons.Download />}
-            onClick={handleExport}
+            onClick={() => downloadReport(filterQueryParams)}
+            loading={isDownloadingReport}
           />
         </Flex>
       </Flex>

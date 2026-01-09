@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
 
+### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added
@@ -33,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
 - Added DB models for monitor stewards [#7131](https://github.com/ethyca/fides/pull/7131) https://github.com/ethyca/fides/labels/db-migration
 - Added ignore and restore actions to schema explorer tree in Action Center [#7156](https://github.com/ethyca/fides/pull/7156)
+- Added recommended security headers to Admin UI & Fides API [#7134](https://github.com/ethyca/fides/pull/7134)
 
 ### Changed
 - Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
 
-class TCFRestrictionType(str, Enum):
+class TCFRestrictionType(StrEnum):
     """Enum for TCF restriction types"""
 
     purpose_restriction = "purpose_restriction"
@@ -24,7 +24,7 @@ class TCFRestrictionType(str, Enum):
     require_legitimate_interest = "require_legitimate_interest"
 
 
-class TCFVendorRestriction(str, Enum):
+class TCFVendorRestriction(StrEnum):
     """Enum for TCF vendor restriction types"""
 
     restrict_all_vendors = "restrict_all_vendors"
