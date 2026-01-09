@@ -8,6 +8,19 @@ from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.service.connectors import HTTPSConnector
 
 
+@dataclass
+class HeaderTestCase:
+    name: str
+    secret: dict[str, str] | None = {}
+    additional: dict[str, str] = {}
+    expected: dict[str, str] = {}
+
+
+def name_of_test(test_case):
+    if isinstance(test_case, HeaderTestCase):
+        return test_case.name
+
+
 class TestHttpConnectorMethods:
     @pytest.fixture(scope="function")
     def connector(self, https_connection_config) -> Generator:
@@ -56,29 +69,28 @@ class TestHttpConnectorMethods:
 
             assert exc.value.args[0] == "Client call failed with status code '500'"
 
-    @dataclass
-    class HeaderTestCase:
-        secret: dict[str, str] | None = {}
-        additional: dict[str, str] = {}
-        expected: dict[str, str] = {}
-
     user_agent_header: dict[str, str] = {"User-Agent": "fides"}
     forwards_secret_headers = HeaderTestCase(
-        secret=user_agent_header, expected=user_agent_header
+        "Forwards headers in stored in secret",
+        secret=user_agent_header,
+        expected=user_agent_header,
     )
 
     forwards_additional_headers = HeaderTestCase(
-        additional=user_agent_header, expected=user_agent_header
+        "Forwards headers in additional_headers param",
+        additional=user_agent_header,
+        expected=user_agent_header,
     )
 
     merges_header_sets_additional_override_existing = HeaderTestCase(
+        "Overwrites headers in secrets with additional_headers param",
         additional=user_agent_header | {"override": "value2"},
         secret={"override": "value1"},
         expected=user_agent_header | {"override": "value2"},
     )
 
     handles_none_secret_headers = HeaderTestCase(
-        additional={}, secret=None, expected={}
+        "None header secrets succeeds", additional={}, secret=None, expected={}
     )
 
     @pytest.mark.parametrize(
@@ -89,6 +101,7 @@ class TestHttpConnectorMethods:
             merges_header_sets_additional_override_existing,
             handles_none_secret_headers,
         ],
+        ids=name_of_test,
     )
     def test_expected_header_secrets(
         self, https_connection_config, test_case: HeaderTestCase
