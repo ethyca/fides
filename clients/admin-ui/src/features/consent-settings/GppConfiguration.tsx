@@ -108,17 +108,20 @@ const GppConfiguration = () => {
             </Section>
             {showMspa ? (
               <Section title="MSPA">
-                <CheckboxField
-                  name="gpp.mspa_covered_transactions"
-                  label="All transactions covered by MSPA"
-                  tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
-                  onChange={(checked) => {
-                    if (!checked) {
-                      setFieldValue("gpp.mspa_service_provider_mode", false);
-                      setFieldValue("gpp.mspa_opt_out_option_mode", false);
-                    }
-                  }}
-                />
+                {/* Remove this font style when upgrading to an ant form */}
+                <div className="font-medium">
+                  <CheckboxField
+                    name="gpp.mspa_covered_transactions"
+                    label="All transactions covered by MSPA"
+                    tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
+                    onChange={(checked) => {
+                      if (!checked) {
+                        setFieldValue("gpp.mspa_service_provider_mode", false);
+                        setFieldValue("gpp.mspa_opt_out_option_mode", false);
+                      }
+                    }}
+                  />
+                </div>
                 <CustomSwitch
                   label="Enable MSPA service provider mode"
                   name="gpp.mspa_service_provider_mode"
