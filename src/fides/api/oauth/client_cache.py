@@ -81,11 +81,11 @@ class ClientCache:
             client_id: The client ID to use as the cache key.
             client: The ClientDetail object to cache.
         """
-        ttl_seconds = CONFIG.security.oauth_client_cache_ttl_seconds
-
         # Cache disabled
-        if ttl_seconds <= 0:
+        if not self.is_enabled():
             return
+
+        ttl_seconds = CONFIG.security.oauth_client_cache_ttl_seconds
 
         # Evict an entry if at capacity
         if len(self._cache) >= self._max_size and client_id not in self._cache:
