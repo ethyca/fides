@@ -91,7 +91,7 @@ const mapResponseToTreeData = (
       status: treeNode.update_status,
       diffStatus: treeNode.diff_status,
       isLeaf:
-        treeNode.resource_type === StagedResourceTypeValue.FIELD ||
+        // treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
       classifyable: [
         StagedResourceTypeValue.SCHEMA,
@@ -298,10 +298,10 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           ...queryParams,
           include_descendant_details: false,
         });
-        const detailedQuery = trigger({
-          ...queryParams,
-          include_descendant_details: true,
-        });
+        // const detailedQuery = trigger({
+        //   ...queryParams,
+        //   include_descendant_details: true,
+        // });
 
         // Handle fast query result as soon as it arrives
         fastQuery.then(({ data: fastData }) => {
@@ -316,19 +316,19 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           }
         });
 
-        // Handle detailed query result when it arrives
-        detailedQuery.then(({ data: detailedData }) => {
-          // Only update if this is still the latest request for this node
-          if (
-            detailedData &&
-            requestSequenceRef.current[nodeKey] === currentSequence
-          ) {
-            // Mark that detailed query has completed for this sequence
-            detailedQueryCompletedRef.current[nodeKey] = currentSequence;
-            // Use the detailed update function if provided, otherwise fall back to the fast one
-            (detailedUpdateFn ?? fastUpdateFn)(detailedData);
-          }
-        });
+        // // Handle detailed query result when it arrives
+        // detailedQuery.then(({ data: detailedData }) => {
+        //   // Only update if this is still the latest request for this node
+        //   if (
+        //     detailedData &&
+        //     requestSequenceRef.current[nodeKey] === currentSequence
+        //   ) {
+        //     // Mark that detailed query has completed for this sequence
+        //     detailedQueryCompletedRef.current[nodeKey] = currentSequence;
+        //     // Use the detailed update function if provided, otherwise fall back to the fast one
+        //     (detailedUpdateFn ?? fastUpdateFn)(detailedData);
+        //   }
+        // });
       },
       [trigger],
     );
