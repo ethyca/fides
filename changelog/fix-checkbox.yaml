@@ -1,4 +1,4 @@
 type: Fixed
-description: Fixed checkbox input in privacy request form not updating visually
+description: Fixed checkbox input not updating visually
 pr: 7205 # PR number
 labels: [] # Optional: ["high-risk", "db-migration"]
