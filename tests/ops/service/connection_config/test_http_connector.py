@@ -58,7 +58,7 @@ class TestHttpConnectorMethods:
 
     @dataclass
     class HeaderTestCase:
-        secret: dict[str, str] = {}
+        secret: dict[str, str] | None = {}
         additional: dict[str, str] = {}
         expected: dict[str, str] = {}
 
@@ -77,12 +77,17 @@ class TestHttpConnectorMethods:
         expected=user_agent_header | {"override": "value2"},
     )
 
+    handles_none_secret_headers = HeaderTestCase(
+        additional={}, secret=None, expected={}
+    )
+
     @pytest.mark.parametrize(
         "test_case",
         [
             forwards_secret_headers,
             forwards_additional_headers,
             merges_header_sets_additional_override_existing,
+            handles_none_secret_headers,
         ],
     )
     def test_expected_header_secrets(
