@@ -11,6 +11,7 @@ import {
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
@@ -23,7 +24,6 @@ import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActio
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
 import { PrivacyRequestFiltersBar } from "./PrivacyRequestFiltersBar";
-import ErrorPage from "~/features/common/errors/ErrorPage";
 
 export const PrivacyRequestsDashboard = () => {
   const pagination = useAntPagination();
