@@ -10,6 +10,7 @@ import {
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import {
   ConsentMethod,
   ConsentReportingSchema,
@@ -37,13 +38,14 @@ const useConsentReportingTableColumns = ({
         title: "User device ID",
         dataIndex: "fides_user_device_id",
         key: "fides_user_device_id",
-        ellipsis: true,
+        render: (value: string) => {
+          return <EllipsisCell>{value}</EllipsisCell>;
+        },
       },
       {
         title: "User geography",
         dataIndex: "user_geography",
         key: "user_geography",
-        ellipsis: true,
         render: (region: PrivacyNoticeRegion | null | undefined) => {
           const isoEntry = region && isoStringToEntry(region);
           const legacyEntry =
@@ -51,7 +53,7 @@ const useConsentReportingTableColumns = ({
           const regionLabel = isoEntry
             ? formatIsoLocation({ isoEntry })
             : legacyEntry;
-          return regionLabel;
+          return <EllipsisCell>{regionLabel}</EllipsisCell>;
         },
       },
       {
@@ -92,10 +94,9 @@ const useConsentReportingTableColumns = ({
         title: "Privacy notice",
         dataIndex: "notice_name",
         key: "notice_name",
-        ellipsis: true,
         render: (value: string) => {
           const label = value === "tcf" ? value.toUpperCase() : value;
-          return label;
+          return <EllipsisCell>{label}</EllipsisCell>;
         },
       },
       {
@@ -129,22 +130,30 @@ const useConsentReportingTableColumns = ({
           if (!timestamp) {
             return "N/A";
           }
-          return formatDistance(new Date(timestamp), new Date(), {
-            addSuffix: true,
-          });
+          return (
+            <EllipsisCell>
+              {formatDistance(new Date(timestamp), new Date(), {
+                addSuffix: true,
+              })}
+            </EllipsisCell>
+          );
         },
       },
       {
         title: "Recorded URL",
         dataIndex: "url_recorded",
         key: "url_recorded",
-        ellipsis: true,
+        render: (value: string) => {
+          return <EllipsisCell>{value}</EllipsisCell>;
+        },
       },
       {
         title: "External ID",
         dataIndex: "external_id",
         key: "external_id",
-        ellipsis: true,
+        render: (value: string) => {
+          return <EllipsisCell>{value}</EllipsisCell>;
+        },
       },
       {
         title: "Email",
@@ -160,7 +169,9 @@ const useConsentReportingTableColumns = ({
         title: "Preference ID",
         dataIndex: "id",
         key: "id",
-        ellipsis: true,
+        render: (value: string) => {
+          return <EllipsisCell>{value}</EllipsisCell>;
+        },
       },
     ],
     [onTcfDetailViewClick],
