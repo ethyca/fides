@@ -54,6 +54,10 @@ class DatabaseSettings(FidesSettings):
         default=True,
         description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
     )
+    api_engine_disable_pooling: bool = Field(
+        default=False,
+        description="If true, the engine will not use a connection pool.",
+    )
 
     # Async Engine Settings
     # Note: We purposely do not include async engine equivalents of the sync engine's
