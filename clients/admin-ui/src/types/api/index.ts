@@ -599,6 +599,7 @@ export type { TCFConfigurationResponse } from "./models/TCFConfigurationResponse
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export { TCFLegalBasisEnum } from "./models/TCFLegalBasisEnum";
+export type { TCFPreferences } from "./models/TCFPreferences";
 export type { TCFPublisherRestrictionRequest } from "./models/TCFPublisherRestrictionRequest";
 export type { TCFPublisherRestrictionUpdateRequest } from "./models/TCFPublisherRestrictionUpdateRequest";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";

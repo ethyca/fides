@@ -9,6 +9,7 @@ import {
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { DEFAULT_PAGE_SIZES } from "~/features/common/table/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { truncateUrl } from "~/features/common/utils";
@@ -101,11 +102,7 @@ export const useConsentBreakdownTable = ({
                 location as PrivacyNoticeRegion
               ] ?? location);
 
-          return (
-            <Typography.Text ellipsis={{ tooltip: location }}>
-              {locationText}
-            </Typography.Text>
-          );
+          return <EllipsisCell>{locationText}</EllipsisCell>;
         },
         width: 180,
       },
@@ -122,9 +119,7 @@ export const useConsentBreakdownTable = ({
               rel="noopener noreferrer"
               variant="primary"
             >
-              <Typography.Text ellipsis={{ tooltip: page }} unStyled>
-                {truncatedPage}
-              </Typography.Text>
+              <EllipsisCell unStyled>{truncatedPage}</EllipsisCell>
             </Link>
           );
         },
