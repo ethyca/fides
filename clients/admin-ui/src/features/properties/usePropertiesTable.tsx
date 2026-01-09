@@ -1,4 +1,4 @@
-import { Button, ColumnsType, Empty, Flex } from "fidesui";
+import { Button, ColumnsType, Empty, Flex, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -45,26 +45,30 @@ const usePropertiesTable = () => {
       isLoading,
       isFetching,
       getRowKey: (record: Property) => record.id ?? "",
-      locale: {
-        emptyText: (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-              <Flex vertical gap="small">
-                <div>No properties found.</div>
-                <div>
-                  <Button
-                    type="primary"
-                    onClick={() => router.push(ADD_PROPERTY_ROUTE)}
-                  >
-                    Add a property
-                  </Button>
-                </div>
-              </Flex>
-            }
-            data-testid="no-results-notice"
-          />
-        ),
+      customTableProps: {
+        locale: {
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <Flex vertical gap="small" align="center">
+                  <Typography.Paragraph>
+                    No properties found.
+                  </Typography.Paragraph>
+                  <Flex>
+                    <Button
+                      type="primary"
+                      onClick={() => router.push(ADD_PROPERTY_ROUTE)}
+                    >
+                      Add a property
+                    </Button>
+                  </Flex>
+                </Flex>
+              }
+              data-testid="no-results-notice"
+            />
+          ),
+        },
       },
     }),
     [totalRows, isLoading, isFetching, items, router],
