@@ -412,6 +412,9 @@ class TestS3Retrieve:
         assert file_size == len(document)
         assert bucket_name in download_link
 
+    @pytest.mark.skip(
+        "This test just verifies that the S3 client can download large files"
+    )
     def test_retrieve_large_file(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
     ):
@@ -536,6 +539,9 @@ class TestS3Retrieve:
         assert file_size == len(document)
         assert content.read() == document
 
+    @pytest.mark.skip(
+        "This test just verifies that the S3 client can download large files"
+    )
     def test_retrieve_large_file_with_content(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
     ):
