@@ -758,11 +758,6 @@ class PrivacyRequest(
         keys = cache.keys(prefix)
         return prefix, cache, keys
 
-    def verify_cache_for_identity_data(self) -> bool:
-        """Verifies if the identity data is cached for this request"""
-        _, _, keys = self.identity_prefix_cache_and_keys()
-        return len(keys) > 0
-
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
         result: Dict[str, Any] = {}

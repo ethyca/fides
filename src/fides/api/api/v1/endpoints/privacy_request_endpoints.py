@@ -989,17 +989,6 @@ def restart_privacy_request_from_failure(
         db, privacy_request_id
     )
 
-    # Automatically resubmit the request if the cache has expired
-
-    if (
-        not privacy_request.verify_cache_for_identity_data()
-        and privacy_request.status != PrivacyRequestStatus.complete
-    ):
-        logger.info(
-            f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
-        )
-        return privacy_request_service.resubmit_privacy_request(privacy_request_id)  # type: ignore[return-value]
-
     if privacy_request.status != PrivacyRequestStatus.error:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
