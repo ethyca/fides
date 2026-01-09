@@ -14,7 +14,7 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
@@ -518,8 +518,12 @@ async def extract_token_and_load_client_async(
         )
     else:
         # Async query for non-root clients
+        # Eager-load the user relationship to avoid lazy-loading issues in async context
+        # This is required for is_token_invalidated() to access client.user.password_reset_at
         result = await db.execute(
-            select(ClientDetail).where(ClientDetail.id == client_id)
+            select(ClientDetail)
+            .options(selectinload(ClientDetail.user))
+            .where(ClientDetail.id == client_id)
         )
         client = result.scalars().first()
 
