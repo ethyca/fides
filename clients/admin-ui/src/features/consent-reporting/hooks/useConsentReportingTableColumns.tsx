@@ -5,12 +5,12 @@ import {
   Icons,
   isoStringToEntry,
   Tag,
-  Typography,
 } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import {
   ConsentMethod,
   ConsentReportingSchema,
@@ -160,10 +160,11 @@ const useConsentReportingTableColumns = ({
         dataIndex: "email",
         key: "email",
         ellipsis: true,
-        render: (email: string) =>
-          email ? (
-            <Typography.Link href={`mailto:${email}`}>{email}</Typography.Link>
-          ) : null,
+        render: (email: string) => (
+          <LinkCell href={`mailto:${email}`} strong={false}>
+            {email}
+          </LinkCell>
+        ),
       },
       {
         title: "Preference ID",

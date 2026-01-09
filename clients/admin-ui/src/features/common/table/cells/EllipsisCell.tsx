@@ -10,5 +10,7 @@ export const EllipsisCell = ({ children, ...props }: EllipsisCellProps) => {
     <Typography.Text ellipsis={{ tooltip: children }} {...props}>
       {children}
     </Typography.Text>
-  ) : null;
+  ) : (
+    children
+  );
 };
