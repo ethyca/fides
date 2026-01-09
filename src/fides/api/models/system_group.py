@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 from citext import CIText
 from sqlalchemy import ARRAY, Column
@@ -12,7 +12,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
-class CustomTaxonomyColor(str, Enum):
+class CustomTaxonomyColor(StrEnum):
     WHITE = "taxonomy_white"
     RED = "taxonomy_red"
     ORANGE = "taxonomy_orange"

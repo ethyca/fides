@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import boto3
 import google.auth.credentials
+import httpx
 import pytest
 import requests
 import yaml
@@ -232,7 +233,9 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://0.0.0.0:8080",
+        follow_redirects=True,
     ) as client:
         yield client
 
@@ -764,8 +767,6 @@ def celery_enable_logging():
     """Turns on celery output logs."""
     return True
 
-
-# Register health check for workers
 @pytest.fixture(scope="session")
 def celery_session_app(celery_session_app):
     celery_healthcheck.register(celery_session_app)
@@ -806,8 +807,6 @@ def celery_session_worker(
                 logger.warning("Failed to dispose of the celery worker.")
     except RuntimeError as re:
         logger.warning("Failed to stop the celery worker: " + str(re))
-
-
 
 @pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
@@ -2085,14 +2084,38 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     Some places within the application, for example `fides.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
+
+    NOTE: This is dangerous, now that starlette's TestClient no longer accepts allow_redirects like requests
+    does - so this is not a direct drop-in any longer and the methods may need to be wrapped / transmogrified.
     """
+
+    # Flip allow_redirects from requests to follow_redirects in starlette
+    def _wrap_requests_post(url, **kwargs):
+        if kwargs.get("allow_redirects") is not None:
+            flag_value = kwargs.pop("allow_redirects")
+            kwargs["follow_redirects"] = flag_value
+
+        return test_client.post(url, **kwargs)
+
     monkeysession.setattr(requests, "get", test_client.get)
-    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "post", _wrap_requests_post)
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
 
 
+@pytest.fixture
+def worker_id(request) -> str:
+    """Fixture to get the xdist worker ID (e.g., 'gw0', 'gw1') or 'master'."""
+    if hasattr(request.config, "workerinput"):
+        # In a worker process
+        return request.config.workerinput["workerid"]
+    else:
+        # In the master process (or not using xdist)
+        return "master"
+
+
+@pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
     """Pytest hook automatically called for each xdist worker node configuration."""
     if hasattr(node, "workerinput") and node.workerinput:
