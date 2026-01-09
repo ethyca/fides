@@ -1,10 +1,9 @@
 """Tests for the OAuth client cache functionality."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from fides.api.models.client import ClientDetail
 from fides.api.oauth.client_cache import (
     CacheEntry,
     ClientCache,
@@ -56,7 +55,9 @@ class TestClientCache:
         cache = ClientCache()
 
         # Create a cache entry that has already expired
-        expired_time = datetime.now() - timedelta(seconds=60)  # Expired 1 minute ago
+        expired_time = datetime.now(timezone.utc) - timedelta(
+            seconds=60
+        )  # Expired 1 minute ago
         cache._cache[oauth_client.id] = CacheEntry(
             client=oauth_client, expires_at=expired_time
         )
@@ -74,7 +75,9 @@ class TestClientCache:
         cache = ClientCache()
 
         # Create a cache entry that expires in the future
-        future_time = datetime.now() + timedelta(seconds=300)  # Expires in 5 minutes
+        future_time = datetime.now(timezone.utc) + timedelta(
+            seconds=300
+        )  # Expires in 5 minutes
         cache._cache[oauth_client.id] = CacheEntry(
             client=oauth_client, expires_at=future_time
         )

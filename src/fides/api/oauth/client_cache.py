@@ -9,7 +9,7 @@ after a configurable TTL (time-to-live).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 from loguru import logger
@@ -62,8 +62,7 @@ class ClientCache:
             return None
 
         # Check if entry has expired
-        now = datetime.now()
-        if now >= entry.expires_at:
+        if datetime.now(timezone.utc) >= entry.expires_at:
             # Entry expired, remove it
             self._cache.pop(client_id, None)
             return None
@@ -91,7 +90,11 @@ class ClientCache:
         if len(self._cache) >= self._max_size and client_id not in self._cache:
             self._evict_one()
 
-        expires_at = datetime.now() + timedelta(seconds=ttl_seconds)
+        # Eagerly load the user relationship before caching to avoid
+        # lazy-loading issues with detached SQLAlchemy objects
+        _ = client.user
+
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
         self._cache[client_id] = CacheEntry(client=client, expires_at=expires_at)
 
     def delete(self, client_id: str) -> bool:
