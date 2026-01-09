@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  TreeDataNode,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -52,7 +53,7 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import { CustomTreeDataNode, NodeAction, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
   data: Page_DatastoreStagedResourceTreeAPIResponse_,
@@ -61,13 +62,13 @@ const mapResponseToTreeData = (
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
     const IconComponent = treeNode.resource_type
       ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[
-          treeNode.resource_type as StagedResourceTypeValue
-        ]
+      treeNode.resource_type as StagedResourceTypeValue
+      ]
       : undefined;
     const statusInfo = treeNode.update_status
       ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[
-          treeNode.update_status
-        ]
+      treeNode.update_status
+      ]
       : undefined;
 
     return {
@@ -76,17 +77,17 @@ const mapResponseToTreeData = (
       selectable: true, // all nodes are selectable since we ignore lowest level descendants in the data
       icon: IconComponent
         ? () => (
-            <Tooltip title={statusInfo?.tooltip}>
-              <Badge
-                className="h-full"
-                offset={[0, 5]}
-                color={statusInfo?.color}
-                dot={shouldShowBadgeDot(treeNode)}
-              >
-                <IconComponent className="h-full" />
-              </Badge>
-            </Tooltip>
-          )
+          <Tooltip title={statusInfo?.tooltip}>
+            <Badge
+              className="h-full"
+              offset={[0, 5]}
+              color={statusInfo?.color}
+              dot={shouldShowBadgeDot(treeNode)}
+            >
+              <IconComponent className="h-full" />
+            </Badge>
+          </Tooltip>
+        )
         : undefined,
       status: treeNode.update_status,
       diffStatus: treeNode.diff_status,
@@ -105,14 +106,14 @@ const mapResponseToTreeData = (
   return (dataItems?.length ?? 0) < TREE_PAGE_SIZE
     ? dataItems
     : [
-        ...dataItems,
-        {
-          title: TREE_NODE_LOAD_MORE_TEXT,
-          key: `${TREE_NODE_LOAD_MORE_KEY_PREFIX}-${data.page}-${key}`,
-          selectable: false,
-          isLeaf: true,
-        },
-      ];
+      ...dataItems,
+      {
+        title: TREE_NODE_LOAD_MORE_TEXT,
+        key: `${TREE_NODE_LOAD_MORE_KEY_PREFIX}-${data.page}-${key}`,
+        selectable: false,
+        isLeaf: true,
+      },
+    ];
 };
 
 const appendTreeNodeData = (
@@ -232,13 +233,13 @@ export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
 
-interface NodeActions<Action, ActionDict extends Record<string, Action>> {
-  nodeActions: ActionDict;
-  primaryAction: keyof ActionDict;
+type TreeActions<AD extends Record<string, NodeAction<TreeDataNode>>> = {
+  nodeActions: AD;
+  primaryAction: keyof AD;
 }
 
 interface MonitorTreeProps
-  extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
+  extends TreeActions<Record<string, NodeAction<TreeDataNode>>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
   selectedNodeKeys: Key[];
 }
@@ -647,20 +648,20 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               menu={{
                 items: nodeActions
                   ? Object.entries(nodeActions).map(
-                      ([key, { label, disabled }]) => ({
-                        key,
-                        label,
-                        disabled: disabled(
-                          selectedNodeKeys.flatMap((nodeKey) => {
-                            const node = findNodeByUrn(
-                              treeData,
-                              nodeKey.toString(),
-                            );
-                            return node ? [node] : [];
-                          }),
-                        ),
-                      }),
-                    )
+                    ([key, { label, disabled }]) => ({
+                      key,
+                      label,
+                      disabled: disabled(
+                        selectedNodeKeys.flatMap((nodeKey) => {
+                          const node = findNodeByUrn(
+                            treeData,
+                            nodeKey.toString(),
+                          );
+                          return node ? [node] : [];
+                        }),
+                      ),
+                    }),
+                  )
                   : [],
                 onClick: ({ key, domEvent }) => {
                   domEvent.preventDefault();
