@@ -1,0 +1,4 @@
+type: Removed
+description: Removed unnecessary auto-resubmit fallback from retry endpoint now that identity data falls back to database
+pr: 7207
+labels: []
