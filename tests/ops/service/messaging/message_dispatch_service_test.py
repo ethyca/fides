@@ -396,6 +396,28 @@ class TestMessageDispatchService:
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
+    def test_email_dispatch_mailgun_privacy_request_complete_consent(
+        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=None,
+        )
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Your consent preferences have been saved",
+                body="Your consent request has been completed.",
+            ),
+            "test@email.com",
+        )
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
     def test_email_dispatch_mailgun_privacy_request_review_deny(
         self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
     ) -> None:
