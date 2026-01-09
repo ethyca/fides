@@ -19,6 +19,7 @@ import {
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
@@ -120,6 +121,8 @@ const actionCenterApi = baseApi.injectEndpoints({
         monitor_config_id: string;
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
+        diffStatus?: DiffStatus[];
+        confidenceBucket?: ConfidenceBucket[];
       }
     >({
       query: ({
@@ -128,10 +131,24 @@ const actionCenterApi = baseApi.injectEndpoints({
         monitor_config_id,
         staged_resource_urn,
         include_descendant_details,
-      }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
-        params: { staged_resource_urn, include_descendant_details, page, size },
-      }),
+        diffStatus,
+        confidenceBucket,
+      }) => {
+        const urlParams = buildArrayQueryParams({
+          diff_status: diffStatus,
+          confidence_bucket: confidenceBucket,
+        });
+
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/tree?${urlParams.toString()}`,
+          params: {
+            staged_resource_urn,
+            include_descendant_details,
+            page,
+            size,
+          },
+        };
+      },
     }),
 
     getMonitorTreeAncestorsStatuses: build.query<

@@ -31,9 +31,11 @@ import {
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import {
+  DiffStatus,
   Page_DatastoreStagedResourceTreeAPIResponse_,
   StagedResourceTypeValue,
 } from "~/types/api";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import {
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
@@ -91,7 +93,7 @@ const mapResponseToTreeData = (
       status: treeNode.update_status,
       diffStatus: treeNode.diff_status,
       isLeaf:
-        treeNode.resource_type === StagedResourceTypeValue.FIELD ||
+        // treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
       classifyable: [
         StagedResourceTypeValue.SCHEMA,
@@ -241,11 +243,21 @@ interface MonitorTreeProps
   extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
   selectedNodeKeys: Key[];
+  filters?: {
+    diffStatus?: DiffStatus[];
+    confidenceBucket?: ConfidenceBucket[];
+  };
 }
 
 const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
   (
-    { setSelectedNodeKeys, selectedNodeKeys, nodeActions, primaryAction },
+    {
+      setSelectedNodeKeys,
+      selectedNodeKeys,
+      nodeActions,
+      primaryAction,
+      filters,
+    },
     ref,
   ) => {
     const router = useRouter();
@@ -273,12 +285,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         nodeKey,
         queryParams,
         fastUpdateFn,
-        detailedUpdateFn,
       }: {
         nodeKey: string;
         queryParams: {
           monitor_config_id: string;
           staged_resource_urn?: string;
+          diffStatus?: DiffStatus[];
+          confidenceBucket?: ConfidenceBucket[];
           size: number;
           page?: number;
         };
@@ -296,12 +309,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         // Trigger both queries simultaneously
         const fastQuery = trigger({
           ...queryParams,
-          include_descendant_details: false,
         });
-        const detailedQuery = trigger({
-          ...queryParams,
-          include_descendant_details: true,
-        });
+        // const detailedQuery = trigger({
+        //   ...queryParams,
+        //   include_descendant_details: true,
+        // });
 
         // Handle fast query result as soon as it arrives
         fastQuery.then(({ data: fastData }) => {
@@ -316,21 +328,21 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           }
         });
 
-        // Handle detailed query result when it arrives
-        detailedQuery.then(({ data: detailedData }) => {
-          // Only update if this is still the latest request for this node
-          if (
-            detailedData &&
-            requestSequenceRef.current[nodeKey] === currentSequence
-          ) {
-            // Mark that detailed query has completed for this sequence
-            detailedQueryCompletedRef.current[nodeKey] = currentSequence;
-            // Use the detailed update function if provided, otherwise fall back to the fast one
-            (detailedUpdateFn ?? fastUpdateFn)(detailedData);
-          }
-        });
+        // // Handle detailed query result when it arrives
+        // detailedQuery.then(({ data: detailedData }) => {
+        //   // Only update if this is still the latest request for this node
+        //   if (
+        //     detailedData &&
+        //     requestSequenceRef.current[nodeKey] === currentSequence
+        //   ) {
+        //     // Mark that detailed query has completed for this sequence
+        //     detailedQueryCompletedRef.current[nodeKey] = currentSequence;
+        //     // Use the detailed update function if provided, otherwise fall back to the fast one
+        //     (detailedUpdateFn ?? fastUpdateFn)(detailedData);
+        //   }
+        // });
       },
-      [trigger],
+      [trigger, filters],
     );
 
     const onLoadData = useCallback(
@@ -350,6 +362,8 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               monitor_config_id: monitorId,
               staged_resource_urn: nodeKey,
               size: TREE_PAGE_SIZE,
+              diffStatus: filters?.diffStatus,
+              confidenceBucket: filters?.confidenceBucket,
             },
             fastUpdateFn: (data) => {
               setTreeData((origin) =>
@@ -395,6 +409,8 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             queryParams: {
               monitor_config_id: monitorId,
               staged_resource_urn: key,
+              diffStatus: filters?.diffStatus,
+              confidenceBucket: filters?.confidenceBucket,
               size: TREE_PAGE_SIZE,
               page: currentNodePagination.pageIndex + 1,
             },
@@ -586,6 +602,8 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           queryParams: {
             monitor_config_id: monitorId,
             size: TREE_PAGE_SIZE,
+            diffStatus: filters?.diffStatus,
+            confidenceBucket: filters?.confidenceBucket,
           },
           fastUpdateFn: (data) => {
             setTreeData(mapResponseToTreeData(data));
@@ -595,6 +613,15 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
 
       getInitTreeData();
     }, [fetchTreeDataWithDetails, monitorId, setTreeData, treeData.length]);
+
+    /**
+     * Rough resetting of const
+     */
+    useEffect(() => {
+      setSelectedNodeKeys([]);
+      setNodePaginationState({});
+      setTreeData([]);
+    }, [JSON.stringify(filters)]);
 
     return (
       <Flex gap="middle" vertical className="h-full">
