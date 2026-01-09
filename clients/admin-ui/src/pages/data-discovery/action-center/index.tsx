@@ -31,12 +31,17 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
+  const {
+    webMonitor: webMonitorEnabled,
+    heliosV2: heliosV2Enabled,
+    oktaMonitor: oktaMonitorEnabled,
+  } = flags;
 
   // Build monitor_type filter based on enabled feature flags
   const monitorTypes: MONITOR_TYPES[] = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ];
 
   const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
@@ -66,7 +71,7 @@ const ActionCenterPage = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
-  if (!webMonitorEnabled && !heliosV2Enabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 
