@@ -2,6 +2,7 @@ from collections.abc import Generator
 
 import pytest
 import requests_mock
+from attr import dataclass
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.service.connectors import HTTPSConnector
@@ -54,3 +55,51 @@ class TestHttpConnectorMethods:
                 connector.execute(request_body, response_expected=True)
 
             assert exc.value.args[0] == "Client call failed with status code '500'"
+
+    @dataclass
+    class HeaderTestCase:
+        secret: dict[str, str] = {}
+        additional: dict[str, str] = {}
+        expected: dict[str, str] = {}
+
+    user_agent_header: dict[str, str] = {"User-Agent": "fides"}
+    forwards_secret_headers = HeaderTestCase(
+        secret=user_agent_header, expected=user_agent_header
+    )
+
+    forwards_additional_headers = HeaderTestCase(
+        additional=user_agent_header, expected=user_agent_header
+    )
+
+    merges_header_sets_additional_override_existing = HeaderTestCase(
+        additional=user_agent_header | {"override": "value2"},
+        secret={"override": "value1"},
+        expected=user_agent_header | {"override": "value2"},
+    )
+
+    @pytest.mark.parametrize(
+        "test_case",
+        [
+            forwards_secret_headers,
+            forwards_additional_headers,
+            merges_header_sets_additional_override_existing,
+        ],
+    )
+    def test_expected_header_secrets(
+        self, https_connection_config, test_case: HeaderTestCase
+    ):
+        https_connection_config.secrets["headers"] = test_case.secret
+        connector: HTTPSConnector = HTTPSConnector(https_connection_config)
+        with requests_mock.Mocker() as mock_response:
+            mock_response.register_uri(
+                "POST",
+                connector.build_uri(),
+                json={"property": "value"},
+                request_headers=test_case.expected,
+            )
+
+            assert {"property": "value"} == connector.execute(
+                {"property": "value"},
+                response_expected=True,
+                additional_headers=test_case.additional,
+            )
