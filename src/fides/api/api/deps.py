@@ -90,6 +90,7 @@ def get_api_session() -> Session:
             keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
+            disable_pooling=CONFIG.database.api_engine_disable_pooling,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     db = SessionLocal()
@@ -111,6 +112,7 @@ def get_readonly_api_session() -> Session:
             keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
             pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
+            disable_pooling=CONFIG.database.api_engine_disable_pooling,
         )
     SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)
     db = SessionLocal()

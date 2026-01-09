@@ -4,6 +4,7 @@ from typing import Any, AsyncGenerator, Callable, Dict
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
@@ -17,6 +18,16 @@ if CONFIG.database.params.get("sslrootcert"):
     ssl_ctx.verify_mode = ssl.CERT_REQUIRED
     connect_args["ssl"] = ssl_ctx
 
+async_engine_args: Dict[str, Any] = {}
+
+if CONFIG.database.api_engine_disable_pooling:
+    async_engine_args["poolclass"] = NullPool
+else:
+    async_engine_args["pool_size"] = CONFIG.database.api_async_engine_pool_size
+    async_engine_args["max_overflow"] = CONFIG.database.api_async_engine_max_overflow
+    async_engine_args["pool_pre_ping"] = CONFIG.database.api_async_engine_pool_pre_ping
+
+
 # Parameters are hidden for security
 async_engine = create_async_engine(
     CONFIG.database.async_database_uri,
@@ -26,9 +37,7 @@ async_engine = create_async_engine(
     logging_name="AsyncEngine",
     json_serializer=custom_json_serializer,
     json_deserializer=custom_json_deserializer,
-    pool_size=CONFIG.database.api_async_engine_pool_size,
-    max_overflow=CONFIG.database.api_async_engine_max_overflow,
-    pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
+    **async_engine_args,
 )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -58,9 +67,7 @@ if CONFIG.database.async_readonly_database_uri:
         logging_name="ReadOnlyAsyncEngine",
         json_serializer=custom_json_serializer,
         json_deserializer=custom_json_deserializer,
-        pool_size=CONFIG.database.api_async_engine_pool_size,
-        max_overflow=CONFIG.database.api_async_engine_max_overflow,
-        pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
+        **async_engine_args,
     )
     readonly_async_session = sessionmaker(
         readonly_async_engine, class_=AsyncSession, expire_on_commit=False
