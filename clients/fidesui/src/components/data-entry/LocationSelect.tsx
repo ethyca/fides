@@ -1,5 +1,5 @@
 import { DefaultOptionType } from "antd/es/select";
-import { AntSelect as Select } from "fidesui";
+import { Select } from "fidesui";
 import type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 import { iso31661, iso31662 } from "iso-3166";
 import { useMemo } from "react";

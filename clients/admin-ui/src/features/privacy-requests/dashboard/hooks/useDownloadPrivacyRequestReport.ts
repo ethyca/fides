@@ -1,21 +1,25 @@
-import { useToast } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 
-import { useLazyDownloadPrivacyRequestCsvQuery } from "../privacy-requests.slice";
+import {
+  SearchFilterParams,
+  useLazyDownloadPrivacyRequestCsvV2Query,
+} from "../../privacy-requests.slice";
 
 const useDownloadPrivacyRequestReport = () => {
-  const toast = useToast();
+  const messageApi = useMessage();
 
-  const [download, { isFetching }] = useLazyDownloadPrivacyRequestCsvQuery();
-  const downloadReport = async (args: Parameters<typeof download>["0"]) => {
+  const [download, { isFetching }] = useLazyDownloadPrivacyRequestCsvV2Query();
+
+  const downloadReport = async (args: SearchFilterParams) => {
     const result = await download(args);
     if (result.isError) {
       const message = getErrorMessage(
         result.error,
-        "A problem occurred while generating your privacy request report.  Please try again.",
+        "A problem occurred while generating your privacy request report. Please try again.",
       );
-      toast({ status: "error", description: message });
+      messageApi.error(message);
     } else {
       const a = document.createElement("a");
       const csvBlob = new Blob([result.data], { type: "text/csv" });
@@ -25,12 +29,10 @@ const useDownloadPrivacyRequestReport = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(csvUrl);
-      toast({
-        status: "success",
-        description: "Successfully downloaded Privacy Request report.",
-      });
+      messageApi.success("Successfully downloaded privacy request report");
     }
   };
+
   return { downloadReport, isDownloadingReport: isFetching };
 };
 

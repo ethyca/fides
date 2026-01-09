@@ -1,8 +1,8 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntTypography as Typography,
+  ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
+  Typography,
 } from "fidesui";
 import { useMemo } from "react";
 

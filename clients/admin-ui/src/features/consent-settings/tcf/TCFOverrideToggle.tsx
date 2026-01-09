@@ -1,12 +1,12 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntSpace as Space,
-  AntSwitch as Switch,
-  AntSwitchProps as SwitchProps,
+  ChakraText as Text,
   ConfirmationModal,
-  Text,
-  useToast,
+  Space,
+  Switch,
+  SwitchProps,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useState } from "react";
 

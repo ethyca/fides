@@ -1,15 +1,15 @@
 import { formatDate } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
-  Box,
-  Divider,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraTag as Tag,
+  ChakraText as Text,
+  ChakraVStack as VStack,
   ErrorWarningIcon,
   GreenCheckCircleIcon,
-  Heading,
-  HStack,
-  Tag,
-  Text,
-  VStack,
 } from "fidesui";
 import React from "react";
 

@@ -1,4 +1,10 @@
-import { Box, BoxProps, Heading, Stack, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraBoxProps as BoxProps,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

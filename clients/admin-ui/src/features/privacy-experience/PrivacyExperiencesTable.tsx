@@ -18,13 +18,13 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import {
-  AntButton as Button,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraVStack as VStack,
   formatIsoLocation,
-  HStack,
   isoStringToEntry,
-  Text,
-  VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { ReactNode, useEffect, useMemo } from "react";

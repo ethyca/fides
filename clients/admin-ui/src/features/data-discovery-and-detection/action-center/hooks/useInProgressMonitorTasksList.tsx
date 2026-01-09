@@ -1,4 +1,4 @@
-import { AntEmpty as Empty } from "fidesui";
+import { Empty } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
 import { useSearch } from "~/features/common/hooks";

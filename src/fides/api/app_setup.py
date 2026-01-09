@@ -58,6 +58,7 @@ from fides.api.util.rate_limit import (
     is_rate_limit_enabled,
 )
 from fides.api.util.saas_config_updater import update_saas_configs
+from fides.api.util.security_headers import SecurityHeadersMiddleware
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from prometheus_client import Counter, make_asgi_app
@@ -105,6 +106,7 @@ def create_fides_app(
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+    fastapi_app.add_middleware(SecurityHeadersMiddleware)
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore

@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  AntSpace as Space,
-  Box,
-  ChakraProps,
-  DragHandleIcon,
-  Flex,
+  Button,
+  ChakraBox as Box,
+  ChakraChakraProps as ChakraProps,
+  ChakraDragHandleIcon as DragHandleIcon,
+  ChakraFlex as Flex,
+  ChakraList as List,
+  ChakraSmallAddIcon as SmallAddIcon,
+  ChakraText as Text,
   Icons,
-  List,
-  SmallAddIcon,
-  Text,
+  Select,
+  Space,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";

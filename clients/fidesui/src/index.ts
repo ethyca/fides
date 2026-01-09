@@ -1,126 +1,316 @@
 import { CustomTypography } from "./hoc/CustomTypography";
 
-// Unmodified components exported directly from ChakraUI
-export * from "@chakra-ui/icons";
-export * from "@chakra-ui/react";
-export { getCSSVar } from "@chakra-ui/react";
-export * from "@chakra-ui/utils";
+/**
+ * @deprecated Chakra UI components are deprecated and will be removed in a future release.
+ * Please use Ant Design components instead.
+ */
+export {
+  chakra,
+  // Disclosure
+  Accordion as ChakraAccordion,
+  AccordionButton as ChakraAccordionButton,
+  AccordionIcon as ChakraAccordionIcon,
+  AccordionItem as ChakraAccordionItem,
+  AccordionPanel as ChakraAccordionPanel,
+  // Feedback
+  Alert as ChakraAlert,
+  AlertDescription as ChakraAlertDescription,
+  AlertDialog as ChakraAlertDialog,
+  AlertDialogBody as ChakraAlertDialogBody,
+  AlertDialogContent as ChakraAlertDialogContent,
+  AlertDialogFooter as ChakraAlertDialogFooter,
+  AlertDialogHeader as ChakraAlertDialogHeader,
+  AlertDialogOverlay as ChakraAlertDialogOverlay,
+  AlertIcon as ChakraAlertIcon,
+  AlertTitle as ChakraAlertTitle,
+  // Layout
+  Box as ChakraBox,
+  // Forms
+  Button as ChakraButton,
+  ButtonGroup as ChakraButtonGroup,
+  Center as ChakraCenter,
+  Checkbox as ChakraCheckbox,
+  CheckboxGroup as ChakraCheckboxGroup,
+  // Other
+  CloseButton as ChakraCloseButton,
+  Code as ChakraCode,
+  Collapse as ChakraCollapse,
+  Container as ChakraContainer,
+  Divider as ChakraDivider,
+  Drawer as ChakraDrawer,
+  DrawerBody as ChakraDrawerBody,
+  DrawerCloseButton as ChakraDrawerCloseButton,
+  DrawerContent as ChakraDrawerContent,
+  DrawerFooter as ChakraDrawerFooter,
+  DrawerHeader as ChakraDrawerHeader,
+  DrawerOverlay as ChakraDrawerOverlay,
+  Flex as ChakraFlex,
+  FormControl as ChakraFormControl,
+  FormErrorMessage as ChakraFormErrorMessage,
+  FormHelperText as ChakraFormHelperText,
+  FormLabel as ChakraFormLabel,
+  // Utilities
+  forwardRef as chakraForwardRef,
+  Grid as ChakraGrid,
+  Heading as ChakraHeading,
+  HStack as ChakraHStack,
+  IconButton as ChakraIconButton,
+  // Data Display
+  Image as ChakraImage,
+  Input as ChakraInput,
+  InputGroup as ChakraInputGroup,
+  InputLeftElement as ChakraInputLeftElement,
+  InputRightElement as ChakraInputRightElement,
+  // Navigation
+  Link as ChakraLink,
+  LinkBox as ChakraLinkBox,
+  LinkOverlay as ChakraLinkOverlay,
+  List as ChakraList,
+  ListIcon as ChakraListIcon,
+  ListItem as ChakraListItem,
+  Menu as ChakraMenu,
+  MenuButton as ChakraMenuButton,
+  MenuDivider as ChakraMenuDivider,
+  MenuItem as ChakraMenuItem,
+  MenuItemOption as ChakraMenuItemOption,
+  MenuList as ChakraMenuList,
+  MenuOptionGroup as ChakraMenuOptionGroup,
+  // Overlay
+  Modal as ChakraModal,
+  ModalBody as ChakraModalBody,
+  ModalCloseButton as ChakraModalCloseButton,
+  ModalContent as ChakraModalContent,
+  ModalFooter as ChakraModalFooter,
+  ModalHeader as ChakraModalHeader,
+  ModalOverlay as ChakraModalOverlay,
+  NumberDecrementStepper as ChakraNumberDecrementStepper,
+  NumberIncrementStepper as ChakraNumberIncrementStepper,
+  NumberInput as ChakraNumberInput,
+  NumberInputField as ChakraNumberInputField,
+  NumberInputStepper as ChakraNumberInputStepper,
+  OrderedList as ChakraOrderedList,
+  Portal as ChakraPortal,
+  SimpleGrid as ChakraSimpleGrid,
+  Skeleton as ChakraSkeleton,
+  Spacer as ChakraSpacer,
+  Spinner as ChakraSpinner,
+  Stack as ChakraStack,
+  StackDivider as ChakraStackDivider,
+  Table as ChakraTable,
+  TableContainer as ChakraTableContainer,
+  Tag as ChakraTag,
+  TagCloseButton as ChakraTagCloseButton,
+  TagLabel as ChakraTagLabel,
+  Tbody as ChakraTbody,
+  Td as ChakraTd,
+  // Typography
+  Text as ChakraText,
+  Textarea as ChakraTextarea,
+  Tfoot as ChakraTfoot,
+  Th as ChakraTh,
+  Thead as ChakraThead,
+  Tr as ChakraTr,
+  UnorderedList as ChakraUnorderedList,
+  VStack as ChakraVStack,
+  Wrap as ChakraWrap,
+  createStandaloneToast as createChakraStandaloneToast,
+  extendTheme as extendChakraTheme,
+  getCSSVar as getChakraCSSVar,
+} from "@chakra-ui/react";
+
+/**
+ * @deprecated Chakra UI hooks are deprecated and will be removed in a future release.
+ * Please use Ant Design hooks instead.
+ */
+export {
+  useClipboard as useChakraClipboard,
+  useDisclosure as useChakraDisclosure,
+  useFormControlContext as useChakraFormControlContext,
+  usePrefersReducedMotion as useChakraPrefersReducedMotion,
+  useToast as useChakraToast,
+} from "@chakra-ui/react";
+
+/**
+ * @deprecated Chakra UI types are deprecated and will be removed in a future release.
+ * Please use Ant Design types instead.
+ */
+export type {
+  AccordionItemProps as ChakraAccordionItemProps,
+  BoxProps as ChakraBoxProps,
+  ButtonProps as ChakraButtonProps,
+  ChakraProps as ChakraChakraProps,
+  CheckboxProps as ChakraCheckboxProps,
+  FlexProps as ChakraFlexProps,
+  FormErrorMessageProps as ChakraFormErrorMessageProps,
+  FormLabelProps as ChakraFormLabelProps,
+  HeadingProps as ChakraHeadingProps,
+  HTMLChakraProps as ChakraHTMLChakraProps,
+  InputProps as ChakraInputProps,
+  LinkProps as ChakraLinkProps,
+  MenuButtonProps as ChakraMenuButtonProps,
+  ModalContentProps as ChakraModalContentProps,
+  ModalProps as ChakraModalProps,
+  SpinnerProps as ChakraSpinnerProps,
+  StackProps as ChakraStackProps,
+  TableCellProps as ChakraTableCellProps,
+  TableHeadProps as ChakraTableHeadProps,
+  TextareaProps as ChakraTextareaProps,
+  TextProps as ChakraTextProps,
+  UseDisclosureReturn as ChakraUseDisclosureReturn,
+  UseToastOptions as ChakraUseToastOptions,
+} from "@chakra-ui/react";
+
+/**
+ * @deprecated Chakra UI utils are deprecated and will be removed in a future release.
+ */
+export { isNumeric as isChakraNumeric } from "@chakra-ui/utils";
+
+/**
+ * @deprecated Chakra UI icons are deprecated and will be removed in a future release.
+ * Please use Carbon icons (Icons.*) instead.
+ */
+export {
+  ArrowBackIcon as ChakraArrowBackIcon,
+  ArrowDownIcon as ChakraArrowDownIcon,
+  ArrowForwardIcon as ChakraArrowForwardIcon,
+  ArrowUpIcon as ChakraArrowUpIcon,
+  BellIcon as ChakraBellIcon,
+  CheckCircleIcon as ChakraCheckCircleIcon,
+  CheckIcon as ChakraCheckIcon,
+  ChevronDownIcon as ChakraChevronDownIcon,
+  ChevronLeftIcon as ChakraChevronLeftIcon,
+  ChevronRightIcon as ChakraChevronRightIcon,
+  ChevronUpIcon as ChakraChevronUpIcon,
+  CloseIcon as ChakraCloseIcon,
+  DeleteIcon as ChakraDeleteIcon,
+  DragHandleIcon as ChakraDragHandleIcon,
+  EditIcon as ChakraEditIcon,
+  ExternalLinkIcon as ChakraExternalLinkIcon,
+  RepeatClockIcon as ChakraRepeatClockIcon,
+  RepeatIcon as ChakraRepeatIcon,
+  SmallAddIcon as ChakraSmallAddIcon,
+  SmallCloseIcon as ChakraSmallCloseIcon,
+  ViewOffIcon as ChakraViewOffIcon,
+  WarningTwoIcon as ChakraWarningTwoIcon,
+  // Icon utilities
+  createIcon as createChakraIcon,
+} from "@chakra-ui/icons";
 
 // Unmodified component exported directly from Ant Design
 export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
 export { LocationSelect } from "./components/data-entry/LocationSelect";
-export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type { ThemeConfig } from "antd/es";
 export type {
-  FilterValue as AntFilterValue,
-  SorterResult as AntSorterResult,
-  TablePaginationConfig as AntTablePaginationConfig,
+  FilterValue,
+  SorterResult,
+  TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
-  AvatarProps as AntAvatarProps,
-  ButtonProps as AntButtonProps,
-  CheckboxProps as AntCheckboxProps,
-  CollapseProps as AntCollapseProps,
-  DatePickerProps as AntDatePickerProps,
-  DrawerProps as AntDrawerProps,
-  DropdownProps as AntDropdownProps,
-  FlexProps as AntFlexProps,
-  FormInstance as AntFormInstance,
-  FormItemProps as AntFormItemProps,
-  InputProps as AntInputProps,
-  MenuProps as AntMenuProps,
-  ModalProps as AntModalProps,
-  ProgressProps as AntProgressProps,
-  RadioGroupProps as AntRadioGroupProps,
-  SelectProps as AntSelectProps,
-  SwitchProps as AntSwitchProps,
-  TableProps as AntTableProps,
-  TabsProps as AntTabsProps,
-  TooltipProps as AntTooltipProps,
-  TreeDataNode as AntTreeDataNode,
-  TreeProps as AntTreeProps,
-  UploadFile as AntUploadFile,
+  AvatarProps,
+  ButtonProps,
+  CheckboxProps,
+  CollapseProps,
+  DatePickerProps,
+  DrawerProps,
+  DropdownProps,
+  FlexProps,
+  FormInstance,
+  FormItemProps,
   GetProps,
+  InputProps as InputPropsOriginal,
   InputRef,
+  MenuProps,
+  ModalProps,
+  ProgressProps,
   RadioChangeEvent,
+  RadioGroupProps,
+  SelectProps,
+  SwitchProps,
+  TableProps,
+  TabsProps,
+  TooltipProps,
+  TreeDataNode,
+  TreeProps,
   UploadFile,
   UploadProps,
 } from "antd/lib";
 export {
-  Alert as AntAlert,
-  AutoComplete as AntAutoComplete,
-  Avatar as AntAvatar,
-  Badge as AntBadge,
-  Breadcrumb as AntBreadcrumb,
-  Button as AntButton,
-  Card as AntCard,
-  Cascader as AntCascader,
-  Checkbox as AntCheckbox,
-  Col as AntCol,
-  Collapse as AntCollapse,
-  DatePicker as AntDatePicker,
-  Descriptions as AntDescriptions,
-  Divider as AntDivider,
-  Drawer as AntDrawer,
-  Dropdown as AntDropdown,
-  Empty as AntEmpty,
-  Flex as AntFlex,
-  Form as AntForm,
-  Image as AntImage,
-  Input as AntInput,
-  InputNumber as AntInputNumber,
-  Layout as AntLayout,
-  Menu as AntMenu,
-  Modal as AntModal,
-  notification as AntNotification,
-  Pagination as AntPagination,
-  Popover as AntPopover,
-  Progress as AntProgress,
-  Radio as AntRadio,
-  Result as AntResult,
-  Row as AntRow,
-  Segmented as AntSegmented,
-  Skeleton as AntSkeleton,
-  Space as AntSpace,
-  Spin as AntSpin,
-  Splitter as AntSplitter,
-  Steps as AntSteps,
-  Switch as AntSwitch,
-  Tabs as AntTabs,
-  TimePicker as AntTimePicker,
-  Tree as AntTree,
-  TreeSelect as AntTreeSelect,
-  Upload as AntUpload,
+  Alert,
+  AutoComplete,
+  Avatar,
+  Badge,
+  Breadcrumb,
+  Button,
+  Card,
+  Cascader,
+  Checkbox,
+  Col,
+  Collapse,
+  DatePicker,
+  Descriptions,
+  Divider,
+  Drawer,
+  Dropdown,
+  Empty,
+  Flex,
+  Form,
+  Image,
+  InputNumber,
+  Layout,
+  Menu,
+  Modal,
+  notification,
+  Pagination,
+  Popover,
+  Progress,
+  Radio,
+  Result,
+  Row,
+  Segmented,
+  Skeleton,
+  Space,
+  Spin,
+  Splitter,
+  Steps,
+  Switch,
+  Tabs,
+  TimePicker,
+  Tree,
+  TreeSelect,
+  Upload,
 } from "antd/lib";
 export type {
-  BreadcrumbItemType as AntBreadcrumbItemType,
-  BreadcrumbProps as AntBreadcrumbProps,
+  BreadcrumbItemType,
+  BreadcrumbProps,
 } from "antd/lib/breadcrumb/Breadcrumb";
-export type { ListItemProps as AntListItemProps } from "antd/lib/list";
-export type {
-  BaseOptionType as AntBaseOptionType,
-  DefaultOptionType as AntDefaultOptionType,
-} from "antd/lib/select";
-export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
-export type { DisplayValueType as AntDisplayValueType } from "rc-select/lib/BaseSelect";
+export type { ListItemProps } from "antd/lib/list";
+export type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
+export type { UploadChangeParam } from "antd/lib/upload";
+export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
-export type { ICustomMultiSelectProps, ICustomSelectProps } from "./hoc";
+export type {
+  ICustomMultiSelectProps,
+  ICustomSelectProps,
+  CustomInputProps as InputProps,
+} from "./hoc";
 export {
-  CustomDateRangePicker as AntDateRangePicker,
-  CustomList as AntList,
-  CustomSelect as AntSelect,
-  CustomTable as AntTable,
-  CustomTag as AntTag,
-  CustomTooltip as AntTooltip,
-  CustomTypography as AntTypography,
   CopyTooltip,
+  CustomDateRangePicker as DateRangePicker,
+  CustomInput as Input,
+  CustomList as List,
+  CustomSelect as Select,
+  CustomTable as Table,
+  CustomTag as Tag,
+  CustomTooltip as Tooltip,
+  CustomTypography as Typography,
 } from "./hoc";
 export type {
-  CustomListProps as AntListProps,
-  RowSelection as AntRowSelection,
+  CustomListProps as ListProps,
+  RowSelection,
 } from "./hoc/CustomList";
-export type { CustomColumnsType as AntColumnsType } from "./hoc/CustomTable";
-export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
+export type { CustomColumnsType as ColumnsType } from "./hoc/CustomTable";
+export type { CustomTagProps as TagProps } from "./hoc/CustomTag";
 export { CUSTOM_TAG_COLOR } from "./hoc/CustomTag";
 export { LIST_HOTKEYS } from "./hooks/useListHotkeys";
 
@@ -150,10 +340,7 @@ export {
 } from "./components/animation";
 
 // Export the destructured Typography components individually
-export const AntText = CustomTypography.Text;
-export const AntTitle = CustomTypography.Title;
-export const AntParagraph = CustomTypography.Paragraph;
-export const AntLink = CustomTypography.Link;
+export const { Text, Title, Paragraph, Link } = CustomTypography;
 
 /**
  * Custom Re-exports
@@ -165,12 +352,12 @@ export const AntLink = CustomTypography.Link;
 export { AddIcon, LinkIcon, WarningIcon } from "./icons";
 export * from "./icons";
 export {
-  CarryOutOutlined as AntCarryOutlined,
-  CheckOutlined as AntCheckOutlined,
-  CloseOutlined as AntCloseOutlined,
-  DownOutlined as AntDownOutlined,
-  PlusOutlined as AntPlusOutlined,
-  SyncOutlined as AntSyncOutlined,
+  CarryOutOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  DownOutlined,
+  PlusOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
 /* eslint-enable import/export */
 
@@ -181,11 +368,7 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export {
-  FidesUIProvider,
-  useModal as useAntModal,
-  useMessage,
-} from "./FidesUIProvider";
+export { FidesUIProvider, useMessage, useModal } from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**

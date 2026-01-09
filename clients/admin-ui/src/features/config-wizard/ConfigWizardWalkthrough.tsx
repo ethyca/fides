@@ -1,4 +1,4 @@
-import { Box, Stack } from "fidesui";
+import { ChakraBox as Box, ChakraStack as Stack } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 

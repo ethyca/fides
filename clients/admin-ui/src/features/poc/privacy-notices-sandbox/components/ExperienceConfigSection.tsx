@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, Input, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { PrivacyNoticeResponse } from "~/types/api";

@@ -1,5 +1,5 @@
 import type { Key } from "antd/es/table/interface";
-import { AntTree as Tree } from "fidesui";
+import { Tree } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { PrivacyNoticeResponse } from "~/types/api";

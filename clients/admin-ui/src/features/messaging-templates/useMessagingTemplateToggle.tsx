@@ -1,5 +1,5 @@
 import { getErrorMessage } from "common/helpers";
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useCallback } from "react";
 
 import { errorToastParams, successToastParams } from "~/features/common/toast";

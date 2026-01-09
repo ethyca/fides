@@ -1,5 +1,6 @@
 import abc
-from typing import Any, Dict, List, Optional, Type, Union
+from enum import Enum
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
@@ -73,13 +74,18 @@ class SaaSSchema(BaseModel, abc.ABC):
 
         return values
 
+    # TODO: See if there's a way to do this that isn't so brittle
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
         if not cls.__private_attributes__:
             # Not sure why this was needed for Pydantic V2.
             # This was to address 'NoneType' object has no attribute 'default'
             return {}
-        return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
+        try:
+            return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
+        except AttributeError:
+            # Default not fetchable
+            return {}
 
     @classmethod
     def external_references(cls) -> List[str]:
@@ -109,6 +115,13 @@ class SaaSSchemaFactory:
         field_definitions: Dict[str, Any] = {}
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
+            if connector_param.options is not None:
+                DynamicOption = Enum(
+                    "DynamicOption",
+                    {value: value for value in connector_param.options},
+                    type=str,
+                )
+                param_type = Union[DynamicOption, List[DynamicOption]]
             field_definitions[connector_param.name] = (
                 (
                     Optional[
@@ -149,7 +162,6 @@ class SaaSSchemaFactory:
         # so they can be accessible in the 'required_components_supplied' validator
         model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.type}_schema",
-            **field_definitions,
             __base__=SaaSSchema,
             _connector_params=PrivateAttr(
                 {
@@ -168,6 +180,7 @@ class SaaSSchemaFactory:
                 if self.saas_config.external_references
                 else []
             ),
+            **field_definitions,
         )
 
         return model

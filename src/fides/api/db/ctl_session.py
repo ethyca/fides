@@ -23,15 +23,6 @@ if CONFIG.database.params.get("sslrootcert"):
     ssl_ctx.verify_mode = ssl.CERT_REQUIRED
     connect_args["ssl"] = ssl_ctx
 
-if CONFIG.database.api_async_engine_keepalives_idle:
-    connect_args["keepalives_idle"] = CONFIG.database.api_async_engine_keepalives_idle
-if CONFIG.database.api_async_engine_keepalives_interval:
-    connect_args["keepalives_interval"] = (
-        CONFIG.database.api_async_engine_keepalives_interval
-    )
-if CONFIG.database.api_async_engine_keepalives_count:
-    connect_args["keepalives_count"] = CONFIG.database.api_async_engine_keepalives_count
-
 # Parameters are hidden for security
 async_engine = create_async_engine(
     CONFIG.database.async_database_uri,
@@ -64,19 +55,6 @@ if CONFIG.database.async_readonly_database_uri:
         ssl_ctx = ssl.create_default_context(cafile=readonly_params["sslrootcert"])
         ssl_ctx.verify_mode = ssl.CERT_REQUIRED
         readonly_connect_args["ssl"] = ssl_ctx
-
-    if CONFIG.database.api_async_engine_keepalives_idle:
-        readonly_connect_args["keepalives_idle"] = (
-            CONFIG.database.api_async_engine_keepalives_idle
-        )
-    if CONFIG.database.api_async_engine_keepalives_interval:
-        readonly_connect_args["keepalives_interval"] = (
-            CONFIG.database.api_async_engine_keepalives_interval
-        )
-    if CONFIG.database.api_async_engine_keepalives_count:
-        readonly_connect_args["keepalives_count"] = (
-            CONFIG.database.api_async_engine_keepalives_count
-        )
 
     readonly_async_engine = create_async_engine(
         CONFIG.database.async_readonly_database_uri,

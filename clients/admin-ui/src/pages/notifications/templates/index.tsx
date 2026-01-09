@@ -8,14 +8,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  AntSwitch as Switch,
-  Box,
-  Flex,
-  HStack,
-  Link,
-  Text,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraLink as Link,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  Switch,
 } from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
