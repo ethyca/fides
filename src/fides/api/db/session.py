@@ -79,6 +79,27 @@ def get_db_engine(
         logger.info("Instrumenting SQLAlchemy engine with OpenTelemetry tracing")
         instrument_sqlalchemy(engine, config)
 
+    # """
+    # Checks out and immediately closes connections to warm the pool.
+    # """
+    # print(f"Warming up connection pool with {pool_size} connections...")
+    # connections = []
+    # try:
+    #     # Check out connections
+    #     for _ in range(pool_size):
+    #         conn = engine.connect()
+    #         connections.append(conn)
+    #         # Optional: run a simple, lightweight query to ensure the connection is truly live
+    #         # conn.execute(text("SELECT 1"))
+    #     print(f"Pool warmed up. Releasing connections...")
+    # except Exception as e:
+    #     print(f"An error occurred during warming: {e}")
+    # finally:
+    #     # Release all connections back to the pool
+    #     for conn in connections:
+    #         conn.close()
+    #     print("Connections released back to the pool.")
+
     return engine
 
 

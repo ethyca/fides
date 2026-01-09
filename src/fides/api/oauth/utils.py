@@ -343,6 +343,7 @@ async def get_root_client(
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
 
+from fides.telemetry.tracing import trace_span
 
 async def verify_oauth_client(
     security_scopes: SecurityScopes,
@@ -357,15 +358,16 @@ async def verify_oauth_client(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
-    token_data, client = extract_token_and_load_client(authorization, db)
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
-    ):
-        raise AuthorizationError(
-            detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
-        )
+    with trace_span("verify_oauth_client"):
+        token_data, client = extract_token_and_load_client(authorization, db)
+        if not has_permissions(
+            token_data=token_data, client=client, endpoint_scopes=security_scopes
+        ):
+            raise AuthorizationError(
+                detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
+            )
 
-    return client
+        return client
 
 
 def extract_token_and_load_client(
@@ -374,67 +376,68 @@ def extract_token_and_load_client(
     *,
     token_duration_override: Optional[int] = None,
 ) -> Tuple[Dict, ClientDetail]:
-    """Extract the token, verify it's valid, and likewise load the client as part of authorization"""
-    if authorization is None:
-        logger.debug("No authorization supplied.")
-        raise AuthenticationError(detail="Authentication Failure")
+    with trace_span("extract_token_and_load_client"):
+        """Extract the token, verify it's valid, and likewise load the client as part of authorization"""
+        if authorization is None:
+            logger.debug("No authorization supplied.")
+            raise AuthenticationError(detail="Authentication Failure")
 
-    try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        try:
+            token_data = json.loads(
+                extract_payload(authorization, CONFIG.security.app_encryption_key)
+            )
+        except exceptions.JWEParseError as exc:
+            logger.debug("Unable to parse auth token.")
+            raise AuthorizationError(detail="Not Authorized for this action") from exc
+
+        issued_at = token_data.get(JWE_ISSUED_AT, None)
+        if not issued_at:
+            logger.debug("Auth token expired.")
+            raise AuthorizationError(detail="Not Authorized for this action")
+
+        issued_at_dt = datetime.fromisoformat(issued_at)
+
+        if is_token_expired(
+            issued_at_dt,
+            token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
+        ):
+            raise AuthorizationError(detail="Not Authorized for this action")
+
+        client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
+        if not client_id:
+            logger.debug("No client_id included in auth token.")
+            raise AuthorizationError(detail="Not Authorized for this action")
+
+        # scopes/roles param is only used if client is root client, otherwise we use the client's associated scopes
+        client = ClientDetail.get(
+            db,
+            object_id=client_id,
+            config=CONFIG,
+            scopes=CONFIG.security.root_user_scopes,
+            roles=CONFIG.security.root_user_roles,
         )
-    except exceptions.JWEParseError as exc:
-        logger.debug("Unable to parse auth token.")
-        raise AuthorizationError(detail="Not Authorized for this action") from exc
 
-    issued_at = token_data.get(JWE_ISSUED_AT, None)
-    if not issued_at:
-        logger.debug("Auth token expired.")
-        raise AuthorizationError(detail="Not Authorized for this action")
+        if not client:
+            logger.debug("Auth token belongs to an invalid client_id.")
+            raise AuthorizationError(detail="Not Authorized for this action")
 
-    issued_at_dt = datetime.fromisoformat(issued_at)
+        # Invalidate tokens issued prior to the user's most recent password reset.
+        # This ensures any existing sessions are expired immediately after a password change.
+        if is_token_invalidated(issued_at_dt, client):
+            logger.debug("Auth token issued before latest password reset.")
+            raise AuthorizationError(detail="Not Authorized for this action")
 
-    if is_token_expired(
-        issued_at_dt,
-        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
-    ):
-        raise AuthorizationError(detail="Not Authorized for this action")
+        # Populate request-scoped context with the authenticated user identifier.
+        # Prefer the linked user_id; fall back to the client id when this is the
+        # special root client (which has no associated FidesUser row).
+        ctx_user_id = client.user_id
+        if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
+            ctx_user_id = CONFIG.security.oauth_root_client_id
 
-    client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
-    if not client_id:
-        logger.debug("No client_id included in auth token.")
-        raise AuthorizationError(detail="Not Authorized for this action")
+        if ctx_user_id:
+            set_user_id(ctx_user_id)
 
-    # scopes/roles param is only used if client is root client, otherwise we use the client's associated scopes
-    client = ClientDetail.get(
-        db,
-        object_id=client_id,
-        config=CONFIG,
-        scopes=CONFIG.security.root_user_scopes,
-        roles=CONFIG.security.root_user_roles,
-    )
-
-    if not client:
-        logger.debug("Auth token belongs to an invalid client_id.")
-        raise AuthorizationError(detail="Not Authorized for this action")
-
-    # Invalidate tokens issued prior to the user's most recent password reset.
-    # This ensures any existing sessions are expired immediately after a password change.
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before latest password reset.")
-        raise AuthorizationError(detail="Not Authorized for this action")
-
-    # Populate request-scoped context with the authenticated user identifier.
-    # Prefer the linked user_id; fall back to the client id when this is the
-    # special root client (which has no associated FidesUser row).
-    ctx_user_id = client.user_id
-    if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
-        ctx_user_id = CONFIG.security.oauth_root_client_id
-
-    if ctx_user_id:
-        set_user_id(ctx_user_id)
-
-    return token_data, client
+        return token_data, client
 
 
 def has_permissions(

@@ -51,6 +51,7 @@ from fides.api.service.privacy_request.request_service import (
     initiate_scheduled_dsr_data_removal,
 )
 
+from fides.telemetry.tracing  import trace_span
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
@@ -139,14 +140,15 @@ if CONFIG.dev_mode:
 
     @app.middleware("http")
     async def profile_request(request: Request, call_next: Callable) -> Response:
-        profiling = request.headers.get("profile-request", False)
-        if profiling:
-            profiler = Profiler(interval=0.001, async_mode="enabled")
-            profiler.start()
-            await call_next(request)
-            profiler.stop()
-            logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
+        with trace_span("profile_request"):
+            profiling = request.headers.get("profile-request", False)
+            if profiling:
+                profiler = Profiler(interval=0.001, async_mode="enabled")
+                profiler.start()
+                await call_next(request)
+                profiler.stop()
+                logger.debug("Request Profiled!")
+                return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
 
         return await call_next(request)
 
@@ -160,37 +162,38 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
     :return: Response
     """
 
-    # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
-    path = request.url.path
-    if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
-        return await call_next(request)
+    with trace_span("dispatch_log_request"):
+        # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
+        path = request.url.path
+        if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
+            return await call_next(request)
 
-    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
-    now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url}"
+        fides_source: Optional[str] = request.headers.get("X-Fides-Source")
+        now: datetime = datetime.now(tz=timezone.utc)
+        endpoint = f"{request.method}: {request.url}"
 
-    try:
-        response = await call_next(request)
-        # HTTPExceptions are considered a handled err by default so are not thrown here.
-        # Accepted workaround is to inspect status code of response.
-        # More context- https://github.com/tiangolo/fastapi/issues/1840
-        response.background = BackgroundTask(
-            prepare_and_log_request,
-            endpoint,
-            request.url.hostname,
-            response.status_code,
-            now,
-            fides_source,
-            "HTTPException" if response.status_code >= 400 else None,
-        )
-        return response
+        try:
+            response = await call_next(request)
+            # HTTPExceptions are considered a handled err by default so are not thrown here.
+            # Accepted workaround is to inspect status code of response.
+            # More context- https://github.com/tiangolo/fastapi/issues/1840
+            response.background = BackgroundTask(
+                prepare_and_log_request,
+                endpoint,
+                request.url.hostname,
+                response.status_code,
+                now,
+                fides_source,
+                "HTTPException" if response.status_code >= 400 else None,
+            )
+            return response
 
-    except Exception as e:
-        await prepare_and_log_request(
-            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
-        )
-        _log_exception(e, CONFIG.dev_mode)
-        raise
+        except Exception as e:
+            await prepare_and_log_request(
+                endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
+            )
+            _log_exception(e, CONFIG.dev_mode)
+            raise
 
 
 async def prepare_and_log_request(
@@ -204,30 +207,31 @@ async def prepare_and_log_request(
     """
     Prepares and sends analytics event provided the user is not opted out of analytics.
     """
-    # Avoid circular imports
-    from fides.api.analytics import (
-        accessed_through_local_host,
-        in_docker_container,
-        send_analytics_event,
-    )
-
-    # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
-    if CONFIG.user.analytics_opt_out:
-        return
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.endpoint_call.value,
-            event_created_at=event_created_at,
-            local_host=accessed_through_local_host(hostname),
-            endpoint=endpoint,
-            status_code=status_code,
-            error=error_class or None,
-            extra_data=(
-                {ExtraData.fides_source.value: fides_source} if fides_source else None
-            ),
+    with trace_span("prepare_and_log_requests"):
+        # Avoid circular imports
+        from fides.api.analytics import (
+            accessed_through_local_host,
+            in_docker_container,
+            send_analytics_event,
         )
-    )
+
+        # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
+        if CONFIG.user.analytics_opt_out:
+            return
+        await send_analytics_event(
+            AnalyticsEvent(
+                docker=in_docker_container(),
+                event=Event.endpoint_call.value,
+                event_created_at=event_created_at,
+                local_host=accessed_through_local_host(hostname),
+                endpoint=endpoint,
+                status_code=status_code,
+                error=error_class or None,
+                extra_data=(
+                    {ExtraData.fides_source.value: fides_source} if fides_source else None
+                ),
+            )
+        )
 
 
 @app.middleware("http")

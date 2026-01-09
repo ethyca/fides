@@ -82,7 +82,7 @@ sqlalchemy-bigquery==1.16.0
 sqlalchemy-citext==1.8.0
 sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
-sqlalchemy[asyncio]==1.4.27
+sqlalchemy[asyncio]==1.4.45
 sshtunnel==0.4.0
 starlette~=0.50.0
 stream-zip==0.0.83
@@ -96,7 +96,7 @@ types-defusedxml==0.7.0.20240218
 typing-extensions==4.14.1
 urllib3~=2.5.0
 versioneer==0.19
-fideslang==3.1.2
+fideslang
 # OpenTelemetry instrumentation
 opentelemetry-api==1.21.0
 opentelemetry-sdk==1.21.0
@@ -118,3 +118,7 @@ requests~=2.32.5
 python-dateutil~=2.9.0.post0
 rfc3986~=2.0.0
 ordered-set==4.1.0
+prometheus-fastapi-instrumentator
+nest_asyncio
+uvicorn[standard]
+gunicorn

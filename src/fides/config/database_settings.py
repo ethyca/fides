@@ -31,15 +31,15 @@ class DatabaseSettings(FidesSettings):
     )
     # API Engine Settings
     api_engine_pool_size: int = Field(
-        default=50,
+        default=200,
         description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
     )
     api_engine_max_overflow: int = Field(
-        default=50,
+        default=0,
         description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
     )
     api_engine_keepalives_idle: int = Field(
-        default=30,
+        default=10,
         description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
     )
     api_engine_keepalives_interval: int = Field(
@@ -51,23 +51,28 @@ class DatabaseSettings(FidesSettings):
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     api_engine_pool_pre_ping: bool = Field(
-        default=True,
+        default=False,
         description="If true, the engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+    api_engine_disable_pool: Optional[bool] = Field(
+        default=False,
+        description ="Disable connection pool?",
+        exclude=True
     )
 
     # Async Engine Settings
     # Note: We purposely do not include async engine equivalents of the sync engine's
     # keepalives_* settings as they are not supported by asyncpg.
     api_async_engine_pool_size: int = Field(
-        default=5,
+        default=200,
         description="Number of concurrent database connections Fides will use for async API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
     )
     api_async_engine_max_overflow: int = Field(
-        default=10,
+        default=0,
         description="Number of additional 'overflow' concurrent database connections Fides will use for async API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
     )
     api_async_engine_pool_pre_ping: bool = Field(
-        default=True,
+        default=False,
         description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
     )
 
@@ -187,6 +192,7 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created asynchronous connection string for the read-only application database.",
         exclude=True,
     )
+
 
     @field_validator("password", mode="before")
     @classmethod
