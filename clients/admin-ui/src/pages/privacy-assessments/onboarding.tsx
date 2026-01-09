@@ -93,13 +93,16 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
       />
       <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}>
         <div style={{ maxWidth: 900, width: "100%" }}>
-          <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <Title level={2} style={{ marginBottom: 8 }}>
-                Welcome to Privacy Assessments
+          <Space direction="vertical" size={32} style={{ width: "100%" }}>
+            <div style={{ marginBottom: 48, textAlign: "center" }}>
+              <Title level={2} style={{ marginBottom: 24 }}>
+                Create automated privacy assessments
               </Title>
-              <Text type="secondary" style={{ fontSize: 16 }}>
-                Configure your global privacy preferences to tailor AI assessments for your compliance needs
+
+              <Text style={{ fontSize: 16, lineHeight: 1.6, display: "block" }}>
+                Privacy assessments help you identify and mitigate risks in your data processing activities.
+                Our AI tool analyzes your operations against relevant regulations and generates compliance documentation.
+                Configure your operational regions, target frameworks, and optionally upload historical assessments to get started.
               </Text>
             </div>
 
@@ -109,12 +112,12 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                 borderRadius: 8,
               }}
             >
-              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <div>
-                  <Title level={4} style={{ marginBottom: 8 }}>
-                    Operational Regions
+                  <Title level={4} style={{ marginBottom: 12 }}>
+                    Operational regions
                   </Title>
-                  <Text type="secondary" style={{ marginBottom: 16, display: "block", fontSize: 12 }}>
+                  <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
                     These regions determine jurisdictional priorities for AI risk analysis.
                   </Text>
                   {selectedRegions.length > 0 && (
@@ -185,11 +188,11 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                 borderRadius: 8,
               }}
             >
-              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <div>
-                  <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
+                  <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                     <Title level={4} style={{ margin: 0 }}>
-                      Target Frameworks & Regulations
+                      Target frameworks & regulations
                     </Title>
                     <Button type="link" onClick={handleSelectAllFrameworks} style={{ padding: 0 }}>
                       Select all that apply
@@ -241,17 +244,17 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                 borderRadius: 8,
               }}
             >
-              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <div>
-                  <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
+                  <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                     <Title level={4} style={{ margin: 0 }}>
-                      Upload Historical Assessments
+                      Upload historical assessments
                     </Title>
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       Optional
                     </Text>
                   </Flex>
-                  <Text type="secondary" style={{ marginBottom: 16, display: "block", fontSize: 12 }}>
+                  <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
                     Upload previous assessments to help the AI learn your organization's specific writing style, tone, and formatting preferences.
                   </Text>
                   <Upload.Dragger>

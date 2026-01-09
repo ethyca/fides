@@ -16,10 +16,10 @@ import {
   CheckOutlined,
   PlusOutlined,
 } from "fidesui";
+import React from "react";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
 import {
-  SearchOutlined,
   InfoCircleOutlined,
   LockOutlined,
   SafetyOutlined,
@@ -37,6 +37,7 @@ import { useState } from "react";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import SearchInput from "~/features/common/SearchInput";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -102,7 +103,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   ];
 
   const handleExpandAll = () => {
-    setExpandedKeys(["1", "2", "3", "4", "5"]);
+    setExpandedKeys(["1", "2", "3", "4", "5", "6", "7"]);
   };
 
   const handleCollapseAll = () => {
@@ -111,8 +112,16 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   const steps = [
     {
-      title: "Description",
+      title: "Need",
       status: "finish",
+    },
+    {
+      title: "Processing",
+      status: "finish",
+    },
+    {
+      title: "Consultation",
+      status: "wait",
     },
     {
       title: "Necessity",
@@ -127,7 +136,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       status: "wait",
     },
     {
-      title: "Review",
+      title: "Sign off",
       status: "wait",
     },
   ];
@@ -136,30 +145,42 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     <Layout title="Privacy assessments">
       <Head>
         <style>{`
-          .privacy-assessment-collapse .ant-collapse-item {
-            border: 1px solid #f0f0f0;
+          .privacy-assessment-collapse {
+            max-width: 100%;
+            overflow-x: hidden;
+            border: 1px solid ${palette.FIDESUI_NEUTRAL_75};
             border-radius: 8px;
+            overflow: hidden;
+          }
+          .privacy-assessment-collapse .ant-collapse-item {
+            border: none;
+            border-left: 6px solid transparent;
+            border-radius: 0;
             margin-bottom: 0;
             overflow: hidden;
             position: relative;
-            transition: border-color 0.2s ease;
+            transition: border-left-color 0.2s ease;
+            max-width: 100%;
           }
           .privacy-assessment-collapse .ant-collapse-item:not(:last-child) {
-            border-bottom: 1px solid #f0f0f0;
-            margin-bottom: 0;
+            border-bottom: 1px solid ${palette.FIDESUI_NEUTRAL_75};
           }
-          .privacy-assessment-collapse .ant-collapse-item:not(:first-child) {
-            border-top: 1px solid #f0f0f0;
+          .privacy-assessment-collapse .ant-collapse-item:first-child {
+            border-top: none;
+          }
+          .privacy-assessment-collapse .ant-collapse-item:last-child {
+            border-bottom: none;
           }
           .privacy-assessment-collapse .ant-collapse-item-active {
             border-left: 6px solid ${palette.FIDESUI_MINOS} !important;
           }
           .privacy-assessment-collapse .ant-collapse-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             min-height: 80px;
             padding: 16px 24px 16px 24px !important;
             padding-right: 140px !important;
+            padding-left: 18px !important;
             position: relative;
             transition: min-height 1.2s cubic-bezier(0.4, 0, 0.2, 1);
           }
@@ -168,9 +189,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           }
           .privacy-assessment-collapse .ant-collapse-arrow {
             position: absolute;
-            top: 50%;
-            left: 24px;
-            transform: translateY(-50%);
+            top: 20px;
+            left: 18px;
             margin-top: 0 !important;
             display: flex;
             align-items: center;
@@ -181,7 +201,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             z-index: 1;
           }
           .privacy-assessment-collapse .ant-collapse-item-active .ant-collapse-arrow {
-            transform: translateY(-50%) rotate(90deg);
+            transform: rotate(90deg);
           }
           .privacy-assessment-collapse .ant-collapse-arrow svg {
             margin: 0;
@@ -218,13 +238,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             transform: translateY(-50%);
             z-index: 2;
           }
+          .privacy-assessment-collapse .status-tag-container .ant-tag {
+            background-color: ${palette.FIDESUI_NEUTRAL_200} !important;
+            border: none !important;
+          }
         `}</style>
       </Head>
       <PageHeader
         heading="Privacy assessments"
         breadcrumbItems={[
           { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
-          { title: "Privacy assessments" },
+          {
+            title: (
+              <Flex align="center" gap="small">
+                <span>Customer Insight AI Module</span>
+                <Tag style={{ fontSize: 12, margin: 0, backgroundColor: palette.FIDESUI_NEUTRAL_300, border: "none", color: palette.FIDESUI_MINOS }}>
+                  GDPR DPIA
+                </Tag>
+              </Flex>
+            ),
+          },
         ]}
         rightContent={
           <Space>
@@ -233,8 +266,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           </Space>
         }
       />
-      <div style={{ padding: "24px 40px" }}>
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <div style={{ padding: "24px 24px", maxWidth: "100%", overflowX: "hidden" }}>
+        <Space direction="vertical" size="large" style={{ width: "100%", maxWidth: "100%" }}>
           <Steps
             current={2}
             size="small"
@@ -242,21 +275,16 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               title: step.title,
               status: step.status as any,
             }))}
-            style={{ marginBottom: 32 }}
+            style={{ marginBottom: 32, overflowX: "auto" }}
           />
 
-          <Flex justify="space-between" align="center" style={{ marginTop: 16 }}>
-            <Input
+          <Flex justify="space-between" align="center" wrap="wrap" gap="small" style={{ marginTop: 16 }}>
+            <SearchInput
               placeholder="Search risks, authors, or content"
-              prefix={<SearchOutlined />}
-              suffix={
-                <Tag color={CUSTOM_TAG_COLOR.MARBLE}>
-                  /
-                </Tag>
-              }
-              style={{ flex: 1, maxWidth: 400 }}
+              onChange={() => {}}
+              style={{ flex: "1 1 300px", minWidth: 200, maxWidth: 400 }}
             />
-            <Flex gap="small">
+            <Flex gap="small" wrap="wrap">
               <Button type="link" onClick={handleExpandAll}>
                 Expand all
               </Button>
@@ -280,21 +308,193 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               header={
                 <>
                   {expandedKeys.includes("1") ? (
-                    <Text strong style={{ fontSize: 16 }}>Description of the processing</Text>
+                    <Text strong style={{ fontSize: 16 }}>1. Identify the need for a DPIA</Text>
                   ) : (
                     <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ minWidth: 60, flexShrink: 0 }}>
-                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>
-                          Step
-                        </Text>
-                        <Text strong style={{ fontSize: 20, display: "block", lineHeight: 1 }}>
-                          1
-                        </Text>
-                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
                           <Text strong style={{ fontSize: 16 }}>
-                            Description of the processing
+                            1. Identify the need for a DPIA
+                          </Text>
+                        </Flex>
+                        <div style={{ marginBottom: 8 }}>
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            Updated 2m ago by{" "}
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 4 }}>JG</Tag>
+                          </Text>
+                        </div>
+                        <Flex gap="large" wrap="wrap">
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            <Text strong>Fields:</Text> 2/2
+                          </Text>
+                          <Flex align="center" gap="small">
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text type="secondary" style={{ fontSize: 11 }}>
+                              <Text strong>Risk Level:</Text> Low
+                            </Text>
+                          </Flex>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  )}
+                  <div className="status-tag-container">
+                    <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
+                  </div>
+                </>
+              }
+              key="1"
+            >
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                <Card
+                  title="PROCESSING OVERVIEW"
+                  style={{ marginBottom: 24 }}
+                >
+                  <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        SCOPE
+                      </Text>
+                      <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                        2 Categories Identified
+                      </Text>
+                      <Space size="small" wrap>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral Data</Tag>
+                      </Space>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        NATURE
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <ThunderboltOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>AI Analysis</Text>
+                      </Flex>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Automated Processing
+                      </Text>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        CONTEXT
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <GlobalOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>External</Text>
+                      </Flex>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Customer Facing
+                      </Text>
+                    </Card>
+                  </Flex>
+                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                    <Flex align="center" gap="small">
+                      <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Request sent 2h ago to @DataSteward
+                      </Text>
+                    </Flex>
+                    <Space wrap>
+                      <Button icon={<MessageOutlined />} size="small">
+                        Request information from team
+                      </Button>
+                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
+                        View AI Context
+                      </Button>
+                    </Space>
+                  </Flex>
+                </Card>
+
+                <Form layout="vertical">
+                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Project overview</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="projectOverview"
+                        initialValue="The Customer Insight AI Module is a machine learning system designed to analyze customer purchase history and browsing behavior to generate personalized product recommendations. This project involves automated processing of personal data through AI algorithms to enhance customer experience and increase sales conversion rates."
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Explain broadly what the project aims to achieve and what type of processing it involves. You may find it helpful to refer or link to other documents, such as a project proposal."
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Why a DPIA is needed</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="dpiaNeed"
+                        initialValue="A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling. The processing uses new technologies (AI/ML algorithms) and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms."
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Summarise why you identified the need for a DPIA."
+                        />
+                      </Form.Item>
+                    </div>
+                  </Space>
+                </Form>
+              </Space>
+            </Panel>
+
+            <Panel
+              header={
+                <>
+                  {expandedKeys.includes("2") ? (
+                    <Text strong style={{ fontSize: 16 }}>2. Describe the processing</Text>
+                  ) : (
+                    <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
+                          <Text strong style={{ fontSize: 16 }}>
+                            2. Describe the processing
                           </Text>
                         </Flex>
                         <div style={{ marginBottom: 8 }}>
@@ -342,20 +542,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </div>
                 </>
               }
-              key="1"
+              key="2"
             >
               <Space direction="vertical" size="large" style={{ width: "100%" }}>
                 <Card
                   title="PROCESSING OVERVIEW"
                   style={{ marginBottom: 24 }}
                 >
-                  <Flex gap="large" style={{ marginBottom: 24 }}>
+                  <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
                     <Card
                       style={{
-                        flex: 1,
-                        border: "1px solid #f0f0f0",
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
                         borderRadius: 8,
                         padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
                       }}
                       bodyStyle={{ padding: 0 }}
                     >
@@ -365,17 +567,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
                         2 Categories Identified
                       </Text>
-                      <Space size="small">
+                      <Space size="small" wrap>
                         <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
                         <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral Data</Tag>
                       </Space>
                     </Card>
                     <Card
                       style={{
-                        flex: 1,
-                        border: "1px solid #f0f0f0",
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
                         borderRadius: 8,
                         padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
                       }}
                       bodyStyle={{ padding: 0 }}
                     >
@@ -392,10 +596,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     </Card>
                     <Card
                       style={{
-                        flex: 1,
-                        border: "1px solid #f0f0f0",
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
                         borderRadius: 8,
                         padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
                       }}
                       bodyStyle={{ padding: 0 }}
                     >
@@ -411,18 +617,18 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       </Text>
                     </Card>
                   </Flex>
-                  <Flex justify="space-between" align="center">
+                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
                     <Flex align="center" gap="small">
                       <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Request sent 2h ago to @DataSteward
                       </Text>
                     </Flex>
-                    <Space>
-                      <Button icon={<MessageOutlined />}>
+                    <Space wrap>
+                      <Button icon={<MessageOutlined />} size="small">
                         Request information from team
                       </Button>
-                      <Button type="default" onClick={() => setIsDrawerOpen(true)}>
+                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
                         View AI Context
                       </Button>
                     </Space>
@@ -431,117 +637,142 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
                 <Form layout="vertical">
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                    <Flex gap="middle" align="flex-start">
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Flex gap="middle" align="flex-start">
+                        <Form.Item
+                          label={
+                            <Flex justify="space-between" align="center">
+                              <Text strong>Project name</Text>
+                              <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                            </Flex>
+                          }
+                          name="projectName"
+                          initialValue="Customer Insight AI Module"
+                          style={{ flex: 1 }}
+                        >
+                          <Input />
+                        </Form.Item>
+                        <Form.Item
+                          label={
+                            <Flex justify="space-between" align="center">
+                              <Text strong>Assessment Framework</Text>
+                              <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                            </Flex>
+                          }
+                          name="framework"
+                          initialValue="GDPR-DPIA"
+                          style={{ flex: 1 }}
+                        >
+                          <Select
+                            options={[
+                              { value: "GDPR-DPIA", label: "GDPR - Data Protection Impact Assessment" },
+                              { value: "CCPA-PIA", label: "CCPA Privacy Impact Assessment" },
+                            ]}
+                          />
+                        </Form.Item>
+                      </Flex>
+                    </div>
+
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
                       <Form.Item
                         label={
                           <Flex justify="space-between" align="center">
-                            <Text strong>Project name</Text>
-                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                            <Text strong>Nature of processing</Text>
+                            <Flex gap="small" align="center">
+                              <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
+                                AI
+                              </Tag>
+                              <Text type="success" style={{ fontSize: 12 }}>
+                                HIGH CONFIDENCE
+                              </Text>
+                            </Flex>
                           </Flex>
                         }
-                        name="projectName"
-                        initialValue="Customer Insight AI Module"
-                        style={{ flex: 1 }}
+                        name="nature"
                       >
-                        <Input />
-                      </Form.Item>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
-                            <Text strong>Assessment Framework</Text>
-                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                          </Flex>
-                        }
-                        name="framework"
-                        initialValue="GDPR-DPIA"
-                        style={{ flex: 1 }}
-                      >
-                        <Select
-                          options={[
-                            { value: "GDPR-DPIA", label: "GDPR - Data Protection Impact Assessment" },
-                            { value: "CCPA-PIA", label: "CCPA Privacy Impact Assessment" },
-                          ]}
-                        />
-                      </Form.Item>
-                    </Flex>
-
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
-                          <Text strong>Nature of processing</Text>
-                          <Flex gap="small" align="center">
-                            <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
-                              AI
-                            </Tag>
-                            <Text type="success" style={{ fontSize: 12 }}>
-                              HIGH CONFIDENCE
-                            </Text>
-                          </Flex>
-                        </Flex>
-                      }
-                      name="nature"
-                    >
-                      <Input.TextArea
-                        rows={6}
-                        defaultValue="The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment."
-                        placeholder="How will you process the data? Describe the data flow, assets, and technology used."
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
-                          <Text strong>Scope (data categories)</Text>
-                          <Tag color={CUSTOM_TAG_COLOR.CORINTH} style={{ marginLeft: 8 }}>
-                            JG + AI
-                          </Tag>
-                        </Flex>
-                      }
-                      name="scope"
-                    >
-                      <div>
-                        <Flex gap="small" wrap="wrap" style={{ marginBottom: 12 }}>
-                          <Tag
-                            color={CUSTOM_TAG_COLOR.MARBLE}
-                            closable
-                            onClose={() => {}}
-                          >
-                            Personal Identifiable Information (PII)
-                          </Tag>
-                          <Tag
-                            color={CUSTOM_TAG_COLOR.MARBLE}
-                            closable
-                            onClose={() => {}}
-                          >
-                            Behavioral Data
-                          </Tag>
-                          <Button type="dashed" size="small" icon={<PlusOutlined />}>
-                            Add Category
-                          </Button>
-                        </Flex>
                         <Input.TextArea
-                          rows={3}
-                          defaultValue="Names, email addresses, IP addresses, purchase history, and clickstream data."
-                          placeholder="What personal data will be processed? Does it include special categories?"
+                          rows={6}
+                          defaultValue="The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment."
+                          placeholder="How will you collect, use, store and delete data? What is the source of the data? Will you be sharing data with anyone? What types of processing identified as likely high risk are involved?"
                         />
-                      </div>
-                    </Form.Item>
+                      </Form.Item>
+                    </div>
 
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
-                          <Text strong>Context of processing</Text>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                        </Flex>
-                      }
-                      name="context"
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        defaultValue="Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base."
-                        placeholder="What is the nature of your relationship with the individuals? Are they vulnerable?"
-                      />
-                    </Form.Item>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Scope of the processing</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.CORINTH} style={{ marginLeft: 8 }}>
+                              JG + AI
+                            </Tag>
+                          </Flex>
+                        }
+                        name="scope"
+                      >
+                        <div>
+                          <Flex gap="small" wrap="wrap" style={{ marginBottom: 12 }}>
+                            <Tag
+                              color={CUSTOM_TAG_COLOR.MARBLE}
+                              closable
+                              onClose={() => {}}
+                            >
+                              Personal Identifiable Information (PII)
+                            </Tag>
+                            <Tag
+                              color={CUSTOM_TAG_COLOR.MARBLE}
+                              closable
+                              onClose={() => {}}
+                            >
+                              Behavioral Data
+                            </Tag>
+                            <Button type="dashed" size="small" icon={<PlusOutlined />}>
+                              Add Category
+                            </Button>
+                          </Flex>
+                          <Input.TextArea
+                            rows={4}
+                            defaultValue="Names, email addresses, IP addresses, purchase history, and clickstream data."
+                            placeholder="What is the nature of the data, and does it include special category or criminal offence data? How much data will you be collecting and using? How often? How long will you keep it? How many individuals are affected? What geographical area does it cover?"
+                          />
+                        </div>
+                      </Form.Item>
+                    </div>
+
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Context of the processing</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="context"
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          defaultValue="Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base."
+                          placeholder="What is the nature of your relationship with the individuals? How much control will they have? Would they expect you to use their data in this way? Do they include children or other vulnerable groups? Are there prior concerns over this type of processing or security flaws?"
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Purposes of the processing</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="purposes"
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="What do you want to achieve? What is the intended effect on individuals? What are the benefits of the processing – for you, and more broadly?"
+                        />
+                      </Form.Item>
+                    </div>
                   </Space>
                 </Form>
               </Space>
@@ -550,22 +781,176 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             <Panel
               header={
                 <>
-                  {expandedKeys.includes("2") ? (
-                    <Text strong style={{ fontSize: 16 }}>Necessity</Text>
+                  {expandedKeys.includes("3") ? (
+                    <Text strong style={{ fontSize: 16 }}>3. Consultation process</Text>
                   ) : (
                     <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ minWidth: 60, flexShrink: 0 }}>
-                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>
-                          Step
-                        </Text>
-                        <Text strong style={{ fontSize: 20, display: "block", lineHeight: 1 }}>
-                          2
-                        </Text>
-                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
                           <Text strong style={{ fontSize: 16 }}>
-                            Necessity
+                            3. Consultation process
+                          </Text>
+                        </Flex>
+                        <div style={{ marginBottom: 8 }}>
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            Updated 1h ago by{" "}
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 4 }}>JG</Tag>
+                          </Text>
+                        </div>
+                        <Flex gap="large" wrap="wrap">
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            <Text strong>Fields:</Text> 2/3
+                          </Text>
+                          <Flex align="center" gap="small">
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text type="secondary" style={{ fontSize: 11 }}>
+                              <Text strong>Risk Level:</Text> Low
+                            </Text>
+                          </Flex>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  )}
+                  <div className="status-tag-container">
+                    <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
+                  </div>
+                </>
+              }
+              key="3"
+            >
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                <Card
+                  title="PROCESSING OVERVIEW"
+                  style={{ marginBottom: 24 }}
+                >
+                  <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        SCOPE
+                      </Text>
+                      <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                        2 Categories Identified
+                      </Text>
+                      <Space size="small" wrap>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral Data</Tag>
+                      </Space>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        NATURE
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <ThunderboltOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>AI Analysis</Text>
+                      </Flex>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Automated Processing
+                      </Text>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        CONTEXT
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <GlobalOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>External</Text>
+                      </Flex>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Customer Facing
+                      </Text>
+                    </Card>
+                  </Flex>
+                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                    <Flex align="center" gap="small">
+                      <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Request sent 2h ago to @DataSteward
+                      </Text>
+                    </Flex>
+                    <Space wrap>
+                      <Button icon={<MessageOutlined />} size="small">
+                        Request information from team
+                      </Button>
+                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
+                        View AI Context
+                      </Button>
+                    </Space>
+                  </Flex>
+                </Card>
+
+                <Form layout="vertical">
+                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Stakeholder consultation</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="stakeholderConsultation"
+                        initialValue="We will consult with the Data Protection Officer (DPO) and the Information Security team before implementation. Customer feedback will be gathered through opt-in surveys during the initial rollout phase. We will also consult with our data processors (cloud infrastructure provider) to ensure compliance measures are in place. The Legal and Compliance teams will review the processing activities and provide guidance on lawful basis and data subject rights."
+                      >
+                        <Input.TextArea
+                          rows={6}
+                          placeholder="Consider how to consult with relevant stakeholders: describe when and how you will seek individuals' views – or justify why it's not appropriate to do so. Who else do you need to involve within your organisation? Do you need to ask your processors to assist? Do you plan to consult information security experts, or any other experts?"
+                        />
+                      </Form.Item>
+                    </div>
+                  </Space>
+                </Form>
+              </Space>
+            </Panel>
+
+            <Panel
+              header={
+                <>
+                  {expandedKeys.includes("4") ? (
+                    <Text strong style={{ fontSize: 16 }}>Assess necessity and proportionality</Text>
+                  ) : (
+                    <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
+                          <Text strong style={{ fontSize: 16 }}>
+                            4. Assess necessity and proportionality
                           </Text>
                         </Flex>
                         <div style={{ marginBottom: 8 }}>
@@ -613,46 +998,136 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </div>
                 </>
               }
-              key="2"
+              key="4"
             >
-              <Form layout="vertical">
-                <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <Form.Item
-                    label={
-                      <Flex justify="space-between" align="center">
-                        <Text strong>Purpose of processing</Text>
-                        <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
-                          AI
-                        </Tag>
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                <Card
+                  title="PROCESSING OVERVIEW"
+                  style={{ marginBottom: 24 }}
+                >
+                  <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        SCOPE
+                      </Text>
+                      <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                        2 Categories Identified
+                      </Text>
+                      <Space size="small" wrap>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
+                        <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral Data</Tag>
+                      </Space>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        NATURE
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <ThunderboltOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>AI Analysis</Text>
                       </Flex>
-                    }
-                    name="purpose"
-                  >
-                    <Input.TextArea rows={4} />
-                  </Form.Item>
-                </Space>
-              </Form>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Automated Processing
+                      </Text>
+                    </Card>
+                    <Card
+                      style={{
+                        flex: "1 1 200px",
+                        minWidth: 200,
+                        border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                        borderRadius: 8,
+                        padding: 16,
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      }}
+                      bodyStyle={{ padding: 0 }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12, textTransform: "uppercase", display: "block", marginBottom: 8 }}>
+                        CONTEXT
+                      </Text>
+                      <Flex align="center" gap="small" style={{ marginBottom: 8 }}>
+                        <GlobalOutlined style={{ fontSize: 16, color: palette.FIDESUI_MINOS }} />
+                        <Text strong style={{ fontSize: 16 }}>External</Text>
+                      </Flex>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Customer Facing
+                      </Text>
+                    </Card>
+                  </Flex>
+                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                    <Flex align="center" gap="small">
+                      <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Request sent 2h ago to @DataSteward
+                      </Text>
+                    </Flex>
+                    <Space wrap>
+                      <Button icon={<MessageOutlined />} size="small">
+                        Request information from team
+                      </Button>
+                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
+                        View AI Context
+                      </Button>
+                    </Space>
+                  </Flex>
+                </Card>
+
+                <Form layout="vertical">
+                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>Compliance and proportionality measures</Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
+                              AI
+                            </Tag>
+                          </Flex>
+                        }
+                        name="complianceMeasures"
+                        initialValue="Lawful basis: Legitimate interests (Article 6(1)(f)) for personalized recommendations to enhance customer experience. The processing achieves the purpose of providing relevant product suggestions, and there is no less intrusive alternative that would achieve the same outcome. Function creep is prevented through strict access controls and regular audits. Data quality is ensured through validation at ingestion points and automated data cleansing processes. Data minimisation is achieved by only processing necessary data fields (purchase history, browsing behavior) and implementing data retention policies (24 months). Individuals are informed through privacy notices and cookie banners. Data subject rights are supported through a self-service portal for access, rectification, erasure, and objection requests. Processors are contractually bound through Data Processing Agreements (DPAs) with specific security and compliance requirements. International transfers are safeguarded through Standard Contractual Clauses (SCCs) and adequacy decisions where applicable."
+                      >
+                        <Input.TextArea
+                          rows={8}
+                          placeholder="What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?"
+                        />
+                      </Form.Item>
+                    </div>
+                  </Space>
+                </Form>
+              </Space>
             </Panel>
 
             <Panel
               header={
                 <>
-                  {expandedKeys.includes("3") ? (
-                    <Text strong style={{ fontSize: 16 }}>Assessment of risks</Text>
+                  {expandedKeys.includes("5") ? (
+                    <Text strong style={{ fontSize: 16 }}>Identify and assess risks</Text>
                   ) : (
                     <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ minWidth: 60, flexShrink: 0 }}>
-                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>
-                          Step
-                        </Text>
-                        <Text strong style={{ fontSize: 20, display: "block", lineHeight: 1 }}>
-                          3
-                        </Text>
-                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
                           <Text strong style={{ fontSize: 16 }}>
-                            Assessment of risks
+                            5. Identify and assess risks
                           </Text>
                         </Flex>
                         <div style={{ marginBottom: 8 }}>
@@ -702,24 +1177,29 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </div>
                 </>
               }
-              key="3"
+              key="5"
             >
               <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <Form.Item
-                    label={
-                      <Flex justify="space-between" align="center">
-                        <Text strong>Identified risks</Text>
-                        <Flex gap="small">
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                          <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 4 }}>AI</Tag>
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Risk assessment</Text>
+                          <Flex gap="small">
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                            <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 4 }}>AI</Tag>
+                          </Flex>
                         </Flex>
-                      </Flex>
-                    }
-                    name="risks"
-                  >
-                    <Input.TextArea rows={4} />
-                  </Form.Item>
+                      }
+                      name="risks"
+                    >
+                      <Input.TextArea
+                        rows={8}
+                        placeholder="Describe source of risk and nature of potential impact on individuals. Include associated compliance and corporate risks as necessary. For each risk, assess the likelihood of harm (Remote, possible or probable) and severity of harm (Minimal, significant or severe) to determine overall risk (Low, medium or high)."
+                      />
+                    </Form.Item>
+                  </div>
                 </Space>
               </Form>
             </Panel>
@@ -727,27 +1207,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             <Panel
               header={
                 <>
-                  {expandedKeys.includes("4") ? (
-                    <Text strong style={{ fontSize: 16 }}>Measures to address risks</Text>
+                  {expandedKeys.includes("6") ? (
+                    <Text strong style={{ fontSize: 16 }}>6. Identify measures to reduce risk</Text>
                   ) : (
                     <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ minWidth: 60, flexShrink: 0 }}>
-                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>
-                          Step
-                        </Text>
-                        <Text strong style={{ fontSize: 20, display: "block", lineHeight: 1 }}>
-                          4
-                        </Text>
-                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
                           <Text strong style={{ fontSize: 16 }}>
-                            Measures to address risks
+                            6. Identify measures to reduce risk
                           </Text>
                         </Flex>
                         <Flex gap="middle" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11 }}>
-                            Pending Step 3 completion
+                            Pending Step 5 completion
                           </Text>
                         </Flex>
                         <Flex gap="large" wrap="wrap">
@@ -763,21 +1235,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </div>
                 </>
               }
-              key="4"
+              key="6"
             >
               <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <Form.Item
-                    label={
-                      <Flex justify="space-between" align="center">
-                        <Text strong>Measures to address risks</Text>
-                        <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                      </Flex>
-                    }
-                    name="measures"
-                  >
-                    <Input.TextArea rows={4} />
-                  </Form.Item>
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Measures to reduce or eliminate risk</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="measures"
+                    >
+                      <Input.TextArea
+                        rows={8}
+                        placeholder="Identify additional measures you could take to reduce or eliminate risks identified as medium or high risk in step 5. For each risk, describe: Options to reduce or eliminate risk, Effect on risk (Eliminated, reduced, accepted), Residual risk (Low, medium, high), and whether the measure is approved (Yes/no)."
+                      />
+                    </Form.Item>
+                  </div>
                 </Space>
               </Form>
             </Panel>
@@ -785,22 +1262,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             <Panel
               header={
                 <>
-                  {expandedKeys.includes("5") ? (
-                    <Text strong style={{ fontSize: 16 }}>Sign off & Review</Text>
+                  {expandedKeys.includes("7") ? (
+                    <Text strong style={{ fontSize: 16 }}>7. Sign off and record outcomes</Text>
                   ) : (
                     <Flex gap="large" align="center" style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ minWidth: 60, flexShrink: 0 }}>
-                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>
-                          Step
-                        </Text>
-                        <Text strong style={{ fontSize: 20, display: "block", lineHeight: 1 }}>
-                          5
-                        </Text>
-                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 8, alignItems: "center" }}>
                           <Text strong style={{ fontSize: 16 }}>
-                            Sign off & Review
+                            7. Sign off and record outcomes
                           </Text>
                         </Flex>
                         <Flex gap="middle" wrap="wrap" style={{ marginBottom: 8 }}>
@@ -810,7 +1279,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </Flex>
                         <Flex gap="large" wrap="wrap">
                           <Text type="secondary" style={{ fontSize: 11 }}>
-                            <Text strong>Fields:</Text> 0/2
+                            <Text strong>Fields:</Text> 0/6
                           </Text>
                         </Flex>
                       </div>
@@ -821,21 +1290,107 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </div>
                 </>
               }
-              key="5"
+              key="7"
             >
               <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <Form.Item
-                    label={
-                      <Flex justify="space-between" align="center">
-                        <Text strong>Final review</Text>
-                        <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                      </Flex>
-                    }
-                    name="review"
-                  >
-                    <Input.TextArea rows={4} />
-                  </Form.Item>
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Measures approved by</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="measuresApprovedBy"
+                    >
+                      <Input placeholder="Name/date - Integrate actions back into project plan, with date and responsibility for completion" />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Residual risks approved by</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="residualRisksApprovedBy"
+                    >
+                      <Input placeholder="Name/date - If accepting any residual high risk, consult the ICO before going ahead" />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>DPO advice provided</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="dpoAdviceProvided"
+                    >
+                      <Input placeholder="Name/date - DPO should advise on compliance, step 6 measures and whether processing can proceed" />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Summary of DPO advice</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="dpoAdviceSummary"
+                    >
+                      <Input.TextArea rows={3} />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>DPO advice accepted or overruled by</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="dpoAdviceAccepted"
+                    >
+                      <Input placeholder="Name/date - If overruled, you must explain your reasons" />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>Consultation responses reviewed by</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="consultationReviewedBy"
+                    >
+                      <Input placeholder="Name/date - If your decision departs from individuals' views, you must explain your reasons" />
+                    </Form.Item>
+                  </div>
+
+                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                    <Form.Item
+                      label={
+                        <Flex justify="space-between" align="center">
+                          <Text strong>This DPIA will be kept under review by</Text>
+                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                        </Flex>
+                      }
+                      name="dpiaReviewBy"
+                    >
+                      <Input placeholder="Name/date - The DPO should also review ongoing compliance with DPIA" />
+                    </Form.Item>
+                  </div>
                 </Space>
               </Form>
             </Panel>
