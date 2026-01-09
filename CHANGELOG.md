@@ -22,6 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
 
 ### Changed
+ - Added a monitor filter to the root action center [#7186](https://github.com/ethyca/fides/pull/7186)
  - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
 
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)

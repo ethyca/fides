@@ -4,6 +4,7 @@ import {
   List,
   Menu,
   Pagination,
+  Select,
   useChakraToast as useToast,
 } from "fidesui";
 import { useEffect, useState } from "react";
@@ -31,25 +32,60 @@ const ActionCenterPage = () => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
 
-  // Build monitor_type filter based on enabled feature flags
-  const monitorTypes: MONITOR_TYPES[] = [
-    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+  // Build monitor_type filter based on selected filter
+  const getMonitorTypesFromFilter = (filter: string): MONITOR_TYPES[] | undefined => {
+    if (filter === "all") {
+      return undefined;
+    }
+    if (filter === MONITOR_TYPES.DATASTORE) {
+      return [MONITOR_TYPES.DATASTORE];
+    }
+    if (filter === "website") {
+      return [MONITOR_TYPES.WEBSITE];
+    }
+    return undefined;
+  };
+
+  const monitorTypes = getMonitorTypesFromFilter(selectedFilter);
+
+  // Build filter options based on enabled monitor types
+  const filterOptions = [
+    ...(webMonitorEnabled || heliosV2Enabled
+      ? [{ value: "all", label: "All monitors" }]
+      : []),
+    ...(heliosV2Enabled
+      ? [{ value: "datastore", label: "Data store monitors" }]
+      : []),
+    ...(webMonitorEnabled
+      ? [{ value: "website", label: "Website monitors" }]
+      : []),
   ];
 
   const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    monitor_type: monitorTypes.length > 0 ? monitorTypes : undefined,
+    monitor_type: monitorTypes,
   });
+
+  // Reset filter if selected option is no longer available
+  useEffect(() => {
+    const isValidFilter = filterOptions.some(
+      (option) => option.value === selectedFilter,
+    );
+    if (!isValidFilter && filterOptions.length > 0) {
+      setSelectedFilter(filterOptions[0].value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [webMonitorEnabled, heliosV2Enabled]);
 
   useEffect(() => {
     resetPagination();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [searchQuery, selectedFilter]);
 
   useEffect(() => {
     if (isError) {
@@ -108,10 +144,21 @@ const ActionCenterPage = () => {
           gap="middle"
           vertical
         >
-          <Flex className="justify-between ">
+          <Flex className="justify-between items-center">
             <DebouncedSearchInput
               value={searchQuery}
               onChange={setSearchQuery}
+            />
+            <Select
+              value={selectedFilter}
+              onChange={(value) => {
+                if (typeof value === "string") {
+                  setSelectedFilter(value);
+                }
+              }}
+              options={filterOptions}
+              className="w-auto min-w-[200px]"
+              data-testid="monitor-type-filter"
             />
           </Flex>
           <List
