@@ -39,6 +39,7 @@
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "next": "^14.2.25",
+    "rc-util": "^5.44.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

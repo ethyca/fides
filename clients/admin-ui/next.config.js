@@ -5,7 +5,8 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 // DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
-const withTM = require("next-transpile-modules")(["fidesui"]);
+// rc-util is required for Ant Design components (Collapse, Drawer, etc.) to work properly
+const withTM = require("next-transpile-modules")(["fidesui", "rc-util"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
