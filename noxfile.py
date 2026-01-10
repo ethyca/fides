@@ -27,8 +27,11 @@ REQUIRED_PYTHON_VERSIONS = ["3.13"]
 
 nox.options.sessions = ["open_docs"]
 
-# This is important for caching pip installs
+# This is important for caching package installs
 nox.options.reuse_existing_virtualenvs = True
+
+# Use uv for faster package installation
+nox.options.default_venv_backend = "uv"
 
 
 @nox.session()

@@ -13,6 +13,7 @@ RUN apt-get update && \
     git \
     gnupg \
     gcc \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,20 +32,25 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 # Activate a Python venv
 RUN python3 -m venv /opt/fides
 ENV PATH="/opt/fides/bin:${PATH}"
+ENV VIRTUAL_ENV="/opt/fides"
 
-# Install Python Dependencies
-RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
+# Copy project files
+COPY pyproject.toml /tmp/
+COPY src /tmp/src
+COPY data /tmp/data
+COPY README.md /tmp/
+COPY LICENSE /tmp/
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY optional-requirements.txt .
-RUN pip install --no-cache-dir -r optional-requirements.txt
+WORKDIR /tmp
 
-COPY dev-requirements.txt .
-RUN pip install --no-cache-dir -r dev-requirements.txt
+# Install Python Dependencies using uv
+RUN uv pip install --no-cache ".[all,dev]"
 
 ##################
 ## Backend Base ##
@@ -85,7 +91,7 @@ RUN git rm --cached -r .
 RUN git config --global --add safe.directory /fides
 
 # Export the version to a file for frontend use
-RUN python -c "import versioneer, json; print(json.dumps({'version': versioneer.get_version()}))" > /fides/version.json
+RUN python -c "from importlib.metadata import version; import json; print(json.dumps({'version': version('ethyca-fides')}))" > /fides/version.json
 
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
@@ -100,7 +106,7 @@ FROM backend AS dev
 
 USER root
 
-RUN pip install -e . --no-deps
+RUN uv pip install --no-cache --no-deps -e .
 
 USER fidesuser
 
@@ -168,12 +174,7 @@ FROM backend AS prod
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 USER root
 # Install without a symlink
-RUN pip install --no-cache-dir setuptools wheel
-RUN pip install --no-cache-dir --upgrade packaging
-RUN python setup.py sdist
-
-# USER root commented out for debugging
-RUN pip install dist/ethyca_fides-*.tar.gz
+RUN uv pip install --no-cache .
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build

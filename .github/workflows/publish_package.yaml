@@ -16,7 +16,12 @@ jobs:
       - name: Setup Python 3.13.11
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11.11
+          python-version: 3.13.11
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -33,21 +38,11 @@ jobs:
           cd clients
           npm run prod-export-admin-ui
 
-      - name: Install setuptools
-        run: pip install setuptools -U
+      - name: Install build tools
+        run: uv tool install build && uv tool install twine
 
-      - name: Install Twine and wheel
-        run: pip install twine wheel
-
-      # The git reset is required here because the build modifies
-      # egg-info and the wheel becomes a dirty version
-      - name: Build the sdist
-        run: |
-          python setup.py sdist
-          git reset --hard
-
-      - name: Build the wheel
-        run: python setup.py bdist_wheel
+      - name: Build the sdist and wheel
+        run: uv build
 
       - name: Check Prod Tag
         id: check-prod-tag

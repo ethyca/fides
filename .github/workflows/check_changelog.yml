@@ -66,9 +66,15 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install uv
+        if: success()
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Install nox
         if: success()
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         if: success()
@@ -78,10 +84,6 @@ jobs:
           key: ${{ runner.os }}-nox-changelog-3.13-${{ hashFiles('noxfiles/changelog_nox.py') }}
           restore-keys: |
             ${{ runner.os }}-nox-changelog-3.13-
-
-      - name: Install Dev Requirements
-        if: success()
-        run: pip install -r dev-requirements.txt
 
       - name: Validate changelog entries
         if: success()

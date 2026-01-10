@@ -43,11 +43,9 @@ jobs:
             backend:
               - '**/*.py'
               - '**/*.pxl'
-              - '**/*requirements.txt'
+              - 'pyproject.toml'
               - 'Dockerfile'
               - 'Makefile'
-              - 'pyproject.toml'
-              - 'setup.cfg'
               - 'noxfile.py'
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
@@ -68,10 +66,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -201,10 +204,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -255,10 +263,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -308,10 +321,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -381,10 +399,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -444,10 +467,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -512,10 +540,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -626,10 +659,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Install Nox
-        run: pip install nox>=2022
+        run: uv tool install nox
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4

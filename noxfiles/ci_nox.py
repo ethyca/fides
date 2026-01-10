@@ -443,14 +443,15 @@ def pytest(session: nox.Session, test_group: str) -> None:
     ],
 )
 def python_build(session: nox.Session, dist: str) -> None:
-    "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    """Build the Python distribution using uv."""
+    install_requirements(session)
+
+    if dist == "sdist":
+        session.run("python", "-m", "build", "--sdist")
+    elif dist == "bdist_wheel":
+        session.run("python", "-m", "build", "--wheel")
+    else:
+        session.error(f"Unknown distribution type: {dist}")
 
 
 @nox_session()

@@ -6,6 +6,7 @@ RUN apt-get update && \
     gnupg \
     gcc \
     git \
+    curl \
     python3-wheel \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -24,11 +25,14 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY . .
-RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
+RUN uv pip install . && uv pip install -r docs/fides/requirements.txt
 
 
 FROM python:3.13-slim-bookworm AS docs

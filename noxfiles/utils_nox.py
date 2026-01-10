@@ -53,10 +53,11 @@ def teardown(session: nox.Session, volumes: bool = False, images: bool = False) 
 
 
 def install_requirements(session: nox.Session, include_optional: bool = False) -> None:
-    session.install("-r", "requirements.txt")
-    session.install("-r", "dev-requirements.txt")
+    """Install project dependencies using uv."""
+    # Install the project with dev dependencies
+    session.install(".[dev]")
     if include_optional:
-        session.install("-r", "optional-requirements.txt")
+        session.install(".[all]")
 
 
 @nox.session()

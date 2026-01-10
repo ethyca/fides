@@ -54,7 +54,7 @@ Explicitly set resource allocations in Docker Desktop
 Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment.
 
 ```bash
-pip install -r dev-requirements.txt
+uv pip install ".[dev]"
 ```
 
 ---
