@@ -178,6 +178,8 @@ all = [
 
 [project.scripts]
 fides = "fides.cli:cli"
+fides-webserver = "fides.api.main:start_webserver"
+server = "fides.api.main:start_webserver"
 
 [project.urls]
 Homepage = "https://github.com/ethyca/fides"
