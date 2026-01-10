@@ -119,6 +119,8 @@ python-dateutil~=2.9.0.post0
 rfc3986~=2.0.0
 ordered-set==4.1.0
 prometheus-fastapi-instrumentator
+prometheus-client
 nest_asyncio
-uvicorn[standard]
+uvicorn[standard]==0.40.0
 gunicorn
+granian

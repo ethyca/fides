@@ -16,6 +16,7 @@ from fides.api.db.session import ExtendedSession
 from fides.api.db.util import custom_json_deserializer, custom_json_serializer
 from fides.config import CONFIG
 
+
 # Import tracing utilities - safe to import even if OpenTelemetry is not installed
 try:
     from fides.telemetry.tracing import instrument_sqlalchemy
@@ -154,6 +155,8 @@ import threading
 POOL_WARMED = False
 POOL_LOCK = threading.Lock()
 
+
+
 async def warm_pool():
     pool_size=CONFIG.database.api_async_engine_pool_size
     print(f"Warming up ASYNC connection pool with {pool_size} connections...")
@@ -182,6 +185,7 @@ async def async_session() -> AsyncSession:
 
     """Provide a session context manager."""
     session = scoped_async_session()
+
     print(async_engine.pool.status())
     try:
         yield session

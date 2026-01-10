@@ -38,7 +38,7 @@ class TracingSettings(FidesSettings):
     )
 
     sample_rate: float = Field(
-        default=0.1,
+        default=0.01,
         ge=0.0,
         le=1.0,
         description="Sampling rate for traces (0.0 to 1.0). 1.0 means trace every request.",

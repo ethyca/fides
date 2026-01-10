@@ -199,20 +199,14 @@ def instrument_sqlalchemy(engine: Engine, config: FidesConfig, extra_tags: Optio
         return
 
     try:
-        enable_commenter = extra_tags is not None
-        if enable_commenter:
-            additional_args = {
-                enable_commenter: True,
-                enable_attribute_commenter: True,
-                commenter_options: extra_tags
-            }
-        else:
-            additional_args = {}
+
 
         SQLAlchemyInstrumentor().instrument(
             engine=engine,
             tracer_provider=trace.get_tracer_provider(),
-            **additional_args
+            enable_attribute_commenter=True,
+            commenter_options=extra_tags if extra_tags is not None else {},
+            enable_commenter=True
         )
         logger.info(f"SQLAlchemy instrumentation enabled for engine: {engine.url.database}")
     except Exception as e:

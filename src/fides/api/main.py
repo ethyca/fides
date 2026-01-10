@@ -75,6 +75,7 @@ NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.or
 VERSION = fides.__version__
 
 
+
 async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     """Run all of the required setup steps for the webserver.
 
@@ -83,6 +84,10 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     """
     start_time = perf_counter()
     logger.info("Starting server setup...")
+    # import anyio.to_thread
+
+    # limiter = anyio.to_thread.current_default_thread_limiter()
+    # limiter.total_tokens = 100
 
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
@@ -130,11 +135,12 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Fides startup complete! v{}", VERSION)
     startup_time = round(perf_counter() - start_time, 3)
     logger.info("Server setup completed in {} seconds", startup_time)
+
+
     yield  # All of this happens before the webserver comes up
 
 
 app = create_fides_app(lifespan=lifespan)  # type: ignore
-
 
 if CONFIG.dev_mode:
 
@@ -162,7 +168,9 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
     :return: Response
     """
 
-    with trace_span("dispatch_log_request"):
+
+
+    with trace_span(f"dispatch_log_request {request.url.path}"):
         # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
         path = request.url.path
         if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
@@ -173,19 +181,21 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         endpoint = f"{request.method}: {request.url}"
 
         try:
-            response = await call_next(request)
+            with trace_span("request"):
+                response = await call_next(request)
             # HTTPExceptions are considered a handled err by default so are not thrown here.
             # Accepted workaround is to inspect status code of response.
             # More context- https://github.com/tiangolo/fastapi/issues/1840
-            response.background = BackgroundTask(
-                prepare_and_log_request,
-                endpoint,
-                request.url.hostname,
-                response.status_code,
-                now,
-                fides_source,
-                "HTTPException" if response.status_code >= 400 else None,
-            )
+            with trace_span("background-task"):
+                response.background = BackgroundTask(
+                    prepare_and_log_request,
+                    endpoint,
+                    request.url.hostname,
+                    response.status_code,
+                    now,
+                    fides_source,
+                    "HTTPException" if response.status_code >= 400 else None,
+                )
             return response
 
         except Exception as e:
@@ -238,7 +248,7 @@ async def prepare_and_log_request(
 async def log_request(request: Request, call_next: Callable) -> Response:
     """Log basic information about every request handled by the server."""
     start = datetime.now()
-
+    #hit_counter = Counter("fides_api_request", "Requests to the API",)
     # If the request fails, we still want to log it
     try:
         response = await call_next(request)
@@ -365,26 +375,27 @@ def start_webserver(port: int = 8080) -> None:
     server.run()
 
 
-@app.middleware("http")
+#@app.middleware("http")
 async def action_to_audit_log(
     request: Request,
     call_next: Callable,
 ) -> Response:
     """Log basic information about every non-GET request handled by the server."""
+    with trace_span("action_to_audit_log", {"call_next": str(call_next)}):
+        if (
+            request.method != "GET"
+            and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
+            and CONFIG.security.enable_audit_log_resource_middleware
+        ):
+            try:
+                with trace_span("handle_audit_log_resource"):
+                    await handle_audit_log_resource(request)
+            except Exception as exc:
+                logger.debug(exc)
+        return await call_next(request)
 
-    if (
-        request.method != "GET"
-        and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
-        and CONFIG.security.enable_audit_log_resource_middleware
-    ):
-        try:
-            await handle_audit_log_resource(request)
-        except Exception as exc:
-            logger.debug(exc)
-    return await call_next(request)
 
-
-@app.exception_handler(RequestValidationError)
+#@app.exception_handler(RequestValidationError)
 async def request_validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
@@ -400,7 +411,7 @@ async def request_validation_exception_handler(
     )
 
 
-@app.exception_handler(RateLimitExceeded)
+#@app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
     """Log rate limit violations and delegate to default handler."""
     client_ip = safe_rate_limit_key(

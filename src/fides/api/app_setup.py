@@ -4,7 +4,7 @@ Contains utility functions that set up the application webserver.
 
 # pylint: disable=too-many-branches
 from logging import DEBUG
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator, Callable, List
 
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -61,8 +61,7 @@ from fides.api.util.saas_config_updater import update_saas_configs
 from fides.api.util.security_headers import SecurityHeadersMiddleware
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from prometheus_client import Counter, make_asgi_app
-from prometheus_fastapi_instrumentator import Instrumentator
+
 
 VERSION = fides.__version__
 
@@ -78,6 +77,45 @@ DB_ROUTER.include_router(HEALTH_ROUTER)
 ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
 OVERRIDING_ROUTERS = [GENERIC_OVERRIDES_ROUTER]
 
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
+from prometheus_fastapi_instrumentator.metrics import Info
+from prometheus_client import Counter
+
+
+def http_requested_languages_total() -> Callable[[Info], None]:
+    METRIC = Counter(
+        "http_requested_languages_total",
+        "Number of times a certain language has been requested.",
+        labelnames=("langs",)
+    )
+
+    def instrumentation(info: Info) -> None:
+        langs = set()
+        lang_str = info.request.headers.get("Accept-Language", "")
+        for element in lang_str.split(","):
+            element = element.split(";")[0].strip().lower()
+            langs.add(element)
+        for language in langs:
+            METRIC.labels(language).inc()
+
+    return instrumentation
+
+
+
+# Global Prometheus instrumentator instance
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    should_ignore_untemplated=True,
+    should_instrument_requests_inprogress=True,
+    excluded_handlers=[".*admin.*", "/metrics"],
+    inprogress_name="inprogress",
+    inprogress_labels=True,
+)
+
+
+def get_instrumentator() -> Instrumentator:
+    """Get the global Prometheus instrumentator instance."""
+    return instrumentator
 
 def create_fides_app(
     lifespan: AsyncGenerator[None, None],
@@ -92,7 +130,17 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
-    Instrumentator().instrument(fastapi_app).expose(fastapi_app, endpoint="/metrics")
+
+
+    instrumentator = Instrumentator(
+        should_group_status_codes=False,
+        #should_ignore_untemplated=True,
+        # should_instrument_requests_inprogress=True,
+        #excluded_handlers=[".*admin.*", "/metrics"],
+        # inprogress_name="inprogress_requests",
+        # inprogress_labels=True
+    )
+
 
     # Initialize OpenTelemetry tracing early
     logger.info("Setting up tracing")
@@ -102,28 +150,29 @@ def create_fides_app(
     instrument_fastapi(fastapi_app, CONFIG)
     instrument_httpx(CONFIG)
     instrument_redis(CONFIG)
+    instrumentator.instrument(fastapi_app).expose(fastapi_app)
 
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
-    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
-    fastapi_app.add_middleware(SecurityHeadersMiddleware)
-    for handler in ExceptionHandlers.get_handlers():
+    #fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+    #fastapi_app.add_middleware(SecurityHeadersMiddleware)
+    #for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
-        fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
+    #    fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
 
-    if is_rate_limit_enabled:
-        # Validate header before SlowAPI processes the request
-        fastapi_app.add_middleware(RateLimitIPValidationMiddleware)
-        # Required for default rate limiting to work
-        fastapi_app.add_middleware(SlowAPIMiddleware)
-    else:
-        logger.warning(
-            "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
-        )
+    #if is_rate_limit_enabled:
+    #     # Validate header before SlowAPI processes the request
+    #     fastapi_app.add_middleware(RateLimitIPValidationMiddleware)
+    #     # Required for default rate limiting to work
+    #     fastapi_app.add_middleware(SlowAPIMiddleware)
+    # else:
+    #     logger.warning(
+    #         "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
+    #     )
 
-    fastapi_app.add_middleware(
-        GZipMiddleware, minimum_size=1000, compresslevel=5
-    )  # minimum_size is in bytes
+    # fastapi_app.add_middleware(
+    #     GZipMiddleware, minimum_size=1000, compresslevel=5
+    # )  # minimum_size is in bytes
 
 
     for router in routers:
@@ -143,8 +192,6 @@ def create_fides_app(
     elif security_env == "prod":
         # This is the most secure, so all security deps are maintained
         pass
-
-
 
     return fastapi_app
 

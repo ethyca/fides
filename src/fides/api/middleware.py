@@ -10,7 +10,7 @@ from starlette.types import Message
 from fides.api.api import deps
 from fides.api.models.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_token_and_load_client
-
+from fides.telemetry.tracing import trace_span
 
 async def handle_audit_log_resource(request: Request) -> None:
     """
@@ -34,22 +34,24 @@ async def handle_audit_log_resource(request: Request) -> None:
         "extra_data": None,
     }
     db: Session = deps.get_api_session()
-
-    # get the user id associated with the request
-    token = request.headers.get("authorization")
-    if token:
-        client = await get_client_user_id(db, token)
-        audit_log_resource_data["user_id"] = client
+    with trace_span("get_user_id"):
+        # get the user id associated with the request
+        token = request.headers.get("authorization")
+        if token:
+            client = await get_client_user_id(db, token)
+            audit_log_resource_data["user_id"] = client
 
     # Access request body to check for fides_keys
     await set_body(request, await request.body())
 
-    body = await get_body(request)
-    fides_keys: List = await extract_data_from_body(body)
-    audit_log_resource_data["fides_keys"] = fides_keys
+    with trace_span("look_for_fides_keys"):
+        body = await get_body(request)
+        fides_keys: List = await extract_data_from_body(body)
+        audit_log_resource_data["fides_keys"] = fides_keys
 
     # write record to server
-    await write_audit_log_resource_record(db, audit_log_resource_data)
+    with trace_span("write_audit_log"):
+        await write_audit_log_resource_record(db, audit_log_resource_data)
 
 
 async def write_audit_log_resource_record(
