@@ -288,10 +288,11 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: (
-            OAuth2AuthorizationCodeAuthenticationStrategy
-        ) = AuthenticationStrategy.get_strategy(
-            authentication.strategy, authentication.configuration  # type: ignore
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                authentication.strategy,
+                authentication.configuration,  # type: ignore
+            )
         )
         return auth_strategy.get_authorization_url(db, connection_config, referer)
     except FidesopsException as exc:

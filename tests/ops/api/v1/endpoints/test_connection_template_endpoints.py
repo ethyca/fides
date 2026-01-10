@@ -253,9 +253,9 @@ class TestGetConnections:
         ]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
     def test_search_connection_types_case_insensitive(
         self, api_client, generate_auth_header, url
@@ -295,9 +295,9 @@ class TestGetConnections:
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
         search = "Re"
         expected_saas_types = [
@@ -355,9 +355,9 @@ class TestGetConnections:
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -1196,7 +1196,7 @@ class TestGetConnectionSecretSchema:
         assert resp.json() == {
             "definitions": {
                 "GoogleCloudSQLIPType": {
-                    "description": "Enum for Google " "Cloud SQL IP types",
+                    "description": "Enum for Google Cloud SQL IP types",
                     "enum": ["public", "private", "psc"],
                     "title": "GoogleCloudSQLIPType",
                     "type": "string",
@@ -1747,7 +1747,7 @@ class TestInstantiateConnectionFromTemplate:
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == "SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(

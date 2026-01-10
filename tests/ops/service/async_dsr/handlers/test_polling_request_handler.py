@@ -15,7 +15,6 @@ from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
 
 @pytest.mark.async_dsr
 class TestPollingRequestHandler:
-
     def test_get_status_response_success(self):
         client = MockAuthenticatedClient()
         client.add_response(

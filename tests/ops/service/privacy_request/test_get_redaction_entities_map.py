@@ -1077,12 +1077,12 @@ class TestDSRReportBuilderRedactionEntitiesIntegration(TestDSRReportBuilderBase)
                 if "collection_2" in f and f.endswith(".html")
             ]
 
-            assert (
-                len(public_info_files) > 0
-            ), "Should have public_info collection files"
-            assert (
-                len(sensitive_data_files) > 0
-            ), "Should have sensitive_data collection files"
+            assert len(public_info_files) > 0, (
+                "Should have public_info collection files"
+            )
+            assert len(sensitive_data_files) > 0, (
+                "Should have sensitive_data collection files"
+            )
 
             # Verify nested data appears in the collection content
             if public_info_files:

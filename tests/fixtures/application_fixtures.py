@@ -426,9 +426,7 @@ def storage_config_default_gcs_service_account_keys(db: Session) -> Generator:
                 "project_id": "test-project-123",
                 "private_key_id": "test-key-id-456",
                 "private_key": (
-                    "-----BEGIN PRIVATE KEY-----\n"
-                    "MIItest\n"
-                    "-----END PRIVATE KEY-----\n"
+                    "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----\n"
                 ),
                 "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
                 "client_id": "123456789",
@@ -1671,7 +1669,7 @@ def _create_privacy_request_for_policy(
             tzinfo=timezone.utc,
         ),
         "status": status,
-        "origin": f"https://example.com/",
+        "origin": "https://example.com/",
         "policy_id": policy.id,
         "client_id": policy.client_id,
     }
@@ -2041,7 +2039,7 @@ def privacy_request_with_custom_fields(
             "finished_processing_at": datetime(2021, 10, 3),
             "requested_at": datetime(2021, 10, 1),
             "status": PrivacyRequestStatus.complete,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2070,7 +2068,7 @@ def privacy_request_with_custom_array_fields(
             "finished_processing_at": datetime(2021, 10, 3),
             "requested_at": datetime(2021, 10, 1),
             "status": PrivacyRequestStatus.complete,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2098,7 +2096,7 @@ def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyR
             "finished_processing_at": datetime(2021, 10, 3),
             "requested_at": datetime(2021, 10, 1),
             "status": PrivacyRequestStatus.complete,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2124,7 +2122,7 @@ def privacy_request_with_custom_identities(
             "finished_processing_at": datetime(2021, 10, 3),
             "requested_at": datetime(2021, 10, 1),
             "status": PrivacyRequestStatus.complete,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2238,7 +2236,7 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
             "finished_processing_at": datetime(2021, 10, 3),
             "requested_at": datetime(2021, 10, 1),
             "status": PrivacyRequestStatus.complete,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2263,7 +2261,7 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
             "finished_processing_at": datetime(2021, 1, 2),
             "requested_at": datetime(2020, 12, 31),
             "status": PrivacyRequestStatus.error,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -2607,26 +2605,6 @@ def privacy_notice(db: Session) -> Generator:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
-
-
-@pytest.fixture(scope="function")
-def served_notice_history(
-    db: Session, privacy_notice, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
-            "email": "test@example.com",
-            "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
-            "served_notice_history_id": "ser_12345",
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -3754,7 +3732,7 @@ def system_with_no_uses(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
-            "fides_key": f"system_fides_key",
+            "fides_key": "system_fides_key",
             "name": f"system-{uuid4()}",
             "description": "tcf_relevant_system",
             "organization_fides_key": "default_organization",
@@ -3772,7 +3750,7 @@ def tcf_system(db: Session) -> Generator[System, None, None]:
         data={
             "fides_key": f"tcf-system_key-f{uuid4()}",
             "vendor_id": "gvl.42",
-            "name": f"TCF System Test",
+            "name": "TCF System Test",
             "description": "My TCF System Description",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
@@ -3827,7 +3805,7 @@ def ac_system_with_privacy_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.8",
-            "name": f"Test AC System",
+            "name": "Test AC System",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
         },
@@ -3882,7 +3860,7 @@ def ac_system_without_privacy_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.100",
-            "name": f"Test AC System 2",
+            "name": "Test AC System 2",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
         },
@@ -3899,7 +3877,7 @@ def ac_system_with_invalid_li_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.100",
-            "name": f"Test AC System 3",
+            "name": "Test AC System 3",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
         },
@@ -3928,7 +3906,7 @@ def ac_system_with_invalid_vi_declaration(db: Session) -> System:
         data={
             "fides_key": f"ac_system{uuid.uuid4()}",
             "vendor_id": "gacp.100",
-            "name": f"Test AC System 4",
+            "name": "Test AC System 4",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
         },
@@ -3961,7 +3939,7 @@ def captify_technologies_system(db: Session) -> System:
         data={
             "fides_key": f"captify_{uuid.uuid4()}",
             "vendor_id": "gvl.2",
-            "name": f"Captify",
+            "name": "Captify",
             "description": "Captify is a search intelligence platform that helps brands and advertisers leverage search insights to improve their ad targeting and relevance.",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
@@ -4011,7 +3989,7 @@ def emerse_system(db: Session) -> System:
         data={
             "fides_key": f"emerse{uuid.uuid4()}",
             "vendor_id": "gvl.8",
-            "name": f"Emerse",
+            "name": "Emerse",
             "description": "Emerse Sverige AB is a provider of programmatic advertising solutions, offering advertisers and publishers tools to manage and optimize their digital ad campaigns.",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
@@ -4077,7 +4055,7 @@ def skimbit_system(db):
         data={
             "fides_key": f"skimbit{uuid.uuid4()}",
             "vendor_id": "gvl.46",
-            "name": f"Skimbit (Skimlinks, Taboola)",
+            "name": "Skimbit (Skimlinks, Taboola)",
             "description": "Skimbit, a Taboola company, specializes in data-driven advertising and provides tools for brands and advertisers to analyze customer behavior and deliver targeted and personalized ads.",
             "organization_fides_key": "default_organization",
             "system_type": "Service",
@@ -4122,6 +4100,7 @@ def purpose_three_consent_publisher_override(db):
     override.delete(db)
 
 
+# TODO: This was a duplicate of the served_notice_history fixture.
 @pytest.fixture(scope="function")
 def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity

@@ -1064,16 +1064,16 @@ class TestConnectionService:
         products_collection = result_dataset_dict["collections"][0]
         products_fields_map = {f["name"]: f for f in products_collection["fields"]}
 
-        assert (
-            len(products_fields_map) == expected_field_count
-        ), f"Expected {expected_field_count} fields, got {len(products_fields_map)}"
+        assert len(products_fields_map) == expected_field_count, (
+            f"Expected {expected_field_count} fields, got {len(products_fields_map)}"
+        )
 
         # Check specific field expectations
         for field_name, expectations in expected_fields.items():
             if expectations.get("exists", True):
-                assert (
-                    field_name in products_fields_map
-                ), f"Field {field_name} should exist"
+                assert field_name in products_fields_map, (
+                    f"Field {field_name} should exist"
+                )
                 field = products_fields_map[field_name]
 
                 if "data_categories" in expectations:
@@ -1081,9 +1081,9 @@ class TestConnectionService:
                 if "data_type" in expectations:
                     assert field["fides_meta"]["data_type"] == expectations["data_type"]
             else:
-                assert (
-                    field_name not in products_fields_map
-                ), f"Field {field_name} should not exist"
+                assert field_name not in products_fields_map, (
+                    f"Field {field_name} should not exist"
+                )
 
     def test_merge_dataset_fields_no_changes_preserves_state(
         self,

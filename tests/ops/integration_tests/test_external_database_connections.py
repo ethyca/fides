@@ -195,9 +195,9 @@ def test_bigquery_example_data(bigquery_test_engine):
     # Check that all expected tables are present in the specified schema
     actual_tables = set(inspector.get_table_names(schema=dataset_name))
     missing_tables = expected_tables - actual_tables
-    assert (
-        not missing_tables
-    ), f"Missing expected tables in {dataset_name}: {missing_tables}"
+    assert not missing_tables, (
+        f"Missing expected tables in {dataset_name}: {missing_tables}"
+    )
 
 
 @pytest.mark.integration_external

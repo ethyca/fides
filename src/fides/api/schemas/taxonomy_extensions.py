@@ -6,9 +6,8 @@ from typing import List, Optional
 
 from fideslang.models import DataCategory as BaseDataCategory
 from fideslang.models import DataSubject as BaseDataSubject
-from fideslang.models import DataSubjectRights
+from fideslang.models import DataSubjectRights, DefaultModel
 from fideslang.models import DataUse as BaseDataUse
-from fideslang.models import DefaultModel
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Field
 

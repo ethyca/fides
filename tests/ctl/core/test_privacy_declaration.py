@@ -7,7 +7,6 @@ from fides.api.util.data_category import get_data_categories_map
 
 
 class TestPrivacyDeclaration:
-
     @pytest.fixture(scope="function")
     def data_categories_map(self, db) -> Dict[str, Set[str]]:
         return get_data_categories_map(db)
@@ -33,11 +32,12 @@ class TestPrivacyDeclaration:
         privacy_declaration_with_single_dataset_reference: PrivacyDeclaration,
         data_categories_map,
     ):
-        assert privacy_declaration_with_single_dataset_reference.undeclared_data_categories(
-            data_categories_map
-        ) == {
-            "user.contact.email"
-        }
+        assert (
+            privacy_declaration_with_single_dataset_reference.undeclared_data_categories(
+                data_categories_map
+            )
+            == {"user.contact.email"}
+        )
 
     def test_privacy_declaration_data_category_defined_on_sibling(
         self,

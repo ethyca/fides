@@ -107,9 +107,9 @@ def assert_rows_match(rows: List[Row], min_size: int, keys: Iterable[str]) -> No
 
     assert len(rows) >= min_size
     for row in rows:
-        assert contains_keys(
-            row, *keys
-        ), f"assert_rows_match differs by [{','.join(set(keys).difference(set(row.keys())))}]"
+        assert contains_keys(row, *keys), (
+            f"assert_rows_match differs by [{','.join(set(keys).difference(set(row.keys())))}]"
+        )
 
 
 # Helper methods
@@ -227,9 +227,9 @@ def generate_binary_tree_resources(
 ) -> List[GraphDataset]:
     """Generate a multi-level binary tree for testing"""
     root = GraphDataset(
-        name=f"root",
-        collections=[Collection(name=f"ds", fields=generate_field_list(3))],
-        connection_key=f"mock_connection_config_key_root",
+        name="root",
+        collections=[Collection(name="ds", fields=generate_field_list(3))],
+        connection_key="mock_connection_config_key_root",
     )
 
     queue = [root]

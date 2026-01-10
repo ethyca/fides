@@ -58,17 +58,17 @@ def create_qa_datasets(postgres_dataset_key, mongo_dataset_key):
     postgres_dataset_config = copy.deepcopy(postgres_dataset_config)
     postgres_dataset_config["fides_key"] = postgres_dataset_key
     postgres_dataset_config["name"] = f"QA {postgres_dataset_config['name']}"
-    postgres_dataset_config[
-        "description"
-    ] = f"QA version of {postgres_dataset_config['description']}"
+    postgres_dataset_config["description"] = (
+        f"QA version of {postgres_dataset_config['description']}"
+    )
 
     # Update mongo dataset with QA key and replace all references
     mongo_dataset_config = copy.deepcopy(mongo_dataset_config)
     mongo_dataset_config["fides_key"] = mongo_dataset_key
     mongo_dataset_config["name"] = f"QA {mongo_dataset_config['name']}"
-    mongo_dataset_config[
-        "description"
-    ] = f"QA version of {mongo_dataset_config['description']}"
+    mongo_dataset_config["description"] = (
+        f"QA version of {mongo_dataset_config['description']}"
+    )
 
     # Recursively replace all dataset references with QA keys
     def replace_dataset_references(obj):

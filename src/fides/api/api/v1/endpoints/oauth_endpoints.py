@@ -265,8 +265,11 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
         authentication = (
             connection_config.get_saas_config().client_config.authentication  # type: ignore
         )
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(  # type: ignore
-            authentication.strategy, authentication.configuration  # type: ignore
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(  # type: ignore
+                authentication.strategy,
+                authentication.configuration,  # type: ignore
+            )
         )
         connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore
         auth_strategy.get_access_token(connection_config, db)

@@ -231,9 +231,9 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        assert user.permissions.roles == [
-            VIEWER
-        ], "User given viewer role by default on create"
+        assert user.permissions.roles == [VIEWER], (
+            "User given viewer role by default on create"
+        )
 
     def test_underscore_in_password(
         self,
@@ -1466,9 +1466,9 @@ class TestUpdateUserPassword:
 
         db.expunge(user)
         user = user.refresh_from_db(db=db)
-        assert (
-            user.hashed_password == old_hashed_password
-        ), "Password changed on the user"
+        assert user.hashed_password == old_hashed_password, (
+            "Password changed on the user"
+        )
 
     def test_force_update_different_user_password(
         self,
@@ -2043,12 +2043,12 @@ class TestUpdateSystemsManagedByUser:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
         resp = api_client.put(
-            V1_URL_PREFIX + f"/user/bad_user/system-manager",
+            V1_URL_PREFIX + "/user/bad_user/system-manager",
             headers=auth_header,
             json=["bad_fides_key"],
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_update_system_manager_system_not_found(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2308,10 +2308,10 @@ class TestGetSystemsUserManages(SystemManagerUserEndpointTestBase):
     ) -> None:
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
         resp = api_client.get(
-            V1_URL_PREFIX + f"/user/bad_user/system-manager", headers=auth_header
+            V1_URL_PREFIX + "/user/bad_user/system-manager", headers=auth_header
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_get_systems_managed_by_user_none_exist(
         self, api_client: TestClient, generate_auth_header, url
@@ -2409,7 +2409,7 @@ class TestGetSpecificSystemUserManages(SystemManagerUserEndpointTestBase):
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_get_system_managed_by_user_system_does_not_exist(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2420,7 +2420,7 @@ class TestGetSpecificSystemUserManages(SystemManagerUserEndpointTestBase):
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+        assert resp.json()["detail"] == "No system found with fides_key bad_system."
 
     def test_get_system_not_managed_by_user(
         self, api_client: TestClient, generate_auth_header, url, viewer_user, system
@@ -2473,7 +2473,7 @@ class TestRemoveUserAsSystemManager:
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_delete_user_as_system_manager_from_nonexistent_system(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2484,7 +2484,7 @@ class TestRemoveUserAsSystemManager:
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+        assert resp.json()["detail"] == "No system found with fides_key bad_system."
 
     def test_remove_user_from_system_not_managed_by_user(
         self, api_client: TestClient, generate_auth_header, url, viewer_user, system

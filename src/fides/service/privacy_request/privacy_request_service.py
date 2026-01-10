@@ -252,7 +252,8 @@ class PrivacyRequestService:
 
         # 3) Single-row global config
         privacy_center_config_record = PrivacyCenterConfigModel.filter(
-            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+            db=self.db,
+            conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
         ).first()
         if privacy_center_config_record:
             return privacy_center_config_record.config  # type: ignore[return-value]

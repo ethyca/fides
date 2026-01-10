@@ -977,7 +977,6 @@ class TimeBasedPartitioning(FidesSchema):
             and end_match is not None
             and end_match.group(1) == base_func_name
         ) or (is_timestamp_pattern and end_timestamp_match is not None):
-
             if is_timestamp_pattern and end_timestamp_match is not None:
                 end_units_raw = int(end_timestamp_match.group(1))
                 end_unit_enum = TimeUnit.parse(end_timestamp_match.group(2))

@@ -50,7 +50,6 @@ def url() -> str:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPatchApplicationConfig:
-
     @pytest.fixture(scope="function")
     def payload(self):
         return {
@@ -669,7 +668,6 @@ class TestPatchApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPutApplicationConfig:
-
     @pytest.fixture(scope="function")
     def payload(self):
         return {
@@ -1039,7 +1037,6 @@ class TestPutApplicationConfig:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestGetApplicationConfigApiSet:
-
     @pytest.fixture(scope="function")
     def payload(self):
         return {
@@ -1152,7 +1149,6 @@ class TestGetApplicationConfigApiSet:
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestDeleteApplicationConfig:
-
     @pytest.fixture(scope="function")
     def payload(self):
         return {
@@ -1328,7 +1324,6 @@ class TestDeleteApplicationConfig:
 
 
 class TestGetConfig:
-
     def test_get_config(
         self,
         api_client: TestClient,
@@ -1358,9 +1353,9 @@ class TestGetConfig:
         }
 
         for key in config.keys():
-            assert (
-                key in allowed_top_level_config_keys
-            ), "Unexpected config API change, please review with Ethyca security team"
+            assert key in allowed_top_level_config_keys, (
+                "Unexpected config API change, please review with Ethyca security team"
+            )
 
         assert "security" in config
         assert "user" in config
@@ -1466,9 +1461,9 @@ class TestGetConfig:
             ), "Unexpected config API change, please review with Ethyca security team"
 
         consent_keys = set(config["consent"].keys())
-        assert (
-            len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0
-        ), "Unexpected config API change, please review with Ethyca security team"
+        assert len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0, (
+            "Unexpected config API change, please review with Ethyca security team"
+        )
 
         execution_keys = set(config["admin_ui"].keys())
         assert (
@@ -1481,9 +1476,9 @@ class TestGetConfig:
         ), "Unexpected config API change, please review with Ethyca security team"
 
         privacy_center_keys = set(config["privacy_center"].keys())
-        assert (
-            len(privacy_center_keys.difference(set(["url"]))) == 0
-        ), "Unexpected config API change, please review with Ethyca security team"
+        assert len(privacy_center_keys.difference(set(["url"]))) == 0, (
+            "Unexpected config API change, please review with Ethyca security team"
+        )
 
 
 class TestPatchDuplicateDetectionConfig:

@@ -37,7 +37,8 @@ class TestGetS3Session:
     def tests_unsupported_storage_secret_type_error(self):
         with pytest.raises(ValueError):
             get_aws_session(
-                "bad", {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"}  # type: ignore
+                "bad",
+                {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"},  # type: ignore
             )
 
 

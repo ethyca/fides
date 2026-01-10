@@ -887,7 +887,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             with mock.patch(
                 "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
-
                 requeue_interrupted_tasks.apply().get()
 
                 # Should log warning and requeue
@@ -996,7 +995,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             with mock.patch(
                 "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
-
                 requeue_interrupted_tasks.apply().get()
 
                 # Should log warning and requeue

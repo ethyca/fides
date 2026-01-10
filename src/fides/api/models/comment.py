@@ -1,9 +1,8 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String, func, orm
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, String, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 

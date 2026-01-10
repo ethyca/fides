@@ -214,7 +214,7 @@ def test_delete_privacy_request(db: Session, policy: Policy) -> None:
             "started_processing_at": datetime.utcnow(),
             "requested_at": datetime.utcnow() - timedelta(days=1),
             "status": PrivacyRequestStatus.in_processing,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -236,7 +236,7 @@ def test_delete_privacy_request_removes_cached_data(
             "started_processing_at": datetime.utcnow(),
             "requested_at": datetime.utcnow() - timedelta(days=1),
             "status": PrivacyRequestStatus.in_processing,
-            "origin": f"https://example.com/",
+            "origin": "https://example.com/",
             "policy_id": policy.id,
             "client_id": policy.client_id,
         },
@@ -577,7 +577,7 @@ class TestPrivacyRequestTriggerWebhooks:
             )
 
             def request_contains_oauth_bearer_token(request):
-                assert request.headers["Authorization"] == f"Bearer test_token"
+                assert request.headers["Authorization"] == "Bearer test_token"
                 return True
 
             mock_response.post(
@@ -629,7 +629,7 @@ class TestPrivacyRequestTriggerWebhooks:
             assert "timestamp" in payload_data
             assert (
                 re.match(
-                    "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
+                    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}",
                     payload_data["timestamp"],
                 )
                 is not None
@@ -1378,7 +1378,6 @@ class TestPrivacyRequestCustomIdentities:
 
 
 class TestPrivacyRequestAttachments:
-
     @pytest.fixture
     def mock_s3_client(self, s3_client, monkeypatch):
         """Fixture to mock the S3 client for attachment tests"""
@@ -1618,9 +1617,9 @@ class TestPrivacyRequestAttachments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert (
-                len(sqlalchemy_warnings) == 0
-            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            assert len(sqlalchemy_warnings) == 0, (
+                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            )
 
             # Cleanup
             if db.query(AttachmentReference).filter_by(id=attachment_ref.id).first():
@@ -1760,9 +1759,9 @@ class TestPrivacyRequestComments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert (
-                len(sqlalchemy_warnings) == 0
-            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            assert len(sqlalchemy_warnings) == 0, (
+                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            )
 
             # Cleanup
             if db.query(CommentReference).filter_by(id=comment_ref.id).first():

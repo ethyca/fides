@@ -112,7 +112,6 @@ class TestDigestConfigConditionMethods:
                 "digest_condition_type": digest_condition_type,
                 "parent_id": root_group.id,
                 "condition_type": ConditionalDependencyType.leaf,
-                "parent_id": root_group.id,
                 "sort_order": 1,
             },
         )

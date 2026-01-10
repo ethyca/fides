@@ -8,7 +8,6 @@ from fides.api.models.taxonomy import Taxonomy, TaxonomyElement, TaxonomyUsage
 
 @pytest.mark.usefixtures("default_taxonomy")
 class TestTaxonomyModels:
-
     def test_cannot_create_legacy_taxonomy(self, db: Session):
         """Legacy taxonomy keys are system-managed and cannot be created via the new model."""
         with pytest.raises(ValidationError):

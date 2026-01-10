@@ -121,7 +121,6 @@ def stripe_dataset_config(
 
 
 class StripeTestClient:
-
     def __init__(self, stripe_secrets: Dict[str, Any]):
         self.base_url = f"https://{stripe_secrets['domain']}"
         self.headers = {
@@ -130,7 +129,6 @@ class StripeTestClient:
         }
 
     def create_customer(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-
         response = requests.post(
             url=f"{self.base_url}/v1/customers",
             headers=self.headers,
@@ -439,7 +437,6 @@ def stripe_test_client(
 
 
 def stripe_generate_data(client, email, phone_number):
-
     # customer
     customer_data = {
         "address": {

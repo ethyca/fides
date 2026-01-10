@@ -177,9 +177,9 @@ def test_create_and_process_access_request_dynamodb(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = f"dynamodb_example_test_dataset:customer"
-    address_table_key = f"dynamodb_example_test_dataset:address"
-    login_table_key = f"dynamodb_example_test_dataset:login"
+    customer_table_key = "dynamodb_example_test_dataset:customer"
+    address_table_key = "dynamodb_example_test_dataset:address"
+    login_table_key = "dynamodb_example_test_dataset:login"
     assert len(results[customer_table_key]) == 1
     assert len(results[address_table_key]) == 1
     assert len(results[login_table_key]) == 2

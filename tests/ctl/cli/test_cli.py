@@ -619,9 +619,7 @@ class TestScan:
     def test_scan_dataset_db_input_connection_string(
         self, worker_id: str, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        database_name = (
-            "fides_test" + f"_{worker_id}" if worker_id is not "master" else ""
-        )
+        database_name = "fides_test" + f"_{worker_id}" if worker_id != "master" else ""
         print(database_name)
         result = test_cli_runner.invoke(
             cli,

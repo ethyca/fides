@@ -299,7 +299,9 @@ class ConditionalDependencyBase(Base):
             # Add children if this is a group
             if node.condition_type == ConditionalDependencyType.group:
                 try:
-                    children = sorted([child for child in node.children], key=lambda x: x.sort_order)  # type: ignore[attr-defined]
+                    children = sorted(
+                        [child for child in node.children], key=lambda x: x.sort_order
+                    )  # type: ignore[attr-defined]
                     for i, child in enumerate(children):
                         is_last_child = i == len(children) - 1
                         child_prefix = prefix + ("    " if is_last else "│   ")

@@ -1,8 +1,7 @@
 from enum import Enum as EnumType
 
-from sqlalchemy import Column
+from sqlalchemy import Column, String
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import String
 
 from fides.api.db.base_class import Base
 

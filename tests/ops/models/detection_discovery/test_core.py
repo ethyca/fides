@@ -414,7 +414,6 @@ SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
 
 class TestMonitorConfigModel:
-
     @pytest.fixture(scope="function")
     def shared_monitor_config(self, db: Session) -> SharedMonitorConfig:
         """Fixture for creating a test SharedMonitorConfig"""

@@ -784,10 +784,10 @@ class TestManualTaskDataExtraction:
                     else:
                         # For scalar fields, check equality
                         if expected_result:
-                            assert (
-                                actual_value == expected_value
-                            ), f"Expected {field_path}={expected_value}, got {actual_value}"
+                            assert actual_value == expected_value, (
+                                f"Expected {field_path}={expected_value}, got {actual_value}"
+                            )
                         else:
-                            assert (
-                                actual_value != expected_value
-                            ), f"Expected {field_path}!={expected_value}, but got {actual_value}"
+                            assert actual_value != expected_value, (
+                                f"Expected {field_path}!={expected_value}, but got {actual_value}"
+                            )

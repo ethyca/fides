@@ -8,7 +8,6 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 @pytest.mark.integration_saas
 class TestHubspotConnector:
-
     def test_hubspot_connection_test(self, hubspot_runner: ConnectorRunner) -> None:
         hubspot_runner.test_connection()
 

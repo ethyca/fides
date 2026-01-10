@@ -111,7 +111,7 @@ class Property(Base):
         ).all()
         if matching_paths:
             raise ValueError(
-                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+                f"The path(s) '{', '.join([matching_path.path for matching_path in matching_paths])}' are already associated with another property."
             )
 
         # Ensure that there is at least 1 default. Relevant for new Fides users who have no properties at all.
@@ -125,7 +125,8 @@ class Property(Base):
         )
 
         property_paths = [
-            PropertyPath(property_id=prop.id, path=path) for path in set(paths)  # type: ignore
+            PropertyPath(property_id=prop.id, path=path)
+            for path in set(paths)  # type: ignore
         ]
         prop._property_paths = property_paths
 
@@ -144,7 +145,7 @@ class Property(Base):
         )
         if matching_paths:
             raise ValueError(
-                f'The path(s) \'{", ".join([matching_path.path for matching_path in matching_paths])}\' are already associated with another property.'
+                f"The path(s) '{', '.join([matching_path.path for matching_path in matching_paths])}' are already associated with another property."
             )
 
         # Ensure that there is at least 1 default.

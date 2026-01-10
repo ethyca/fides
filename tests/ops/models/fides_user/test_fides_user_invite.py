@@ -11,7 +11,6 @@ from fides.api.oauth.roles import VIEWER
 
 
 class TestFidesUserInvite:
-
     @pytest.mark.usefixtures("approver")
     def test_create(self, db: Session, username: str):
         invite_code = "test_invite"

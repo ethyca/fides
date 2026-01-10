@@ -113,7 +113,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # This check needs to be here so it has access to the session to throw an error
     if image == "prod":
         try:
-            import git  # pylint: disable=unused-import
+            import git  # noqa: F401
         except ModuleNotFoundError:
             session.error(
                 "Building the prod image requires the GitPython module! Please run 'pip install gitpython' and try again"

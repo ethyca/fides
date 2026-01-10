@@ -20,21 +20,9 @@ from fides.config import CONFIG
 
 page_size = Params().size
 
-import json
 from typing import Any, Dict, Generator
 
-import pytest
-
 from fides.api import middleware as _middleware
-from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fides.api.oauth.jwt import generate_jwe
-from fides.common.api.scope_registry import USER_CREATE
-from fides.config import CONFIG
 
 # from sqlalchemy.exc import SQLAlchemyError
 

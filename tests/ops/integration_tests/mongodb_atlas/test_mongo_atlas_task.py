@@ -1543,6 +1543,6 @@ class TestRetrievingDataMongoDBAtlas:
 
         # Test connection
         status = connector.test_connection()
-        assert (
-            status == ConnectionTestStatus.succeeded
-        ), "Atlas connection should succeed"
+        assert status == ConnectionTestStatus.succeeded, (
+            "Atlas connection should succeed"
+        )

@@ -927,7 +927,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         # just one of them
         assert response.status_code == 422
         assert (
-            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'"
+            "Phone number must be formatted in E.164 format, i.e. '+15558675309'"
             in response.text
         )
 
@@ -947,7 +947,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert (
-            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
+            "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
             in response.text
         )
 
@@ -1045,10 +1045,13 @@ class TestPutMessagingConfigSecretsAWSSES:
             == "5678"
         )
         assert (
-            messaging_config_aws_ses.secrets[
-                MessagingServiceSecrets.AWS_AUTH_METHOD.value
-            ]
-        ) == "secret_keys"
+            (
+                messaging_config_aws_ses.secrets[
+                    MessagingServiceSecrets.AWS_AUTH_METHOD.value
+                ]
+            )
+            == "secret_keys"
+        )
 
 
 class TestGetMessagingConfigs:

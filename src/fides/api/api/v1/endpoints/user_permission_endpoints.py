@@ -113,7 +113,11 @@ async def update_user_permissions(
 
     updated_user_perms = user.permissions.update(  # type: ignore[attr-defined]
         db=db,
-        data={"id": user.permissions.id, "user_id": user_id, "roles": permissions.roles},  # type: ignore[attr-defined]
+        data={
+            "id": user.permissions.id,
+            "user_id": user_id,
+            "roles": permissions.roles,
+        },  # type: ignore[attr-defined]
     )
 
     if user.systems and APPROVER in user.permissions.roles:  # type: ignore[attr-defined]

@@ -238,10 +238,8 @@ class TestConsentEmailBatchSend:
         execution_logs: ExecutionLog = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == privacy_request_awaiting_consent_email_send.id
             ),
         )
         assert execution_logs.count() == 1
@@ -447,10 +445,8 @@ class TestConsentEmailBatchSend:
         email_execution_logs: ExecutionLog = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == privacy_request_awaiting_consent_email_send.id
             ),
         )
         assert email_execution_logs.count() == 1
@@ -563,10 +559,8 @@ class TestConsentEmailBatchSend:
         logs_for_privacy_request_without_identity = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == second_privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == second_privacy_request_awaiting_consent_email_send.id
             ),
         )
         assert logs_for_privacy_request_without_identity.count() == 1
@@ -692,10 +686,8 @@ class TestConsentEmailBatchSend:
         logs_for_privacy_request_without_identity = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == second_privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == second_privacy_request_awaiting_consent_email_send.id
             ),
         )
         assert logs_for_privacy_request_without_identity.count() == 1
@@ -1020,10 +1012,8 @@ class TestErasureEmailBatchSend:
         consent_logs = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == second_privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == second_privacy_request_awaiting_consent_email_send.id
             ),
         ).first()
         assert consent_logs is None
@@ -1032,10 +1022,8 @@ class TestErasureEmailBatchSend:
         logs_for_privacy_request_without_identity = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == third_privacy_request_awaiting_erasure_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == third_privacy_request_awaiting_erasure_email_send.id
             ),
         )
         assert logs_for_privacy_request_without_identity.count() == 1
@@ -1112,10 +1100,8 @@ class TestErasureEmailBatchSend:
         consent_logs = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == second_privacy_request_awaiting_consent_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == second_privacy_request_awaiting_consent_email_send.id
             ),
         ).first()
         assert consent_logs is None
@@ -1124,10 +1110,8 @@ class TestErasureEmailBatchSend:
         logs_for_privacy_request_without_identity = ExecutionLog.filter(
             db=db,
             conditions=(
-                (
-                    ExecutionLog.privacy_request_id
-                    == third_privacy_request_awaiting_erasure_email_send.id
-                )
+                ExecutionLog.privacy_request_id
+                == third_privacy_request_awaiting_erasure_email_send.id
             ),
         )
         assert logs_for_privacy_request_without_identity.count() == 1

@@ -574,13 +574,16 @@ def run_privacy_request(
                 access_result_urls: list[str] = []
                 raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
-                    policy.get_rules_for_action(action_type=ActionType.access)
-                    or policy.get_rules_for_action(
-                        action_type=ActionType.erasure
-                    )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
-                ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.upload_access,
-                    from_checkpoint=resume_step,
+                    (
+                        policy.get_rules_for_action(action_type=ActionType.access)
+                        or policy.get_rules_for_action(
+                            action_type=ActionType.erasure
+                        )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+                    )
+                    and can_run_checkpoint(
+                        request_checkpoint=CurrentStep.upload_access,
+                        from_checkpoint=resume_step,
+                    )
                 ):
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access

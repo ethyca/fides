@@ -12,13 +12,14 @@ Run with:
 - python qa/scenarios/sql_translator_demo.py teardown # Cleans up demo resources
 """
 
-import sys
 import argparse
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from uuid import uuid4
+
 from sqlalchemy import and_
 from sqlalchemy.orm import Session, sessionmaker
-from uuid import uuid4
 
 # Add project root and qa directory to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -29,42 +30,42 @@ if str(project_root) not in sys.path:
 if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
-from utils import QATestScenario, Argument
+from utils import Argument, QATestScenario
 
-from fides.api.db.ctl_session import sync_engine
 from fides.api.db.base import *
+from fides.api.db.ctl_session import sync_engine
 from fides.api.db.database import seed_db
+from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskConfigurationType,
-    ManualTaskFieldType,
-    ManualTaskParentEntityType,
-    ManualTaskType,
     ManualTaskExecutionTiming,
+    ManualTaskFieldType,
+    ManualTaskInstance,
+    ManualTaskParentEntityType,
     ManualTaskReference,
     ManualTaskReferenceType,
-    ManualTaskInstance,
+    ManualTaskType,
 )
-from fides.api.models.fides_user import FidesUser
-from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.client import ClientDetail
-from fides.api.oauth.roles import (
-    OWNER,
-    CONTRIBUTOR,
-    VIEWER,
-    APPROVER,
-    RESPONDENT,
-)
-from fides.api.models.policy import Policy, Rule, RuleTarget, ActionType
-from fides.api.models.storage import StorageConfig
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.storage import StorageConfig
+from fides.api.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    RESPONDENT,
+    VIEWER,
+)
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
     ConditionGroup,
@@ -72,8 +73,12 @@ from fides.api.task.conditional_dependencies.schemas import (
     GroupOperator,
     Operator,
 )
-from fides.api.task.conditional_dependencies.sql_translator import SQLConditionTranslator
-from fides.api.task.manual.manual_task_utils import get_connection_configs_with_manual_tasks
+from fides.api.task.conditional_dependencies.sql_translator import (
+    SQLConditionTranslator,
+)
+from fides.api.task.manual.manual_task_utils import (
+    get_connection_configs_with_manual_tasks,
+)
 
 # Initialize database
 SessionLocal = sessionmaker(bind=sync_engine)
@@ -90,7 +95,7 @@ DEMO_USERS = [
         "password": "DemoOwner123!",
         "roles": [OWNER],
         "assign_to_task": True,
-        "description": "Owner with full admin access"
+        "description": "Owner with full admin access",
     },
     {
         "username": "demo_contributor_user",
@@ -100,7 +105,7 @@ DEMO_USERS = [
         "password": "DemoContrib123!",
         "roles": [CONTRIBUTOR],
         "assign_to_task": True,
-        "description": "Contributor with edit access (no storage/messaging config)"
+        "description": "Contributor with edit access (no storage/messaging config)",
     },
     {
         "username": "demo_viewer_user",
@@ -110,7 +115,7 @@ DEMO_USERS = [
         "password": "DemoViewer123!",
         "roles": [VIEWER],
         "assign_to_task": False,
-        "description": "Viewer with read-only access to Data Map"
+        "description": "Viewer with read-only access to Data Map",
     },
     {
         "username": "demo_approver_user",
@@ -120,7 +125,7 @@ DEMO_USERS = [
         "password": "DemoApprover123!",
         "roles": [APPROVER],
         "assign_to_task": True,
-        "description": "Approver who can manage Privacy Requests"
+        "description": "Approver who can manage Privacy Requests",
     },
     {
         "username": "demo_respondent_user",
@@ -130,8 +135,8 @@ DEMO_USERS = [
         "password": "DemoRespondent123!",
         "roles": [RESPONDENT],
         "assign_to_task": True,
-        "description": "Internal respondent for manual DSR tasks"
-    }
+        "description": "Internal respondent for manual DSR tasks",
+    },
 ]
 
 # Manual Task configuration fields
@@ -142,8 +147,8 @@ MANUAL_TASK_FIELDS = [
         "field_metadata": {
             "label": "Data Verification Complete",
             "required": True,
-            "help_text": "Verify that all requested data has been collected"
-        }
+            "help_text": "Verify that all requested data has been collected",
+        },
     },
     {
         "field_key": "processing_notes",
@@ -151,8 +156,8 @@ MANUAL_TASK_FIELDS = [
         "field_metadata": {
             "label": "Processing Notes",
             "required": False,
-            "help_text": "Add any notes about the data processing"
-        }
+            "help_text": "Add any notes about the data processing",
+        },
     },
     {
         "field_key": "reviewer_approval",
@@ -160,9 +165,9 @@ MANUAL_TASK_FIELDS = [
         "field_metadata": {
             "label": "Reviewer Approval",
             "required": True,
-            "help_text": "Confirm review and approval of the processed data"
-        }
-    }
+            "help_text": "Confirm review and approval of the processed data",
+        },
+    },
 ]
 
 
@@ -170,17 +175,19 @@ class SQLTranslatorDemo(QATestScenario):
     """QA demo for SQL translator functionality with user management and manual task assignment."""
 
     arguments = {
-        'connection_key': Argument(
+        "connection_key": Argument(
             type=str,
             default="sql_translator_demo_connection",
-            description="Connection key for the demo Manual Task connection"
+            description="Connection key for the demo Manual Task connection",
         )
     }
 
     def __init__(self, base_url: str = "http://localhost:8080", **kwargs):
         super().__init__(base_url, **kwargs)
         self.db = self._get_db_session()
-        self.connection_key = kwargs.get('connection_key', 'sql_translator_demo_connection')
+        self.connection_key = kwargs.get(
+            "connection_key", "sql_translator_demo_connection"
+        )
         self.demo_users = []
         self.connection_config = None
         self.manual_task = None
@@ -275,16 +282,16 @@ class SQLTranslatorDemo(QATestScenario):
 
         print(f"Cleaning up SQL Translator Demo resources...")
         deleted_counts = {
-            'users': 0,
-            'clients': 0,
-            'permissions': 0,
-            'manual_tasks': 0,
-            'connections': 0,
-            'task_references': 0,
-            'privacy_requests': 0,
-            'task_instances': 0,
-            'policies': 0,
-            'storage_configs': 0
+            "users": 0,
+            "clients": 0,
+            "permissions": 0,
+            "manual_tasks": 0,
+            "connections": 0,
+            "task_references": 0,
+            "privacy_requests": 0,
+            "task_instances": 0,
+            "policies": 0,
+            "storage_configs": 0,
         }
 
         try:
@@ -294,7 +301,9 @@ class SQLTranslatorDemo(QATestScenario):
             deleted_counts["privacy_requests"] += privacy_count
             deleted_counts["task_instances"] += instance_count
             if privacy_count > 0:
-                self.success(f"Deleted {privacy_count} privacy request(s) and {instance_count} task instance(s)")
+                self.success(
+                    f"Deleted {privacy_count} privacy request(s) and {instance_count} task instance(s)"
+                )
 
             # Step 2: Delete Policy and Storage Config
             self.step(2, "Deleting Policy and Storage Config")
@@ -302,7 +311,9 @@ class SQLTranslatorDemo(QATestScenario):
             deleted_counts["policies"] += policy_count
             deleted_counts["storage_configs"] += storage_count
             if policy_count > 0:
-                self.success(f"Deleted {policy_count} policy/policies and {storage_count} storage config(s)")
+                self.success(
+                    f"Deleted {policy_count} policy/policies and {storage_count} storage config(s)"
+                )
 
             # Step 3: Delete Manual Task (cascades to references)
             self.step(3, "Deleting Manual Task and references")
@@ -319,11 +330,17 @@ class SQLTranslatorDemo(QATestScenario):
             # Step 5: Delete demo users (cascades to clients and permissions)
             self.step(5, "Deleting demo users")
             for user_data in DEMO_USERS:
-                user = self.db.query(FidesUser).filter_by(username=user_data["username"]).first()
+                user = (
+                    self.db.query(FidesUser)
+                    .filter_by(username=user_data["username"])
+                    .first()
+                )
                 if user and self._delete_user_by_username(user_data["username"]):
                     deleted_counts["users"] += 1
                     deleted_counts["clients"] += 1  # Client is cascade deleted
-                    deleted_counts["permissions"] += 1  # Permissions are cascade deleted
+                    deleted_counts["permissions"] += (
+                        1  # Permissions are cascade deleted
+                    )
                     self.success(f"Deleted user: {user.username}")
 
             self.summary("Cleanup Summary", deleted_counts)
@@ -344,9 +361,15 @@ class SQLTranslatorDemo(QATestScenario):
         try:
             for user_data in DEMO_USERS:
                 # Check if user already exists
-                existing_user = self.db.query(FidesUser).filter_by(username=user_data["username"]).first()
+                existing_user = (
+                    self.db.query(FidesUser)
+                    .filter_by(username=user_data["username"])
+                    .first()
+                )
                 if existing_user:
-                    self.info(f"User {user_data['username']} already exists, skipping creation")
+                    self.info(
+                        f"User {user_data['username']} already exists, skipping creation"
+                    )
                     self.demo_users.append(existing_user)
                     continue
 
@@ -365,13 +388,11 @@ class SQLTranslatorDemo(QATestScenario):
 
                 # Create user permissions
                 permissions = FidesUserPermissions.create(
-                    db=self.db,
-                    data={
-                        "user_id": user.id,
-                        "roles": user_data["roles"]
-                    }
+                    db=self.db, data={"user_id": user.id, "roles": user_data["roles"]}
                 )
-                self.success(f"Created user: {user_data['username']} ({user_data['description']})")
+                self.success(
+                    f"Created user: {user_data['username']} ({user_data['description']})"
+                )
 
             return True
 
@@ -383,7 +404,11 @@ class SQLTranslatorDemo(QATestScenario):
         """Create the Manual Task connection."""
         try:
             # Check if connection already exists
-            existing_connection = self.db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
+            existing_connection = (
+                self.db.query(ConnectionConfig)
+                .filter_by(key=self.connection_key)
+                .first()
+            )
             if existing_connection:
                 self.info(f"Connection {self.connection_key} already exists")
                 self.connection_config = existing_connection
@@ -400,7 +425,9 @@ class SQLTranslatorDemo(QATestScenario):
                 "description": "Demo connection for SQL translator functionality with manual task assignment",
             }
 
-            self.connection_config = ConnectionConfig.create(db=self.db, data=connection_data)
+            self.connection_config = ConnectionConfig.create(
+                db=self.db, data=connection_data
+            )
             self.success(f"Created Manual Task connection: {self.connection_key}")
 
             return True
@@ -413,10 +440,15 @@ class SQLTranslatorDemo(QATestScenario):
         """Create the Manual Task."""
         try:
             # Check if manual task already exists for this connection
-            existing_task = self.db.query(ManualTask).filter(
-                ManualTask.parent_entity_id == self.connection_config.id,
-                ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config
-            ).first()
+            existing_task = (
+                self.db.query(ManualTask)
+                .filter(
+                    ManualTask.parent_entity_id == self.connection_config.id,
+                    ManualTask.parent_entity_type
+                    == ManualTaskParentEntityType.connection_config,
+                )
+                .first()
+            )
 
             if existing_task:
                 self.info(f"Manual Task already exists for connection")
@@ -427,7 +459,7 @@ class SQLTranslatorDemo(QATestScenario):
             manual_task_data = {
                 "task_type": ManualTaskType.privacy_request,
                 "parent_entity_id": self.connection_config.id,
-                "parent_entity_type": ManualTaskParentEntityType.connection_config
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
             }
 
             self.manual_task = ManualTask.create(db=self.db, data=manual_task_data)
@@ -443,14 +475,20 @@ class SQLTranslatorDemo(QATestScenario):
         """Create Manual Task configuration."""
         try:
             # Check if config already exists for this task
-            existing_config = self.db.query(ManualTaskConfig).filter_by(
-                task_id=self.manual_task.id,
-                config_type=ManualTaskConfigurationType.access_privacy_request,
-                is_current=True
-            ).first()
+            existing_config = (
+                self.db.query(ManualTaskConfig)
+                .filter_by(
+                    task_id=self.manual_task.id,
+                    config_type=ManualTaskConfigurationType.access_privacy_request,
+                    is_current=True,
+                )
+                .first()
+            )
 
             if existing_config:
-                self.info(f"Manual Task configuration already exists: {existing_config.id}")
+                self.info(
+                    f"Manual Task configuration already exists: {existing_config.id}"
+                )
                 self.manual_task_config = existing_config
                 return True
 
@@ -459,11 +497,15 @@ class SQLTranslatorDemo(QATestScenario):
                 "config_type": ManualTaskConfigurationType.access_privacy_request,
                 "version": 1,
                 "is_current": True,
-                "execution_timing": ManualTaskExecutionTiming.post_execution
+                "execution_timing": ManualTaskExecutionTiming.post_execution,
             }
 
-            self.manual_task_config = ManualTaskConfig.create(db=self.db, data=config_data)
-            self.success(f"Created Manual Task configuration: {self.manual_task_config.id}")
+            self.manual_task_config = ManualTaskConfig.create(
+                db=self.db, data=config_data
+            )
+            self.success(
+                f"Created Manual Task configuration: {self.manual_task_config.id}"
+            )
 
             return True
 
@@ -475,16 +517,22 @@ class SQLTranslatorDemo(QATestScenario):
         """Create Manual Task configuration fields."""
         try:
             # Check if the expected number of unique fields already exist for this config
-            existing_fields = self.db.query(ManualTaskConfigField).filter_by(
-                config_id=self.manual_task_config.id
-            ).all()
+            existing_fields = (
+                self.db.query(ManualTaskConfigField)
+                .filter_by(config_id=self.manual_task_config.id)
+                .all()
+            )
 
             # Check if we have the expected fields (no duplicates)
             expected_field_keys = {field["field_key"] for field in MANUAL_TASK_FIELDS}
             existing_field_keys = {field.field_key for field in existing_fields}
 
-            if existing_field_keys == expected_field_keys and len(existing_fields) == len(MANUAL_TASK_FIELDS):
-                self.info(f"Manual Task fields already exist ({len(existing_fields)} fields), skipping creation")
+            if existing_field_keys == expected_field_keys and len(
+                existing_fields
+            ) == len(MANUAL_TASK_FIELDS):
+                self.info(
+                    f"Manual Task fields already exist ({len(existing_fields)} fields), skipping creation"
+                )
                 return True
             elif existing_fields:
                 for field in existing_fields:
@@ -513,10 +561,14 @@ class SQLTranslatorDemo(QATestScenario):
         """Assign selected users to the Manual Task."""
         try:
             # Check if assignments already exist
-            existing_assignments = self.db.query(ManualTaskReference).filter_by(
-                task_id=self.manual_task.id,
-                reference_type=ManualTaskReferenceType.assigned_user
-            ).all()
+            existing_assignments = (
+                self.db.query(ManualTaskReference)
+                .filter_by(
+                    task_id=self.manual_task.id,
+                    reference_type=ManualTaskReferenceType.assigned_user,
+                )
+                .all()
+            )
 
             if existing_assignments:
                 for assignment in existing_assignments:
@@ -525,7 +577,11 @@ class SQLTranslatorDemo(QATestScenario):
             assigned_count = 0
             for i, user_data in enumerate(DEMO_USERS):
                 # Get user from database in current session to avoid detached instance error
-                user = self.db.query(FidesUser).filter_by(username=user_data["username"]).first()
+                user = (
+                    self.db.query(FidesUser)
+                    .filter_by(username=user_data["username"])
+                    .first()
+                )
                 if not user:
                     self.error(f"User not found: {user_data['username']}")
                     continue
@@ -535,15 +591,21 @@ class SQLTranslatorDemo(QATestScenario):
                     reference_data = {
                         "task_id": self.manual_task.id,
                         "reference_id": user.id,
-                        "reference_type": ManualTaskReferenceType.assigned_user
+                        "reference_type": ManualTaskReferenceType.assigned_user,
                     }
 
-                    reference = ManualTaskReference.create(db=self.db, data=reference_data)
+                    reference = ManualTaskReference.create(
+                        db=self.db, data=reference_data
+                    )
                     assigned_count += 1
 
-                    self.success(f"Assigned user to task: {user.username} ({user_data['roles'][0]})")
+                    self.success(
+                        f"Assigned user to task: {user.username} ({user_data['roles'][0]})"
+                    )
                 else:
-                    self.info(f"User NOT assigned to task: {user.username} ({user_data['roles'][0]})")
+                    self.info(
+                        f"User NOT assigned to task: {user.username} ({user_data['roles'][0]})"
+                    )
 
             self.success(f"Assigned {assigned_count} users to Manual Task")
 
@@ -557,21 +619,28 @@ class SQLTranslatorDemo(QATestScenario):
         """Create policy and storage config for privacy requests."""
         try:
             # Check if policy already exists
-            existing_policy = self.db.query(Policy).filter_by(
-                key="sql_translator_demo_policy"
-            ).first()
+            existing_policy = (
+                self.db.query(Policy)
+                .filter_by(key="sql_translator_demo_policy")
+                .first()
+            )
 
             if existing_policy:
                 self.info("Policy already exists, reusing")
                 # Find associated storage and rule
-                access_rule = self.db.query(Rule).filter_by(
-                    policy_id=existing_policy.id,
-                    action_type=ActionType.access
-                ).first()
+                access_rule = (
+                    self.db.query(Rule)
+                    .filter_by(
+                        policy_id=existing_policy.id, action_type=ActionType.access
+                    )
+                    .first()
+                )
                 if access_rule:
-                    storage_config = self.db.query(StorageConfig).filter_by(
-                        id=access_rule.storage_destination_id
-                    ).first()
+                    storage_config = (
+                        self.db.query(StorageConfig)
+                        .filter_by(id=access_rule.storage_destination_id)
+                        .first()
+                    )
                 return True
 
             # Create storage config for access rule
@@ -633,9 +702,11 @@ class SQLTranslatorDemo(QATestScenario):
         """Create privacy request to trigger manual task instances."""
         try:
             # Check if privacy request already exists
-            existing_request = self.db.query(PrivacyRequest).filter_by(
-                external_id="sql-translator-demo-request"
-            ).first()
+            existing_request = (
+                self.db.query(PrivacyRequest)
+                .filter_by(external_id="sql-translator-demo-request")
+                .first()
+            )
 
             if existing_request:
                 self.info("Privacy request already exists, reusing")
@@ -643,7 +714,11 @@ class SQLTranslatorDemo(QATestScenario):
                 return True
 
             # Get policy fresh from database to avoid session issues
-            policy = self.db.query(Policy).filter_by(key="sql_translator_demo_policy").first()
+            policy = (
+                self.db.query(Policy)
+                .filter_by(key="sql_translator_demo_policy")
+                .first()
+            )
 
             if not policy:
                 self.error("Policy not found for privacy request creation")
@@ -669,11 +744,14 @@ class SQLTranslatorDemo(QATestScenario):
             self.privacy_request.persist_identity(db=self.db, identity=identity_data)
 
             # Trigger manual task instance creation
-            connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(self.db)
+            connection_configs_with_manual_tasks = (
+                get_connection_configs_with_manual_tasks(self.db)
+            )
 
             # Filter to only our demo connection
             demo_connections = [
-                conn for conn in connection_configs_with_manual_tasks
+                conn
+                for conn in connection_configs_with_manual_tasks
                 if conn.key == self.connection_key
             ]
 
@@ -681,7 +759,9 @@ class SQLTranslatorDemo(QATestScenario):
                 self.privacy_request.create_manual_task_instances(
                     self.db, demo_connections
                 )
-                self.success(f"Created {len(self.privacy_request.manual_task_instances)} manual task instances")
+                self.success(
+                    f"Created {len(self.privacy_request.manual_task_instances)} manual task instances"
+                )
             else:
                 self.info("No manual task connections found for instance creation")
 
@@ -694,7 +774,6 @@ class SQLTranslatorDemo(QATestScenario):
     def _verify_manual_task_instances(self) -> bool:
         """Verify that manual task instances were created correctly."""
         try:
-
             if not self.privacy_request:
                 self.error("Privacy request not found!")
                 return False
@@ -703,7 +782,9 @@ class SQLTranslatorDemo(QATestScenario):
                 self.error("No manual task instances found!")
                 return False
 
-            self.success(f"✓ Found {len(self.privacy_request.manual_task_instances)} manual task instances")
+            self.success(
+                f"✓ Found {len(self.privacy_request.manual_task_instances)} manual task instances"
+            )
 
             # Get our demo connection and manual task fresh from database
             if not self.connection_config:
@@ -716,7 +797,8 @@ class SQLTranslatorDemo(QATestScenario):
 
             # Verify instances are linked to our manual task
             our_instances = [
-                instance for instance in self.privacy_request.manual_task_instances
+                instance
+                for instance in self.privacy_request.manual_task_instances
                 if instance.task_id == self.manual_task.id
             ]
 
@@ -724,7 +806,9 @@ class SQLTranslatorDemo(QATestScenario):
                 self.error("No instances found for our demo manual task!")
                 return False
 
-            self.success(f"✓ {len(our_instances)} instances are linked to our demo manual task")
+            self.success(
+                f"✓ {len(our_instances)} instances are linked to our demo manual task"
+            )
 
             return True
 
@@ -735,9 +819,9 @@ class SQLTranslatorDemo(QATestScenario):
     def _demonstrate_sql_translator(self) -> bool:
         """Demonstrate SQL Translator functionality with different types of conditions."""
         try:
-            print("\n" + "="*80)
+            print("\n" + "=" * 80)
             print("🔍 SQL TRANSLATOR DEMONSTRATION")
-            print("="*80)
+            print("=" * 80)
 
             # Initialize SQL translator
             translator = SQLConditionTranslator(self.db)
@@ -758,31 +842,37 @@ class SQLTranslatorDemo(QATestScenario):
             self._demo_nested_condition(translator)
 
             # Demo 4: Complex Multi-Table Query (Manual Task Business Logic)
-            print(f"\n📋 Demo 4: Complex Multi-Table Query (Manual Task Business Logic)")
+            print(
+                f"\n📋 Demo 4: Complex Multi-Table Query (Manual Task Business Logic)"
+            )
             print("-" * 40)
             self._demo_manual_task_query(translator)
 
-            print("\n" + "="*80)
+            print("\n" + "=" * 80)
             print("✅ SQL Translator demonstration completed successfully!")
-            print("="*80)
+            print("=" * 80)
             return True
 
         except Exception as e:
             self.error(f"Error demonstrating SQL translator: {e}")
             return False
 
-    def _execute_and_display_query(self, translator: SQLConditionTranslator, condition: Condition, expected: str) -> list:
+    def _execute_and_display_query(
+        self, translator: SQLConditionTranslator, condition: Condition, expected: str
+    ) -> list:
         """Helper method to execute query and display results."""
         try:
             query = translator.generate_query_from_condition(condition)
-            sql_str = str(query.statement.compile(compile_kwargs={"literal_binds": True}))
+            sql_str = str(
+                query.statement.compile(compile_kwargs={"literal_binds": True})
+            )
             print(f"\n🔍 Generated SQL:\n   {sql_str}")
 
             results = query.all()
             print(f"\n📊 Results: Found {len(results)} record(s)")
             if results:
                 for result in results[:3]:  # Limit to first 3 for brevity
-                    if hasattr(result, 'username'):
+                    if hasattr(result, "username"):
                         print(f"   - User: {result.username} ({result.email_address})")
                     else:
                         print(f"   - {type(result).__name__} (ID: {result.id})")
@@ -802,22 +892,34 @@ class SQLTranslatorDemo(QATestScenario):
         condition = ConditionLeaf(
             field_address="fidesuser.username",
             operator=Operator.eq,
-            value="demo_owner_user"
+            value="demo_owner_user",
         )
 
-        print(f"📝 Condition: {condition.field_address} {condition.operator.value} '{condition.value}'")
+        print(
+            f"📝 Condition: {condition.field_address} {condition.operator.value} '{condition.value}'"
+        )
         print(f"   Description: Find user with username 'demo_owner_user'")
 
-        self._execute_and_display_query(translator, condition, "1 user (demo_owner_user)")
+        self._execute_and_display_query(
+            translator, condition, "1 user (demo_owner_user)"
+        )
 
     def _demo_group_condition(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a group condition with AND operator."""
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field_address="fidesuser.username", operator=Operator.starts_with, value="demo_"),
-                ConditionLeaf(field_address="fidesuser.email_address", operator=Operator.contains, value="@example.com")
-            ]
+                ConditionLeaf(
+                    field_address="fidesuser.username",
+                    operator=Operator.starts_with,
+                    value="demo_",
+                ),
+                ConditionLeaf(
+                    field_address="fidesuser.email_address",
+                    operator=Operator.contains,
+                    value="@example.com",
+                ),
+            ],
         )
 
         print(f"📝 Condition: {condition.logical_operator.value.upper()} group")
@@ -825,7 +927,9 @@ class SQLTranslatorDemo(QATestScenario):
         print(f"   - fidesuser.email_address contains '@example.com'")
         print(f"   Description: Find demo users with example.com email addresses")
 
-        self._execute_and_display_query(translator, condition, "5 users (all demo users)")
+        self._execute_and_display_query(
+            translator, condition, "5 users (all demo users)"
+        )
 
     def _demo_nested_condition(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a nested condition with AND and OR operators."""
@@ -835,12 +939,24 @@ class SQLTranslatorDemo(QATestScenario):
                 ConditionGroup(
                     logical_operator=GroupOperator.or_,
                     conditions=[
-                        ConditionLeaf(field_address="fidesuser.username", operator=Operator.eq, value="demo_owner_user"),
-                        ConditionLeaf(field_address="fidesuser.username", operator=Operator.eq, value="demo_viewer_user")
-                    ]
+                        ConditionLeaf(
+                            field_address="fidesuser.username",
+                            operator=Operator.eq,
+                            value="demo_owner_user",
+                        ),
+                        ConditionLeaf(
+                            field_address="fidesuser.username",
+                            operator=Operator.eq,
+                            value="demo_viewer_user",
+                        ),
+                    ],
                 ),
-                ConditionLeaf(field_address="fidesuser.email_address", operator=Operator.contains, value="@example.com")
-            ]
+                ConditionLeaf(
+                    field_address="fidesuser.email_address",
+                    operator=Operator.contains,
+                    value="@example.com",
+                ),
+            ],
         )
 
         print(f"📝 Condition: Nested AND/OR")
@@ -848,7 +964,9 @@ class SQLTranslatorDemo(QATestScenario):
         print(f"   AND email contains '@example.com'")
         print(f"   Description: Find owner or viewer users with example.com emails")
 
-        self._execute_and_display_query(translator, condition, "2 users (demo_owner_user and demo_viewer_user)")
+        self._execute_and_display_query(
+            translator, condition, "2 users (demo_owner_user and demo_viewer_user)"
+        )
 
     def _demo_manual_task_query(self, translator: SQLConditionTranslator) -> None:
         """Demonstrate a complex multi-table query for manual task business logic."""
@@ -861,20 +979,36 @@ class SQLTranslatorDemo(QATestScenario):
         condition = ConditionGroup(
             logical_operator=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field_address="manual_task_instance.status", operator=Operator.neq, value="complete"),
-                ConditionLeaf(field_address="manual_task.references.reference_id", operator=Operator.eq, value=demo_user_id),
-                ConditionLeaf(field_address="privacyrequest.status", operator=Operator.neq, value="complete")
-            ]
+                ConditionLeaf(
+                    field_address="manual_task_instance.status",
+                    operator=Operator.neq,
+                    value="complete",
+                ),
+                ConditionLeaf(
+                    field_address="manual_task.references.reference_id",
+                    operator=Operator.eq,
+                    value=demo_user_id,
+                ),
+                ConditionLeaf(
+                    field_address="privacyrequest.status",
+                    operator=Operator.neq,
+                    value="complete",
+                ),
+            ],
         )
 
         print(f"📝 Condition: Complex Multi-Table Query")
         print(f"   - manual_task_instance.status != 'complete' (PRIMARY)")
         print(f"   - manual_task.references.reference_id = demo_owner_user_id")
         print(f"   - privacyrequest.status != 'complete'")
-        print(f"   Description: Find actionable manual task instances for demo_owner_user")
+        print(
+            f"   Description: Find actionable manual task instances for demo_owner_user"
+        )
 
         try:
-            results = self._execute_and_display_query(translator, condition, "1 instance (demo_owner_user)")
+            results = self._execute_and_display_query(
+                translator, condition, "1 instance (demo_owner_user)"
+            )
             expected_count = self._get_expected_manual_task_count(self.db, user)
 
             print(f"\n✅ Expected: {expected_count} | Actual: {len(results)}")
@@ -896,14 +1030,18 @@ class SQLTranslatorDemo(QATestScenario):
             count = 0
             for instance in self.privacy_request.manual_task_instances:
                 # Check if this instance's task is assigned to our user
-                task_assigned = db.query(
-                    ManualTaskReference
-                ).filter(ManualTaskReference.reference_id == user.id).first()
+                task_assigned = (
+                    db.query(ManualTaskReference)
+                    .filter(ManualTaskReference.reference_id == user.id)
+                    .first()
+                )
 
-                if (task_assigned and
-                    self.privacy_request and
-                    self.privacy_request.status != "complete" and
-                    instance.status != "complete"):
+                if (
+                    task_assigned
+                    and self.privacy_request
+                    and self.privacy_request.status != "complete"
+                    and instance.status != "complete"
+                ):
                     count += 1
 
             return count
@@ -912,12 +1050,11 @@ class SQLTranslatorDemo(QATestScenario):
             print(f"   (Could not calculate expected count: {e})")
             return 0
 
-
     def _display_demo_summary(self) -> None:
         """Display a summary of the created demo environment."""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("SQL TRANSLATOR DEMO SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         print(f"\n📋 Manual Task Connection: {self.connection_key}")
 
@@ -927,18 +1064,21 @@ class SQLTranslatorDemo(QATestScenario):
                 print(f"   └── Task ID: {self.manual_task.id}")
 
                 # Get current config
-                current_config = self.db.query(ManualTaskConfig).filter_by(
-                    task_id=self.manual_task.id,
-                    is_current=True
-                ).first()
+                current_config = (
+                    self.db.query(ManualTaskConfig)
+                    .filter_by(task_id=self.manual_task.id, is_current=True)
+                    .first()
+                )
 
                 if current_config:
                     print(f"   └── Config ID: {current_config.id}")
 
                     # Get field count
-                    field_count = self.db.query(ManualTaskConfigField).filter_by(
-                        task_id=self.manual_task.id
-                    ).count()
+                    field_count = (
+                        self.db.query(ManualTaskConfigField)
+                        .filter_by(task_id=self.manual_task.id)
+                        .count()
+                    )
                     print(f"   └── Fields: {field_count}")
 
         print(f"\n👥 Created Users ({len(DEMO_USERS)} total):")
@@ -948,10 +1088,16 @@ class SQLTranslatorDemo(QATestScenario):
         # Get fresh data from database to avoid session issues
         # Get user data
         for user_data in DEMO_USERS:
-            user = self.db.query(FidesUser).filter_by(username=user_data["username"]).first()
+            user = (
+                self.db.query(FidesUser)
+                .filter_by(username=user_data["username"])
+                .first()
+            )
             if user:
-                role_display = user_data['roles'][0].upper()
-                user_info = f"   {user.username} ({user.email_address}) - {role_display}"
+                role_display = user_data["roles"][0].upper()
+                user_info = (
+                    f"   {user.username} ({user.email_address}) - {role_display}"
+                )
 
                 if user_data["assign_to_task"]:
                     assigned_users.append(user_info + " ✅ ASSIGNED")
@@ -967,10 +1113,16 @@ class SQLTranslatorDemo(QATestScenario):
             print(user_info)
 
         # Get field data from same session
-        fields = self.db.query(ManualTaskConfigField).filter_by(task_id=self.manual_task.id).all()
+        fields = (
+            self.db.query(ManualTaskConfigField)
+            .filter_by(task_id=self.manual_task.id)
+            .all()
+        )
         print(f"\n🔧 Manual Task Fields ({len(fields)}):")
         for field in fields:
-            required = "REQUIRED" if field.field_metadata.get("required") else "OPTIONAL"
+            required = (
+                "REQUIRED" if field.field_metadata.get("required") else "OPTIONAL"
+            )
             print(f"   └── {field.field_key} ({field.field_type.value}) - {required}")
 
         # Get privacy request and instances info fresh from database
@@ -981,12 +1133,18 @@ class SQLTranslatorDemo(QATestScenario):
             print(f"   └── Status: {self.privacy_request.status}")
 
             # Get policy info
-            policy = self.db.query(Policy).filter_by(key="sql_translator_demo_policy").first()
+            policy = (
+                self.db.query(Policy)
+                .filter_by(key="sql_translator_demo_policy")
+                .first()
+            )
             print(f"   └── Policy: {policy.key if policy else 'N/A'}")
 
             # Get manual task instances
 
-            print(f"\n🎯 Manual Task Instances ({len(self.privacy_request.manual_task_instances)}):")
+            print(
+                f"\n🎯 Manual Task Instances ({len(self.privacy_request.manual_task_instances)}):"
+            )
             for instance in self.privacy_request.manual_task_instances:
                 print(f"   └── Instance ID: {instance.id}")
                 print(f"       ├── Config: {instance.config.config_type.value}")
@@ -994,39 +1152,59 @@ class SQLTranslatorDemo(QATestScenario):
                 print(f"       └── Task: {instance.config.task_id}")
 
                 # Show which users can access this instance
-                assigned_users = self.db.query(ManualTaskReference).filter_by(
-                    task_id=instance.config.task_id,
-                    reference_type=ManualTaskReferenceType.assigned_user
-                ).all()
+                assigned_users = (
+                    self.db.query(ManualTaskReference)
+                    .filter_by(
+                        task_id=instance.config.task_id,
+                        reference_type=ManualTaskReferenceType.assigned_user,
+                    )
+                    .all()
+                )
 
                 if assigned_users:
-                    print(f"       └── Accessible by {len(assigned_users)} assigned users:")
+                    print(
+                        f"       └── Accessible by {len(assigned_users)} assigned users:"
+                    )
                     for ref in assigned_users:
-                        user = self.db.query(FidesUser).filter_by(id=ref.reference_id).first()
+                        user = (
+                            self.db.query(FidesUser)
+                            .filter_by(id=ref.reference_id)
+                            .first()
+                        )
                         if user:
                             user_role = next(
-                                (ud['roles'][0] for ud in DEMO_USERS if ud['username'] == user.username),
-                                'UNKNOWN'
+                                (
+                                    ud["roles"][0]
+                                    for ud in DEMO_USERS
+                                    if ud["username"] == user.username
+                                ),
+                                "UNKNOWN",
                             )
                             print(f"           ├── {user.username} ({user_role})")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("🎉 SQL Translator Demo Environment Ready!")
-        print("="*80)
+        print("=" * 80)
         print("✅ Users created with different permission levels")
         print("✅ Manual Task configured with access controls")
         print("✅ Privacy Request created and processed")
         print("✅ Manual Task Instances automatically generated")
         print("✅ Role-based access control demonstrated")
-        print("="*80)
+        print("=" * 80)
 
     def _delete_manual_task_by_connection(self) -> bool:
         """Delete Manual Task and all related resources by finding them via connection key."""
         try:
             # Find connection by key
-            connection = self.db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
+            connection = (
+                self.db.query(ConnectionConfig)
+                .filter_by(key=self.connection_key)
+                .first()
+            )
             if not connection:
-                self.info(f"Connection {self.connection_key} not found, nothing to delete")
+                self.info(
+                    f"Connection {self.connection_key} not found, nothing to delete"
+                )
                 return False
 
             # Find manual task for this connection
@@ -1046,7 +1224,9 @@ class SQLTranslatorDemo(QATestScenario):
         """Delete the connection configuration by key."""
         try:
             if not self.connection_config:
-                self.info(f"Connection {self.connection_key} not found, nothing to delete")
+                self.info(
+                    f"Connection {self.connection_key} not found, nothing to delete"
+                )
                 return False
 
             self.connection_config.delete(self.db)
@@ -1106,16 +1286,20 @@ class SQLTranslatorDemo(QATestScenario):
             storage_count = 0
 
             # Find policy first
-            policy = self.db.query(Policy).filter_by(
-                key="sql_translator_demo_policy"
-            ).first()
+            policy = (
+                self.db.query(Policy)
+                .filter_by(key="sql_translator_demo_policy")
+                .first()
+            )
 
             if policy:
                 # Delete rules and rule targets first (manual cleanup to avoid cascade issues)
                 rules = self.db.query(Rule).filter_by(policy_id=policy.id).all()
                 for rule in rules:
                     # Delete rule targets first
-                    rule_targets = self.db.query(RuleTarget).filter_by(rule_id=rule.id).all()
+                    rule_targets = (
+                        self.db.query(RuleTarget).filter_by(rule_id=rule.id).all()
+                    )
                     for target in rule_targets:
                         self.db.delete(target)
 
@@ -1125,12 +1309,16 @@ class SQLTranslatorDemo(QATestScenario):
                 # Now delete the policy
                 policy.delete(self.db)
                 policy_count += 1
-                self.success(f"Deleted policy and associated rules: sql_translator_demo_policy")
+                self.success(
+                    f"Deleted policy and associated rules: sql_translator_demo_policy"
+                )
 
             # Find and delete storage config
-            storage = self.db.query(StorageConfig).filter_by(
-                key="sql_translator_demo_storage"
-            ).first()
+            storage = (
+                self.db.query(StorageConfig)
+                .filter_by(key="sql_translator_demo_storage")
+                .first()
+            )
 
             if storage:
                 storage.delete(self.db)
@@ -1151,9 +1339,14 @@ class SQLTranslatorDemo(QATestScenario):
 if __name__ == "__main__":
     """Run the SQL translator demo."""
     parser = argparse.ArgumentParser(description="Run SQL Translator Demo")
-    parser.add_argument("action", choices=["setup", "teardown"], help="Action to perform")
-    parser.add_argument("--connection-key", default="sql_translator_demo_connection",
-                       help="Connection key for the demo")
+    parser.add_argument(
+        "action", choices=["setup", "teardown"], help="Action to perform"
+    )
+    parser.add_argument(
+        "--connection-key",
+        default="sql_translator_demo_connection",
+        help="Connection key for the demo",
+    )
     args = parser.parse_args()
 
     demo = SQLTranslatorDemo(connection_key=args.connection_key)

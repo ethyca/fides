@@ -788,7 +788,6 @@ def celery_session_worker(
         celery_session_app.register_task(class_task)
 
     try:
-
         logger.info("Starting safe celery session worker...")
         with worker.start_worker(
             celery_session_app,

@@ -317,7 +317,6 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         mock_load_config.return_value = {"test": "config"}
@@ -369,7 +368,6 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         mock_load_config.return_value = {"test": "config"}
@@ -414,7 +412,6 @@ def test_get_saas_connection_types_config_parsing_exception():
         ) as mock_get_template,
         patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         # Make SaaSConfig constructor raise an exception
@@ -462,7 +459,6 @@ def test_get_saas_connection_types_load_config_exception():
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         # Make load_config_from_string raise an exception

@@ -12,7 +12,6 @@ from fides.api.service.connectors.base_connector import DB_CONNECTOR_TYPE
 
 
 class DatahubConnector(Generic[DB_CONNECTOR_TYPE]):
-
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
         self.config = DatahubSchema(**configuration.secrets or {})

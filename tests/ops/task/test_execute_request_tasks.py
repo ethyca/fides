@@ -508,7 +508,7 @@ class TestGetDSRVersion:
         privacy_request,
     ):
         cache: FidesopsRedis = get_cache()
-        key = f"access_request__test_dataset:test_collection"
+        key = "access_request__test_dataset:test_collection"
         cache.set_encoded_object(f"{privacy_request.id}__{key}", 2)
 
         # Privacy request already started processing on DSR 2.0 so we continue on DSR 2.0
@@ -579,7 +579,6 @@ class TestGetUpstreamAccessDataForErasureTask:
             erasure_task,
             db,
         ) as resources:
-
             result = get_upstream_access_data_for_erasure_task(
                 erasure_task, db, resources
             )
@@ -615,7 +614,6 @@ class TestGetUpstreamAccessDataForErasureTask:
             erasure_task,
             db,
         ) as resources:
-
             with pytest.raises(Exception) as exc_info:
                 get_upstream_access_data_for_erasure_task(erasure_task, db, resources)
 

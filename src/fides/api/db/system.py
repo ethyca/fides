@@ -196,7 +196,6 @@ async def update_system(
     updated_system = await update_resource(System, resource.model_dump(), db)
 
     async with db.begin():
-
         await db.refresh(updated_system)
 
         system_updated: bool = _audit_system_changes(
@@ -310,7 +309,6 @@ async def create_system(
     privacy_declaration_exception = None
     try:
         async with db.begin():
-
             # create the specified declarations as records in their own table
             for privacy_declaration in privacy_declarations:
                 data = privacy_declaration.model_dump(mode="json")

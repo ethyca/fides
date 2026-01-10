@@ -13,7 +13,6 @@ from fides.api.models.fides_user_respondent_email_verification import (
 
 
 class TestFidesUserRespondentEmailVerification:
-
     def test_create(self, db: Session, external_respondent: FidesUser) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,

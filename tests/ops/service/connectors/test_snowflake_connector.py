@@ -80,7 +80,6 @@ class TestSnowflakeConnector:
 @pytest.mark.integration_external
 @pytest.mark.integration_snowflake
 class TestSnowflakeConnectorTableExists:
-
     def test_table_exists(
         self,
         snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig,
