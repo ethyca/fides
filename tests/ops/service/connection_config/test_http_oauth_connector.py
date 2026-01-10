@@ -33,7 +33,7 @@ class TestHttpOAuth2ConnectorMethods:
 
         # Validate that the connector uses the Bearer token in the request to the endpoint
         def request_contains_oauth_bearer_token(request):
-            assert request.headers["Authorization"] == f"Bearer test_token"
+            assert request.headers["Authorization"] == "Bearer test_token"
             return True
 
         # Validate that the connector uses the OAuth2 token URL to fetch a token
@@ -46,7 +46,6 @@ class TestHttpOAuth2ConnectorMethods:
             return True
 
         with requests_mock.Mocker() as mock_response:
-
             mock_response.post(
                 connector.configuration.oauth_config.token_url,
                 json={"access_token": "test_token", "token_type": "Bearer"},

@@ -664,9 +664,9 @@ class TestMessageDispatchService:
         )
         mock_twilio_dispatcher.assert_called_with(
             messaging_config_twilio_sms,
-            f"Your privacy request verification code is 2348. "
-            + f"Please return to the Privacy Center and enter the code to continue. "
-            + f"This code will expire in 10 minutes",
+            "Your privacy request verification code is 2348. "
+            + "Please return to the Privacy Center and enter the code to continue. "
+            + "This code will expire in 10 minutes",
             "+12312341231",
         )
 
@@ -1150,8 +1150,8 @@ class TestTwilioSmsDispatcher:
         )
         mock_twilio_dispatcher.assert_called_with(
             messaging_config_twilio_sms,
-            f"Your privacy request verification code is 2348. "
-            + f"Please return to the Privacy Center and enter the code to continue. "
-            + f"This code will expire in 10 minutes",
+            "Your privacy request verification code is 2348. "
+            + "Please return to the Privacy Center and enter the code to continue. "
+            + "This code will expire in 10 minutes",
             "+12312341231",
         )

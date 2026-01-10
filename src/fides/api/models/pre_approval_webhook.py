@@ -20,7 +20,9 @@ class PreApprovalWebhook(Base):
         )
     )
     connection_config = relationship(
-        "ConnectionConfig", back_populates="pre_approval_webhooks", uselist=False  # type: ignore
+        "ConnectionConfig",
+        back_populates="pre_approval_webhooks",
+        uselist=False,  # type: ignore
     )
 
     @classmethod
@@ -49,7 +51,9 @@ class PreApprovalWebhookReply(Base):
     is_eligible = Column(Boolean, nullable=False)
 
     privacy_request = relationship(
-        "PrivacyRequest", back_populates="pre_approval_webhook_replies", uselist=False  # type: ignore
+        "PrivacyRequest",
+        back_populates="pre_approval_webhook_replies",
+        uselist=False,  # type: ignore
     )
 
     __table_args__ = (

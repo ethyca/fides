@@ -7,7 +7,6 @@ from fides.api.service.connectors.postgres_connector import PostgreSQLConnector
 @pytest.mark.integration
 @pytest.mark.integration_postgres
 class TestPostgreSQLConnectorTableExists:
-
     def test_table_exists(
         self,
         postgres_integration_db,

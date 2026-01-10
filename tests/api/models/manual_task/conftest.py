@@ -33,7 +33,7 @@ def manual_task(
     yield task
     try:
         task.delete(db)
-    except Exception as e:
+    except Exception:
         pass
 
 

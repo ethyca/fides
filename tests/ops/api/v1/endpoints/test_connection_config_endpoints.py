@@ -432,9 +432,9 @@ class TestPatchConnections:
 
         assert 200 == response.status_code
 
-        assert (
-            mock_queue.called
-        ), "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -1432,9 +1432,9 @@ class TestDeleteConnection:
             .first()
             is None
         )
-        assert (
-            mock_queue.called
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -1584,11 +1584,14 @@ class TestPutConnectionConfigSecrets:
             json.loads(resp.text)["detail"][0]["msg"]
             == "Input should be a valid integer, unable to parse string as an integer"
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "loc",
-            "msg",
-            "type",
-        }  # Assert url, input, ctx keys have been removed to suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "loc",
+                "msg",
+                "type",
+            }
+        )  # Assert url, input, ctx keys have been removed to suppress sensitive information
 
     def test_put_connection_config_secrets(
         self,
@@ -2037,11 +2040,14 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "type",
-            "loc",
-            "msg",
-        }  # url, input, and ctx have been removed to help suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "type",
+                "loc",
+                "msg",
+            }
+        )  # url, input, and ctx have been removed to help suppress sensitive information
 
     def test_put_connection_config_snowflake_secrets(
         self,
@@ -2367,7 +2373,7 @@ class TestPutConnectionConfigSecrets:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == f"Unknown dataset 'non_existent_dataset' referenced by external reference"
+            == "Unknown dataset 'non_existent_dataset' referenced by external reference"
         )
 
         db.refresh(saas_example_connection_config)

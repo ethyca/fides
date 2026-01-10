@@ -438,7 +438,9 @@ class TestSaasConnector:
         )
 
         #  Mock adding a new placeholder to the request body for which we don't have a value
-        connector.endpoints["data_management"].requests.update.body = (
+        connector.endpoints[
+            "data_management"
+        ].requests.update.body = (
             '{\n  "unique_id": "<privacy_request_id>", "email": "<test_val>"\n}\n'
         )
 
@@ -820,9 +822,7 @@ class TestSaasConnectorRunConsentRequest:
         saas_example_connection_config,
     ):
         """Can only propagate preferences that have a system wide enforcement level"""
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history_fr_provide_service_frontend_only.save(db)
 
         connector = get_connector(saas_example_connection_config)
@@ -963,9 +963,9 @@ class TestSaasConnectorRunConsentRequest:
 
         assert "No 'opt_in' requests defined" in str(exc)
         db.refresh(privacy_preference_history)
-        assert (
-            privacy_preference_history.affected_system_status == {}
-        ), "Updated to skipped in graph task, not updated here"
+        assert privacy_preference_history.affected_system_status == {}, (
+            "Updated to skipped in graph task, not updated here"
+        )
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(

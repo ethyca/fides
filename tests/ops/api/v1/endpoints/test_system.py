@@ -51,7 +51,7 @@ def url(system) -> str:
 
 @pytest.fixture(scope="function")
 def url_invalid_system() -> str:
-    return V1_URL_PREFIX + f"/system/not-a-real-system/connection"
+    return V1_URL_PREFIX + "/system/not-a-real-system/connection"
 
 
 @pytest.fixture(scope="function")
@@ -123,7 +123,7 @@ class TestPatchSystem:
         generate_auth_header,
         db: Session,
     ):
-        url = V1_URL_PREFIX + f"/system/hidden"
+        url = V1_URL_PREFIX + "/system/hidden"
         auth_header = generate_auth_header(
             scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
         )
@@ -537,9 +537,7 @@ class TestDeleteSystemConnectionConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = (
-            system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
-        )
+        key = system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -588,9 +586,9 @@ class TestDeleteSystemConnectionConfig:
             .first()
             is None
         )
-        assert (
-            mock_queue.called == True
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called == True, (
+            "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -756,7 +754,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == "SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(

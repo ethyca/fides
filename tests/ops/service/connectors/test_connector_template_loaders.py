@@ -296,7 +296,7 @@ class TestCustomConnectorTemplateLoader:
                 "planet_express_user_access", SaaSRequestType.UPDATE
             )
         assert (
-            f"Custom SaaS override 'planet_express_user_access' does not exist."
+            "Custom SaaS override 'planet_express_user_access' does not exist."
             in str(exc.value)
         )
 

@@ -21,7 +21,6 @@ def system_manager(
 
 
 class TestCreateFidesUser:
-
     def test_create_user(self, db: Session, username: str, password: str) -> None:
         user = FidesUser.create(
             db=db,
@@ -93,7 +92,6 @@ class TestUpdateFidesUserPassword:
     def test_update_user_password_external_respondent(
         self, db: Session, external_respondent: FidesUser
     ) -> None:
-
         with pytest.raises(ValueError) as e:
             external_respondent.update_password(db, "new_test_password")
         assert "Password changes are not allowed for external respondents" in str(

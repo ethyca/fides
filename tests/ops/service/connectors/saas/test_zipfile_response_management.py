@@ -176,9 +176,9 @@ class TestZipFileResponseManagement:
         assert isinstance(response.content, bytes)
 
         # Verify it's a valid ZIP file
-        assert response.content.startswith(
-            b"PK"
-        ), "Content should start with ZIP signature"
+        assert response.content.startswith(b"PK"), (
+            "Content should start with ZIP signature"
+        )
 
         # Verify we can read the ZIP file
         zip_buffer = io.BytesIO(response.content)
@@ -227,27 +227,27 @@ class TestZipFileResponseManagement:
         assert len(response.content) > 0
 
         # Verify it starts with ZIP signature
-        assert response.content.startswith(
-            b"PK"
-        ), "Content should start with ZIP signature"
+        assert response.content.startswith(b"PK"), (
+            "Content should start with ZIP signature"
+        )
 
         # Verify the problematic bytes are at position 10-11 (same as Bazaarvoice error)
         problematic_bytes = response.content[10:12]
-        assert (
-            problematic_bytes == b"\xe1\x93"
-        ), f"Expected problematic bytes at position 10-11, got {problematic_bytes.hex()}"
+        assert problematic_bytes == b"\xe1\x93", (
+            f"Expected problematic bytes at position 10-11, got {problematic_bytes.hex()}"
+        )
 
         # Verify that UTF-8 decoding fails at the expected position
         with pytest.raises(UnicodeDecodeError) as exc_info:
             response.content.decode("utf-8")
 
         error = exc_info.value
-        assert (
-            error.start == 10
-        ), f"Expected UTF-8 error at position 10, got {error.start}"
-        assert (
-            error.end == 12
-        ), f"Expected UTF-8 error end at position 12, got {error.end}"
+        assert error.start == 10, (
+            f"Expected UTF-8 error at position 10, got {error.start}"
+        )
+        assert error.end == 12, (
+            f"Expected UTF-8 error end at position 12, got {error.end}"
+        )
         assert "invalid continuation byte" in str(error)
 
         # The key test: AuthenticatedClient should handle this as binary data

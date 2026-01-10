@@ -138,7 +138,6 @@ class TestManualTaskConfig:
     ],
 )
 class TestManualTaskConfigField:
-
     def test_create_field(
         self,
         db: Session,

@@ -60,7 +60,6 @@ def create_combined_graph(db, mock_dataset_graph):
 
 
 class TestManualTaskGraphTask:
-
     def test_manual_task_graph_task_initialization(self):
         """Test that ManualTaskGraphTask can be initialized"""
         # This is a basic test since ManualTaskGraphTask inherits from GraphTask

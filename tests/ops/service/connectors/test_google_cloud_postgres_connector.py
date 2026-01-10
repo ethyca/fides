@@ -60,11 +60,11 @@ def connector(mock_config):
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_postgres_connector" ".Connector",
+    "fides.api.service.connectors.google_cloud_postgres_connector.Connector",
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_postgres_connector" ".create_engine",
+    "fides.api.service.connectors.google_cloud_postgres_connector.create_engine",
     autospec=True,
 )
 class TestGoogleCloudSQLPostgresConnectorCreateClient:

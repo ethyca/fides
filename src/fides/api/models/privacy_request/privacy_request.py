@@ -37,8 +37,10 @@ from fides.api.cryptography.cryptographic_util import (
     hash_value_with_salt,
 )
 from fides.api.cryptography.identity_salt import get_identity_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -468,7 +470,9 @@ class PrivacyRequest(
             "paused_at": self.paused_at.isoformat() if self.paused_at else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "days_left": self.days_left,
-            "custom_fields": self.get_persisted_custom_privacy_request_fields() if self.custom_fields else None,  # type: ignore[attr-defined]
+            "custom_fields": self.get_persisted_custom_privacy_request_fields()
+            if self.custom_fields
+            else None,  # type: ignore[attr-defined]
             "location": self.location,
         }
 
@@ -1549,7 +1553,10 @@ class PrivacyRequest(
         value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
         # extract request id to return a map of address:value
         number_of_leading_strings_to_exclude = 2
-        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            for k, v in value_dict.items()
+        }  # type: ignore
 
     def get_consent_results(self) -> Dict[str, int]:
         """For parity, return whether a consent request was sent for third

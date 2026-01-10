@@ -66,9 +66,7 @@ def get_manual_task_for_connection_config(
         db.query(ManualTask)
         .join(ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id)
         .options(
-            selectinload(ManualTask.configs).selectinload(
-                "field_definitions"
-            ),  # type: ignore[attr-defined]
+            selectinload(ManualTask.configs).selectinload("field_definitions"),  # type: ignore[attr-defined]
             selectinload(ManualTask.conditional_dependencies),
         )
         .filter(
@@ -193,9 +191,7 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         db.query(ManualTask, ConnectionConfig.key)
         .join(ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id)
         .options(
-            selectinload(ManualTask.configs).selectinload(
-                "field_definitions"
-            ),  # type: ignore[attr-defined]
+            selectinload(ManualTask.configs).selectinload("field_definitions"),  # type: ignore[attr-defined]
             selectinload(ManualTask.conditional_dependencies),
         )
         .filter(

@@ -40,48 +40,47 @@ from utils_nox import db, install_requirements
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
-    session.notify("black(fix)")
-    session.notify("isort(fix)")
+    session.notify("ruff(format)")
+    session.notify("ruff(check)")
     session.notify("mypy")
-    session.notify("pylint")
 
 
 @nox.session()
 @nox.parametrize(
     "mode",
     [
+        nox.param("format", id="format"),
         nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
     ],
 )
-def black(session: nox.Session, mode: str) -> None:
-    """Run the 'black' style linter."""
+def ruff(session: nox.Session, mode: str) -> None:
+    """Run the 'ruff' linter and formatter."""
     install_requirements(session)
-    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-    if session.posargs:
-        command = ("black", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
 
-
-@nox.session()
-@nox.parametrize(
-    "mode",
-    [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
-    ],
-)
-def isort(session: nox.Session, mode: str) -> None:
-    """Run the 'isort' import linter."""
-    install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-    if session.posargs:
-        command = ("isort", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+    if mode == "format":
+        # Format code
+        command = (
+            "ruff",
+            "format",
+            "src",
+            "tests",
+            "noxfiles",
+            "scripts",
+            "noxfile.py",
+        )
+        if session.posargs:
+            command = ("ruff", "format", *session.posargs)
+        session.run(*command)
+    elif mode == "check":
+        # Lint code
+        command = ("ruff", "check", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+        if session.posargs:
+            command = ("ruff", "check", *session.posargs)
+        else:
+            # Add --fix only when no posargs (in CI we may want check only)
+            if "--no-fix" not in session.posargs:
+                command = (*command, "--fix")
+        session.run(*command)
 
 
 @nox.session()
@@ -90,21 +89,6 @@ def mypy(session: nox.Session) -> None:
     install_requirements(session)
     command = "mypy"
     session.run(command)
-
-
-@nox.session()
-def pylint(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
-    install_requirements(session)
-    command = (
-        "pylint",
-        "src",
-        "noxfiles",
-        "noxfile.py",
-        "--jobs",
-        "0",
-    )
-    session.run(*command)
 
 
 @nox.session()
