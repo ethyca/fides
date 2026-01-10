@@ -4120,8 +4120,9 @@ def purpose_three_consent_publisher_override(db):
     override.delete(db)
 
 
+# TODO: This was a duplicate of the served_notice_history fixture.
 @pytest.fixture(scope="function")
-def served_notice_history(
+def served_notice_history_translated(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
     pref_1 = ServedNoticeHistory.create(

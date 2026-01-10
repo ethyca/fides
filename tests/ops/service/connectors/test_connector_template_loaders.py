@@ -124,15 +124,6 @@ class TestCustomConnectorTemplateLoader:
             }
         )
 
-    @pytest.fixture
-    def non_replaceable_hubspot_zip(self, hubspot_config, hubspot_dataset) -> BytesIO:
-        return create_zip_file(
-            {
-                "config.yml": replace_version(hubspot_config, "0.0.0"),
-                "dataset.yml": hubspot_dataset,
-            }
-        )
-
     def test_custom_connector_template_loader_no_templates(self):
         connector_templates = CustomConnectorTemplateLoader.get_connector_templates()
         assert connector_templates == {}

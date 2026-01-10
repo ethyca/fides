@@ -115,7 +115,7 @@ def test_comment_single_attachment_relationship(
     attachment_reference.delete(db=db)
     attachment.delete(db=db)
 
-
+# TODO: This seems to be a duplicate of the test_comment_to_multiple_attachments_relationship test.
 def test_comment_multiple_attachments_relationship(
     s3_client, db, comment, multiple_attachments, monkeypatch
 ):
@@ -394,7 +394,7 @@ def test_comment_attachment_relationship(
     attachment.delete(db)
 
 
-def test_comment_multiple_attachments_relationship(
+def test_comment_to_multiple_attachments_relationship(
     s3_client, db, comment, multiple_attachments, monkeypatch
 ):
     """Test the relationship between a comment and multiple attachments."""
