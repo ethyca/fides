@@ -75,8 +75,6 @@ class ManualTaskReferenceType(StrEnum):
     # Add more reference types as needed
 
 
-
-
 class ManualTaskConfigurationType(StrEnum):
     """Enum for manual task configuration types."""
 
