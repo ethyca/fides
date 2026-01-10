@@ -2103,7 +2103,11 @@ class TestPutConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"url": "example.com", "authorization": "test_authorization123"}
+        payload = {
+            "url": "example.com",
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.put(
             url,
@@ -2121,6 +2125,7 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.secrets == {
             "url": "example.com",
             "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
@@ -2531,7 +2536,10 @@ class TestPatchConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"authorization": "test_authorization123"}
+        payload = {
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.patch(
             url,
@@ -2548,7 +2556,8 @@ class TestPatchConnectionConfigSecrets:
         db.refresh(https_connection_config)
         assert https_connection_config.secrets == {
             "url": "http://example.com",  # original value
-            "authorization": "test_authorization123",  # new value
+            "authorization": "test_authorization123",  # new value,
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
