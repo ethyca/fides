@@ -1,15 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Privacy Request Error</title>
-  </head>
-  <body>
-    <main>
-      <p>
-        {{ unsent_errors }} errors have occurred when processing privacy
-        requests.
-      </p>
-    </main>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Request Processing Alert</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        /* Main styles */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            min-width: 100%;
+            height: 100%;
+            background-color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .banner {
+            background-color: #2b2e35;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .banner-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #fafafa;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .banner-logo {
+            width: 31px;
+            height: 20px;
+            fill: currentColor;
+            vertical-align: middle;
+        }
+
+        .logo-section {
+            background-color: #ffffff;
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .logo-container {
+            margin-bottom: 0;
+        }
+
+        .logo {
+            max-width: 200px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .logo-placeholder {
+            width: 200px;
+            height: 60px;
+            background-color: #333333;
+            border: 2px dashed #666666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #999999;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            color: #000000;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .intro-text {
+            margin-bottom: 32px;
+            color: #333333;
+            line-height: 1.7;
+        }
+
+        .action-text {
+            margin-top: 24px;
+            color: #333333;
+            line-height: 1.7;
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .footer-text {
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Responsive styles */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content, .footer {
+                padding: 24px 16px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #000000;
+            }
+
+            .email-container {
+                background-color: #1a1a1a;
+            }
+
+            .greeting {
+                color: #ffffff;
+            }
+
+            .intro-text, .action-text, .footer-text {
+                color: #cccccc;
+            }
+
+            .footer {
+                background-color: #333333;
+                border-top-color: #666666;
+            }
+
+            .logo-section {
+                background-color: #1a1a1a;
+                border-bottom-color: #666666;
+            }
+
+            .logo-placeholder {
+                background-color: #555555;
+                border-color: #888888;
+                color: #cccccc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px 0;">
+        <div class="email-container">
+            <!-- Ethyca Branded Banner -->
+            <div class="banner">
+                <a href="https://ethyca.com/" class="banner-content" style="color: #fafafa; text-decoration: none;">
+                    <svg class="banner-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 20" fill="currentColor" role="img" aria-label="Ethyca">
+                        <path d="M11.5602 0H8.70311V7.9999H11.5602V0ZM23.0026 12.0001H20.1455V20H23.0026V12.0001ZM14.1258 20H17.5799L12.1315 11.9774V17.0631L14.1258 20ZM8.13179 17.0626V11.9769L2.68588 19.9995H6.14003L8.13129 17.0626H8.13179ZM23.5744 2.93688V8.02263L29.0198 0H25.5682L23.5739 2.93688H23.5744ZM19.5742 2.93688L17.5799 0H14.1258L19.5742 8.02263V2.93688ZM19.5717 8.57121H12.132V11.4283H19.5717V8.57121ZM31 8.57121H23.5603V11.4283H31V8.57121ZM8.13179 8.57121H0.691589V11.4283H8.13179V8.57121Z" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Logo Section -->
+            {% if organization_name or company_logo_url %}
+            <div class="logo-section">
+                <div class="logo-container">
+                    {% if company_logo_url %}
+                        <img src="{{ company_logo_url }}" alt="{{ organization_name | default('Fides') }} Logo" class="logo">
+                    {% elif organization_name %}
+                        <div class="logo-placeholder">{{ organization_name }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Content -->
+            <div class="content">
+                {% if is_test %}
+                <div class="greeting">Test: Important information about your privacy request</div>
+
+                <div class="intro-text">
+                    This is a test email to verify your notification settings are configured correctly.
+                </div>
+
+                <div class="action-text">
+                    <p>If you receive this email, your notification settings are working properly. This is not a real error notification.</p>
+                </div>
+                {% else %}
+                <div class="greeting">Important information about your privacy request</div>
+
+                <div class="intro-text">
+                    We wanted to let you know that we've encountered some issues while processing privacy requests.
+                </div>
+
+                <div class="action-text">
+                    <p>Please review the request details in your admin dashboard to investigate and resolve these issues. If you need assistance, our support team is here to help.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-text">
+                    This email was sent from your Privacy Center. Please do not reply to this email.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

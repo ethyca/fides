@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, Security
+from fastapi import Body, Depends, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -41,6 +41,7 @@ from fides.api.schemas.messaging.messaging import (
     BasicMessagingTemplateRequest,
     BasicMessagingTemplateResponse,
     BulkPutBasicMessagingTemplateResponse,
+    ErrorNotificationBodyParams,
     MessagingActionType,
     MessagingConfigRequest,
     MessagingConfigRequestBase,
