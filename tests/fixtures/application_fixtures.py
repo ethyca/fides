@@ -2608,26 +2608,6 @@ def privacy_notice(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def served_notice_history(
-    db: Session, privacy_notice, fides_user_provided_identity
-) -> Generator:
-    pref_1 = ServedNoticeHistory.create(
-        db=db,
-        data={
-            "acknowledge_mode": False,
-            "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
-            "email": "test@example.com",
-            "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
-            "served_notice_history_id": "ser_12345",
-        },
-        check_name=False,
-    )
-    yield pref_1
-    pref_1.delete(db)
-
-
-@pytest.fixture(scope="function")
 def privacy_notice_us_ca_provide(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
@@ -4122,7 +4102,7 @@ def purpose_three_consent_publisher_override(db):
 
 # TODO: This was a duplicate of the served_notice_history fixture.
 @pytest.fixture(scope="function")
-def served_notice_history_translated(
+def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
     pref_1 = ServedNoticeHistory.create(
