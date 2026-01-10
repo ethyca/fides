@@ -1,0 +1,5 @@
+
+type: Changed
+description: Replaced pip, setuptools and versioneer with uv and hatchling
+pr:
+labels: ["qol"]

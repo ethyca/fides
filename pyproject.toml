@@ -177,9 +177,26 @@ all = [
 ]
 
 [project.scripts]
+# Main CLI
 fides = "fides.cli:cli"
+
+# Webserver shortcuts
 fides-webserver = "fides.api.main:start_webserver"
 server = "fides.api.main:start_webserver"
+
+# Worker shortcuts - these need to be called through the CLI for proper setup
+# Use: uv run fides worker [options]
+# Or for specific queues:
+# uv run fides worker -q privacy_preferences
+# uv run fides worker -q access,erasure
+
+# Testing shortcuts
+test = "pytest:main"
+pytest = "pytest:main"
+
+# Linting and formatting shortcuts
+ruff = "ruff.cli:main"
+mypy = "mypy.__main__:console_entry"
 
 [project.urls]
 Homepage = "https://github.com/ethyca/fides"
