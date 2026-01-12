@@ -67,7 +67,7 @@ if CONFIG.database.async_readonly_database_uri:
         json_deserializer=custom_json_deserializer,
         pool_size=CONFIG.database.async_readonly_database_pool_size,
         max_overflow=CONFIG.database.async_readonly_database_max_overflow,
-        pool_pre_ping=CONFIG.database.async_readonly_database_pool_pre_ping,
+        pool_pre_ping=CONFIG.database.async_readonly_database_pre_ping,
         # Don't rollback before returning a connection to the pool - this improves performance dramatically;
         # can be turned off via config but the default is to not reset on return
         pool_reset_on_return=None
@@ -109,7 +109,7 @@ async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
         if not ASYNC_READONLY_POOL_WARMED:
             await warm_async_pool(
                 "readonly-async-pool",
-                CONFIG.database.api_async_engine_pool_size,
+                CONFIG.database.async_readonly_database_pool_size,
                 readonly_async_engine,
             )
             ASYNC_READONLY_POOL_WARMED = True
@@ -136,12 +136,18 @@ async def non_warmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
     except Exception:
         await session.rollback()
         raise
+    finally:
+        await session.close()
 
 
 readonly_async_session: Callable[[], _AsyncGeneratorContextManager[Any, None]] = (
     prewarmed_async_readonly_session
     if CONFIG.database.async_readonly_database_uri
     else non_warmed_async_readonly_session
+)
+
+async_session: Callable[[], _AsyncGeneratorContextManager[AsyncSession, None]] = (
+    async_session_factory
 )
 
 
