@@ -128,13 +128,29 @@ def downgrade():
         "manual_task_conditional_dependency",
         sa.Column("operator", sa.VARCHAR(), nullable=True),
     )
+    # Add condition_type and sort_order as nullable first to handle existing rows
     op.add_column(
         "manual_task_conditional_dependency",
-        sa.Column("condition_type", sa.VARCHAR(), nullable=False),
+        sa.Column("condition_type", sa.VARCHAR(), nullable=True),
     )
     op.add_column(
         "manual_task_conditional_dependency",
-        sa.Column("sort_order", sa.INTEGER(), nullable=False),
+        sa.Column("sort_order", sa.INTEGER(), nullable=True),
+    )
+    # Set default values for existing root rows (root conditions are groups at position 0)
+    op.execute(
+        "UPDATE manual_task_conditional_dependency SET condition_type = 'group', sort_order = 0 WHERE condition_type IS NULL"
+    )
+    # Now make columns non-nullable
+    op.alter_column(
+        "manual_task_conditional_dependency",
+        "condition_type",
+        nullable=False,
+    )
+    op.alter_column(
+        "manual_task_conditional_dependency",
+        "sort_order",
+        nullable=False,
     )
     op.add_column(
         "manual_task_conditional_dependency",
@@ -203,13 +219,29 @@ def downgrade():
         "digest_condition",
         sa.Column("operator", sa.VARCHAR(), nullable=True),
     )
+    # Add condition_type and sort_order as nullable first to handle existing rows
     op.add_column(
         "digest_condition",
-        sa.Column("condition_type", sa.VARCHAR(), nullable=False),
+        sa.Column("condition_type", sa.VARCHAR(), nullable=True),
     )
     op.add_column(
         "digest_condition",
-        sa.Column("sort_order", sa.INTEGER(), nullable=False),
+        sa.Column("sort_order", sa.INTEGER(), nullable=True),
+    )
+    # Set default values for existing root rows (root conditions are groups at position 0)
+    op.execute(
+        "UPDATE digest_condition SET condition_type = 'group', sort_order = 0 WHERE condition_type IS NULL"
+    )
+    # Now make columns non-nullable
+    op.alter_column(
+        "digest_condition",
+        "condition_type",
+        nullable=False,
+    )
+    op.alter_column(
+        "digest_condition",
+        "sort_order",
+        nullable=False,
     )
     op.add_column(
         "digest_condition",
