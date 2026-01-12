@@ -246,15 +246,6 @@ class ManualTask(Base):
             if ref.reference_type == ManualTaskReferenceType.assigned_user
         ]
 
-    # CRUD Operations
-    @classmethod
-    def create(
-        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
-    ) -> "ManualTask":
-        """Create a new manual task."""
-        task = super().create(db=db, data=data, check_name=check_name)
-        return task
-
 
 class ManualTaskInstance(Base):
     """Model for tracking task status per entity instance."""
@@ -633,7 +624,7 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
-        # Get the config to access its task_id and check if it exists
+        # Get the config to check if it exists
         config = (
             db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == data["config_id"])

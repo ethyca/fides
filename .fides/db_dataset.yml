@@ -1064,6 +1064,8 @@ dataset:
       data_categories: [system.operations]
     - name: digest_config_id
       data_categories: [system.operations]
+    - name: condition_tree
+      data_categories: [system.operations]
     - name: parent_id
       data_categories: [system.operations]
     - name: digest_condition_type
@@ -1276,6 +1278,8 @@ dataset:
     - name: id
       data_categories: [system.operations]
     - name: manual_task_id
+      data_categories: [system.operations]
+    - name: condition_tree
       data_categories: [system.operations]
     - name: parent_id
       data_categories: [system.operations]

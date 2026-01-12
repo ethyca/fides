@@ -15,6 +15,24 @@ from fides.api.task.manual.manual_task_conditional_evaluation import (
 )
 
 
+def _email_exists_tree():
+    """Return condition tree dict for email exists condition."""
+    return {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "exists",
+        "value": None,
+    }
+
+
+def _city_eq_new_york_tree():
+    """Return condition tree dict for city == New York condition."""
+    return {
+        "field_address": "postgres_example_test_dataset:address:city",
+        "operator": "eq",
+        "value": "New York",
+    }
+
+
 @pytest.fixture
 def email_exists_conditional_dependency(db, manual_task):
     return ManualTaskConditionalDependency.create(
@@ -26,6 +44,7 @@ def email_exists_conditional_dependency(db, manual_task):
             "operator": "exists",
             "value": None,
             "sort_order": 1,
+            "condition_tree": _email_exists_tree(),
         },
     )
 
@@ -41,8 +60,17 @@ def city_eq_new_york_conditional_dependency(db, manual_task):
             "operator": "eq",
             "value": "New York",
             "sort_order": 2,
+            "condition_tree": _city_eq_new_york_tree(),
         },
     )
+
+
+def _input_group_tree():
+    """Return condition tree dict for input group (email AND city)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_email_exists_tree(), _city_eq_new_york_tree()],
+    }
 
 
 @pytest.fixture
@@ -59,18 +87,43 @@ def input_group_conditional_dependency(
             "condition_type": "group",
             "logical_operator": "and",
             "sort_order": 1,
+            "condition_tree": _input_group_tree(),
         },
     )
 
     email_exists_conditional_dependency.parent = dependency
     email_exists_conditional_dependency.sort_order = 3
+    email_exists_conditional_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     city_eq_new_york_conditional_dependency.parent = dependency
+    city_eq_new_york_conditional_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     dependency.children = [
         email_exists_conditional_dependency,
         city_eq_new_york_conditional_dependency,
     ]
     db.commit()
     return dependency
+
+
+def _privacy_request_location_tree():
+    """Return condition tree dict for privacy_request.location == New York."""
+    return {
+        "field_address": "privacy_request.location",
+        "operator": "eq",
+        "value": "New York",
+    }
+
+
+def _privacy_request_access_rule_tree():
+    """Return condition tree dict for privacy_request.policy.has_access_rule == True."""
+    return {
+        "field_address": "privacy_request.policy.has_access_rule",
+        "operator": "eq",
+        "value": True,
+    }
 
 
 @pytest.fixture
@@ -84,6 +137,7 @@ def privacy_request_location_dependency(db, manual_task):
             "operator": "eq",
             "value": "New York",
             "sort_order": 1,
+            "condition_tree": _privacy_request_location_tree(),
         },
     )
 
@@ -99,12 +153,18 @@ def privacy_request_access_rule_dependency(db, manual_task):
             "operator": "eq",
             "value": True,
             "sort_order": 1,
+            "condition_tree": _privacy_request_access_rule_tree(),
         },
     )
 
 
 @pytest.fixture
 def privacy_request_policy_id_dependency(db, manual_task, policy):
+    condition_tree = {
+        "field_address": "privacy_request.policy.id",
+        "operator": "eq",
+        "value": policy.id,
+    }
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
@@ -113,8 +173,20 @@ def privacy_request_policy_id_dependency(db, manual_task, policy):
             "field_address": "privacy_request.policy.id",
             "operator": "eq",
             "value": policy.id,
+            "condition_tree": condition_tree,
         },
     )
+
+
+def _privacy_request_group_tree():
+    """Return condition tree dict for privacy request group (location AND access_rule)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            _privacy_request_location_tree(),
+            _privacy_request_access_rule_tree(),
+        ],
+    }
 
 
 @pytest.fixture
@@ -131,16 +203,31 @@ def privacy_request_group_conditional_dependency(
             "condition_type": "group",
             "logical_operator": "and",
             "sort_order": 1,
+            "condition_tree": _privacy_request_group_tree(),
         },
     )
     privacy_request_location_dependency.parent = dependency
+    privacy_request_location_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     privacy_request_access_rule_dependency.parent = dependency
+    privacy_request_access_rule_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     dependency.children = [
         privacy_request_location_dependency,
         privacy_request_access_rule_dependency,
     ]
     db.commit()
     return dependency
+
+
+def _full_group_tree():
+    """Return condition tree dict for the full group (inputs AND privacy_request)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_input_group_tree(), _privacy_request_group_tree()],
+    }
 
 
 @pytest.fixture
@@ -157,10 +244,17 @@ def group_conditional_dependency(
             "condition_type": "group",
             "logical_operator": "and",
             "sort_order": 1,
+            "condition_tree": _full_group_tree(),
         },
     )
     input_group_conditional_dependency.parent = dependency
+    input_group_conditional_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     privacy_request_group_conditional_dependency.parent = dependency
+    privacy_request_group_conditional_dependency.condition_tree = (
+        None  # Clear since parent has full tree
+    )
     dependency.children = [
         input_group_conditional_dependency,
         privacy_request_group_conditional_dependency,
@@ -376,6 +470,11 @@ class TestManualTaskDataExtraction:
             ]
 
             # Create a conditional dependency that references a deeply nested field
+            condition_tree = {
+                "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
+                "operator": "eq",
+                "value": "dark",
+            }
             ManualTaskConditionalDependency.create(
                 db=db,
                 data={
@@ -385,6 +484,7 @@ class TestManualTaskDataExtraction:
                     "operator": "eq",
                     "value": "dark",
                     "sort_order": 1,
+                    "condition_tree": condition_tree,
                 },
             )
 
@@ -658,17 +758,17 @@ class TestManualTaskDataExtraction:
         result = set_nested_value(field_address, value)
         assert result == expected_result
 
-    def test_evaluate_conditional_dependencies_no_root_condition(self, db, manual_task):
+    def test_evaluate_conditional_dependencies_no_condition_tree(self, db, manual_task):
         """Test evaluating conditional dependencies when no root condition exists"""
         with patch.object(
-            ManualTaskConditionalDependency, "get_root_condition", return_value=None
+            ManualTaskConditionalDependency, "get_condition_tree", return_value=None
         ):
             result = evaluate_conditional_dependencies(
                 db, manual_task, {"test": "data"}
             )
             assert result is None
 
-    def test_evaluate_conditional_dependencies_with_root_condition(
+    def test_evaluate_conditional_dependencies_with_condition_tree(
         self, db, manual_task
     ):
         """Test evaluating conditional dependencies with existing root condition"""
@@ -678,7 +778,7 @@ class TestManualTaskDataExtraction:
         with (
             patch.object(
                 ManualTaskConditionalDependency,
-                "get_root_condition",
+                "get_condition_tree",
                 return_value=mock_root_condition,
             ),
             patch(
