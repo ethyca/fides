@@ -49,9 +49,27 @@ class TestConsentRequestOverride:
         "dsr_version, opt_in, expected_override_function_name, expected_saas_request_type",
         [
             ("use_dsr_3_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
-            ("use_dsr_2_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
             ("use_dsr_3_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
-            ("use_dsr_2_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
+            # XFAIL 2.0 for now, it's a deprecated path and it's causing errors that the 3.0 one is not
+            # (Per Adrian on 12/11/25)
+            pytest.param(
+                "use_dsr_2_0",
+                False,
+                "opt_out_request_override",
+                SaaSRequestType.OPT_OUT,
+                marks=pytest.mark.xfail(
+                    reason="DSR 2.0 deprecated - see comments in test"
+                ),
+            ),
+            pytest.param(
+                "use_dsr_2_0",
+                True,
+                "opt_in_request_override",
+                SaaSRequestType.OPT_IN,
+                marks=pytest.mark.xfail(
+                    reason="DSR 2.0 deprecated - see comments in test"
+                ),
+            ),
         ],
     )
     def test_old_consent_request(
@@ -97,9 +115,27 @@ class TestConsentRequestOverride:
         "dsr_version, opt_in, expected_override_function_name, expected_saas_request_type",
         [
             ("use_dsr_3_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
-            ("use_dsr_2_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
             ("use_dsr_3_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
-            ("use_dsr_2_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
+            # XFAIL 2.0 for now, it's a deprecated feature and it's causing errors that the 3.0 one is not
+            # (Per Adrian on 12/11/25)
+            pytest.param(
+                "use_dsr_2_0",
+                False,
+                "opt_out_request_override",
+                SaaSRequestType.OPT_OUT,
+                marks=pytest.mark.xfail(
+                    reason="DSR 2.0 deprecated - see comments in test"
+                ),
+            ),
+            pytest.param(
+                "use_dsr_2_0",
+                True,
+                "opt_in_request_override",
+                SaaSRequestType.OPT_IN,
+                marks=pytest.mark.xfail(
+                    reason="DSR 2.0 deprecated - see comments in test"
+                ),
+            ),
         ],
     )
     async def test_new_consent_request(

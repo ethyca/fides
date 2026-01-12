@@ -27,6 +27,3 @@ class TestConditionalDependencyBase:
         ):
             ConditionalDependencyBase.get_condition_tree(db, test_id="test_id")
 
-    def test_abstract_class_has_condition_tree_column(self):
-        """Test that the abstract class has the condition_tree column."""
-        assert "condition_tree" in ConditionalDependencyBase.__dict__

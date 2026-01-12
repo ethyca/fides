@@ -417,7 +417,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-        body: urns,
+        body: {
+          urns,
+        },
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),

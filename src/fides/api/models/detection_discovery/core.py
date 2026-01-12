@@ -64,7 +64,10 @@ class MonitorFrequency(Enum):
 QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 
-class StagedResourceType(str, Enum):
+from enum import StrEnum
+
+
+class StagedResourceType(StrEnum):
     """
     Enum representing the type of staged resource.
     The resource_type column is a string in the DB, this is just for

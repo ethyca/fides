@@ -116,7 +116,7 @@ interface DateRangeParams {
   to?: string | null;
 }
 
-interface SearchFilterParams
+export interface SearchFilterParams
   extends Partial<PrivacyRequestFilter>,
     Partial<DateRangeParams> {}
 

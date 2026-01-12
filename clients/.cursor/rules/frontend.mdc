@@ -13,7 +13,6 @@ While working in this `clients` directory, you are a Senior Front-End Developer 
 - The `clients/privacy-center` directory contains the Privacy Center React/NextJS app
 - The `clients/fides-js` directory contains the Fides CMP Preact SDK, sometimes referred to as FidesJS, Fides.js, Fides SDK, or Janus. Both the Admin UI and the Privacy Center import a compiled version of the SDK.
 - The `clients/fidesui` directory is a design system which exports both Chakra and Ant Design components, however we are migrating to Ant from Chakra so Ant components are always preferred if possible. Only Admin UI and Privacy center use this design system, never try to use it in fides-js code.
-- The `clients/cypress-e2e` directory is a specific set of tests and can mostly be ignored while working in the 3 main apps
 - The `clients/sample-app` directory is a demo app and can mostly be ignored while working in the 3 main apps.
 - The rest of the codebase is considered the "backend" of fides which also gets wrapped by another repository called `fidesplus` which manages other backend code not found in this repo but is definitely utilized by the fides frontend.
 - The `clients/fides-js/docs` directory gets auto-generated from the jsdocs in `clients/fides-js/src/docs` and should never be updated manually. Always add to the `clients/fides-js/src/docs` instead. The types specified in `clients/fides-js/src/docs` do get imported and used in the codebase.

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 # ------------------------------------------------------------
 
 
-class ManualTaskExecutionTiming(str, Enum):
+class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
     pre_execution = "pre_execution"  # Execute before the main DAG
@@ -42,14 +42,14 @@ class ManualTaskExecutionTiming(str, Enum):
     parallel = "parallel"  # Execute in parallel with the main DAG
 
 
-class ManualTaskType(str, Enum):
+class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
     # Add more task types as needed
 
 
-class ManualTaskParentEntityType(str, Enum):
+class ManualTaskParentEntityType(StrEnum):
     """Enum for manual task parent entity types."""
 
     connection_config = (
@@ -58,14 +58,14 @@ class ManualTaskParentEntityType(str, Enum):
     # Add more parent entity types as needed
 
 
-class ManualTaskEntityType(str, Enum):
+class ManualTaskEntityType(StrEnum):
     """Enum for manual task entity types."""
 
     privacy_request = "privacy_request"
     # Add more entity types as needed
 
 
-class ManualTaskReferenceType(str, Enum):
+class ManualTaskReferenceType(StrEnum):
     """Enum for manual task reference types."""
 
     privacy_request = "privacy_request"
@@ -75,7 +75,9 @@ class ManualTaskReferenceType(str, Enum):
     # Add more reference types as needed
 
 
-class ManualTaskConfigurationType(str, Enum):
+
+
+class ManualTaskConfigurationType(StrEnum):
     """Enum for manual task configuration types."""
 
     access_privacy_request = "access_privacy_request"
@@ -83,7 +85,7 @@ class ManualTaskConfigurationType(str, Enum):
     # Add more configuration types as needed
 
 
-class ManualTaskFieldType(str, Enum):
+class ManualTaskFieldType(StrEnum):
     """Enum for manual task field types."""
 
     text = "text"  # Key-value pairs
@@ -92,7 +94,7 @@ class ManualTaskFieldType(str, Enum):
     # Add more field types as needed
 
 
-class StatusType(str, Enum):
+class StatusType(StrEnum):
     """Enum for manual task status."""
 
     pending = "pending"
