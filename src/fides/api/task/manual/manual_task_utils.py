@@ -14,6 +14,9 @@ from fides.api.graph.config import (
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_task import ManualTask
 from fides.api.schemas.policy import ActionType
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestTopLevelFields,
+)
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
