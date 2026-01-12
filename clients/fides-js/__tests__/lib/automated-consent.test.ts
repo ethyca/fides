@@ -17,7 +17,7 @@ import {
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import { decodeNoticeConsentString } from "../../src/lib/consent-utils";
-import { updateConsent } from "../../src/lib/preferences";
+import { savePreferencesApi, updateConsent } from "../../src/lib/preferences";
 import mockFidesInitOptions from "../__fixtures__/mock_fides_init_options.json";
 
 // Mock dependencies
@@ -38,6 +38,11 @@ jest.mock("../../src/lib/consent-utils", () => ({
   ...jest.requireActual("../../src/lib/consent-utils"),
   decodeNoticeConsentString: jest.fn().mockReturnValue({}),
 }));
+jest.mock("../../src/lib/fides-lifecycle-manager", () => ({
+  fidesLifecycleManager: {
+    getServedNoticeHistoryId: jest.fn().mockReturnValue(undefined),
+  },
+}));
 
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
@@ -47,6 +52,9 @@ const mockGetGpcContext = getGpcContext as jest.MockedFunction<
 >;
 const mockUpdateConsent = updateConsent as jest.MockedFunction<
   typeof updateConsent
+>;
+const mockSavePreferencesApi = savePreferencesApi as jest.MockedFunction<
+  typeof savePreferencesApi
 >;
 
 describe("automaticallyApplyPreferences", () => {
@@ -577,13 +585,14 @@ describe("saveAutomatedPreferencesToApi", () => {
     experience_config: {
       id: "config-1",
       component: ComponentType.BANNER_AND_MODAL,
+      privacy_experience_config_history_id: "config-history-1",
       translations: [
         {
           language: "en",
           privacy_experience_config_history_id: "config-history-1",
         },
       ],
-    } as ExperienceConfig,
+    } as any,
     privacy_notices: [
       {
         id: "notice-1",
@@ -617,19 +626,21 @@ describe("saveAutomatedPreferencesToApi", () => {
   const mockFidesGlobal = {
     experience: mockRegularExperience,
     cookie: mockCookie,
-    geolocation: {
-      country: "US",
+    config: {
+      options: mockOptions,
+      geolocation: {
+        location: "US",
+      },
     },
-    options: mockOptions,
     locale: "en",
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUpdateConsent.mockResolvedValue(undefined);
+    mockSavePreferencesApi.mockResolvedValue(undefined);
   });
 
-  it("calls updateConsent with the correct parameters", async () => {
+  it("calls savePreferencesApi with the correct parameters", async () => {
     const noticeConsent = {
       analytics: false,
       marketing: false,
@@ -642,14 +653,26 @@ describe("saveAutomatedPreferencesToApi", () => {
       consentMethod,
     );
 
-    expect(mockUpdateConsent).toHaveBeenCalledWith(mockFidesGlobal, {
-      noticeConsent,
+    expect(mockSavePreferencesApi).toHaveBeenCalledWith(
+      mockOptions,
+      mockFidesGlobal.cookie,
+      mockFidesGlobal.experience,
       consentMethod,
-    });
+      "config-history-1",
+      [
+        {
+          noticeHistoryId: "notice-history-1",
+          consentPreference: "opt_out",
+        },
+      ],
+      undefined,
+      "us",
+      undefined,
+    );
   });
 
-  it("does not throw when updateConsent fails", async () => {
-    mockUpdateConsent.mockRejectedValue(new Error("API error"));
+  it("does not throw when savePreferencesApi fails", async () => {
+    mockSavePreferencesApi.mockRejectedValue(new Error("API error"));
 
     const noticeConsent = {
       analytics: false,
@@ -664,6 +687,6 @@ describe("saveAutomatedPreferencesToApi", () => {
       ),
     ).resolves.not.toThrow();
 
-    expect(mockUpdateConsent).toHaveBeenCalled();
+    expect(mockSavePreferencesApi).toHaveBeenCalled();
   });
 });

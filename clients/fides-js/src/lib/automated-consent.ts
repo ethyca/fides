@@ -6,12 +6,19 @@ import {
   FidesGlobal,
   NoticeConsent,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
 } from "./consent-types";
-import { decodeNoticeConsentString } from "./consent-utils";
-import { hasFidesConsentCookie } from "./cookie";
-import { decodeFidesString } from "./fides-string";
-import { updateConsent } from "./preferences";
 import {
+  constructFidesRegionString,
+  decodeNoticeConsentString,
+} from "./consent-utils";
+import { hasFidesConsentCookie } from "./cookie";
+import { fidesLifecycleManager } from "./fides-lifecycle-manager";
+import { decodeFidesString } from "./fides-string";
+import { DEFAULT_LOCALE, selectBestExperienceConfigTranslation } from "./i18n";
+import { savePreferencesApi, updateConsent } from "./preferences";
+import {
+  buildConsentPreferencesArray,
   noticeHasConsentInCookie,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
@@ -162,7 +169,7 @@ export const calculateAutomatedConsent = (
 
 /**
  * Saves automated consent preferences to the Fides API.
- * This function only persists consent to the backend - it does NOT update the cookie,
+ * This function ONLY persists consent to the backend - it does NOT update the cookie,
  * window.Fides object, or dispatch events (those are already done during initialization).
  *
  * @param fidesGlobal - The Fides global state
@@ -170,21 +177,70 @@ export const calculateAutomatedConsent = (
  * @param consentMethod - The consent method (e.g., GPC, SCRIPT)
  */
 export const saveAutomatedPreferencesToApi = async (
-  fidesGlobal: Pick<
-    FidesGlobal,
-    "experience" | "cookie" | "geolocation" | "options" | "locale"
-  >,
+  fidesGlobal: Pick<FidesGlobal, "experience" | "cookie" | "config" | "locale">,
   noticeConsent: NoticeConsent,
   consentMethod: ConsentMethod,
 ): Promise<void> => {
+  const { experience, cookie, config, locale } = fidesGlobal;
+
+  if (
+    !experience ||
+    !cookie ||
+    !config ||
+    config.options.fidesDisableSaveApi ||
+    !experience.privacy_notices
+  ) {
+    return;
+  }
+
+  const { options } = config;
+
   try {
-    // Call updateConsent to persist to the API
-    // This updates the cookie and window.Fides, but since we've already done that
-    // during initialization, this is primarily to persist to the backend
-    await updateConsent(fidesGlobal, {
+    // Build SaveConsentPreference array using shared utility
+    const consentPreferencesToSave = buildConsentPreferencesArray(
       noticeConsent,
+      experience.privacy_notices,
+      locale || DEFAULT_LOCALE,
+      DEFAULT_LOCALE,
+      false, // Return minimal objects with just noticeHistoryId and consentPreference
+    );
+
+    if (consentPreferencesToSave.length === 0) {
+      return;
+    }
+
+    // Get privacy_experience_config_history_id from experience config translations
+    let configHistoryId: string | undefined;
+    if (experience.experience_config?.translations?.length) {
+      const bestExperienceConfigTranslation =
+        selectBestExperienceConfigTranslation(
+          locale || DEFAULT_LOCALE,
+          DEFAULT_LOCALE,
+          experience.experience_config,
+        );
+      configHistoryId =
+        bestExperienceConfigTranslation?.privacy_experience_config_history_id;
+    }
+
+    // Get user geography string from config.geolocation
+    const userLocationString = constructFidesRegionString(config.geolocation);
+
+    // Get served notice history ID
+    const servedNoticeHistoryId =
+      fidesLifecycleManager.getServedNoticeHistoryId();
+
+    // Call savePreferencesApi to handle the API request
+    await savePreferencesApi(
+      options,
+      cookie,
+      experience as PrivacyExperience | PrivacyExperienceMinimal,
       consentMethod,
-    });
+      configHistoryId,
+      consentPreferencesToSave,
+      undefined, // tcf
+      userLocationString,
+      servedNoticeHistoryId,
+    );
   } catch (error) {
     fidesDebugger("Error saving automated preferences to API:", error);
     // Don't throw - we don't want to block if the API call fails
