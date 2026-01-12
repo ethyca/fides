@@ -9,24 +9,24 @@ import {
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
 const InfrastructureClassificationSelect = ({
-  onSelectDataCategory,
+  onSelectDataUse,
   urn,
   ...props
 }: {
-  onSelectDataCategory: (value: string) => void;
+  onSelectDataUse: (value: string) => void;
   urn?: string;
 } & TaxonomySelectProps) => {
   const { getDataUseDisplayNameProps, getDataUses } = useTaxonomies();
   const dataUses = getDataUses().filter((use) => use.active);
   const [open, setOpen] = useState(false);
 
-  const options: TaxonomySelectOption[] = dataUses.map((dataCategory) => {
+  const options: TaxonomySelectOption[] = dataUses.map((dataUse) => {
     const { name, primaryName } = getDataUseDisplayNameProps(
-      dataCategory.fides_key,
+      dataUse.fides_key,
     );
 
     return {
-      value: dataCategory.fides_key,
+      value: dataUse.fides_key,
       label: (
         <div>
           <strong>{primaryName || name}</strong>
@@ -35,7 +35,7 @@ const InfrastructureClassificationSelect = ({
       ),
       name,
       primaryName,
-      description: dataCategory.description || "",
+      description: dataUse.description || "",
     };
   });
   return (
@@ -43,7 +43,7 @@ const InfrastructureClassificationSelect = ({
       options={options}
       prefix={
         <Button
-          aria-label="Add Data Category"
+          aria-label="Add Data Use"
           type="text"
           size="small"
           icon={<Icons.Add />}
@@ -66,7 +66,7 @@ const InfrastructureClassificationSelect = ({
       open={open}
       onOpenChange={(visible) => setOpen(visible)}
       onSelect={(value) => {
-        onSelectDataCategory(value);
+        onSelectDataUse(value);
         setOpen(false);
       }}
       data-classification-select={urn}

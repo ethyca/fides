@@ -15,6 +15,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
 import { useGetMonitorConfigQuery } from "../action-center.slice";
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
@@ -63,6 +64,18 @@ export const DiscoveredInfrastructureSystemsTable = ({
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
+
+  const [updateInfrastructureSystemDataUses] =
+    useUpdateInfrastructureSystemDataUsesMutation();
+
+  const handleSetDataUses = async (urn: string, dataUses: string[]) => {
+    await updateInfrastructureSystemDataUses({
+      monitorId,
+      urnList: [urn],
+      dataUses,
+    });
+    refetch();
+  };
 
   const {
     selectedItems,
@@ -212,6 +225,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
               activeTab={activeTab as ActionCenterTabHash | null}
               allowIgnore={allowIgnore}
               onPromoteSuccess={refetch}
+              onSetDataUses={handleSetDataUses}
             />
           )}
         />

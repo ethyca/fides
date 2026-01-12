@@ -10,6 +10,7 @@ import {
   Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
+  Schema,
 } from "~/types/api";
 import { MonitorClassifyParams } from "~/types/api/models/MonitorClassifyParams";
 
@@ -410,6 +411,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfrastructureSystemDataUses: build.mutation<
+      Schema,
+      { monitorId: string; urnList: string[]; dataUses: string[] }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          user_assigned_data_uses: params.dataUses,
+        })),
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
@@ -474,6 +489,7 @@ export const {
   usePromoteIdentityProviderMonitorResultMutation,
   useMuteIdentityProviderMonitorResultMutation,
   useUnmuteIdentityProviderMonitorResultMutation,
+  useUpdateInfrastructureSystemDataUsesMutation,
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,

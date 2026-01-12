@@ -63,7 +63,7 @@ interface InfrastructureSystemListItemProps {
     diff_status?: string | null;
     data_uses?: string[];
     description?: string | null;
-    preferred_data_categories?: string[] | null;
+    preferred_data_uses?: string[] | null;
     classifications?: Array<{ label: string }> | null;
   };
   selected?: boolean;
@@ -73,9 +73,9 @@ interface InfrastructureSystemListItemProps {
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
-  onSetDataCategories?: (urn: string, dataCategories: string[]) => void;
-  onSelectDataCategory?: (value: string) => void;
-  dataCategoriesDisabled?: boolean;
+  onSetDataUses?: (urn: string, dataUses: string[]) => void;
+  onSelectDataUse?: (value: string) => void;
+  dataUsesDisabled?: boolean;
   onPromoteSuccess?: () => void;
 }
 
@@ -88,9 +88,9 @@ export const InfrastructureSystemListItem = ({
   monitorId,
   activeTab,
   allowIgnore,
-  onSetDataCategories,
-  onSelectDataCategory,
-  dataCategoriesDisabled,
+  onSetDataUses,
+  onSelectDataUse,
+  dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
   const itemKey = item.urn ?? item.id ?? "";
@@ -135,14 +135,14 @@ export const InfrastructureSystemListItem = ({
     }
   };
 
-  // Handle data category selection
-  const handleSelectDataCategory = (value: string) => {
-    if (onSelectDataCategory) {
-      onSelectDataCategory(value);
-    } else if (onSetDataCategories && itemKey) {
-      const currentCategories = item.preferred_data_categories ?? [];
-      if (!currentCategories.includes(value)) {
-        onSetDataCategories(itemKey, [...currentCategories, value]);
+  // Handle data use selection
+  const handleSelectDataUse = (value: string) => {
+    if (onSelectDataUse) {
+      onSelectDataUse(value);
+    } else if (onSetDataUses && itemKey) {
+      const currentDataUses = item.preferred_data_uses ?? [];
+      if (!currentDataUses.includes(value)) {
+        onSetDataUses(itemKey, [...currentDataUses, value]);
       }
     }
   };
@@ -190,7 +190,7 @@ export const InfrastructureSystemListItem = ({
         description={
           <InfrastructureClassificationSelect
             mode="multiple"
-            value={item.preferred_data_categories ?? []}
+            value={item.preferred_data_uses ?? []}
             urn={itemKey}
             tagRender={(props) => {
               const isFromClassifier = !!item.classifications?.find(
@@ -198,12 +198,12 @@ export const InfrastructureSystemListItem = ({
               );
 
               const handleClose = () => {
-                if (onSetDataCategories && itemKey) {
-                  const newDataCategories =
-                    item.preferred_data_categories?.filter(
-                      (category) => category !== props.value,
+                if (onSetDataUses && itemKey) {
+                  const newDataUses =
+                    item.preferred_data_uses?.filter(
+                      (dataUse) => dataUse !== props.value,
                     ) ?? [];
-                  onSetDataCategories(itemKey, newDataCategories);
+                  onSetDataUses(itemKey, newDataUses);
                 }
               };
 
@@ -213,8 +213,8 @@ export const InfrastructureSystemListItem = ({
                 onClose: handleClose,
               });
             }}
-            onSelectDataCategory={handleSelectDataCategory}
-            disabled={dataCategoriesDisabled}
+            onSelectDataUse={handleSelectDataUse}
+            disabled={dataUsesDisabled}
           />
         }
       />
