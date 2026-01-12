@@ -1,4 +1,5 @@
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 
 export const RESOURCE_TYPE_MAP = new Map([
   [LegacyResourceTypes.SYSTEM, "system:information"],
@@ -7,6 +8,12 @@ export const RESOURCE_TYPE_MAP = new Map([
   [LegacyResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
   [LegacyResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
+
+export const VALUE_TYPE_RESOURCE_TYPE_MAP: Record<string, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: "taxonomy:data category",
+  [TaxonomyTypeEnum.DATA_USE]: "taxonomy:data use",
+  [TaxonomyTypeEnum.DATA_SUBJECT]: "taxonomy:data subject",
+};
 
 export enum FieldTypes {
   SINGLE_SELECT = "singleSelect",

@@ -40,6 +40,9 @@ const CustomTaxonomyDetails = ({
   const [isAdding, setIsAdding] = useState(false);
 
   const { valueTypeOptions } = useCustomFieldValueTypeOptions();
+  const filteredValueTypeOptions = valueTypeOptions.filter(
+    (option) => option.value !== fidesKey,
+  );
 
   const canDeleteCustomFieldDefinition = useHasPermission([
     ScopeRegistryEnum.CUSTOM_FIELD_DELETE,
@@ -125,7 +128,7 @@ const CustomTaxonomyDetails = ({
       </Form>
       {isAdding && (
         <Select
-          options={valueTypeOptions}
+          options={filteredValueTypeOptions}
           defaultOpen
           aria-label="Attribute type"
           onSelect={handleAddCustomFieldDefinition}

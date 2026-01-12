@@ -13,6 +13,7 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -22,6 +23,7 @@ import {
   FIELD_TYPE_OPTIONS,
   FieldTypes,
   RESOURCE_TYPE_MAP,
+  VALUE_TYPE_RESOURCE_TYPE_MAP,
 } from "~/features/custom-fields/constants";
 import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
@@ -92,6 +94,21 @@ const CustomFieldForm = ({
     useDeleteCustomFieldDefinitionMutation();
   const { data: locations, isLoading: isLocationsLoading } =
     useGetCustomFieldLocationsQuery();
+
+  const locationOptions = useMemo(() => {
+    return (
+      locations
+        ?.filter(
+          (loc: string) =>
+            loc !== VALUE_TYPE_RESOURCE_TYPE_MAP[valueType] &&
+            loc !== `taxonomy:${valueType}`,
+        )
+        .map((loc: string) => ({
+          label: loc,
+          value: loc,
+        })) ?? []
+    );
+  }, [locations, valueType]);
 
   const { valueTypeOptions } = useCustomFieldValueTypeOptions();
 
@@ -373,12 +390,7 @@ const CustomFieldForm = ({
         tooltip="Choose where this field applies, including taxonomies"
       >
         <Select
-          options={
-            locations?.map((loc: string) => ({
-              label: loc,
-              value: loc,
-            })) ?? []
-          }
+          options={locationOptions}
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
