@@ -754,7 +754,6 @@ class TestManualTaskConditionalDependencies:
             with pytest.raises(AwaitingAsyncTask):
                 graph_task._run_request(
                     ActionType.access,
-                    ActionType.access,
                     [],  # Empty input data - only privacy request conditions
                 )
         else:
@@ -1412,7 +1411,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 mock_set_data.return_value = [{"result": "data"}]
 
                 result = manual_task_graph_task._run_request(
-                    ActionType.access,
                     ActionType.access,
                     [],
                 )

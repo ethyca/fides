@@ -31,12 +31,6 @@ def upgrade():
         "ix_manual_task_conditional_dependency_manual_task_id",
         table_name="manual_task_conditional_dependency",
     )
-    op.create_index(
-        op.f("ix_manual_task_conditional_dependency_manual_task_id"),
-        "manual_task_conditional_dependency",
-        ["manual_task_id"],
-        unique=False,
-    )
     # Partial unique index for field-level conditions (when config_field_id IS NOT NULL)
     op.create_index(
         "ix_manual_task_cond_dep_task_field",
@@ -174,10 +168,7 @@ def downgrade():
         DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_only;
     """
     )
-    op.drop_index(
-        op.f("ix_manual_task_conditional_dependency_manual_task_id"),
-        table_name="manual_task_conditional_dependency",
-    )
+    # Recreate the original basic index that was dropped in upgrade
     op.create_index(
         "ix_manual_task_conditional_dependency_manual_task_id",
         "manual_task_conditional_dependency",

@@ -38,11 +38,11 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
     # Foreign key to parent manual task
+    # Note: index handled by partial indexes in __table_args__
     manual_task_id = Column(
         String,
         ForeignKey("manual_task.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
 
     # Optional foreign key to config field - when set, condition applies to field only
@@ -81,28 +81,39 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     def get_condition_tree(
         cls, db: Session, **kwargs: Any
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
-        """Get the condition tree for a manual task
+        """Get the condition tree for a manual task or specific config field.
 
         Args:
             db: Database session
             **kwargs: Keyword arguments containing:
-                manual_task_id: ID of the manual task
+                manual_task_id: ID of the manual task (required)
+                config_field_id: ID of the config field (optional).
+                    When None, returns the task-level condition (where config_field_id IS NULL).
+                    When provided, returns the field-level condition for that specific field.
 
         Returns:
             Optional[Union[ConditionLeaf, ConditionGroup]]: The condition tree,
-                or None if no conditions exist for this task
+                or None if no conditions exist for this task/field combination
 
         Raises:
             ValueError: If manual_task_id is not provided
         """
         manual_task_id = kwargs.get("manual_task_id")
+        config_field_id = kwargs.get("config_field_id")
 
         if not manual_task_id:
             raise ValueError("manual_task_id is required as a keyword argument")
 
-        condition_row = (
-            db.query(cls).filter(cls.manual_task_id == manual_task_id).one_or_none()
-        )
+        query = db.query(cls).filter(cls.manual_task_id == manual_task_id)
+
+        if config_field_id is None:
+            # Get task-level condition (where config_field_id IS NULL)
+            query = query.filter(cls.config_field_id.is_(None))
+        else:
+            # Get field-level condition for specific field
+            query = query.filter(cls.config_field_id == config_field_id)
+
+        condition_row = query.one_or_none()
 
         if condition_row is None or condition_row.condition_tree is None:
             return None
