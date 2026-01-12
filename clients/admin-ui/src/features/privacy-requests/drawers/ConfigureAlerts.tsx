@@ -2,6 +2,7 @@ import {
   Button,
   ChakraBellIcon as BellIcon,
   ChakraText as Text,
+  Divider,
   Drawer,
   Flex,
   Form,
@@ -26,7 +27,7 @@ const DEFAULT_MIN_ERROR_COUNT = 1;
 const ConfigureAlerts = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
-  const [notify, setNotify] = useState(false);
+  const [notify, setNotify] = useState(true);
   const [minErrorCount, setMinErrorCount] = useState(DEFAULT_MIN_ERROR_COUNT);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const firstField = useRef(null);
@@ -44,7 +45,7 @@ const ConfigureAlerts = () => {
 
     setIsSubmitting(true);
     const payload = await saveNotification({
-      email_addresses: emails,
+      email_addresses: notify ? emails : [],
       notify_after_failures: notify ? minErrorCount : 0,
     });
     if (isErrorResult(payload)) {
@@ -61,18 +62,28 @@ const ConfigureAlerts = () => {
 
   const handleClose = () => {
     setIsOpen(false);
+    // Reset form to defaults when drawer closes
+    setEmails([]);
+    setNotify(true);
+    setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
   };
 
   useEffect(() => {
     if (isOpen) {
       setSkip(false);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (data) {
-      setEmails(data.email_addresses);
+      // Only populate from API data, never use dummy/pre-seeded emails
+      // Ensure we always use an array, even if API returns undefined/null
+      setEmails(Array.isArray(data.email_addresses) ? data.email_addresses : []);
       setNotify(data.notify_after_failures !== 0);
       setMinErrorCount(data.notify_after_failures || DEFAULT_MIN_ERROR_COUNT);
     }
-  }, [data, isOpen]);
+    // If no data exists, state remains at initial defaults (empty emails array)
+  }, [data]);
 
   return (
     <>
@@ -106,10 +117,28 @@ const ConfigureAlerts = () => {
             Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors.
           </Text>
           <Space direction="vertical" size="middle" className="w-full">
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Flex justify="space-between" align="center" className="w-full">
+                <span>Enable email notifications</span>
+                <Switch
+                  size="small"
+                  checked={notify}
+                  onChange={(checked) => {
+                    setNotify(checked);
+                    if (!checked) {
+                      setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
+                    }
+                  }}
+                />
+              </Flex>
+            </Form.Item>
+
+            <Divider style={{ marginTop: 8, marginBottom: 12 }} />
+
             <Form.Item
               label={
                 <Flex align="center">
-                  <span>Enter email</span>
+                  <span>Email addresses</span>
                   <InfoTooltip label="Type or paste email addresses separated by commas and press Enter or Tab to add them" className="ml-1" />
                 </Flex>
               }
@@ -117,40 +146,34 @@ const ConfigureAlerts = () => {
               validateStatus={notify && emails.length === 0 ? "error" : undefined}
               help={notify && emails.length === 0 ? "At least one email is required" : undefined}
             >
-                          <EmailChipList
+              <EmailChipList
                 emails={emails}
                 onEmailsChange={setEmails}
-                            ref={firstField}
-                          />
+                ref={firstField}
+                disabled={!notify}
+              />
             </Form.Item>
 
-            <div>
-              <Flex justify="space-between" align="center" className="w-full">
-                <span>Notify on every error</span>
-                            <Switch
-                  size="small"
-                  checked={notify}
-                  onChange={(checked) => {
-                    setNotify(checked);
-                    if (!checked) {
-                      setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
-                                }
-                              }}
-                            />
-              </Flex>
-              {notify && (
-                <Flex align="center" gap={0} className="mt-2">
-                  <span>Notify after</span>
-                  <InputNumber
-                    min={DEFAULT_MIN_ERROR_COUNT}
-                    value={minErrorCount}
-                    onChange={(value) => setMinErrorCount(value || DEFAULT_MIN_ERROR_COUNT)}
-                    style={{ width: 80, marginLeft: 8, marginRight: 8 }}
-                  />
-                  <span>errors</span>
-                </Flex>
-              )}
-            </div>
+            {notify && (
+              <>
+                <Divider style={{ marginTop: 16, marginBottom: 0 }} />
+                <Form.Item
+                  label="Notification frequency"
+                  help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
+                >
+                  <Flex align="center" gap={0}>
+                    <span>Send notification after</span>
+                    <InputNumber
+                      min={DEFAULT_MIN_ERROR_COUNT}
+                      value={minErrorCount}
+                      onChange={(value) => setMinErrorCount(value || DEFAULT_MIN_ERROR_COUNT)}
+                      style={{ width: 80, marginLeft: 8, marginRight: 8 }}
+                    />
+                    <span>error(s)</span>
+                  </Flex>
+                </Form.Item>
+              </>
+            )}
           </Space>
         </Form>
       </Drawer>

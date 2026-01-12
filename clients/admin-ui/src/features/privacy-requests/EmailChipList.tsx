@@ -7,15 +7,17 @@ const isValidEmail = (email: string) => EMAIL_REGEXP.test(email);
 type EmailChipListProps = {
   emails: string[];
   onEmailsChange: (emails: string[]) => void;
+  disabled?: boolean;
 };
 
 const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
-  ({ emails, onEmailsChange }, ref) => {
+  ({ emails, onEmailsChange, disabled = false }, ref) => {
     const [inputValue, setInputValue] = useState("");
 
     const emailChipExists = (email: string) => emails.includes(email);
 
     const addEmails = (emailsToAdd: string[]) => {
+      if (disabled) return;
       const validatedEmails = emailsToAdd
         .map((e) => e.trim())
         .filter((email) => isValidEmail(email) && !emailChipExists(email));
@@ -26,10 +28,12 @@ const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (disabled) return;
       setInputValue(event.target.value);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (disabled) return;
       if (["Enter", "Tab", ","].includes(event.key)) {
         event.preventDefault();
         addEmails([inputValue]);
@@ -37,6 +41,7 @@ const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
     };
 
     const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+      if (disabled) return;
       event.preventDefault();
       const pastedData = event.clipboardData.getData("text");
       const pastedEmails = pastedData.split(",");
@@ -44,6 +49,7 @@ const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
     };
 
     const removeEmail = (emailToRemove: string) => {
+      if (disabled) return;
       onEmailsChange(emails.filter((email) => email !== emailToRemove));
     };
 
@@ -58,13 +64,14 @@ const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
           ref={ref}
           type="email"
           value={inputValue}
+          disabled={disabled}
         />
         {emails.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {emails.map((email) => (
               <Tag
                 key={email}
-                closable
+                closable={!disabled}
                 onClose={() => removeEmail(email)}
                 color="default"
               >
