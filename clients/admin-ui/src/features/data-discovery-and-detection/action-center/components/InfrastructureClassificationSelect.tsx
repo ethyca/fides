@@ -21,9 +21,7 @@ const InfrastructureClassificationSelect = ({
   const [open, setOpen] = useState(false);
 
   const options: TaxonomySelectOption[] = dataUses.map((dataUse) => {
-    const { name, primaryName } = getDataUseDisplayNameProps(
-      dataUse.fides_key,
-    );
+    const { name, primaryName } = getDataUseDisplayNameProps(dataUse.fides_key);
 
     return {
       value: dataUse.fides_key,
@@ -43,7 +41,7 @@ const InfrastructureClassificationSelect = ({
       options={options}
       prefix={
         <Button
-          aria-label="Add Data Use"
+          aria-label="Add data use"
           type="text"
           size="small"
           icon={<Icons.Add />}
