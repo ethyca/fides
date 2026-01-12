@@ -14,10 +14,12 @@ import {
   FidesInitOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
+  NoticeConsent,
   NoticeValues,
   OverrideType,
 } from "./lib/consent-types";
 import {
+  hasFidesConsentCookie,
   isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -94,13 +96,28 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.config = config;
 
   /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  // This includes GPC, migrated consent from third-party providers (e.g., OneTrust),
+  // and notice consent string overrides from options
   const automatedConsentContext = getAutomatedConsentContext(
     config.options,
     optionsOverrides,
   );
+
+  // Apply migrated consent to cookie if we have it and no existing Fides cookie
+  let migratedConsent: NoticeConsent | undefined;
+  if (
+    automatedConsentContext.migratedConsent &&
+    !hasFidesConsentCookie(config.options.fidesCookieSuffix)
+  ) {
+    migratedConsent = automatedConsentContext.migratedConsent;
+  }
   /* END AUTOMATED CONSENT */
 
   this.cookie = await getInitialCookie(config);
+  this.cookie.consent = {
+    ...this.cookie.consent,
+    ...migratedConsent,
+  };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
@@ -129,7 +146,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   this.experience = config.experience; // pre-fetched experience if available
   const hasExistingCookie = !isNewFidesCookie(this.cookie);
-  if (hasExistingCookie) {
+  const hasMigratableConsent = !!migratedConsent;
+  if (hasExistingCookie || hasMigratableConsent) {
     /*
      * We have enough information to initialize the Fides object before we have a valid experience.
      * In this case, the experience is less important because the user has already consented to something.
