@@ -117,19 +117,19 @@ async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
 
         session = readonly_async_session_factory()
 
-        try:
-            yield session
-            # If we aren't using autocommit, commit the transaction
-            # TODO: Do we even want to do this? It's harmless on read-only queries but somewhat meaningless
-            if not CONFIG.database.async_readonly_database_autocommit:
-                await session.commit()
-        except Exception:
-            # If something went wrong, rollback the transaction for safety
-            if not CONFIG.database.async_readonly_database_pool_skip_rollback:
-                await session.rollback()
-            raise
-        finally:
-            await session.close()
+    try:
+        yield session
+        # If we aren't using autocommit, commit the transaction
+        # TODO: Do we even want to do this? It's harmless on read-only queries but somewhat meaningless
+        if not CONFIG.database.async_readonly_database_autocommit:
+            await session.commit()
+    except Exception:
+        # If something went wrong, rollback the transaction for safety
+        if not CONFIG.database.async_readonly_database_pool_skip_rollback:
+            await session.rollback()
+        raise
+    finally:
+        await session.close()
 
 
 # If warm-up is disabled, use non-warmed session factory
