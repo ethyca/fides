@@ -181,8 +181,10 @@ export const InfrastructureSystemListItem = ({
             value={item.preferred_data_uses ?? []}
             urn={itemKey}
             tagRender={(props) => {
-              const isFromClassifier = !!item.classifications?.find(
-                (classification) => classification.label === props.value,
+              // Show sparkle icon if the data use was auto-detected (in data_uses)
+              // and not manually assigned (not in user_assigned_data_uses)
+              const isAutoDetectedFromCompass = item.data_uses?.includes(
+                props.value as string,
               );
 
               const handleClose = () => {
@@ -197,7 +199,7 @@ export const InfrastructureSystemListItem = ({
 
               return tagRender({
                 ...props,
-                isFromClassifier,
+                isFromClassifier: isAutoDetectedFromCompass,
                 onClose: handleClose,
               });
             }}
