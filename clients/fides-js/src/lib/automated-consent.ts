@@ -195,7 +195,7 @@ export const saveAutomatedPreferencesToApi = async (
  * Opt out of notices that can be opted out of automatically.
  * This does not currently do anything with TCF unless the experience has custom notices applied.
  * Returns true if GPC or Notice Consent string has been applied
- * 
+ *
  * @deprecated This function is being refactored. Use calculateAutomatedConsent() and saveAutomatedPreferencesToApi() instead.
  */
 export const automaticallyApplyPreferences = async (

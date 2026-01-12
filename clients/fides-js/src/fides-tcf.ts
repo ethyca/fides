@@ -12,6 +12,7 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import { FidesCookie, isNewFidesCookie } from "./fides";
+import { getAutomatedConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -152,6 +153,14 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     },
   };
   this.config = config;
+
+  /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  const automatedConsentContext = getAutomatedConsentContext(
+    config.options,
+    optionsOverrides,
+  );
+  /* END AUTOMATED CONSENT */
+
   this.cookie = await getInitialCookie(config);
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -217,6 +226,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience: updateTCFExperience,
     overrides,
+    automatedConsentContext,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);

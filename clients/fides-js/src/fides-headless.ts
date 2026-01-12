@@ -5,6 +5,7 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
+import { getAutomatedConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesCookie,
@@ -91,6 +92,14 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     options: { ...config.options, ...overrides.optionsOverrides },
   };
   this.config = config;
+
+  /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  const automatedConsentContext = getAutomatedConsentContext(
+    config.options,
+    optionsOverrides,
+  );
+  /* END AUTOMATED CONSENT */
+
   this.cookie = await getInitialCookie(config);
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -147,6 +156,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     fides: this,
     updateExperience,
     overrides,
+    automatedConsentContext,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
