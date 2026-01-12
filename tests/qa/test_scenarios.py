@@ -19,7 +19,6 @@ if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
 import pytest
-
 from qa.__main__ import discover_scenarios
 from qa.utils import QATestScenario
 

@@ -70,7 +70,7 @@ def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
 
     format_command = ("ruff", "format", *ruff_arguments)
     check_command = ("ruff", "check", *ruff_arguments)
-    sort_imports_command = ("ruff", "check", "--select", "I", *ruff_arguments)
+    sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
     if mode == RuffMode.FORMAT:
         # Format code and sort imports
