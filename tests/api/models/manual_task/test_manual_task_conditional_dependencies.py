@@ -252,7 +252,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         )
 
         # Get root condition
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 
