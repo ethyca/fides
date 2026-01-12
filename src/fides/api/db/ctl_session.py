@@ -138,7 +138,7 @@ async def non_warmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
         raise
 
 
-async_session: Callable[[], _AsyncGeneratorContextManager[Any, None]] = (
+readonly_async_session: Callable[[], _AsyncGeneratorContextManager[Any, None]] = (
     prewarmed_async_readonly_session
     if CONFIG.database.async_readonly_database_uri
     else non_warmed_async_readonly_session
