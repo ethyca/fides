@@ -43,18 +43,6 @@ def build_condition_tree(
 
     if condition_type == "leaf":
         parsed_value = value
-        if isinstance(value, str):
-            try:
-                parsed_value = json.loads(value)
-            except (json.JSONDecodeError, TypeError):
-                parsed_value = value
-
-        return {
-            "field_address": field_address,
-            "operator": operator,
-            "value": parsed_value,
-    if condition_type == "leaf":
-        parsed_value = value
 
         return {
             "field_address": field_address,
