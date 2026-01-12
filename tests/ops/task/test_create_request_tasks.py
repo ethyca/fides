@@ -1125,7 +1125,9 @@ class TestPersistErasureRequestTasks:
         assert ready_task.action_type == ActionType.erasure
 
         assert update_erasure_tasks_with_access_data_mock.called
-        update_erasure_tasks_with_access_data_mock.called_with(db, privacy_request)
+        update_erasure_tasks_with_access_data_mock.assert_called_with(
+            db, privacy_request
+        )
         assert run_erasure_node_mock.called
         run_erasure_node_mock.assert_called_with(erasure_request_task, False)
 

@@ -174,7 +174,9 @@ def extract_conditional_dependency_data_from_inputs(
     # Convert to list for iteration
     # if no field addresses, return conditional data which may contain privacy request data or be empty
     dataset_field_addresses = list(
-        addr for addr in all_field_addresses if not addr.startswith("privacy_request.")
+        addr
+        for addr in all_field_addresses
+        if not addr.startswith(PrivacyRequestTopLevelFields.privacy_request.value)
     )
     if not dataset_field_addresses:
         return conditional_data
@@ -397,12 +399,12 @@ def evaluate_conditional_dependencies(
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
-    # Get the root condition for this manual task
-    root_condition = ManualTaskConditionalDependency.get_root_condition(
+    # Get the condition tree for this manual task
+    condition_tree = ManualTaskConditionalDependency.get_condition_tree(
         db, manual_task_id=manual_task.id
     )
 
-    if not root_condition:
+    if not condition_tree:
         # No conditional dependencies - always execute
         return None
 

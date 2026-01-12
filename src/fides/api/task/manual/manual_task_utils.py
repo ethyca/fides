@@ -162,7 +162,9 @@ def _create_collection_from_manual_task(
             field_addresses = set(
                 addr
                 for addr in extract_field_addresses(tree)
-                if not addr.startswith("privacy_request.")
+                if not addr.startswith(
+                    PrivacyRequestTopLevelFields.privacy_request.value
+                )
             )
 
             # For consent-only tasks, skip dataset field references entirely
