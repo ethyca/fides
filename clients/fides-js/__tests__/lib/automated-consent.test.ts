@@ -1,5 +1,9 @@
-import { automaticallyApplyPreferences } from "../../src/lib/automated-consent";
-import { getGpcContext } from "../../src/lib/consent-context";
+import {
+  automaticallyApplyPreferences,
+  calculateAutomatedConsent,
+  saveAutomatedPreferencesToApi,
+} from "../../src/lib/automated-consent";
+import { ConsentContext, getGpcContext } from "../../src/lib/consent-context";
 import {
   ComponentType,
   ConsentMechanism,
@@ -12,7 +16,9 @@ import {
   PrivacyNotice,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
+import { decodeNoticeConsentString } from "../../src/lib/consent-utils";
 import { updateConsent } from "../../src/lib/preferences";
+import mockFidesInitOptions from "../__fixtures__/mock_fides_init_options.json";
 
 // Mock dependencies
 jest.mock("../../src/lib/consent-context");
@@ -27,6 +33,10 @@ jest.mock("../../src/lib/consent-migration", () => ({
 }));
 jest.mock("../../src/lib/cookie", () => ({
   getFidesConsentCookie: jest.fn().mockReturnValue(null),
+}));
+jest.mock("../../src/lib/consent-utils", () => ({
+  ...jest.requireActual("../../src/lib/consent-utils"),
+  decodeNoticeConsentString: jest.fn().mockReturnValue({}),
 }));
 
 // Mock fidesDebugger
@@ -47,43 +57,8 @@ describe("automaticallyApplyPreferences", () => {
     tcf_consent: {},
   };
 
-  const mockOptions: FidesInitOptions = {
-    fidesApiUrl: "https://api.example.com",
-    debug: false,
-    geolocationApiUrl: "",
-    isOverlayEnabled: true,
-    isPrefetchEnabled: false,
-    isGeolocationEnabled: false,
-    overlayParentId: null,
-    modalLinkId: "",
-    privacyCenterUrl: "",
-    tcfEnabled: false,
-    gppEnabled: false,
-    fidesEmbed: false,
-    fidesDisableSaveApi: false,
-    fidesDisableNoticesServedApi: false,
-    fidesDisableBanner: false,
-    fidesString: null,
-    apiOptions: null,
-    fidesTcfGdprApplies: false,
-    fidesJsBaseUrl: "",
-    customOptionsPath: null,
-    preventDismissal: false,
-    allowHTMLDescription: null,
-    base64Cookie: false,
-    fidesLocale: undefined,
-    fidesPrimaryColor: null,
-    fidesClearCookie: false,
-    showFidesBrandLink: false,
-    fidesConsentOverride: null,
-    otFidesMapping: null,
-    fidesDisabledNotices: null,
-    fidesDisabledSystems: null,
-    fidesConsentNonApplicableFlagMode: null,
-    fidesConsentFlagType: null,
-    fidesInitializedEventMode: "once",
-    fidesCookieCompression: "none",
-  };
+  const mockOptions: FidesInitOptions =
+    mockFidesInitOptions as FidesInitOptions;
 
   const mockFidesGlobal = (override?: Partial<FidesGlobal>) => {
     let fidesGlobal: Pick<
@@ -356,5 +331,339 @@ describe("automaticallyApplyPreferences", () => {
         }),
       );
     });
+  });
+});
+
+describe("calculateAutomatedConsent", () => {
+  const mockRegularExperience: PrivacyExperience = {
+    id: "regular-exp-1",
+    region: "us",
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-01-01T00:00:00Z",
+    experience_config: {
+      id: "config-1",
+      component: ComponentType.BANNER_AND_MODAL,
+      translations: [
+        {
+          language: "en",
+          privacy_experience_config_history_id: "config-history-1",
+        },
+      ],
+    } as ExperienceConfig,
+    privacy_notices: [
+      {
+        id: "notice-1",
+        notice_key: "analytics",
+        name: "Analytics",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+        has_gpc_flag: true,
+        default_preference: UserConsentPreference.OPT_OUT,
+        translations: [
+          {
+            language: "en",
+            title: "Analytics",
+            description: "Analytics description",
+            privacy_notice_history_id: "notice-history-1",
+          },
+        ],
+      },
+      {
+        id: "notice-2",
+        notice_key: "marketing",
+        name: "Marketing",
+        consent_mechanism: ConsentMechanism.OPT_IN,
+        has_gpc_flag: true,
+        default_preference: UserConsentPreference.OPT_IN,
+        translations: [
+          {
+            language: "en",
+            title: "Marketing",
+            description: "Marketing description",
+            privacy_notice_history_id: "notice-history-2",
+          },
+        ],
+      },
+    ] as PrivacyNotice[],
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("returns no consent when context has no automated sources", () => {
+    const context: ConsentContext = {};
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(false);
+    expect(result.consentMethod).toBeNull();
+    expect(result.noticeConsent).toEqual({});
+  });
+
+  it("applies GPC when globalPrivacyControl is true", () => {
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(true);
+    expect(result.consentMethod).toBe(ConsentMethod.GPC);
+    expect(result.noticeConsent).toEqual({
+      analytics: false,
+      marketing: false,
+    });
+  });
+
+  it("applies migrated consent with higher priority than GPC", () => {
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+      migratedConsent: {
+        analytics: true, // Migrated says opt-in
+      },
+      migrationMethod: ConsentMethod.EXTERNAL_PROVIDER,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(true);
+    expect(result.consentMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
+    expect(result.noticeConsent).toEqual({
+      analytics: true, // Migrated consent takes priority
+      marketing: false, // GPC applied to marketing
+    });
+  });
+
+  it("applies notice consent string with priority between migrated and GPC", () => {
+    (decodeNoticeConsentString as jest.Mock).mockReturnValueOnce({
+      analytics: true,
+    });
+
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+      noticeConsentString: "analytics:true", // Notice string says opt-in
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(true);
+    // Should be SCRIPT method when notice consent string is applied
+    expect(result.consentMethod).toBe(ConsentMethod.SCRIPT);
+  });
+
+  it("respects saved consent for GPC", () => {
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+    const savedConsent = {
+      analytics: true, // User already opted in
+    };
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(true);
+    expect(result.consentMethod).toBe(ConsentMethod.GPC);
+    expect(result.noticeConsent).toEqual({
+      analytics: true, // Preserved existing consent
+      marketing: false, // GPC applied only to marketing
+    });
+  });
+
+  it("does not apply GPC to notices without has_gpc_flag", () => {
+    const experienceWithoutGpcFlag: PrivacyExperience = {
+      ...mockRegularExperience,
+      privacy_notices: [
+        {
+          ...mockRegularExperience.privacy_notices![0],
+          has_gpc_flag: false,
+        },
+        {
+          ...mockRegularExperience.privacy_notices![1],
+          has_gpc_flag: false,
+        },
+      ] as PrivacyNotice[],
+    };
+
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      experienceWithoutGpcFlag,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(false);
+    expect(result.consentMethod).toBeNull();
+  });
+
+  it("does not apply GPC to notice-only mechanisms", () => {
+    const experienceWithNoticeOnly: PrivacyExperience = {
+      ...mockRegularExperience,
+      privacy_notices: [
+        {
+          ...mockRegularExperience.privacy_notices![0],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        },
+      ] as PrivacyNotice[],
+    };
+
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      experienceWithNoticeOnly,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(false);
+    expect(result.consentMethod).toBeNull();
+  });
+
+  it("returns no consent when experience is invalid", () => {
+    const invalidExperience = {} as PrivacyExperience;
+    const context: ConsentContext = {
+      globalPrivacyControl: true,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      invalidExperience,
+      savedConsent,
+      context,
+    );
+
+    expect(result.applied).toBe(false);
+    expect(result.consentMethod).toBeNull();
+    expect(result.noticeConsent).toEqual({});
+  });
+});
+
+describe("saveAutomatedPreferencesToApi", () => {
+  const mockRegularExperience: PrivacyExperience = {
+    id: "regular-exp-1",
+    region: "us",
+    created_at: "2023-01-01T00:00:00Z",
+    updated_at: "2023-01-01T00:00:00Z",
+    experience_config: {
+      id: "config-1",
+      component: ComponentType.BANNER_AND_MODAL,
+      translations: [
+        {
+          language: "en",
+          privacy_experience_config_history_id: "config-history-1",
+        },
+      ],
+    } as ExperienceConfig,
+    privacy_notices: [
+      {
+        id: "notice-1",
+        notice_key: "analytics",
+        name: "Analytics",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+        has_gpc_flag: true,
+        default_preference: UserConsentPreference.OPT_OUT,
+        translations: [
+          {
+            language: "en",
+            title: "Analytics",
+            description: "Analytics description",
+            privacy_notice_history_id: "notice-history-1",
+          },
+        ],
+      },
+    ] as PrivacyNotice[],
+  };
+
+  const mockCookie: FidesCookie = {
+    consent: {},
+    identity: {},
+    fides_meta: {},
+    tcf_consent: {},
+  };
+
+  const mockOptions: FidesInitOptions =
+    mockFidesInitOptions as FidesInitOptions;
+
+  const mockFidesGlobal = {
+    experience: mockRegularExperience,
+    cookie: mockCookie,
+    geolocation: {
+      country: "US",
+    },
+    options: mockOptions,
+    locale: "en",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUpdateConsent.mockResolvedValue(undefined);
+  });
+
+  it("calls updateConsent with the correct parameters", async () => {
+    const noticeConsent = {
+      analytics: false,
+      marketing: false,
+    };
+    const consentMethod = ConsentMethod.GPC;
+
+    await saveAutomatedPreferencesToApi(
+      mockFidesGlobal,
+      noticeConsent,
+      consentMethod,
+    );
+
+    expect(mockUpdateConsent).toHaveBeenCalledWith(mockFidesGlobal, {
+      noticeConsent,
+      consentMethod,
+    });
+  });
+
+  it("does not throw when updateConsent fails", async () => {
+    mockUpdateConsent.mockRejectedValue(new Error("API error"));
+
+    const noticeConsent = {
+      analytics: false,
+    };
+    const consentMethod = ConsentMethod.GPC;
+
+    await expect(
+      saveAutomatedPreferencesToApi(
+        mockFidesGlobal,
+        noticeConsent,
+        consentMethod,
+      ),
+    ).resolves.not.toThrow();
+
+    expect(mockUpdateConsent).toHaveBeenCalled();
   });
 });
