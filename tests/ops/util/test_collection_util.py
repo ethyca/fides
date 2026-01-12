@@ -164,7 +164,7 @@ class TestUnflattenDict:
 
     # TODO: what is this test testing?
     def test_overwrite_existing_values(self):
-        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}} # noqa: F601
+        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}  # noqa: F601
 
     def test_conflicting_types(self):
         with pytest.raises(ValueError):

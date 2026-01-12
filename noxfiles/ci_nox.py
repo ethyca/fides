@@ -1,5 +1,6 @@
 """Contains the nox sessions used during CI checks."""
 
+from enum import StrEnum
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict
@@ -34,6 +35,12 @@ from setup_tests_nox import (
 from utils_nox import db, install_requirements
 
 
+class RuffMode(StrEnum):
+    FORMAT = "format"
+    CHECK = "check"
+    SORT_IMPORTS_ONLY = "sort-imports"
+
+
 ###################
 ## Static Checks ##
 ###################
@@ -49,38 +56,33 @@ def static_checks(session: nox.Session) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("format", id="format"),
-        nox.param("check", id="check"),
+        nox.param(RuffMode.FORMAT, id="format"),
+        nox.param(RuffMode.CHECK, id="check"),
+        nox.param(RuffMode.SORT_IMPORTS_ONLY, id="sort-imports"),
     ],
 )
-def ruff(session: nox.Session, mode: str) -> None:
-    """Run the 'ruff' linter and formatter."""
+def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
+    """Run the 'ruff' linter and formatter - check (check only), format (sort imports and apply formatting) or sort-imports (only sort imports)."""
     install_requirements(session)
+    ruff_arguments = ["src", "tests", "noxfiles", "scripts", "noxfile.py"]
+    if session.posargs:
+        ruff_arguments = session.posargs
 
-    if mode == "format":
-        # Format code
-        command = (
-            "ruff",
-            "format",
-            "src",
-            "tests",
-            "noxfiles",
-            "scripts",
-            "noxfile.py",
-        )
-        if session.posargs:
-            command = ("ruff", "format", *session.posargs)
-        session.run(*command)
-    elif mode == "check":
+    format_command = ("ruff", "format", *ruff_arguments)
+    check_command = ("ruff", "check", *ruff_arguments)
+    sort_imports_command = ("ruff", "check", "--select", "I", *ruff_arguments)
+
+    if mode == RuffMode.FORMAT:
+        # Format code and sort imports
+        session.run(*format_command)
+        session.run(*sort_imports_command)
+
+    elif mode == RuffMode.CHECK:
         # Lint code
-        command = ("ruff", "check", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-        if session.posargs:
-            command = ("ruff", "check", *session.posargs)
-        else:
-            # Add --fix only when no posargs (in CI we may want check only)
-            if "--no-fix" not in session.posargs:
-                command = (*command, "--fix")
-        session.run(*command)
+        session.run(*check_command)
+
+    elif mode == RuffMode.SORT_IMPORTS_ONLY:
+        session.run(*sort_imports_command)
 
 
 @nox.session()

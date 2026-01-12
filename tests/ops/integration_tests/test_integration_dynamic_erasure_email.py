@@ -557,8 +557,10 @@ async def test_erasure_email_invalid_dataset(
     # we expect the job to raise an exception because the connector is misconfigured
     with pytest.raises(DynamicErasureEmailConnectorException) as exc:
         send_email_batch.delay().get()
-        assert str(exc.value) == "DatasetConfig with key nonexistent_dataset not found. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
-
+        assert (
+            str(exc.value)
+            == "DatasetConfig with key nonexistent_dataset not found. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
+        )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(

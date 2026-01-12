@@ -54,7 +54,6 @@ jobs:
       matrix:
         session_name:
           [
-            '"ruff(format)"',
             '"ruff(check)"',
             "mypy",
             "check_install",
