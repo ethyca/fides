@@ -15,9 +15,11 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
+import { VALUE_TYPE_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
 import { useDeleteCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
@@ -28,6 +30,7 @@ interface CustomTaxonomyDetailsProps {
   onSubmit: (values: TaxonomyUpdate) => void;
   formId: string;
   customFields: CustomFieldDefinitionWithId[];
+  isCustom?: boolean;
 }
 
 const CustomTaxonomyDetails = ({
@@ -35,6 +38,7 @@ const CustomTaxonomyDetails = ({
   onSubmit,
   formId,
   customFields,
+  isCustom = false,
 }: CustomTaxonomyDetailsProps) => {
   const { fides_key: fidesKey, ...initialValues } = taxonomy ?? {};
 
@@ -87,11 +91,14 @@ const CustomTaxonomyDetails = ({
       return;
     }
 
+    const resourceType =
+      VALUE_TYPE_RESOURCE_TYPE_MAP[fidesKey as TaxonomyTypeEnum] ?? fidesKey;
+
     const result = await createOrUpdate(
       {
         name: (taxonomyType.label as string) ?? taxonomyType.value,
         value_type: taxonomyType.value as string,
-        resource_type: fidesKey as string,
+        resource_type: resourceType,
       },
       undefined,
       undefined,
@@ -107,26 +114,40 @@ const CustomTaxonomyDetails = ({
   return (
     <Flex vertical gap="large">
       {modalContext}
-      <Descriptions>
+      <Descriptions column={1}>
         <Descriptions.Item label="Fides key">{fidesKey}</Descriptions.Item>
+        {!isCustom && (
+          <>
+            <Descriptions.Item label="Name">
+              {taxonomy?.name ?? ""}
+            </Descriptions.Item>
+            {taxonomy?.description && (
+              <Descriptions.Item label="Description">
+                {taxonomy?.description ?? ""}
+              </Descriptions.Item>
+            )}
+          </>
+        )}
       </Descriptions>
-      <Form
-        id={formId}
-        layout="vertical"
-        initialValues={initialValues}
-        onFinish={onSubmit}
-      >
-        <Form.Item
-          label="Name"
-          name="name"
-          rules={[{ required: true, message: "Name is required" }]}
+      {isCustom && (
+        <Form
+          id={formId}
+          layout="vertical"
+          initialValues={initialValues}
+          onFinish={onSubmit}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item label="Description" name="description">
-          <Input.TextArea />
-        </Form.Item>
-      </Form>
+          <Form.Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: "Name is required" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label="Description" name="description">
+            <Input.TextArea />
+          </Form.Item>
+        </Form>
+      )}
       {isAdding && (
         <Select
           options={filteredValueTypeOptions}

@@ -16,10 +16,10 @@ import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice"
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
 
 const FIELD_TYPE_LABEL_MAP = {
-  [TaxonomyTypeEnum.DATA_CATEGORY]: "Data categories",
+  [TaxonomyTypeEnum.DATA_CATEGORY]: "Data category",
   [TaxonomyTypeEnum.DATA_USE]: "Data use field",
-  [TaxonomyTypeEnum.DATA_SUBJECT]: "Data subjects",
-  [TaxonomyTypeEnum.SYSTEM_GROUP]: "System groups",
+  [TaxonomyTypeEnum.DATA_SUBJECT]: "Data subject",
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "System group",
 };
 
 const LOCATION_LABEL_MAP = {
@@ -28,6 +28,7 @@ const LOCATION_LABEL_MAP = {
   [LegacyResourceTypes.DATA_CATEGORY]: "Data category",
   [LegacyResourceTypes.DATA_SUBJECT]: "Data subject",
   [LegacyResourceTypes.PRIVACY_DECLARATION]: "System data use",
+  "system group": "System group",
 };
 
 const useCustomFieldsTable = () => {

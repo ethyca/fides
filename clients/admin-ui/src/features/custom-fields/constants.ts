@@ -13,6 +13,14 @@ export const VALUE_TYPE_RESOURCE_TYPE_MAP: Record<string, string> = {
   [TaxonomyTypeEnum.DATA_CATEGORY]: "taxonomy:data category",
   [TaxonomyTypeEnum.DATA_USE]: "taxonomy:data use",
   [TaxonomyTypeEnum.DATA_SUBJECT]: "taxonomy:data subject",
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "taxonomy:system group",
+};
+
+export const FIDES_KEY_RESOURCE_TYPE_MAP: Record<string, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: LegacyResourceTypes.DATA_CATEGORY,
+  [TaxonomyTypeEnum.DATA_USE]: LegacyResourceTypes.DATA_USE,
+  [TaxonomyTypeEnum.DATA_SUBJECT]: LegacyResourceTypes.DATA_SUBJECT,
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "system group",
 };
 
 export enum FieldTypes {
