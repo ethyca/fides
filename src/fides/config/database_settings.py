@@ -200,16 +200,16 @@ class DatabaseSettings(FidesSettings):
         description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
     )
     async_readonly_database_pool_skip_rollback: bool = Field(
-        default=True,
+        default=False,
         description="If true, the async engine will skip rolling back connections when they are returned to the pool.",
     )
     async_readonly_database_autocommit: bool = Field(
-        default=True,
+        default=False,
         description="If true, the async engine will autocommit transactions. This should effectively be a no-op because it's a readonly database.",
     )
     async_readonly_database_prewarm: bool = Field(
         default=False,
-        description="Whether to warm the asynchronous read-only database pool on startup.",
+        description="Whether to warm the asynchronous read-only database pool on startup - this will cause the pool to open all possible connections on startup so make sure your database can handle the load.",
         exclude=True,
     )
 

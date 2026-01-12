@@ -102,6 +102,7 @@ sync_session = sessionmaker(
 
 
 # This will delay the first connection until the pool is warmed up
+# TODO: Defer marking the service as healthy until this finishes if it's enabled
 @asynccontextmanager
 async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
     async with ASYNC_READONLY_POOL_LOCK:
@@ -114,16 +115,21 @@ async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
             )
             ASYNC_READONLY_POOL_WARMED = True
 
-    session = readonly_async_session_factory()
+        session = readonly_async_session_factory()
 
-    try:
-        yield session
-        await session.commit()
-    except Exception:
-        await session.rollback()
-        raise
-    finally:
-        await session.close()
+        try:
+            yield session
+            # If we aren't using autocommit, commit the transaction
+            # TODO: Do we even want to do this? It's harmless on read-only queries but somewhat meaningless
+            if not CONFIG.database.async_readonly_database_autocommit:
+                await session.commit()
+        except Exception:
+            # If something went wrong, rollback the transaction for safety
+            if not CONFIG.database.async_readonly_database_pool_skip_rollback:
+                await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 
 # If warm-up is disabled, use non-warmed session factory
@@ -140,25 +146,26 @@ async def non_warmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
         await session.close()
 
 
+# If the prewarm flag is enabled, use the prewarmed session factory, otherwise use the non-warmed one
 readonly_async_session: Callable[[], _AsyncGeneratorContextManager[Any, None]] = (
     prewarmed_async_readonly_session
-    if CONFIG.database.async_readonly_database_uri
+    if CONFIG.database.async_readonly_database_prewarm
     else non_warmed_async_readonly_session
 )
 
-async_session: Callable[[], _AsyncGeneratorContextManager[AsyncSession, None]] = (
-    async_session_factory
-)
+# This is here for consistency with the readonly pattern and for a future behavior change
+async_session: Callable[[], AsyncSession] = async_session_factory
 
 
-# engine is actually an AsyncEngine but apparently the async proxy doesn't propertly export connect
+# engine is actually an AsyncEngine but apparently the async proxy doesn't properly export connect
 # as async so the type checking complains below in await engine.connect()
-async def warm_async_pool(pool_id: str, pool_size: int, engine):
+async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine):
     logger.info(f"Warming up {pool_id} connection pool with {pool_size} connections...")
     connections = []
     try:
         # Check out connections
         for _ in range(pool_size):
+            # This is actually async, even though the type checker may not think so
             conn = await engine.connect()
             connections.append(conn)
         logger.info(f"Pool {pool_id} warmed up. Releasing connections...")
