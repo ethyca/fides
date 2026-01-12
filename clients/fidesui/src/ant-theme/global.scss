@@ -129,13 +129,30 @@ h6 {
   font-weight: 500;
 }
 
-.ant-table-wrapper .ant-table {
-  --ant-table-header-icon-color: var(--fidesui-neutral-300);
-}
+.ant-table {
+  &-wrapper & {
+    --ant-table-header-icon-color: var(--fidesui-neutral-300);
+  }
 
-// This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
-.ant-table-cell * {
-  --ant-font-size: var(--ant-table-cell-font-size-sm);
+  // This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
+  &-cell * {
+    --ant-font-size: var(--ant-table-cell-font-size-sm);
+  }
+
+  // fixes container bleeding over the border radius of the table itself when horizontally scrollable
+  // We may be able to remove this once we update to a version containing this fix https://github.com/ant-design/ant-design/pull/56478
+  &-container {
+    &::before {
+      border-start-start-radius: var(--ant-table-header-border-radius);
+    }
+    &::after {
+      border-start-end-radius: var(--ant-table-header-border-radius);
+    }
+  }
+  &-content {
+    border-start-start-radius: var(--ant-table-header-border-radius);
+    border-start-end-radius: var(--ant-table-header-border-radius);
+  }
 }
 
 .ant-list {

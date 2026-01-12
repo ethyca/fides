@@ -116,8 +116,16 @@ def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
                 attributes.pop("default")
 
             if attributes.get("$ref"):
-                # V1 called it "#/$defs", V2 dalls it "#/definitions/"
-                attributes["$ref"] = swap_defs_with_definitions(attributes["$ref"])
+                # V1 called it "#/$defs", V2 calls it "#/definitions/"
+                ref_value = swap_defs_with_definitions(attributes["$ref"])
+
+                # If there are additional properties alongside $ref (like description, title, sensitive),
+                # we need to wrap the $ref in an allOf array to be JSON Schema compliant
+                if len(attributes) > 1:  # More than just $ref
+                    attributes.pop("$ref")
+                    attributes["allOf"] = [{"$ref": ref_value}]
+                else:
+                    attributes["$ref"] = ref_value
 
     transform_any_of(schema["properties"])
 

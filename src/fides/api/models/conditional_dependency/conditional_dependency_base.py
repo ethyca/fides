@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+from pydantic import TypeAdapter
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
@@ -17,6 +18,10 @@ if TYPE_CHECKING:
     from sqlalchemy.orm.relationships import RelationshipProperty
 
 
+# TypeAdapter for deserializing JSONB to Condition (handles Union discrimination)
+ConditionTypeAdapter: TypeAdapter[Condition] = TypeAdapter(Condition)
+
+
 class ConditionalDependencyError(Exception):
     """Exception for conditional dependency errors."""
 
@@ -25,7 +30,10 @@ class ConditionalDependencyError(Exception):
         super().__init__(self.message)
 
 
-class ConditionalDependencyType(str, Enum):
+from enum import StrEnum
+
+
+class ConditionalDependencyType(StrEnum):
     """Shared enum for conditional dependency node types.
 
     Attributes:
@@ -41,9 +49,12 @@ class ConditionalDependencyBase(Base):
     """Abstract base class for all conditional dependency models.
 
     This class provides a common structure for building hierarchical condition trees
-    that can be evaluated to determine when certain actions should be taken.
+    or storing condition trees as a single JSONB object that can be evaluated to
+    determine when certain actions should be taken.
 
     Architecture:
+        - JSONB Storage: Full condition tree stored as a single JSONB object
+        - Pydantic Integration: Uses Condition schema for serialization/deserialization
         - Tree Structure: Supports parent-child relationships for complex logic
         - Two Node Types: 'leaf' (individual conditions) and 'group' (logical operators)
         - Flexible Schema: Uses JSONB for dynamic value storage
@@ -63,25 +74,36 @@ class ConditionalDependencyBase(Base):
         1. Inherit from this base class
         2. Define your table name with @declared_attr
         3. Add foreign key relationships (parent_id, entity_id)
-        4. Implement get_root_condition() classmethod
+        4. Implement get_condition_tree() classmethod
         5. Add any domain-specific columns
 
-    Example Tree Structure:
-        Root Group (AND)
-        ├── Leaf: user.role == "admin"
-        ├── Leaf: request.priority >= 3
-        └── Child Group (OR)
-            ├── Leaf: user.department == "security"
-            └── Leaf: user.department == "compliance"
+    Example Tree Structure (stored in condition_tree JSONB):
+        {
+            "logical_operator": "and",
+            "conditions": [
+                {"field_address": "user.role", "operator": "eq", "value": "admin"},
+                {"field_address": "request.priority", "operator": "gte", "value": 3},
+                {
+                    "logical_operator": "or",
+                    "conditions": [
+                        {"field_address": "user.department", "operator": "eq", "value": "security"},
+                        {"field_address": "user.department", "operator": "eq", "value": "compliance"}
+                    ]
+                }
+            ]
+        }
 
     Note:
         - This is a SQLAlchemy abstract model (__abstract__ = True)
         - No database table is created for this base class
-        - Subclasses must implement get_root_condition()
+        - Subclasses must implement get_condition_tree()
         - The 'children' relationship must be defined in concrete subclasses
     """
 
     __abstract__ = True
+
+    # JSONB storage for full condition tree
+    condition_tree = Column(JSONB, nullable=True)
 
     # Tree structure - parent_id defined in concrete classes for proper foreign keys
     condition_type = Column(
@@ -194,26 +216,20 @@ class ConditionalDependencyBase(Base):
         )
 
     @classmethod
-    def get_root_condition(cls, db: Session, **kwargs: Any) -> Optional[Condition]:
-        """Get the root condition tree for a parent entity.
+    def get_condition_tree(cls, db: Session, **kwargs: Any) -> Optional[Condition]:
+        """Get the condition tree for a parent entity.
 
         This abstract method must be implemented by concrete subclasses to define
-        how to retrieve the root condition node for their specific use case.
+        how to retrieve the condition tree for their specific use case.
         The root condition represents the top-level node in a condition tree.
-
-        Implementation Guidelines:
-            1. Query for conditions with parent_id=None for the given parent entity
-            2. Return None if no root condition exists
-            3. Convert the database model to a Condition schema object
-            4. Handle any domain-specific filtering or validation
 
         Args:
             db: SQLAlchemy database session for querying
             **kwargs: Keyword arguments specific to each implementation.
                     Examples:
-                    - manual_task_id: ID of the manual task (for single-type hierarchies)
-                    - digest_config_id: ID of the digest config (for multi-type hierarchies)
-                    - digest_condition_type: Type of digest condition (for multi-type hierarchies)
+                    - manual_task_id: ID of the manual task
+                    - digest_config_id: ID of the digest config
+                    - digest_condition_type: Type of digest condition (RECEIVER, CONTENT, PRIORITY)
 
         Returns:
             Optional[Condition]: Root condition tree (ConditionLeaf or ConditionGroup) or None
@@ -222,90 +238,9 @@ class ConditionalDependencyBase(Base):
         Raises:
             NotImplementedError: If called on the base class directly
 
-        Example Implementation:
-            >>> @classmethod
-            >>> def get_root_condition(cls, db: Session, *, manual_task_id: str) -> Optional[Condition]:
-            ...     root = db.query(cls).filter(
-            ...         cls.manual_task_id == manual_task_id,
-            ...         cls.parent_id.is_(None)
-            ...     ).first()
-            ...     if not root:
-            ...         return None
-            ...     return root.to_condition_leaf() if root.condition_type == 'leaf' else root.to_condition_group()
         """
         raise NotImplementedError(
-            f"Subclasses of {cls.__name__} must implement get_root_condition(). "
-            f"This method should query for the root condition (parent_id=None) "
-            f"and return it as a Condition schema object, or None if not found. "
+            f"Subclasses of {cls.__name__} must implement get_condition_tree(). "
+            f"This method should query for the condition tree and return it as a Condition schema object, or None if not found. "
             f"See the docstring for implementation guidelines and examples."
         )
-
-    def get_depth(self) -> int:
-        """Calculate the depth of this node in the condition tree.
-
-        Returns:
-            int: Depth level (0 for root, 1 for direct children, etc.)
-
-        Note:
-            Requires the 'parent' relationship to be defined in concrete classes.
-        """
-        depth = 0
-        current = self
-        try:
-            while hasattr(current, "parent") and current.parent is not None:  # type: ignore[attr-defined]
-                depth += 1
-                current = current.parent  # type: ignore[attr-defined]
-        except AttributeError:
-            # If parent relationship not defined, we can't calculate depth
-            pass
-        return depth
-
-    def get_tree_summary(self) -> str:
-        """Generate a human-readable summary of this condition tree.
-
-        Returns:
-            str: Multi-line string representation of the condition tree structure
-
-        Example:
-            >>> print(condition.get_tree_summary())
-            Group (AND) [depth: 0, order: 0]
-            ├── Leaf: user.role == "admin" [depth: 1, order: 0]
-            ├── Leaf: request.priority >= 3 [depth: 1, order: 1]
-            └── Group (OR) [depth: 1, order: 2]
-                ├── Leaf: user.dept == "security" [depth: 2, order: 0]
-                └── Leaf: user.dept == "compliance" [depth: 2, order: 1]
-        """
-
-        def _build_tree_lines(
-            node: "ConditionalDependencyBase", prefix: str = "", is_last: bool = True
-        ) -> list[str]:
-            lines = []
-
-            # Current node info
-            if node.condition_type == ConditionalDependencyType.leaf:
-                node_desc = f"Leaf: {node.field_address} {node.operator} {node.value}"
-            else:
-                node_desc = f"Group ({node.logical_operator.upper() if node.logical_operator else 'UNKNOWN'})"
-
-            depth = node.get_depth()
-            connector = "└── " if is_last else "├── "
-            lines.append(
-                f"{prefix}{connector}{node_desc} [depth: {depth}, order: {node.sort_order}]"
-            )
-
-            # Add children if this is a group
-            if node.condition_type == ConditionalDependencyType.group:
-                try:
-                    children = sorted([child for child in node.children], key=lambda x: x.sort_order)  # type: ignore[attr-defined]
-                    for i, child in enumerate(children):
-                        is_last_child = i == len(children) - 1
-                        child_prefix = prefix + ("    " if is_last else "│   ")
-                        lines.extend(
-                            _build_tree_lines(child, child_prefix, is_last_child)
-                        )
-                except AttributeError:
-                    lines.append(f"{prefix}    [children relationship not defined]")
-
-            return lines
-
-        return "\n".join(_build_tree_lines(self))

@@ -15,7 +15,7 @@ permissions:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.16"
+  DEFAULT_PYTHON_VERSION: "3.13.11"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -59,7 +59,6 @@ jobs:
   Collect-Tests:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
-
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -78,9 +77,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Run Static Check
         run: nox -s collect_tests
@@ -88,10 +87,6 @@ jobs:
   Build:
     needs: [Check-Backend-Changes, Collect-Tests]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
-    strategy:
-      matrix:
-        # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -106,20 +101,19 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          build-args: PYTHON_VERSION=${{ matrix.python_version }}
+          build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
           target: prod
-          outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
+          outputs: type=docker,dest=/tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           push: false
           tags: ${{ env.IMAGE }}
-          cache-from: type=gha,scope=${{ matrix.python_version }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.python_version }}
-
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Upload container
         uses: actions/upload-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/python-${{ matrix.python_version }}.tar
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           retention-days: 1
 
   ##################
@@ -162,9 +156,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -216,9 +210,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -270,9 +264,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -323,9 +317,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-qq
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -351,7 +345,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -365,14 +358,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Pull Docker images in background
+        run: |
+          docker pull postgres:16 > /dev/null 2>&1 &
+          docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          echo "Docker pull initiated in background."
+        shell: bash
+
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -390,9 +390,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ matrix.test_selection }}
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -425,19 +425,17 @@ jobs:
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -455,9 +453,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -495,19 +493,17 @@ jobs:
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -525,9 +521,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -613,17 +609,15 @@ jobs:
       id-token: write
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
-      matrix:
-        python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
         with:
-          name: python-${{ matrix.python_version }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -641,9 +635,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.python_version }}-
+            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
