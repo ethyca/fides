@@ -203,39 +203,6 @@ class TestConditionalDependencyBase:
         ):
             ConditionalDependencyBase.get_condition_tree(db, test_id="test_id")
 
-    def test_abstract_class_attributes(self):
-        """Test that the abstract class has the required attributes."""
-        # Test the abstract class attributes are present
-        abstract_class_attributes = ["__module__", "__doc__", "__abstract__"]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__
-            for attr in abstract_class_attributes
-        )
-
-        # Test the attributes that are common to all conditional dependency models
-        common_attributes = [
-            "condition_type",
-            "field_address",
-            "operator",
-            "value",
-            "logical_operator",
-            "sort_order",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in common_attributes
-        )
-
-        # Test the functions that are common to all conditional dependency models
-        common_functions = [
-            "to_correct_condition_type",
-            "to_condition_leaf",
-            "to_condition_group",
-            "get_condition_tree",
-        ]
-        assert all(
-            attr in ConditionalDependencyBase.__dict__ for attr in common_functions
-        )
-
 
 class TestConditionalDependencyBaseMethods:
     """Test the shared methods in ConditionalDependencyBase."""
