@@ -38,8 +38,6 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
         nullable=False,
         unique=True,
         index=True,
-        # TODO update to this in next migration to use UniqueConstraint
-        # unique=True,
     )
 
     # Relationship to parent manual task
