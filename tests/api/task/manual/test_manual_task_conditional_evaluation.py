@@ -100,8 +100,6 @@ def email_and_privacy_request_conditional_dependency(db, manual_task):
     )
 
 
-
-
 def _privacy_request_location_tree():
     """Return condition tree dict for privacy_request.location == New York."""
     return {
