@@ -98,6 +98,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
+      {
+        title: "Asset reporting",
+        path: routes.REPORTING_ASSETS_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
     ],
   },
   {
