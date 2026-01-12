@@ -8,6 +8,7 @@ import {
   Flex,
   Form,
   Input,
+  Modal,
   Select,
   Space,
   Steps,
@@ -28,6 +29,8 @@ import {
   ThunderboltOutlined,
   CloseOutlined,
   MessageOutlined,
+  FilePdfOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -53,8 +56,9 @@ interface ChatMessage {
 const PrivacyAssessmentDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(["1"]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Mock Slack conversation data
   const chatMessages: ChatMessage[] = [
@@ -150,14 +154,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             overflow-x: hidden;
             border: 1px solid ${palette.FIDESUI_NEUTRAL_75};
             border-radius: 8px;
-            overflow: hidden;
+            overflow: visible;
           }
           .privacy-assessment-collapse .ant-collapse-item {
             border: none;
             border-left: 6px solid transparent;
             border-radius: 0;
             margin-bottom: 0;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             transition: border-left-color 0.2s ease;
             max-width: 100%;
@@ -178,11 +182,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             display: flex;
             align-items: flex-start;
             min-height: 80px;
-            padding: 16px 24px 16px 24px !important;
+            padding: 16px 24px 20px 24px !important;
             padding-right: 140px !important;
             padding-left: 18px !important;
             position: relative;
             transition: min-height 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: visible !important;
           }
           .privacy-assessment-collapse .ant-collapse-item-active .ant-collapse-header {
             min-height: 60px;
@@ -238,10 +243,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             transform: translateY(-50%);
             z-index: 2;
           }
-          .privacy-assessment-collapse .status-tag-container .ant-tag {
-            background-color: ${palette.FIDESUI_NEUTRAL_200} !important;
-            border: none !important;
-          }
         `}</style>
       </Head>
       <PageHeader
@@ -262,7 +263,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         rightContent={
           <Space>
             <Button>Save as draft</Button>
-            <Button type="primary">Generate report</Button>
+            <Button type="primary" onClick={() => setIsReportModalOpen(true)}>Generate report</Button>
           </Space>
         }
       />
@@ -1492,6 +1493,121 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           ))}
         </div>
       </Drawer>
+
+      <Modal
+        title={
+          <Flex align="center" gap="small">
+            <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 20 }} />
+            <span>Assessment Generated</span>
+          </Flex>
+        }
+        open={isReportModalOpen}
+        onCancel={() => setIsReportModalOpen(false)}
+        footer={null}
+        width={600}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%", marginTop: 8 }}>
+          <Text type="secondary" style={{ display: "block", marginBottom: 32, fontSize: 14 }}>
+            Review the summary and sign to finalize.
+          </Text>
+
+          <div style={{ paddingBottom: 24, borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}` }}>
+            <Title level={5} style={{ marginBottom: 16, textTransform: "uppercase", fontSize: 11, letterSpacing: 1, fontWeight: 600, color: palette.FIDESUI_NEUTRAL_700 }}>
+              Executive Summary
+            </Title>
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Flex align="center" gap="small">
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    backgroundColor: palette.FIDESUI_WARNING,
+                  }}
+                />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>Risk Level:</Text>Medium
+                </Text>
+              </Flex>
+              <Flex align="center" gap="small">
+                <SafetyOutlined style={{ color: palette.FIDESUI_MINOS, fontSize: 16 }} />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>Compliance:</Text>GDPR
+                </Text>
+              </Flex>
+              <Flex align="center" gap="small">
+                <ThunderboltOutlined style={{ color: palette.FIDESUI_MINOS, fontSize: 16 }} />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>Confidence:</Text>94% AI
+                </Text>
+              </Flex>
+            </Space>
+          </div>
+
+          <div style={{ paddingBottom: 24, borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}` }}>
+            <Title level={5} style={{ marginBottom: 16, textTransform: "uppercase", fontSize: 11, letterSpacing: 1, fontWeight: 600, color: palette.FIDESUI_NEUTRAL_700 }}>
+              Document Details
+            </Title>
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>Project:</Text>
+                <Text strong style={{ fontSize: 14 }}>Customer Insight AI</Text>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>Data Types:</Text>
+                <Space size="small">
+                  <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
+                  <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral</Tag>
+                </Space>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>Retention:</Text>
+                <Text strong style={{ fontSize: 14 }}>24 Months</Text>
+              </Flex>
+            </Space>
+          </div>
+
+          <div style={{ paddingBottom: 24 }}>
+            <Title level={5} style={{ marginBottom: 16, textTransform: "uppercase", fontSize: 11, letterSpacing: 1, fontWeight: 600, color: palette.FIDESUI_NEUTRAL_700 }}>
+              Responsible Parties
+            </Title>
+            <Flex align="center" gap="middle">
+              <Avatar size={40} style={{ backgroundColor: palette.FIDESUI_MINOS }}>AM</Avatar>
+              <Flex vertical gap={4} style={{ flex: 1 }}>
+                <Text strong style={{ fontSize: 15 }}>Alex Morgan</Text>
+                <Flex align="center" gap="small">
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    Privacy Officer • Primary Owner
+                  </Text>
+                  <EditOutlined style={{ fontSize: 13, color: palette.FIDESUI_NEUTRAL_500, cursor: "pointer" }} />
+                </Flex>
+              </Flex>
+            </Flex>
+          </div>
+
+          <Flex gap="small" style={{ marginTop: 8, paddingTop: 24, borderTop: `1px solid ${palette.FIDESUI_NEUTRAL_100}`, justifyContent: "flex-end" }}>
+            <Button
+              icon={<FilePdfOutlined />}
+              onClick={() => {
+                // Handle PDF download
+                setIsReportModalOpen(false);
+              }}
+            >
+              Download PDF
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => {
+                // Handle sign document
+                setIsReportModalOpen(false);
+              }}
+            >
+              Sign Document
+            </Button>
+          </Flex>
+        </Space>
+      </Modal>
     </Layout>
   );
 };

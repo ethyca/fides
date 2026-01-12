@@ -4,11 +4,14 @@ import {
   CUSTOM_TAG_COLOR,
   Flex,
   Input,
+  Modal,
   Select,
   Space,
   Tag,
   Typography,
   PlusOutlined,
+  Checkbox,
+  Upload,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -16,6 +19,8 @@ import {
   SearchOutlined,
   ArrowRightOutlined,
   FileTextOutlined,
+  SettingOutlined,
+  CloudUploadOutlined,
 } from "@ant-design/icons";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -132,9 +137,63 @@ const mockAssessments = {
   },
 };
 
+const frameworks = [
+  { id: "gdpr", label: "GDPR", description: "General Data Protection Regulation (EU)" },
+  { id: "ccpa", label: "CCPA / CPRA", description: "California Consumer Privacy Act" },
+  { id: "hipaa", label: "HIPAA", description: "Health Insurance Portability Act" },
+  { id: "nist", label: "NIST AI RMF", description: "AI Risk Management Framework" },
+  { id: "eu-ai", label: "EU AI Act", description: "Artificial Intelligence Act" },
+  { id: "iso", label: "ISO 42001", description: "AI Management System Standard" },
+];
+
+const regions = [
+  "United States",
+  "European Union",
+  "United Kingdom",
+  "Canada",
+  "Brazil",
+];
+
 const PrivacyAssessmentsPage: NextPage = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(["United States", "European Union"]);
+  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(["gdpr", "ccpa"]);
+  const [regionSearch, setRegionSearch] = useState("");
+
+  const handleAddRegion = (region: string) => {
+    if (!selectedRegions.includes(region)) {
+      setSelectedRegions([...selectedRegions, region]);
+    }
+    setRegionSearch("");
+  };
+
+  const handleRemoveRegion = (region: string) => {
+    setSelectedRegions(selectedRegions.filter((r) => r !== region));
+  };
+
+  const handleSelectAllFrameworks = () => {
+    if (selectedFrameworks.length === frameworks.length) {
+      setSelectedFrameworks([]);
+    } else {
+      setSelectedFrameworks(frameworks.map((f) => f.id));
+    }
+  };
+
+  const handleToggleFramework = (frameworkId: string) => {
+    if (selectedFrameworks.includes(frameworkId)) {
+      setSelectedFrameworks(selectedFrameworks.filter((f) => f !== frameworkId));
+    } else {
+      setSelectedFrameworks([...selectedFrameworks, frameworkId]);
+    }
+  };
+
+  const filteredRegions = regions.filter(
+    (region) =>
+      !selectedRegions.includes(region) &&
+      region.toLowerCase().includes(regionSearch.toLowerCase()),
+  );
 
   const handleCreateNew = () => {
     router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/onboarding`);
@@ -185,13 +244,19 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         breadcrumbItems={[{ title: "Privacy assessments" }]}
         rightContent={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreateNew}
-          >
-            Create new assessment
-          </Button>
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreateNew}
+            >
+              Create new assessment
+            </Button>
+            <Button
+              icon={<SettingOutlined />}
+              onClick={() => setIsSettingsModalOpen(true)}
+            />
+          </Space>
         }
         isSticky={true}
       >
@@ -423,6 +488,139 @@ const PrivacyAssessmentsPage: NextPage = () => {
           ))}
         </Space>
       </div>
+
+      <Modal
+        title="Assessment settings"
+        open={isSettingsModalOpen}
+        onCancel={() => setIsSettingsModalOpen(false)}
+        onOk={() => setIsSettingsModalOpen(false)}
+        okText="Save"
+        width={800}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%", marginTop: 24 }}>
+          <div style={{ padding: "16px", backgroundColor: palette.FIDESUI_BG_CORINTH, borderRadius: 8, marginBottom: 8 }}>
+            <Text style={{ fontSize: 14, lineHeight: 1.6 }}>
+              The selections you make here and any historical assessments you upload will be used to train our LLM to understand your organization's specific compliance needs, risk profile, and processing patterns. This enables the AI to generate more accurate and tailored privacy assessments.
+            </Text>
+          </div>
+          <div>
+            <Title level={4} style={{ marginBottom: 12 }}>
+              Operational regions
+            </Title>
+            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
+              These regions determine jurisdictional priorities for AI risk analysis.
+            </Text>
+            {selectedRegions.length > 0 && (
+              <Flex gap="small" wrap style={{ marginBottom: 16 }}>
+                {selectedRegions.map((region) => (
+                  <Tag
+                    key={region}
+                    closable
+                    onClose={() => handleRemoveRegion(region)}
+                  >
+                    {region}
+                  </Tag>
+                ))}
+              </Flex>
+            )}
+            <Input
+              placeholder="Search or add countries..."
+              prefix={<SearchOutlined />}
+              value={regionSearch}
+              onChange={(e) => setRegionSearch(e.target.value)}
+              onPressEnter={() => {
+                if (filteredRegions.length > 0) {
+                  handleAddRegion(filteredRegions[0]);
+                } else if (regionSearch.trim() && !selectedRegions.includes(regionSearch.trim())) {
+                  handleAddRegion(regionSearch.trim());
+                }
+              }}
+              style={{ marginBottom: 8 }}
+            />
+            {regionSearch && filteredRegions.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                {filteredRegions.slice(0, 5).map((region) => (
+                  <div
+                    key={region}
+                    onClick={() => handleAddRegion(region)}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #f0f0f0",
+                    }}
+                  >
+                    {region}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+              <Title level={4} style={{ margin: 0 }}>
+                Target frameworks & regulations
+              </Title>
+              <Button type="link" onClick={handleSelectAllFrameworks} style={{ padding: 0 }}>
+                {selectedFrameworks.length === frameworks.length ? "Deselect all" : "Select all"}
+              </Button>
+            </Flex>
+            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
+              Select the privacy frameworks and regulations that apply to your organization.
+            </Text>
+            <Space direction="vertical" size="small" style={{ width: "100%" }}>
+              {frameworks.map((framework) => (
+                <Card
+                  key={framework.id}
+                  hoverable
+                  style={{
+                    border: selectedFrameworks.includes(framework.id)
+                      ? `2px solid ${palette.FIDESUI_MINOS}`
+                      : "1px solid #d9d9d9",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleToggleFramework(framework.id)}
+                >
+                  <Flex justify="space-between" align="center">
+                    <div>
+                      <Text strong>{framework.label}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {framework.description}
+                      </Text>
+                    </div>
+                    <Checkbox checked={selectedFrameworks.includes(framework.id)} />
+                  </Flex>
+                </Card>
+              ))}
+            </Space>
+          </div>
+
+          <div>
+            <Title level={4} style={{ marginBottom: 12 }}>
+              Upload historical assessments
+            </Title>
+            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
+              Upload previous privacy assessments to help the AI understand your existing compliance posture.
+            </Text>
+            <Upload.Dragger
+              multiple
+              beforeUpload={() => false}
+              style={{ padding: 20 }}
+            >
+              <p>
+                <CloudUploadOutlined style={{ fontSize: 48, color: "#1890ff" }} />
+              </p>
+              <Text type="secondary" style={{ display: "block", marginTop: 8 }}>
+                Click or drag files to this area to upload
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
+                Support for PDF, DOCX, or CSV files
+              </Text>
+            </Upload.Dragger>
+          </div>
+        </Space>
+      </Modal>
     </Layout>
   );
 };
