@@ -21,10 +21,13 @@ const LoginWithOIDC: NextPage = () => {
     if (!router.query || !router.query.provider || !router.query.code) {
       return;
     }
+
     const data: LoginWithOIDCRequest = {
       provider: router.query.provider as string,
       code: router.query.code as string,
+      state: router.query.state as string,
     };
+
     loginRequest(data)
       .unwrap()
       .then((response) => {
@@ -34,8 +37,10 @@ const LoginWithOIDC: NextPage = () => {
       .catch((error) => {
         toast({
           status: "error",
-          description: error?.data?.detail,
+          description: "An error occurred while logging in.",
         });
+        // eslint-disable-next-line no-console
+        console.error(error);
         router.push("/login");
       });
   }, [router, toast, dispatch, router.query, loginRequest]);
