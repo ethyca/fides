@@ -118,6 +118,24 @@ def _privacy_request_access_rule_tree():
     }
 
 
+def _privacy_request_location_tree():
+    """Return condition tree dict for privacy_request.location == New York."""
+    return {
+        "field_address": "privacy_request.location",
+        "operator": "eq",
+        "value": "New York",
+    }
+
+
+def _privacy_request_access_rule_tree():
+    """Return condition tree dict for privacy_request.policy.has_access_rule == True."""
+    return {
+        "field_address": "privacy_request.policy.has_access_rule",
+        "operator": "eq",
+        "value": True,
+    }
+
+
 @pytest.fixture
 def privacy_request_location_dependency(db, manual_task):
     return ManualTaskConditionalDependency.create(
@@ -177,6 +195,14 @@ def privacy_request_group_conditional_dependency(db, manual_task):
             "condition_tree": _privacy_request_group_tree(),
         },
     )
+
+
+def _full_group_tree():
+    """Return condition tree dict for the full group (inputs AND privacy_request)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_input_group_tree(), _privacy_request_group_tree()],
+    }
 
 
 def _full_group_tree():

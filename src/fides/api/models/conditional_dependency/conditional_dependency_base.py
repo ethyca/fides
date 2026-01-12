@@ -12,6 +12,10 @@ from fides.api.task.conditional_dependencies.schemas import Condition
 ConditionTypeAdapter: TypeAdapter[Condition] = TypeAdapter(Condition)
 
 
+# TypeAdapter for deserializing JSONB to Condition (handles Union discrimination)
+ConditionTypeAdapter: TypeAdapter[Condition] = TypeAdapter(Condition)
+
+
 class ConditionalDependencyError(Exception):
     """Exception for conditional dependency errors."""
 
