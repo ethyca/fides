@@ -37,11 +37,12 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
 
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
-    # Foreign key to parent manual task
+    # Foreign key to parent manual task - one condition tree per task
     manual_task_id = Column(
         String,
         ForeignKey("manual_task.id", ondelete="CASCADE"),
         nullable=False,
+        unique=True,
         index=True,
     )
 
