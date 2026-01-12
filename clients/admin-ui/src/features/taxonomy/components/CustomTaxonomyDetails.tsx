@@ -1,6 +1,7 @@
 import {
   Button,
   Descriptions,
+  EnterExitList,
   Flex,
   Form,
   Icons,
@@ -140,29 +141,34 @@ const CustomTaxonomyDetails = ({
         </Button>
       )}
       <List>
-        {customFields.map((field) => (
-          <List.Item
-            key={field.id!}
-            actions={
-              canDeleteCustomFieldDefinition
-                ? [
-                    <Button
-                      key="remove"
-                      type="link"
-                      onClick={() => handleRemoveClicked(field)}
-                    >
-                      Remove
-                    </Button>,
-                  ]
-                : undefined
-            }
-          >
-            <List.Item.Meta
-              title={field.name}
-              description={field.description}
-            />
-          </List.Item>
-        ))}
+        <EnterExitList
+          dataSource={customFields}
+          itemKey={(field) => field.id!}
+          renderItem={(field) => (
+            <List.Item
+              actions={
+                canDeleteCustomFieldDefinition
+                  ? [
+                      <Button
+                        key="remove"
+                        type="link"
+                        onClick={() => handleRemoveClicked(field)}
+                      >
+                        Remove
+                      </Button>,
+                    ]
+                  : undefined
+              }
+            >
+              <List.Item.Meta
+                title={field.name}
+                description={field.description}
+              />
+            </List.Item>
+          )}
+          className="flex-col"
+          itemClassName="w-full"
+        />
       </List>
     </Flex>
   );
