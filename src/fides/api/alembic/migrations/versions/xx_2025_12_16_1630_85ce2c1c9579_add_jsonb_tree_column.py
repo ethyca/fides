@@ -53,6 +53,13 @@ def build_condition_tree(
             "field_address": field_address,
             "operator": operator,
             "value": parsed_value,
+    if condition_type == "leaf":
+        parsed_value = value
+
+        return {
+            "field_address": field_address,
+            "operator": operator,
+            "value": parsed_value,
         }
 
     # It's a group - get children ordered by sort_order
