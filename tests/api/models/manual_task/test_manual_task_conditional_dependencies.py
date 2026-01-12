@@ -252,7 +252,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         )
 
         # Get root condition
-        root_condition = ManualTaskConditionalDependency.get_root_condition(
+        root_condition = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
 
@@ -260,7 +260,7 @@ class TestManualTaskConditionalDependencyClassMethods:
         assert isinstance(root_condition, ConditionGroup)
         assert root_condition.model_dump() == condition_tree
 
-    def test_get_root_condition_missing_manual_task_id(self, db: Session):
-        """Test that get_root_condition raises error when manual_task_id is missing"""
+    def test_get_condition_tree_missing_manual_task_id(self, db: Session):
+        """Test that get_condition_tree raises error when manual_task_id is missing"""
         with pytest.raises(ValueError, match="manual_task_id is required"):
-            ManualTaskConditionalDependency.get_root_condition(db)
+            ManualTaskConditionalDependency.get_condition_tree(db)
