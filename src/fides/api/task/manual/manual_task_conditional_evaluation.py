@@ -390,15 +390,22 @@ def evaluate_conditional_dependencies(
     conditional dependencies and the data received from upstream regular tasks.
 
     Args:
+        db: Database session
         manual_task: The manual task to evaluate
         conditional_data: Data from regular tasks for conditional dependency fields
-        privacy_request_only: If True, only evaluate privacy_request.* conditions
-            (used for consent tasks which don't have dataset data flow)
+        privacy_request_only: If True, only evaluate privacy_request.* conditions.
+            Used for consent tasks which don't have data flow through datasets.
 
     Returns:
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
+    # For consent tasks (privacy_request_only=True), we can only evaluate
+    # privacy_request.* conditions since consent DSRs don't have data flow
+    # through datasets. Skip evaluation if the task has non-privacy-request conditions.
+    if privacy_request_only and has_non_privacy_request_conditions(manual_task):
+        return None
+
     # Get the condition tree for this manual task
     condition_tree = ManualTaskConditionalDependency.get_condition_tree(
         db, manual_task_id=manual_task.id
