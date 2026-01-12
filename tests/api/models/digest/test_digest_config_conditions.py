@@ -1,13 +1,8 @@
 """Tests for DigestConfig condition-related methods."""
 
-from typing import Any
-
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.digest import DigestConfig, DigestType
 from fides.api.models.digest.conditional_dependencies import (
     DigestCondition,
@@ -34,14 +29,7 @@ GET_BY_TYPE = {
 class TestDigestConfigConditionMethods:
     """Test DigestConfig methods for retrieving conditions."""
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_leaf(
         self,
         db: Session,
@@ -57,9 +45,6 @@ class TestDigestConfigConditionMethods:
             data={
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": digest_condition_type,
-                **sample_exists_condition_leaf.model_dump(),
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
                 "condition_tree": sample_exists_condition_leaf.model_dump(),
             },
         )
@@ -75,20 +60,12 @@ class TestDigestConfigConditionMethods:
         assert conditions.value == None
         condition.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_group(
         self,
         db: Session,
         digest_config: DigestConfig,
         digest_condition_type: DigestConditionType,
-        group_condition_and: dict[str, Any],
         sample_exists_condition_leaf: ConditionLeaf,
         sample_eq_condition_leaf: ConditionLeaf,
     ):
@@ -106,36 +83,9 @@ class TestDigestConfigConditionMethods:
         root_group = DigestCondition.create(
             db=db,
             data={
-                **group_condition_and,
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": digest_condition_type,
-                "sort_order": 0,
                 "condition_tree": condition_tree,
-            },
-        )
-
-        # Create child conditions (for backward compatibility/relationships)
-        DigestCondition.create(
-            db=db,
-            data={
-                **sample_exists_condition_leaf.model_dump(),
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": digest_condition_type,
-                "parent_id": root_group.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 1,
-            },
-        )
-
-        DigestCondition.create(
-            db=db,
-            data={
-                **sample_eq_condition_leaf.model_dump(),
-                "digest_config_id": digest_config.id,
-                "digest_condition_type": digest_condition_type,
-                "parent_id": root_group.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "sort_order": 2,
             },
         )
 
@@ -161,14 +111,7 @@ class TestDigestConfigConditionMethods:
         )
         root_group.delete(db)
 
-    @pytest.mark.parametrize(
-        "digest_condition_type",
-        [
-            DigestConditionType.RECEIVER,
-            DigestConditionType.CONTENT,
-            DigestConditionType.PRIORITY,
-        ],
-    )
+    @pytest.mark.parametrize("digest_condition_type", list(GET_BY_TYPE.keys()))
     def test_get_type_specific_condition_none(
         self,
         db: Session,
@@ -188,12 +131,11 @@ class TestDigestConfigConditionMethods:
 
         # Test getting all conditions
         all_conditions = digest_config.get_all_conditions(db)
-        assert len(all_conditions) == 3
-        assert DigestConditionType.RECEIVER in all_conditions
-        assert DigestConditionType.CONTENT in all_conditions
-        assert DigestConditionType.PRIORITY in all_conditions
+        expected_conditions = sorted(list(GET_BY_TYPE.keys()))
+        assert len(all_conditions) == len(expected_conditions)
+        assert sorted(all_conditions) == expected_conditions
 
-        # Test receiver condition
+        # Test conditions
         receiver = all_conditions[DigestConditionType.RECEIVER]
         assert isinstance(receiver, ConditionLeaf)
         assert receiver.field_address == "user.email"
@@ -297,11 +239,6 @@ class TestDigestConfigConditionIntegration:
             data={
                 "digest_config_id": config1.id,
                 "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.team",
-                "operator": Operator.eq,
-                "value": "alpha",
-                "sort_order": 1,
                 "condition_tree": condition1_tree,
             },
         )
@@ -317,11 +254,6 @@ class TestDigestConfigConditionIntegration:
             data={
                 "digest_config_id": config2.id,
                 "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.team",
-                "operator": Operator.eq,
-                "value": "beta",
-                "sort_order": 1,
                 "condition_tree": condition2_tree,
             },
         )
@@ -342,10 +274,6 @@ class TestDigestConfigConditionIntegration:
         assert config1_all[DigestConditionType.RECEIVER].value == "alpha"
         assert config2_all[DigestConditionType.RECEIVER].value == "beta"
 
-        # Clean up
-        config1.delete(db)
-        config2.delete(db)
-
     def test_condition_updates_reflected_immediately(
         self, db: Session, digest_config: DigestConfig
     ):
@@ -364,11 +292,6 @@ class TestDigestConfigConditionIntegration:
             data={
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": DigestConditionType.RECEIVER,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "user.status",
-                "operator": Operator.eq,
-                "value": "active",
-                "sort_order": 1,
                 "condition_tree": condition_tree,
             },
         )
@@ -379,13 +302,13 @@ class TestDigestConfigConditionIntegration:
         assert isinstance(receiver_conditions, ConditionLeaf)
         assert receiver_conditions.value == "active"
 
-        # Update the condition (including condition_tree)
+        # Update the condition_tree
         updated_tree = {
             "field_address": "user.status",
             "operator": "eq",
             "value": "verified",
         }
-        condition.update(db, data={"value": "verified", "condition_tree": updated_tree})
+        condition.update(db, data={"condition_tree": updated_tree})
 
         # Should reflect the update
         updated_receiver_conditions = digest_config.get_receiver_condition(db)
@@ -423,42 +346,9 @@ class TestDigestConfigConditionIntegration:
             data={
                 "digest_config_id": digest_config.id,
                 "digest_condition_type": DigestConditionType.CONTENT,
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": GroupOperator.or_,
-                "sort_order": 1,
                 "condition_tree": condition_tree,
             },
         )
-
-        # Create multiple branches (for backward compatibility/relationships)
-        for branch_idx in range(3):
-            branch_group = DigestCondition.create(
-                db=db,
-                data={
-                    "digest_config_id": digest_config.id,
-                    "digest_condition_type": DigestConditionType.CONTENT,
-                    "parent_id": root_group.id,
-                    "condition_type": ConditionalDependencyType.group,
-                    "logical_operator": GroupOperator.and_,
-                    "sort_order": branch_idx + 1,
-                },
-            )
-
-            # Create multiple leaves per branch
-            for leaf_idx in range(5):
-                DigestCondition.create(
-                    db=db,
-                    data={
-                        "digest_config_id": digest_config.id,
-                        "digest_condition_type": DigestConditionType.CONTENT,
-                        "parent_id": branch_group.id,
-                        "condition_type": ConditionalDependencyType.leaf,
-                        "field_address": f"task.field_{branch_idx}_{leaf_idx}",
-                        "operator": Operator.eq,
-                        "value": f"value_{branch_idx}_{leaf_idx}",
-                        "sort_order": leaf_idx + 1,
-                    },
-                )
 
         # Test that retrieval still works efficiently
         content_conditions = digest_config.get_content_condition(db)
@@ -473,5 +363,3 @@ class TestDigestConfigConditionIntegration:
                 assert isinstance(leaf, ConditionLeaf)
                 assert leaf.field_address == f"task.field_{i}_{j}"
                 assert leaf.value == f"value_{i}_{j}"
-
-        root_group.delete(db)
