@@ -1,5 +1,5 @@
 import { automaticallyApplyPreferences } from "../../src/lib/automated-consent";
-import { getConsentContext } from "../../src/lib/consent-context";
+import { getGpcContext } from "../../src/lib/consent-context";
 import {
   ComponentType,
   ConsentMechanism,
@@ -32,8 +32,8 @@ jest.mock("../../src/lib/cookie", () => ({
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
 
-const mockGetConsentContext = getConsentContext as jest.MockedFunction<
-  typeof getConsentContext
+const mockGetGpcContext = getGpcContext as jest.MockedFunction<
+  typeof getGpcContext
 >;
 const mockUpdateConsent = updateConsent as jest.MockedFunction<
   typeof updateConsent
@@ -169,7 +169,7 @@ describe("automaticallyApplyPreferences", () => {
     mockFidesGlobal({ experience: mockRegularExperience });
 
     it("applies GPC to notices when GPC is enabled", async () => {
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: true,
       });
       const fidesGlobal = mockFidesGlobal({
@@ -189,7 +189,7 @@ describe("automaticallyApplyPreferences", () => {
     });
 
     it("does not apply GPC when GPC is disabled", async () => {
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: false,
       });
 
@@ -200,7 +200,7 @@ describe("automaticallyApplyPreferences", () => {
     });
 
     it("does not apply GPC to notices that already have prior consent", async () => {
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: true,
       });
       const fidesGlobal = mockFidesGlobal({
@@ -237,7 +237,7 @@ describe("automaticallyApplyPreferences", () => {
         ] as PrivacyNotice[],
       };
 
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: true,
       });
 
@@ -271,7 +271,7 @@ describe("automaticallyApplyPreferences", () => {
         experience: experienceWithNoticeOnly,
       });
 
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: true,
       });
 
@@ -334,7 +334,7 @@ describe("automaticallyApplyPreferences", () => {
       ] as PrivacyNotice[],
     };
     it("still applies GPC to TCF experiences with custom notices", async () => {
-      mockGetConsentContext.mockReturnValue({
+      mockGetGpcContext.mockReturnValue({
         globalPrivacyControl: true,
       });
 

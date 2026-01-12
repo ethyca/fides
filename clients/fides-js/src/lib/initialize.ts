@@ -2,7 +2,7 @@ import { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
-import { getConsentContext } from "./consent-context";
+import { getGpcContext } from "./consent-context";
 import {
   ComponentType,
   FidesConfig,
@@ -133,7 +133,7 @@ export const getInitialCookie = async ({
   options,
 }: FidesConfig): Promise<FidesCookie> => {
   // Configure the default legacy consent values
-  const context = getConsentContext();
+  const context = getGpcContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie

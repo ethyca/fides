@@ -1,9 +1,9 @@
-import { getConsentContext } from "../../src/lib/consent-context";
+import { getGpcContext } from "../../src/lib/consent-context";
 
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
 
-describe("getConsentContext", () => {
+describe("getGpcContext", () => {
   beforeEach(() => {
     // Reset window.Fides before each test
     (window as any).Fides = {
@@ -34,7 +34,7 @@ describe("getConsentContext", () => {
         writable: true,
         configurable: true,
       });
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -45,7 +45,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -56,7 +56,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
@@ -69,7 +69,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -82,12 +82,12 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
     it("returns undefined when GPC is not set", () => {
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -109,7 +109,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -133,7 +133,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
   });

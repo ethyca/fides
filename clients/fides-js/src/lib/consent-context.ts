@@ -50,10 +50,10 @@ export type ConsentContext = {
 };
 
 /**
- * Returns the context in which consent should be evaluated. This includes information from the
- * browser/document, such as whether GPC is enabled.
+ * Returns the GPC context from the browser/document.
+ * This function specifically returns GPC status only.
  */
-export const getConsentContext = (): ConsentContext => {
+export const getGpcContext = (): ConsentContext => {
   if (typeof window === "undefined") {
     return {};
   }
