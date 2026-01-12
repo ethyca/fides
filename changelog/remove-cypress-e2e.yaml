@@ -1,0 +1,4 @@
+type: Removed
+description: Removed cypress-e2e test suite and associated GitHub workflow
+pr: 7193
+labels: []

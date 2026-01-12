@@ -556,6 +556,9 @@ class PrivacyRequest(
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
+
+        If an identity field with the same field_name already exists for this privacy request,
+        it will be replaced with the new value to prevent duplicate records.
         """
 
         if isinstance(identity, dict):
@@ -574,6 +577,19 @@ class PrivacyRequest(
                         )
                 else:
                     label = None
+
+                # Delete any existing ProvidedIdentity records with the same field_name
+                # to prevent duplicates and ensure the latest value is used
+                existing_identities = (
+                    db.query(ProvidedIdentity)
+                    .filter(
+                        ProvidedIdentity.privacy_request_id == self.id,
+                        ProvidedIdentity.field_name == key,
+                    )
+                    .all()
+                )
+                for existing in existing_identities:
+                    existing.delete(db=db)
 
                 hashed_value = ProvidedIdentity.hash_value(value)
                 provided_identity_data = {

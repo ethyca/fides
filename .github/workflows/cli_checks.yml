@@ -14,7 +14,7 @@ on:
       - "release-**"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10.16"
+  DEFAULT_PYTHON_VERSION: "3.13.11"
 
 jobs:
   Check-CLI-Changes:
