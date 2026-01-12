@@ -130,7 +130,6 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     refetch: refetchOktaData,
   } = oktaDataQuery;
 
-  // Use API data directly - no transformation needed
   const data = useMemo(
     () => ({
       items: oktaData?.items ?? [],
