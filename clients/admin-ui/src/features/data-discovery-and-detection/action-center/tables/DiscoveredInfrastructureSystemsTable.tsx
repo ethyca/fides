@@ -71,7 +71,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
   const handleSetDataUses = async (urn: string, dataUses: string[]) => {
     await updateInfrastructureSystemDataUses({
       monitorId,
-      urnList: [urn],
+      urn,
       dataUses,
     });
     refetch();

@@ -413,15 +413,15 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     updateInfrastructureSystemDataUses: build.mutation<
       Schema,
-      { monitorId: string; urnList: string[]; dataUses: string[] }
+      { monitorId: string; urn: string; dataUses: string[] }
     >({
       query: (params) => ({
         method: "PATCH",
-        url: `/plus/identity-provider-monitors/${params.monitorId}/results`,
-        body: params.urnList.map((urn) => ({
-          urn,
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results/${params.urn}`,
+        body: {
+          urn: params.urn,
           user_assigned_data_uses: params.dataUses,
-        })),
+        },
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
