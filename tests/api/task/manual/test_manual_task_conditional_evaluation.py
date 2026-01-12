@@ -100,22 +100,6 @@ def email_and_privacy_request_conditional_dependency(db, manual_task):
     )
 
 
-def _privacy_request_location_tree():
-    """Return condition tree dict for privacy_request.location == New York."""
-    return {
-        "field_address": "privacy_request.location",
-        "operator": "eq",
-        "value": "New York",
-    }
-
-
-def _privacy_request_access_rule_tree():
-    """Return condition tree dict for privacy_request.policy.has_access_rule == True."""
-    return {
-        "field_address": "privacy_request.policy.has_access_rule",
-        "operator": "eq",
-        "value": True,
-    }
 
 
 def _privacy_request_location_tree():
