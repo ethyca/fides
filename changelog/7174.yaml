@@ -1,0 +1,7 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Added consent manual tasks to manual task graph and added ability to assign users and conditional dependencies to config fields.
+pr: 7174 # PR number
+labels: ["db-migration"] # Optional: ["high-risk", "db-migration"]
