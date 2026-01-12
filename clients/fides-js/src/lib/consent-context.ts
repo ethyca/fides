@@ -1,3 +1,15 @@
+import {
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./consent-migration";
+import {
+  ConsentMethod,
+  FidesInitOptions,
+  FidesInitOptionsOverrides,
+  NoticeConsent,
+} from "./consent-types";
+import { decodeFidesString } from "./fides-string";
+
 declare global {
   interface Navigator {
     globalPrivacyControl?: boolean;
@@ -45,9 +57,12 @@ const getGlobalPrivacyControl = (): boolean | undefined => {
   return window.navigator?.globalPrivacyControl;
 };
 
-export type ConsentContext = {
+export interface ConsentContext {
   globalPrivacyControl?: boolean;
-};
+  migratedConsent?: NoticeConsent;
+  migrationMethod?: ConsentMethod;
+  noticeConsentString?: string;
+}
 
 /**
  * Returns the GPC context from the browser/document.
@@ -61,4 +76,46 @@ export const getGpcContext = (): ConsentContext => {
   return {
     globalPrivacyControl: getGlobalPrivacyControl(),
   };
+};
+
+/**
+ * Returns the complete automated consent context by reading all automated consent sources.
+ * This includes GPC, migrated consent from third-party providers (like OneTrust),
+ * and notice consent string overrides from options.
+ *
+ * This function is synchronous and should be called early in initialization before the experience API call.
+ *
+ * @param options - Fides initialization options
+ * @param optionsOverrides - Overrides containing provider mappings and other configuration
+ * @returns Complete ConsentContext with all automated consent sources
+ */
+export const getAutomatedConsentContext = (
+  options: FidesInitOptions,
+  optionsOverrides: Partial<FidesInitOptionsOverrides>,
+): ConsentContext => {
+  const context: ConsentContext = {};
+
+  // Read GPC status
+  context.globalPrivacyControl = getGlobalPrivacyControl();
+
+  // Register and read migrated consent from third-party providers (e.g., OneTrust)
+  registerDefaultProviders(optionsOverrides);
+  const { consent: migratedConsent, method: migrationMethod } =
+    readConsentFromAnyProvider(optionsOverrides);
+
+  if (migratedConsent && migrationMethod) {
+    context.migratedConsent = migratedConsent;
+    context.migrationMethod = migrationMethod;
+  }
+
+  // Extract notice consent string from fidesString option
+  const { nc: noticeConsentString } = decodeFidesString(
+    options.fidesString || "",
+  );
+
+  if (noticeConsentString) {
+    context.noticeConsentString = noticeConsentString;
+  }
+
+  return context;
 };
