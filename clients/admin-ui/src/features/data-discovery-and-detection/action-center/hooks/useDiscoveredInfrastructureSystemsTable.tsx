@@ -6,10 +6,7 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import {
-  StagedResourceAPIResponse,
-  SystemStagedResourcesAggregateRecord,
-} from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
@@ -28,12 +25,6 @@ interface UseDiscoveredInfrastructureSystemsTableConfig {
   statusFilters?: InfrastructureSystemFilterLabel[] | null;
   vendorFilters?: string[] | null;
 }
-
-// Extended type to include diff_status for list items
-type InfrastructureSystemListItem = SystemStagedResourcesAggregateRecord & {
-  diff_status?: string | null;
-  urn?: string;
-};
 
 export const useDiscoveredInfrastructureSystemsTable = ({
   monitorId,
@@ -139,40 +130,14 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     refetch: refetchOktaData,
   } = oktaDataQuery;
 
-  // Transform API data to table format
-  // Vendor filters are now applied server-side via the vendor_id query parameter
-  const transformedData = useMemo((): {
-    items: InfrastructureSystemListItem[];
-    total: number;
-  } => {
-    if (!oktaData?.items) {
-      return { items: [], total: 0 };
-    }
-
-    const items: InfrastructureSystemListItem[] = oktaData.items.map(
-      (item: StagedResourceAPIResponse): InfrastructureSystemListItem => {
-        return {
-          id: item.urn,
-          urn: item.urn,
-          name: item.name ?? null,
-          system_key: item.system_key ?? null,
-          data_uses: item.data_uses ?? [],
-          vendor_id: item.vendor_id ?? null,
-          total_updates: 1,
-          locations: item.locations ?? [],
-          domains: item.domain ? [item.domain] : [],
-          consent_status: null,
-          metadata: item.metadata ?? null,
-          diff_status: item.diff_status ?? null,
-        };
-      },
-    );
-
-    return {
-      items,
-      total: oktaData.total ?? 0,
-    };
-  }, [oktaData]);
+  // Use API data directly - no transformation needed
+  const data = useMemo(
+    () => ({
+      items: oktaData?.items ?? [],
+      total: oktaData?.total ?? 0,
+    }),
+    [oktaData],
+  );
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
@@ -185,8 +150,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   );
 
   const rowClickUrl = useCallback(
-    (record: InfrastructureSystemListItem) => {
-      const recordId = record.urn ?? record.id ?? UNCATEGORIZED_SEGMENT;
+    (record: StagedResourceAPIResponse) => {
+      const recordId = record.urn ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
       return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.INFRASTRUCTURE}/${monitorId}/${recordId}${activeTabHash}`;
     },
@@ -195,7 +160,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
   return {
     // Data
-    data: transformedData,
+    data,
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
     refetch: refetchOktaData,
@@ -218,12 +183,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
     // Selection helpers
     getRecordKey: useCallback(
-      (record: InfrastructureSystemListItem) =>
-        record.urn ??
-        record.id ??
-        record.vendor_id ??
-        record.name ??
-        UNCATEGORIZED_SEGMENT,
+      (record: StagedResourceAPIResponse) =>
+        record.urn ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT,
       [],
     ),
   };

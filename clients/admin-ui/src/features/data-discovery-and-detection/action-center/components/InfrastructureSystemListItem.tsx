@@ -13,7 +13,7 @@ import {
 import { useMemo } from "react";
 
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
-import { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
@@ -53,23 +53,11 @@ const tagRender: TagRender = (props) => {
 };
 
 interface InfrastructureSystemListItemProps {
-  item: {
-    id?: string | null;
-    urn?: string;
-    name?: string | null;
-    system_key?: string | null;
-    vendor_id?: string | null;
-    metadata?: IdentityProviderApplicationMetadata | null;
-    diff_status?: string | null;
-    data_uses?: string[];
-    description?: string | null;
-    preferred_data_uses?: string[] | null;
-    classifications?: Array<{ label: string }> | null;
-  };
+  item: StagedResourceAPIResponse;
   selected?: boolean;
   onSelect?: (key: string, selected: boolean) => void;
   onNavigate?: (url: string) => void;
-  rowClickUrl?: (item: InfrastructureSystemListItemProps["item"]) => string;
+  rowClickUrl?: (item: StagedResourceAPIResponse) => string;
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
@@ -93,7 +81,7 @@ export const InfrastructureSystemListItem = ({
   dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
-  const itemKey = item.urn ?? item.id ?? "";
+  const itemKey = item.urn;
   const url = rowClickUrl?.(item);
   const { metadata } = item;
   const systemName = item.name ?? "Uncategorized";
