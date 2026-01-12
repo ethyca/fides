@@ -463,34 +463,6 @@ class TestManualTaskDataAggregation:
             assert len(result["user_email"]) == 1
             assert result["user_email"][0]["file_name"] == "test_document.pdf"
 
-    def test_aggregate_submission_data_mixed_field_types(
-        self,
-        manual_task_graph_task,
-        manual_task_submission_text,
-        manual_task_submission_attachment,
-        attachment_for_access_package,
-    ):
-        """Test aggregation with mixed field types (text and attachment)"""
-        instance1 = manual_task_submission_text.instance
-        instance2 = manual_task_submission_attachment.instance
-
-        # Mock the attachment retrieval
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
-        ) as mock_retrieve:
-            mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
-
-            result = manual_task_graph_task._aggregate_submission_data(
-                [instance1, instance2]
-            )
-
-            # Should have both text and attachment data
-            assert "user_email" in result
-            # The last instance processed will overwrite the first one with the same field_key
-            assert isinstance(result["user_email"], list)
-            assert len(result["user_email"]) == 1
-            assert result["user_email"][0]["file_name"] == "test_document.pdf"
-
     def test_aggregate_submission_data_attachment_field_no_attachments(
         self, manual_task_graph_task, manual_task_submission_attachment
     ):
@@ -755,6 +727,11 @@ class TestManualTaskConditionalDependencies:
         manual_task, graph_task = build_graph_task
 
         # Create privacy request conditional dependency
+        condition_tree = {
+            "field_address": privacy_request_field_address,
+            "operator": "eq",
+            "value": privacy_request_value,
+        }
         ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -764,6 +741,7 @@ class TestManualTaskConditionalDependencies:
                 "operator": "eq",
                 "value": privacy_request_value,
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 

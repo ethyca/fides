@@ -399,6 +399,11 @@ class TestManualTaskUtilsConditionalDependencies:
         )
 
         # Add a conditional dependency to the second task
+        condition_tree = {
+            "field_address": "postgres_example:payment_card:billing.subscription.status",
+            "operator": "eq",
+            "value": "active",
+        }
         ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -408,6 +413,7 @@ class TestManualTaskUtilsConditionalDependencies:
                 "operator": "eq",
                 "value": "active",
                 "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 
