@@ -1,12 +1,8 @@
-import {
-  ColumnsType,
-  formatIsoLocation,
-  isoStringToEntry,
-  Typography,
-} from "fidesui";
+import { ColumnsType, formatIsoLocation, isoStringToEntry } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { pluralize } from "~/features/common/utils";
 import {
@@ -24,8 +20,6 @@ import {
 } from "~/types/api";
 
 import { MonitorConfigEnableCell } from "../configure-monitor/MonitorConfigEnableCell";
-
-const { Text } = Typography;
 
 enum MonitorConfigColumnKeys {
   NAME = "name",
@@ -107,9 +101,7 @@ export const useMonitorConfigTable = ({
       dataIndex: MonitorConfigColumnKeys.NAME,
       key: MonitorConfigColumnKeys.NAME,
       render: (name: string) => (
-        <Text ellipsis={{ tooltip: name }} style={{ maxWidth: 150 }}>
-          {name}
-        </Text>
+        <EllipsisCell style={{ maxWidth: 150 }}>{name}</EllipsisCell>
       ),
       fixed: "left" as const,
     };
@@ -134,9 +126,9 @@ export const useMonitorConfigTable = ({
       render: () => {
         const secrets = integration.secrets as WebsiteSchema | null;
         return (
-          <Text ellipsis={{ tooltip: secrets?.url }} style={{ maxWidth: 150 }}>
+          <EllipsisCell style={{ maxWidth: 150 }}>
             {secrets?.url ?? "Not scheduled"}
-          </Text>
+          </EllipsisCell>
         );
       },
     };
@@ -201,12 +193,9 @@ export const useMonitorConfigTable = ({
           .join(", ");
 
         return (
-          <Text
-            ellipsis={{ tooltip: formattedLocations }}
-            style={{ maxWidth: 150 }}
-          >
+          <EllipsisCell style={{ maxWidth: 150 }}>
             {formattedLocations}
-          </Text>
+          </EllipsisCell>
         );
       },
     };
