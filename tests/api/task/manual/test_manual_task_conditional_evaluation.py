@@ -305,6 +305,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -312,12 +313,14 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create test input data
             inputs = [
                 [
                     {"id": 1, "email": "customer-1@example.com", "name": "Customer 1"},
                     {"id": 2, "email": "customer-2@example.com", "name": "Customer 2"},
                 ]
             ]
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -325,6 +328,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should extract the email field data
             expected = {
                 "postgres_example_test_dataset": {
                     "customer": {"email": "customer-1@example.com"}
@@ -341,6 +345,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting a simple field like 'postgres_example_test_dataset:customer:email'"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -348,12 +353,14 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create test input data
             inputs = [
                 [
                     {"id": 1, "email": "customer-1@example.com", "name": "Customer 1"},
                     {"id": 2, "email": "customer-2@example.com", "name": "Customer 2"},
                 ]
             ]
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -361,6 +368,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should extract the email field data
             expected = {
                 "postgres_example_test_dataset": {
                     "customer": {"email": "customer-1@example.com"}
@@ -372,6 +380,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting nested fields like 'dataset:collection:subcollection:field'"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -379,10 +388,12 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create test input data (nested structure)
             inputs = [
                 [{"id": 1, "profile": {"age": 25, "preferences": {"theme": "dark"}}}]
             ]
 
+            # Create a conditional dependency that references a deeply nested field
             condition_tree = {
                 "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
                 "operator": "eq",
@@ -396,6 +407,7 @@ class TestManualTaskDataExtraction:
                 },
             )
 
+            # Should extract the nested field data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -415,6 +427,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior when the field doesn't exist in input data"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -422,8 +435,10 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create test input data without the expected field
             inputs = [[{"id": 1, "name": "Customer 1"}]]  # No email field
 
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -431,6 +446,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should include the field with None value
             expected = {"postgres_example_test_dataset": {"customer": {"email": None}}}
             assert result == expected
 
@@ -439,6 +455,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting from multiple input collections"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -447,11 +464,13 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:address"),
             ]
 
+            # Create test input data for multiple collections
             inputs = [
                 [{"id": 1, "email": "customer-1@example.com"}],
                 [{"id": 1, "city": "New York"}],
             ]
 
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -459,6 +478,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should extract the data from both collections
             expected = {
                 "postgres_example_test_dataset": {
                     "customer": {"email": "customer-1@example.com"},
@@ -472,6 +492,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior with empty input data"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -479,8 +500,10 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create empty input data
             inputs = [[]]
 
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -488,6 +511,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should handle empty inputs gracefully
             expected = {"postgres_example_test_dataset": {"customer": {"email": None}}}
             assert result == expected
 
@@ -495,6 +519,7 @@ class TestManualTaskDataExtraction:
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test behavior when there are no conditional dependencies"""
+        # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
@@ -502,8 +527,10 @@ class TestManualTaskDataExtraction:
                 CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
+            # Create test input data
             inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
 
+            # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -511,6 +538,7 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Should return empty dict when no conditional dependencies exist
             assert result == {}
 
     @pytest.mark.parametrize(
@@ -699,12 +727,14 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
+            # Verify the extracted location convenience fields match expected
             for field_path, expected_value in conditional_data[
                 "privacy_request"
             ].items():
                 if field_path in result.get("privacy_request", {}):
                     actual_value = result["privacy_request"][field_path]
                     if isinstance(expected_value, list):
+                        # For list fields, check if expected items are in actual
                         if expected_result:
                             assert all(
                                 item in actual_value for item in expected_value
@@ -714,6 +744,7 @@ class TestManualTaskDataExtraction:
                                 item in actual_value for item in expected_value
                             ), f"Expected {expected_value} not to be in {actual_value}"
                     else:
+                        # For scalar fields, check equality
                         if expected_result:
                             assert (
                                 actual_value == expected_value

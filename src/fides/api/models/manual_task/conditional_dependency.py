@@ -73,7 +73,7 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
             raise ValueError("manual_task_id is required as a keyword argument")
 
         condition_row = (
-            db.query(cls).filter(cls.manual_task_id == manual_task_id).first()
+            db.query(cls).filter(cls.manual_task_id == manual_task_id).one()
         )
 
         if not condition_row or condition_row.condition_tree is None:
