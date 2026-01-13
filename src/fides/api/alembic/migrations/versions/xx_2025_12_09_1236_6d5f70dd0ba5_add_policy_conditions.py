@@ -1,7 +1,7 @@
 """add policy conditions
 
 Revision ID: 6d5f70dd0ba5
-Revises: a7241db3ee6a
+Revises: 9cf7bb472a7c
 Create Date: 2025-12-09 12:36:02.092314
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "6d5f70dd0ba5"
-down_revision = "a7241db3ee6a"
+down_revision = "9cf7bb472a7c"
 branch_labels = None
 depends_on = None
 
