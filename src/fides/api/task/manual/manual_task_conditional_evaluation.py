@@ -16,6 +16,7 @@ from fides.api.task.conditional_dependencies.privacy_request.privacy_request_dat
 )
 from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     CONSENT_UNAVAILABLE_FIELDS,
+    PrivacyRequestTopLevelFields,
     get_consent_unavailable_field_message,
 )
 from fides.api.task.conditional_dependencies.schemas import (
