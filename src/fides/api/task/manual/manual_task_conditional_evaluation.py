@@ -416,12 +416,11 @@ def evaluate_conditional_dependencies(
         return None
 
     # For consent tasks, filter out dataset field conditions and unavailable fields
-    condition_tree: Optional[Condition] = root_condition
     filter_result: Optional[ConsentConditionFilterResult] = None
     if privacy_request_only:
         filter_result = ConsentConditionFilterResult()
         condition_tree = _filter_condition_tree_for_privacy_request_only(
-            root_condition, filter_result
+            condition_tree, filter_result
         )
         # Log skipped dataset conditions for visibility
         if filter_result.has_skipped_conditions:
