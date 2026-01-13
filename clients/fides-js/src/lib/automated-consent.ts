@@ -59,10 +59,12 @@ export const calculateAutomatedConsent = (
     migratedConsent,
     migrationMethod,
     noticeConsentString,
+    hasFidesCookie,
   } = context;
 
   // Check if we have migrated consent (only applies if no Fides cookie exists yet)
-  const hasMigratedConsent = !!migratedConsent && !!migrationMethod;
+  const hasMigratedConsent =
+    !!migratedConsent && !!migrationMethod && !hasFidesCookie;
 
   // Early-exit if no automated consent sources are available
   if (!globalPrivacyControl && !noticeConsentString && !hasMigratedConsent) {
@@ -99,7 +101,7 @@ export const calculateAutomatedConsent = (
         notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY;
 
       // First check for migrated consent
-      if (hasMigratedConsent && migratedConsent) {
+      if (hasMigratedConsent) {
         const preference = migratedConsent[notice.notice_key];
         if (preference !== undefined) {
           migratedConsentApplied = true;

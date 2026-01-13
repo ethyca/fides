@@ -501,6 +501,58 @@ describe("calculateAutomatedConsent", () => {
     });
   });
 
+  it("respects saved consent over migrated consent (including false values)", () => {
+    const context: ConsentContext = {
+      migratedConsent: {
+        analytics: true, // Migrated says opt-in
+        marketing: true, // Migrated says opt-in
+      },
+      migrationMethod: ConsentMethod.EXTERNAL_PROVIDER,
+      hasFidesCookie: true, // Existing Fides cookie present
+    };
+    const savedConsent = {
+      analytics: false, // User previously opted out
+      marketing: false, // User previously opted out
+    };
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    // No automated consent applied since hasFidesCookie is true
+    expect(result.applied).toBe(false);
+    expect(result.consentMethod).toBeNull();
+    expect(result.noticeConsent).toEqual({});
+  });
+
+  it("applies migrated consent when no Fides cookie exists", () => {
+    const context: ConsentContext = {
+      migratedConsent: {
+        analytics: true, // Migrated says opt-in
+        marketing: false, // Migrated says opt-out
+      },
+      migrationMethod: ConsentMethod.EXTERNAL_PROVIDER,
+      hasFidesCookie: false, // No existing Fides cookie
+    };
+    const savedConsent = {}; // Empty saved consent
+
+    const result = calculateAutomatedConsent(
+      mockRegularExperience,
+      savedConsent,
+      context,
+    );
+
+    // Migrated consent should be applied
+    expect(result.applied).toBe(true);
+    expect(result.consentMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
+    expect(result.noticeConsent).toEqual({
+      analytics: true, // From migrated consent
+      marketing: false, // From migrated consent
+    });
+  });
+
   it("does not apply GPC to notices without has_gpc_flag", () => {
     const experienceWithoutGpcFlag: PrivacyExperience = {
       ...mockRegularExperience,

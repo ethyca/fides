@@ -8,6 +8,7 @@ import {
   FidesInitOptionsOverrides,
   NoticeConsent,
 } from "./consent-types";
+import { hasFidesConsentCookie } from "./cookie";
 import { decodeFidesString } from "./fides-string";
 
 declare global {
@@ -48,6 +49,7 @@ export interface ConsentContext {
   migratedConsent?: NoticeConsent;
   migrationMethod?: ConsentMethod;
   noticeConsentString?: string;
+  hasFidesCookie?: boolean;
 }
 
 /**
@@ -80,6 +82,9 @@ export const getAutomatedConsentContext = (
   optionsOverrides: Partial<FidesInitOptionsOverrides>,
 ): ConsentContext => {
   const context: ConsentContext = {};
+
+  // Check if a Fides cookie already exists
+  context.hasFidesCookie = hasFidesConsentCookie(options.fidesCookieSuffix);
 
   // Read GPC status
   context.globalPrivacyControl = getGlobalPrivacyControl();
