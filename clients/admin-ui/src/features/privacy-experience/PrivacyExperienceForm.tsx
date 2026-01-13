@@ -44,6 +44,7 @@ import {
   ConsentMechanism,
   ExperienceConfigCreate,
   ExperienceTranslation,
+  ExperienceTranslationCreate,
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   Property,
@@ -51,6 +52,11 @@ import {
   StagedResourceTypeValue,
   SupportedLanguage,
 } from "~/types/api";
+
+import {
+  GpcTranslationDefaults,
+  useLazyGetGpcDefaultsByComponentQuery,
+} from "./privacy-experience.slice";
 
 import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
@@ -259,7 +265,44 @@ export const PrivacyExperienceForm = ({
     </div>
   );
 
-  const handleComponentChange = (value: ComponentType) => {
+  /**
+   * Fetches GPC translation defaults from experience config templates.
+   * GPC fields are populated from templates (via migration or manual DB update)
+   * and are fetched when creating new experiences to provide customized defaults.
+   * Non-GPC translation fields (title, description, buttons, etc.) use UI-defined
+   * fallback values from defaultTranslations in helpers.tsx.
+   */
+  const [fetchGpcDefaults] = useLazyGetGpcDefaultsByComponentQuery();
+
+  /**
+   * Merges GPC defaults from templates into existing translations.
+   * Only merges GPC fields, leaving other translation fields unchanged.
+   */
+  const mergeGpcDefaultsIntoTranslations = (
+    translations: ExperienceTranslationCreate[],
+    gpcDefaults: GpcTranslationDefaults[],
+  ): ExperienceTranslationCreate[] => {
+    const gpcByLanguage = new Map(
+      gpcDefaults.map((g) => [g.language, g]),
+    );
+
+    return translations.map((t) => {
+      const gpc = gpcByLanguage.get(t.language);
+      if (!gpc) {
+        return t;
+      }
+      return {
+        ...t,
+        gpc_label: gpc.gpc_label ?? undefined,
+        gpc_title: gpc.gpc_title ?? undefined,
+        gpc_description: gpc.gpc_description ?? undefined,
+        gpc_status_applied_label: gpc.gpc_status_applied_label ?? undefined,
+        gpc_status_overridden_label: gpc.gpc_status_overridden_label ?? undefined,
+      };
+    });
+  };
+
+  const handleComponentChange = async (value: ComponentType) => {
     if (!values.component) {
       return;
     }
@@ -306,6 +349,18 @@ export const PrivacyExperienceForm = ({
         break;
       default:
         break;
+    }
+
+    // Fetch GPC defaults from templates and merge into translations
+    // This allows customized GPC values to be pre-populated for new experiences
+    if (values.translations?.length) {
+      const gpcResult = await fetchGpcDefaults(newComponent);
+      if (gpcResult.data?.length) {
+        updates.translations = mergeGpcDefaultsIntoTranslations(
+          values.translations,
+          gpcResult.data,
+        );
+      }
     }
 
     setValues({

@@ -3,6 +3,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigDisabledUpdate,
   ExperienceConfigListViewResponse,
@@ -11,7 +12,22 @@ import {
   ExperienceTranslation,
   Page_ExperienceConfigListViewResponse_,
   PrivacyNoticeRegion,
+  SupportedLanguage,
 } from "~/types/api";
+
+/**
+ * GPC translation default values for a specific language.
+ * These are fetched from experience config templates to populate
+ * GPC fields when creating new experiences.
+ */
+export interface GpcTranslationDefaults {
+  language: SupportedLanguage;
+  gpc_label?: string | null;
+  gpc_title?: string | null;
+  gpc_description?: string | null;
+  gpc_status_applied_label?: string | null;
+  gpc_status_overridden_label?: string | null;
+}
 
 export interface State {
   page?: number;
@@ -121,6 +137,20 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Experience Config Translations"],
     }),
+    /**
+     * Fetches GPC translation defaults from experience config templates
+     * for a given component type. Used when creating new experiences to
+     * populate GPC field defaults from customized templates.
+     */
+    getGpcDefaultsByComponent: build.query<
+      Array<GpcTranslationDefaults>,
+      ComponentType
+    >({
+      query: (component) => ({
+        url: `experience-config/gpc-defaults/${component}`,
+      }),
+      providesTags: () => ["Experience Config Translations"],
+    }),
     postExperienceConfig: build.mutation<
       ExperienceConfigResponse,
       ExperienceConfigCreate
@@ -141,6 +171,8 @@ export const {
   useLimitedPatchExperienceConfigMutation,
   useGetExperienceConfigByIdQuery,
   useGetAvailableConfigTranslationsQuery,
+  useGetGpcDefaultsByComponentQuery,
+  useLazyGetGpcDefaultsByComponentQuery,
   usePostExperienceConfigMutation,
 } = privacyExperienceConfigApi;
 

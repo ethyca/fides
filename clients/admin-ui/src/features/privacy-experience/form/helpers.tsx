@@ -27,6 +27,19 @@ export const getSelectedRegionIds = (
 export const getSelectedRegions = (allLocations?: LocationOrLocationGroup[]) =>
   allLocations?.filter((loc) => loc.selected) ?? [];
 
+/**
+ * Default translation values for new privacy experiences.
+ *
+ * These provide initial placeholder values for core translation fields.
+ * GPC fields (gpc_label, gpc_title, gpc_description, gpc_status_applied_label,
+ * gpc_status_overridden_label) are NOT included here - they are fetched from
+ * experience config templates when the user selects a component type.
+ * This allows organizations to customize their default GPC messaging in
+ * the template and have it automatically applied to new experiences.
+ *
+ * @see PrivacyExperienceForm.tsx - handleComponentChange() for GPC default fetching
+ * @see privacy-experience.slice.ts - getGpcDefaultsByComponent query
+ */
 export const defaultTranslations: ExperienceTranslationCreate[] = [
   {
     language: SupportedLanguage.EN,
