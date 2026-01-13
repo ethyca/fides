@@ -34,6 +34,7 @@ import {
   getCookieByName,
   getOrMakeFidesCookie,
   makeConsentDefaultsLegacy,
+  saveFidesCookie,
   updateCookieFromExperience,
 } from "./cookie";
 import {
@@ -373,6 +374,20 @@ export const initialize = async ({
       );
       // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
+
+      // If automated consent was applied, save the cookie to the browser
+      if (automatedApplied) {
+        // Set the consentMethod on fides_meta before saving
+        Object.assign(fides.cookie.fides_meta, {
+          consentMethod: automatedMethod,
+        });
+
+        await saveFidesCookie(fides.cookie, options);
+        fidesDebugger(
+          "Saved automated consent to browser cookie",
+          fides.cookie,
+        );
+      }
 
       // Initialize the i18n singleton before we render the overlay
       const i18n = setupI18n();
