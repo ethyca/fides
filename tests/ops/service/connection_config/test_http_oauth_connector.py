@@ -24,11 +24,35 @@ class TestHttpOAuth2ConnectorMethods:
         )
 
     @pytest.mark.parametrize(
-        "response_expected, response_data",
-        [(False, {}), (True, {"test": "response"})],
-        ids=["no_response", "response"],
+        "response_expected, response_data, headers, expected_headers",
+        [
+            (False, {}, {}, {}),
+            (True, {"test": "response"}, {}, {}),
+            (True, {"test": "response"}, {"Authorization": "invalid"}, {}),
+            (
+                True,
+                {"test": "response"},
+                {"x-forwarded-header": "value"},
+                {"x-forwarded-header": "value"},
+            ),
+        ],
+        ids=[
+            "no_response",
+            "response",
+            "authorization not overridden",
+            "forwards headers",
+        ],
     )
-    def test_execute_request(self, response_expected, response_data, connector):
+    def test_execute_request(
+        self,
+        response_expected,
+        response_data,
+        headers,
+        expected_headers,
+        https_connection_config_with_oauth,
+    ):
+        https_connection_config_with_oauth.secrets["headers"] = headers
+        connector: HTTPSConnector = HTTPSConnector(https_connection_config_with_oauth)
         request_body = {"test": "response"}
 
         # Validate that the connector uses the Bearer token in the request to the endpoint
@@ -46,7 +70,6 @@ class TestHttpOAuth2ConnectorMethods:
             return True
 
         with requests_mock.Mocker() as mock_response:
-
             mock_response.post(
                 connector.configuration.oauth_config.token_url,
                 json={"access_token": "test_token", "token_type": "Bearer"},
@@ -55,10 +78,12 @@ class TestHttpOAuth2ConnectorMethods:
                 additional_matcher=request_contains_oauth_token_request,
             )
 
-            mock_response.post(
+            mock_response.register_uri(
+                "POST",
                 connector.build_uri(),
                 json={"test": "response"},
                 status_code=200,
+                request_headers=expected_headers,
                 additional_matcher=request_contains_oauth_bearer_token,
             )
 
