@@ -18,7 +18,6 @@ import InfoBox from "~/features/common/InfoBox";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import {
   NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
-  NOTIFICATIONS_EDIT_TEMPLATE_ROUTE,
   NOTIFICATIONS_TEMPLATES_ROUTE,
 } from "~/features/common/nav/routes";
 import NotificationTabs from "~/features/common/NotificationTabs";
