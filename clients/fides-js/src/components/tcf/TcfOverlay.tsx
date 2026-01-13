@@ -393,11 +393,18 @@ export const TcfOverlay = () => {
 
     // Use full experience if available and the current locale is English
     if (experienceFull && currentLocale === DEFAULT_LOCALE) {
-      const fullPurposeNames =
+      const fullPurposeConsents =
         experienceFull.tcf_purpose_consents?.map((p) => p.name) || [];
+      const fullPurposeLegitimateInterests =
+        experienceFull.tcf_purpose_legitimate_interests?.map((p) => p.name) ||
+        [];
       const fullSpecialFeatureNames =
         experienceFull.tcf_special_features?.map((sf) => sf.name) || [];
-      return [...fullPurposeNames, ...fullSpecialFeatureNames];
+      return [
+        ...fullPurposeConsents,
+        ...fullPurposeLegitimateInterests,
+        ...fullSpecialFeatureNames,
+      ];
     }
 
     // Otherwise, use the minimal experience
