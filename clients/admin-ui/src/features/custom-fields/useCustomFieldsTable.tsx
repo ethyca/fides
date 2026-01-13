@@ -10,17 +10,10 @@ import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import TagCell from "~/features/common/table/cells/TagCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldCell";
+import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
-import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
-
-const FIELD_TYPE_LABEL_MAP = {
-  [TaxonomyTypeEnum.DATA_CATEGORY]: "Data category",
-  [TaxonomyTypeEnum.DATA_USE]: "Data use field",
-  [TaxonomyTypeEnum.DATA_SUBJECT]: "Data subject",
-  [TaxonomyTypeEnum.SYSTEM_GROUP]: "System group",
-};
 
 const LOCATION_LABEL_MAP = {
   [LegacyResourceTypes.SYSTEM]: "System",
@@ -87,16 +80,11 @@ const useCustomFieldsTable = () => {
         title: "Type",
         dataIndex: "field_type",
         key: "field_type",
-        render: (_: any, record: CustomFieldDefinitionWithId) => {
-          let label: string;
-          if (record.field_type in FIELD_TYPE_LABEL_MAP) {
-            label = FIELD_TYPE_LABEL_MAP[record.field_type as TaxonomyTypeEnum];
-          } else {
-            label =
-              customTaxonomies?.find(
-                (taxonomy) => taxonomy.fides_key === record.field_type,
-              )?.name ?? record.field_type;
-          }
+        render: (_, record) => {
+          const customTaxonomy = customTaxonomies?.find(
+            (taxonomy) => taxonomy.fides_key === record.field_type,
+          );
+          const label = customTaxonomy?.name ?? getCustomFieldTypeLabel(record);
           return <TagCell value={label} />;
         },
       },

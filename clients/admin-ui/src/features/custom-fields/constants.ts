@@ -40,3 +40,10 @@ export const FIELD_TYPE_LABEL_MAP: Record<FieldTypes, string> = {
   [FieldTypes.MULTIPLE_SELECT]: "Multi-value select",
   [FieldTypes.OPEN_TEXT]: "Open text",
 };
+
+export const TAXONOMY_FIELD_TYPE_LABEL_MAP: Record<TaxonomyTypeEnum, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: "Data category",
+  [TaxonomyTypeEnum.DATA_USE]: "Data use field",
+  [TaxonomyTypeEnum.DATA_SUBJECT]: "Data subject",
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "System group",
+};
