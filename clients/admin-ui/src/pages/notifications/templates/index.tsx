@@ -16,9 +16,14 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { NOTIFICATIONS_ADD_TEMPLATE_ROUTE } from "~/features/common/nav/routes";
+import {
+  NOTIFICATIONS_ADD_TEMPLATE_ROUTE,
+  NOTIFICATIONS_EDIT_TEMPLATE_ROUTE,
+  NOTIFICATIONS_TEMPLATES_ROUTE,
+} from "~/features/common/nav/routes";
 import NotificationTabs from "~/features/common/NotificationTabs";
 import PageHeader from "~/features/common/PageHeader";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
@@ -158,6 +163,13 @@ const NotificationTemplatesPage: NextPage = () => {
         title: "Message",
         dataIndex: "type",
         key: "type",
+        render: (_, { type, id }) => {
+          return (
+            <LinkCell href={`${NOTIFICATIONS_TEMPLATES_ROUTE}/${id}`}>
+              {type}
+            </LinkCell>
+          );
+        },
       },
       {
         title: "Properties",
