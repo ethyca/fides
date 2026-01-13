@@ -175,14 +175,6 @@ def _create_collection_from_manual_task(
     # Get conditional dependency field addresses from JSONB condition_tree
     conditional_field_addresses: set[str] = set()
     for dependency in manual_task.conditional_dependencies:
-        # Filter field-level dependencies by config type
-        if dependency.config_field_key is not None and config_types is not None:
-            # Get the config type for this field's config
-            config_field = dependency.config_field
-            if config_field and config_field.config:
-                if config_field.config.config_type not in config_types:
-                    continue
-
         tree = dependency.condition_tree
         if isinstance(tree, dict) or tree is None:
             field_addresses = set(
