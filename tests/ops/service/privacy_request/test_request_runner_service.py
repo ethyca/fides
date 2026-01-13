@@ -76,21 +76,33 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 class TestManualFinalization:
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,enable_fixture,pending_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+            (
+                "use_dsr_2_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+        ],
     )
     def test_mark_as_requires_manual_finalization_if_config_true(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        enable_fixture,
+        pending_fixture,
         request,
-        enable_erasure_request_finalization_required,
-        privacy_request_erasure_pending,
     ) -> None:
-        """Assert marking privacy request as requires_manual_finalization"""
+        """Assert marking privacy request as requires_manual_finalization for erasure"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_erasure_pending
+        request.getfixturevalue(enable_fixture)
+        privacy_request = request.getfixturevalue(pending_fixture)
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -100,21 +112,33 @@ class TestManualFinalization:
         )
 
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,disable_fixture,pending_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "disable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+            (
+                "use_dsr_2_0",
+                "disable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+        ],
     )
     def test_no_manual_finalization_if_config_false(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        disable_fixture,
+        pending_fixture,
         request,
-        disable_erasure_request_finalization_required,
-        privacy_request_erasure_pending,
     ) -> None:
-        """Assert marking pending privacy request as complete"""
+        """Assert marking pending privacy request as complete when finalization disabled"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_erasure_pending
+        request.getfixturevalue(disable_fixture)
+        privacy_request = request.getfixturevalue(pending_fixture)
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -122,21 +146,33 @@ class TestManualFinalization:
         assert privacy_request.status == PrivacyRequestStatus.complete
 
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,enable_fixture,finalization_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_requires_manual_finalization",
+            ),
+            (
+                "use_dsr_2_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_requires_manual_finalization",
+            ),
+        ],
     )
     def test_mark_as_complete_when_finalized_at_exists(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        enable_fixture,
+        finalization_fixture,
         request,
-        enable_erasure_request_finalization_required,
-        privacy_request_requires_manual_finalization,
     ) -> None:
         """Ensures that if finalized_at exists, we mark it as complete"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_requires_manual_finalization
+        request.getfixturevalue(enable_fixture)
+        privacy_request = request.getfixturevalue(finalization_fixture)
         privacy_request.finalized_at = "2021-08-30T16:09:37.359Z"
         privacy_request.save(db)
 
@@ -161,50 +197,51 @@ def privacy_request_complete_email_notification_enabled(db):
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    "dsr_version,privacy_request_fixture,expected_action_type",
+    [
+        (
+            "use_dsr_3_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_3_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+    ],
 )
-def test_policy_upload_dispatch_message_called(
+def test_completion_email_sent_for_request(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
-    privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
     dsr_version,
+    privacy_request_fixture,
+    expected_action_type,
     request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
+    """Test that completion email is sent for access and consent requests."""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    privacy_request = request.getfixturevalue(privacy_request_fixture)
 
     upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+    run_privacy_request_task.delay(privacy_request.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    assert upload_mock.called
     assert mock_email_dispatch.call_count == 1
-
-
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_complete_email_not_sent_if_consent_request(
-    upload_mock: Mock,
-    mock_email_dispatch: Mock,
-    privacy_request_with_consent_policy: PrivacyRequest,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-    privacy_request_complete_email_notification_enabled,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_with_consent_policy.id).get(
-        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-    )
-    assert not mock_email_dispatch.called
+    call_kwargs = mock_email_dispatch.call_args.kwargs
+    assert call_kwargs["action_type"] == expected_action_type
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
