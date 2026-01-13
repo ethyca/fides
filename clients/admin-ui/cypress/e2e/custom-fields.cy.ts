@@ -1,4 +1,3 @@
-import { getByRole } from "@testing-library/dom";
 import { stubCustomFields, stubPlus } from "cypress/support/stubs";
 
 import { RoleRegistryEnum } from "~/types/api";
@@ -38,21 +37,66 @@ describe("Custom Fields V2", () => {
     it("displays all required form fields", () => {
       cy.get("form").within(() => {
         cy.getByTestId("input-name").should("exist");
+        cy.getByTestId("input-description").should("exist");
+        cy.getByTestId("select-template").should("exist");
         cy.getByTestId("select-value-type").should("exist").should("be.hidden");
         cy.getByTestId("select-resource-type").should("exist");
       });
     });
 
     it("allows selecting a taxonomy type", () => {
-      cy.getByTestId("input-name").type("Data c");
-      cy.getByTestId("input-name-autocomplete").antSelect("Data categories");
-      cy.getByTestId("input-name")
-        .should("have.value", "Data categories")
-        .should("be.disabled");
+      cy.getByTestId("select-template").antSelect("Data categories");
+      cy.getByTestId("input-name").type("Test taxonomy field");
       cy.getByTestId("select-value-type")
         .should("be.hidden")
         .should("contain", "Data categories");
-      cy.getByTestId("input-description").should("not.exist");
+      cy.getByTestId("select-field-type").should("not.exist");
+    });
+
+    it("filters location options when taxonomy type is selected", () => {
+      // First, check available locations before selecting taxonomy
+      cy.getByTestId("select-resource-type").click();
+      cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
+        .should("be.visible")
+        .then(($dropdown) => {
+          const initialOptions = $dropdown.find(
+            ".ant-select-item-option",
+          ).length;
+          cy.get("body").click(0, 0); // Close dropdown
+
+          // Select a taxonomy type
+          cy.getByTestId("select-template").antSelect("Data categories");
+
+          // Check that "taxonomy:data category" is filtered out from location options
+          cy.getByTestId("select-resource-type").click();
+          cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
+            .should("be.visible")
+            .within(() => {
+              // Should not contain the matching taxonomy location
+              cy.contains("taxonomy:data category").should("not.exist");
+              // Should still contain other locations
+              cy.contains("system:information").should("exist");
+            });
+        });
+    });
+
+    it("allows switching between Custom and Taxonomy templates", () => {
+      cy.getByTestId("input-name").type("Test field");
+
+      // Start with Custom template
+      cy.getByTestId("select-template").antSelect("Custom");
+      cy.getByTestId("select-field-type").should("exist");
+
+      // Switch to Taxonomy template
+      cy.getByTestId("select-template").antSelect("Data categories");
+      cy.getByTestId("select-field-type").should("not.exist");
+      cy.getByTestId("select-value-type")
+        .should("be.hidden")
+        .should("contain", "Data categories");
+
+      // Switch back to Custom
+      cy.getByTestId("select-template").antSelect("Custom");
+      cy.getByTestId("select-field-type").should("exist");
     });
 
     it("validates required fields", () => {
@@ -61,6 +105,8 @@ describe("Custom Fields V2", () => {
       cy.contains("Please select a location").should("be.visible");
 
       cy.getByTestId("input-name").type("custom name");
+      cy.getByTestId("save-btn").click();
+      cy.getByTestId("select-template").antSelect("Custom");
       cy.getByTestId("save-btn").click();
       cy.contains("Please select a field type").should("be.visible");
       cy.getByTestId("select-field-type").antSelect("Single select");
@@ -72,6 +118,8 @@ describe("Custom Fields V2", () => {
 
     it("shows options field for select types", () => {
       cy.getByTestId("input-name").type("custom name");
+      // Select Custom template first
+      cy.getByTestId("select-template").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add and validate options
@@ -86,6 +134,8 @@ describe("Custom Fields V2", () => {
 
     it("validates unique options for select types", () => {
       cy.getByTestId("input-name").type("custom name");
+      // Select Custom template first
+      cy.getByTestId("select-template").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
 
       // Add duplicate options
@@ -104,6 +154,7 @@ describe("Custom Fields V2", () => {
 
       cy.getByTestId("input-name").type(fieldName).blur();
       cy.getByTestId("input-description").type(fieldDesc);
+      cy.getByTestId("select-template").antSelect("Custom");
       cy.getByTestId("select-field-type").antSelect("Single select");
       cy.getByTestId("add-option-btn").click();
       cy.getByTestId("input-option-0").type("Option 1");
@@ -128,12 +179,32 @@ describe("Custom Fields V2", () => {
       cy.getByTestId("select-field-type").should("exist");
     });
 
+    it("disables resource type select when editing existing field", () => {
+      cy.visit("/settings/custom-fields");
+      cy.getByTestId("edit-btn").first().click();
+
+      // Verify resource type is disabled
+      cy.getByTestId("select-resource-type")
+        .should("have.class", "ant-select-disabled")
+        .should("be.disabled");
+    });
+
+    it("navigates to edit form when name link is clicked", () => {
+      cy.visit("/settings/custom-fields");
+      cy.get(".ant-table-tbody").within(() => {
+        cy.get("a").first().click();
+      });
+      cy.url().should("include", "/settings/custom-fields/");
+      cy.getByTestId("input-name").should("exist");
+    });
+
     it("allows updating field properties", () => {
       cy.visit("/settings/custom-fields");
       cy.getByTestId("edit-btn").first().click();
 
       // Update name
       cy.getByTestId("input-name").clear().type("Updated field name");
+      cy.getByTestId("select-template").should("contain", "Custom");
       cy.getByTestId("add-option-btn").click();
       cy.getByTestId("input-option-3").type("Added option");
 

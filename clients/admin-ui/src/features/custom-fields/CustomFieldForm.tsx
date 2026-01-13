@@ -252,11 +252,21 @@ const CustomFieldForm = ({
               form.setFieldValue("value_type", value);
             }
           }}
+          data-testid="select-template"
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
         />
       </Form.Item>
 
       <Form.Item name="value_type" hidden>
-        <Select options={valueTypeOptions} data-testid="select-value-type" />
+        <Select
+          options={valueTypeOptions}
+          data-testid="select-value-type"
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
+        />
       </Form.Item>
 
       {!!name && selectedTemplate === CUSTOM_TEMPLATE_VALUE && (
