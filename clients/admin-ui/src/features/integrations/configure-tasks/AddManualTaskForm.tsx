@@ -130,10 +130,7 @@ const AddManualTaskForm = ({
         }
       }
       // When request type is cleared, clear field type
-      else if (
-        changedValues.requestType === null ||
-        changedValues.requestType === ""
-      ) {
+      else if (changedValues.requestType === null) {
         form.setFieldsValue({ fieldType: undefined });
       }
     }
