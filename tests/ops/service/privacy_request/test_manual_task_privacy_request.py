@@ -18,7 +18,6 @@ from fides.api.models.manual_task import (
     ManualTaskConditionalDependency,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskParentEntityType,
@@ -26,6 +25,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
@@ -111,7 +111,7 @@ def manual_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.access_privacy_request,
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },
@@ -482,7 +482,7 @@ def test_manual_task_with_conditional_dependencies(
             db=db,
             data={
                 "task_id": manual_task_or.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
