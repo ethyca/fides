@@ -11,7 +11,6 @@ from fides.api.models.conditional_dependency.conditional_dependency_base import 
     ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
-    Condition,
     ConditionGroup,
     ConditionLeaf,
 )
