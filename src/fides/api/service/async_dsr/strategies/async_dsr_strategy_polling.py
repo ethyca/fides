@@ -613,7 +613,10 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                         logger.info(
                             f"Sub-request {sub_request.id} complete with no data to fetch"
                         )
-                        sub_request.access_data = []
+                        if polling_task.action_type == ActionType.access:
+                            sub_request.access_data = []
+                        if polling_task.action_type == ActionType.erasure:
+                            sub_request.rows_masked = 0
                         sub_request.update_status(
                             self.session, ExecutionLogStatus.complete.value
                         )
