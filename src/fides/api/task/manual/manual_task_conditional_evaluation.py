@@ -54,8 +54,10 @@ def has_non_privacy_request_conditions(manual_task: ManualTask) -> bool:
     """
     Check if a manual task has any conditional dependencies that reference dataset fields.
 
-    This is used to validate consent manual tasks, which can only use privacy_request.*
-    conditions because the consent graph doesn't have access data flowing between nodes.
+    This can be used to validate or warn about consent manual tasks that have dataset
+    field conditions, since consent DSRs don't have access data flowing between nodes.
+    Dataset field conditions will be filtered out at runtime but this function can be
+    used for upfront validation.
 
     Args:
         manual_task: The manual task to check
@@ -396,16 +398,16 @@ def evaluate_conditional_dependencies(
         conditional_data: Data from regular tasks for conditional dependency fields
         privacy_request_only: If True, only evaluate privacy_request.* conditions.
             Used for consent tasks which don't have data flow through datasets.
+            Dataset field conditions will be filtered out and the remaining
+            privacy_request.* conditions will still be evaluated.
 
     Returns:
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
-    # For consent tasks (privacy_request_only=True), we can only evaluate
-    # privacy_request.* conditions since consent DSRs don't have data flow
-    # through datasets. Skip evaluation if the task has non-privacy-request conditions.
-    if privacy_request_only and has_non_privacy_request_conditions(manual_task):
-        return None
+    # Note: For consent tasks (privacy_request_only=True), dataset field conditions
+    # are filtered out by _filter_condition_tree_for_privacy_request_only below.
+    # We don't skip evaluation entirely - we filter and evaluate what remains.
 
     # Get the condition tree for this manual task
     condition_tree = ManualTaskConditionalDependency.get_condition_tree(
