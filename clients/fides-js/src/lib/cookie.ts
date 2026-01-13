@@ -547,7 +547,7 @@ export const removeCookiesFromBrowser = (
     if (removeSubdomainCookies) {
       cookies.remove(cookie.name, { domain: `.${hostname}` });
     }
-  }
+  };
 
   cookiesToRemove.forEach((cookie) => {
     if (isWildcardCookie(cookie)) {
