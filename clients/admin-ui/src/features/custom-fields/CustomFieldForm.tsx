@@ -1,19 +1,18 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  AntAutoComplete as AutoComplete,
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSkeleton as Skeleton,
-  AntTypography as Typography,
-  ConfirmationModal,
+  AutoComplete,
+  Button,
+  Flex,
+  Form,
   Icons,
+  Input,
+  Select,
+  Skeleton,
+  Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -80,6 +79,7 @@ const CustomFieldForm = ({
   const { resource_type: queryResourceType } = router.query;
 
   const messageApi = useMessage();
+  const modalApi = useModal();
 
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
@@ -99,18 +99,40 @@ const CustomFieldForm = ({
     useHasPermission([ScopeRegistryEnum.CUSTOM_FIELD_DELETE]) && !!initialField;
 
   const handleDelete = async () => {
-    const result = await deleteCustomField({ id: initialField?.id as string });
+    if (!initialField) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { id, resource_type, field_type } = initialField;
+    const result = await deleteCustomField({
+      id: id!,
+      resource_type,
+      field_type,
+    });
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
       return;
     }
-    // navigate to main page after success toast is shown
-    messageApi.success("Custom field deleted successfully", undefined, () => {
-      router.push(CUSTOM_FIELDS_ROUTE);
-    });
+    messageApi.success("Custom field deleted successfully");
+    router.push(CUSTOM_FIELDS_ROUTE);
   };
 
-  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
+  const confirmDelete = () => {
+    modalApi.confirm({
+      title: "Delete custom field?",
+      content: (
+        <Typography.Paragraph>
+          Are you sure you want to delete{" "}
+          <strong>{initialField?.name ?? "this custom field"}</strong>? This
+          action cannot be undone.
+        </Typography.Paragraph>
+      ),
+      onOk: handleDelete,
+      okType: "primary",
+      okText: "Delete",
+      centered: true,
+    });
+  };
 
   const onSubmit = async (values: CustomFieldsFormValues) => {
     const result = await createOrUpdate(values, initialField, allowList);
@@ -367,31 +389,14 @@ const CustomFieldForm = ({
 
       <Flex justify="space-between">
         {showDeleteButton && (
-          <>
-            <Button
-              danger
-              onClick={() => setDeleteModalIsOpen(true)}
-              loading={deleteIsLoading}
-              data-testid="delete-btn"
-            >
-              Delete
-            </Button>
-            <ConfirmationModal
-              isOpen={deleteModalIsOpen}
-              onClose={() => setDeleteModalIsOpen(false)}
-              onConfirm={handleDelete}
-              title="Delete custom field"
-              message={
-                <Typography.Paragraph>
-                  Are you sure you want to delete{" "}
-                  <strong>{initialField?.name}</strong>? This action cannot be
-                  undone.
-                </Typography.Paragraph>
-              }
-              isCentered
-              data-testid="delete-modal"
-            />
-          </>
+          <Button
+            danger
+            onClick={confirmDelete}
+            loading={deleteIsLoading}
+            data-testid="delete-btn"
+          >
+            Delete
+          </Button>
         )}
         <Button type="primary" htmlType="submit" data-testid="save-btn">
           Save

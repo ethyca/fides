@@ -164,19 +164,18 @@ extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 [tool.pytest.ini_options]
 env = [
   "FIDES__TEST_MODE=true",
-  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute"
+  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute",
+  "PYTHONDONTWRITEBYTECODE=1"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
 addopts = [
-    "--cov=fides",
-    "--cov-branch",
-    "--no-cov-on-fail",
     "-ra",
     "-vv",
-    "--disable-pytest-warnings"
+    "--disable-pytest-warnings",
+    "--junitxml=test_report.xml"
 ]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",

@@ -1,9 +1,9 @@
-import { Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
-import { PrivacyNoticesTable } from "~/features/privacy-notices/PrivacyNoticesTable";
+import { PrivacyNoticesTable } from "~/features/privacy-notices/table/PrivacyNoticesTable";
 
 const PrivacyNoticesPage = () => (
   <FixedLayout title="Privacy notices">

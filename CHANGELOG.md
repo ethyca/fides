@@ -19,21 +19,66 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.76.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
+
+### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+
+### Added
+- Monitor scoped activity tab for datastore monitors in the action center [#7162](https://github.com/ethyca/fides/pull/7162)
+
+## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
+
+### Added
+- Added editable GPC translation fields to privacy experience configuration [#7137](https://github.com/ethyca/fides/pull/7137)
+- Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
+- Support for preserving customer field changes to SaaS datasets [#7002](https://github.com/ethyca/fides/pull/7002)
+- Added location filter to new request manager screen [#7132](https://github.com/ethyca/fides/pull/7132)
+- Added handling for "page-level" errors [#7144](https://github.com/ethyca/fides/pull/7144)
+- Added gzip compression option for larger consent cookies [#7142](https://github.com/ethyca/fides/pull/7142)
+- Added sorting to new request manager screen [#7138](https://github.com/ethyca/fides/pull/7138)
+- Added DB models for monitor stewards [#7131](https://github.com/ethyca/fides/pull/7131) https://github.com/ethyca/fides/labels/db-migration
+- Added ignore and restore actions to schema explorer tree in Action Center [#7156](https://github.com/ethyca/fides/pull/7156)
+- Added recommended security headers to Admin UI & Fides API [#7134](https://github.com/ethyca/fides/pull/7134)
+
+### Changed
+- Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+- Replaced old request manager UI with new list based view [#7168](https://github.com/ethyca/fides/pull/7168)
+- Improvements to the UI/UX of the new request manager screen [#7128](https://github.com/ethyca/fides/pull/7128)
+- Increasing default async DB pool size to 50 pooled connections and 50 overflow connections [#7126](https://github.com/ethyca/fides/pull/7126)
+- Track active taxonomy in URL in taxonomy screen [#7113](https://github.com/ethyca/fides/pull/7113)
+- Updated status labels for the Action Center [#7098](https://github.com/ethyca/fides/pull/7098)
+- Extending read-only DB configuration [#7139](https://github.com/ethyca/fides/pull/7139)
+- Removed the ManualTaskLog table since it is un-used. This is a lossy migration, it can be `downgraded` but data will not be restored. [#7124](https://github.com/ethyca/fides/pull/7124) https://github.com/ethyca/fides/labels/db-migration
+- Renamed staged resource diff status from 'approved' to 'reviewed' in database migration [#7159](https://github.com/ethyca/fides/pull/7159) https://github.com/ethyca/fides/labels/db-migration
+
+### Developer Experience
+- Deprecated Chakra UI exports with `Chakra` prefix, removed `Ant` prefix from Ant Design exports [#7173](https://github.com/ethyca/fides/pull/7173)
+- Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
+- Migrated privacy notices table to Ant Design [#7087](https://github.com/ethyca/fides/pull/7087)
+- Update Ant modal hook usage [#7086](https://github.com/ethyca/fides/pull/7086)
+- Added reusable animation components to FidesUI [#7125](https://github.com/ethyca/fides/pull/7125)
+- Added test coverage for new request manager page [#7164](https://github.com/ethyca/fides/pull/7164)
+
+### Fixed
+- Fixed bulk delete modal not closing after deleting multiple systems
+- Fixed search input `/` hotkey opening Firefox Quick Find instead of focusing search [#7157](https://github.com/ethyca/fides/pull/7157)
+- Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
+- Fixed incorrect date format string [#7143](https://github.com/ethyca/fides/pull/7143)
+- Fixed dsr error toast staying while navigating [#7149](https://github.com/ethyca/fides/pull/7149)
+- Fixed repeatedly clicking "Delete" on custom fields causing multiple errors [#7115](https://github.com/ethyca/fides/pull/7115)
+- Fixed multi-select tree action counts [7182](https://github.com/ethyca/fides/pull/7182)
+
+
+## [2.76.1](https://github.com/ethyca/fides/compare/2.76.0..2.76.1)
 
 ### Added
 - Added options to use privacy request fields as manual task conditions [#7089](https://github.com/ethyca/fides/pull/7089)
 - Added new indexes on privacy requests and provided identities to speed up duplicate detection. [#7095](https://github.com/ethyca/fides/pull/7095) https://github.com/ethyca/fides/labels/db-migration
-- Supports multi-select for the data explorer in the Action Center [#7093](https://github.com/ethyca/fides/pull/7093)
 
-### Changed
-- Bulk privacy request actions now accept filter sets as well as lists, enables select all functionality. [#7027](https://github.com/ethyca/fides/pull/7027)
+### Security
+- Upgraded NextJS and React dependencies in Privacy Center to fix new vulnerabilities [#7112](https://github.com/ethyca/fides/pull/7112)
 
-### Developer Experience
-- Migrated consent settings tables to Ant Design [#7084](https://github.com/ethyca/fides/pull/7084)
-
-### Fixed
-- Fixed layout issues in Action Center and Monitor Configuration UI [#7092](https://github.com/ethyca/fides/pull/7092)
 
 ## [2.76.0](https://github.com/ethyca/fides/compare/2.75.2..2.76.0)
 

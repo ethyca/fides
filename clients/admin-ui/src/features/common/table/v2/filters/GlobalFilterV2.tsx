@@ -1,5 +1,5 @@
 import { debounce } from "common/utils";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import SearchInput from "~/features/common/SearchInput";

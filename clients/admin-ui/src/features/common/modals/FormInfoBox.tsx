@@ -1,4 +1,4 @@
-import { Box, BoxProps } from "fidesui";
+import { ChakraBox as Box, ChakraBoxProps as BoxProps } from "fidesui";
 
 const FormInfoBox = ({ children, ...props }: BoxProps) => {
   return (

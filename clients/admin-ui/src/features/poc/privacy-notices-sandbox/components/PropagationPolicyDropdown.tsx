@@ -1,8 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntSelect as Select,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Select, Typography } from "fidesui";
 
 import type { PropagationPolicyKey } from "~/types/api/models/PropagationPolicyKey";
 import { PropagationPolicyKey as PropagationPolicyKeyEnum } from "~/types/api/models/PropagationPolicyKey";
@@ -27,6 +23,7 @@ const PropagationPolicyDropdown = ({
       value: PropagationPolicyKeyEnum.CASCADE_UP_AND_DOWN,
       label: "Cascade up and down",
     },
+    { value: PropagationPolicyKeyEnum.PREFER_OPT_IN, label: "Prefer opt in" },
   ];
 
   return (

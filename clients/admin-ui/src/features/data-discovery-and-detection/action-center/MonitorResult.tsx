@@ -1,21 +1,20 @@
 import { formatDistanceStrict } from "date-fns";
 import {
-  AntButton as Button,
-  AntCol as Col,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntList as List,
-  AntListItemProps as ListItemProps,
-  AntRow as Row,
-  AntSkeleton as Skeleton,
-  AntSpace as Space,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Icons,
+  Button,
+  Col,
+  Divider,
+  ExpandCollapse,
+  Flex,
+  List,
+  ListItemProps,
+  OpenCloseArrow,
+  Row,
+  Space,
   SparkleIcon,
+  Tag,
+  Tooltip,
+  Typography,
 } from "fidesui";
-import { AnimatePresence, motion } from "framer-motion";
 import NextLink from "next/link";
 import { useState } from "react";
 
@@ -43,13 +42,11 @@ const MONITOR_RESULT_COUNT_TYPES = {
 
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
-  showSkeleton?: boolean;
   href: string;
 }
 
 export const MonitorResult = ({
   monitorSummary,
-  showSkeleton,
   href,
   ...props
 }: MonitorResultProps) => {
@@ -108,132 +105,113 @@ export const MonitorResult = ({
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
-      <Skeleton avatar title={false} loading={showSkeleton} active>
-        <Flex vertical className="grow">
-          <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
-            <Col span={heliosV2Enabled ? 14 : 17}>
-              <List.Item.Meta
-                avatar={
-                  <ConnectionTypeLogo
-                    data={{
-                      kind: ConnectionLogoKind.CONNECTION,
-                      connectionType,
-                      name,
-                      key,
-                      saasType: saasConfig?.type,
-                      websiteUrl: secrets?.url,
-                    }}
-                  />
-                }
-                title={
-                  <Flex
-                    align="center"
-                    gap={4}
-                    className={styles["monitor-result__title"]}
-                  >
-                    <NextLink href={href} data-testid="monitor-link">
-                      {name}
-                    </NextLink>
-                    <Text type="secondary">
-                      {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
-                    </Text>
-                    {consentStatus && (
-                      <DiscoveryStatusIcon consentStatus={consentStatus} />
-                    )}
-                    {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
-                  </Flex>
-                }
-                description={
-                  !!updates && (
-                    <MonitorResultDescription
-                      updates={updates}
-                      isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
-                    />
-                  )
-                }
-              />
-            </Col>
-            <Col span={5} className="flex justify-end">
-              {!!lastMonitoredDistance && (
-                <Tooltip title={formattedLastMonitored}>
-                  <Text type="secondary" data-testid="monitor-date">
-                    <span className="hidden lg:inline">Last scan: </span>
-                    {lastMonitoredDistance}
+      <Flex vertical className="grow">
+        <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
+          <Col span={heliosV2Enabled ? 14 : 17}>
+            <List.Item.Meta
+              avatar={
+                <ConnectionTypeLogo
+                  data={{
+                    kind: ConnectionLogoKind.CONNECTION,
+                    connectionType,
+                    name,
+                    key,
+                    saasType: saasConfig?.type,
+                    websiteUrl: secrets?.url,
+                  }}
+                />
+              }
+              title={
+                <Flex
+                  align="center"
+                  gap={4}
+                  className={styles["monitor-result__title"]}
+                >
+                  <NextLink href={href} data-testid="monitor-link">
+                    {name}
+                  </NextLink>
+                  <Text type="secondary">
+                    {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
                   </Text>
-                </Tooltip>
-              )}
-            </Col>
-            <Col
-              span={heliosV2Enabled ? 5 : 2}
-              className="flex items-center justify-end"
-            >
-              {heliosV2Enabled && showConfidenceRow && (
-                <>
-                  <Button
-                    type="link"
-                    className="p-0"
-                    icon={
-                      isConfidenceRowExpanded ? (
-                        <Icons.ChevronUp />
-                      ) : (
-                        <Icons.ChevronDown />
-                      )
-                    }
-                    iconPosition="end"
-                    onClick={() =>
-                      setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
-                    }
-                    aria-haspopup="true"
-                    aria-expanded={isConfidenceRowExpanded}
-                    aria-controls={`confidence-row-${key}`}
-                    aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
-                  >
-                    <Space>
-                      <SparkleIcon />
-                      Findings
-                    </Space>
-                  </Button>
-                  <Divider type="vertical" orientationMargin={0} />
-                </>
-              )}
-              <NextLink key="review" href={href} passHref legacyBehavior>
+                  {consentStatus && (
+                    <DiscoveryStatusIcon consentStatus={consentStatus} />
+                  )}
+                  {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
+                </Flex>
+              }
+              description={
+                !!updates && (
+                  <MonitorResultDescription
+                    updates={updates}
+                    isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+                  />
+                )
+              }
+            />
+          </Col>
+          <Col span={5} className="flex justify-end">
+            {!!lastMonitoredDistance && (
+              <Tooltip title={formattedLastMonitored}>
+                <Text type="secondary" data-testid="monitor-date">
+                  <span className="hidden lg:inline">Last scan: </span>
+                  {lastMonitoredDistance}
+                </Text>
+              </Tooltip>
+            )}
+          </Col>
+          <Col
+            span={heliosV2Enabled ? 5 : 2}
+            className="flex items-center justify-end"
+          >
+            {heliosV2Enabled && showConfidenceRow && (
+              <>
                 <Button
                   type="link"
                   className="p-0"
-                  data-testid={`review-button-${monitorSummary.key}`}
+                  icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
+                  iconPosition="end"
+                  onClick={() =>
+                    setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
+                  }
+                  aria-haspopup="true"
+                  aria-expanded={isConfidenceRowExpanded}
+                  aria-controls={`confidence-row-${key}`}
+                  aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
                 >
-                  Review
+                  <Space>
+                    <SparkleIcon />
+                    Findings
+                  </Space>
                 </Button>
-              </NextLink>
-            </Col>
-          </Row>
-          {heliosV2Enabled && (
-            <AnimatePresence initial={false}>
-              {showConfidenceRow &&
-                isConfidenceRowExpanded &&
-                confidenceCounts && (
-                  // TODO: [ENG-2136] Add a custom Expanded/Collapsed animation component in FidesUI
-                  <motion.div
-                    key="confidence-row"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <ConfidenceRow
-                      confidenceCounts={confidenceCounts}
-                      reviewHref={href}
-                      monitorId={key}
-                      className="mt-6"
-                      id={`confidence-row-${key}`}
-                    />
-                  </motion.div>
-                )}
-            </AnimatePresence>
-          )}
-        </Flex>
-      </Skeleton>
+                <Divider type="vertical" orientationMargin={0} />
+              </>
+            )}
+            <NextLink key="review" href={href} passHref legacyBehavior>
+              <Button
+                type="link"
+                className="p-0"
+                data-testid={`review-button-${monitorSummary.key}`}
+              >
+                Review
+              </Button>
+            </NextLink>
+          </Col>
+        </Row>
+        {heliosV2Enabled && showConfidenceRow && confidenceCounts && (
+          <ExpandCollapse
+            isExpanded={isConfidenceRowExpanded}
+            motionKey={`confidence-row-${key}`}
+          >
+            <ConfidenceRow
+              confidenceCounts={confidenceCounts}
+              reviewHref={href}
+              monitorId={key}
+              className="mt-6"
+              id={`confidence-row-${key}`}
+            />
+          </ExpandCollapse>
+        )}
+      </Flex>
     </List.Item>
   );
 };

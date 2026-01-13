@@ -1,9 +1,4 @@
-import {
-  AntMenuProps as MenuProps,
-  Icons,
-  useAntModal,
-  useMessage,
-} from "fidesui";
+import { Icons, MenuProps, useMessage, useModal } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { pluralize } from "~/features/common/utils";
@@ -91,7 +86,7 @@ export const usePrivacyRequestBulkActions = ({
   );
 
   const messageApi = useMessage();
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();

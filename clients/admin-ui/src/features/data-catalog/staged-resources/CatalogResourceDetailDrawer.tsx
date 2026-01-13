@@ -1,10 +1,10 @@
 import {
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerCloseButton as DrawerCloseButton,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
 } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
@@ -32,7 +32,7 @@ const CatalogResourceDetailDrawer = ({
   const showDataCategories =
     (resourceType === StagedResourceTypeValue.FIELD ||
       resourceType === StagedResourceTypeValue.TABLE) &&
-    status === CatalogResourceStatus.IN_REVIEW;
+    status === CatalogResourceStatus.CLASSIFIED;
 
   return (
     <Drawer isOpen={!!resource} onClose={onClose} size="md">

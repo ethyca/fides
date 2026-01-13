@@ -1,4 +1,10 @@
-import { AntButton as Button, Box, Center, Stack, Text } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/routes";
 

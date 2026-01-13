@@ -1,4 +1,4 @@
-import { AntButton as Button, AntEmpty as Empty } from "fidesui";
+import { Button, Empty } from "fidesui";
 import NextLink from "next/link";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";

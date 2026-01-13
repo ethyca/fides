@@ -42,8 +42,8 @@ describe("Home", () => {
       IS_GEOLOCATION_ENABLED: true,
       GEOLOCATION_API_URL: geolocationApiUrl,
     };
-    cy.visit("/");
-    cy.overrideSettings(settings);
+
+    // Set up intercepts BEFORE visiting the page to avoid race conditions
     cy.intercept("GET", geolocationApiUrl, {
       fixture: "consent/geolocation.json",
     }).as("getGeolocation");
@@ -52,8 +52,17 @@ describe("Home", () => {
       body: undefined,
     }).as("getExperience");
 
-    cy.getByTestId("card").contains("Manage your consent").click();
-    cy.getByTestId("notice-empty-state");
+    cy.visit("/");
+    cy.overrideSettings(settings);
+
+    // Wait for the API calls to complete before interacting with the page
+    cy.wait("@getGeolocation");
+    cy.wait("@getExperience");
+
+    cy.getByTestId("card")
+      .contains("Manage your consent")
+      .click({ force: true });
+    cy.getByTestId("notice-empty-state").should("be.visible");
   });
 
   describe("when handling errors", () => {

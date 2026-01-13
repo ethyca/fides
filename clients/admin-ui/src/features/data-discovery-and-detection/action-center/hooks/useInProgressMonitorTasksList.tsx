@@ -1,4 +1,4 @@
-import { AntEmpty as Empty } from "fidesui";
+import { Empty } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
 import { useSearch } from "~/features/common/hooks";
@@ -7,7 +7,11 @@ import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
-export const useInProgressMonitorTasksList = () => {
+export const useInProgressMonitorTasksList = ({
+  filters,
+}: {
+  filters?: { monitorId?: string };
+}) => {
   const { resetPagination, pageIndex, pageSize, paginationProps } =
     useAntPagination();
 
@@ -42,9 +46,12 @@ export const useInProgressMonitorTasksList = () => {
     [setSearchQuery, resetPagination],
   );
 
-  const updateStatusFilters = useCallback((filters: ExecutionLogStatus[]) => {
-    setStagedStatusFilters(filters);
-  }, []);
+  const updateStatusFilters = useCallback(
+    (newStatusFilters: ExecutionLogStatus[]) => {
+      setStagedStatusFilters(newStatusFilters);
+    },
+    [],
+  );
 
   const updateShowDismissed = useCallback((show: boolean) => {
     setStagedShowDismissed(show);
@@ -82,7 +89,7 @@ export const useInProgressMonitorTasksList = () => {
     {
       page: pageIndex,
       size: pageSize,
-      search: searchQuery,
+      search: filters?.monitorId ?? searchQuery,
       statuses:
         appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
       return_dismissed: appliedShowDismissed,

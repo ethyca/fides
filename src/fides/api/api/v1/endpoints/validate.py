@@ -2,7 +2,7 @@
 Contains all of the endpoints required to validate credentials.
 """
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Callable, Dict, Union
 
 from fastapi import Response, Security, status
@@ -21,7 +21,7 @@ from fides.connectors.models import (
 )
 
 
-class ValidationTarget(str, Enum):
+class ValidationTarget(StrEnum):
     """
     Allowed targets for the validate endpoint
     """
@@ -40,7 +40,7 @@ class ValidateRequest(BaseModel):
     target: ValidationTarget
 
 
-class ValidationStatus(str, Enum):
+class ValidationStatus(StrEnum):
     """
     Validate endpoint response status
     """
@@ -128,4 +128,4 @@ async def validate_okta(okta_config: OktaConfig) -> None:
     """
     import fides.connectors.okta as okta_connector
 
-    await okta_connector.validate_credentials(okta_config=okta_config)
+    okta_connector.validate_credentials(okta_config=okta_config)

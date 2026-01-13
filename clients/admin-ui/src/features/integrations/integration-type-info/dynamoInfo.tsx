@@ -1,4 +1,4 @@
-import { Code, ListItem } from "fidesui";
+import { ChakraCode as Code, ChakraListItem as ListItem } from "fidesui";
 
 import {
   InfoHeading,

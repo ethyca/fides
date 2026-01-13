@@ -3,31 +3,30 @@
  */
 
 import {
-  AntButton as Button,
-  AntDefaultOptionType as DefaultOptionType,
-  AntSwitch as Switch,
-  AntSwitchProps as SwitchProps,
-  Box,
-  Checkbox,
-  Code,
+  Button,
+  ChakraBox as Box,
+  ChakraCode as Code,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraFormErrorMessage as FormErrorMessage,
+  ChakraFormErrorMessageProps as FormErrorMessageProps,
+  ChakraFormLabel as FormLabel,
+  ChakraFormLabelProps as FormLabelProps,
+  chakraForwardRef as forwardRef,
+  ChakraGrid as Grid,
+  ChakraHStack as HStack,
+  ChakraInput as Input,
+  ChakraInputGroup as InputGroup,
+  ChakraInputProps as InputProps,
+  ChakraInputRightElement as InputRightElement,
+  ChakraText as Text,
+  ChakraTextarea as Textarea,
+  ChakraTextareaProps as TextareaProps,
+  ChakraVStack as VStack,
+  DefaultOptionType,
   EyeIcon,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormErrorMessageProps,
-  FormLabel,
-  FormLabelProps,
-  forwardRef,
-  Grid,
-  HStack,
-  Input,
-  InputGroup,
-  InputProps,
-  InputRightElement,
-  Text,
-  Textarea,
-  TextareaProps,
-  VStack,
+  Switch,
+  SwitchProps,
 } from "fidesui";
 import {
   Field,
@@ -476,47 +475,6 @@ export const CustomSwitch = ({
         {innerSwitch}
         <InfoTooltip label={tooltip} />
       </Box>
-    </FormControl>
-  );
-};
-
-export const CustomCheckbox = ({
-  label,
-  tooltip,
-  isDisabled,
-  ...props
-}: Omit<CustomSwitchProps, "variant"> &
-  Omit<FieldHookConfig<boolean>, "onChange">) => {
-  const [field, meta] = useField({
-    name: props.name,
-    value: props.value,
-    type: "checkbox",
-  });
-  const isInvalid = !!(meta.touched && meta.error);
-
-  return (
-    <FormControl isInvalid={isInvalid}>
-      <Flex alignItems="center">
-        <Checkbox
-          name={field.name}
-          isChecked={field.checked}
-          onChange={(e) => {
-            field.onChange(e);
-            props.onChange?.(e.target.checked);
-          }}
-          onBlur={field.onBlur}
-          data-testid={`input-${field.name}`}
-          disabled={isDisabled}
-          colorScheme="complimentary"
-          mr="2"
-        >
-          <Text fontSize="sm" fontWeight="medium">
-            {label}
-          </Text>
-        </Checkbox>
-
-        <InfoTooltip label={tooltip} />
-      </Flex>
     </FormControl>
   );
 };

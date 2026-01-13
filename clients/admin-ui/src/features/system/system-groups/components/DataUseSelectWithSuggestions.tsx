@@ -1,9 +1,9 @@
 import {
-  AntDefaultOptionType as DefaultOptionType,
-  AntFlex as Flex,
-  AntSelect as Select,
-  AntSpace as Space,
+  DefaultOptionType,
+  Flex,
   Icons,
+  Select,
+  Space,
   SparkleIcon,
 } from "fidesui";
 import { useField } from "formik";

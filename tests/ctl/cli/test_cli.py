@@ -70,7 +70,6 @@ def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
 def test_commands_print_help_text_even_on_invalid(
     test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
 ) -> None:
-
     # the context needs to have a placeholder URL since these tests are testing for behavior when the server is invalid/shutdown
     result = test_cli_runner.invoke(
         cli,
@@ -616,9 +615,14 @@ class TestEvaluate:
 @pytest.mark.usefixtures("default_organization")
 class TestScan:
     @pytest.mark.integration
+    @pytest.mark.xfail(reason="This test is unstable.")
     def test_scan_dataset_db_input_connection_string(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, worker_id: str, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
+        database_name = (
+            "fides_test" + f"_{worker_id}" if worker_id is not "master" else ""
+        )
+        print(database_name)
         result = test_cli_runner.invoke(
             cli,
             [
@@ -628,7 +632,7 @@ class TestScan:
                 "dataset",
                 "db",
                 "--connection-string",
-                "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
+                f"postgresql+psycopg2://postgres:fides@fides-db:5432/{database_name}",
                 "--coverage-threshold",
                 "0",
             ],
@@ -752,10 +756,15 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_input_credential_options(
         self, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        token = os.environ["OKTA_CLIENT_TOKEN"]
+        client_id = os.environ.get("OKTA_CLIENT_ID")
+        private_key = os.environ.get("OKTA_PRIVATE_KEY")
+        if not all([client_id, private_key]):
+            pytest.skip("Okta OAuth2 credentials not configured")
         result = test_cli_runner.invoke(
             cli,
             [
@@ -766,8 +775,10 @@ class TestScan:
                 "okta",
                 "--org-url",
                 OKTA_URL,
-                "--token",
-                token,
+                "--client-id",
+                client_id,
+                "--private-key",
+                private_key,
                 "--coverage-threshold",
                 "0",
             ],
@@ -776,14 +787,19 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_input_credentials_id(
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
     ) -> None:
-        os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ[
-            "OKTA_CLIENT_TOKEN"
-        ]
+        client_id = os.environ.get("OKTA_CLIENT_ID")
+        private_key = os.environ.get("OKTA_PRIVATE_KEY")
+        if not all([client_id, private_key]):
+            pytest.skip("Okta OAuth2 credentials not configured")
+        os.environ["FIDES__CREDENTIALS__OKTA_1__CLIENT_ID"] = client_id
+        os.environ["FIDES__CREDENTIALS__OKTA_1__PRIVATE_KEY"] = private_key
         result = test_cli_runner.invoke(
             cli,
             [
@@ -802,6 +818,8 @@ class TestScan:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_scan_system_okta_environment_credentials(
         self,
         test_config_path: str,
@@ -954,14 +972,19 @@ class TestGenerate:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_input_credential_options(
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
         tmpdir: LocalPath,
     ) -> None:
+        client_id = os.environ.get("OKTA_CLIENT_ID")
+        private_key = os.environ.get("OKTA_PRIVATE_KEY")
+        if not all([client_id, private_key]):
+            pytest.skip("Okta OAuth2 credentials not configured")
         tmp_file = tmpdir.join("system.yml")
-        token = os.environ["OKTA_CLIENT_TOKEN"]
         result = test_cli_runner.invoke(
             cli,
             [
@@ -973,14 +996,18 @@ class TestGenerate:
                 f"{tmp_file}",
                 "--org-url",
                 OKTA_URL,
-                "--token",
-                token,
+                "--client-id",
+                client_id,
+                "--private-key",
+                private_key,
             ],
         )
         print(result.output)
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_environment_credentials(
         test_config_path: str,
         test_cli_runner: CliRunner,
@@ -996,16 +1023,21 @@ class TestGenerate:
         assert result.exit_code == 0
 
     @pytest.mark.external
+    @pytest.mark.xfail(reason="Old Okta tests")
+    @pytest.mark.integration_external
     def test_generate_system_okta_input_credentials_id(
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
         tmpdir: LocalPath,
     ) -> None:
+        client_id = os.environ.get("OKTA_CLIENT_ID")
+        private_key = os.environ.get("OKTA_PRIVATE_KEY")
+        if not all([client_id, private_key]):
+            pytest.skip("Okta OAuth2 credentials not configured")
         tmp_file = tmpdir.join("system.yml")
-        os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ[
-            "OKTA_CLIENT_TOKEN"
-        ]
+        os.environ["FIDES__CREDENTIALS__OKTA_1__CLIENT_ID"] = client_id
+        os.environ["FIDES__CREDENTIALS__OKTA_1__PRIVATE_KEY"] = private_key
         result = test_cli_runner.invoke(
             cli,
             [

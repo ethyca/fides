@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import lru_cache
 from os.path import dirname, join
 from typing import Any, Dict, Iterable, List, Optional, Set, Union
@@ -432,10 +432,9 @@ def get_location_by_id(location: str) -> Optional[Location]:
 
 # dynamically create an enum based on definitions loaded from YAML
 # This is a combination of "locations" and "location groups" for use on Privacy Experiences
-PrivacyNoticeRegion = Enum(  # type: ignore[misc]
+PrivacyNoticeRegion = StrEnum(  # type: ignore[misc]
     "PrivacyNoticeRegion",
     [(location.id, location.id) for location in privacy_notice_regions_by_id.values()],
-    type=str,
 )
 
 # Create a notice region enum that includes regions we no longer support but still preserve

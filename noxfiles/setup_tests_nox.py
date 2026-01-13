@@ -1,6 +1,5 @@
+from dataclasses import dataclass
 from typing import Optional
-
-from nox import Session
 
 from constants_nox import (
     CI_ARGS_EXEC,
@@ -13,6 +12,7 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
+from nox import Session
 from run_infrastructure import (
     API_TEST_DIR,
     OPS_API_TEST_DIRS,
@@ -21,28 +21,98 @@ from run_infrastructure import (
 )
 
 
-def pytest_lib(session: Session, coverage_arg: str) -> None:
+@dataclass
+class CoverageConfig:
+    report_format: str = "xml"
+    cov_name: str = "fides"
+    branch_coverage: bool = True
+    skip_on_fail: bool = True
+
+    def __str__(self):
+        return " ".join(self.args)
+
+    @property
+    def args(self) -> list[str]:
+        return [
+            f"--cov={self.cov_name}",
+            f"--cov-report={self.report_format}",
+            "--cov-branch" if self.branch_coverage else "",
+            "--no-cov-on-fail" if self.skip_on_fail else "",
+        ]
+
+
+@dataclass
+class XdistConfig:
+    parallel_runners: str = "auto"
+
+    def __str__(self):
+        return " ".join(self.args)
+
+    @property
+    def args(self) -> list[str]:
+        return ["-n", self.parallel_runners]
+
+
+@dataclass
+class ReportConfig:
+    report_file: str = "test_report.xml"
+    report_format: str = "xml"
+
+    def __str__(self):
+        return " ".join(self.args)
+
+    @property
+    def args(self) -> list[str]:
+        if self.report_format == "xml":
+            return [
+                "--junitxml",
+                self.report_file,
+            ]
+
+        return []
+
+
+@dataclass
+class PytestConfig:
+    xdist_config: Optional[XdistConfig] = None
+    coverage_config: Optional[CoverageConfig] = None
+    report_config: Optional[ReportConfig] = None
+    suppress_stdout: bool = True
+    suppress_warnings: bool = True
+
+    @property
+    def args(self) -> list[str]:
+        return [
+            *self.xdist_config.args,
+            *self.coverage_config.args,
+            *self.report_config.args,
+            "-x",
+            "-s" if self.suppress_stdout else "",
+            "-W ignore" if self.suppress_warnings else "",
+        ]
+
+
+def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
     """Runs lib tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
         *EXEC,
         "pytest",
-        coverage_arg,
+        *pytest_config.args,
         "tests/lib/",
     )
     session.run(*run_command, external=True)
 
 
-def pytest_nox(session: Session, coverage_arg: str) -> None:
+def pytest_nox(session: Session, pytest_config: PytestConfig) -> None:
     """Runs any tests of nox commands themselves."""
-    # the nox tests don't run with coverage, override the provided arg
-    coverage_arg = "--no-cov"
-    run_command = ("pytest", coverage_arg, "noxfiles/")
+    # the nox tests don't run with coverage or xdist so just add the reporting config here
+    run_command = ("pytest", *pytest_config.report_config.args, "noxfiles/")
     session.run(*run_command, external=True)
 
 
-def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
+def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None:
     """Runs ctl tests."""
     session.notify("teardown")
     if mark == "external":
@@ -73,7 +143,9 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "AWS_DEFAULT_REGION",
             "-e",
-            "OKTA_CLIENT_TOKEN",
+            "OKTA_CLIENT_ID",
+            "-e",
+            "OKTA_PRIVATE_KEY",
             "-e",
             "BIGQUERY_CONFIG",
             "-e",
@@ -85,7 +157,8 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
-            coverage_arg,
+            *pytest_config.coverage_config.args,
+            *pytest_config.report_config.args,
             "-m",
             "external",
             "tests/ctl",
@@ -93,12 +166,18 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         )
         session.run(*run_command, external=True)
     else:
+        import copy
+
+        # Don't use xdist for this one
+        local_pytest_config = copy.copy(pytest_config)
+        local_pytest_config.xdist_config.parallel_runners = "0"
+
         session.run(*START_APP, external=True)
         session.run(*LOGIN, external=True)
         run_command = (
             *EXEC,
             "pytest",
-            coverage_arg,
+            *local_pytest_config.args,
             "tests/ctl/",
             "-m",
             mark,
@@ -110,7 +189,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
 def pytest_ops(
     session: Session,
     mark: str,
-    coverage_arg: str,
+    pytest_config: PytestConfig,
     subset_dir: Optional[str] = None,
 ) -> None:
     """Runs fidesops tests."""
@@ -121,31 +200,27 @@ def pytest_ops(
             run_command = (
                 *EXEC,
                 "pytest",
-                coverage_arg,
+                *pytest_config.args,
                 *OPS_API_TEST_DIRS,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
-                "-n",
-                "4",
             )
         elif subset_dir == "non-api":
             ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
             run_command = (
                 *EXEC,
                 "pytest",
-                coverage_arg,
+                *pytest_config.args,
                 OPS_TEST_DIR,
                 *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
-                "-n",
-                "4",
             )
         else:
             run_command = (
                 *EXEC,
                 "pytest",
-                coverage_arg,
+                *pytest_config.args,
                 OPS_TEST_DIR,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
@@ -223,7 +298,9 @@ def pytest_ops(
             "-e",
             "OKTA_ORG_URL",
             "-e",
-            "OKTA_API_TOKEN",
+            "OKTA_CLIENT_ID",
+            "-e",
+            "OKTA_PRIVATE_KEY",
             "-e",
             "RDS_MYSQL_AWS_ACCESS_KEY_ID",
             "-e",
@@ -271,7 +348,9 @@ def pytest_ops(
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
-            coverage_arg,
+            # Don't use xdist for these
+            *pytest_config.coverage_config.args,
+            *pytest_config.report_config.args,
             OPS_TEST_DIR,
             "-m",
             "integration_external",
@@ -303,7 +382,9 @@ def pytest_ops(
             "pytest",
             "--reruns",
             "3",
-            coverage_arg,
+            # Don't use xdist for these
+            *pytest_config.coverage_config.args,
+            *pytest_config.report_config.args,
             OPS_TEST_DIR,
             "-m",
             "integration_saas",
@@ -312,14 +393,14 @@ def pytest_ops(
         session.run(*run_command, external=True)
 
 
-def pytest_api(session: Session, coverage_arg: str) -> None:
+def pytest_api(session: Session, pytest_config: PytestConfig) -> None:
     """Runs tests under /tests/api/"""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
         *EXEC,
         "pytest",
-        coverage_arg,
+        *pytest_config.args,
         API_TEST_DIR,
         "-m",
         "not integration and not integration_external and not integration_saas",
@@ -327,14 +408,14 @@ def pytest_api(session: Session, coverage_arg: str) -> None:
     session.run(*run_command, external=True)
 
 
-def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
+def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
     """Runs unit tests from smaller test directories."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
         *EXEC,
         "pytest",
-        coverage_arg,
+        *pytest_config.args,
         "tests/service/",
         "tests/task/",
         "tests/util/",
@@ -344,7 +425,9 @@ def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
     session.run(*run_command, external=True)
 
 
-def pytest_misc_integration(session: Session, mark: str, coverage_arg: str) -> None:
+def pytest_misc_integration(
+    session: Session, mark: str, pytest_config: PytestConfig
+) -> None:
     """Runs integration tests from smaller test directories."""
     session.notify("teardown")
     if mark == "external":
@@ -389,7 +472,7 @@ def pytest_misc_integration(session: Session, mark: str, coverage_arg: str) -> N
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
-            coverage_arg,
+            *pytest_config.args,
             "tests/qa/",
             "tests/service/",
             "tests/task/",

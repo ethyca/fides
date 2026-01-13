@@ -1,4 +1,4 @@
-import { AntMenu as Menu } from "fidesui";
+import { Menu } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useAppSelector } from "~/app/hooks";

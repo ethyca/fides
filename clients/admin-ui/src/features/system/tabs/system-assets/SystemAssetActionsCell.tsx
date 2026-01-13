@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
+  Button,
   ConfirmationModal,
-  useDisclosure,
-  useToast,
+  Flex,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";

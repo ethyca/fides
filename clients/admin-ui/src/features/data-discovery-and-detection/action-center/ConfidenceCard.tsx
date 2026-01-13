@@ -1,12 +1,4 @@
-import {
-  AntAvatar as Avatar,
-  AntButton as Button,
-  AntCard as Card,
-  AntSpace as Space,
-  AntText as Text,
-  Icons,
-  SparkleIcon,
-} from "fidesui";
+import { Avatar, Button, Card, Icons, Space, SparkleIcon, Text } from "fidesui";
 import NextLink from "next/link";
 import { ReactNode } from "react";
 
@@ -66,10 +58,10 @@ const getActions = ({
         type="text"
         size="small"
         icon={<Icons.CheckmarkOutline />}
-        aria-label={`Confirm all ${item.label} fields`}
+        aria-label={`Approve all ${item.label} fields`}
         onClick={onConfirmAll}
       >
-        Confirm
+        Approve
       </Button>,
     );
   }
