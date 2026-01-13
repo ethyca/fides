@@ -17,10 +17,11 @@ depends_on = None
 
 
 def upgrade():
-    # Add config_field_id to manual_task_conditional_dependency
+    # Add config_field_key to manual_task_conditional_dependency
+    # This stores the field_key string rather than the config_field_id UUID
     op.add_column(
         "manual_task_conditional_dependency",
-        sa.Column("config_field_id", sa.String(), nullable=True),
+        sa.Column("config_field_key", sa.String(), nullable=True),
     )
     op.drop_constraint(
         "uq_manual_task_conditional_dependency",
@@ -31,55 +32,39 @@ def upgrade():
         "ix_manual_task_conditional_dependency_manual_task_id",
         table_name="manual_task_conditional_dependency",
     )
-    # Partial unique index for field-level conditions (when config_field_id IS NOT NULL)
+    # Partial unique index for field-level conditions (when config_field_key IS NOT NULL)
     op.create_index(
         "ix_manual_task_cond_dep_task_field",
         "manual_task_conditional_dependency",
-        ["manual_task_id", "config_field_id"],
+        ["manual_task_id", "config_field_key"],
         unique=True,
-        postgresql_where=sa.text("config_field_id IS NOT NULL"),
+        postgresql_where=sa.text("config_field_key IS NOT NULL"),
     )
-    # Partial unique index for task-level conditions (when config_field_id IS NULL)
+    # Partial unique index for task-level conditions (when config_field_key IS NULL)
     op.create_index(
         "ix_manual_task_cond_dep_task_only",
         "manual_task_conditional_dependency",
         ["manual_task_id"],
         unique=True,
-        postgresql_where=sa.text("config_field_id IS NULL"),
+        postgresql_where=sa.text("config_field_key IS NULL"),
     )
     op.create_index(
-        op.f("ix_manual_task_conditional_dependency_config_field_id"),
+        op.f("ix_manual_task_conditional_dependency_config_field_key"),
         "manual_task_conditional_dependency",
-        ["config_field_id"],
+        ["config_field_key"],
         unique=False,
-    )
-    op.create_foreign_key(
-        "fk_manual_task_cond_dep_config_field_id",
-        "manual_task_conditional_dependency",
-        "manual_task_config_field",
-        ["config_field_id"],
-        ["id"],
-        ondelete="CASCADE",
     )
 
-    # Add config_field_id to manual_task_reference
+    # Add config_field_key to manual_task_reference
     op.add_column(
         "manual_task_reference",
-        sa.Column("config_field_id", sa.String(), nullable=True),
+        sa.Column("config_field_key", sa.String(), nullable=True),
     )
     op.create_index(
-        "ix_manual_task_reference_config_field_id",
+        "ix_manual_task_reference_config_field_key",
         "manual_task_reference",
-        ["config_field_id"],
+        ["config_field_key"],
         unique=False,
-    )
-    op.create_foreign_key(
-        "fk_manual_task_reference_config_field_id",
-        "manual_task_reference",
-        "manual_task_config_field",
-        ["config_field_id"],
-        ["id"],
-        ondelete="CASCADE",
     )
 
     # Migrate config_type values from ManualTaskConfigurationType to ActionType
@@ -109,11 +94,13 @@ def downgrade():
     # Remove execution_timing from manual_task_config_field
     op.drop_column("manual_task_config_field", "execution_timing")
     # Revert config_type values from ActionType back to ManualTaskConfigurationType
+    # Note: consent configs created after upgrade are converted to access_privacy_request
+    # as there is no equivalent in the old ManualTaskConfigurationType enum
     op.execute(
         """
         UPDATE manual_task_config
         SET config_type = 'access_privacy_request'
-        WHERE config_type = 'access'
+        WHERE config_type IN ('access', 'consent')
     """
     )
     op.execute(
@@ -124,48 +111,31 @@ def downgrade():
     """
     )
 
-    # Remove config_field_id from manual_task_reference
-    # Use DO block to handle either constraint name
-    op.execute(
-        """
-        DO $$
-        BEGIN
-            IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_manual_task_reference_config_field_id') THEN
-                ALTER TABLE manual_task_reference DROP CONSTRAINT fk_manual_task_reference_config_field_id;
-            ELSIF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'manual_task_reference_config_field_id_fkey') THEN
-                ALTER TABLE manual_task_reference DROP CONSTRAINT manual_task_reference_config_field_id_fkey;
-            END IF;
-        END $$;
-    """
-    )
+    # Remove config_field_key from manual_task_reference
     op.drop_index(
-        "ix_manual_task_reference_config_field_id", table_name="manual_task_reference"
+        "ix_manual_task_reference_config_field_key", table_name="manual_task_reference"
     )
-    op.drop_column("manual_task_reference", "config_field_id")
+    op.drop_column("manual_task_reference", "config_field_key")
 
-    # Remove config_field_id from manual_task_conditional_dependency
-    # Use DO block to handle either constraint name
-    op.execute(
-        """
-        DO $$
-        BEGIN
-            IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_manual_task_cond_dep_config_field_id') THEN
-                ALTER TABLE manual_task_conditional_dependency DROP CONSTRAINT fk_manual_task_cond_dep_config_field_id;
-            ELSIF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'manual_task_conditional_dependency_config_field_id_fkey') THEN
-                ALTER TABLE manual_task_conditional_dependency DROP CONSTRAINT manual_task_conditional_dependency_config_field_id_fkey;
-            END IF;
-        END $$;
-    """
-    )
+    # Remove config_field_key from manual_task_conditional_dependency
     op.drop_index(
-        op.f("ix_manual_task_conditional_dependency_config_field_id"),
+        op.f("ix_manual_task_conditional_dependency_config_field_key"),
         table_name="manual_task_conditional_dependency",
     )
-    # Drop indexes - handle both old (non-partial) and new (partial) configurations
+    # Drop partial indexes
     op.execute(
         """
         DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_field;
         DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_only;
+    """
+    )
+    # Delete field-level conditional dependencies before dropping config_field_key column.
+    # The old schema only supports one task-level condition per manual_task_id, so we must
+    # remove field-level conditions to avoid unique constraint violations.
+    op.execute(
+        """
+        DELETE FROM manual_task_conditional_dependency
+        WHERE config_field_key IS NOT NULL
     """
     )
     # Recreate the original basic index that was dropped in upgrade
@@ -180,4 +150,4 @@ def downgrade():
         "manual_task_conditional_dependency",
         ["manual_task_id"],
     )
-    op.drop_column("manual_task_conditional_dependency", "config_field_id")
+    op.drop_column("manual_task_conditional_dependency", "config_field_key")

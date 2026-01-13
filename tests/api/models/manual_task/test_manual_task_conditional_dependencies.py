@@ -201,8 +201,8 @@ def field_level_condition_leaf() -> ConditionLeaf:
     )
 
 
-class TestGetConditionTreeWithConfigFieldId:
-    """Test get_condition_tree method with config_field_id parameter"""
+class TestGetConditionTreeWithConfigFieldKey:
+    """Test get_condition_tree method with config_field_key parameter"""
 
     def test_get_task_level_condition_tree(
         self,
@@ -210,7 +210,7 @@ class TestGetConditionTreeWithConfigFieldId:
         manual_task: ManualTask,
         sample_condition_leaf: ConditionLeaf,
     ):
-        """Test getting task-level condition tree (config_field_id=None)"""
+        """Test getting task-level condition tree (config_field_key=None)"""
         ManualTaskConditionalDependency.create(
             db=db,
             data={
@@ -219,7 +219,7 @@ class TestGetConditionTreeWithConfigFieldId:
             },
         )
 
-        # Get task-level condition (default behavior, config_field_id not specified)
+        # Get task-level condition (default behavior, config_field_key not specified)
         result = ManualTaskConditionalDependency.get_condition_tree(
             db, manual_task_id=manual_task.id
         )
@@ -234,19 +234,19 @@ class TestGetConditionTreeWithConfigFieldId:
         manual_task_config_field: ManualTaskConfigField,
         field_level_condition_leaf: ConditionLeaf,
     ):
-        """Test getting field-level condition tree by specifying config_field_id"""
+        """Test getting field-level condition tree by specifying config_field_key"""
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "config_field_id": manual_task_config_field.id,
+                "config_field_key": manual_task_config_field.field_key,
                 "condition_tree": field_level_condition_leaf.model_dump(),
             },
         )
 
-        # Get field-level condition by specifying config_field_id
+        # Get field-level condition by specifying config_field_key
         result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_id=manual_task_config_field.id
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
         )
 
         assert isinstance(result, ConditionLeaf)
@@ -277,7 +277,7 @@ class TestGetConditionTreeWithConfigFieldId:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "config_field_id": manual_task_config_field.id,
+                "config_field_key": manual_task_config_field.field_key,
                 "condition_tree": field_condition,
             },
         )
@@ -291,7 +291,7 @@ class TestGetConditionTreeWithConfigFieldId:
 
         # Get field-level condition
         field_result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_id=manual_task_config_field.id
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
         )
         assert field_result.field_address == "privacy_request.status"
         assert field_result.value == "approved"
@@ -315,7 +315,7 @@ class TestGetConditionTreeWithConfigFieldId:
 
         # Try to get field-level condition that doesn't exist
         result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_id=manual_task_config_field.id
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
         )
 
         assert result is None
@@ -333,7 +333,7 @@ class TestGetConditionTreeWithConfigFieldId:
             db=db,
             data={
                 "manual_task_id": manual_task.id,
-                "config_field_id": manual_task_config_field.id,
+                "config_field_key": manual_task_config_field.field_key,
                 "condition_tree": sample_condition_leaf.model_dump(),
             },
         )
