@@ -18,7 +18,12 @@ const LoginWithOIDC: NextPage = () => {
   const toast = useToast();
 
   useEffect(() => {
-    if (!router.query || !router.query.provider || !router.query.code) {
+    if (
+      !router.query ||
+      !router.query.provider ||
+      !router.query.code ||
+      !router.query.state
+    ) {
       return;
     }
 
