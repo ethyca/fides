@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from enum import Enum, StrEnum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
@@ -76,7 +76,7 @@ class ManualTaskReferenceType(StrEnum):
     # Add more reference types as needed
 
 
-class ManualTaskFieldType(str, Enum):
+class ManualTaskFieldType(StrEnum):
     """Enum for manual task field types."""
 
     text = "text"  # Key-value pairs

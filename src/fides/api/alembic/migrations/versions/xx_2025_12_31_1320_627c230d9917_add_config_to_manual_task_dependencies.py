@@ -129,6 +129,15 @@ def downgrade():
         DROP INDEX IF EXISTS ix_manual_task_cond_dep_task_only;
     """
     )
+    # Delete field-level conditional dependencies before dropping config_field_key column.
+    # The old schema only supports one task-level condition per manual_task_id, so we must
+    # remove field-level conditions to avoid unique constraint violations.
+    op.execute(
+        """
+        DELETE FROM manual_task_conditional_dependency
+        WHERE config_field_key IS NOT NULL
+    """
+    )
     # Recreate the original basic index that was dropped in upgrade
     op.create_index(
         "ix_manual_task_conditional_dependency_manual_task_id",
