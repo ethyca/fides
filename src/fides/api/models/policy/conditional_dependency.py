@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session, relationship
 from fides.api.db.base_class import FidesBase
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
-    ConditionalDependencyError,
     ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
@@ -60,20 +59,6 @@ class PolicyCondition(ConditionalDependencyBase):
             name="uq_policy_condition_policy_id",
         ),
     )
-
-    @classmethod
-    def create(
-        cls,
-        db: Session,
-        *,
-        data: dict[str, Any],
-        check_name: bool = True,
-    ) -> "PolicyCondition":
-        """Create a new PolicyCondition."""
-        try:
-            return super().create(db=db, data=data, check_name=check_name)
-        except Exception as e:
-            raise ConditionalDependencyError(str(e)) from e
 
     @classmethod
     def get_condition_tree(
