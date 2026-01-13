@@ -66,6 +66,19 @@ class RejectAllMechanism(Enum):
     REJECT_CONSENT_ONLY = "reject_consent_only"
 
 
+class ResurfaceBehavior(Enum):
+    """
+    Resurface behavior options - controls when to re-show the banner/modal.
+    Used to configure whether the experience resurfaces after rejection or dismissal.
+    """
+
+    # Resurface the banner after user rejects
+    REJECT = "reject"
+    # Resurface the banner after user dismisses
+    DISMISS = "dismiss"
+    # Note: NULL or empty array means default behavior (no resurfacing)
+
+
 # Fides JS UX Types - there should only be one of these defined per region
 FidesJSUXTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
@@ -108,6 +121,11 @@ class PrivacyExperienceConfigBase:
         nullable=True,
         default=True,
     )  # base is nullable for privacy experience config history
+
+    resurface_behavior = Column(
+        ARRAY(EnumColumn(ResurfaceBehavior)),
+        nullable=True,
+    )
 
     disabled = Column(Boolean, nullable=False, default=True)
 
