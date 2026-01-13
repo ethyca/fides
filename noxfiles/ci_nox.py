@@ -62,7 +62,12 @@ def static_checks(session: nox.Session) -> None:
     ],
 )
 def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
-    """Run the 'ruff' linter and formatter - check (check only), format (sort imports and apply formatting) or sort-imports (only sort imports)."""
+    """
+    Run the 'ruff' linter and formatter. Supported modes:
+    - `check` (check only)
+    - `format` (sort imports and apply formatting)
+    - `sort-imports` (only sort imports).
+    """
     install_requirements(session)
     ruff_arguments = ["src", "tests", "noxfiles", "scripts", "noxfile.py"]
     if session.posargs:
