@@ -30,7 +30,6 @@ const IntegrationDetailView: NextPage = () => {
       skip: !id,
     },
   );
-
   // Fetch connection types for SAAS integration generation
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
   const connectionTypes = connectionTypesData?.items || [];

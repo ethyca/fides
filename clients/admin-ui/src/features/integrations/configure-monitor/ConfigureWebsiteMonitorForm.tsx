@@ -22,7 +22,7 @@ import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-r
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
-  MonitorConfig,
+  EditableMonitorConfig,
   MonitorFrequency,
   WebsiteMonitorParams,
 } from "~/types/api";
@@ -30,7 +30,7 @@ import {
 import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
 
 interface WebsiteMonitorConfig
-  extends Omit<MonitorConfig, "datasource_params"> {
+  extends Omit<EditableMonitorConfig, "datasource_params"> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
 }
@@ -58,10 +58,10 @@ const ConfigureWebsiteMonitorForm = ({
   onClose,
   onSubmit,
 }: {
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   url: string;
   onClose: () => void;
-  onSubmit: (values: MonitorConfig) => Promise<void>;
+  onSubmit: (values: EditableMonitorConfig) => Promise<void>;
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
