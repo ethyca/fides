@@ -88,8 +88,12 @@ const authApi = baseApi.injectEndpoints({
     }),
     loginWithOIDC: build.mutation<LoginResponse, LoginWithOIDCRequest>({
       query: (data) => ({
-        url: `plus/openid-provider/${data.provider}/callback?code=${data.code}&state=${data.state}`,
+        url: `plus/openid-provider/${encodeURIComponent(data.provider)}/callback`,
         method: "GET",
+        params: {
+          code: data.code,
+          state: data.state,
+        },
       }),
       invalidatesTags: () => ["Auth"],
     }),
