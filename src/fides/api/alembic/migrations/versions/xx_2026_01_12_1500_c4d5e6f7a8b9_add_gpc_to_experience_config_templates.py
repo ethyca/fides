@@ -1,7 +1,7 @@
 """Add GPC fields to experience config template translations
 
 Revision ID: c4d5e6f7a8b9
-Revises: b9c8e7f6d5a4
+Revises: 9cf7bb472a7c
 Create Date: 2026-01-12 15:00:00.000000
 
 This migration adds GPC translation fields to the experienceconfigtemplate.translations
@@ -25,7 +25,7 @@ from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "c4d5e6f7a8b9"
-down_revision = "b9c8e7f6d5a4"
+down_revision = "9cf7bb472a7c"
 branch_labels = None
 depends_on = None
 
