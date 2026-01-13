@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed an issue where custom default translations for GPC fields in experience templates could revert to system defaults
+pr: 7214
+labels: ["db-migration"]
