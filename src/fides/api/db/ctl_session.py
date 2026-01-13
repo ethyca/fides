@@ -159,7 +159,7 @@ async_session: Callable[[], AsyncSession] = async_session_factory
 
 # engine is actually an AsyncEngine but apparently the async proxy doesn't properly export connect
 # as async so the type checking complains below in await engine.connect()
-async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine):
+async def warm_async_pool(pool_id: str, pool_size: int, engine: AsyncEngine) -> None:
     logger.info(f"Warming up {pool_id} connection pool with {pool_size} connections...")
     connections = []
     try:
