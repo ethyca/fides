@@ -2197,7 +2197,31 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">498</span>
 <span class="normal">499</span>
 <span class="normal">500</span>
-<span class="normal">501</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2238,7 +2262,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;e70801c7c8434b1ad48ab2e67839251c&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;bead6fec64720f68040c11630e4183e3&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2377,6 +2401,30 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Additional connection parameters used when connecting to the</span>
 <span class="c1"># application database.</span>
 <span class="n">params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="c1"># object</span>
+
+<span class="c1"># Number of concurrent database connections Fides will use for read-</span>
+<span class="c1"># only API requests. Note that the pool begins with no connections, but</span>
+<span class="c1"># as they are requested the connections are maintained and reused up to</span>
+<span class="c1"># this limit.</span>
+<span class="n">async_readonly_database_pool_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Number of additional &#39;overflow&#39; concurrent database connections Fides</span>
+<span class="c1"># will use for read-only API requests if the pool reaches the limit.</span>
+<span class="c1"># These overflow connections are discarded afterwards and not</span>
+<span class="c1"># maintained.</span>
+<span class="n">async_readonly_database_max_overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># If true, the async engine will pre-ping connections to ensure they</span>
+<span class="c1"># are still valid before using them.</span>
+<span class="n">async_readonly_database_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># If true, the async engine will skip rolling back connections when</span>
+<span class="c1"># they are returned to the pool.</span>
+<span class="n">async_readonly_database_pool_skip_rollback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># If true, the async engine will autocommit transactions. This should</span>
+<span class="c1"># effectively be a no-op because it&#39;s a readonly database.</span>
+<span class="n">async_readonly_database_autocommit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#---------------#</span>
 <span class="c1">#-- EXECUTION --#</span>

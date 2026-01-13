@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "e70801c7c8434b1ad48ab2e67839251c" # string
+analytics_id = "bead6fec64720f68040c11630e4183e3" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -178,6 +178,30 @@ user = "defaultuser" # string
 # Additional connection parameters used when connecting to the
 # application database.
 params = {} # object
+
+# Number of concurrent database connections Fides will use for read-
+# only API requests. Note that the pool begins with no connections, but
+# as they are requested the connections are maintained and reused up to
+# this limit.
+async_readonly_database_pool_size = 5 # integer
+
+# Number of additional 'overflow' concurrent database connections Fides
+# will use for read-only API requests if the pool reaches the limit.
+# These overflow connections are discarded afterwards and not
+# maintained.
+async_readonly_database_max_overflow = 10 # integer
+
+# If true, the async engine will pre-ping connections to ensure they
+# are still valid before using them.
+async_readonly_database_pre_ping = true # boolean
+
+# If true, the async engine will skip rolling back connections when
+# they are returned to the pool.
+async_readonly_database_pool_skip_rollback = false # boolean
+
+# If true, the async engine will autocommit transactions. This should
+# effectively be a no-op because it's a readonly database.
+async_readonly_database_autocommit = false # boolean
 
 #---------------#
 #-- EXECUTION --#
