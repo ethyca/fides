@@ -153,7 +153,7 @@ def _create_collection_from_manual_task(
     conditional_field_addresses: set[str] = set()
     for dependency in manual_task.conditional_dependencies:
         # Filter field-level dependencies by config type
-        if dependency.config_field_id is not None and config_types is not None:
+        if dependency.config_field_key is not None and config_types is not None:
             # Get the config type for this field's config
             config_field = dependency.config_field
             if config_field and config_field.config:
