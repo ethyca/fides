@@ -1,14 +1,14 @@
 import {
-  AntDropdown as Dropdown,
-  ChevronDownIcon,
+  ChakraChevronDownIcon as ChevronDownIcon,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraStack as Stack,
+  Dropdown,
   LinkIcon,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  useToast,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useState } from "react";
 

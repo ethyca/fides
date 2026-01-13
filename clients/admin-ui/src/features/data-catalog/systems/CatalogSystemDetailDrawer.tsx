@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
+  Button,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerCloseButton as DrawerCloseButton,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
 } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";

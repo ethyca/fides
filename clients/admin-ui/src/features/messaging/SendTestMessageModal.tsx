@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntModal as Modal,
+  Button,
+  ChakraVStack as VStack,
+  Form,
+  Input,
+  Modal,
   useMessage,
-  VStack,
 } from "fidesui";
 import { useState } from "react";
 

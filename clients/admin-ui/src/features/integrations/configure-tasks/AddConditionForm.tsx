@@ -1,11 +1,11 @@
 import { Dayjs } from "dayjs";
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntRadio as Radio,
-  AntSelect as Select,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  Form,
+  Radio,
   RadioChangeEvent,
+  Select,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 

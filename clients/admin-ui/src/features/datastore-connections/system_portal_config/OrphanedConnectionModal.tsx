@@ -4,19 +4,19 @@ import ConnectionTypeLogo, {
 } from "datastore-connections/ConnectionTypeLogo";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
-  AntButton as Button,
-  Box,
-  Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 

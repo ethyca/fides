@@ -2,7 +2,7 @@
 Contains all of the endpoints required to manage generating resources.
 """
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Security, status
@@ -37,7 +37,7 @@ from fides.core.utils import validate_db_engine
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 
-class ValidTargets(str, Enum):
+class ValidTargets(StrEnum):
     """
     Validation of targets attempted to generate resources from
     """
@@ -50,7 +50,7 @@ class ValidTargets(str, Enum):
     SCYLLADB = "scylla"
 
 
-class GenerateTypes(str, Enum):
+class GenerateTypes(StrEnum):
     """
     Generate Type Enum to capture the discrete possible values
     for a valid type of resource to generate.
@@ -163,7 +163,7 @@ async def generate(
             )
 
         elif generate_target == "okta" and isinstance(generate_config, OktaConfig):
-            generate_results = await generate_okta(
+            generate_results = generate_okta(
                 okta_config=generate_config,
                 organization=organization,
             )
@@ -239,7 +239,7 @@ def generate_dynamodb(
     return [i.model_dump(exclude_none=True) for i in aws_resources]
 
 
-async def generate_okta(
+def generate_okta(
     okta_config: OktaConfig, organization: Organization
 ) -> List[Dict[str, str]]:
     """
@@ -256,7 +256,7 @@ async def generate_okta(
             detail=str(error),
         )
     log.info("Generating systems from Okta")
-    okta_systems = await generate_okta_systems(
+    okta_systems = generate_okta_systems(
         organization=organization, okta_config=okta_config
     )
     return [i.model_dump(exclude_none=True) for i in okta_systems]

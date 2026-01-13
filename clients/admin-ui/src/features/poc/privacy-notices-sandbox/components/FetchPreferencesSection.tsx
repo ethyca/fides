@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntSelect as Select,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, Input, Select, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
@@ -91,7 +85,7 @@ const FetchPreferencesSection = ({
             getCurrentResponse
               ? `GET /api/v3/privacy-preferences/current?identity.email=${email}${
                   selectedNoticeKeys.length > 0
-                    ? `&notice_keys=${selectedNoticeKeys.join(",")}`
+                    ? `&notice_keys=${selectedNoticeKeys.join(",")}&include_descendants=true`
                     : ""
                 }`
               : null

@@ -1,8 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntSelect as Select,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Select, Typography } from "fidesui";
 import { useMemo } from "react";
 
 interface UserOption {

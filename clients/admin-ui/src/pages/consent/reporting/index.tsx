@@ -1,33 +1,25 @@
-/* eslint-disable react/no-unstable-nested-components */
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs, { Dayjs } from "dayjs";
 import {
-  AntButton as Button,
-  AntDateRangePicker as DateRangePicker,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
+  Button,
+  DateRangePicker,
+  Dropdown,
+  Flex,
   Icons,
-  useToast,
+  Table,
+  useChakraToast as useToast,
 } from "fidesui";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import { usePagination } from "~/features/common/hooks";
 import PageHeader from "~/features/common/PageHeader";
 import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
-import {
-  FidesTableV2,
-  TableActionBar,
-  TableSkeletonLoader,
-} from "~/features/common/table/v2";
 import { successToastParams } from "~/features/common/toast";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
 import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetailModal";
-import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
-import { ConsentReportingSchema } from "~/types/api";
+import useConsentReportingColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 
 const ConsentReportingPage = () => {
   const pagination = usePagination();
@@ -59,18 +51,14 @@ const ConsentReportingPage = () => {
     return results;
   }, [data]);
 
-  const onTcfDetailViewClick = (tcfPreferences: any) => {
+  const onTcfDetailViewClick = useCallback((tcfPreferences: any) => {
     setIsConsentTcfDetailModalOpen(true);
     setCurrentTcfPreferences(tcfPreferences);
-  };
+  }, []);
 
-  const columns = useConsentReportingTableColumns({ onTcfDetailViewClick });
-  const tableInstance = useReactTable<ConsentReportingSchema>({
-    getCoreRowModel: getCoreRowModel(),
-    data: privacyPreferences,
-    columns,
-    getRowId: (row) => `${row.id}`,
-    manualPagination: true,
+  // Ant Design table columns
+  const antColumns = useConsentReportingColumns({
+    onTcfDetailViewClick,
   });
 
   const handleClickRefresh = async () => {
@@ -98,78 +86,64 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <div data-testid="consent-reporting" className="overflow-auto">
-        <Flex vertical gap="middle">
-          {isLoading ? (
-            <div className="border p-2">
-              <TableSkeletonLoader rowHeight={26} numRows={10} />
-            </div>
-          ) : (
-            <div>
-              <TableActionBar>
-                <DateRangePicker
-                  placeholder={["From", "To"]}
-                  maxDate={today}
-                  data-testid="input-date-range"
-                  onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
-                    setStartDate(dates && dates[0]);
-                    setEndDate(dates && dates[1]);
-                  }}
-                />
-                <Flex gap={12}>
-                  <Button
-                    icon={<Icons.Download />}
-                    data-testid="download-btn"
-                    onClick={() => setIsDownloadReportModalOpen(true)}
-                    aria-label="Download Consent Report"
-                  />
-                  <Dropdown
-                    menu={{
-                      items: [
-                        {
-                          key: "1",
-                          label: (
-                            <span data-testid="consent-preference-lookup-btn">
-                              Consent preference lookup
-                            </span>
-                          ),
-                          onClick: () => setIsConsentLookupModalOpen(true),
-                        },
-                      ],
-                    }}
-                    overlayStyle={{ width: "220px" }}
-                    trigger={["click"]}
-                  >
-                    <Button
-                      aria-label="Menu"
-                      icon={<Icons.OverflowMenuVertical />}
-                      data-testid="consent-reporting-dropdown-btn"
-                    />
-                  </Dropdown>
-                </Flex>
-              </TableActionBar>
-              <FidesTableV2<ConsentReportingSchema>
-                tableInstance={tableInstance}
-                emptyTableNotice={
-                  <Empty
-                    description="No results."
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    styles={{
-                      image: {
-                        marginBottom: 15,
-                      },
-                    }}
-                  />
-                }
-              />
-            </div>
-          )}
-          <InfinitePaginator
-            disableNext={(data?.items?.length ?? 0) < pageSize}
-            pagination={pagination}
+      <Flex vertical gap="middle">
+        <Flex justify="space-between">
+          <DateRangePicker
+            placeholder={["From", "To"]}
+            maxDate={today}
+            data-testid="input-date-range"
+            onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
+              setStartDate(dates && dates[0]);
+              setEndDate(dates && dates[1]);
+            }}
           />
+          <Flex gap={12}>
+            <Button
+              icon={<Icons.Download />}
+              data-testid="download-btn"
+              onClick={() => setIsDownloadReportModalOpen(true)}
+              aria-label="Download Consent Report"
+            />
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "1",
+                    label: (
+                      <span data-testid="consent-preference-lookup-btn">
+                        Consent preference lookup
+                      </span>
+                    ),
+                    onClick: () => setIsConsentLookupModalOpen(true),
+                  },
+                ],
+              }}
+              overlayStyle={{ width: "220px" }}
+              trigger={["click"]}
+            >
+              <Button
+                aria-label="Menu"
+                icon={<Icons.OverflowMenuVertical />}
+                data-testid="consent-reporting-dropdown-btn"
+              />
+            </Dropdown>
+          </Flex>
         </Flex>
-      </div>
+        <Table
+          columns={antColumns}
+          dataSource={privacyPreferences}
+          rowKey="id"
+          loading={isLoading}
+          pagination={false}
+          data-testid="consent-reporting-table"
+          scroll={{ x: 1590 }}
+          tableLayout="fixed"
+        />
+        <InfinitePaginator
+          disableNext={(data?.items?.length ?? 0) < pageSize}
+          pagination={pagination}
+        />
+      </Flex>
       <ConsentLookupModal
         isOpen={isConsentLookupModalOpen}
         onClose={() => setIsConsentLookupModalOpen(false)}

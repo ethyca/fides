@@ -77,4 +77,5 @@ export interface PrivacyCenterSettings {
     | "enabled_acknowledge_not_supported"
     | "disabled"; // (optional) controls handling of unsupported repeated script loading (defaults to "disabled")
   FIDES_COOKIE_SUFFIX: string | null; // (optional) attaches as suffix to the cookie fides.js uses to store consent preferences in the format `fides_consent_{FIDES_COOKIE_SUFFIX}`
+  FIDES_COOKIE_COMPRESSION: "gzip" | "none"; // (optional) compression method to use for the consent cookie (defaults to "none")
 }

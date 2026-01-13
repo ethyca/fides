@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
+  Button,
   Icons,
-  useDisclosure,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
@@ -66,18 +66,10 @@ const MonitorConfigActionsCell = ({
   };
 
   const handleExecute = async () => {
-    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
-    if (isOktaMonitor) {
-      const result = await executeOktaMonitor({
-        monitor_config_key: monitorId,
-      });
-      toastExecuteResult(result);
-    } else {
-      const result = await executeRegularMonitor({
-        monitor_config_id: monitorId,
-      });
-      toastExecuteResult(result);
-    }
+    const result = isOktaMonitor
+      ? await executeOktaMonitor({ monitor_config_key: monitorId })
+      : await executeRegularMonitor({ monitor_config_id: monitorId });
+    toastExecuteResult(result);
   };
 
   return (

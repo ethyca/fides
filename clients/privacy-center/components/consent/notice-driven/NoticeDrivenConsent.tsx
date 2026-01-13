@@ -16,7 +16,13 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "fides-js";
-import { Accordion, Box, Stack, StackDivider, useToast } from "fidesui";
+import {
+  ChakraAccordion as Accordion,
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  ChakraStackDivider as StackDivider,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -60,14 +66,23 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
-  const cookie = useMemo(() => getOrMakeFidesCookie(), []);
-  const { fides_user_device_id: fidesUserDeviceId } = cookie.identity;
+  const [cookie, setCookie] = useState<FidesCookie | null>(null);
   const [updatePrivacyPreferencesMutationTrigger] =
     useUpdatePrivacyPreferencesMutation();
   const region = useAppSelector(selectUserRegion);
   const { i18n, selectNoticeTranslation, selectExperienceConfigTranslation } =
     useI18n();
   const property = useProperty();
+
+  useEffect(() => {
+    const loadCookie = async () => {
+      const loadedCookie = await getOrMakeFidesCookie();
+      setCookie(loadedCookie);
+    };
+    loadCookie();
+  }, []);
+
+  const fidesUserDeviceId = cookie?.identity.fides_user_device_id ?? "";
 
   const browserIdentities = useMemo(() => {
     const identities = inspectForBrowserIdentities();
@@ -87,6 +102,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   const initialDraftPreferences: NoticeHistoryIdToPreference = useMemo(() => {
     const newPreferences: NoticeHistoryIdToPreference = {};
+    if (!cookie) {
+      return newPreferences;
+    }
     flatPrivacyNoticesList.forEach((notice) => {
       const pref: UserConsentPreference | undefined = resolveConsentValue(
         notice,
@@ -226,6 +244,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
    * 3. Delete any cookies that have been opted out of
    */
   const handleSave = async () => {
+    if (!cookie) {
+      return;
+    }
     // Reconnect preferences to notices
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
@@ -338,6 +359,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       ...{ [historyId]: pref },
     }));
   };
+
+  if (!cookie) {
+    return null;
+  }
 
   return (
     <Box width={{ base: "full", lg: "700px" }}>

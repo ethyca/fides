@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed request body serialization for filtered field action exclusions
+pr: 7212
+labels: []

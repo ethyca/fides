@@ -86,10 +86,23 @@ interface IdentityProviderMonitorResultsQueryParams {
   page?: number;
   size?: number;
   search?: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  status?: string | string[];
+  vendor_id?: string | string[];
 }
 
 interface IdentityProviderMonitorExecuteParams {
   monitor_config_key: string;
+}
+
+interface IdentityProviderResourceActionParam {
+  monitor_config_key: string;
+  urn: string;
+}
+
+interface IdentityProviderResourceBulkActionParam {
+  monitor_config_key: string;
+  urns: string[];
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -291,7 +304,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Monitor Field Details",
       ],
     }),
-    approveStagedResources: build.mutation<
+    reviewStagedResources: build.mutation<
       any,
       BulkResourceActionQueryParams & {
         monitor_config_key: string;
@@ -299,7 +312,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     >({
       query: ({ staged_resource_urns, monitor_config_key }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/${monitor_config_key}/approve`,
+        url: `/plus/discovery-monitor/${monitor_config_key}/review`,
         body: {
           staged_resource_urns,
         },
@@ -353,7 +366,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
         params,
       }),
-      providesTags: () => ["Discovery Monitor Results"],
+      providesTags: () => ["Identity Provider Monitor Results"],
     }),
     executeIdentityProviderMonitor: build.mutation<
       { monitor_execution_id: string; task_id: string | null },
@@ -364,6 +377,73 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/identity-provider-monitors/${monitor_config_key}/execute`,
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    promoteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/${urn}/promote`,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    muteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
+        body: [urn],
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    unmuteIdentityProviderMonitorResult: build.mutation<
+      any,
+      IdentityProviderResourceActionParam
+    >({
+      query: ({ monitor_config_key, urn }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        body: [urn],
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkPromoteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
+        body: {
+          urns,
+        },
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkMuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
+        body: urns,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
+    bulkUnmuteIdentityProviderMonitorResults: build.mutation<
+      any,
+      IdentityProviderResourceBulkActionParam
+    >({
+      query: ({ monitor_config_key, urns }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        body: urns,
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
     }),
   }),
 });
@@ -385,12 +465,18 @@ export const {
   useUnmuteResourceMutation,
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
-  useApproveStagedResourcesMutation,
+  useReviewStagedResourcesMutation,
   useCreateIdentityProviderMonitorMutation,
   usePutIdentityProviderMonitorMutation,
   useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,
   useExecuteIdentityProviderMonitorMutation,
+  usePromoteIdentityProviderMonitorResultMutation,
+  useMuteIdentityProviderMonitorResultMutation,
+  useUnmuteIdentityProviderMonitorResultMutation,
+  useBulkPromoteIdentityProviderMonitorResultsMutation,
+  useBulkMuteIdentityProviderMonitorResultsMutation,
+  useBulkUnmuteIdentityProviderMonitorResultsMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

@@ -1,4 +1,4 @@
-import { useAntModal, useMessage } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
@@ -11,14 +11,10 @@ import {
   FIELD_ACTION_LABEL,
 } from "./FieldActions.const";
 import { useFieldActionsMutation } from "./monitor-fields.slice";
-import {
-  getActionErrorMessage,
-  getActionModalProps,
-  getActionSuccessMessage,
-} from "./utils";
+import { getActionErrorMessage, getActionModalProps } from "./utils";
 
 export const useConfirmAllFields = (monitorId: string) => {
-  const modalApi = useAntModal();
+  const modalApi = useModal();
   const [bulkAction] = useFieldActionsMutation();
   const messageApi = useMessage();
 
@@ -74,8 +70,8 @@ export const useConfirmAllFields = (monitorId: string) => {
     messageApi.open({
       key,
       type: "success",
-      content: getActionSuccessMessage(actionType, count),
-      duration: 5,
+      content: `${count} ${pluralize(count, "field", "fields")} approved — stronger governance, less busywork.`,
+      duration: 10,
     });
   };
 

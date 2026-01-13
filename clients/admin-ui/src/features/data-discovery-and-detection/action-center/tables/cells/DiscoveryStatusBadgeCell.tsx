@@ -1,4 +1,4 @@
-import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
+import { Tag, Tooltip } from "fidesui";
 
 import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 

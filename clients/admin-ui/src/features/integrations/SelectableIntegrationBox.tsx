@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  AntTypography as Typography,
-  Box,
-  Flex,
-  Text,
-  Wrap,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraWrap as Wrap,
+  Tag,
+  Typography,
 } from "fidesui";
 
 import { useConnectionLogo } from "~/features/common/hooks";

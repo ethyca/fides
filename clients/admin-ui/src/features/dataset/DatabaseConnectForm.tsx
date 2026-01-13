@@ -1,4 +1,10 @@
-import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  useChakraToast as useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";

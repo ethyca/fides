@@ -1,12 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntSpace as Space,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, Form, Input, Space, Tooltip, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";

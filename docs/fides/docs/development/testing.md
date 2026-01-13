@@ -172,7 +172,3 @@ The `fides.toml` file should be used for configurations that should be present f
 The environment will work "out of the box", but can also be configured to enable other features like S3 storage, email notifications, etc.
 
 To configure these, you'll need to edit the `.env` file and provide some secrets - see `example.env` for what is supported.
-
-### Automated Cypress E2E Tests
-
-The test environment is also used to run automated end-to-end (E2E) tests via Cypress. Use `nox -s e2e_test` to run this locally.

@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  AntDescriptions as Descriptions,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntList as List,
-  AntModal as Modal,
-  AntSelect as Select,
+  Button,
+  Descriptions,
+  Flex,
+  Form,
   Icons,
+  Input,
+  List,
+  Modal,
+  Select,
   useMessage,
 } from "fidesui";
 import { useState } from "react";
@@ -51,8 +51,14 @@ const CustomTaxonomyDetails = ({
   const [deleteMutationTrigger] = useDeleteCustomFieldDefinitionMutation();
   const { createOrUpdate } = useCreateOrUpdateCustomField();
 
-  const removeCustomField = async (fieldId: string) => {
-    const result = await deleteMutationTrigger({ id: fieldId });
+  const removeCustomField = async (field: CustomFieldDefinitionWithId) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { id, resource_type, field_type } = field;
+    const result = await deleteMutationTrigger({
+      id: id!,
+      resource_type,
+      field_type,
+    });
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
       return;
@@ -60,11 +66,11 @@ const CustomTaxonomyDetails = ({
     messageApi.success("Attribute removed successfully");
   };
 
-  const handleRemoveClicked = (fieldId: string) => {
+  const handleRemoveClicked = (field: CustomFieldDefinitionWithId) => {
     modalApi.confirm({
       title: "Remove attribute",
       content: "Are you sure you want to remove this attribute?",
-      onOk: () => removeCustomField(fieldId),
+      onOk: () => removeCustomField(field),
       okText: "Remove",
       centered: true,
     });
@@ -140,7 +146,7 @@ const CustomTaxonomyDetails = ({
                     <Button
                       key="remove"
                       type="link"
-                      onClick={() => handleRemoveClicked(field.id!)}
+                      onClick={() => handleRemoveClicked(field)}
                     >
                       Remove
                     </Button>,

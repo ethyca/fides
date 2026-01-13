@@ -1,8 +1,4 @@
-import {
-  AntSelect as Select,
-  AntTypography as Typography,
-  Flex,
-} from "fidesui";
+import { ChakraFlex as Flex, Select, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetPrivacyRequestFieldsQuery } from "~/features/datastore-connections/connection-manual-tasks.slice";

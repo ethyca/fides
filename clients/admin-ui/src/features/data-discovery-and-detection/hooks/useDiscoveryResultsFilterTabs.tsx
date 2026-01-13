@@ -15,12 +15,12 @@ const TAB_MAP: Record<DiscoveryResultFilterTabs, FilterTab> = {
     filters: [
       DiffStatus.CLASSIFICATION_ADDITION,
       DiffStatus.CLASSIFICATION_UPDATE,
-      DiffStatus.APPROVED,
+      DiffStatus.REVIEWED,
     ],
     childFilters: [
       DiffStatus.CLASSIFICATION_ADDITION,
       DiffStatus.CLASSIFICATION_UPDATE,
-      DiffStatus.APPROVED,
+      DiffStatus.REVIEWED,
     ],
   },
   [DiscoveryResultFilterTabs.IN_PROGRESS]: {

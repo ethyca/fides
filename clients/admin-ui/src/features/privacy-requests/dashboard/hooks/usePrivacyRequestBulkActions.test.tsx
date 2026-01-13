@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { AntMenuProps as MenuProps } from "fidesui";
+import { MenuProps } from "fidesui";
 
 import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
@@ -40,7 +40,7 @@ const mockModalApi = {
 
 jest.mock("fidesui", () => ({
   useMessage: jest.fn(() => mockMessageApi),
-  useAntModal: jest.fn(() => mockModalApi),
+  useModal: jest.fn(() => mockModalApi),
   Icons: {
     Checkmark: () => null,
     Close: () => null,
