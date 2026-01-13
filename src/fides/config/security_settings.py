@@ -81,6 +81,10 @@ class SecuritySettings(FidesSettings):
         default=16,
         description="Sets desired length in bytes of generated client secret used for oauth.",
     )
+    oauth_client_cache_ttl_seconds: int = Field(
+        default=300,
+        description="The time in seconds for which OAuth client details will be cached in memory. Set to 0 to disable caching. Default is 300 seconds (5 minutes).",
+    )
     parent_server_password: Optional[str] = Field(
         default=None,
         description="When using a parent/child Fides deployment, this password will be used by the child server to access the parent server.",

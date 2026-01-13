@@ -33,6 +33,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
+from fides.api.oauth.client_cache import get_cached_client
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING, get_scopes_from_roles
 from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import (
@@ -435,9 +436,10 @@ def extract_token_and_load_client(
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes/roles param is only used if client is root client, otherwise we use the client's associated scopes
-    client = ClientDetail.get(
-        db,
-        object_id=client_id,
+    # Use cached client lookup to reduce database queries on authenticated requests
+    client = get_cached_client(
+        db=db,
+        client_id=client_id,
         config=CONFIG,
         scopes=CONFIG.security.root_user_scopes,
         roles=CONFIG.security.root_user_roles,
