@@ -207,7 +207,6 @@ def snowflake_example_test_dataset_config(
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-
     if request.param == "snowflake_connection_config":
         config: ConnectionConfig = snowflake_connection_config
     elif request.param == "snowflake_connection_config_with_keypair":
@@ -237,7 +236,6 @@ def snowflake_example_test_dataset_config_with_namespace_meta(
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-
     connection_config = snowflake_connection_config_without_default_dataset_or_schema
     dataset = example_datasets[2]
     dataset["fides_meta"] = {

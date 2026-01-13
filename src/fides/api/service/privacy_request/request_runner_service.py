@@ -514,7 +514,10 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                manual_task_graphs = create_manual_task_artificial_graphs(session)
+                # Only include manual tasks with access or erasure configs
+                manual_task_graphs = create_manual_task_artificial_graphs(
+                    session, config_types=[ActionType.access, ActionType.erasure]
+                )
                 dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
@@ -574,13 +577,16 @@ def run_privacy_request(
                 access_result_urls: list[str] = []
                 raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
-                    policy.get_rules_for_action(action_type=ActionType.access)
-                    or policy.get_rules_for_action(
-                        action_type=ActionType.erasure
-                    )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
-                ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.upload_access,
-                    from_checkpoint=resume_step,
+                    (
+                        policy.get_rules_for_action(action_type=ActionType.access)
+                        or policy.get_rules_for_action(
+                            action_type=ActionType.erasure
+                        )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+                    )
+                    and can_run_checkpoint(
+                        request_checkpoint=CurrentStep.upload_access,
+                        from_checkpoint=resume_step,
+                    )
                 ):
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access
@@ -643,7 +649,7 @@ def run_privacy_request(
                     consent_runner(
                         privacy_request=privacy_request,
                         policy=policy,
-                        graph=build_consent_dataset_graph(datasets),
+                        graph=build_consent_dataset_graph(datasets, session),
                         connection_configs=connection_configs,
                         identity=identity_data,
                         session=session,

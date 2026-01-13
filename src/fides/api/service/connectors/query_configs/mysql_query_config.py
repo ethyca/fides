@@ -15,4 +15,4 @@ class MySQLQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with backtick formatting for tables that have the same names as
         MySQL reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE ({" OR ".join(clauses)})'
+        return f"SELECT {field_list} FROM `{self.node.collection.name}` WHERE ({' OR '.join(clauses)})"
