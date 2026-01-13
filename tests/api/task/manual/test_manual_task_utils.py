@@ -11,10 +11,11 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.manual_task import ManualTask
+from fides.api.models.manual_task import ManualTask, ManualTaskConfig
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     create_collection_for_connection_key,
@@ -457,3 +458,113 @@ class TestManualTaskUtilsConditionalDependencies:
             # Clean up
             second_manual_task.delete(db)
             second_connection_config.delete(db)
+
+
+class TestConsentManualTaskUtils:
+    """Tests for consent-specific manual task utility functions"""
+
+    def test_get_manual_task_addresses_with_consent_returns_empty_when_no_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter returns empty when no consent configs exist"""
+        # connection_with_manual_access_task has only access configs
+        addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+        # Should not include the access-only manual task
+        assert len(addresses) == 0
+
+    def test_get_manual_task_addresses_with_consent_returns_addresses_for_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter returns addresses for manual tasks with consent configs"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a consent config for the manual task
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+            # Should include the manual task with consent config
+            assert len(addresses) == 1
+            assert addresses[0].dataset == connection_config.key
+            assert addresses[0].collection == "manual_data"
+        finally:
+            consent_config.delete(db)
+
+    def test_get_manual_task_addresses_with_consent_excludes_non_current_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter excludes manual tasks with only non-current consent configs"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a non-current consent config
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": False,  # Not current
+            },
+        )
+
+        try:
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+            # Should not include the manual task with non-current consent config
+            assert len(addresses) == 0
+        finally:
+            consent_config.delete(db)
+
+    def test_create_manual_task_artificial_graphs_with_consent_returns_empty_when_no_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that create_manual_task_artificial_graphs with consent filter returns empty when no consent configs exist"""
+        # connection_with_manual_access_task has only access configs
+        graphs = create_manual_task_artificial_graphs(
+            db, config_types=[ActionType.consent]
+        )
+
+        # Should not include any graphs
+        assert len(graphs) == 0
+
+    def test_create_manual_task_artificial_graphs_with_consent_creates_graphs_for_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that create_manual_task_artificial_graphs with consent filter creates GraphDatasets for consent manual tasks"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a consent config for the manual task
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            graphs = create_manual_task_artificial_graphs(
+                db, config_types=[ActionType.consent]
+            )
+
+            # Should have one graph for the consent manual task
+            assert len(graphs) == 1
+
+            graph = graphs[0]
+            assert graph.name == connection_config.key
+            assert graph.connection_key == connection_config.key
+            assert len(graph.collections) == 1
+
+            collection = graph.collections[0]
+            assert collection.name == "manual_data"
+        finally:
+            consent_config.delete(db)

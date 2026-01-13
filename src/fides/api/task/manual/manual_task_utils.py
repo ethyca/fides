@@ -40,21 +40,44 @@ def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConf
     return connection_configs
 
 
-def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
+def get_manual_task_addresses(
+    db: Session, config_types: Optional[list[ActionType]] = None
+) -> list[CollectionAddress]:
     """
     Get manual task addresses for all connection configs that have manual tasks.
 
     Note: Manual tasks should be included in the graph if they exist for any connection config
     that's part of the dataset graph, regardless of specific policy targets. This allows
     manual tasks to collect additional data that may be needed for the privacy request.
-    """
-    # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
 
-    # Return addresses for all connections that have manual tasks
+    Args:
+        db: Database session
+        config_types: Optional list of ActionType values to filter manual tasks by.
+            Only tasks with current configs matching these types will be included.
+            If None, all manual tasks are included.
+    """
+    from fides.api.models.manual_task import ManualTaskConfig
+
+    # Build base query joining connection configs with manual tasks
+    query = (
+        db.query(ConnectionConfig)
+        .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
+        .filter(ManualTask.parent_entity_type == "connection_config")
+        .filter(ConnectionConfig.disabled.is_(False))
+    )
+
+    # If config_types specified, filter to only include tasks with matching current configs
+    if config_types is not None:
+        query = query.join(ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id).filter(
+            ManualTaskConfig.is_current.is_(True),
+            ManualTaskConfig.config_type.in_(config_types),
+        )
+
+    connection_configs = query.distinct().all()
+
     return [
         ManualTaskAddress.create(config.key)
-        for config in connection_configs_with_manual_tasks
+        for config in connection_configs
     ]
 
 
@@ -129,8 +152,24 @@ def create_conditional_dependency_scalar_fields(
 
 def _create_collection_from_manual_task(
     manual_task: ManualTask,
+    config_types: Optional[list[ActionType]] = None,
 ) -> Optional[Collection]:
-    """Create a Collection from a ManualTask. Helper function to avoid duplication."""
+    """Create a Collection from a ManualTask. Helper function to avoid duplication.
+
+    Args:
+        manual_task: The manual task to create a collection from
+        config_types: Optional list of config types to filter dependencies by.
+            For consent tasks, dataset field references are excluded since
+            consent DSRs don't have data flow through datasets.
+    """
+    # Determine if we should exclude dataset field references
+    # Consent tasks don't have data flow, so they shouldn't reference dataset fields
+    is_consent_only = (
+        config_types is not None
+        and len(config_types) == 1
+        and ActionType.consent in config_types
+    )
+
     # Get conditional dependency field addresses from JSONB condition_tree
     conditional_field_addresses: set[str] = set()
     for dependency in manual_task.conditional_dependencies:
@@ -143,6 +182,12 @@ def _create_collection_from_manual_task(
                     PrivacyRequestTopLevelFields.privacy_request.value
                 )
             )
+
+            # For consent-only tasks, skip dataset field references entirely
+            # since consent DSRs don't have data flow through datasets
+            if is_consent_only:
+                continue
+
             conditional_field_addresses.update(field_addresses)
 
     # Create scalar fields for data category fields and conditional dependency field addresses
@@ -171,7 +216,9 @@ def create_collection_for_connection_key(
     return _create_collection_from_manual_task(manual_task)
 
 
-def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
+def create_manual_task_artificial_graphs(
+    db: Session, config_types: Optional[list[ActionType]] = None
+) -> list[GraphDataset]:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
@@ -182,6 +229,9 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
 
     Args:
         db: Database session
+        config_types: Optional list of ActionType values to filter manual tasks by.
+            Only tasks with configs matching these types will be included.
+            If None, all manual tasks are included.
 
     Returns:
         List of GraphDataset objects representing manual tasks as individual collections
@@ -218,8 +268,19 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         if not manual_task:
             continue
 
+        # Filter by config_types if specified
+        if config_types is not None:
+            # Check if any config matches the requested types
+            has_matching_config = any(
+                config.config_type in config_types for config in manual_task.configs
+            )
+            if not has_matching_config:
+                continue
+
         # Create collection using the helper function to avoid duplication
-        collection = _create_collection_from_manual_task(manual_task)
+        # Pass config_types to filter dependencies appropriately (e.g., consent tasks
+        # should not include dataset field references since they don't have data flow)
+        collection = _create_collection_from_manual_task(manual_task, config_types)
         if not collection:
             continue
 

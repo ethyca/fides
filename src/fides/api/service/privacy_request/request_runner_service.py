@@ -514,7 +514,10 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                manual_task_graphs = create_manual_task_artificial_graphs(session)
+                # Only include manual tasks with access or erasure configs
+                manual_task_graphs = create_manual_task_artificial_graphs(
+                    session, config_types=[ActionType.access, ActionType.erasure]
+                )
                 dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
@@ -646,7 +649,7 @@ def run_privacy_request(
                     consent_runner(
                         privacy_request=privacy_request,
                         policy=policy,
-                        graph=build_consent_dataset_graph(datasets),
+                        graph=build_consent_dataset_graph(datasets, session),
                         connection_configs=connection_configs,
                         identity=identity_data,
                         session=session,

@@ -1394,6 +1394,9 @@ class PrivacyRequest(
             ActionType.erasure: bool(
                 self.policy.get_rules_for_action(action_type=ActionType.erasure)
             ),
+            ActionType.consent: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.consent)
+            ),
         }
 
         if not any(policy_rules.values()):
