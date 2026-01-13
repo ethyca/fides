@@ -302,9 +302,9 @@ def initiate_post_upgrade_index_creation() -> None:
         logger.debug("Skipping post upgrade index creation in test mode")
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    )
 
     logger.info("Initiating scheduler for hash migration")
     scheduler.add_job(

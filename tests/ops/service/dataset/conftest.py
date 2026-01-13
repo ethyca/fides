@@ -3,11 +3,11 @@ from typing import Any, Dict, Generator
 
 import pytest
 from sqlalchemy.orm import Session
+from tests.fixtures.application_fixtures import load_dataset
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from tests.fixtures.application_fixtures import load_dataset
 
 
 def load_example_dataset(filename: str) -> Dict[str, Any]:

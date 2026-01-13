@@ -1251,7 +1251,6 @@ class TestErrorHandling(TestConditionEvaluator):
             with patch.object(
                 evaluator, "evaluate_rule", side_effect=failing_evaluate_rule
             ):
-
                 # This should raise the ConditionEvaluationError from the failing evaluate_rule call
                 with pytest.raises(ConditionEvaluationError, match=error_message):
                     evaluator._evaluate_group_condition(group, sample_data)

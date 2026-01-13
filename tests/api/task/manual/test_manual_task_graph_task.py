@@ -411,7 +411,6 @@ class TestManualTaskDataAggregation:
                 multiple_attachments_for_access[1], "retrieve_attachment", autospec=True
             ) as mock_retrieve2,
         ):
-
             mock_retrieve1.return_value = (2560, "https://example.com/doc1.pdf")
             mock_retrieve2.return_value = (1024, "https://example.com/doc2.pdf")
 
@@ -1475,7 +1474,6 @@ class TestManualTaskGraphTaskHelperMethods:
             mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
             create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
-
             # Test access request with mocked completion
             result = manual_task_graph_task.access_request([])
 
@@ -1496,7 +1494,6 @@ class TestManualTaskGraphTaskHelperMethods:
             mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
             create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
-
             # Test erasure request with mocked completion
             result = manual_task_graph_task.erasure_request(
                 [], inputs=[[{"test": "data"}]]
@@ -1519,7 +1516,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task, "log_end", autospec=True
             ) as mock_log_end,
         ):
-
             # Test access request - should not call log_end when awaiting input
             result = manual_task_graph_task.access_request([])
             assert result == []
@@ -1532,7 +1528,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 manual_task_graph_task, "log_end", autospec=True
             ) as mock_log_end,
         ):
-
             result = manual_task_graph_task.erasure_request([], inputs=[])
             assert result == 0
             mock_log_end.assert_not_called()
@@ -1553,7 +1548,6 @@ class TestManualTaskGraphTaskHelperMethods:
             mock_run_request(manual_task_graph_task, return_value=[{"test": "data"}]),
             create_log_end_mock(manual_task_graph_task) as mock_log_end,
         ):
-
             # Test access request with conditional dependencies
             result = manual_task_graph_task.access_request([])
 

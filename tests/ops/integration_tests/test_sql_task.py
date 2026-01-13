@@ -761,7 +761,7 @@ class TestRetrievingData:
             RequestTask(),
             {"email": ["customer-1@example.com"]},
         )
-        assert len(results) is 1
+        assert len(results) == 1
         assert results == [
             {
                 "address_id": 1,

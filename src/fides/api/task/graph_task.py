@@ -302,7 +302,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
-                row=seed_data, target_path=foreign_field_path  # type: ignore
+                row=seed_data,
+                target_path=foreign_field_path,  # type: ignore
             )
             grouped_data[local_field_path.string_path] = dependent_values
         return grouped_data
@@ -1016,9 +1017,9 @@ def build_affected_field_logs(
             if not rule_categories:
                 continue
 
-            collection_categories: Dict[
-                str, List[FieldPath]
-            ] = node.collection.field_paths_by_category  # type: ignore
+            collection_categories: Dict[str, List[FieldPath]] = (
+                node.collection.field_paths_by_category
+            )  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):

@@ -153,10 +153,8 @@ def extract_conditional_dependency_data_from_inputs(
         field_value = None
         input_data = collection_data_map.get(source_collection_key)
         if input_data:
-
             # Look for the field in the input data
             for row in input_data:
-
                 # Traverse the nested field path to get the actual value
                 field_value = extract_nested_field_value(row, field_path)
 

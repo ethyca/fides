@@ -17,7 +17,6 @@ from fides.api.util.saas_util import load_as_string
 
 
 class TestProperty:
-
     @pytest.fixture
     def privacy_center_config(self) -> PrivacyCenterConfig:
         return PrivacyCenterConfig(
@@ -172,7 +171,6 @@ class TestProperty:
         assert experience.name == minimal_experience["name"]
 
     def test_update_property_remove_only_default(self, db: Session, property_a):
-
         # When property_a fixture gets created, the db model sets is_default to True.
         # Here we attempt to set the only default property to is_default = false
         with pytest.raises(ValueError):

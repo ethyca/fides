@@ -254,9 +254,9 @@ class TestManualTaskUtilsConditionalDependencies:
                 field_with_reference = field
                 break
 
-        assert (
-            field_with_reference is not None
-        ), f"Expected field '{expected_field_name}' not found"
+        assert field_with_reference is not None, (
+            f"Expected field '{expected_field_name}' not found"
+        )
         assert len(field_with_reference.references) == 1
         assert field_with_reference.references[0][0] == expected_reference
         assert field_with_reference.references[0][1] == "from"

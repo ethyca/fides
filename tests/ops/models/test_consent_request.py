@@ -116,7 +116,6 @@ def test_consent_request(db):
 
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:
-
     @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
@@ -184,9 +183,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert request_data.consent_preferences[0].data_use == "marketing.advertising"
         assert request_data.consent_preferences[0].opt_in is False
 
-        assert (
-            call_kwargs["authenticated"] is True
-        ), "We already validated identity with a verification code earlier in the request"
+        assert call_kwargs["authenticated"] is True, (
+            "We already validated identity with a verification code earlier in the request"
+        )
 
         custom_fields = request_data.custom_privacy_request_fields
         if custom_fields:

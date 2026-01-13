@@ -75,9 +75,7 @@ def calculate_data_size(data: List[Row]) -> int:  # noqa: D401 – utility funct
         return sys.getsizeof(data)
 
 
-def is_large_data(
-    data: List[Row], threshold_bytes: Optional[int] = None
-) -> bool:  # noqa: D401
+def is_large_data(data: List[Row], threshold_bytes: Optional[int] = None) -> bool:  # noqa: D401
     """Return *True* if *data* is likely to exceed *threshold_bytes* when serialized."""
 
     if not data:
