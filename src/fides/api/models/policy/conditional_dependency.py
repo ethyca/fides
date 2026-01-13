@@ -1,14 +1,17 @@
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import FidesBase
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionalDependencyBase,
+    ConditionalDependencyError,
+    ConditionTypeAdapter,
 )
 from fides.api.task.conditional_dependencies.schemas import (
+    Condition,
     ConditionGroup,
     ConditionLeaf,
 )
@@ -18,65 +21,71 @@ if TYPE_CHECKING:
 
 
 class PolicyCondition(ConditionalDependencyBase):
-    """Policy conditional dependencies - single type hierarchy.
+    """Policy conditional dependencies - stores condition tree as JSONB.
 
     Used to define conditional logic for policy execution. Each policy can have
-    a single condition tree (root condition with optional nested children) that
-    determines when the policy's rules should be applied.
+    a single condition tree that determines when the policy's rules should be applied.
+    The entire condition tree is stored as a single JSONB object.
 
-    Example Tree Structure:
-        Policy (e.g., "GDPR Access Request")
-        └── Condition Tree
-            └── Group (AND)
-                ├── Leaf: request.country == "EU"
-                └── Leaf: user.verified == true
+    Example Tree Structure (stored in condition_tree JSONB):
+        {
+            "logical_operator": "and",
+            "conditions": [
+                {"field_address": "request.country", "operator": "eq", "value": "EU"},
+                {"field_address": "user.verified", "operator": "eq", "value": true}
+            ]
+        }
     """
 
     @declared_attr
     def __tablename__(cls) -> str:
         return "policy_condition"
 
-    # We need to redefine it here so that self-referential relationships
-    # can properly reference the `id` column instead of the built-in Python function.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
-    # Foreign key relationships
+    # Foreign key to policy
     policy_id = Column(
         String,
         ForeignKey("policy.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    parent_id = Column(
-        String,
-        ForeignKey("policy_condition.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
-    )
 
-    # Relationships
+    # Relationship to policy
     policy = relationship("Policy", back_populates="conditions")
-    parent = relationship(
-        "PolicyCondition",
-        remote_side=[id],
-        back_populates="children",
-        foreign_keys=[parent_id],
-    )
-    children = relationship(
-        "PolicyCondition",
-        back_populates="parent",
-        cascade="all, delete-orphan",
-        foreign_keys=[parent_id],
+
+    # Ensure only one condition tree per policy
+    __table_args__ = (
+        UniqueConstraint(
+            "policy_id",
+            name="uq_policy_condition_policy_id",
+        ),
     )
 
     @classmethod
-    def get_root_condition(
-        cls, db: Session, **kwargs: Any
+    def create(
+        cls,
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "PolicyCondition":
+        """Create a new PolicyCondition."""
+        try:
+            return super().create(db=db, data=data, check_name=check_name)
+        except Exception as e:
+            raise ConditionalDependencyError(str(e)) from e
+
+    @classmethod
+    def get_condition_tree(
+        cls,
+        db: Session,
+        **kwargs: Any,
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
-        """Get the root condition for a policy.
+        """Get the condition tree for a policy.
 
         Args:
-            db: Database session
+            db: SQLAlchemy database session for querying
             **kwargs: Keyword arguments containing:
                 policy_id: ID of the policy
 
@@ -86,19 +95,23 @@ class PolicyCondition(ConditionalDependencyBase):
 
         Raises:
             ValueError: If policy_id is not provided
+
+        Example:
+            >>> # Get conditions for a policy
+            >>> conditions = PolicyCondition.get_condition_tree(
+            ...     db, policy_id=policy.id
+            ... )
         """
         policy_id = kwargs.get("policy_id")
 
         if not policy_id:
             raise ValueError("policy_id is required as a keyword argument")
 
-        root = (
-            db.query(cls)
-            .filter(cls.policy_id == policy_id, cls.parent_id.is_(None))
-            .first()
+        condition_row = (
+            db.query(cls).filter(cls.policy_id == policy_id).one_or_none()
         )
 
-        if not root:
+        if not condition_row or condition_row.condition_tree is None:
             return None
 
-        return root.to_correct_condition_type()
+        return ConditionTypeAdapter.validate_python(condition_row.condition_tree)
