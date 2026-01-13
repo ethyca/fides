@@ -15,10 +15,7 @@ from fides.api.task.conditional_dependencies.schemas import (
 )
 
 if TYPE_CHECKING:
-    from fides.api.models.manual_task.manual_task import (
-        ManualTask,
-        ManualTaskConfigField,
-    )
+    from fides.api.models.manual_task.manual_task import ManualTask
 
 
 class ManualTaskConditionalDependency(ConditionalDependencyBase):
@@ -27,8 +24,8 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     Each manual task can have condition trees that determine when the task
     or specific fields should be created or executed based on privacy request data.
 
-    When config_field_id is NULL, the condition applies to the entire task.
-    When config_field_id is set, the condition applies only to that specific field.
+    When config_field_key is NULL, the condition applies to the entire task.
+    When config_field_key is set, the condition applies only to that specific field.
     """
 
     @declared_attr
@@ -45,10 +42,10 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
         nullable=False,
     )
 
-    # Optional foreign key to config field - when set, condition applies to field only
-    config_field_id = Column(
+    # Optional field key - when set, condition applies to field only
+    # This stores the field_key string rather than the config_field_id UUID
+    config_field_key = Column(
         String,
-        ForeignKey("manual_task_config_field.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
@@ -56,24 +53,21 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
     # Relationship to parent manual task
     task = relationship("ManualTask", back_populates="conditional_dependencies")
 
-    # Relationship to config field (optional)
-    config_field = relationship("ManualTaskConfigField")
-
     __table_args__ = (
-        # Unique constraint for field-level conditions: one condition per (task, field) pair
+        # Unique constraint for field-level conditions: one condition per (task, field_key) pair
         Index(
             "ix_manual_task_cond_dep_task_field",
             "manual_task_id",
-            "config_field_id",
+            "config_field_key",
             unique=True,
-            postgresql_where=text("config_field_id IS NOT NULL"),
+            postgresql_where=text("config_field_key IS NOT NULL"),
         ),
         # Partial unique index for task-level conditions: one condition per task when field is NULL
         Index(
             "ix_manual_task_cond_dep_task_only",
             "manual_task_id",
             unique=True,
-            postgresql_where=text("config_field_id IS NULL"),
+            postgresql_where=text("config_field_key IS NULL"),
         ),
     )
 
@@ -87,8 +81,8 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
             db: Database session
             **kwargs: Keyword arguments containing:
                 manual_task_id: ID of the manual task (required)
-                config_field_id: ID of the config field (optional).
-                    When None, returns the task-level condition (where config_field_id IS NULL).
+                config_field_key: Key of the config field (optional).
+                    When None, returns the task-level condition (where config_field_key IS NULL).
                     When provided, returns the field-level condition for that specific field.
 
         Returns:
@@ -99,19 +93,19 @@ class ManualTaskConditionalDependency(ConditionalDependencyBase):
             ValueError: If manual_task_id is not provided
         """
         manual_task_id = kwargs.get("manual_task_id")
-        config_field_id = kwargs.get("config_field_id")
+        config_field_key = kwargs.get("config_field_key")
 
         if not manual_task_id:
             raise ValueError("manual_task_id is required as a keyword argument")
 
         query = db.query(cls).filter(cls.manual_task_id == manual_task_id)
 
-        if config_field_id is None:
-            # Get task-level condition (where config_field_id IS NULL)
-            query = query.filter(cls.config_field_id.is_(None))
+        if config_field_key is None:
+            # Get task-level condition (where config_field_key IS NULL)
+            query = query.filter(cls.config_field_key.is_(None))
         else:
             # Get field-level condition for specific field
-            query = query.filter(cls.config_field_id == config_field_id)
+            query = query.filter(cls.config_field_key == config_field_key)
 
         condition_row = query.one_or_none()
 

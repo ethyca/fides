@@ -407,8 +407,8 @@ class ManualTaskReference(Base):
 
     A single task may have many references including privacy requests, configurations, and assigned users.
 
-    When config_field_id is NULL, the reference applies to the entire task.
-    When config_field_id is set, the reference applies only to that specific field.
+    When config_field_key is NULL, the reference applies to the entire task.
+    When config_field_key is set, the reference applies only to that specific field.
     This enables field-level user assignments.
     """
 
@@ -440,10 +440,10 @@ class ManualTaskReference(Base):
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
 
-    # Optional foreign key to config field - when set, reference applies to field only
-    config_field_id = Column(
+    # Optional field key - when set, reference applies to field only
+    # This stores the field_key string rather than the config_field_id UUID
+    config_field_key = Column(
         String,
-        ForeignKey("manual_task_config_field.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
@@ -451,12 +451,11 @@ class ManualTaskReference(Base):
     __table_args__ = (
         Index("ix_manual_task_reference_reference", "reference_id", "reference_type"),
         Index("ix_manual_task_reference_task_id", "task_id"),
-        Index("ix_manual_task_reference_config_field_id", "config_field_id"),
+        Index("ix_manual_task_reference_config_field_key", "config_field_key"),
     )
 
     # Relationships
     task = relationship("ManualTask", back_populates="references")
-    config_field = relationship("ManualTaskConfigField")
 
 
 class ManualTaskConfig(Base):
