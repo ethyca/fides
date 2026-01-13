@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fides.api.models.digest.digest_config import DigestConfig
 
 
-class DigestTaskExecution(WorkerTask, Base):  # pylint: disable=too-many-instance-attributes
+class DigestTaskExecution(WorkerTask, Base):  # ruff: ignore: PLR0902
     """
     Model for tracking digest task execution state and progress.
 
