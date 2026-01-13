@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
  - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
 
+### Added
+- Monitor scoped activity tab for datastore monitors in the action center [#7162](https://github.com/ethyca/fides/pull/7162)
+
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added
