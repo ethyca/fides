@@ -40,21 +40,44 @@ def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConf
     return connection_configs
 
 
-def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
+def get_manual_task_addresses(
+    db: Session, config_types: Optional[list[ActionType]] = None
+) -> list[CollectionAddress]:
     """
     Get manual task addresses for all connection configs that have manual tasks.
 
     Note: Manual tasks should be included in the graph if they exist for any connection config
     that's part of the dataset graph, regardless of specific policy targets. This allows
     manual tasks to collect additional data that may be needed for the privacy request.
-    """
-    # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
 
-    # Return addresses for all connections that have manual tasks
+    Args:
+        db: Database session
+        config_types: Optional list of ActionType values to filter manual tasks by.
+            Only tasks with current configs matching these types will be included.
+            If None, all manual tasks are included.
+    """
+    from fides.api.models.manual_task import ManualTaskConfig
+
+    # Build base query joining connection configs with manual tasks
+    query = (
+        db.query(ConnectionConfig)
+        .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
+        .filter(ManualTask.parent_entity_type == "connection_config")
+        .filter(ConnectionConfig.disabled.is_(False))
+    )
+
+    # If config_types specified, filter to only include tasks with matching current configs
+    if config_types is not None:
+        query = query.join(ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id).filter(
+            ManualTaskConfig.is_current.is_(True),
+            ManualTaskConfig.config_type.in_(config_types),
+        )
+
+    connection_configs = query.distinct().all()
+
     return [
         ManualTaskAddress.create(config.key)
-        for config in connection_configs_with_manual_tasks
+        for config in connection_configs
     ]
 
 
