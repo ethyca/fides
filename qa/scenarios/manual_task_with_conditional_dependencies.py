@@ -39,8 +39,6 @@ from fides.api.models.manual_task import (
     ManualTaskConditionalDependency,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
-    ManualTaskExecutionTiming,
     ManualTaskFieldType,
     ManualTaskParentEntityType,
     ManualTaskType,
@@ -631,7 +629,7 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             db = self._get_db_session()
             config_data = {
                 "task_id": self.manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
                 "execution_timing": ManualTaskExecutionTiming.post_execution,

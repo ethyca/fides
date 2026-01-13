@@ -62,7 +62,6 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskInstance,
 )
@@ -1402,13 +1401,7 @@ class PrivacyRequest(
 
         # Build configuration types using list comprehension
         config_types = [
-            (
-                ManualTaskConfigurationType.access_privacy_request
-                if action_type == ActionType.access
-                else ManualTaskConfigurationType.erasure_privacy_request
-            )
-            for action_type, has_rules in policy_rules.items()
-            if has_rules
+            action_type for action_type, has_rules in policy_rules.items() if has_rules
         ]
 
         # Get all relevant manual tasks and configs in one query

@@ -22,6 +22,76 @@ from fides.api.task.manual.manual_task_utils import extract_field_addresses
 from fides.api.util.collection_util import Row
 
 
+def get_all_field_addresses_from_manual_task(manual_task: ManualTask) -> set[str]:
+    """
+    Extract all field addresses from a manual task's conditional dependencies.
+
+    Args:
+        manual_task: The manual task to extract field addresses from
+
+    Returns:
+        Set of all field addresses referenced in conditional dependencies
+    """
+    all_field_addresses: set[str] = set()
+
+    for dependency in manual_task.conditional_dependencies:
+        tree = dependency.condition_tree
+        if isinstance(tree, dict) or tree is None:
+            all_field_addresses.update(extract_field_addresses(tree))
+
+    return all_field_addresses
+
+
+def has_non_privacy_request_conditions(manual_task: ManualTask) -> bool:
+    """
+    Check if a manual task has any conditional dependencies that reference dataset fields.
+
+    This is used to validate consent manual tasks, which can only use privacy_request.*
+    conditions because the consent graph doesn't have access data flowing between nodes.
+
+    Args:
+        manual_task: The manual task to check
+
+    Returns:
+        True if any condition references a dataset field (not privacy_request.*), False otherwise
+    """
+    all_field_addresses = get_all_field_addresses_from_manual_task(manual_task)
+
+    # Check if any field address does NOT start with "privacy_request."
+    return any(not addr.startswith("privacy_request.") for addr in all_field_addresses)
+
+
+def extract_privacy_request_only_conditional_data(
+    field_addresses: set[str],
+    privacy_request: PrivacyRequest,
+) -> dict[str, Any]:
+    """
+    Extract conditional dependency data from privacy request only.
+
+    This is used for consent manual tasks which cannot use dataset field conditions
+    because the consent graph doesn't have access data flowing between nodes.
+
+    Args:
+        manual_task: Manual task to extract conditional dependencies from
+        privacy_request: The privacy request to extract data from
+
+    Returns:
+        Dictionary containing privacy request data for conditional dependency evaluation
+    """
+    # Filter to only privacy_request.* field addresses
+    privacy_request_field_addresses: set[str] = set(
+        address for address in field_addresses if address.startswith("privacy_request.")
+    )
+
+    conditional_privacy_request_data: dict[str, Any] = {}
+    if privacy_request_field_addresses:
+        conditional_privacy_request_data = PrivacyRequestDataTransformer(
+            privacy_request
+        ).to_evaluation_data(privacy_request_field_addresses)
+
+    return {**conditional_privacy_request_data}
+
+
 def extract_conditional_dependency_data_from_inputs(
     *inputs: list[Row],
     manual_task: ManualTask,
@@ -47,25 +117,15 @@ def extract_conditional_dependency_data_from_inputs(
     """
 
     conditional_data: dict[str, Any] = {}
-    all_field_addresses: set[str] = set()
-
-    for dependency in manual_task.conditional_dependencies:
-        # condition_tree is always a dict or None; cast to satisfy mypy's JSONB typing
-        tree = cast(Optional[dict[str, Any]], dependency.condition_tree)
-        all_field_addresses.update(extract_field_addresses(tree))
+    all_field_addresses: set[str] = get_all_field_addresses_from_manual_task(
+        manual_task
+    )
 
     # If there are any privacy request conditional dependencies field addresses,
     # transform the privacy request data into a dictionary structure for evaluation
-    privacy_request_field_addresses: set[str] = set(
-        address
-        for address in all_field_addresses
-        if address.startswith(PrivacyRequestTopLevelFields.privacy_request.value)
+    conditional_data = extract_privacy_request_only_conditional_data(
+        all_field_addresses, privacy_request
     )
-    if privacy_request_field_addresses:
-        conditional_privacy_request_data = PrivacyRequestDataTransformer(
-            privacy_request
-        ).to_evaluation_data(privacy_request_field_addresses)
-        conditional_data = {**conditional_privacy_request_data}
 
     # Get dataset field addresses (exclude privacy_request addresses)
     # Convert to list for iteration
@@ -166,7 +226,10 @@ def set_nested_value(field_address: str, value: Any) -> dict[str, Any]:
 
 
 def evaluate_conditional_dependencies(
-    db: Session, manual_task: ManualTask, conditional_data: dict[str, Any]
+    db: Session,
+    manual_task: ManualTask,
+    conditional_data: dict[str, Any],
+    privacy_request_only: bool = False,
 ) -> Optional[EvaluationResult]:
     """
     Evaluate conditional dependencies for a manual task using data from regular tasks.
@@ -175,13 +238,22 @@ def evaluate_conditional_dependencies(
     conditional dependencies and the data received from upstream regular tasks.
 
     Args:
+        db: Database session
         manual_task: The manual task to evaluate
         conditional_data: Data from regular tasks for conditional dependency fields
+        privacy_request_only: If True, only evaluate privacy_request.* conditions.
+            Used for consent tasks which don't have data flow through datasets.
 
     Returns:
         EvaluationResult object containing detailed information about which conditions
         were met or not met, or None if no conditional dependencies exist
     """
+    # For consent tasks (privacy_request_only=True), we can only evaluate
+    # privacy_request.* conditions since consent DSRs don't have data flow
+    # through datasets. Skip evaluation if the task has non-privacy-request conditions.
+    if privacy_request_only and has_non_privacy_request_conditions(manual_task):
+        return None
+
     # Get the condition tree for this manual task
     condition_tree = ManualTaskConditionalDependency.get_condition_tree(
         db, manual_task_id=manual_task.id
