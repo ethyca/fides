@@ -1,4 +1,4 @@
-ruff==0.9.2
+ruff==0.14.11
 debugpy~=1.8.0
 Faker==14.1.0
 freezegun==1.5.5
