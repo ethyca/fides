@@ -63,7 +63,7 @@ const ASSET_TYPE_OPTIONS = [
 export const useAssetReportingTable = ({
   filters,
 }: UseAssetReportingTableConfig) => {
-  const { getDataUses, getDataUseDisplayName } = useTaxonomies();
+  const { getDataUses, getDataUseByKey, getDataUseDisplayName } = useTaxonomies();
 
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
   const [dataUsesVersion, setDataUsesVersion] = useState(0);
@@ -100,7 +100,7 @@ export const useAssetReportingTable = ({
   });
 
   const dataUseFilterOptions = useMemo(
-    () => getDataUses().map((du) => du.name).filter((name): name is string => !!name),
+    () => getDataUses().map((du) => du.fides_key).filter((key): key is string => !!key),
     [getDataUses],
   );
 
@@ -186,7 +186,9 @@ export const useAssetReportingTable = ({
             }
           },
         },
-        filters: convertToAntFilters(dataUseFilterOptions),
+        filters: convertToAntFilters(dataUseFilterOptions, (key) =>
+          getDataUseByKey(key)?.name || key
+        ),
         filteredValue: columnFilters?.data_uses || null,
         render: (_, record: Asset) => (
           <TagExpandableCell
@@ -251,7 +253,7 @@ export const useAssetReportingTable = ({
         ),
       },
     ],
-    [sortKey, sortOrder, columnFilters, dataUseFilterOptions, isDataUsesExpanded, dataUsesVersion, getDataUseDisplayName, isLocationsExpanded, locationsVersion],
+    [sortKey, sortOrder, columnFilters, dataUseFilterOptions, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion],
   );
 
   const antTableConfig = useMemo(

@@ -47,13 +47,17 @@ jest.mock(
 );
 
 // Mock useTaxonomies hook
+const mockDataUses = [
+  { fides_key: "analytics", name: "Analytics" },
+  { fides_key: "marketing.advertising", name: "Advertising" },
+];
 jest.mock("../../../../src/features/common/hooks/useTaxonomies", () => ({
   __esModule: true,
   default: jest.fn(() => ({
-    getDataUses: jest.fn(() => [
-      { fides_key: "analytics", name: "Analytics" },
-      { fides_key: "marketing.advertising", name: "Advertising" },
-    ]),
+    getDataUses: jest.fn(() => mockDataUses),
+    getDataUseByKey: jest.fn((key: string) =>
+      mockDataUses.find((du) => du.fides_key === key)
+    ),
     getDataUseDisplayName: jest.fn((key: string) => {
       const displayNames: Record<string, string> = {
         analytics: "Analytics",
