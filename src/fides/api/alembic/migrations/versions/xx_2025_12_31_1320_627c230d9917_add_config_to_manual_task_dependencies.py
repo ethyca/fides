@@ -94,11 +94,13 @@ def downgrade():
     # Remove execution_timing from manual_task_config_field
     op.drop_column("manual_task_config_field", "execution_timing")
     # Revert config_type values from ActionType back to ManualTaskConfigurationType
+    # Note: consent configs created after upgrade are converted to access_privacy_request
+    # as there is no equivalent in the old ManualTaskConfigurationType enum
     op.execute(
         """
         UPDATE manual_task_config
         SET config_type = 'access_privacy_request'
-        WHERE config_type = 'access'
+        WHERE config_type IN ('access', 'consent')
     """
     )
     op.execute(
