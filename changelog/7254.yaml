@@ -1,0 +1,4 @@
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Filtering of monitors by data steward in action center
+pr: 2074 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

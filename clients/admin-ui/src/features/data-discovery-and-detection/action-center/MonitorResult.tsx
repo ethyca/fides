@@ -1,5 +1,6 @@
 import { formatDistanceStrict } from "date-fns";
 import {
+  Avatar,
   Button,
   Col,
   Divider,
@@ -15,6 +16,7 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useState } from "react";
 
@@ -64,6 +66,7 @@ export const MonitorResult = ({
     saas_config: saasConfig,
     monitorType,
     isTestMonitor,
+    stewards,
   } = monitorSummary;
 
   let confidenceCounts;
@@ -149,7 +152,27 @@ export const MonitorResult = ({
               }
             />
           </Col>
-          <Col span={5} className="flex justify-end">
+          <Col span={2} className="flex justify-end">
+            {!!stewards && (
+              <Avatar.Group
+                max={{
+                  count: 5,
+                  style: { background: palette.FIDESUI_NEUTRAL_700 },
+                }}
+              >
+                {stewards.map((steward) => (
+                  <Tooltip title={steward.username} key={steward.id}>
+                    <Avatar style={{ background: palette.FIDESUI_MINOS }}>
+                      {steward.first_name?.charAt(0)}
+                      {steward.last_name?.charAt(0)}
+                    </Avatar>
+                  </Tooltip>
+                ))}
+              </Avatar.Group>
+            )}
+          </Col>
+
+          <Col span={3} className="flex justify-end">
             {!!lastMonitoredDistance && (
               <Tooltip title={formattedLastMonitored}>
                 <Text type="secondary" data-testid="monitor-date">

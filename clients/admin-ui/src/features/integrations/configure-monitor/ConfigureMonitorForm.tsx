@@ -204,7 +204,7 @@ const ConfigureMonitorForm = ({
   });
 
   const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: user.username,
+    label: `${user.first_name} ${user.last_name}`,
     value: user.id,
   }));
 
@@ -238,7 +238,7 @@ const ConfigureMonitorForm = ({
       ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
     stewards:
-      monitor?.stewards || systemData?.data_stewards?.map(({ id }) => id),
+      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
   } as const;
 
   return (
