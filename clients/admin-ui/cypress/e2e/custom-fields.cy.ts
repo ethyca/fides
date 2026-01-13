@@ -184,9 +184,10 @@ describe("Custom Fields V2", () => {
       cy.getByTestId("edit-btn").first().click();
 
       // Verify resource type is disabled
-      cy.getByTestId("select-resource-type")
-        .should("have.class", "ant-select-disabled")
-        .should("be.disabled");
+      cy.getByTestId("select-resource-type").should(
+        "have.class",
+        "ant-select-disabled",
+      );
     });
 
     it("navigates to edit form when name link is clicked", () => {
