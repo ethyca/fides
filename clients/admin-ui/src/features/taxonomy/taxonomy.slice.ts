@@ -128,7 +128,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       { fides_key: string; page?: number; size?: number }
     >({
       query: ({ fides_key, page, size }) => ({
-        url: `taxonomies/${fides_key}/history`,
+        url: `/plus/taxonomies/${fides_key}/history`,
         params: {
           page,
           size,

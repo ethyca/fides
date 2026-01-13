@@ -4,7 +4,6 @@ import {
   Flex,
   FlexProps,
   Icons,
-  Typography,
   useMessage,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -16,6 +15,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ListExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { convertToAntFilters } from "~/features/common/utils";
@@ -325,9 +325,7 @@ const useSystemsTable = () => {
         key: SystemColumnKeys.DESCRIPTION,
         render: (description: string | null) => (
           <div className="max-w-96">
-            <Typography.Text ellipsis={{ tooltip: description }}>
-              {description}
-            </Typography.Text>
+            <EllipsisCell>{description}</EllipsisCell>
           </div>
         ),
         ellipsis: true,

@@ -1,0 +1,4 @@
+type: Removed
+description: Removed erroneous async engine settings of the form api_async_engine_keepalives_* that would cause errors when set
+pr: 7177 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
