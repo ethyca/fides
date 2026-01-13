@@ -6,9 +6,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import CollectionAddress, FieldAddress, ScalarField
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -341,7 +338,7 @@ class TestManualTaskUtilsConditionalDependencies:
         )  # from "payment_card.subscription.status"
 
     @pytest.mark.usefixtures(
-        "connection_with_manual_access_task", "condition_gt_18", "condition_age_lt_65"
+        "connection_with_manual_access_task", "condition_age_range"
     )
     def test_no_duplicate_fields_from_conditional_dependencies(
         self, db: Session, manual_task: ManualTask
@@ -399,15 +396,16 @@ class TestManualTaskUtilsConditionalDependencies:
         )
 
         # Add a conditional dependency to the second task
+        condition_tree = {
+            "field_address": "postgres_example:payment_card:billing.subscription.status",
+            "operator": "eq",
+            "value": "active",
+        }
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": second_manual_task.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "postgres_example:payment_card:billing.subscription.status",
-                "operator": "eq",
-                "value": "active",
-                "sort_order": 1,
+                "condition_tree": condition_tree,
             },
         )
 

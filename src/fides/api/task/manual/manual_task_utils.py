@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy.orm import Session, selectinload
 
@@ -11,11 +11,11 @@ from fides.api.graph.config import (
 )
 
 # Import application models
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestTopLevelFields,
+)
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
@@ -129,14 +129,19 @@ def _create_collection_from_manual_task(
     manual_task: ManualTask,
 ) -> Optional[Collection]:
     """Create a Collection from a ManualTask. Helper function to avoid duplication."""
-    # Get conditional dependency field addresses - raw field data
-    conditional_field_addresses: set[str] = {
-        dependency.field_address
-        for dependency in manual_task.conditional_dependencies
-        if dependency.condition_type == ConditionalDependencyType.leaf
-        and dependency.field_address is not None
-        and not dependency.field_address.startswith("privacy_request.")
-    }
+    # Get conditional dependency field addresses from JSONB condition_tree
+    conditional_field_addresses: set[str] = set()
+    for dependency in manual_task.conditional_dependencies:
+        tree = dependency.condition_tree
+        if isinstance(tree, dict) or tree is None:
+            field_addresses = set(
+                addr
+                for addr in extract_field_addresses(tree)
+                if not addr.startswith(
+                    PrivacyRequestTopLevelFields.privacy_request.value
+                )
+            )
+            conditional_field_addresses.update(field_addresses)
 
     # Create scalar fields for data category fields and conditional dependency field addresses
     fields: list[ScalarField] = []
@@ -226,3 +231,31 @@ def create_manual_task_artificial_graphs(db: Session) -> list[GraphDataset]:
         manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs
+
+
+def extract_field_addresses(
+    tree: Optional[dict[str, Any]],
+) -> set[str]:
+    """Recursively extract dataset field addresses from a JSONB condition tree.
+
+    This function is used to extract all field addresses from a condition tree
+    stored as JSONB. It's useful for determining upstream dependencies when
+    building the dataset graph for conditional dependencies.
+
+    Returns:
+        Set of field addresses found in the tree, excluding privacy_request.* fields
+    """
+    if not tree:
+        return set()
+
+    field_addresses: set[str] = set()
+
+    # Check if this is a leaf condition (has field_address)
+    if "field_address" in tree:
+        field_addresses.add(tree["field_address"])
+    # Check if this is a group condition (has conditions list)
+    elif "conditions" in tree:
+        for condition in tree.get("conditions", []):
+            field_addresses.update(extract_field_addresses(condition))
+
+    return field_addresses

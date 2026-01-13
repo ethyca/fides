@@ -12,7 +12,6 @@ from fides.api.models.manual_task import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -122,6 +121,7 @@ class TestManualTaskConfig:
         data["config_id"] = config.id
         ManualTaskConfigField.create(db, data=data)
 
+        # Verify field definitions and logs (logs created by ManualTaskConfigField.create)
         assert len(config.field_definitions) == 1
 
 

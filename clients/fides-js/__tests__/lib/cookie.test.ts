@@ -16,6 +16,7 @@ import {
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
+  isWildcardCookie,
   makeConsentDefaultsLegacy,
   makeFidesCookie,
   removeCookiesFromBrowser,
@@ -397,6 +398,22 @@ describe("cookies", () => {
     });
   });
 
+  describe("isWildcardCookie", () => {
+    it("returns false for non-wildcard cookies", () => {
+      const cookie: CookiesType = { name: "regular_cookie" };
+      expect(isWildcardCookie(cookie)).toBeFalsy();
+    });
+
+    it("returns true for wildcard cookies", () => {
+      expect(isWildcardCookie({ name: "_ga[id]" })).toBeTruthy();
+      expect(
+        isWildcardCookie({
+          name: "_ga_[id]_[id]",
+        }),
+      ).toBeTruthy();
+    });
+  });
+
   describe("removeCookiesFromBrowser", () => {
     afterEach(() => mockRemoveCookie.mockClear());
 
@@ -500,6 +517,95 @@ describe("cookies", () => {
         });
       },
     );
+
+    describe("wildcard cookies", () => {
+      it("should remove cookies with provided domain", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { domain: "foo.com", path: "/bar" }],
+        ]);
+      });
+      it("should remove cookies with host domain and subdomains", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          true,
+          true,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { domain: "example.co.jp", path: "/bar" }],
+          ["_ga123", { domain: ".example.co.jp" }],
+        ]);
+      });
+      it("should remove cookies matching multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          foo_abc: "test_value_2",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]" }, { name: "foo_[id]" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { path: "/" }],
+          ["foo_abc", { path: "/" }],
+        ]);
+      });
+      it("should handle the wildcard anchors correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab123: "",
+          cab123: "",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "x[id]" }, { name: "ab[id]" }, { name: "y[id]" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
+      });
+      it("should handle prefix-only cookies correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab: "",
+          ab123: "",
+        } as any);
+        removeCookiesFromBrowser([{ name: "ab[id]" }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
+      });
+      it("should handle wildcard cookies with special characters", () => {
+        const prefix = "^$[](){}\\|.*?-";
+        mockGetCookie.mockReturnValue({
+          [`${prefix}123`]: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: `${prefix}[id]` }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          [`${prefix}123`, { path: "/" }],
+        ]);
+      });
+      it("should handle cookies with multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga_123_456: "test_value",
+          "_ga_789.101": "test_value_2",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga_123_456", { path: "/" }],
+        ]);
+      });
+    });
   });
 
   describe("transformTcfPreferencesToCookieKeys", () => {

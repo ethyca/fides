@@ -304,7 +304,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         privacy_request.persist_identity(
             db=db,
             identity={
-                "email": "user@example.com",
+                "email": "test@example.com",
                 "customer_id": LabeledIdentity(label="Customer ID", value="cust_123"),
             },
         )
@@ -312,7 +312,7 @@ class TestPrivacyRequestToEvaluationDataIdentity:
         data = transformer.to_evaluation_data(set(field_addresses))
 
         # Regular identity field (email) returns the value directly
-        assert data["privacy_request"]["identity"]["email"] == "user@example.com"
+        assert data["privacy_request"]["identity"]["email"] == "test@example.com"
 
         # LabeledIdentity field (customer_id) should return just the value, not the full dict
         assert data["privacy_request"]["identity"]["customer_id"] == "cust_123"

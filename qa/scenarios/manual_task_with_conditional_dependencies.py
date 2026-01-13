@@ -28,9 +28,6 @@ from utils import Argument, QATestScenario
 from fides.api.db.base import *
 from fides.api.db.ctl_session import sync_engine
 from fides.api.db.database import seed_db
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -107,68 +104,52 @@ FIELDS_DATA = [
     },
 ]
 
-DEPENDENCIES_DATA = [
-    # Root group condition (AND)
-    {
-        "parent_id": None,
-        "condition_type": ConditionalDependencyType.group,
-        "logical_operator": "and",
-        "sort_order": 0,
-    },
-    # Customer name exists condition (leaf) - references postgres dataset field
-    {
-        "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ConditionalDependencyType.leaf,
-        "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
-        "operator": "exists",
-        "value": None,  # exists operator doesn't need a value
-        "sort_order": 1,
-    },
-    # Customer email contains specific value condition (leaf) - references postgres dataset field
-    {
-        "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ConditionalDependencyType.leaf,
-        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
-        "operator": "starts_with",
-        "value": "customer-1",
-        "sort_order": 2,
-    },
-    # Nested group condition (OR)
-    {
-        "parent_id": None,  # Will be updated after root group is created
-        "condition_type": ConditionalDependencyType.group,
-        "logical_operator": "or",
-        "sort_order": 3,
-    },
-    # Customer ID condition (leaf) - references postgres dataset field
-    {
-        "parent_id": None,  # Will be updated after nested group is created
-        "condition_type": ConditionalDependencyType.leaf,
-        "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
-        "operator": "gt",
-        "value": 0,
-        "sort_order": 4,
-    },
-    # Customer address city starts with Example condition (leaf) - references postgres dataset field
-    {
-        "parent_id": None,  # Will be updated after nested group is created
-        "condition_type": ConditionalDependencyType.leaf,
-        "field_address": f"{POSTGRES_DATASET_KEY}:address:city",
-        "operator": "starts_with",
-        "value": "Example",
-        "sort_order": 5,
-    },
-]
-
-
-def create_dependencies_data(manual_task_id: str) -> list[dict]:
-    return [
+# Full condition tree stored as JSONB:
+# (customer.name exists AND customer.email starts_with "customer-1") AND
+# (customer.id > 0 OR address.city starts_with "Example")
+CONDITION_TREE = {
+    "logical_operator": "and",
+    "conditions": [
+        # Customer name exists condition
         {
-            "manual_task_id": manual_task_id,
-            **dependency_data,
-        }
-        for dependency_data in DEPENDENCIES_DATA
-    ]
+            "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
+            "operator": "exists",
+            "value": None,
+        },
+        # Customer email starts with specific value condition
+        {
+            "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
+            "operator": "starts_with",
+            "value": "customer-1",
+        },
+        # Nested OR group
+        {
+            "logical_operator": "or",
+            "conditions": [
+                # Customer ID condition
+                {
+                    "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
+                    "operator": "gt",
+                    "value": 0,
+                },
+                # Customer address city starts with Example condition
+                {
+                    "field_address": f"{POSTGRES_DATASET_KEY}:address:city",
+                    "operator": "starts_with",
+                    "value": "Example",
+                },
+            ],
+        },
+    ],
+}
+
+
+def create_dependency_data(manual_task_id: str) -> dict:
+    """Create a single dependency with the full condition tree."""
+    return {
+        "manual_task_id": manual_task_id,
+        "condition_tree": CONDITION_TREE,
+    }
 
 
 def create_fields_data(manual_task_id: str, manual_task_config_id: str) -> list[dict]:
@@ -687,48 +668,20 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             return False
 
     def _create_conditional_dependencies(self) -> bool:
-        """Create ManualTaskConditionalDependencies based on ManualTask fields."""
+        """Create ManualTaskConditionalDependency with full condition tree."""
         try:
             db = self._get_db_session()
 
-            dependencies_data = create_dependencies_data(self.manual_task.id)
+            dependency_data = create_dependency_data(self.manual_task.id)
+            dep = ManualTaskConditionalDependency.create(db=db, data=dependency_data)
+            self.conditional_dependencies.append(dep)
+            self.info(f"Created conditional dependency with full condition tree: {dep.id}")
 
-            # Create dependencies in order and establish parent-child relationships
-            root_group = None
-            nested_group = None
-
-            for i, dep_data in enumerate(dependencies_data):
-                dep = ManualTaskConditionalDependency.create(db=db, data=dep_data)
-                self.conditional_dependencies.append(dep)
-
-                # Set up parent-child relationships
-                if i == 0:  # Root group
-                    root_group = dep
-                    self.info(f"Created root group dependency: {dep.id}")
-                elif i == 3:  # Nested group
-                    nested_group = dep
-                    # Update parent to root group
-                    dep.parent_id = root_group.id
-                    db.commit()
-                    self.info(f"Created nested group dependency: {dep.id}")
-                elif i in [1, 2]:  # Leaf conditions under root group
-                    # Update parent to root group
-                    dep.parent_id = root_group.id
-                    db.commit()
-                    self.info(f"Created leaf dependency under root: {dep.id}")
-                elif i in [4, 5]:  # Leaf conditions under nested group
-                    # Update parent to nested group
-                    dep.parent_id = nested_group.id
-                    db.commit()
-                    self.info(f"Created leaf dependency under nested group: {dep.id}")
-
-            self.success(
-                f"Created {len(self.conditional_dependencies)} ManualTaskConditionalDependencies"
-            )
+            self.success("Created ManualTaskConditionalDependency with condition tree")
             return True
 
         except Exception as e:
-            self.error(f"Error creating ManualTaskConditionalDependencies: {e}")
+            self.error(f"Error creating ManualTaskConditionalDependency: {e}")
             return False
 
     def _create_policy(self) -> bool:
