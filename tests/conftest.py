@@ -2205,38 +2205,6 @@ def privacy_request_requires_manual_finalization(
     pr.delete(db=db)
 
 
-@pytest.fixture(scope="function")
-def privacy_request_consent_pending(db: Session, consent_policy: Policy) -> Generator:
-    pr = PrivacyRequest.create(
-        db=db,
-        data={
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_id": consent_policy.id,
-            "status": "pending",
-            "external_id": "b5d78237-f831-4add-8a88-883a4843b017",
-        },
-    )
-    yield pr
-    pr.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def privacy_request_consent_requires_manual_finalization(
-    db: Session, consent_policy: Policy
-) -> Generator:
-    pr = PrivacyRequest.create(
-        db=db,
-        data={
-            "requested_at": "2021-08-30T16:09:37.359Z",
-            "policy_id": consent_policy.id,
-            "status": "requires_manual_finalization",
-            "external_id": "b5d78237-f831-4add-8a88-883a4843b018",
-        },
-    )
-    yield pr
-    pr.delete(db=db)
-
-
 @pytest.fixture
 def mock_gcs_client(
     base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file

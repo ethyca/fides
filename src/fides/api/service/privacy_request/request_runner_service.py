@@ -650,17 +650,6 @@ def run_privacy_request(
                         privacy_request_proceed=True,  # Should always be True unless we're testing
                     )
 
-                # Finalize Consent CHECKPOINT
-                if can_run_checkpoint(
-                    request_checkpoint=CurrentStep.finalize_consent,
-                    from_checkpoint=resume_step,
-                ):
-                    # This checkpoint allows a Privacy Request to be re-queued
-                    # after the Consent Step is complete for DSR 3.0
-                    privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.finalize_consent
-                    )
-
             except PrivacyRequestPaused as exc:
                 privacy_request.pause_processing(session)
                 _log_warning(exc, CONFIG.dev_mode)
@@ -745,19 +734,10 @@ def run_privacy_request(
                     erasure_rules = policy.get_rules_for_action(
                         action_type=ActionType.erasure
                     )
-                    consent_rules = policy.get_rules_for_action(
-                        action_type=ActionType.consent
-                    )
                     config_proxy = ConfigProxy(session)
                     requires_finalization = privacy_request.finalized_at is None and (
-                        (
-                            erasure_rules
-                            and config_proxy.execution.erasure_request_finalization_required
-                        )
-                        or (
-                            consent_rules
-                            and config_proxy.execution.consent_request_finalization_required
-                        )
+                        erasure_rules
+                        and config_proxy.execution.erasure_request_finalization_required
                     )
                     if requires_finalization:
                         logger.info(

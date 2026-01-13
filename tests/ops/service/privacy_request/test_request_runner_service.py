@@ -77,16 +77,6 @@ class TestManualFinalization:
                 "enable_erasure_request_finalization_required",
                 "privacy_request_erasure_pending",
             ),
-            (
-                "use_dsr_3_0",
-                "enable_consent_request_finalization_required",
-                "privacy_request_consent_pending",
-            ),
-            (
-                "use_dsr_2_0",
-                "enable_consent_request_finalization_required",
-                "privacy_request_consent_pending",
-            ),
         ],
     )
     def test_mark_as_requires_manual_finalization_if_config_true(
@@ -98,7 +88,7 @@ class TestManualFinalization:
         pending_fixture,
         request,
     ) -> None:
-        """Assert marking privacy request as requires_manual_finalization for erasure and consent"""
+        """Assert marking privacy request as requires_manual_finalization for erasure"""
         request.getfixturevalue(dsr_version)
         request.getfixturevalue(enable_fixture)
         privacy_request = request.getfixturevalue(pending_fixture)
@@ -122,16 +112,6 @@ class TestManualFinalization:
                 "use_dsr_2_0",
                 "disable_erasure_request_finalization_required",
                 "privacy_request_erasure_pending",
-            ),
-            (
-                "use_dsr_3_0",
-                "disable_consent_request_finalization_required",
-                "privacy_request_consent_pending",
-            ),
-            (
-                "use_dsr_2_0",
-                "disable_consent_request_finalization_required",
-                "privacy_request_consent_pending",
             ),
         ],
     )
@@ -166,16 +146,6 @@ class TestManualFinalization:
                 "use_dsr_2_0",
                 "enable_erasure_request_finalization_required",
                 "privacy_request_requires_manual_finalization",
-            ),
-            (
-                "use_dsr_3_0",
-                "enable_consent_request_finalization_required",
-                "privacy_request_consent_requires_manual_finalization",
-            ),
-            (
-                "use_dsr_2_0",
-                "enable_consent_request_finalization_required",
-                "privacy_request_consent_requires_manual_finalization",
             ),
         ],
     )

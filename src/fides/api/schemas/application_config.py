@@ -75,8 +75,6 @@ class ExecutionApplicationConfig(FidesSchema):
     require_manual_request_approval: Optional[bool] = None
     memory_watchdog_enabled: Optional[bool] = None
     sql_dry_run: Optional[SqlDryRunMode] = None
-    erasure_request_finalization_required: Optional[bool] = None
-    consent_request_finalization_required: Optional[bool] = None
 
     # Allow deprecated / unknown fields (e.g. “safe_mode”) to pass through
     model_config = ConfigDict(use_enum_values=True, extra="ignore")
