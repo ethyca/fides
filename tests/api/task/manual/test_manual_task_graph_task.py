@@ -5,7 +5,6 @@ from pytest import param
 
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.manual_task import (
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
@@ -580,7 +579,6 @@ class TestManualTaskConditionalDependencies:
         # This should raise AwaitingAsyncTask since no submissions exist yet
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
@@ -614,7 +612,6 @@ class TestManualTaskConditionalDependencies:
 
         # Call _run_request which should NOT create instances when conditions are not met
         result = graph_task._run_request(
-            ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,
             [],  # Empty input data since we're mocking the extraction
         )
@@ -653,7 +650,6 @@ class TestManualTaskConditionalDependencies:
         # This should raise AwaitingAsyncTask since no submissions exist yet
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
@@ -689,7 +685,6 @@ class TestManualTaskConditionalDependencies:
         # This should raise AwaitingAsyncTask since no submissions exist yet
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data since we're mocking the extraction
             )
@@ -758,14 +753,12 @@ class TestManualTaskConditionalDependencies:
             # Should raise AwaitingAsyncTask since conditions are met but no submissions exist
             with pytest.raises(AwaitingAsyncTask):
                 graph_task._run_request(
-                    ManualTaskConfigurationType.access_privacy_request,
                     ActionType.access,
                     [],  # Empty input data - only privacy request conditions
                 )
         else:
             # Should return None when conditions are not met
             result = graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],  # Empty input data - only privacy request conditions
             )
@@ -817,7 +810,6 @@ class TestManualTaskConditionalDependencies:
         # Call _run_request with task input data
         with pytest.raises(AwaitingAsyncTask):
             graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [{"email": "test@example.com"}],  # Task input data
             )
@@ -852,7 +844,6 @@ class TestManualTaskGraphTaskHelperMethods:
         ) as mock_log_end:
             result = manual_task_graph_task._check_manual_task_configs(
                 manual_task,
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
             )
             assert result is False
@@ -866,11 +857,10 @@ class TestManualTaskGraphTaskHelperMethods:
 
         # Ensure configs exist and are current
         config.is_current = True
-        config.config_type = ManualTaskConfigurationType.access_privacy_request
+        config.config_type = ActionType.access
 
         result = manual_task_graph_task._check_manual_task_configs(
             manual_task,
-            ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,
         )
         assert result is True
@@ -901,7 +891,7 @@ class TestManualTaskGraphTaskHelperMethods:
         manual_task_graph_task._ensure_manual_task_instances(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
         )
 
         # Verify only one instance exists
@@ -964,7 +954,7 @@ class TestManualTaskGraphTaskHelperMethods:
         manual_task_graph_task._ensure_manual_task_instances(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
         )
 
         # Verify no instances were created
@@ -978,7 +968,7 @@ class TestManualTaskGraphTaskHelperMethods:
         result = manual_task_graph_task._get_submitted_data(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
         )
         assert result is None
 
@@ -1012,7 +1002,7 @@ class TestManualTaskGraphTaskHelperMethods:
             result = manual_task_graph_task._get_submitted_data(
                 manual_task,
                 access_privacy_request,
-                ManualTaskConfigurationType.access_privacy_request,
+                ActionType.access,
             )
             assert result is None
 
@@ -1059,7 +1049,7 @@ class TestManualTaskGraphTaskHelperMethods:
         result = manual_task_graph_task._get_submitted_data(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
             {"conditional": "data"},
         )
 
@@ -1110,7 +1100,6 @@ class TestManualTaskGraphTaskHelperMethods:
             return_value=None,
         ):
             result = manual_task_graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],
             )
@@ -1133,7 +1122,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ),
         ):
             result = manual_task_graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],
             )
@@ -1182,7 +1170,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ) as mock_cleanup,
         ):
             result = manual_task_graph_task._run_request(
-                ManualTaskConfigurationType.access_privacy_request,
                 ActionType.access,
                 [],
             )
@@ -1264,7 +1251,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
                     manual_task,
-                    ManualTaskConfigurationType.access_privacy_request,
                     ActionType.access,
                 )
 
@@ -1290,7 +1276,6 @@ class TestManualTaskGraphTaskHelperMethods:
             ):
                 manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
                     manual_task,
-                    ManualTaskConfigurationType.access_privacy_request,
                     ActionType.access,
                     awaiting_detail_message="Test detail",
                 )
@@ -1307,12 +1292,12 @@ class TestManualTaskGraphTaskHelperMethods:
 
         # Ensure config is current and has the right type
         config.is_current = True
-        config.config_type = ManualTaskConfigurationType.access_privacy_request
+        config.config_type = ActionType.access
 
         manual_task_graph_task._ensure_manual_task_instances(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
         )
 
         # Verify instance was created
@@ -1363,7 +1348,7 @@ class TestManualTaskGraphTaskHelperMethods:
         result = manual_task_graph_task._get_submitted_data(
             manual_task,
             access_privacy_request,
-            ManualTaskConfigurationType.access_privacy_request,
+            ActionType.access,
         )
 
         # Should return the aggregated data
@@ -1426,7 +1411,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 mock_set_data.return_value = [{"result": "data"}]
 
                 result = manual_task_graph_task._run_request(
-                    ManualTaskConfigurationType.access_privacy_request,
                     ActionType.access,
                     [],
                 )
@@ -1434,7 +1418,6 @@ class TestManualTaskGraphTaskHelperMethods:
                 # Should call _set_submitted_data_or_raise_awaiting_async_task_callback with detailed message
                 mock_set_data.assert_called_once_with(
                     manual_task,
-                    ManualTaskConfigurationType.access_privacy_request,
                     ActionType.access,
                     conditional_data={"test": "data"},
                     awaiting_detail_message="Success message",
