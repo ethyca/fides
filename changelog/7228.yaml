@@ -1,0 +1,5 @@
+type: Fixed
+description: Added experience config ID class to embedded consent body for per-brand CSS
+pr: 7228
+labels: []
+
