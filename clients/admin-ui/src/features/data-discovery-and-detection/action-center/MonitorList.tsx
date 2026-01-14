@@ -5,7 +5,6 @@ import {
   Pagination,
   useChakraToast as useToast,
 } from "fidesui";
-import { NextPage } from "next";
 import { useEffect, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
@@ -18,10 +17,14 @@ import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/act
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
-const MonitorList: NextPage = () => {
+const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled },
+    flags: {
+      webMonitor: webMonitorEnabled,
+      heliosV2: heliosV2Enabled,
+      oktaMonitor: oktaMonitorEnabled,
+    },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
@@ -31,6 +34,7 @@ const MonitorList: NextPage = () => {
   const monitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ] as const;
 
   const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
@@ -60,7 +64,7 @@ const MonitorList: NextPage = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
-  if (!webMonitorEnabled && !heliosV2Enabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 
