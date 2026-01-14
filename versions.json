@@ -1,1 +1,14 @@
-[{"version": "2.77.1", "title": "2.77.1", "aliases": ["stable"]}, {"version": "dev", "title": "dev", "aliases": []}]
+[
+  {
+    "version": "dev",
+    "title": "dev",
+    "aliases": []
+  },
+  {
+    "version": "2.77.1",
+    "title": "2.77.1",
+    "aliases": [
+      "stable"
+    ]
+  }
+]
