@@ -309,6 +309,15 @@ export const shouldResurfaceBanner = (
   if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
     return true;
   }
+  // Resurface if configured for this consent method
+  if (
+    cookie?.fides_meta.consentMethod &&
+    experience.experience_config?.resurface_behavior?.includes(
+      cookie.fides_meta.consentMethod,
+    )
+  ) {
+    return true;
+  }
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
   const hasConsentInCookie = (

@@ -2,10 +2,13 @@ import {
   Button,
   ChakraArrowForwardIcon as ArrowForwardIcon,
   ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraCheckboxGroup as CheckboxGroup,
   ChakraDivider as Divider,
   ChakraFlex as Flex,
   ChakraFormLabel as FormLabel,
   ChakraHeading as Heading,
+  ChakraStack as Stack,
   ChakraText as Text,
   formatIsoLocation,
   isoStringToEntry,
@@ -48,6 +51,7 @@ import {
   LimitedPrivacyNoticeResponseSchema,
   Property,
   RejectAllMechanism,
+  ResurfaceBehavior,
   StagedResourceTypeValue,
   SupportedLanguage,
 } from "~/types/api";
@@ -91,6 +95,19 @@ const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
     label: "Reject consent only",
     value: RejectAllMechanism.REJECT_CONSENT_ONLY,
+  },
+];
+
+const resurfaceBehaviorOptions = [
+  {
+    label: "Reject",
+    value: ResurfaceBehavior.REJECT,
+    description: "Show the banner again when user rejects",
+  },
+  {
+    label: "Dismiss",
+    value: ResurfaceBehavior.DISMISS,
+    description: "Show the banner again when user dismisses",
   },
 ];
 
@@ -399,6 +416,52 @@ export const PrivacyExperienceForm = ({
             />
           </Box>
         )}
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.TCF_OVERLAY) && (
+        <Box>
+          <FormLabel fontSize="sm" fontWeight="semibold" mb={2}>
+            Resurface banner
+          </FormLabel>
+          <Text fontSize="sm" color="gray.600" mb={3}>
+            Choose when to show the banner again after the user has interacted
+            with it. Leave unchecked for default behavior (only resurface on
+            cookie expiration or vendor changes).
+          </Text>
+          <CheckboxGroup
+            value={values.resurface_behavior ?? []}
+            onChange={(selectedValues) => {
+              setFieldValue(
+                "resurface_behavior",
+                selectedValues.length > 0 ? selectedValues : null,
+              );
+            }}
+          >
+            <Stack spacing={2}>
+              {resurfaceBehaviorOptions.map((option) => {
+                const isDisabled =
+                  option.value === ResurfaceBehavior.DISMISS &&
+                  !values.dismissable;
+                return (
+                  <Checkbox
+                    key={option.value}
+                    value={option.value}
+                    isDisabled={isDisabled}
+                  >
+                    <Box>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {option.label}
+                      </Text>
+                      <Text fontSize="xs" color="gray.600">
+                        {option.description}
+                      </Text>
+                    </Box>
+                  </Checkbox>
+                );
+              })}
+            </Stack>
+          </CheckboxGroup>
+        </Box>
+      )}
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Privacy notices
