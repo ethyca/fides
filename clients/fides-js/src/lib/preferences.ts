@@ -270,7 +270,7 @@ const validateConsent = (
       isNoticeOnly &&
       value !== true &&
       value !== UserConsentPreference.ACKNOWLEDGE &&
-      consentMethod !== ConsentMethod.EXTERNAL_PROVIDER
+      !window?.FidesPreview
     ) {
       return new Error(
         `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
