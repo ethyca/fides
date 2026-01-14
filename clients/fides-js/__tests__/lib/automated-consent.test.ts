@@ -152,7 +152,7 @@ describe("calculateAutomatedConsent", () => {
     });
   });
 
-  it("applies notice consent string with priority between migrated and GPC", () => {
+  it("applies notice consent string with priority over GPC", () => {
     (decodeNoticeConsentString as jest.Mock).mockReturnValueOnce({
       analytics: true,
     });
@@ -172,6 +172,10 @@ describe("calculateAutomatedConsent", () => {
     expect(result.applied).toBe(true);
     // Should be SCRIPT method when notice consent string is applied
     expect(result.consentMethod).toBe(ConsentMethod.SCRIPT);
+    expect(result.noticeConsent).toEqual({
+      analytics: true, // Notice string applied (overrides GPC)
+      marketing: false, // GPC applied
+    });
   });
 
   it("respects saved consent for GPC", () => {

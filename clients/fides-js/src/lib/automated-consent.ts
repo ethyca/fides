@@ -98,13 +98,13 @@ export const calculateAutomatedConsent = (
         notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY;
 
       // NOTICE_ONLY mechanisms (like essential notices) must always be true
-      // and cannot be opted out of, even via migrated consent
+      // and cannot be opted out of, even via any automated consent source
       if (isNoticeOnly) {
         appliedConsent[notice.notice_key] = true;
         return appliedConsent;
       }
 
-      // now Check for non-NOTICE_ONLY migrated consent
+      // Priority 1: Migrated consent (OneTrust, etc.) - highest priority
       if (hasMigratedConsent) {
         const preference = migratedConsent[notice.notice_key];
         if (preference !== undefined) {
@@ -114,7 +114,7 @@ export const calculateAutomatedConsent = (
         }
       }
 
-      // Then check for notice consent string
+      // Priority 2: Notice consent string (fidesString override)
       if (noticeConsentString) {
         const noticeConsent = decodeNoticeConsentString(noticeConsentString);
         const preference = noticeConsent[notice.notice_key];
@@ -125,7 +125,7 @@ export const calculateAutomatedConsent = (
         }
       }
 
-      // Then check for GPC
+      // Priority 3: GPC (Global Privacy Control) - lowest priority
       if (globalPrivacyControl && !hasPriorConsent) {
         if (notice.has_gpc_flag) {
           gpcApplied = true;
@@ -141,6 +141,7 @@ export const calculateAutomatedConsent = (
 
   if (gpcApplied || noticeConsentApplied || migratedConsentApplied) {
     let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
+    // Determine consent method based on priority (highest to lowest)
     if (migratedConsentApplied && migrationMethod) {
       fidesDebugger("Calculated automated consent from migrated provider");
       consentMethod = migrationMethod;
