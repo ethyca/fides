@@ -1,7 +1,0 @@
-# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
-# Fill in the required fields and delete this comment block
-
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Consent DSR completion email template.
-pr: 7102 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
