@@ -580,6 +580,46 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
         )
 
+    def _process_single_sub_request(
+        self,
+        client: AuthenticatedClient,
+        sub_request: RequestTaskSubRequest,
+        polling_task: RequestTask,
+    ) -> None:
+        """
+        Process a single sub-request by checking its status and handling completion.
+
+        Args:
+            client: The authenticated client
+            sub_request: The sub-request to process
+            polling_task: The parent polling task
+        """
+        param_values = sub_request.param_values
+        status_result = self._check_sub_request_status(client, param_values)
+
+        if status_result.is_complete:
+            if status_result.skip_result_request:
+                # Complete but no data to fetch - mark complete with empty data
+                logger.info(
+                    f"Sub-request {sub_request.id} complete with no data to fetch"
+                )
+                if polling_task.action_type == ActionType.access:
+                    sub_request.access_data = []
+                if polling_task.action_type == ActionType.erasure:
+                    sub_request.rows_masked = 0
+                sub_request.update_status(
+                    self.session, ExecutionLogStatus.complete.value
+                )
+            else:
+                # Complete with data - fetch results
+                self._process_completed_sub_request(
+                    client, param_values, sub_request, polling_task
+                )
+        else:
+            logger.debug(
+                f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
+            )
+
     def _process_sub_requests_for_request(
         self,
         client: AuthenticatedClient,
@@ -601,35 +641,8 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             if sub_request.status == ExecutionLogStatus.complete.value:
                 continue
 
-            param_values = sub_request.param_values
-
             try:
-                # Check status of the sub-request
-                status_result = self._check_sub_request_status(client, param_values)
-
-                if status_result.is_complete:
-                    if status_result.skip_result_request:
-                        # Complete but no data to fetch - mark complete with empty data
-                        logger.info(
-                            f"Sub-request {sub_request.id} complete with no data to fetch"
-                        )
-                        if polling_task.action_type == ActionType.access:
-                            sub_request.access_data = []
-                        if polling_task.action_type == ActionType.erasure:
-                            sub_request.rows_masked = 0
-                        sub_request.update_status(
-                            self.session, ExecutionLogStatus.complete.value
-                        )
-                    else:
-                        # Complete with data - fetch results
-                        self._process_completed_sub_request(
-                            client, param_values, sub_request, polling_task
-                        )
-                else:
-                    logger.debug(
-                        f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
-                    )
-
+                self._process_single_sub_request(client, sub_request, polling_task)
             except Exception as exc:
                 logger.error(
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"
