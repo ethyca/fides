@@ -48,6 +48,7 @@ readonly_async_engine: Any = None
 readonly_async_session_factory: Callable[[], AsyncSession] = async_session_factory
 
 if CONFIG.database.async_readonly_database_uri:
+    logger.info("Creating read-only async engine and session factory")
     # Build connect_args for readonly (similar to primary)
     readonly_connect_args: Dict[str, Any] = {}
     readonly_params = CONFIG.database.readonly_params or {}
@@ -57,6 +58,7 @@ if CONFIG.database.async_readonly_database_uri:
         ssl_ctx.verify_mode = ssl.CERT_REQUIRED
         readonly_connect_args["ssl"] = ssl_ctx
 
+    logger.info(f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}")
     readonly_async_engine = create_async_engine(
         CONFIG.database.async_readonly_database_uri,
         connect_args=readonly_connect_args,
@@ -117,7 +119,7 @@ async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
             )
             ASYNC_READONLY_POOL_WARMED = True
 
-        session = readonly_async_session_factory()
+    session = readonly_async_session_factory()
 
     try:
         yield session
