@@ -1,0 +1,71 @@
+.card {
+  max-width: 480px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.description {
+  margin-bottom: 16px;
+}
+
+.channelSection {
+  padding: 16px;
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 8px;
+}
+
+.channelSelect {
+  min-width: 200px;
+}
+
+.testMessageSection {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 8px;
+}
+
+.messageInput {
+  flex: 1;
+}
+
+.qaSection {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 8px;
+}
+
+.questionCard {
+  background: var(--ant-color-bg-container);
+}
+
+.answersContainer {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--ant-color-fill-tertiary);
+  border-radius: 4px;
+}
+
+.answer {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.qaItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}

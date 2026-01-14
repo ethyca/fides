@@ -1,0 +1,143 @@
+import { baseApi } from "~/features/common/api.slice";
+
+export interface ChatProviderSettings {
+  enabled: boolean;
+  provider_type: "slack";
+  workspace_url?: string;
+  client_id?: string;
+  client_secret?: string;
+  notification_channel_id?: string;
+}
+
+export interface ChatProviderSettingsResponse {
+  id: string;
+  enabled: boolean;
+  provider_type: string;
+  workspace_url?: string;
+  client_id?: string;
+  authorized: boolean;
+  created_at: string;
+  updated_at: string;
+  workspace_name?: string;
+  connected_by_email?: string;
+  notification_channel_id?: string;
+}
+
+export interface ChatProviderTestResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface SendMessageRequest {
+  channel_id: string;
+  message: string;
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface SlackChannel {
+  id: string;
+  name: string;
+}
+
+export interface ChatChannelsResponse {
+  channels: SlackChannel[];
+}
+
+// Conversational Q&A Feature interfaces
+
+export interface QuestionWithAnswer {
+  question: string;
+  answer: string | null;
+  answered_at: string | null;
+  user: string | null;
+}
+
+export interface Conversation {
+  thread_ts: string;
+  channel_id: string;
+  created_at: string;
+  current_question_index: number;
+  questions: QuestionWithAnswer[];
+  status: "in_progress" | "completed";
+  last_processed_ts: string;
+}
+
+export interface QuestionsResponse {
+  conversations: Conversation[];
+}
+
+export interface PostQuestionsResponse {
+  success: boolean;
+  message: string;
+  questions_posted: number;
+}
+
+const chatProviderApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    getChatSettings: build.query<ChatProviderSettingsResponse, void>({
+      query: () => ({ url: "plus/chat/settings" }),
+      providesTags: ["Chat Provider"],
+    }),
+    updateChatSettings: build.mutation<
+      ChatProviderSettingsResponse,
+      ChatProviderSettings
+    >({
+      query: (body) => ({
+        url: "plus/chat/settings",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Chat Provider"],
+    }),
+    testChatConnection: build.mutation<ChatProviderTestResponse, void>({
+      query: () => ({
+        url: "plus/chat/test",
+        method: "POST",
+      }),
+    }),
+    getChatChannels: build.query<ChatChannelsResponse, void>({
+      query: () => ({ url: "plus/chat/channels" }),
+    }),
+    deleteChatConnection: build.mutation<void, void>({
+      query: () => ({
+        url: "plus/chat/settings",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Chat Provider"],
+    }),
+    sendChatMessage: build.mutation<SendMessageResponse, SendMessageRequest>({
+      query: (body) => ({
+        url: "plus/chat/send",
+        method: "POST",
+        body,
+      }),
+    }),
+    // Q&A Feature endpoints
+    postQuestions: build.mutation<PostQuestionsResponse, void>({
+      query: () => ({
+        url: "plus/chat/questions",
+        method: "POST",
+      }),
+      invalidatesTags: ["Chat Questions"],
+    }),
+    getQuestions: build.query<QuestionsResponse, void>({
+      query: () => ({ url: "plus/chat/questions" }),
+      providesTags: ["Chat Questions"],
+    }),
+  }),
+});
+
+export const {
+  useGetChatSettingsQuery,
+  useUpdateChatSettingsMutation,
+  useTestChatConnectionMutation,
+  useGetChatChannelsQuery,
+  useDeleteChatConnectionMutation,
+  useSendChatMessageMutation,
+  usePostQuestionsMutation,
+  useGetQuestionsQuery,
+} = chatProviderApi;
