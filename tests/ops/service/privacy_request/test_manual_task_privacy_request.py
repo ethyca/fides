@@ -18,7 +18,6 @@ from fides.api.models.manual_task import (
     ManualTaskConditionalDependency,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskParentEntityType,
@@ -26,6 +25,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
@@ -111,7 +111,7 @@ def manual_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.access_privacy_request,
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },
@@ -234,9 +234,9 @@ def test_privacy_request_runs_after_manual_input_simple(
         db.refresh(privacy_request)
 
         # After first run, privacy request should be awaiting manual input
-        assert (
-            privacy_request.status == PrivacyRequestStatus.requires_input
-        ), f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        assert privacy_request.status == PrivacyRequestStatus.requires_input, (
+            f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        )
 
         # ------------------------------------------------------------------
         # 3. Provide manual input via ManualTaskSubmission and re-run
@@ -279,19 +279,19 @@ def test_privacy_request_runs_after_manual_input_simple(
         source_addr_key = "postgres_example_test_dataset:customer"
 
         # Verify source dataset data is present (proves regular datasets execute)
-        assert (
-            source_addr_key in results
-        ), "Source dataset data should be present in results"
+        assert source_addr_key in results, (
+            "Source dataset data should be present in results"
+        )
 
         # Verify manual task data is present in results
-        assert (
-            manual_addr_key in results
-        ), "Manual task data should be present in results"
+        assert manual_addr_key in results, (
+            "Manual task data should be present in results"
+        )
         assert (
             results[manual_addr_key][0]["verification_required"] == "verified_customer"
         ), "Manual task should contain submitted value"
 
-    except Exception as e:
+    except Exception:
         print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise
 
@@ -374,9 +374,9 @@ def test_manual_task_with_conditional_dependencies(
         db.refresh(privacy_request)
 
         # Should require manual input (manual task has configuration and should require input)
-        assert (
-            privacy_request.status == PrivacyRequestStatus.requires_input
-        ), f"Expected requires_input, got {privacy_request.status}"
+        assert privacy_request.status == PrivacyRequestStatus.requires_input, (
+            f"Expected requires_input, got {privacy_request.status}"
+        )
 
         # Verify manual task instance was created (proves manual task was reached in DAG)
         instance = (
@@ -407,9 +407,9 @@ def test_manual_task_with_conditional_dependencies(
         )
         db.refresh(privacy_request)
 
-        assert (
-            privacy_request.status == PrivacyRequestStatus.complete
-        ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        assert privacy_request.status == PrivacyRequestStatus.complete, (
+            f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        )
 
         # Verify results contain manual task data
         results = cast(
@@ -418,9 +418,9 @@ def test_manual_task_with_conditional_dependencies(
         )
 
         manual_addr_key = ManualTaskAddress.create("manual_connection").value
-        assert (
-            manual_addr_key in results
-        ), "Manual task data should be present in results"
+        assert manual_addr_key in results, (
+            "Manual task data should be present in results"
+        )
         assert (
             results[manual_addr_key][0]["verification_required"]
             == "verified_premium_user"
@@ -482,7 +482,7 @@ def test_manual_task_with_conditional_dependencies(
             db=db,
             data={
                 "task_id": manual_task_or.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -523,9 +523,9 @@ def test_manual_task_with_conditional_dependencies(
         )
 
         # Should require manual input since OR condition should be met (email exists OR name contains 'customer')
-        assert (
-            privacy_request_or.status == PrivacyRequestStatus.requires_input
-        ), f"Expected requires_input, got {privacy_request_or.status}"
+        assert privacy_request_or.status == PrivacyRequestStatus.requires_input, (
+            f"Expected requires_input, got {privacy_request_or.status}"
+        )
 
         # Verify manual task instance was created (proves manual task was reached in DAG)
         instance_or = (
@@ -536,9 +536,9 @@ def test_manual_task_with_conditional_dependencies(
             )
             .first()
         )
-        assert (
-            instance_or is not None
-        ), "ManualTaskInstance should be created for OR condition"
+        assert instance_or is not None, (
+            "ManualTaskInstance should be created for OR condition"
+        )
 
         # Provide manual input for both manual tasks
         for instance in all_instances:
@@ -578,9 +578,9 @@ def test_manual_task_with_conditional_dependencies(
         )
         db.refresh(privacy_request_or)
 
-        assert (
-            privacy_request_or.status == PrivacyRequestStatus.complete
-        ), f"Expected complete, got {privacy_request_or.status}. Error: {getattr(privacy_request_or, 'error_message', 'No error message')}"
+        assert privacy_request_or.status == PrivacyRequestStatus.complete, (
+            f"Expected complete, got {privacy_request_or.status}. Error: {getattr(privacy_request_or, 'error_message', 'No error message')}"
+        )
 
         # Verify results contain OR manual task data
         results_or = cast(
@@ -591,14 +591,14 @@ def test_manual_task_with_conditional_dependencies(
         manual_addr_key_or = ManualTaskAddress.create(
             "or_conditional_manual_connection"
         ).value
-        assert (
-            manual_addr_key_or in results_or
-        ), "OR manual task data should be present in results"
+        assert manual_addr_key_or in results_or, (
+            "OR manual task data should be present in results"
+        )
         assert (
             results_or[manual_addr_key_or][0]["verification_required"] == "or_verified"
         )
 
-    except Exception as e:
+    except Exception:
         print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise
 
@@ -676,9 +676,9 @@ def test_manual_tasks_are_integrated_into_dag(
     dag_test_graph = next(
         (g for g in manual_task_graphs if g.name == "manual_connection"), None
     )
-    assert (
-        dag_test_graph is not None
-    ), "Manual task graph for manual_connection should exist"
+    assert dag_test_graph is not None, (
+        "Manual task graph for manual_connection should exist"
+    )
 
     # ------------------------------------------------------------------
     # 4. PROOF 2: Verify manual tasks have proper dependencies
@@ -701,9 +701,9 @@ def test_manual_tasks_are_integrated_into_dag(
         if field_with_reference:
             break
 
-    assert (
-        field_with_reference is not None
-    ), f"Manual task should have a scalar field with reference to {expected_field_address}. Found fields: {[f.name for f in manual_collection.fields]}"
+    assert field_with_reference is not None, (
+        f"Manual task should have a scalar field with reference to {expected_field_address}. Found fields: {[f.name for f in manual_collection.fields]}"
+    )
 
     # ------------------------------------------------------------------
     # 5. PROOF 3: Verify manual tasks are included in the complete graph
@@ -714,9 +714,9 @@ def test_manual_tasks_are_integrated_into_dag(
 
     # Verify manual task node exists in the complete graph
     manual_address = ManualTaskAddress.create("manual_connection")
-    assert (
-        manual_address in complete_graph.nodes
-    ), "Manual task should be included in complete graph"
+    assert manual_address in complete_graph.nodes, (
+        "Manual task should be included in complete graph"
+    )
 
     # ------------------------------------------------------------------
     # 6. PROOF 4: Verify manual task dependencies are properly configured
@@ -737,20 +737,20 @@ def test_manual_tasks_are_integrated_into_dag(
         if field_with_reference:
             break
 
-    assert (
-        field_with_reference is not None
-    ), f"Manual task should have a scalar field with reference to {expected_field_address}"
+    assert field_with_reference is not None, (
+        f"Manual task should have a scalar field with reference to {expected_field_address}"
+    )
 
     # Verify the manual task has the correct fields that depend on source data
     manual_fields = [field.name for field in manual_collection.fields]
 
     # The manual task should have both its own field and the conditional dependency field
-    assert (
-        "verification_required" in manual_fields
-    ), "Manual task should have its own field"
-    assert (
-        "postgres_example_test_dataset:customer:email" in manual_fields
-    ), "Manual task should have conditional dependency field from source"
+    assert "verification_required" in manual_fields, (
+        "Manual task should have its own field"
+    )
+    assert "postgres_example_test_dataset:customer:email" in manual_fields, (
+        "Manual task should have conditional dependency field from source"
+    )
 
     # ------------------------------------------------------------------
     # 7. PROOF 5: Verify data flows through manual task graph task (proves DAG integration)
@@ -769,9 +769,9 @@ def test_manual_tasks_are_integrated_into_dag(
     db.refresh(privacy_request)
 
     # Should require manual input (conditional evaluation not implemented yet)
-    assert (
-        privacy_request.status == PrivacyRequestStatus.requires_input
-    ), f"Expected requires_input, got {privacy_request.status}"
+    assert privacy_request.status == PrivacyRequestStatus.requires_input, (
+        f"Expected requires_input, got {privacy_request.status}"
+    )
 
     # Verify manual task instance was created (proves manual task was reached in DAG)
     instance = (
@@ -802,9 +802,9 @@ def test_manual_tasks_are_integrated_into_dag(
     )
     db.refresh(privacy_request)
 
-    assert (
-        privacy_request.status == PrivacyRequestStatus.complete
-    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    assert privacy_request.status == PrivacyRequestStatus.complete, (
+        f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    )
 
     # Verify results contain both source data and manual task data
     results = cast(
@@ -885,9 +885,9 @@ def test_manual_task_output_data_available_for_downstream(
         db.refresh(privacy_request)
 
         # Should require manual input
-        assert (
-            privacy_request.status == PrivacyRequestStatus.requires_input
-        ), f"Expected requires_input, got {privacy_request.status}"
+        assert privacy_request.status == PrivacyRequestStatus.requires_input, (
+            f"Expected requires_input, got {privacy_request.status}"
+        )
 
         # Provide manual input
         instance = (
@@ -917,9 +917,9 @@ def test_manual_task_output_data_available_for_downstream(
         )
         db.refresh(privacy_request)
 
-        assert (
-            privacy_request.status == PrivacyRequestStatus.complete
-        ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        assert privacy_request.status == PrivacyRequestStatus.complete, (
+            f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+        )
 
         # Verify manual task output data is properly structured
         results = cast(
@@ -930,23 +930,23 @@ def test_manual_task_output_data_available_for_downstream(
         manual_addr_key = ManualTaskAddress.create("manual_connection").value
 
         # Verify manual task data is present and properly structured
-        assert (
-            manual_addr_key in results
-        ), "Manual task data should be present in results"
+        assert manual_addr_key in results, (
+            "Manual task data should be present in results"
+        )
         manual_task_data = results[manual_addr_key][0]
 
         # Verify the manual task output has the expected structure
-        assert (
-            "verification_required" in manual_task_data
-        ), "Manual task should have verification_required field"
-        assert (
-            manual_task_data["verification_required"] == "test_output_data"
-        ), "Manual task should contain submitted value"
+        assert "verification_required" in manual_task_data, (
+            "Manual task should have verification_required field"
+        )
+        assert manual_task_data["verification_required"] == "test_output_data", (
+            "Manual task should contain submitted value"
+        )
 
         # Verify the manual task output is a proper Row structure that can be consumed by downstream collections
-        assert isinstance(
-            manual_task_data, dict
-        ), "Manual task output should be a dictionary"
+        assert isinstance(manual_task_data, dict), (
+            "Manual task output should be a dictionary"
+        )
         assert (
             "id" in manual_task_data or "verification_required" in manual_task_data
         ), "Manual task output should have identifiable fields"
@@ -958,56 +958,56 @@ def test_manual_task_output_data_available_for_downstream(
         manual_task_fields = list(manual_task_data.keys())
 
         # Assert: Manual task collection address follows the expected format
-        assert (
-            ":" in manual_collection_address
-        ), "Manual task collection address should contain ':' separator"
-        assert (
-            manual_collection_address == "manual_connection:manual_data"
-        ), f"Expected 'manual_connection:manual_data', got '{manual_collection_address}'"
+        assert ":" in manual_collection_address, (
+            "Manual task collection address should contain ':' separator"
+        )
+        assert manual_collection_address == "manual_connection:manual_data", (
+            f"Expected 'manual_connection:manual_data', got '{manual_collection_address}'"
+        )
 
         # Assert: Manual task data contains the expected fields for downstream reference
-        assert (
-            "verification_required" in manual_task_fields
-        ), "Manual task should have verification_required field for downstream reference"
-        assert (
-            len(manual_task_fields) >= 1
-        ), "Manual task should have at least one field for downstream reference"
+        assert "verification_required" in manual_task_fields, (
+            "Manual task should have verification_required field for downstream reference"
+        )
+        assert len(manual_task_fields) >= 1, (
+            "Manual task should have at least one field for downstream reference"
+        )
 
         # Assert: Manual task data can be parsed as a CollectionAddress (proves compatibility with existing system)
         parsed_collection_address = CollectionAddress.from_string(
             manual_collection_address
         )
-        assert (
-            parsed_collection_address.dataset == "manual_connection"
-        ), f"Expected dataset 'manual_connection', got '{parsed_collection_address.dataset}'"
-        assert (
-            parsed_collection_address.collection == "manual_data"
-        ), f"Expected collection 'manual_data', got '{parsed_collection_address.collection}'"
+        assert parsed_collection_address.dataset == "manual_connection", (
+            f"Expected dataset 'manual_connection', got '{parsed_collection_address.dataset}'"
+        )
+        assert parsed_collection_address.collection == "manual_data", (
+            f"Expected collection 'manual_data', got '{parsed_collection_address.collection}'"
+        )
 
         # Assert: Manual task address is recognized as a manual task address
-        assert ManualTaskAddress.is_manual_task_address(
-            manual_collection_address
-        ), "Manual task address should be recognized as a manual task address"
-        assert ManualTaskAddress.is_manual_task_address(
-            parsed_collection_address
-        ), "Manual task CollectionAddress should be recognized as a manual task address"
+        assert ManualTaskAddress.is_manual_task_address(manual_collection_address), (
+            "Manual task address should be recognized as a manual task address"
+        )
+        assert ManualTaskAddress.is_manual_task_address(parsed_collection_address), (
+            "Manual task CollectionAddress should be recognized as a manual task address"
+        )
 
         # Assert: Manual task data structure is compatible with downstream collection input requirements
         # Downstream collections expect Row objects (dictionaries) with identifiable fields
-        assert isinstance(
-            manual_task_data, dict
-        ), "Manual task output should be a dictionary for downstream consumption"
-        assert (
-            "verification_required" in manual_task_data
-        ), "Manual task should have verification_required field accessible to downstream collections"
-        assert (
-            manual_task_data["verification_required"] == "test_output_data"
-        ), "Manual task should preserve submitted value for downstream collections"
+        assert isinstance(manual_task_data, dict), (
+            "Manual task output should be a dictionary for downstream consumption"
+        )
+        assert "verification_required" in manual_task_data, (
+            "Manual task should have verification_required field accessible to downstream collections"
+        )
+        assert manual_task_data["verification_required"] == "test_output_data", (
+            "Manual task should preserve submitted value for downstream collections"
+        )
 
         # This proves that downstream collections can depend on manual tasks
         # and access their output data through the standard graph traversal mechanism
 
-    except Exception as e:
+    except Exception:
         print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise
 
@@ -1079,9 +1079,9 @@ def test_manual_task_conditional_dependencies_skip_execution(
     db.refresh(privacy_request)
 
     # Should complete immediately since manual task condition is not met
-    assert (
-        privacy_request.status == PrivacyRequestStatus.complete
-    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    assert privacy_request.status == PrivacyRequestStatus.complete, (
+        f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    )
 
     # Verify NO manual task instance was created (proves manual task was skipped)
     instance = (
@@ -1092,9 +1092,9 @@ def test_manual_task_conditional_dependencies_skip_execution(
         )
         .first()
     )
-    assert (
-        instance is None
-    ), f"ManualTaskInstance should NOT be created when condition is not met: Instance: {instance}"
+    assert instance is None, (
+        f"ManualTaskInstance should NOT be created when condition is not met: Instance: {instance}"
+    )
 
     # Verify results contain source data but NO manual task data
     results = cast(
@@ -1109,9 +1109,9 @@ def test_manual_task_conditional_dependencies_skip_execution(
     assert source_addr_key in results, "Source data should be present in results"
 
     # Verify manual task data is NOT present (proves manual task was skipped)
-    assert not results.get(
-        manual_addr_key
-    ), "Manual task data should NOT be present when condition is not met"
+    assert not results.get(manual_addr_key), (
+        "Manual task data should NOT be present when condition is not met"
+    )
 
 
 @pytest.mark.integration_postgres
@@ -1181,9 +1181,9 @@ def test_manual_task_conditional_dependencies_execute_when_met(
     db.refresh(privacy_request)
 
     # Should require manual input since manual task condition is met
-    assert (
-        privacy_request.status == PrivacyRequestStatus.requires_input
-    ), f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    assert privacy_request.status == PrivacyRequestStatus.requires_input, (
+        f"Expected requires_input, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    )
 
     # Verify manual task instance was created (proves manual task was executed)
     instance = (
@@ -1194,9 +1194,9 @@ def test_manual_task_conditional_dependencies_execute_when_met(
         )
         .first()
     )
-    assert (
-        instance is not None
-    ), "ManualTaskInstance should be created when condition is met"
+    assert instance is not None, (
+        "ManualTaskInstance should be created when condition is met"
+    )
 
     # Provide manual input
     submission = ManualTaskSubmission.create(
@@ -1216,9 +1216,9 @@ def test_manual_task_conditional_dependencies_execute_when_met(
     )
     db.refresh(privacy_request)
 
-    assert (
-        privacy_request.status == PrivacyRequestStatus.complete
-    ), f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    assert privacy_request.status == PrivacyRequestStatus.complete, (
+        f"Expected complete, got {privacy_request.status}. Error: {getattr(privacy_request, 'error_message', 'No error message')}"
+    )
 
     # Verify results contain both source data and manual task data
     results = cast(

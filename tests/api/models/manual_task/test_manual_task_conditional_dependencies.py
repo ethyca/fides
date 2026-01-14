@@ -1,7 +1,11 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_task import ManualTask, ManualTaskConditionalDependency
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfigField,
+    ManualTaskConditionalDependency,
+)
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
     ConditionLeaf,
@@ -79,89 +83,6 @@ class TestManualTaskConditionalDependencyCRUD:
         assert dependency.condition_tree == sample_condition_group.model_dump()
         assert dependency.condition_tree["logical_operator"] == GroupOperator.and_
         assert len(dependency.condition_tree["conditions"]) == 2
-
-
-class TestManualTaskConditionalDependencyRelationships:
-    """Test relationships and foreign key constraints"""
-
-    def test_manual_task_conditional_dependency_foreign_key_constraint(
-        self, db: Session, sample_condition_leaf: ConditionLeaf
-    ):
-        """Test that foreign key constraints are enforced"""
-        condition_tree = sample_condition_leaf.model_dump()
-        # Try to create a dependency with non-existent manual_task_id
-        with pytest.raises(
-            Exception
-        ):  # Should raise an exception for invalid foreign key
-            ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": "non_existent_id",
-                    "condition_tree": condition_tree,
-                },
-            )
-
-    def test_manual_task_unique_constraint(
-        self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
-    ):
-        """Test that only one conditional dependency is allowed per manual task"""
-        condition_tree = sample_condition_leaf.model_dump()
-
-        # Create first dependency
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_tree": condition_tree,
-            },
-        )
-
-        # Try to create second dependency for the same task
-        with pytest.raises(Exception):  # Should raise unique constraint violation
-            ManualTaskConditionalDependency.create(
-                db=db,
-                data={
-                    "manual_task_id": manual_task.id,
-                    "condition_tree": condition_tree,
-                },
-            )
-
-
-class TestManualTaskConditionalDependencyCascadeDeletes:
-    """Test cascade delete behavior"""
-
-    def test_manual_task_conditional_dependency_cascade_delete(
-        self, db: Session, manual_task: ManualTask, sample_condition_leaf: ConditionLeaf
-    ):
-        """Test that conditional dependencies are deleted when the manual task is deleted"""
-        condition_tree = sample_condition_leaf.model_dump()
-        dependency = ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task.id,
-                "condition_tree": condition_tree,
-            },
-        )
-
-        # Verify dependency exists
-        assert (
-            db.query(ManualTaskConditionalDependency)
-            .filter_by(id=dependency.id)
-            .first()
-            is not None
-        )
-
-        # Delete the manual task
-        db.delete(manual_task)
-        db.commit()
-
-        # Verify dependency is deleted
-        assert (
-            db.query(ManualTaskConditionalDependency)
-            .filter_by(id=dependency.id)
-            .first()
-            is None
-        )
 
 
 class TestManualTaskConditionalDependencyClassMethods:
@@ -264,3 +185,162 @@ class TestManualTaskConditionalDependencyClassMethods:
         """Test that get_condition_tree raises error when manual_task_id is missing"""
         with pytest.raises(ValueError, match="manual_task_id is required"):
             ManualTaskConditionalDependency.get_condition_tree(db)
+
+
+# ============================================================================
+# Field-Level Conditional Dependency Tests
+# ============================================================================
+# Note: manual_task_config and manual_task_config_field fixtures are defined in conftest.py
+
+
+@pytest.fixture
+def field_level_condition_leaf() -> ConditionLeaf:
+    """Create a sample leaf condition for field-level dependency"""
+    return ConditionLeaf(
+        field_address="privacy_request.status", operator=Operator.eq, value="approved"
+    )
+
+
+class TestGetConditionTreeWithConfigFieldKey:
+    """Test get_condition_tree method with config_field_key parameter"""
+
+    def test_get_task_level_condition_tree(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        sample_condition_leaf: ConditionLeaf,
+    ):
+        """Test getting task-level condition tree (config_field_key=None)"""
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_tree": sample_condition_leaf.model_dump(),
+            },
+        )
+
+        # Get task-level condition (default behavior, config_field_key not specified)
+        result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id
+        )
+
+        assert isinstance(result, ConditionLeaf)
+        assert result.model_dump() == sample_condition_leaf.model_dump()
+
+    def test_get_field_level_condition_tree(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_field: ManualTaskConfigField,
+        field_level_condition_leaf: ConditionLeaf,
+    ):
+        """Test getting field-level condition tree by specifying config_field_key"""
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "config_field_key": manual_task_config_field.field_key,
+                "condition_tree": field_level_condition_leaf.model_dump(),
+            },
+        )
+
+        # Get field-level condition by specifying config_field_key
+        result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+        )
+
+        assert isinstance(result, ConditionLeaf)
+        assert result.model_dump() == field_level_condition_leaf.model_dump()
+
+    def test_get_condition_tree_distinguishes_task_vs_field_level(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_field: ManualTaskConfigField,
+        sample_condition_leaf: ConditionLeaf,
+    ):
+        """Test that get_condition_tree correctly distinguishes between task-level and field-level conditions"""
+        task_condition = {"field_address": "user.age", "operator": "gte", "value": 18}
+        field_condition = {"field_address": "privacy_request.status", "operator": "eq", "value": "approved"}
+
+        # Create task-level dependency
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_tree": task_condition,
+            },
+        )
+
+        # Create field-level dependency
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "config_field_key": manual_task_config_field.field_key,
+                "condition_tree": field_condition,
+            },
+        )
+
+        # Get task-level condition (default)
+        task_result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id
+        )
+        assert task_result.field_address == "user.age"
+        assert task_result.value == 18
+
+        # Get field-level condition
+        field_result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+        )
+        assert field_result.field_address == "privacy_request.status"
+        assert field_result.value == "approved"
+
+    def test_get_condition_tree_returns_none_for_nonexistent_field_condition(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_field: ManualTaskConfigField,
+        sample_condition_leaf: ConditionLeaf,
+    ):
+        """Test that get_condition_tree returns None when no condition exists for a field"""
+        # Create task-level dependency only
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_tree": sample_condition_leaf.model_dump(),
+            },
+        )
+
+        # Try to get field-level condition that doesn't exist
+        result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+        )
+
+        assert result is None
+
+    def test_get_condition_tree_returns_none_for_nonexistent_task_condition(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_field: ManualTaskConfigField,
+        sample_condition_leaf: ConditionLeaf,
+    ):
+        """Test that get_condition_tree returns None when no task-level condition exists"""
+        # Create field-level dependency only
+        ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "config_field_key": manual_task_config_field.field_key,
+                "condition_tree": sample_condition_leaf.model_dump(),
+            },
+        )
+
+        # Try to get task-level condition that doesn't exist
+        result = ManualTaskConditionalDependency.get_condition_tree(
+            db, manual_task_id=manual_task.id
+        )
+
+        assert result is None

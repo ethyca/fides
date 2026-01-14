@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.validation import FidesKey
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, backref, declared_attr, relationship  # type: ignore
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -344,7 +343,9 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
+    def create(
+        cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
+    ) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on create"""
         policy_id: Optional[str] = data.get("policy_id")
 
@@ -519,7 +520,9 @@ class RuleTarget(Base):
         return db_obj  # type: ignore[return-value]
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any], check_name: bool = True) -> FidesBase:  # type: ignore[override]
+    def create(
+        cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
+    ) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:

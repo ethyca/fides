@@ -598,6 +598,11 @@ def run_consent_request(  # pylint: disable = too-many-arguments
             traversal_node = TraversalNode(node)
             traversal_nodes[col_address] = traversal_node
 
+        # Snapshot manual task field instances for this privacy request
+        privacy_request.create_manual_task_instances(
+            session, get_connection_configs_with_manual_tasks(session)
+        )
+
         ready_tasks = persist_new_consent_request_tasks(
             session, privacy_request, traversal_nodes, identity, graph
         )

@@ -10,7 +10,6 @@ from fides.api.models.identity_salt import IdentitySalt
 
 class TestIdentitySalt:
     def test_create_duplicate_identity_salt(self, db: Session):
-
         # delete the salt
         db.query(IdentitySalt).delete()
         db.commit()

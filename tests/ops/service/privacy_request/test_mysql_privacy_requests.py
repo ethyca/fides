@@ -51,7 +51,7 @@ def test_create_and_process_access_request_mysql(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"mysql_example_test_dataset:"
+    result_key_prefix = "mysql_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
