@@ -150,9 +150,9 @@ class ConnectorRunner:
         if not skip_collection_verification:
             # verify we returned at least one row for each collection in the dataset
             for collection in self.dataset["collections"]:
-                assert len(
-                    access_results[f"{fides_key}:{collection['name']}"]
-                ), f"No rows returned for collection '{collection['name']}'"
+                assert len(access_results[f"{fides_key}:{collection['name']}"]), (
+                    f"No rows returned for collection '{collection['name']}'"
+                )
         return access_results
 
     async def erasure_request(
@@ -323,9 +323,9 @@ class ConnectorRunner:
             ):
                 # verify we returned at least one row for each collection in the dataset
                 for collection in self.dataset["collections"]:
-                    assert len(
-                        access_results[f"{fides_key}:{collection['name']}"]
-                    ), f"No rows returned for collection '{collection['name']}'"
+                    assert len(access_results[f"{fides_key}:{collection['name']}"]), (
+                        f"No rows returned for collection '{collection['name']}'"
+                    )
 
         erasure_results = erasure_runner_tester(
             privacy_request,
@@ -562,7 +562,7 @@ def generate_random_phone_number() -> str:
     """
     Generate a random phone number in the format of E.164, +1112223333
     """
-    return f"+{random.randrange(100,999)}555{random.randrange(1000,9999)}"
+    return f"+{random.randrange(100, 999)}555{random.randrange(1000, 9999)}"
 
 
 def mock_external_results_3_0(

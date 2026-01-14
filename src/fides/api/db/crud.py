@@ -8,9 +8,8 @@ from typing import Any, Dict, List, Tuple, Type, TypeVar
 
 from fastapi import HTTPException
 from loguru import logger as log
-from sqlalchemy import and_, column
+from sqlalchemy import and_, column, or_
 from sqlalchemy import delete as _delete
-from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -43,7 +42,6 @@ async def create_resource(
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
-
         existing_resource = await get_resource(
             sql_model, resource_dict["fides_key"], async_session, raise_not_found=False
         )
@@ -146,7 +144,9 @@ async def get_resource(
             sql_resource = result.scalars().first()
             if sql_resource is None and raise_not_found:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=not_found_error.detail["error"]).info("Resource not found")  # type: ignore[index]
+                log.bind(error=not_found_error.detail["error"]).info(
+                    "Resource not found"
+                )  # type: ignore[index]
                 raise not_found_error
 
             return sql_resource

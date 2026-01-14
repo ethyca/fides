@@ -54,11 +54,8 @@ jobs:
       matrix:
         session_name:
           [
-#            '"isort(check)"',
-#            '"black(check)"',
-#            "mypy",
-#            "pylint",
-#            "xenon",
+            '"ruff(check)"',
+            "mypy",
             "check_install",
             '"pytest(nox)"',
           ]

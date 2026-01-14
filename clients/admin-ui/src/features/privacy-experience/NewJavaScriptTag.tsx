@@ -59,7 +59,6 @@ const NewJavaScriptTag = ({ property }: Props) => {
       <Button
         aria-label="Install property"
         size="small"
-        className="mr-[10px]"
         icon={<GearLightIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();

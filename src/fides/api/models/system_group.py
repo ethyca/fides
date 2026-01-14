@@ -1,9 +1,8 @@
 from enum import Enum, StrEnum
 
 from citext import CIText
-from sqlalchemy import ARRAY, Column
+from sqlalchemy import ARRAY, Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 

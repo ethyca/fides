@@ -201,6 +201,6 @@ class TestPrivacyRequestPerformance:
 
         # Key optimization: Should fetch all requests in 1 query (not N queries)
         # Note: Approve has high query count due to DSR processing in tests
-        assert (
-            counter.count < max_queries
-        ), f"Too many queries: {counter.count} (expected <{max_queries})"
+        assert counter.count < max_queries, (
+            f"Too many queries: {counter.count} (expected <{max_queries})"
+        )

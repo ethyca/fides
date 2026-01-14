@@ -35,7 +35,7 @@ def shell(session: Session) -> None:
         )
 
 
-# pylint: disable=too-many-branches
+# ruff: noqa: PLR0912
 @nox_session()
 def dev(session: Session) -> None:
     """
@@ -225,7 +225,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         if index == 0:
             continue
         session.log(
-            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index-1]['time']:.2f}s"
+            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index - 1]['time']:.2f}s"
         )
     session.log(
         f"      | {'Total':20} | {timestamps[-1]['time'] - timestamps[0]['time']:.2f}s"
