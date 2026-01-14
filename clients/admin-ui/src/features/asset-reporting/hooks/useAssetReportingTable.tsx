@@ -15,7 +15,10 @@ import { Asset, ConsentStatus, PrivacyNoticeRegion } from "~/types/api";
 import { convertToAntFilters } from "~/features/common/utils";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-import { useGetAllAssetsQuery } from "../asset-reporting.slice";
+import {
+  useGetAllAssetsQuery,
+  useGetAssetReportingFilterOptionsQuery,
+} from "../asset-reporting.slice";
 import type { AssetReportingFilters } from "../asset-reporting.slice";
 
 enum AssetReportingColumnKeys {
@@ -52,18 +55,10 @@ interface UseAssetReportingTableConfig {
   filters: AssetReportingFilters;
 }
 
-const ASSET_TYPE_OPTIONS = [
-  "Cookie",
-  "Browser request",
-  "Image",
-  "iFrame",
-  "Javascript tag",
-];
-
 export const useAssetReportingTable = ({
   filters,
 }: UseAssetReportingTableConfig) => {
-  const { getDataUses, getDataUseByKey, getDataUseDisplayName } = useTaxonomies();
+  const { getDataUseByKey, getDataUseDisplayName } = useTaxonomies();
 
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
   const [dataUsesVersion, setDataUsesVersion] = useState(0);
@@ -99,10 +94,12 @@ export const useAssetReportingTable = ({
     ...columnFilters,
   });
 
-  const dataUseFilterOptions = useMemo(
-    () => getDataUses().map((du) => du.fides_key).filter((key): key is string => !!key),
-    [getDataUses],
-  );
+  // Fetch dynamic filter options based on current filters
+  const { data: filterOptions } = useGetAssetReportingFilterOptionsQuery({
+    search: searchQuery,
+    ...filters,
+    ...columnFilters,
+  });
 
   const columns: ColumnsType<Asset> = useMemo(
     () => [
@@ -129,7 +126,7 @@ export const useAssetReportingTable = ({
         sorter: true,
         sortOrder:
           sortKey === AssetReportingColumnKeys.ASSET_TYPE ? sortOrder : null,
-        filters: convertToAntFilters(ASSET_TYPE_OPTIONS),
+        filters: convertToAntFilters(filterOptions?.asset_type),
         filteredValue: columnFilters?.asset_type || null,
       },
       {
@@ -165,8 +162,8 @@ export const useAssetReportingTable = ({
             ? sortOrder
             : null,
         filters: convertToAntFilters(
-          Object.values(ConsentStatus),
-          (status) => CONSENT_STATUS_LABELS[status as ConsentStatus],
+          filterOptions?.consent_status,
+          (status) => CONSENT_STATUS_LABELS[status as ConsentStatus] || status,
         ),
         filteredValue: columnFilters?.consent_status || null,
       },
@@ -186,7 +183,7 @@ export const useAssetReportingTable = ({
             }
           },
         },
-        filters: convertToAntFilters(dataUseFilterOptions, (key) =>
+        filters: convertToAntFilters(filterOptions?.data_uses, (key) =>
           getDataUseByKey(key)?.name || key
         ),
         filteredValue: columnFilters?.data_uses || null,
@@ -232,6 +229,14 @@ export const useAssetReportingTable = ({
             }
           },
         },
+        filters: convertToAntFilters(filterOptions?.locations, (location) => {
+          const isoEntry = isoStringToEntry(location);
+          return isoEntry
+            ? formatIsoLocation({ isoEntry })
+            : (PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+                location);
+        }),
+        filteredValue: columnFilters?.locations || null,
         render: (locations: PrivacyNoticeRegion[]) => (
           <TagExpandableCell
             values={
@@ -253,7 +258,7 @@ export const useAssetReportingTable = ({
         ),
       },
     ],
-    [sortKey, sortOrder, columnFilters, dataUseFilterOptions, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion],
+    [sortKey, sortOrder, columnFilters, filterOptions, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion],
   );
 
   const antTableConfig = useMemo(

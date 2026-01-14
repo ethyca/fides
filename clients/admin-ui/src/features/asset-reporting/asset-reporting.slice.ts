@@ -6,7 +6,16 @@ export interface AssetReportingFilters {
   consent_status?: ConsentStatus[];
   system_id?: string[];
   data_uses?: string[];
+  locations?: string[];
   search?: string;
+}
+
+export interface AssetReportingFilterOptions {
+  asset_type?: string[] | null;
+  consent_status?: string[] | null;
+  system_id?: string[] | null;
+  data_uses?: string[] | null;
+  locations?: string[] | null;
 }
 
 export interface AssetReportingQueryParams extends AssetReportingFilters {
@@ -14,8 +23,8 @@ export interface AssetReportingQueryParams extends AssetReportingFilters {
   size: number;
 }
 
-const buildQueryParams = (params: AssetReportingQueryParams) => {
-  const queryParams: Record<string, any> = { page: params.page, size: params.size };
+const buildFilterParams = (params: AssetReportingFilters) => {
+  const queryParams: Record<string, any> = {};
 
   if (params.search) {
     queryParams.search = params.search;
@@ -34,8 +43,19 @@ const buildQueryParams = (params: AssetReportingQueryParams) => {
   if (params.data_uses?.length) {
     queryParams.data_uses = params.data_uses;
   }
+  if (params.locations?.length) {
+    queryParams.locations = params.locations;
+  }
 
   return queryParams;
+};
+
+const buildQueryParams = (params: AssetReportingQueryParams) => {
+  return {
+    page: params.page,
+    size: params.size,
+    ...buildFilterParams(params),
+  };
 };
 
 export const assetReportingApi = baseApi.injectEndpoints({
@@ -49,19 +69,28 @@ export const assetReportingApi = baseApi.injectEndpoints({
     }),
 
     downloadAssetReport: build.query<any, AssetReportingFilters>({
-      query: (filters) => {
-        const params = buildQueryParams({ ...filters, page: 1, size: 1 });
-        delete params.page;
-        delete params.size;
+      query: (filters) => ({
+        url: "plus/asset-reporting/export",
+        params: buildFilterParams(filters),
+        responseHandler: "text",
+      }),
+    }),
 
-        return {
-          url: "plus/asset-reporting/export",
-          params,
-          responseHandler: "text",
-        };
-      },
+    getAssetReportingFilterOptions: build.query<
+      AssetReportingFilterOptions,
+      AssetReportingFilters
+    >({
+      query: (filters) => ({
+        url: "plus/asset-reporting/filters",
+        params: buildFilterParams(filters),
+      }),
+      providesTags: ["Asset Reporting"],
     }),
   }),
 });
 
-export const { useGetAllAssetsQuery, useLazyDownloadAssetReportQuery } = assetReportingApi;
+export const {
+  useGetAllAssetsQuery,
+  useLazyDownloadAssetReportQuery,
+  useGetAssetReportingFilterOptionsQuery,
+} = assetReportingApi;
