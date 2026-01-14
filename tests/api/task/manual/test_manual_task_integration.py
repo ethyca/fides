@@ -14,7 +14,6 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -24,6 +23,7 @@ from fides.api.models.manual_task import (
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
@@ -268,8 +268,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == access_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -279,8 +278,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == access_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -321,8 +319,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == erasure_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -332,8 +329,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == erasure_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -424,8 +420,7 @@ class TestManualTaskGraphTaskInstanceCreation:
         access_config = next(
             config
             for config in access_manual_task.configs
-            if config.config_type == ManualTaskConfigurationType.access_privacy_request
-            and config.is_current
+            if config.config_type == ActionType.access and config.is_current
         )
         ManualTaskInstance.create(
             db=db,
@@ -442,8 +437,7 @@ class TestManualTaskGraphTaskInstanceCreation:
         erasure_config = next(
             config
             for config in erasure_manual_task.configs
-            if config.config_type == ManualTaskConfigurationType.erasure_privacy_request
-            and config.is_current
+            if config.config_type == ActionType.erasure and config.is_current
         )
         ManualTaskInstance.create(
             db=db,
@@ -462,8 +456,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == mixed_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfig.config_type == ActionType.access,
             )
             .count()
         )
@@ -473,8 +466,7 @@ class TestManualTaskGraphTaskInstanceCreation:
             .join(ManualTaskConfig)
             .filter(
                 ManualTaskInstance.entity_id == mixed_privacy_request.id,
-                ManualTaskConfig.config_type
-                == ManualTaskConfigurationType.erasure_privacy_request,
+                ManualTaskConfig.config_type == ActionType.erasure,
             )
             .count()
         )
@@ -516,7 +508,7 @@ class TestManualTaskDisabledConnectionConfig:
             db=db,
             data={
                 "task_id": manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -615,7 +607,7 @@ class TestManualTaskDisabledConnectionConfig:
 class TestManualTaskTraversalExecution:
     """Test that manual task traversal executes correctly with conditional dependencies and upstream data"""
 
-    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    @pytest.mark.usefixtures("group_condition")
     def test_manual_task_traversal_with_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -738,9 +730,7 @@ class TestManualTaskTraversalExecution:
 class TestManualTaskUpstreamDataFlow:
     """Test that manual tasks receive and process upstream data correctly"""
 
-    @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_receives_upstream_data_from_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -815,9 +805,7 @@ class TestManualTaskUpstreamDataFlow:
 class TestManualTaskExecutionOrder:
     """Test that manual tasks execute in the correct order relative to their dependencies"""
 
-    @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_executes_after_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
@@ -880,9 +868,7 @@ class TestManualTaskExecutionOrder:
 class TestManualTaskTraversalIntegration:
     """Integration tests for manual task traversal with real graph execution"""
 
-    @pytest.mark.usefixtures(
-        "condition_gt_18", "condition_eq_active", "privacy_request"
-    )
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_traversal_integration_with_conditional_dependencies(
         self, db, connection_with_manual_access_task, mock_dataset_graph
     ):

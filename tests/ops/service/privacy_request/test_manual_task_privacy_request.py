@@ -7,9 +7,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -21,7 +18,6 @@ from fides.api.models.manual_task import (
     ManualTaskConditionalDependency,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskParentEntityType,
@@ -29,6 +25,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
@@ -114,7 +111,7 @@ def manual_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.access_privacy_request,
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },
@@ -145,15 +142,16 @@ def manual_field(
 def conditional_name_exists(
     db: Session, manual_task: ManualTask, manual_config: ManualTaskConfig
 ) -> ManualTaskConditionalDependency:
+    condition_tree = {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "list_contains",
+        "value": "customer-1@example.com",
+    }
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "list_contains",
-            "value": "customer-1@example.com",  # Use an email that actually exists in test data
-            "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
 
@@ -163,15 +161,16 @@ def conditional_email_exists(
     db: Session, manual_task: ManualTask, manual_config: ManualTaskConfig
 ) -> ManualTaskConditionalDependency:
     """Alternative conditional dependency that checks for email existence"""
+    condition_tree = {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "exists",
+        "value": None,
+    }
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "exists",
-            "value": None,  # exists operator doesn't need a value
-            "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
 
@@ -452,42 +451,29 @@ def test_manual_task_with_conditional_dependencies(
             },
         )
 
-        # Root group condition (OR)
-        root_dependency_or = ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task_or.id,
-                "condition_type": ConditionalDependencyType.group,
-                "logical_operator": "or",
-                "sort_order": 1,
-            },
-        )
+        # Build full condition tree for JSONB storage
+        condition_tree_or = {
+            "logical_operator": "or",
+            "conditions": [
+                {
+                    "field_address": "postgres_example_test_dataset:customer:email",
+                    "operator": "exists",
+                    "value": None,
+                },
+                {
+                    "field_address": "postgres_example_test_dataset:customer:name",
+                    "operator": "list_contains",
+                    "value": "customer",
+                },
+            ],
+        }
 
-        # First condition: customer email exists (this will be True for any customer)
+        # Create conditional dependency with the full condition tree
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task_or.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "postgres_example_test_dataset:customer:email",
-                "operator": "exists",
-                "value": None,  # exists operator doesn't need a value
-                "sort_order": 2,
-                "parent_id": root_dependency_or.id,
-            },
-        )
-
-        # Second condition: customer name contains 'customer' (this will be True for customer-1, customer-2)
-        ManualTaskConditionalDependency.create(
-            db=db,
-            data={
-                "manual_task_id": manual_task_or.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "postgres_example_test_dataset:customer:name",
-                "operator": "list_contains",
-                "value": "customer",
-                "sort_order": 3,
-                "parent_id": root_dependency_or.id,
+                "condition_tree": condition_tree_or,
             },
         )
 
@@ -496,7 +482,7 @@ def test_manual_task_with_conditional_dependencies(
             db=db,
             data={
                 "task_id": manual_task_or.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -1050,15 +1036,16 @@ def test_manual_task_conditional_dependencies_skip_execution(
     """
 
     # Create a conditional dependency that will NOT be met
+    condition_tree = {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "eq",
+        "value": "nonexistent@example.com",
+    }
     ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "eq",
-            "value": "nonexistent@example.com",  # Email that doesn't exist in test data
-            "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
 
@@ -1151,15 +1138,16 @@ def test_manual_task_conditional_dependencies_execute_when_met(
     """
 
     # Create a conditional dependency that WILL be met
+    condition_tree = {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "exists",
+        "value": None,
+    }
     ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": ConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "exists",
-            "value": None,  # exists operator doesn't need a value
-            "sort_order": 1,
+            "condition_tree": condition_tree,
         },
     )
 

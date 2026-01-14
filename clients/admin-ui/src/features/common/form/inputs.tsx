@@ -8,7 +8,6 @@ import {
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
   Box,
-  Checkbox,
   Code,
   EyeIcon,
   Flex,
@@ -476,47 +475,6 @@ export const CustomSwitch = ({
         {innerSwitch}
         <InfoTooltip label={tooltip} />
       </Box>
-    </FormControl>
-  );
-};
-
-export const CustomCheckbox = ({
-  label,
-  tooltip,
-  isDisabled,
-  ...props
-}: Omit<CustomSwitchProps, "variant"> &
-  Omit<FieldHookConfig<boolean>, "onChange">) => {
-  const [field, meta] = useField({
-    name: props.name,
-    value: props.value,
-    type: "checkbox",
-  });
-  const isInvalid = !!(meta.touched && meta.error);
-
-  return (
-    <FormControl isInvalid={isInvalid}>
-      <Flex alignItems="center">
-        <Checkbox
-          name={field.name}
-          isChecked={field.checked}
-          onChange={(e) => {
-            field.onChange(e);
-            props.onChange?.(e.target.checked);
-          }}
-          onBlur={field.onBlur}
-          data-testid={`input-${field.name}`}
-          disabled={isDisabled}
-          colorScheme="complimentary"
-          mr="2"
-        >
-          <Text fontSize="sm" fontWeight="medium">
-            {label}
-          </Text>
-        </Checkbox>
-
-        <InfoTooltip label={tooltip} />
-      </Flex>
     </FormControl>
   );
 };

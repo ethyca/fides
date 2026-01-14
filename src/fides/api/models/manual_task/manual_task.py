@@ -21,6 +21,7 @@ from sqlalchemy.sql import func
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment
@@ -73,14 +74,6 @@ class ManualTaskReferenceType(str, Enum):
     manual_task_config = "manual_task_config"
     assigned_user = "assigned_user"  # Reference to the user assigned to the task
     # Add more reference types as needed
-
-
-class ManualTaskConfigurationType(str, Enum):
-    """Enum for manual task configuration types."""
-
-    access_privacy_request = "access_privacy_request"
-    erasure_privacy_request = "erasure_privacy_request"
-    # Add more configuration types as needed
 
 
 class ManualTaskFieldType(str, Enum):
@@ -243,15 +236,6 @@ class ManualTask(Base):
             for ref in self.references
             if ref.reference_type == ManualTaskReferenceType.assigned_user
         ]
-
-    # CRUD Operations
-    @classmethod
-    def create(
-        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
-    ) -> "ManualTask":
-        """Create a new manual task."""
-        task = super().create(db=db, data=data, check_name=check_name)
-        return task
 
 
 class ManualTaskInstance(Base):
@@ -422,6 +406,10 @@ class ManualTaskReference(Base):
     """Join table to associate manual tasks with multiple references.
 
     A single task may have many references including privacy requests, configurations, and assigned users.
+
+    When config_field_key is NULL, the reference applies to the entire task.
+    When config_field_key is set, the reference applies only to that specific field.
+    This enables field-level user assignments.
     """
 
     @declared_attr
@@ -452,9 +440,18 @@ class ManualTaskReference(Base):
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
 
+    # Optional field key - when set, reference applies to field only
+    # This stores the field_key string rather than the config_field_id UUID
+    config_field_key = Column(
+        String,
+        nullable=True,
+        index=True,
+    )
+
     __table_args__ = (
         Index("ix_manual_task_reference_reference", "reference_id", "reference_type"),
         Index("ix_manual_task_reference_task_id", "task_id"),
+        Index("ix_manual_task_reference_config_field_key", "config_field_key"),
     )
 
     # Relationships
@@ -495,7 +492,7 @@ class ManualTaskConfig(Base):
         ),
         nullable=True,
     )
-    config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
+    config_type = Column(EnumColumn(ActionType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
     execution_timing = Column(
@@ -535,9 +532,9 @@ class ManualTaskConfig(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfig":
         """Create a new manual task configuration."""
-        # Validate config_type
+        # Validate config_type - must be a valid ActionType
         try:
-            ManualTaskConfigurationType(data["config_type"])
+            ActionType(data["config_type"])
         except ValueError:
             raise ValueError(f"Invalid config type: {data['config_type']}")
 
@@ -602,6 +599,12 @@ class ManualTaskConfigField(Base):
     field_metadata: dict[str, Any] = cast(
         dict[str, Any], Column(JSONB, nullable=False, default={})
     )
+    # Field-level execution timing override. When NULL, uses config's execution_timing.
+    execution_timing = Column(
+        EnumColumn(ManualTaskExecutionTiming),
+        nullable=True,
+        default=None,
+    )
 
     __table_args__ = (
         UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
@@ -631,7 +634,7 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
-        # Get the config to access its task_id and check if it exists
+        # Get the config to check if it exists
         config = (
             db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == data["config_id"])
