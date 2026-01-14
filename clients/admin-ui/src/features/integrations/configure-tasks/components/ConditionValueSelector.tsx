@@ -1,9 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import {
-  AntDatePicker as DatePicker,
-  AntInput as Input,
-  AntRadio as Radio,
-  AntSelect as Select,
+  DatePicker,
+  Input,
   iso31661,
   LocationSelect,
 } from "fidesui";
