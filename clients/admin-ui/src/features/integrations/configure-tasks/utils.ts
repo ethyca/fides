@@ -60,8 +60,8 @@ export const getFieldType = (fieldAddress: string): FieldType => {
     return "location_regulations";
   }
 
-  // Check policy ID field
-  if (fieldAddress === "privacy_request.policy.id") {
+  // Check policy name field
+  if (fieldAddress === "privacy_request.policy.name") {
     return "policy";
   }
 
@@ -219,7 +219,6 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.location_country",
   "privacy_request.location_groups",
   "privacy_request.location_regulations",
-  "privacy_request.policy.id",
   "privacy_request.policy.name",
   "privacy_request.policy.key",
   "privacy_request.policy.has_access_rule",
