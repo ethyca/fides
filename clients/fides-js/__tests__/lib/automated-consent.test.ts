@@ -248,6 +248,48 @@ describe("calculateAutomatedConsent", () => {
     });
   });
 
+  it("forces NOTICE_ONLY mechanisms to true, ignoring migrated consent", () => {
+    const experienceWithNoticeOnly: PrivacyExperience = {
+      ...mockRegularExperience,
+      privacy_notices: [
+        {
+          ...mockRegularExperience.privacy_notices![0],
+          notice_key: "essential",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        },
+        {
+          ...mockRegularExperience.privacy_notices![1],
+          notice_key: "analytics",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
+        },
+      ] as PrivacyNotice[],
+    };
+
+    const context: ConsentContext = {
+      migratedConsent: {
+        essential: false, // Migrated says opt-out (should be ignored)
+        analytics: false, // Migrated says opt-out (should be applied)
+      },
+      migrationMethod: ConsentMethod.EXTERNAL_PROVIDER,
+      hasFidesCookie: false,
+    };
+    const savedConsent = {};
+
+    const result = calculateAutomatedConsent(
+      experienceWithNoticeOnly,
+      savedConsent,
+      context,
+    );
+
+    // Migrated consent should be applied, but NOTICE_ONLY must be forced to true
+    expect(result.applied).toBe(true);
+    expect(result.consentMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
+    expect(result.noticeConsent).toEqual({
+      essential: true, // Forced to true despite migrated consent saying false
+      analytics: false, // From migrated consent
+    });
+  });
+
   it("does not apply GPC to notices without has_gpc_flag", () => {
     const experienceWithoutGpcFlag: PrivacyExperience = {
       ...mockRegularExperience,

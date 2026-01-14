@@ -97,7 +97,14 @@ export const calculateAutomatedConsent = (
       const isNoticeOnly =
         notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY;
 
-      // First check for migrated consent
+      // NOTICE_ONLY mechanisms (like essential notices) must always be true
+      // and cannot be opted out of, even via migrated consent
+      if (isNoticeOnly) {
+        appliedConsent[notice.notice_key] = true;
+        return appliedConsent;
+      }
+
+      // now Check for non-NOTICE_ONLY migrated consent
       if (hasMigratedConsent) {
         const preference = migratedConsent[notice.notice_key];
         if (preference !== undefined) {
@@ -105,13 +112,6 @@ export const calculateAutomatedConsent = (
           appliedConsent[notice.notice_key] = preference;
           return appliedConsent;
         }
-      }
-
-      if (isNoticeOnly) {
-        // We always match consent vals one-to-one from migrated providers, even if it's
-        // "false" on a notice_only notice. If there's no migrated preference, we
-        // keep the default preference for notice_only notices.
-        return appliedConsent;
       }
 
       // Then check for notice consent string
