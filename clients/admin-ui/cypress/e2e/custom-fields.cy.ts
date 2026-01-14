@@ -1,5 +1,11 @@
 import { stubCustomFields, stubPlus } from "cypress/support/stubs";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields";
+import {
+  RESOURCE_TYPE_MAP,
+  VALUE_TYPE_RESOURCE_TYPE_MAP,
+} from "~/features/custom-fields/constants";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Custom Fields V2", () => {
@@ -73,9 +79,13 @@ describe("Custom Fields V2", () => {
             .should("be.visible")
             .within(() => {
               // Should not contain the matching taxonomy location
-              cy.contains("taxonomy:data category").should("not.exist");
+              cy.contains(
+                VALUE_TYPE_RESOURCE_TYPE_MAP[TaxonomyTypeEnum.DATA_CATEGORY],
+              ).should("not.exist");
               // Should still contain other locations
-              cy.contains("system:information").should("exist");
+              cy.contains(RESOURCE_TYPE_MAP[LegacyResourceTypes.SYSTEM]).should(
+                "exist",
+              );
             });
         });
     });

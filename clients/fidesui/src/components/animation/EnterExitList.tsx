@@ -1,4 +1,4 @@
-import classNames from "classnames";
+import { Flex } from "antd/lib";
 import { AnimatePresence, Easing, motion } from "motion/react";
 import { HTMLAttributes, ReactNode } from "react";
 
@@ -50,7 +50,7 @@ export interface EnterExitListProps<T> extends HTMLAttributes<HTMLDivElement> {
    */
   className?: string;
   /**
-   * Additional className for the items
+   * Additional className for the items; avoid using styles that could change the item's position, as they might break the animation
    */
   itemClassName?: string;
 }
@@ -74,15 +74,7 @@ export const EnterExitList = <T,>({
   ...props
 }: EnterExitListProps<T>) => {
   return (
-    <div
-      {...props}
-      className={classNames(
-        props.className,
-        "flex",
-        gutter > 0 ? `gap-${gutter}` : undefined,
-      )}
-      role="list"
-    >
+    <Flex {...props} gap={gutter} role="list">
       <AnimatePresence mode="popLayout">
         {dataSource.map((item, index) => {
           const key = itemKey(item, index);
@@ -120,6 +112,6 @@ export const EnterExitList = <T,>({
           );
         })}
       </AnimatePresence>
-    </div>
+    </Flex>
   );
 };
