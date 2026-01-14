@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.75.3b0.post0.dev114"
+    "version": "2.75.3b0.post0.dev115"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -26536,6 +26536,7 @@
           "privacy_request_receipt",
           "privacy_request_complete_access",
           "privacy_request_complete_deletion",
+          "privacy_request_complete_consent",
           "privacy_request_review_deny",
           "privacy_request_review_approve",
           "user_invite",
