@@ -69,3 +69,33 @@
     border-bottom: none;
   }
 }
+
+// Chat history styles
+.chatHistoryContainer {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--ant-color-fill-tertiary);
+  border-radius: 4px;
+}
+
+.botMessage,
+.userMessage {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.botMessage {
+  background: var(--ant-color-bg-container);
+  border-left: 3px solid var(--ant-color-text-quaternary);
+}
+
+.userMessage {
+  background: var(--ant-color-primary-bg);
+  border-left: 3px solid var(--ant-color-primary);
+}

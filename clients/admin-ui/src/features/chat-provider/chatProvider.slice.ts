@@ -79,6 +79,49 @@ export interface PostQuestionsResponse {
   questions_posted: number;
 }
 
+// Questionnaire Feature interfaces (provider-agnostic)
+
+export interface ChatHistoryEntry {
+  timestamp: string;
+  text: string;
+  is_bot: boolean;
+  user_email: string | null;
+  user_display_name: string | null;
+}
+
+export interface QuestionResponse {
+  question: string;
+  answer: string | null;
+  answered_by_email: string | null;
+  answered_by_display_name: string | null;
+  answered_at: string | null;
+}
+
+export interface Questionnaire {
+  id: string;
+  title: string;
+  status: "in_progress" | "completed";
+  created_at: string;
+  current_question_index: number;
+  questions: QuestionResponse[];
+  chat_history: ChatHistoryEntry[];
+}
+
+export interface QuestionnaireListResponse {
+  questionnaires: Questionnaire[];
+}
+
+export interface CreateQuestionnaireRequest {
+  title: string;
+  questions: string[];
+}
+
+export interface CreateQuestionnaireResponse {
+  success: boolean;
+  message: string;
+  questionnaire_id?: string;
+}
+
 const chatProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getChatSettings: build.query<ChatProviderSettingsResponse, void>({
@@ -119,7 +162,7 @@ const chatProviderApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    // Q&A Feature endpoints
+    // Legacy Q&A Feature endpoints
     postQuestions: build.mutation<PostQuestionsResponse, void>({
       query: () => ({
         url: "plus/chat/questions",
@@ -130,6 +173,26 @@ const chatProviderApi = baseApi.injectEndpoints({
     getQuestions: build.query<QuestionsResponse, void>({
       query: () => ({ url: "plus/chat/questions" }),
       providesTags: ["Chat Questions"],
+    }),
+    // Questionnaire Feature endpoints (provider-agnostic)
+    createQuestionnaire: build.mutation<
+      CreateQuestionnaireResponse,
+      CreateQuestionnaireRequest
+    >({
+      query: (body) => ({
+        url: "plus/chat/questionnaire",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Questionnaires"],
+    }),
+    getQuestionnaires: build.query<QuestionnaireListResponse, void>({
+      query: () => ({ url: "plus/chat/questionnaire" }),
+      providesTags: ["Questionnaires"],
+    }),
+    getQuestionnaire: build.query<Questionnaire, string>({
+      query: (id) => ({ url: `plus/chat/questionnaire/${id}` }),
+      providesTags: (_result, _error, id) => [{ type: "Questionnaires", id }],
     }),
   }),
 });
@@ -143,4 +206,8 @@ export const {
   useSendChatMessageMutation,
   usePostQuestionsMutation,
   useGetQuestionsQuery,
+  // Questionnaire hooks
+  useCreateQuestionnaireMutation,
+  useGetQuestionnairesQuery,
+  useGetQuestionnaireQuery,
 } = chatProviderApi;

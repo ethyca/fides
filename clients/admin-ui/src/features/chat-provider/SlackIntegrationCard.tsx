@@ -16,11 +16,13 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import {
+  ChatHistoryEntry,
+  Questionnaire,
+  useCreateQuestionnaireMutation,
   useDeleteChatConnectionMutation,
   useGetChatChannelsQuery,
   useGetChatSettingsQuery,
-  useGetQuestionsQuery,
-  usePostQuestionsMutation,
+  useGetQuestionnairesQuery,
   useSendChatMessageMutation,
   useTestChatConnectionMutation,
   useUpdateChatSettingsMutation,
@@ -71,28 +73,27 @@ const SlackIntegrationCard = () => {
   const [deleteConnection, { isLoading: isDeleting }] =
     useDeleteChatConnectionMutation();
   const [sendMessage, { isLoading: isSending }] = useSendChatMessageMutation();
-  const [postQuestions, { isLoading: isPostingQuestions }] =
-    usePostQuestionsMutation();
+  const [createQuestionnaire, { isLoading: isCreatingQuestionnaire }] =
+    useCreateQuestionnaireMutation();
 
   // Track if there's an active conversation for polling speed
   const [hasActiveConversation, setHasActiveConversation] = useState(false);
 
-  // Poll faster (3s) when a conversation is active, slower (30s) otherwise
-  const pollingInterval = hasActiveConversation ? 3000 : 30000;
-
-  const { data: questionsData, refetch: refetchQuestions } =
-    useGetQuestionsQuery(undefined, {
+  // Questionnaire polling (provider-agnostic)
+  const { data: questionnairesData, refetch: refetchQuestionnaires } =
+    useGetQuestionnairesQuery(undefined, {
       skip: !settings?.authorized,
-      pollingInterval,
+      pollingInterval: hasActiveConversation ? 3000 : 30000,
     });
+
+  // Get the latest questionnaire
+  const latestQuestionnaire = questionnairesData?.questionnaires?.[0];
 
   // Update active conversation state when data changes
   useEffect(() => {
-    const isActive = questionsData?.conversations?.some(
-      (conv) => conv.status === "in_progress"
-    );
+    const isActive = latestQuestionnaire?.status === "in_progress";
     setHasActiveConversation(isActive ?? false);
-  }, [questionsData?.conversations]);
+  }, [latestQuestionnaire?.status]);
 
   const { data: channelsData } = useGetChatChannelsQuery(undefined, {
     skip: !settings?.authorized,
@@ -250,20 +251,30 @@ const SlackIntegrationCard = () => {
     }
   };
 
-  const handlePostQuestions = async () => {
-    const result = await postQuestions();
+  // Questionnaire handler
+  const handleCreateQuestionnaire = async () => {
+    const result = await createQuestionnaire({
+      title: "Team Preferences Survey",
+      questions: [
+        "What's your favorite color?",
+        "What's your go-to comfort food?",
+        "Coffee or tea?",
+        "What's the best thing about working here?",
+        "What hobby would you pick up if you had unlimited time?",
+      ],
+    });
 
     if ("data" in result && result.data) {
       if (result.data.success) {
         toast(successToastParams(result.data.message));
-        refetchQuestions();
+        refetchQuestionnaires();
       } else {
         toast(errorToastParams(result.data.message));
       }
     } else if (isErrorResult(result)) {
       toast(
         errorToastParams(
-          getErrorMessage(result.error, "Failed to post questions.")
+          getErrorMessage(result.error, "Failed to create questionnaire.")
         )
       );
     }
@@ -274,6 +285,13 @@ const SlackIntegrationCard = () => {
       month: "short",
       day: "numeric",
       year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
     });
@@ -512,110 +530,157 @@ const SlackIntegrationCard = () => {
         </Button>
       </Flex>
 
-      {/* Conversational Q&A Section */}
+      {/* Questionnaire Section */}
       <div className={styles.qaSection}>
         <Flex justify="space-between" align="center" className="mb-3">
-          <Text strong>Team Q&A Conversations</Text>
+          <Text strong>Questionnaire</Text>
           <Flex gap={8}>
             <Button
-              onClick={() => refetchQuestions()}
+              onClick={() => refetchQuestionnaires()}
               size="small"
-              data-testid="refresh-questions-btn"
+              data-testid="refresh-questionnaires-btn"
             >
               Refresh
             </Button>
             <Button
               type="primary"
-              onClick={handlePostQuestions}
-              loading={isPostingQuestions}
+              onClick={handleCreateQuestionnaire}
+              loading={isCreatingQuestionnaire}
               disabled={!selectedChannel}
               size="small"
-              data-testid="post-questions-btn"
+              data-testid="create-questionnaire-btn"
             >
-              Start conversation
+              New questionnaire
             </Button>
           </Flex>
         </Flex>
 
         {!selectedChannel && (
           <Text type="secondary" className="mb-3 block">
-            Select a channel above to start a conversation.
+            Select a channel above to start a questionnaire.
           </Text>
         )}
 
-        {questionsData?.conversations &&
-        questionsData.conversations.length > 0 ? (
-          <Space direction="vertical" size={12} className="w-full">
-            {questionsData.conversations.map((conv) => {
-              const answeredCount = conv.questions.filter(
-                (q) => q.answer !== null
-              ).length;
-              const totalQuestions = conv.questions.length;
-              const isCompleted = conv.status === "completed";
-
-              return (
-                <Card
-                  key={conv.thread_ts}
-                  size="small"
-                  className={styles.questionCard}
-                >
-                  <Flex justify="space-between" align="center" className="mb-2">
-                    <Text strong>
-                      Conversation started {formatDateTime(conv.created_at)}
-                    </Text>
-                    <Tag
-                      color={
-                        isCompleted
-                          ? CUSTOM_TAG_COLOR.SUCCESS
-                          : CUSTOM_TAG_COLOR.PROCESSING
-                      }
-                    >
-                      {isCompleted
-                        ? "Completed"
-                        : `${answeredCount}/${totalQuestions} answered`}
-                    </Tag>
-                  </Flex>
-
-                  <div className={styles.answersContainer}>
-                    {conv.questions.map((q, idx) => (
-                      <div key={idx} className={styles.qaItem}>
-                        <Text strong className="block">
-                          Q{idx + 1}: {q.question}
-                        </Text>
-                        {q.answer ? (
-                          <Text className="block ml-4">
-                            <Text type="secondary">A:</Text> {q.answer}
-                            {(q.user_email ?? q.user) && (
-                              <Text type="secondary">
-                                {" "}
-                                (by {q.user_email ?? q.user})
-                              </Text>
-                            )}
-                          </Text>
-                        ) : idx === conv.current_question_index &&
-                          !isCompleted ? (
-                          <Text type="secondary" italic className="block ml-4">
-                            Waiting for answer...
-                          </Text>
-                        ) : (
-                          <Text type="secondary" className="block ml-4">
-                            —
-                          </Text>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              );
-            })}
-          </Space>
+        {latestQuestionnaire ? (
+          <QuestionnaireCard
+            questionnaire={latestQuestionnaire}
+            formatDateTime={formatDateTime}
+            formatTime={formatTime}
+          />
         ) : (
           <Text type="secondary">
-            No conversations yet. Click &quot;Start conversation&quot; to begin
-            asking fun questions to your team!
+            No questionnaires yet. Click &quot;New questionnaire&quot; to create one.
           </Text>
         )}
       </div>
+    </Card>
+  );
+};
+
+// Questionnaire Card with tabbed Q&A Summary and Full Conversation views
+const QuestionnaireCard = ({
+  questionnaire,
+  formatDateTime,
+  formatTime,
+}: {
+  questionnaire: Questionnaire;
+  formatDateTime: (dateString: string) => string;
+  formatTime: (dateString: string) => string;
+}) => {
+  const [activeTab, setActiveTab] = useState<"qa" | "history">("qa");
+  const answeredCount = questionnaire.questions.filter(
+    (q) => q.answer !== null
+  ).length;
+  const totalQuestions = questionnaire.questions.length;
+  const isCompleted = questionnaire.status === "completed";
+
+  return (
+    <Card size="small" className={styles.questionCard}>
+      <Flex justify="space-between" align="center" className="mb-2">
+        <Text strong>{questionnaire.title}</Text>
+        <Tag
+          color={
+            isCompleted ? CUSTOM_TAG_COLOR.SUCCESS : CUSTOM_TAG_COLOR.PROCESSING
+          }
+        >
+          {isCompleted
+            ? "Completed"
+            : `${answeredCount}/${totalQuestions} answered`}
+        </Tag>
+      </Flex>
+      <Text type="secondary" className="block mb-3">
+        Started {formatDateTime(questionnaire.created_at)}
+      </Text>
+
+      {/* Simple tab buttons instead of Ant Tabs */}
+      <Flex gap={8} className="mb-3">
+        <Button
+          size="small"
+          type={activeTab === "qa" ? "primary" : "default"}
+          onClick={() => setActiveTab("qa")}
+        >
+          Q&A Summary
+        </Button>
+        <Button
+          size="small"
+          type={activeTab === "history" ? "primary" : "default"}
+          onClick={() => setActiveTab("history")}
+        >
+          Full Conversation
+        </Button>
+      </Flex>
+
+      {activeTab === "qa" && (
+        <div className={styles.answersContainer}>
+          {questionnaire.questions.map((q, idx) => (
+            <div key={idx} className={styles.qaItem}>
+              <Text strong className="block">
+                Q{idx + 1}: {q.question}
+              </Text>
+              {q.answer ? (
+                <Text className="block ml-4">
+                  <Text type="secondary">A:</Text> {q.answer}
+                  {(q.answered_by_email ?? q.answered_by_display_name) && (
+                    <Text type="secondary">
+                      {" "}
+                      (by {q.answered_by_email ?? q.answered_by_display_name})
+                    </Text>
+                  )}
+                </Text>
+              ) : idx === questionnaire.current_question_index && !isCompleted ? (
+                <Text type="secondary" italic className="block ml-4">
+                  Waiting for answer...
+                </Text>
+              ) : (
+                <Text type="secondary" className="block ml-4">
+                  —
+                </Text>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === "history" && (
+        <div className={styles.chatHistoryContainer}>
+          {questionnaire.chat_history.map((entry, idx) => (
+            <div
+              key={idx}
+              className={entry.is_bot ? styles.botMessage : styles.userMessage}
+            >
+              <Flex justify="space-between" align="center" className="mb-1">
+                <Text strong>
+                  {entry.is_bot
+                    ? "🤖 Astralis"
+                    : `👤 ${entry.user_display_name ?? entry.user_email ?? "User"}`}
+                </Text>
+                <Text type="secondary">{formatTime(entry.timestamp)}</Text>
+              </Flex>
+              <Text className="block">{entry.text}</Text>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 };
