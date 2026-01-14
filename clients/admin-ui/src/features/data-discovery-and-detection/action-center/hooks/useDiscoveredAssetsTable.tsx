@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import {
   ACTION_CENTER_WEBSITE_MONITOR_ROUTE,
   SYSTEM_ROUTE,
@@ -87,6 +88,7 @@ export const useDiscoveredAssetsTable = ({
   const [dataUsesVersion, setDataUsesVersion] = useState(0);
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
+  const { getDataUseByKey } = useTaxonomies();
 
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
@@ -262,6 +264,7 @@ export const useDiscoveredAssetsTable = ({
         },
         filters: convertToAntFilters(
           filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
+          (key) => getDataUseByKey(key)?.name || key,
         ),
         filteredValue: columnFilters?.data_uses || null,
         render: (_, record) => (
@@ -437,6 +440,7 @@ export const useDiscoveredAssetsTable = ({
     consentStatus,
     onTabChange,
     onShowComplianceIssueDetails,
+    getDataUseByKey,
   ]);
 
   // Business logic effects

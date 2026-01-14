@@ -5,7 +5,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 // eslint-disable-next-line global-require
 jest.mock("nuqs", () => require("../../../utils/nuqs-mock").nuqsMock);
 
-// Mock the RTK Query hook
+// Mock the RTK Query hooks
 jest.mock(
   "../../../../src/features/asset-reporting/asset-reporting.slice",
   () => ({
@@ -39,6 +39,17 @@ jest.mock(
         page: 1,
         size: 25,
         pages: 1,
+      },
+      isLoading: false,
+      isFetching: false,
+    })),
+    useGetAssetReportingFilterOptionsQuery: jest.fn(() => ({
+      data: {
+        asset_type: ["Cookie", "Javascript tag"],
+        consent_status: ["WITH_CONSENT", "WITHOUT_CONSENT"],
+        system_id: ["system-1"],
+        data_uses: ["analytics", "marketing.advertising"],
+        locations: null, // Set to null to avoid iso function calls in tests
       },
       isLoading: false,
       isFetching: false,
