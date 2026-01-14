@@ -13,7 +13,6 @@ from fides.api.models.privacy_preference import (
 
 
 class TestPrivacyPreference:
-
     def test_privacy_notice_preference(
         self,
         db,

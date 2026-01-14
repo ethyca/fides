@@ -72,7 +72,9 @@ class SaaSRequestOverrideFactory:
         valid_overrides[request_type] = ""
 
     @classmethod
-    def register(cls, name: str, request_types: List[SaaSRequestType]) -> Callable[
+    def register(
+        cls, name: str, request_types: List[SaaSRequestType]
+    ) -> Callable[
         [RequestOverrideFunction],
         RequestOverrideFunction,
     ]:

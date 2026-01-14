@@ -5,9 +5,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
-from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -75,7 +74,9 @@ class FidesUser(Base):
         "ClientDetail", backref="user", cascade="all, delete", uselist=False
     )
 
-    systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
+    systems = relationship(
+        "System", secondary="systemmanager", back_populates="data_stewards"
+    )  # type: ignore
     # permissions relationship is defined via backref in FidesUserPermissions
     email_verifications = relationship(
         "FidesUserRespondentEmailVerification",

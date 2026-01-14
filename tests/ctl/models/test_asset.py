@@ -72,7 +72,6 @@ async def system_2_async(async_session):
 
 
 class TestUpsertAsset:
-
     async def test_upsert_asset_async(self, async_session, javascript_asset_data):
         """
         Tests basic upsert (create and update) function of the Asset model.

@@ -381,5 +381,6 @@ SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
 # mypy doesn't like taking the dictionary to generate the enum
 # https://github.com/python/mypy/issues/5317
 ScopeRegistryEnum = Enum(  # type: ignore[misc]
-    "ScopeRegistryEnum", {scope: scope for scope in SCOPE_REGISTRY}  # type: ignore
+    "ScopeRegistryEnum",
+    {scope: scope for scope in SCOPE_REGISTRY},  # type: ignore
 )

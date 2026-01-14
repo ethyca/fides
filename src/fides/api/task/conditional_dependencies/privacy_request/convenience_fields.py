@@ -154,10 +154,10 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
                 ] = country_code.upper()
                 extra_fields[
                     PrivacyRequestLocationConvenienceFields.location_groups.value
-                ] = (location_data.belongs_to or [])
+                ] = location_data.belongs_to or []
                 extra_fields[
                     PrivacyRequestLocationConvenienceFields.location_regulations.value
-                ] = (location_data.regulation or [])
+                ] = location_data.regulation or []
 
         return extra_fields
 

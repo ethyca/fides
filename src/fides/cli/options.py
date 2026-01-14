@@ -19,9 +19,7 @@ def diff_flag(command: Callable) -> Callable:
         "--diff",
         is_flag=True,
         help="Print any diffs between the local & server objects",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -33,9 +31,7 @@ def coverage_threshold_option(command: Callable) -> Callable:
         type=click.IntRange(0, 100),
         default=100,
         help="Set the coverage percentage for a passing scan.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -44,9 +40,7 @@ def resource_type_argument(command: Callable) -> Callable:
     command = click.argument(
         "resource_type",
         type=click.Choice(model_list, case_sensitive=False),
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -56,9 +50,7 @@ def resource_type_option(command: Callable) -> Callable:
         "--resource-type",
         default="",
         help=f"Choose from {str(model_list)}",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -67,9 +59,7 @@ def fides_key_argument(command: Callable) -> Callable:
     command = click.argument(
         "fides_key",
         type=str,
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -79,9 +69,7 @@ def fides_key_option(command: Callable) -> Callable:
         "-k",
         "--fides-key",
         default="",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -89,9 +77,7 @@ def manifests_dir_argument(command: Callable) -> Callable:
     "Add the manifests_dir argument."
     command = click.argument(
         "manifests_dir", type=click.Path(exists=True), default=".fides/"
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -99,9 +85,7 @@ def dry_flag(command: Callable) -> Callable:
     "Add a flag that prevents side-effects."
     command = click.option(
         "--dry", is_flag=True, help="Do not upload results to the Fides webserver."
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -112,9 +96,7 @@ def yes_flag(command: Callable) -> Callable:
         "-y",
         is_flag=True,
         help="Automatically responds `yes` to any prompts.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -125,9 +107,7 @@ def verbose_flag(command: Callable) -> Callable:
         "-v",
         is_flag=True,
         help="Enable verbose output.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -137,9 +117,7 @@ def include_null_flag(command: Callable) -> Callable:
         "--include-null",
         is_flag=True,
         help="Include null attributes.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -151,9 +129,7 @@ def organization_fides_key_option(command: Callable) -> Callable:
         default="default_organization",
         show_default=True,
         help="The `organization_fides_key` of the `Organization` you want to specify.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -165,9 +141,7 @@ def output_directory_option(command: Callable) -> Callable:
         default=".fides/",
         show_default=True,
         help="The output directory for the data map to be exported to.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -177,9 +151,7 @@ def credentials_id_option(command: Callable) -> Callable:
         "--credentials-id",
         type=str,
         help="Use credentials keys defined within Fides config.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -189,9 +161,7 @@ def connection_string_option(command: Callable) -> Callable:
         "--connection-string",
         type=str,
         help="Use the connection string option to connect to a database.",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -201,9 +171,7 @@ def okta_org_url_option(command: Callable) -> Callable:
         "--org-url",
         type=str,
         help="Connect to Okta using an 'Org URL'. _Requires options `--org-url`, `--client-id` & `--private-key`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -213,9 +181,7 @@ def okta_client_id_option(command: Callable) -> Callable:
         "--client-id",
         type=str,
         help="Connect to Okta using an OAuth2 Client ID. _Requires options `--org-url`, `--client-id` & `--private-key`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -225,9 +191,7 @@ def okta_private_key_option(command: Callable) -> Callable:
         "--private-key",
         type=str,
         help="Connect to Okta using a private key (JWK JSON format). _Requires options `--org-url`, `--client-id` & `--private-key`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -237,9 +201,7 @@ def aws_access_key_id_option(command: Callable) -> Callable:
         "--access_key_id",
         type=str,
         help="Connect to AWS using an `Access Key ID`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -249,9 +211,7 @@ def aws_secret_access_key_option(command: Callable) -> Callable:
         "--secret_access_key",
         type=str,
         help="Connect to AWS using an `Access Key`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -262,9 +222,7 @@ def aws_session_token_option(command: Callable) -> Callable:
         type=str,
         default="",
         help="Connect to AWS using a temporary `Access Key`. _Requires options `--access_key_id`, `--secret_access_key`, `--session_token`, & `--region`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -274,9 +232,7 @@ def aws_region_option(command: Callable) -> Callable:
         "--region",
         type=str,
         help="Connect to AWS using a specific `Region`. _Requires options `--access_key_id`, `--secret_access_key` & `--region`._",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -317,9 +273,7 @@ def username_option(command: Callable) -> Callable:
         help="If not provided, will be pulled from the config file or prompted for.",
         default="",
         callback=prompt_username,
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -330,9 +284,7 @@ def password_option(command: Callable) -> Callable:
         help="If not provided, will be pulled from the config file or prompted for.",
         default="",
         callback=prompt_password,
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -341,9 +293,7 @@ def first_name_option(command: Callable) -> Callable:
         "-f",
         "--first-name",
         default="",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 
@@ -352,9 +302,7 @@ def last_name_option(command: Callable) -> Callable:
         "-l",
         "--last-name",
         default="",
-    )(
-        command
-    )  # type: ignore
+    )(command)  # type: ignore
     return command
 
 

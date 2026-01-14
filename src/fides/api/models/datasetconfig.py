@@ -129,7 +129,8 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            Dataset.model_validate(self.ctl_dataset), self.connection_config.key  # type: ignore
+            Dataset.model_validate(self.ctl_dataset),
+            self.connection_config.key,  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -138,7 +139,9 @@ class DatasetConfig(Base):
         ):
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore
+                self.connection_config.get_saas_config().get_graph(
+                    self.connection_config.secrets
+                ),  # type: ignore
             )
         else:
             logger.debug(
@@ -382,7 +385,8 @@ def validate_dataset_reference(
         )
 
     dataset: GraphDataset = convert_dataset_to_graph(
-        Dataset.model_validate(dataset_config.ctl_dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        Dataset.model_validate(dataset_config.ctl_dataset),
+        dataset_config.fides_key,  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

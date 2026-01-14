@@ -22,15 +22,17 @@ describe("Properties page", () => {
 
   describe("Table", () => {
     it("Should render properties table", () => {
-      cy.getByTestId("fidesTable").should("be.visible");
-      cy.getByTestId("fidesTable-body").find("tr").should("have.length", 2);
+      cy.getByTestId("properties-table").should("be.visible");
+      cy.get("tbody tr[data-row-key]").should("have.length", 2);
     });
 
     it("Should show empty table notice if there are no properties", () => {
       cy.intercept("GET", "/api/v1/plus/properties*", {
         fixture: "empty-pagination.json",
       }).as("getProperties");
-      cy.getByTestId("fidesTable").should("be.visible");
+      cy.visit(PROPERTIES_ROUTE);
+      cy.wait("@getProperties");
+      cy.getByTestId("properties-table").should("be.visible");
       cy.getByTestId("no-results-notice").should("be.visible");
     });
   });
@@ -46,10 +48,12 @@ describe("Properties page", () => {
         }).as("getProperty");
 
         cy.getByTestId("add-property-button").should("be.visible");
-        cy.getByTestId("edit-property-button").should("be.visible");
-        cy.getByTestId("delete-property-button").should("be.visible");
+        cy.getAntTableRow("FDS-CEA9EV").within(() => {
+          cy.getByTestId("edit-property-button").should("be.visible");
+          cy.getByTestId("delete-property-button").should("be.visible");
+        });
 
-        cy.get("table").contains("tr", "Property A").click();
+        cy.getAntTableRow("FDS-CEA9EV").contains("Property A").click();
         cy.wait("@getProperty");
         cy.getByTestId("delete-property-button").should("exist");
       });
@@ -61,10 +65,12 @@ describe("Properties page", () => {
           cy.visit(PROPERTIES_ROUTE);
 
           cy.getByTestId("add-property-button").should("not.exist");
-          cy.getByTestId("edit-property-button").should("not.exist");
-          cy.getByTestId("delete-property-button").should("not.exist");
+          cy.getAntTableRow("FDS-CEA9EV").within(() => {
+            cy.getByTestId("edit-property-button").should("not.exist");
+            cy.getByTestId("delete-property-button").should("not.exist");
+          });
 
-          cy.get("table").contains("tr", "Property A").click();
+          cy.getAntTableRow("FDS-CEA9EV").contains("Property A").click();
           cy.url().should("not.contain", "/property/FDS-");
         },
       );
@@ -73,11 +79,11 @@ describe("Properties page", () => {
 
   describe("Delete", () => {
     it("Should only allow deletes if a property does not have any experiences", () => {
-      cy.contains("tr", "Property A").within(() => {
+      cy.getAntTableRow("FDS-CEA9EV").within(() => {
         cy.getByTestId("delete-property-button").should("be.enabled");
       });
 
-      cy.contains("tr", "Property B").within(() => {
+      cy.getAntTableRow("FDS-Z21I5X").within(() => {
         cy.getByTestId("delete-property-button").should("be.disabled");
       });
     });
@@ -87,7 +93,7 @@ describe("Properties page", () => {
         "deleteProperty",
       );
 
-      cy.contains("tr", "Property A").within(() => {
+      cy.getAntTableRow("FDS-CEA9EV").within(() => {
         cy.getByTestId("delete-property-button").click();
       });
       cy.getByTestId("confirmation-modal").should("be.visible");

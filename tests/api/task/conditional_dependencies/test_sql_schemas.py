@@ -73,7 +73,6 @@ class TestHandleListContains:
             patch.object(real_column, "contains") as mock_contains,
             patch.object(real_column, "like") as mock_like,
         ):
-
             mock_contains.side_effect = Exception("Contains not supported")
             mock_like.return_value = "LIKE result"
 
@@ -116,9 +115,9 @@ class TestHandleListContains:
 
         # Parameters should be different to avoid conflicts
         if params_1 and params_2:
-            assert (
-                params_1[0] != params_2[0]
-            ), f"Parameter names should be unique: {params_1[0]} vs {params_2[0]}"
+            assert params_1[0] != params_2[0], (
+                f"Parameter names should be unique: {params_1[0]} vs {params_2[0]}"
+            )
 
 
 class TestFieldAddress:
@@ -401,9 +400,9 @@ class TestOperatorMap:
     def test_operator_functions_are_callable(self):
         """Test that all operator functions are callable"""
         for operator, func in OPERATOR_MAP.items():
-            assert callable(
-                func
-            ), f"Operator {operator} should have a callable function"
+            assert callable(func), (
+                f"Operator {operator} should have a callable function"
+            )
 
     def test_operator_functions_return_sqlalchemy_expressions(self):
         """Test that operator functions return SQLAlchemy expressions"""
@@ -415,9 +414,9 @@ class TestOperatorMap:
                 result = func(self.test_column, self.test_value)
 
             # Check that the result is a SQLAlchemy expression
-            assert hasattr(
-                result, "compile"
-            ), f"Operator {operator} should return a SQLAlchemy expression"
+            assert hasattr(result, "compile"), (
+                f"Operator {operator} should return a SQLAlchemy expression"
+            )
 
     def test_string_operators_with_patterns(self):
         """Test that string operators generate correct LIKE patterns"""
@@ -749,9 +748,9 @@ class TestSecurityFeatures:
                 assert malicious_path.replace("'", "''") in result
                 # Verify no unescaped single quotes remain that could break out
                 # The pattern should be: ->>'escaped_content'
-                assert re.match(
-                    r"data->>'[^']*(?:''[^']*)*'$", result
-                ), f"Malicious injection not properly escaped: {result}"
+                assert re.match(r"data->>'[^']*(?:''[^']*)*'$", result), (
+                    f"Malicious injection not properly escaped: {result}"
+                )
 
     class TestIntegratedSecurityScenarios:
         """Test security in realistic usage scenarios"""
