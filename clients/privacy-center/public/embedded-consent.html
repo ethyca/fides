@@ -82,10 +82,15 @@
     </main>
     <script>
       const onInitialized = () => {
-        // Add experience config ID as a class to the body for per-brand CSS styling
-        const experienceConfigId = window.Fides?.experience?.experience_config?.id;
+        // Add experience config ID and property ID as classes to the body for per-brand CSS styling
+        const experienceConfigId =
+          window.Fides?.experience?.experience_config?.id;
         if (experienceConfigId) {
           window.document.body.classList.add(experienceConfigId);
+        }
+        const propertyId = window.Fides?.experience?.property_id;
+        if (propertyId) {
+          window.document.body.classList.add(propertyId);
         }
 
         let fidesUIShown = false;
