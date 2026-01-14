@@ -466,7 +466,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, self.current_request, param_values  # type: ignore
+            self.action,
+            self.collection_name,
+            self.current_request,
+            param_values,  # type: ignore
         )
 
         logger.debug("Populated request params for {}", self.current_request.path)
@@ -597,7 +600,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, update_request, param_values  # type: ignore
+            self.action,
+            self.collection_name,
+            update_request,
+            param_values,  # type: ignore
         )
 
         logger.debug("Populated request params for {}", update_request.path)

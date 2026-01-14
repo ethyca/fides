@@ -68,13 +68,13 @@ def build_automaton(
     automaton = ahocorasick.Automaton()  # pylint: disable=c-extension-no-member
     # Use query_without_large_columns to prevent OOM errors when building automaton
     # We only need identity data, not filtered results or access result URLs
-    all_privacy_requests: List[
-        PrivacyRequest
-    ] = PrivacyRequest.query_without_large_columns(db).yield_per(
-        1000
+    all_privacy_requests: List[PrivacyRequest] = (
+        PrivacyRequest.query_without_large_columns(db).yield_per(1000)
     )  # type: ignore
     for request in all_privacy_requests:
-        _add_decrypted_identities_to_automaton(request.get_persisted_identity().__dict__, request.id, automaton)  # type: ignore
+        _add_decrypted_identities_to_automaton(
+            request.get_persisted_identity().__dict__, request.id, automaton
+        )  # type: ignore
     set_automaton_cache_signal()
     return automaton
 

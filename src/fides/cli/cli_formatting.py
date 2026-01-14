@@ -106,9 +106,7 @@ rich_click.USE_RICH_MARKUP = (
     False  # Parse help strings for rich markup (eg. [red]my text[/])
 )
 rich_click.COMMAND_GROUPS = {}  # Define sorted groups of panels to display subcommands
-rich_click.OPTION_GROUPS = (
-    {}
-)  # Define sorted groups of panels to display options and arguments
+rich_click.OPTION_GROUPS = {}  # Define sorted groups of panels to display options and arguments
 rich_click.USE_CLICK_SHORT_HELP = (
     False  # Use click's default function to truncate help text
 )

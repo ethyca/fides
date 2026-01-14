@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Integration tests for the API module."""
+
 import json
 import typing
 from datetime import datetime, timedelta, timezone
@@ -33,10 +34,9 @@ from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import DataCategory as DataCategoryModel
-from fides.api.models.sql_models import Dataset
+from fides.api.models.sql_models import Dataset, PrivacyDeclaration, System
 from fides.api.models.sql_models import DataSubject as DataSubjectModel
 from fides.api.models.sql_models import DataUse as DataUseModel
-from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import OWNER, VIEWER
@@ -2125,9 +2125,9 @@ class TestSystemUpdate:
         db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
-        system_update_request_body.privacy_declarations[0].data_use = (
-            inactive_data_use.fides_key
-        )
+        system_update_request_body.privacy_declarations[
+            0
+        ].data_use = inactive_data_use.fides_key
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -2578,21 +2578,21 @@ class TestSystemUpdate:
         # assert the declarations in our responses match those in our requests
         response_decs: List[dict] = result.json()["privacy_declarations"]
 
-        assert len(response_decs) == len(
-            update_declarations
-        ), "Response declaration count doesn't match the number sent!"
+        assert len(response_decs) == len(update_declarations), (
+            "Response declaration count doesn't match the number sent!"
+        )
         for response_dec in response_decs:
-            assert (
-                "id" in response_dec.keys()
-            ), "No 'id' field in the response declaration!"
+            assert "id" in response_dec.keys(), (
+                "No 'id' field in the response declaration!"
+            )
 
             parsed_response_declaration = models.PrivacyDeclaration.model_validate(
                 response_dec
             )
-            assert (
-                parsed_response_declaration in update_declarations
-            ), "The response declaration '{}' doesn't match anything in the request declarations!".format(
-                parsed_response_declaration.name
+            assert parsed_response_declaration in update_declarations, (
+                "The response declaration '{}' doesn't match anything in the request declarations!".format(
+                    parsed_response_declaration.name
+                )
             )
 
         # do the same for the declarations in our db record
@@ -3010,9 +3010,9 @@ class TestDefaultTaxonomyCrud:
             resource_id=resource.fides_key,
             headers=auth_header,
         )
-        assert (
-            result.status_code == 403
-        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 403, (
+            f"Expected 403 but got {result.status_code}: {result.json()}"
+        )
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3034,9 +3034,9 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             json_resource=json_resource,
         )
-        assert (
-            result.status_code == 200
-        ), f"Expected 200 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 200, (
+            f"Expected 200 but got {result.status_code}: {result.json()}"
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
@@ -3058,9 +3058,9 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resources=resources,
         )
-        assert (
-            result.status_code == 200
-        ), f"Expected 200 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 200, (
+            f"Expected 200 but got {result.status_code}: {result.json()}"
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
@@ -3084,9 +3084,9 @@ class TestDefaultTaxonomyCrud:
             json_resource=manifest.json(exclude_none=True),
             headers=auth_header,
         )
-        assert (
-            result.status_code == 403
-        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 403, (
+            f"Expected 403 but got {result.status_code}: {result.json()}"
+        )
         response_json = result.json()
         assert "cannot create a resource where 'is_default' is true" in str(
             response_json
@@ -3132,9 +3132,9 @@ class TestDefaultTaxonomyCrud:
             resources=[manifest.model_dump(mode="json")],
         )
         assert result.status_code == 403
-        assert (
-            result.status_code == 403
-        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 403, (
+            f"Expected 403 but got {result.status_code}: {result.json()}"
+        )
         response_json = result.json()
         assert "cannot create a resource where 'is_default' is true" in str(
             response_json
@@ -3178,9 +3178,9 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        assert (
-            result.status_code == 403
-        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 403, (
+            f"Expected 403 but got {result.status_code}: {result.json()}"
+        )
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3227,9 +3227,9 @@ class TestDefaultTaxonomyCrud:
                 second_item.model_dump(mode="json"),
             ],
         )
-        assert (
-            result.status_code == 403
-        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        assert result.status_code == 403, (
+            f"Expected 403 but got {result.status_code}: {result.json()}"
+        )
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3363,9 +3363,9 @@ class TestHealthchecks:
 
         monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
         response = test_client.get(test_config.cli.server_url + "/health/database")
-        assert (
-            response.status_code == expected_status_code
-        ), f"Request failed: {response.text}"
+        assert response.status_code == expected_status_code, (
+            f"Request failed: {response.text}"
+        )
 
     def test_server_healthcheck(
         self,
