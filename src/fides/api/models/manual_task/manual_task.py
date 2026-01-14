@@ -1,9 +1,5 @@
 from datetime import datetime, timezone
-<<<<<<< HEAD
-from enum import Enum
-=======
 from enum import StrEnum
->>>>>>> 9db64bb600 ([ENG-2185] Adding Consent (#7174))
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
