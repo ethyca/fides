@@ -446,6 +446,16 @@ describe("cookies", () => {
       };
       expect(tcfCookieIsProperlySet(cookieWithBothFields)).toBeTruthy();
     });
+
+    it("returns false when fides_string contains only NC data (no TC or GPP)", () => {
+      const cookieWithOnlyNC: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          ",,,eyJhbmFseXRpY3MiOjEsImRhdGFfc2FsZXNfYW5kX3NoYXJpbmciOjEsIm1hcmtldGluZyI6MX0=",
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithOnlyNC)).toBeFalsy();
+    });
   });
 
   describe("isWildcardCookie", () => {
