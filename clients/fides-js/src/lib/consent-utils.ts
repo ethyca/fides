@@ -3,7 +3,7 @@ import {
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./consent-constants";
-import { ConsentContext } from "./consent-context";
+import { AutomatedConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentFlagType,
@@ -365,7 +365,7 @@ export const getGpcStatusFromNotice = ({
 }: {
   value: boolean;
   notice: PrivacyNotice;
-  consentContext: ConsentContext;
+  consentContext: AutomatedConsentContext;
 }) => {
   // If GPC is not enabled, it won't be applied at all.
   if (

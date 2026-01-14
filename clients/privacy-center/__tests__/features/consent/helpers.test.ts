@@ -1,4 +1,4 @@
-import { ConsentContext } from "fides-js";
+import { AutomatedConsentContext } from "fides-js";
 
 import { makeNoticeConsent } from "~/features/consent/helpers";
 import { ConfigConsentOption } from "~/types/api";
@@ -13,7 +13,7 @@ describe("makeNoticeConsent", () => {
   };
 
   describe("With blank consent context", () => {
-    const consentContext: ConsentContext = {};
+    const consentContext: AutomatedConsentContext = {};
 
     const dataUseSales: ConfigConsentOption = {
       fidesDataUseKey: "data_use.sales",
@@ -101,7 +101,7 @@ describe("makeNoticeConsent", () => {
   });
 
   describe("With GPC enabled in the consent context", () => {
-    const consentContext: ConsentContext = {
+    const consentContext: AutomatedConsentContext = {
       globalPrivacyControl: true,
     };
 

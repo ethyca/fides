@@ -1,4 +1,4 @@
-import { ConsentContext, getGpcContext } from "./consent-context";
+import { AutomatedConsentContext, getGpcStatus } from "./consent-context";
 import { readConsentFromAnyProvider } from "./consent-migration";
 import {
   ConsentMechanism,
@@ -35,7 +35,7 @@ import {
 export const calculateAutomatedConsent = (
   experience: PrivacyExperience,
   savedConsent: NoticeConsent,
-  context: ConsentContext,
+  context: AutomatedConsentContext,
 ): {
   noticeConsent: NoticeConsent;
   consentMethod: ConsentMethod | null;
@@ -277,7 +277,7 @@ export const automaticallyApplyPreferences = async (
     return false;
   }
 
-  const context = getGpcContext();
+  const context = getGpcStatus();
   // let fidesString: string | undefined;
   const { nc: noticeConsentString } = decodeFidesString(
     options.fidesString || "",

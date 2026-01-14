@@ -1,5 +1,5 @@
 import {
-  ConsentContext,
+  AutomatedConsentContext,
   GpcStatus,
   NoticeConsent,
   resolveLegacyConsentValue,
@@ -55,7 +55,7 @@ export const makeNoticeConsent = ({
 }: {
   consentOptions: ConfigConsentOption[];
   fidesKeyToConsent: FidesKeyToConsent;
-  consentContext: ConsentContext;
+  consentContext: AutomatedConsentContext;
 }): NoticeConsent => {
   const consent: NoticeConsent = {};
   consentOptions.forEach((option) => {
@@ -83,7 +83,7 @@ export const getGpcStatus = ({
 }: {
   value: boolean;
   consentOption: ConfigConsentOption;
-  consentContext: ConsentContext;
+  consentContext: AutomatedConsentContext;
 }): GpcStatus => {
   // If GPC is not enabled, it won't be applied at all.
   if (!consentContext.globalPrivacyControl) {

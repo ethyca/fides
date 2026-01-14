@@ -67,17 +67,13 @@ export const transformConsentToFidesUserPreference = (
  * @param fullObjects - If true, returns full SaveConsentPreference objects; if false, returns minimal objects with just noticeHistoryId and consentPreference
  * @returns Array of SaveConsentPreference objects (or minimal versions)
  */
-export const buildConsentPreferencesArray = <T extends boolean = true>(
+export const buildConsentPreferencesArray = (
   noticeConsent: NoticeConsent,
   privacyNotices: PrivacyNotice[],
   locale: string,
   defaultLocale: string,
-  fullObjects?: T,
-): T extends true
-  ? SaveConsentPreference[]
-  : Array<
-      Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
-    > => {
+  fullObjects?: boolean,
+): SaveConsentPreference[] => {
   const consentPreferencesToSave: SaveConsentPreference[] = [];
 
   privacyNotices.forEach((notice) => {
@@ -123,7 +119,7 @@ export const buildConsentPreferencesArray = <T extends boolean = true>(
     }
   });
 
-  return consentPreferencesToSave as any;
+  return consentPreferencesToSave;
 };
 
 /**

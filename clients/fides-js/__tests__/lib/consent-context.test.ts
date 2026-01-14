@@ -1,6 +1,6 @@
 import {
   getAutomatedConsentContext,
-  getGpcContext,
+  getGpcStatus,
 } from "../../src/lib/consent-context";
 import { readConsentFromAnyProvider } from "../../src/lib/consent-migration";
 import { ConsentMethod, FidesInitOptions } from "../../src/lib/consent-types";
@@ -22,7 +22,7 @@ jest.mock("../../src/lib/fides-string", () => ({
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
 
-describe("getGpcContext", () => {
+describe("getGpcStatus", () => {
   beforeEach(() => {
     // Reset window.Fides before each test
     (window as any).Fides = {
@@ -53,7 +53,7 @@ describe("getGpcContext", () => {
         writable: true,
         configurable: true,
       });
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -64,7 +64,7 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -75,7 +75,7 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
@@ -88,7 +88,7 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -101,12 +101,12 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
     it("returns undefined when GPC is not set", () => {
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -128,7 +128,7 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -152,7 +152,7 @@ describe("getGpcContext", () => {
         configurable: true,
       });
 
-      const context = getGpcContext();
+      const context = getGpcStatus();
       expect(context.globalPrivacyControl).toBe(true);
     });
   });

@@ -1,7 +1,7 @@
 import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
-import type { ConsentContext } from "../../src/lib/consent-context";
+import type { AutomatedConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies as CookiesType,
   FidesCookie,
@@ -335,7 +335,7 @@ describe("cookies", () => {
     };
 
     describe("when global privacy control is not present", () => {
-      const context: ConsentContext = {};
+      const context: AutomatedConsentContext = {};
 
       it("returns the default consent values by key", () => {
         expect(makeConsentDefaultsLegacy(config, context)).toEqual({
@@ -348,7 +348,7 @@ describe("cookies", () => {
     });
 
     describe("when global privacy control is set", () => {
-      const context: ConsentContext = {
+      const context: AutomatedConsentContext = {
         globalPrivacyControl: true,
       };
 

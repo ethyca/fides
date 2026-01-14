@@ -5,7 +5,7 @@ import {
   calculateAutomatedConsent,
   saveAutomatedPreferencesToApi,
 } from "./automated-consent";
-import { ConsentContext, getGpcContext } from "./consent-context";
+import { AutomatedConsentContext, getGpcStatus } from "./consent-context";
 import {
   ComponentType,
   FidesConfig,
@@ -138,7 +138,7 @@ export const getInitialCookie = async ({
   options,
 }: FidesConfig): Promise<FidesCookie> => {
   // Configure the default legacy consent values
-  const context = getGpcContext();
+  const context = getGpcStatus();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
@@ -197,7 +197,7 @@ export interface InitializeProps {
     props: UpdateExperienceProps,
   ) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
-  automatedConsentContext: ConsentContext;
+  automatedConsentContext: AutomatedConsentContext;
 }
 
 /**
