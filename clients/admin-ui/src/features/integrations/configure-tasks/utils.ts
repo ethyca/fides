@@ -61,7 +61,7 @@ export const getFieldType = (fieldAddress: string): FieldType => {
   }
 
   // Check policy ID field
-  if (fieldAddress === "privacy_request.policy.id") {
+  if (fieldAddress === "privacy_request.policy.key") {
     return "policy";
   }
 
