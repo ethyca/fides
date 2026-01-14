@@ -47,6 +47,15 @@ class ChatProviderConfig(Base):
         ),
         nullable=True,
     )
+    signing_secret = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=True,
+    )
     enabled = Column(Boolean, nullable=False, default=False)
     single_row = Column(Boolean, nullable=False, default=True)
     workspace_name = Column(String, nullable=True)

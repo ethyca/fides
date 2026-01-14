@@ -6,6 +6,7 @@ export interface ChatProviderSettings {
   workspace_url?: string;
   client_id?: string;
   client_secret?: string;
+  signing_secret?: string;
   notification_channel_id?: string;
 }
 
@@ -16,6 +17,7 @@ export interface ChatProviderSettingsResponse {
   workspace_url?: string;
   client_id?: string;
   authorized: boolean;
+  has_signing_secret: boolean;
   created_at: string;
   updated_at: string;
   workspace_name?: string;
@@ -54,6 +56,7 @@ export interface QuestionWithAnswer {
   answer: string | null;
   answered_at: string | null;
   user: string | null;
+  user_email: string | null;
 }
 
 export interface Conversation {

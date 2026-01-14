@@ -108,6 +108,7 @@ const SlackIntegrationCard = () => {
   // Credentials form state
   const [clientId, setClientId] = useState<string>("");
   const [clientSecret, setClientSecret] = useState<string>("");
+  const [signingSecret, setSigningSecret] = useState<string>("");
 
   // Update selected channel when settings load
   useEffect(() => {
@@ -161,6 +162,7 @@ const SlackIntegrationCard = () => {
       provider_type: "slack",
       client_id: clientId.trim(),
       client_secret: clientSecret.trim(),
+      signing_secret: signingSecret.trim() || undefined,
     });
 
     if (isErrorResult(result)) {
@@ -169,7 +171,8 @@ const SlackIntegrationCard = () => {
       );
     } else {
       toast(successToastParams("Credentials saved. You can now connect to Slack."));
-      setClientSecret(""); // Clear secret after save
+      setClientSecret(""); // Clear secrets after save
+      setSigningSecret("");
       refetch();
     }
   };
@@ -360,6 +363,23 @@ const SlackIntegrationCard = () => {
                   : "Enter Slack app Client Secret"
               }
               data-testid="slack-client-secret-input"
+            />
+          </div>
+
+          <div>
+            <Text className="mb-1 block">
+              Signing Secret{" "}
+              <Text type="secondary">(optional, for webhooks)</Text>
+            </Text>
+            <Input.Password
+              value={signingSecret}
+              onChange={(e) => setSigningSecret(e.target.value)}
+              placeholder={
+                settings?.has_signing_secret
+                  ? "Enter new secret to update"
+                  : "Enter Slack app Signing Secret"
+              }
+              data-testid="slack-signing-secret-input"
             />
           </div>
 
@@ -565,8 +585,11 @@ const SlackIntegrationCard = () => {
                         {q.answer ? (
                           <Text className="block ml-4">
                             <Text type="secondary">A:</Text> {q.answer}
-                            {q.user && (
-                              <Text type="secondary"> (by {q.user})</Text>
+                            {(q.user_email ?? q.user) && (
+                              <Text type="secondary">
+                                {" "}
+                                (by {q.user_email ?? q.user})
+                              </Text>
                             )}
                           </Text>
                         ) : idx === conv.current_question_index &&
