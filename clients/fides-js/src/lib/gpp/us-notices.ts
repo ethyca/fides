@@ -4,7 +4,7 @@
 
 import { CmpApi } from "@iabgpp/cmpapi";
 
-import type { AutomatedConsentContext } from "../consent-context";
+import type { ConsentContext } from "../consent-context";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
 import {
   CmpApiUpdaterProps,
@@ -19,7 +19,7 @@ import { GPPSection } from "./types";
 interface UpdateGppProps {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
-  context: AutomatedConsentContext;
+  context: ConsentContext;
   cookie?: FidesCookie;
 }
 const updateGpp = (
@@ -75,7 +75,7 @@ export const setGppNoticesProvidedFromExperience = ({
 }: {
   cmpApi: CmpApi;
   experience: PrivacyExperience;
-  context: AutomatedConsentContext;
+  context: ConsentContext;
 }) => updateGpp(setNoticesProvided, { cmpApi, experience, context });
 
 /**
@@ -92,5 +92,5 @@ export const setGppOptOutsFromCookieAndExperience = ({
   cmpApi: CmpApi;
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  context: AutomatedConsentContext;
+  context: ConsentContext;
 }) => updateGpp(setOptOuts, { cmpApi, cookie, experience, context });

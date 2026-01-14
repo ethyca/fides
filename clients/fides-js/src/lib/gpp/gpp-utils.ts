@@ -19,7 +19,7 @@ import {
   SECTIONS_WITH_GPC_SUBSECTION,
 } from "./constants";
 import {
-  AutomatedConsentContext,
+  ConsentContext,
   GPPPrivacyExperience,
   GPPSection,
   GPPSettings,
@@ -256,7 +256,7 @@ export const setGpcSubsection = ({
 }: {
   gppApi: GPPApiLike;
   gppSection: GPPSection;
-  context: AutomatedConsentContext;
+  context: ConsentContext;
 }) => {
   if (isGpcSubsectionSupported(gppSection)) {
     const isGpcEnabled = context?.globalPrivacyControl ?? false;

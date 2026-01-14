@@ -1,4 +1,4 @@
-import { AutomatedConsentContext } from "./consent-context";
+import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -32,7 +32,7 @@ import {
 export const calculateAutomatedConsent = (
   experience: PrivacyExperience,
   savedConsent: NoticeConsent,
-  context: AutomatedConsentContext,
+  context: ConsentContext,
 ): {
   noticeConsent: NoticeConsent;
   consentMethod: ConsentMethod | null;

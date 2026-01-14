@@ -2,7 +2,7 @@ import {
   calculateAutomatedConsent,
   saveAutomatedPreferencesToApi,
 } from "../../src/lib/automated-consent";
-import { AutomatedConsentContext } from "../../src/lib/consent-context";
+import { ConsentContext } from "../../src/lib/consent-context";
 import {
   ComponentType,
   ConsentMechanism,
@@ -94,7 +94,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("returns no consent when context has no automated sources", () => {
-    const context: AutomatedConsentContext = {};
+    const context: ConsentContext = {};
     const savedConsent = {};
 
     const result = calculateAutomatedConsent(
@@ -109,7 +109,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("applies GPC when globalPrivacyControl is true", () => {
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {};
@@ -129,7 +129,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("applies migrated consent with higher priority than GPC", () => {
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
       migratedConsent: {
         analytics: true, // Migrated says opt-in
@@ -157,7 +157,7 @@ describe("calculateAutomatedConsent", () => {
       analytics: true,
     });
 
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
       noticeConsentString: "analytics:true", // Notice string says opt-in
     };
@@ -175,7 +175,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("respects saved consent for GPC", () => {
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {
@@ -197,7 +197,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("respects saved consent over migrated consent (including false values)", () => {
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       migratedConsent: {
         analytics: true, // Migrated says opt-in
         marketing: true, // Migrated says opt-in
@@ -223,7 +223,7 @@ describe("calculateAutomatedConsent", () => {
   });
 
   it("applies migrated consent when no Fides cookie exists", () => {
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       migratedConsent: {
         analytics: true, // Migrated says opt-in
         marketing: false, // Migrated says opt-out
@@ -263,7 +263,7 @@ describe("calculateAutomatedConsent", () => {
       ] as PrivacyNotice[],
     };
 
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {};
@@ -289,7 +289,7 @@ describe("calculateAutomatedConsent", () => {
       ] as PrivacyNotice[],
     };
 
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {};
@@ -306,7 +306,7 @@ describe("calculateAutomatedConsent", () => {
 
   it("returns no consent when experience is invalid", () => {
     const invalidExperience = {} as PrivacyExperience;
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {};
@@ -374,7 +374,7 @@ describe("calculateAutomatedConsent", () => {
       ] as PrivacyNotice[],
     };
 
-    const context: AutomatedConsentContext = {
+    const context: ConsentContext = {
       globalPrivacyControl: true,
     };
     const savedConsent = {};

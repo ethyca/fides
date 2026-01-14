@@ -1,4 +1,4 @@
-import { AutomatedConsentContext } from "./consent-context";
+import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentValue,
@@ -13,7 +13,7 @@ import {
 
 export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,
-  context: AutomatedConsentContext,
+  context: ConsentContext,
 ): boolean => {
   if (value === undefined) {
     return false;

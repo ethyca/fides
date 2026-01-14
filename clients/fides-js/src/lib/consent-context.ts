@@ -44,7 +44,7 @@ const getGlobalPrivacyControl = (): boolean | undefined => {
   return window.navigator?.globalPrivacyControl;
 };
 
-export interface AutomatedConsentContext {
+export interface ConsentContext {
   globalPrivacyControl?: boolean;
   migratedConsent?: NoticeConsent;
   migrationMethod?: ConsentMethod;
@@ -56,7 +56,7 @@ export interface AutomatedConsentContext {
  * Returns the GPC context from the browser/document.
  * This function specifically returns GPC status only.
  */
-export const getGpcStatus = (): { globalPrivacyControl?: boolean } => {
+export const getConsentContext = (): { globalPrivacyControl?: boolean } => {
   if (typeof window === "undefined") {
     return {};
   }
@@ -80,8 +80,8 @@ export const getGpcStatus = (): { globalPrivacyControl?: boolean } => {
 export const getAutomatedConsentContext = (
   options: FidesInitOptions,
   optionsOverrides: Partial<FidesInitOptionsOverrides>,
-): AutomatedConsentContext => {
-  const context: AutomatedConsentContext = {};
+): ConsentContext => {
+  const context: ConsentContext = {};
 
   // Check if a Fides cookie already exists
   context.hasFidesCookie = hasFidesConsentCookie(options.fidesCookieSuffix);

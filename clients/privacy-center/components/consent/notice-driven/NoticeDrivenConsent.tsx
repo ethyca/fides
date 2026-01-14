@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
-  AutomatedConsentContext,
+  ConsentContext,
   Cookies as FidesJSCookies,
   ExperienceConfig,
   FidesCookie,
-  getGpcStatus,
+  getConsentContext,
   getGpcStatusFromNotice,
   getOrMakeFidesCookie,
   NoticeConsent,
@@ -64,7 +64,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
 
-  const consentContext = useMemo(() => getGpcStatus(), []);
+  const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const [cookie, setCookie] = useState<FidesCookie | null>(null);
   const [updatePrivacyPreferencesMutationTrigger] =
@@ -451,7 +451,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (
   notice: PrivacyNoticeResponse,
-  context: AutomatedConsentContext,
+  context: ConsentContext,
   cookie: FidesCookie,
 ): UserConsentPreference | undefined => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {

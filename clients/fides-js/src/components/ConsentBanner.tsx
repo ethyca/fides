@@ -4,7 +4,7 @@ import { useEffect } from "preact/hooks";
 
 import { A11yDialogAttributes } from "~/lib/a11y-dialog";
 
-import { getGpcStatus } from "../lib/consent-context";
+import { getConsentContext } from "../lib/consent-context";
 import {
   GpcStatus,
   PrivacyExperience,
@@ -50,7 +50,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
 }) => {
   const { container, dialog, title, closeButton } = attributes;
   const { i18n } = useI18n();
-  const showGpcBadge = getGpcStatus().globalPrivacyControl;
+  const showGpcBadge = getConsentContext().globalPrivacyControl;
   const { setTrigger } = useEvent();
   useEffect(() => {
     if (bannerIsOpen) {

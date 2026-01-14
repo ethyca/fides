@@ -2,7 +2,7 @@ import { decode as base64_decode, encode as base64_encode } from "base-64";
 import Cookies, { CookiesStatic } from "js-cookie";
 import { v4 as uuidv4 } from "uuid";
 
-import { AutomatedConsentContext } from "./consent-context";
+import { ConsentContext } from "./consent-context";
 import {
   Cookies as CookiesType,
   FidesCookie,
@@ -490,7 +490,7 @@ export const transformTcfPreferencesToCookieKeys = (
  */
 export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
-  context: AutomatedConsentContext,
+  context: ConsentContext,
 ): NoticeConsent => {
   const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {

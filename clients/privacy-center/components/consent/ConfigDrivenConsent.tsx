@@ -1,6 +1,6 @@
 import {
   FidesCookie,
-  getGpcStatus as getGpcBrowserContext,
+  getConsentContext,
   getOrMakeFidesCookie,
   GpcStatus,
   resolveLegacyConsentValue,
@@ -46,7 +46,7 @@ const ConfigDrivenConsent = ({
   const toast = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const consentContext = useMemo(() => getGpcBrowserContext(), []);
+  const consentContext = useMemo(() => getConsentContext(), []);
   const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
