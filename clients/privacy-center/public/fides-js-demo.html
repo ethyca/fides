@@ -149,6 +149,9 @@
       <h2>Geolocation</h2>
       <pre id="consent-geolocation"></pre>
 
+      <h2>Locale</h2>
+      <pre id="consent-locale"></pre>
+
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
 
@@ -194,6 +197,13 @@
         document.getElementById("consent-geolocation").textContent =
           JSON.stringify(Fides.geolocation, null, 2);
 
+        // Pretty-print the fides geolocation object and add it to the page.
+        document.getElementById("consent-locale").textContent = JSON.stringify(
+          Fides.locale,
+          null,
+          2,
+        );
+
         // Pretty-print the fides options object and add it to the page.
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
@@ -215,7 +225,7 @@
         });
 
         // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
-        const modalLink = document.getElementById("fides-modal-link");
+        const modalLink = document.getElementById(Fides.options.modalLinkId);
         if (!!modalLink) {
           modalLink.innerText = Fides.getModalLinkLabel();
         }

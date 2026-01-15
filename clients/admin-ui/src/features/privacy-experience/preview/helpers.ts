@@ -1,5 +1,6 @@
 /* eslint-disable*/
 
+import { FidesInitOptions, DEFAULT_MODAL_LINK_ID } from "fides-js";
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import {
   ComponentType,
@@ -63,12 +64,12 @@ export const buildBaseConfig = (
       isGeolocationEnabled: false,
       isOverlayEnabled: true,
       isPrefetchEnabled: false,
-      modalLinkId: null,
+      modalLinkId: DEFAULT_MODAL_LINK_ID,
       overlayParentId: PREVIEW_CONTAINER_ID,
       preventDismissal: experienceConfig.dismissable ?? false,
       privacyCenterUrl: "http://localhost:3000",
       showFidesBrandLink: true,
-    },
+    } as Partial<FidesInitOptions>,
     experience: {
       available_locales: experienceConfig.translations?.map((t) => t.language),
       component: experienceConfig.component,

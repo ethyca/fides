@@ -358,7 +358,7 @@ export const initialize = async ({
       if (
         fides.experience.experience_config?.component === ComponentType.HEADLESS
       ) {
-        const modalLinkId = options.modalLinkId || "fides-modal-link";
+        const { modalLinkId } = options;
         const modalLinkIsDisabled =
           !fides.experience ||
           !!options.fidesEmbed ||

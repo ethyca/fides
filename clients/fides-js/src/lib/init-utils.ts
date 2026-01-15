@@ -90,7 +90,7 @@ export const getCoreFides = ({
       isGeolocationEnabled: false,
       geolocationApiUrl: "",
       overlayParentId: null,
-      modalLinkId: null,
+      modalLinkId: "",
       privacyCenterUrl: "",
       fidesApiUrl: "",
       tcfEnabled,
