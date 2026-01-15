@@ -120,7 +120,10 @@ def create_fides_app(
     # Pure ASGI middleware for request logging, analytics, and audit logging
     # These are high-performance replacements for BaseHTTPMiddleware-based versions
     fastapi_app.add_middleware(LogRequestMiddleware)
-    fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
+
+    if not CONFIG.user.analytics_opt_out:
+        fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
+
     if CONFIG.security.enable_audit_log_resource_middleware:
         fastapi_app.add_middleware(AuditLogMiddleware)
 
