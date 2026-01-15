@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
@@ -6,7 +7,8 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 // DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
 // rc-util is required for Ant Design components (Collapse, Drawer, etc.) to work properly
-const withTM = require("next-transpile-modules")(["fidesui", "rc-util"]);
+// @ant-design/x and antd need to be transpiled to resolve ES module import issues
+const withTM = require("next-transpile-modules")(["fidesui", "rc-util", "@ant-design/x", "antd"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
@@ -18,6 +20,32 @@ const nextConfig = {
   },
   images: {
     loader: "custom",
+  },
+  webpack: (config, { isServer }) => {
+    // Handle ESM packages used by @ant-design/x
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+
+    // Fix antd version import issue - alias to point to index.js which exports the version
+    if (!config.resolve.alias) {
+      config.resolve.alias = {};
+    }
+    config.resolve.alias["antd/es/version"] = path.resolve(__dirname, "node_modules/antd/es/version/index.js");
+
+    // Handle ESM externals for react-syntax-highlighter used by @ant-design/x
+    // Ignore the problematic async language loader that tries to import ESM packages
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^refractor\/.*$/,
+        contextRegExp: /react-syntax-highlighter/,
+      })
+    );
+
+    return config;
   },
   async rewrites() {
     // The CI tests run without a server, so we leave this value out of .env.test.

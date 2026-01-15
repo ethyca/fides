@@ -12,6 +12,7 @@ import {
   PlusOutlined,
   Checkbox,
   Upload,
+  Tooltip,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -22,9 +23,10 @@ import {
   SettingOutlined,
   CloudUploadOutlined,
 } from "@ant-design/icons";
+import { SlackOutlined } from "@ant-design/icons";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Layout from "~/features/common/Layout";
 import {
@@ -154,6 +156,8 @@ const regions = [
   "Brazil",
 ];
 
+const VIEWED_ASSESSMENTS_KEY = "privacy-assessments-viewed";
+
 const PrivacyAssessmentsPage: NextPage = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -161,6 +165,39 @@ const PrivacyAssessmentsPage: NextPage = () => {
   const [selectedRegions, setSelectedRegions] = useState<string[]>(["United States", "European Union"]);
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(["gdpr", "ccpa"]);
   const [regionSearch, setRegionSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewedAssessments, setViewedAssessments] = useState<Set<string>>(new Set());
+
+  // Load viewed assessments from localStorage on mount
+  // Initialize with half of assessments already viewed (so half are "new")
+  useEffect(() => {
+    const getAllAssessmentIds = () => {
+      return [
+        ...mockAssessments.gdpr.assessments.map((a) => a.id),
+        ...mockAssessments.ccpa.assessments.map((a) => a.id),
+      ];
+    };
+
+    const stored = localStorage.getItem(VIEWED_ASSESSMENTS_KEY);
+    if (stored) {
+      try {
+        const viewedIds = JSON.parse(stored) as string[];
+        setViewedAssessments(new Set(viewedIds));
+      } catch (e) {
+        // If parsing fails, initialize with half viewed
+        const allAssessmentIds = getAllAssessmentIds();
+        const halfViewed = allAssessmentIds.slice(0, Math.ceil(allAssessmentIds.length / 2));
+        setViewedAssessments(new Set(halfViewed));
+        localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(halfViewed));
+      }
+    } else {
+      // First time: initialize with half viewed
+      const allAssessmentIds = getAllAssessmentIds();
+      const halfViewed = allAssessmentIds.slice(0, Math.ceil(allAssessmentIds.length / 2));
+      setViewedAssessments(new Set(halfViewed));
+      localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(halfViewed));
+    }
+  }, []);
 
   const handleAddRegion = (region: string) => {
     if (!selectedRegions.includes(region)) {
@@ -200,7 +237,17 @@ const PrivacyAssessmentsPage: NextPage = () => {
   };
 
   const handleAssessmentClick = (id: string) => {
+    // Mark assessment as viewed
+    const newViewed = new Set(viewedAssessments);
+    newViewed.add(id);
+    setViewedAssessments(newViewed);
+    localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(Array.from(newViewed)));
+
     router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/${id}`);
+  };
+
+  const isNewAssessment = (id: string) => {
+    return !viewedAssessments.has(id);
   };
 
   const getStatusText = (status: string, time?: string) => {
@@ -283,8 +330,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
               <Select
                 placeholder="Status: All"
                 style={{ width: 240 }}
+                value={statusFilter}
+                onChange={(value) => setStatusFilter(value)}
                 options={[
                   { label: "All", value: "all" },
+                  { label: "New", value: "new" },
                   { label: "Updated", value: "updated" },
                   { label: "Out of date", value: "outdated" },
                 ]}
@@ -353,7 +403,15 @@ const PrivacyAssessmentsPage: NextPage = () => {
               </Flex>
 
               <Flex gap="middle" wrap="wrap">
-                {template.assessments.map((assessment) => (
+                {template.assessments
+                  .filter((assessment) => {
+                    if (statusFilter === "all") return true;
+                    if (statusFilter === "new") return isNewAssessment(assessment.id);
+                    if (statusFilter === "updated") return assessment.status === "updated";
+                    if (statusFilter === "outdated") return assessment.status === "outdated";
+                    return true;
+                  })
+                  .map((assessment) => (
                   <Card
                     key={assessment.id}
                     hoverable
@@ -365,17 +423,41 @@ const PrivacyAssessmentsPage: NextPage = () => {
                     onClick={() => handleAssessmentClick(assessment.id)}
                   >
                     <Flex vertical gap="small">
-                      <Title
-                        level={5}
-                        style={{
-                          margin: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {assessment.name}
-                      </Title>
+                      <Flex justify="space-between" align="flex-start" gap="small">
+                        <Title
+                          level={5}
+                          style={{
+                            margin: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            flex: 1,
+                          }}
+                        >
+                          {assessment.name}
+                        </Title>
+                        {isNewAssessment(assessment.id) && (
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{
+                              flexShrink: 0,
+                              fontSize: 11,
+                              color: palette.FIDESUI_NEUTRAL_600,
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text style={{ fontSize: 11 }}>New</Text>
+                          </Flex>
+                        )}
+                      </Flex>
                       <Text
                         type="secondary"
                         style={{
@@ -454,9 +536,26 @@ const PrivacyAssessmentsPage: NextPage = () => {
                               </Text>
                             )}
                           </Flex>
-                          <Button type="link" style={{ padding: 0, fontSize: 12 }}>
-                            Resume
-                          </Button>
+                          <Flex align="center" gap="small">
+                            <Tooltip title="Request input from your team via Slack">
+                              <Button
+                                type="text"
+                                icon={<SlackOutlined />}
+                                size="small"
+                                style={{
+                                  padding: "4px 8px",
+                                  color: palette.FIDESUI_NEUTRAL_600,
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Handle Slack conversation initiation
+                                }}
+                              />
+                            </Tooltip>
+                            <Button type="link" style={{ padding: 0, fontSize: 12 }}>
+                              Resume
+                            </Button>
+                          </Flex>
                         </Flex>
                       </div>
                     </Flex>

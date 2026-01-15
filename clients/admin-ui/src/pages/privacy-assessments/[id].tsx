@@ -17,6 +17,11 @@ import {
   Typography,
   CheckOutlined,
   PlusOutlined,
+  Icons,
+  Descriptions,
+  List,
+  Divider,
+  Badge,
 } from "fidesui";
 import React from "react";
 // TODO: fix this export to be better encapsulated in fidesui
@@ -32,7 +37,14 @@ import {
   MessageOutlined,
   FilePdfOutlined,
   EditOutlined,
+  DownloadOutlined,
+  ExportOutlined,
+  FilterOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
+import { SlackOutlined } from "@ant-design/icons";
+import { Bubble } from "@ant-design/x/lib/bubble";
+import { Sources } from "@ant-design/x/lib/sources";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -59,6 +71,59 @@ interface SectionSummary {
   sectionKey: string;
   summary: string;
   isLoading: boolean;
+}
+
+interface EvidenceItem {
+  id: string;
+  questionId: string; // Which question/section this evidence relates to
+  type: "system" | "human" | "analysis";
+  subtype: string;
+  content: string;
+  source: {
+    system?: string;
+    person?: { name: string; role: string };
+    model?: string;
+  };
+  timestamp: string;
+  confidence?: number;
+  references?: string[];
+  metadata?: Record<string, any>;
+  links?: { label: string; url: string }[];
+}
+
+interface SystemEvidenceItem extends EvidenceItem {
+  type: "system";
+  subtype: "data-classification" | "system-inventory" | "policy-document" | "compliance-monitor";
+  source: {
+    system: string;
+  };
+  confidence?: number;
+}
+
+interface HumanEvidenceItem extends EvidenceItem {
+  type: "human";
+  subtype: "manual-entry" | "stakeholder-communication";
+  source: {
+    person: { name: string; role: string };
+  };
+  status?: "verified" | "pending-review" | "draft";
+  threadMessages?: Array<{
+    sender: string;
+    timestamp: string;
+    message: string;
+  }>;
+  channel?: string;
+  participants?: string[];
+}
+
+interface AnalysisEvidenceItem extends EvidenceItem {
+  type: "analysis";
+  subtype: "summary" | "inference" | "risk-assessment" | "compliance-check";
+  source: {
+    model: string;
+  };
+  confidence: number;
+  references: string[];
 }
 
 /**
@@ -96,13 +161,17 @@ const generateSectionSummary = async (
 const PrivacyAssessmentDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [expandedKeys, setExpandedKeys] = useState<string[]>(["1"]);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [sectionSummaries, setSectionSummaries] = useState<Record<string, SectionSummary>>({});
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [form] = Form.useForm();
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
+  const [evidenceExpandedSections, setEvidenceExpandedSections] = useState<string[]>([]);
+  const [evidenceFilters, setEvidenceFilters] = useState<Record<string, string>>({});
+  const [focusedQuestionId, setFocusedQuestionId] = useState<string | null>(null);
 
   // Format region code to display name
   const formatRegionDisplay = (regionCode: string): string => {
@@ -113,51 +182,131 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     return regionCode;
   };
 
-  // Mock Slack conversation data
-  const chatMessages: ChatMessage[] = [
+  // Mock evidence data grouped by question
+  // In a real implementation, this would come from an API and be organized by question
+  const allEvidence: EvidenceItem[] = [
+    // Question 2: Describe the processing
     {
-      id: "1",
-      sender: "astralis",
-      senderName: "Astralis agent",
-      message: "I've analyzed the Customer Insight AI Module and identified 2 data categories: PII and Behavioral Data. The processing involves automated AI analysis for personalized recommendations.",
-      timestamp: "2:15 PM",
+      id: "sys-1",
+      questionId: "2",
+      type: "system",
+      subtype: "data-classification",
+      content: "PII, Behavioral Data",
+      source: { system: "Fides Data Map" },
+      timestamp: "2024-01-15T14:23:00Z",
+      confidence: 98,
+      links: [{ label: "View in Data Map", url: "#" }],
     },
     {
-      id: "2",
-      sender: "jack",
-      senderName: "Jack Gale",
+      id: "sys-2",
+      questionId: "2",
+      type: "system",
+      subtype: "system-inventory",
+      content: "Customer Insight AI Module",
+      source: { system: "System Inventory" },
+      timestamp: "2024-01-15T14:20:00Z",
+      links: [{ label: "View system details", url: "#" }],
+    },
+    {
+      id: "sys-3",
+      questionId: "2",
+      type: "system",
+      subtype: "policy-document",
+      content: "Retention: 24 months (Section 4.2)",
+      source: { system: "Data Retention Policy v3.1" },
+      timestamp: "2024-01-15T13:45:00Z",
+      links: [{ label: "View policy document", url: "#" }],
+    },
+    {
+      id: "human-1",
+      questionId: "2",
+      type: "human",
+      subtype: "manual-entry",
+      content: "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations.",
+      source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
+      timestamp: "2024-01-15T14:20:00Z",
+      status: "verified",
+    },
+    {
+      id: "human-2",
+      questionId: "2",
+      type: "human",
+      subtype: "stakeholder-communication",
+      content: "Data flow discussion with team",
+      source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
+      timestamp: "2024-01-15T14:15:00Z",
+      channel: "Slack #privacy-assessments",
+      participants: ["Jack Gale", "Sarah Johnson", "Data Steward Team"],
+      threadMessages: [
+        {
+          sender: "Jack Gale",
+          timestamp: "2024-01-15T14:15:00Z",
       message: "Thanks! Can you help me understand the data flow? How is the data ingested?",
-      timestamp: "2:18 PM",
-    },
-    {
-      id: "3",
-      sender: "astralis",
-      senderName: "Astralis agent",
-      message: "Based on the system architecture, data is ingested via API from the core commerce engine. It's processed in a secure isolated environment with machine learning algorithms analyzing purchase history and browsing behavior.",
-      timestamp: "2:19 PM",
-    },
-    {
-      id: "4",
-      sender: "jack",
-      senderName: "Jack Gale",
+        },
+        {
+          sender: "Sarah Johnson",
+          timestamp: "2024-01-15T14:18:00Z",
+          message: "Based on the system architecture, data is ingested via API from the core commerce engine. It's processed in a secure isolated environment.",
+        },
+        {
+          sender: "Jack Gale",
+          timestamp: "2024-01-15T14:22:00Z",
       message: "What about the retention period? Do we have that information?",
-      timestamp: "2:22 PM",
+        },
+        {
+          sender: "Sarah Johnson",
+          timestamp: "2024-01-15T14:23:00Z",
+          message: "The retention period is 24 months based on the legitimate interest lawful basis.",
+        },
+      ],
     },
     {
-      id: "5",
-      sender: "astralis",
-      senderName: "Astralis agent",
-      message: "The retention period is 24 months based on the legitimate interest lawful basis. This aligns with the marketing communication opt-in period for customers.",
-      timestamp: "2:23 PM",
-    },
-    {
-      id: "6",
-      sender: "jack",
-      senderName: "Jack Gale",
-      message: "Perfect, that helps. I'll update the assessment with this information.",
-      timestamp: "2:25 PM",
+      id: "analysis-1",
+      questionId: "2",
+      type: "analysis",
+      subtype: "summary",
+      content: "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations. Data from commerce engine, processed in isolated environment. Scope: PII and behavioral data for opted-in customers.",
+      source: { model: "GPT-4-turbo (v2024.01)" },
+      timestamp: "2024-01-15T15:30:00Z",
+      confidence: 87,
+      references: ["sys-1", "sys-2", "human-1", "human-2"],
     },
   ];
+
+  // Group evidence by question
+  const evidenceByQuestion = useMemo(() => {
+    const grouped: Record<string, { system: SystemEvidenceItem[]; human: HumanEvidenceItem[]; analysis: AnalysisEvidenceItem[] }> = {};
+
+    allEvidence.forEach((item) => {
+      if (!grouped[item.questionId]) {
+        grouped[item.questionId] = { system: [], human: [], analysis: [] };
+      }
+
+      if (item.type === "system") {
+        grouped[item.questionId].system.push(item as SystemEvidenceItem);
+      } else if (item.type === "human") {
+        grouped[item.questionId].human.push(item as HumanEvidenceItem);
+      } else if (item.type === "analysis") {
+        grouped[item.questionId].analysis.push(item as AnalysisEvidenceItem);
+      }
+    });
+
+    return grouped;
+  }, [allEvidence]);
+
+  // Get question titles
+  const getQuestionTitle = (questionId: string): string => {
+    const questionMap: Record<string, string> = {
+      "1": "Why a DPIA is needed",
+      "2": "Describe the processing",
+      "3": "Consultation process",
+      "4": "Assess necessity and proportionality",
+      "5": "Identify and assess risks",
+      "6": "Identify measures to reduce risk",
+      "7": "Sign off and record outcomes",
+    };
+    return questionMap[questionId] || `Question ${questionId}`;
+  };
 
   const handleExpandAll = () => {
     setExpandedKeys(["1", "2", "3", "4", "5", "6", "7"]);
@@ -166,6 +315,137 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const handleCollapseAll = () => {
     setExpandedKeys([]);
   };
+
+  // Format timestamp for display
+  const formatTimestamp = (timestamp: string): string => {
+    return new Date(timestamp).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+  };
+
+  // Component to render text with inline source links
+  const renderTextWithSources = (text: string, questionId: string) => {
+    // Pattern to match [1], [2], etc. or [source:questionId:evidenceId]
+    const sourcePattern = /\[(\d+)\]|\[source:([^:]+):([^\]]+)\]/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let sourceIndex = 0;
+
+    while ((match = sourcePattern.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+
+      const fullMatch = match[0];
+      const sourceNum = match[1]; // For [1], [2] format
+      const refQuestionId = match[2]; // For [source:questionId:evidenceId] format
+      const evidenceId = match[3]; // For [source:questionId:evidenceId] format
+
+      // Create clickable source link with pill badge style
+      parts.push(
+        <Button
+          key={`source-${sourceIndex++}`}
+          type="text"
+          style={{
+            padding: "2px 8px",
+            height: "auto",
+            minHeight: "auto",
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#4A6CF7",
+            backgroundColor: "#F0F4FF",
+            border: "1px solid #D6E4FF",
+            borderRadius: 12,
+            lineHeight: 1.2,
+            transition: "all 0.2s ease",
+            verticalAlign: "baseline",
+            margin: "0 2px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#E0E9FF";
+            e.currentTarget.style.transform = "scale(1.05)";
+            e.currentTarget.style.borderColor = "#B8D0FF";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#F0F4FF";
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.borderColor = "#D6E4FF";
+          }}
+          onClick={() => {
+            const targetQuestionId = refQuestionId || questionId;
+            setFocusedQuestionId(targetQuestionId);
+            setIsDrawerOpen(true);
+            // Expand the focused question
+            if (!evidenceExpandedSections.includes(targetQuestionId)) {
+              setEvidenceExpandedSections([...evidenceExpandedSections, targetQuestionId]);
+            }
+          }}
+        >
+          [{sourceNum || "source"}]
+        </Button>
+      );
+
+      lastIndex = match.index + fullMatch.length;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? <>{parts}</> : text;
+  };
+
+  // Filter evidence based on search query
+  const filteredEvidenceByQuestion = useMemo(() => {
+    if (!evidenceSearchQuery) return evidenceByQuestion;
+
+    const query = evidenceSearchQuery.toLowerCase();
+    const filtered: typeof evidenceByQuestion = {};
+
+    Object.entries(evidenceByQuestion).forEach(([questionId, evidence]) => {
+      const filteredSystem = evidence.system.filter(
+        (item) =>
+          item.content.toLowerCase().includes(query) ||
+          item.source.system?.toLowerCase().includes(query) ||
+          item.subtype.toLowerCase().includes(query)
+      );
+
+      const filteredHuman = evidence.human.filter(
+        (item) =>
+          item.content.toLowerCase().includes(query) ||
+          item.source.person.name.toLowerCase().includes(query) ||
+          item.source.person.role.toLowerCase().includes(query) ||
+          (item.channel && item.channel.toLowerCase().includes(query)) ||
+          (item.participants && item.participants.some((p) => p.toLowerCase().includes(query)))
+      );
+
+      const filteredAnalysis = evidence.analysis.filter(
+        (item) =>
+          item.content.toLowerCase().includes(query) ||
+          (item.source.model && item.source.model.toLowerCase().includes(query)) ||
+          item.subtype.toLowerCase().includes(query)
+      );
+
+      // Only include question if it has filtered results
+      if (filteredSystem.length > 0 || filteredHuman.length > 0 || filteredAnalysis.length > 0) {
+        filtered[questionId] = {
+          system: filteredSystem,
+          human: filteredHuman,
+          analysis: filteredAnalysis,
+        };
+      }
+    });
+
+    return filtered;
+  }, [evidenceSearchQuery, evidenceByQuestion]);
 
   const sections = [
     { key: "1", title: "Identify the need for a DPIA", fields: ["projectOverview", "dpiaNeed"] },
@@ -636,15 +916,15 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       <div style={{ padding: "24px 24px", maxWidth: "100%", overflowX: "hidden" }} className="assessment-page-container">
         <Space direction="vertical" size="large" style={{ width: "100%", maxWidth: "100%" }}>
           <div style={{ overflowX: "auto", marginBottom: 32 }}>
-            <Steps
-              current={2}
-              size="small"
-              items={steps.map((step, index) => ({
-                title: step.title,
-                status: step.status as any,
-              }))}
+          <Steps
+            current={2}
+            size="small"
+            items={steps.map((step, index) => ({
+              title: step.title,
+              status: step.status as any,
+            }))}
               style={{ minWidth: 600 }}
-            />
+          />
           </div>
 
           <Flex justify="space-between" align="center" wrap="wrap" gap="small" style={{ marginTop: 16 }}>
@@ -664,22 +944,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           </Flex>
 
           <Form form={form} layout="vertical" onValuesChange={handleFormValuesChange}>
-            <Collapse
-              activeKey={expandedKeys}
-              onChange={(keys) => setExpandedKeys(keys as string[])}
-              className="privacy-assessment-collapse"
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #f0f0f0",
-                borderRadius: 8,
-              }}
-            >
+          <Collapse
+            activeKey={expandedKeys}
+            onChange={(keys) => setExpandedKeys(keys as string[])}
+            className="privacy-assessment-collapse"
+            style={{
+              backgroundColor: "white",
+              border: "1px solid #f0f0f0",
+              borderRadius: 8,
+            }}
+          >
             <Panel
               header={
                 <>
                   {expandedKeys.includes("1") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>1. Identify the need for a DPIA</Text>
+                    <Text strong style={{ fontSize: 16 }}>1. Identify the need for a DPIA</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -697,42 +977,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
                             <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>2/2</span>
                           </Text>
+                          <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                          </Flex>
                         </Flex>
                       </div>
                     </Flex>
                   )}
                   <div className="status-tag-container">
-                    {sectionSummaries["1"]?.summary && !sectionSummaries["1"].isLoading && (
-                      <Text className="summary-text">
-                        <Text style={{ color: palette.FIDESUI_MINOS, fontWeight: 500 }}>Summary:</Text> {sectionSummaries["1"].summary}
-                      </Text>
-                    )}
-                    {sectionSummaries["1"]?.summary && !sectionSummaries["1"].isLoading && (
-                      <div className="risk-confidence-container">
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600, marginBottom: 4 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Risk: Low</Text>
-                        </Flex>
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Confidence: High</Text>
-                        </Flex>
-                      </div>
-                    )}
                     <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                   </div>
                 </>
@@ -812,61 +1072,69 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       </Text>
                     </Card>
                   </Flex>
-                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                  <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
                     <Flex align="center" gap="small">
                       <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Request sent 2h ago to @DataSteward
                       </Text>
                     </Flex>
-                    <Space wrap>
-                      <Button icon={<MessageOutlined />} size="small">
-                        Request information from team
+                    <Button icon={<SlackOutlined />} size="small">
+                      Request input from team
                       </Button>
-                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
-                        View AI Context
+                    <Button type="default" icon={<Icons.Document />} onClick={() => setIsDrawerOpen(true)} size="small">
+                      View evidence
                       </Button>
-                    </Space>
                   </Flex>
                 </Card>
 
-                <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
-                          <Text strong>Project overview</Text>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                        </Flex>
-                      }
-                      name="projectOverview"
-                      initialValue="The Customer Insight AI Module is a machine learning system designed to analyze customer purchase history and browsing behavior to generate personalized product recommendations. This project involves automated processing of personal data through AI algorithms to enhance customer experience and increase sales conversion rates."
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Explain broadly what the project aims to achieve and what type of processing it involves. You may find it helpful to refer or link to other documents, such as a project proposal."
-                      />
-                    </Form.Item>
-                  </div>
+                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>
+                              Project overview {renderTextWithSources("See evidence [1]", "2")}
+                            </Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="projectOverview"
+                        initialValue="The Customer Insight AI Module is a machine learning system designed to analyze customer purchase history and browsing behavior [1] to generate personalized product recommendations. This project involves automated processing of personal data through AI algorithms to enhance customer experience and increase sales conversion rates."
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Explain broadly what the project aims to achieve and what type of processing it involves. You may find it helpful to refer or link to other documents, such as a project proposal."
+                        />
+                      </Form.Item>
+                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
+                        {renderTextWithSources("[1] System inventory data", "2")}
+                      </Text>
+                    </div>
 
-                  <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
-                          <Text strong>Why a DPIA is needed</Text>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                        </Flex>
-                      }
-                      name="dpiaNeed"
-                      initialValue="A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling. The processing uses new technologies (AI/ML algorithms) and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms."
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Summarise why you identified the need for a DPIA."
-                      />
-                    </Form.Item>
-                  </div>
-                </Space>
+                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
+                      <Form.Item
+                        label={
+                          <Flex justify="space-between" align="center">
+                            <Text strong>
+                              Why a DPIA is needed {renderTextWithSources("See evidence [1] [2]", "1")}
+                            </Text>
+                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
+                          </Flex>
+                        }
+                        name="dpiaNeed"
+                        initialValue="A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling [1]. The processing uses new technologies (AI/ML algorithms) [2] and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms."
+                      >
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Summarise why you identified the need for a DPIA."
+                        />
+                      </Form.Item>
+                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
+                        {renderTextWithSources("[1] GDPR Article 35 requirements [2] AI/ML processing classification", "1")}
+                      </Text>
+                    </div>
+                  </Space>
               </Space>
             </Panel>
 
@@ -875,7 +1143,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("2") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>2. Describe the processing</Text>
+                    <Text strong style={{ fontSize: 16 }}>2. Describe the processing</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -893,42 +1161,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
                             <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>5/5</span>
                           </Text>
+                          <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                          </Flex>
                         </Flex>
                       </div>
                     </Flex>
                   )}
                   <div className="status-tag-container">
-                    {sectionSummaries["2"]?.summary && !sectionSummaries["2"].isLoading && (
-                      <Text className="summary-text">
-                        <Text style={{ color: palette.FIDESUI_MINOS, fontWeight: 500 }}>Summary:</Text> {sectionSummaries["2"].summary}
-                      </Text>
-                    )}
-                    {sectionSummaries["2"]?.summary && !sectionSummaries["2"].isLoading && (
-                      <div className="risk-confidence-container">
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600, marginBottom: 4 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Risk: Low</Text>
-                        </Flex>
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Confidence: High</Text>
-                        </Flex>
-                      </div>
-                    )}
                     <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                   </div>
                 </>
@@ -1008,21 +1256,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       </Text>
                     </Card>
                   </Flex>
-                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                  <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
                     <Flex align="center" gap="small">
                       <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Request sent 2h ago to @DataSteward
                       </Text>
                     </Flex>
-                    <Space wrap>
-                      <Button icon={<MessageOutlined />} size="small">
-                        Request information from team
+                    <Button icon={<SlackOutlined />} size="small">
+                      Request input from team
                       </Button>
-                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
-                        View AI Context
+                    <Button type="default" icon={<Icons.Document />} onClick={() => setIsDrawerOpen(true)} size="small">
+                      View evidence
                       </Button>
-                    </Space>
                   </Flex>
                 </Card>
 
@@ -1174,7 +1420,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("3") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>3. Consultation process</Text>
+                    <Text strong style={{ fontSize: 16 }}>3. Consultation process</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -1191,7 +1437,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           </Text>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
                             <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>2/3</span>
-                          </Text>
+                            </Text>
                         </Flex>
                       </div>
                     </Flex>
@@ -1276,21 +1522,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       </Text>
                     </Card>
                   </Flex>
-                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                  <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
                     <Flex align="center" gap="small">
                       <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Request sent 2h ago to @DataSteward
                       </Text>
                     </Flex>
-                    <Space wrap>
-                      <Button icon={<MessageOutlined />} size="small">
-                        Request information from team
+                    <Button icon={<SlackOutlined />} size="small">
+                      Request input from team
                       </Button>
-                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
-                        View AI Context
+                    <Button type="default" icon={<Icons.Document />} onClick={() => setIsDrawerOpen(true)} size="small">
+                      View evidence
                       </Button>
-                    </Space>
                   </Flex>
                 </Card>
 
@@ -1323,7 +1567,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("4") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>Assess necessity and proportionality</Text>
+                    <Text strong style={{ fontSize: 16 }}>Assess necessity and proportionality</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -1341,42 +1585,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
                             <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>4/4</span>
                           </Text>
+                          <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
+                            <div
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                backgroundColor: palette.FIDESUI_SUCCESS,
+                              }}
+                            />
+                            <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                          </Flex>
                         </Flex>
                       </div>
                     </Flex>
                   )}
                   <div className="status-tag-container">
-                    {sectionSummaries["4"]?.summary && !sectionSummaries["4"].isLoading && (
-                      <Text className="summary-text">
-                        <Text style={{ color: palette.FIDESUI_MINOS, fontWeight: 500 }}>Summary:</Text> {sectionSummaries["4"].summary}
-                      </Text>
-                    )}
-                    {sectionSummaries["4"]?.summary && !sectionSummaries["4"].isLoading && (
-                      <div className="risk-confidence-container">
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600, marginBottom: 4 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Risk: Low</Text>
-                        </Flex>
-                        <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: "50%",
-                              backgroundColor: palette.FIDESUI_SUCCESS,
-                            }}
-                          />
-                          <Text style={{ fontSize: 11 }}>Confidence: High</Text>
-                        </Flex>
-                      </div>
-                    )}
                     <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                   </div>
                 </>
@@ -1456,21 +1680,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       </Text>
                     </Card>
                   </Flex>
-                  <Flex justify="space-between" align="center" wrap="wrap" gap="small">
+                  <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
                     <Flex align="center" gap="small">
                       <CheckCircleOutlined style={{ color: palette.FIDESUI_SUCCESS, fontSize: 14 }} />
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Request sent 2h ago to @DataSteward
                       </Text>
                     </Flex>
-                    <Space wrap>
-                      <Button icon={<MessageOutlined />} size="small">
-                        Request information from team
+                    <Button icon={<SlackOutlined />} size="small">
+                      Request input from team
                       </Button>
-                      <Button type="default" onClick={() => setIsDrawerOpen(true)} size="small">
-                        View AI Context
+                    <Button type="default" icon={<Icons.Document />} onClick={() => setIsDrawerOpen(true)} size="small">
+                      View evidence
                       </Button>
-                    </Space>
                   </Flex>
                 </Card>
 
@@ -1480,20 +1702,25 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       <Form.Item
                         label={
                           <Flex justify="space-between" align="center">
-                            <Text strong>Compliance and proportionality measures</Text>
+                            <Text strong>
+                              Compliance and proportionality measures {renderTextWithSources("See evidence [1] [2]", "4")}
+                            </Text>
                             <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
                               AI
                             </Tag>
                           </Flex>
                         }
                         name="complianceMeasures"
-                        initialValue="Lawful basis: Legitimate interests (Article 6(1)(f)) for personalized recommendations to enhance customer experience. The processing achieves the purpose of providing relevant product suggestions, and there is no less intrusive alternative that would achieve the same outcome. Function creep is prevented through strict access controls and regular audits. Data quality is ensured through validation at ingestion points and automated data cleansing processes. Data minimisation is achieved by only processing necessary data fields (purchase history, browsing behavior) and implementing data retention policies (24 months). Individuals are informed through privacy notices and cookie banners. Data subject rights are supported through a self-service portal for access, rectification, erasure, and objection requests. Processors are contractually bound through Data Processing Agreements (DPAs) with specific security and compliance requirements. International transfers are safeguarded through Standard Contractual Clauses (SCCs) and adequacy decisions where applicable."
+                        initialValue="Lawful basis: Legitimate interests (Article 6(1)(f)) for personalized recommendations to enhance customer experience [1]. The processing achieves the purpose of providing relevant product suggestions, and there is no less intrusive alternative that would achieve the same outcome. Function creep is prevented through strict access controls and regular audits. Data quality is ensured through validation at ingestion points and automated data cleansing processes. Data minimisation is achieved by only processing necessary data fields (purchase history, browsing behavior) [2] and implementing data retention policies (24 months) [3]. Individuals are informed through privacy notices and cookie banners. Data subject rights are supported through a self-service portal for access, rectification, erasure, and objection requests. Processors are contractually bound through Data Processing Agreements (DPAs) with specific security and compliance requirements. International transfers are safeguarded through Standard Contractual Clauses (SCCs) and adequacy decisions where applicable."
                       >
                         <Input.TextArea
                           rows={8}
                           placeholder="What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?"
                         />
                       </Form.Item>
+                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
+                        {renderTextWithSources("[1] Legal basis assessment [2] Data classification [3] Retention policy document", "4")}
+                      </Text>
                     </div>
                   </Space>
                 </Form>
@@ -1505,7 +1732,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("5") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>Identify and assess risks</Text>
+                    <Text strong style={{ fontSize: 16 }}>Identify and assess risks</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -1524,7 +1751,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           </Text>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
                             <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>2/4</span>
-                          </Text>
+                            </Text>
                         </Flex>
                       </div>
                     </Flex>
@@ -1566,7 +1793,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("6") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>6. Identify measures to reduce risk</Text>
+                    <Text strong style={{ fontSize: 16 }}>6. Identify measures to reduce risk</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -1618,7 +1845,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("7") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                      <Text strong style={{ fontSize: 16 }}>7. Sign off and record outcomes</Text>
+                    <Text strong style={{ fontSize: 16 }}>7. Sign off and record outcomes</Text>
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
@@ -1751,97 +1978,506 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       </div>
 
       <Drawer
-        title="AI Context - Slack Conversation"
+        title={
+          <Flex justify="space-between" align="center" style={{ width: "100%" }}>
+            <div>
+              <Title level={5} style={{ margin: 0, color: "#1A1F36", fontWeight: 600 }}>
+                Evidence
+              </Title>
+              <Text type="secondary" style={{ fontSize: 13, color: "#6B7280" }}>
+                Complete evidence trail organized by question
+              </Text>
+            </div>
+            <Space>
+              <Button
+                type="text"
+                icon={<DownloadOutlined />}
+                size="small"
+                onClick={() => {
+                  // Handle export
+                }}
+              >
+                Export
+              </Button>
+            </Space>
+          </Flex>
+        }
         placement="right"
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setFocusedQuestionId(null);
+        }}
         open={isDrawerOpen}
-        width={480}
+        width={600}
         styles={{
           body: {
             padding: 0,
             display: "flex",
             flexDirection: "column",
             height: "100%",
+            backgroundColor: "#FAFBFC",
           },
         }}
+        afterOpenChange={(open) => {
+          if (open && focusedQuestionId) {
+            // Expand the focused question if not already expanded
+            if (!evidenceExpandedSections.includes(focusedQuestionId)) {
+              setEvidenceExpandedSections([...evidenceExpandedSections, focusedQuestionId]);
+            }
+            // Scroll to focused question after drawer opens
+            setTimeout(() => {
+              const element = document.querySelector(`[data-question-id="${focusedQuestionId}"]`);
+              if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
+                // Remove focus highlight after a delay
+                setTimeout(() => {
+                  setFocusedQuestionId(null);
+                }, 3000);
+              }
+            }, 200);
+          }
+        }}
       >
+        <div
+          style={{
+            padding: "20px 24px",
+            borderBottom: "1px solid #E8EBED",
+            backgroundColor: "#FFFFFF",
+          }}
+        >
+          <Input
+            placeholder="Search evidence..."
+            prefix={<SearchOutlined style={{ color: "#6B7280" }} />}
+            value={evidenceSearchQuery}
+            onChange={(e) => setEvidenceSearchQuery(e.target.value)}
+            allowClear
+            style={{
+              borderRadius: 8,
+              border: "1px solid #E8EBED",
+            }}
+          />
+        </div>
         <div
           style={{
             flex: 1,
             overflowY: "auto",
             padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-            backgroundColor: "#fafafa",
+            backgroundColor: "#FAFBFC",
           }}
         >
-          {chatMessages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                display: "flex",
-                gap: 12,
-                justifyContent: msg.sender === "astralis" ? "flex-start" : "flex-end",
-                flexDirection: msg.sender === "astralis" ? "row" : "row-reverse",
-              }}
-            >
-              <Avatar
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            {Object.entries(filteredEvidenceByQuestion).map(([questionId, evidence]) => {
+              const collapseContent = (
+                <>
+                  <Collapse
+                    key={questionId}
+                    activeKey={evidenceExpandedSections.includes(questionId) ? [questionId] : []}
+                    onChange={(keys) => {
+                      if (keys.includes(questionId)) {
+                        setEvidenceExpandedSections([...evidenceExpandedSections, questionId]);
+                      } else {
+                        setEvidenceExpandedSections(evidenceExpandedSections.filter((k) => k !== questionId));
+                      }
+                    }}
+                    ghost
+                  >
+                    <Panel
+                      key={questionId}
+                      header={
+                        <Text strong style={{ fontSize: 15, fontWeight: 600, color: "#1A1F36" }}>
+                          {getQuestionTitle(questionId)}
+                        </Text>
+                      }
+                    >
+                      <Collapse
+                        ghost
                 style={{
-                  backgroundColor: msg.sender === "astralis" ? palette.FIDESUI_MINOS : palette.FIDESUI_MARBLE,
-                  flexShrink: 0,
-                }}
-                size={32}
-              >
-                {msg.sender === "astralis" ? "A" : "JG"}
-              </Avatar>
-              <div
+                          backgroundColor: "transparent",
+                        }}
+                      >
+                    {/* System-Derived Data Subsection */}
+                    {evidence.system.length > 0 && (
+                      <Panel
+                        key={`${questionId}-system`}
+                        header={
+                          <Text style={{ fontSize: 13, fontWeight: 500, color: "#4A5568" }}>System-Derived Data</Text>
+                        }
+                      >
+                        <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 12, color: "#6B7280", lineHeight: 1.6 }}>
+                          Automated data points extracted from system inventory, classifications, policies, and monitoring systems.
+                        </Text>
+                        <List
+                          dataSource={evidence.system}
+                          renderItem={(item) => (
+                            <List.Item
                 style={{
-                  maxWidth: "75%",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                }}
-              >
-                <div
+                                padding: "16px",
+                                marginBottom: 8,
+                                backgroundColor: "#FFFFFF",
+                                borderRadius: 8,
+                                border: "1px solid #E8EBED",
+                                transition: "all 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = "#D1D9E6";
+                                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.04)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = "#E8EBED";
+                                e.currentTarget.style.boxShadow = "none";
+                              }}
+                            >
+                              <List.Item.Meta
+                                title={
+                                  <Flex vertical gap="small" style={{ flex: 1 }}>
+                                    <Flex align="center" gap="small">
+                                      <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ margin: 0, fontSize: 11 }}>
+                                        {item.subtype === "data-classification" && "Data Classification"}
+                                        {item.subtype === "system-inventory" && "System Inventory"}
+                                        {item.subtype === "policy-document" && "Policy Document"}
+                                        {item.subtype === "compliance-monitor" && "Compliance Monitor"}
+                                      </Tag>
+                                    </Flex>
+                                    <Text strong style={{ fontSize: 13, color: "#1A1F36", lineHeight: 1.6 }}>
+                                      {item.content}
+                  </Text>
+                                    <Descriptions
+                                      column={1}
+                                      size="small"
+                                      items={[
+                                        {
+                                          key: "source",
+                                          label: "Source",
+                                          children: item.source.system,
+                                        },
+                                        {
+                                          key: "extracted",
+                                          label: "Extracted",
+                                          children: formatTimestamp(item.timestamp),
+                                        },
+                                        ...(item.confidence
+                                          ? [
+                                              {
+                                                key: "confidence",
+                                                label: "Confidence",
+                                                children: `${item.confidence}%`,
+                                              },
+                                            ]
+                                          : []),
+                                      ]}
+                                    />
+                                  </Flex>
+                                }
+                              />
+                            </List.Item>
+                          )}
+                        />
+                      </Panel>
+                    )}
+
+                    {/* Human Input Subsection */}
+                    {evidence.human.length > 0 && (
+                      <Panel
+                        key={`${questionId}-human`}
+                        header={
+                          <Text style={{ fontSize: 13, fontWeight: 500, color: "#4A5568" }}>Human Input</Text>
+                        }
+                      >
+                        <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 12, color: "#6B7280", lineHeight: 1.6 }}>
+                          Manual entries and stakeholder communications that inform this assessment.
+                  </Text>
+                        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                          {evidence.human.map((item) => (
+                            <Card
+                              key={item.id}
+                              size="small"
                   style={{
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "center",
-                    justifyContent: msg.sender === "astralis" ? "flex-start" : "flex-end",
-                  }}
-                >
-                  <Text strong style={{ fontSize: 13 }}>
-                    {msg.senderName}
+                                backgroundColor: "#FFFFFF",
+                                border: "1px solid #E8EBED",
+                                borderRadius: 8,
+                                transition: "all 0.15s ease",
+                                marginBottom: 8,
+                              }}
+                              hoverable
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = "#D1D9E6";
+                                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.04)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = "#E8EBED";
+                                e.currentTarget.style.boxShadow = "none";
+                              }}
+                            >
+                              {item.subtype === "manual-entry" ? (
+                                <>
+                                  <Flex justify="space-between" align="flex-start" style={{ marginBottom: 12 }}>
+                                    <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ margin: 0, fontSize: 11 }}>
+                                      Manual Entry
+                                    </Tag>
+                                    {item.status && (
+                                      <Tag
+                                        color={
+                                          item.status === "verified"
+                                            ? CUSTOM_TAG_COLOR.SUCCESS
+                                            : item.status === "pending-review"
+                                              ? CUSTOM_TAG_COLOR.WARNING
+                                              : CUSTOM_TAG_COLOR.MARBLE
+                                        }
+                                        style={{ margin: 0, fontSize: 11 }}
+                                      >
+                                        {item.status === "verified" && "Verified"}
+                                        {item.status === "pending-review" && "Pending Review"}
+                                        {item.status === "draft" && "Draft"}
+                                      </Tag>
+                                    )}
+                                  </Flex>
+                                  <Text style={{ fontSize: 13, display: "block", marginBottom: 12, color: "#1A1F36", lineHeight: 1.6 }}>
+                                    {item.content}
+                  </Text>
+                                  <Descriptions
+                                    column={1}
+                                    size="small"
+                                    items={[
+                                      {
+                                        key: "entered",
+                                        label: "Entered by",
+                                        children: `${item.source.person.name}, ${item.source.person.role}`,
+                                      },
+                                      {
+                                        key: "date",
+                                        label: "Date",
+                                        children: formatTimestamp(item.timestamp),
+                                      },
+                                    ]}
+                                  />
+                                </>
+                              ) : (
+                                <>
+                                  <Flex justify="space-between" align="flex-start" style={{ marginBottom: 12 }}>
+                                    <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ margin: 0, fontSize: 11 }}>
+                                      Stakeholder Communication
+                                    </Tag>
+                                  </Flex>
+                                  <Descriptions
+                                    column={1}
+                                    size="small"
+                                    items={[
+                                      {
+                                        key: "channel",
+                                        label: "Channel",
+                                        children: item.channel || "N/A",
+                                      },
+                                      {
+                                        key: "participants",
+                                        label: "Participants",
+                                        children: item.participants?.join(", ") || "N/A",
+                                      },
+                                      {
+                                        key: "thread",
+                                        label: "Thread",
+                                        children: item.content,
+                                      },
+                                      {
+                                        key: "date",
+                                        label: "Date Range",
+                                        children: formatTimestamp(item.timestamp),
+                                      },
+                                      {
+                                        key: "messages",
+                                        label: "Message Count",
+                                        children: item.threadMessages?.length.toString() || "0",
+                                      },
+                                    ]}
+                                  />
+                                  {item.threadMessages && item.threadMessages.length > 0 && (
+                                    <Collapse
+                                      ghost
+                                      style={{ marginTop: 12 }}
+                                      items={[
+                                        {
+                                          key: "thread",
+                                          label: `View ${item.threadMessages.length} messages`,
+                                          children: (
+                                            <List
+                                              size="small"
+                                              dataSource={item.threadMessages}
+                                              renderItem={(msg) => (
+                                                <List.Item style={{ padding: "8px 0", borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}` }}>
+                                                  <List.Item.Meta
+                                                    title={
+                                                      <Flex align="center" gap="small">
+                                                        <Text strong style={{ fontSize: 12 }}>
+                                                          {msg.sender}
                   </Text>
                   <Text type="secondary" style={{ fontSize: 11 }}>
-                    {msg.timestamp}
+                                                          {new Date(msg.timestamp).toLocaleString("en-US", {
+                                                            month: "short",
+                                                            day: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                          })}
                   </Text>
-                </div>
-                <div
+                                                      </Flex>
+                                                    }
+                                                    description={<Text style={{ fontSize: 13, marginTop: 4 }}>{msg.message}</Text>}
+                                                  />
+                                                </List.Item>
+                                              )}
+                                            />
+                                          ),
+                                        },
+                                      ]}
+                                    />
+                                  )}
+                                </>
+                              )}
+                            </Card>
+                          ))}
+                        </Space>
+                      </Panel>
+                    )}
+
+                    {/* Analysis & Synthesis Subsection */}
+                    {evidence.analysis.length > 0 && (
+                      <Panel
+                        key={`${questionId}-analysis`}
+                        header={
+                          <Text style={{ fontSize: 13, fontWeight: 500, color: "#4A5568" }}>Analysis & Synthesis</Text>
+                        }
+                      >
+                        <Text type="secondary" style={{ fontSize: 13, display: "block", marginBottom: 12, color: "#6B7280", lineHeight: 1.6 }}>
+                          Inferences and summaries generated from system data and human input.
+                        </Text>
+                        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                          {evidence.analysis.map((item) => {
+                            const systemRefs = evidence.system.filter((e) => item.references?.includes(e.id));
+                            const humanRefs = evidence.human.filter((e) => item.references?.includes(e.id));
+                            const allRefs = [...systemRefs, ...humanRefs];
+
+                            return (
+                              <Card
+                                key={item.id}
+                                size="small"
                   style={{
-                    padding: "12px 16px",
+                                  backgroundColor: "#FFFFFF",
+                                  border: "1px solid #E8EBED",
+                                  borderRadius: 8,
+                                  transition: "all 0.15s ease",
+                                  marginBottom: 8,
+                                }}
+                                hoverable
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.borderColor = "#D1D9E6";
+                                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.04)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.borderColor = "#E8EBED";
+                                  e.currentTarget.style.boxShadow = "none";
+                                }}
+                              >
+                                <Flex justify="space-between" align="flex-start" style={{ marginBottom: 12 }}>
+                                  <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ margin: 0, fontSize: 11 }}>
+                                    {item.subtype === "summary" && "Summary"}
+                                    {item.subtype === "inference" && "Inference"}
+                                    {item.subtype === "risk-assessment" && "Risk Assessment"}
+                                    {item.subtype === "compliance-check" && "Compliance Check"}
+                                  </Tag>
+                                </Flex>
+                                <Descriptions
+                                  column={1}
+                                  size="small"
+                                  items={[
+                                    {
+                                      key: "generated",
+                                      label: "Generated",
+                                      children: formatTimestamp(item.timestamp),
+                                    },
+                                    {
+                                      key: "model",
+                                      label: "Model",
+                                      children: item.source.model,
+                                    },
+                                    {
+                                      key: "confidence",
+                                      label: "Confidence",
+                                      children: `${item.confidence}%`,
+                                    },
+                                  ]}
+                                />
+                                <Divider style={{ margin: "12px 0", borderColor: "#E8EBED" }} />
+                                <Bubble
+                                  content={item.content}
+                                />
+                                {allRefs.length > 0 && (
+                                  <>
+                                    <Divider style={{ margin: "12px 0", borderColor: "#E8EBED" }} />
+                                    <Text strong style={{ fontSize: 13, display: "block", marginBottom: 8, color: "#1A1F36", fontWeight: 500 }}>
+                                      Sources:
+                  </Text>
+                                    <Sources
+                                      items={allRefs.map((ref, idx) => ({
+                                        key: ref.id || idx,
+                                        title: ref.content.substring(0, 60) + (ref.content.length > 60 ? "..." : ""),
+                                        description: ref.type === "system"
+                                          ? `${ref.source.system} • ${formatTimestamp(ref.timestamp)}`
+                                          : `${ref.source.person.name} • ${formatTimestamp(ref.timestamp)}`,
+                                      }))}
+                                    />
+                                  </>
+                                )}
+                              </Card>
+                            );
+                          })}
+                        </Space>
+                      </Panel>
+                    )}
+                      </Collapse>
+                    </Panel>
+                  </Collapse>
+                </>
+              );
+
+              // Remove Card wrapper for "Describe the processing" (questionId "2")
+              if (questionId === "2") {
+                return (
+                  <div key={questionId} data-question-id={questionId} style={{ marginBottom: 16 }}>
+                    {collapseContent}
+                  </div>
+                );
+              }
+
+              return (
+                <Card
+                  key={questionId}
+                  data-question-id={questionId}
+                    style={{
+                    border: `1px solid ${focusedQuestionId === questionId ? "#4A6CF7" : "#E8EBED"}`,
                     borderRadius: 12,
-                    backgroundColor: msg.sender === "astralis" ? "white" : palette.FIDESUI_MINOS,
-                    color: msg.sender === "astralis" ? "#1a1a1a" : "white",
-                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                    wordWrap: "break-word",
+                    backgroundColor: "#FFFFFF",
+                    boxShadow: focusedQuestionId === questionId
+                      ? "0 0 0 2px rgba(74, 108, 247, 0.12)"
+                      : "none",
+                    transition: "all 0.2s ease",
+                    marginBottom: 16,
+                  }}
+                  bodyStyle={{ padding: "20px" }}
+                  hoverable
+                  onMouseEnter={(e) => {
+                    if (focusedQuestionId !== questionId) {
+                      e.currentTarget.style.borderColor = "#D1D9E6";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (focusedQuestionId !== questionId) {
+                      e.currentTarget.style.borderColor = "#E8EBED";
+                    }
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      lineHeight: "20px",
-                      color: msg.sender === "astralis" ? "#1a1a1a" : "white",
-                      margin: 0,
-                    }}
-                  >
-                    {msg.message}
-                  </Text>
-                </div>
-              </div>
-            </div>
-          ))}
+                  {collapseContent}
+                </Card>
+              );
+            })}
+          </Space>
         </div>
       </Drawer>
 
