@@ -20,6 +20,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -69,6 +70,7 @@ from fides.service.connection.merge_configs_util import (
     get_endpoint_resources,
     merge_datasets,
     merge_saas_config_with_monitored_resources,
+    normalize_dataset,
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
@@ -706,9 +708,17 @@ class ConnectionService:
             # Get endpoint resources and preserve collections from customer dataset
             monitored_endpoints = get_endpoint_resources(self.db, connection_config)
             if monitored_endpoints:
+                # Get monitor config IDs for this connection
+                monitor_configs = MonitorConfig.filter(
+                    db=self.db,
+                    conditions=(MonitorConfig.connection_config_id == connection_config.id),
+                ).all()
+                monitor_config_ids = [mc.key for mc in monitor_configs]
+
                 upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
-                    monitored_endpoints, customer_dataset, upcoming_dataset
+                    monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
                 )
+                upcoming_dataset = normalize_dataset(upcoming_dataset, "upcoming")
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict

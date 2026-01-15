@@ -8,10 +8,12 @@ from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource
+from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource, StagedResourceAncestor
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import ConnectionConfig
 from fides.api.util.saas_util import replace_dataset_placeholders
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 
 def _get_fields(field: dict[str, Any]) -> list[dict[str, Any]]:
@@ -161,6 +163,21 @@ def _merge_collection(
 
     return merged_collection
 
+# Normalize stored and upcoming datasets to have the same complete structure as customer dataset
+# This ensures consistent field comparison by using the same Pydantic model serialization
+def normalize_dataset(
+    dataset: dict[str, Any], dataset_name: str
+) -> Optional[dict[str, Any]]:
+    try:
+        return FideslangDataset(**dataset).model_dump(mode="json")
+    except PydanticValidationError as e:
+        logger.warning(f"{dataset_name} normalization failed validation: {e}")
+        return None
+    except Exception as e:
+        logger.warning(
+            f"{dataset_name} normalization failed with unknown error: {e}"
+        )
+        return None
 
 def merge_datasets(
     customer_dataset: dict[str, Any],
@@ -172,21 +189,6 @@ def merge_datasets(
     stored_dataset_copy = copy.deepcopy(stored_dataset)
     upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
 
-    # Normalize stored and upcoming datasets to have the same complete structure as customer dataset
-    # This ensures consistent field comparison by using the same Pydantic model serialization
-    def normalize_dataset(
-        dataset: dict[str, Any], dataset_name: str
-    ) -> Optional[dict[str, Any]]:
-        try:
-            return FideslangDataset(**dataset).model_dump(mode="json")
-        except PydanticValidationError as e:
-            logger.warning(f"{dataset_name} normalization failed validation: {e}")
-            return None
-        except Exception as e:
-            logger.warning(
-                f"{dataset_name} normalization failed with unknown error: {e}"
-            )
-            return None
 
     normalized_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
     normalized_upcoming_dataset = normalize_dataset(upcoming_dataset_copy, "upcoming")
@@ -238,15 +240,47 @@ def merge_datasets(
     return merged_dataset
 
 
-def get_endpoint_resources(
-    db: Session, connection_config: ConnectionConfig
-) -> List[StagedResource]:
+def _get_endpoint_urns_with_monitored_fields(
+    db: Session, monitor_config_ids: list[str]
+) -> set[str]:
     """
-    Get endpoint staged resources for a given connection config.
-    Only returns Endpoint type resources since those are what we need to preserve.
+    Helper function to get endpoint URNs that contain monitored field resources.
+
+    Args:
+        db: Database session
+        monitor_config_ids: List of monitor config IDs to search within
 
     Returns:
-        List of endpoint staged resources
+        Set of endpoint URNs that contain monitored fields
+    """
+
+    # Find all field resources that are monitored for these monitor configs
+    # Then get their ancestor URNs (which will be endpoint URNs) using StagedResourceAncestor
+    # This gives us endpoints that contain at least one monitored field
+    monitored_fields_query = select(StagedResourceAncestor.ancestor_urn).where(
+        StagedResourceAncestor.descendant_urn.in_(
+            select(StagedResource.urn).where(
+                (StagedResource.monitor_config_id.in_(monitor_config_ids))
+                & (StagedResource.resource_type == "Field")
+                & (StagedResource.diff_status == "monitored")
+            )
+        )
+    ).distinct()
+
+    result = db.execute(monitored_fields_query)
+    return set(result.scalars().all())
+
+
+def get_endpoint_resources(
+    db: Session, connection_config: ConnectionConfig
+) -> list[StagedResource]:
+    """
+    Get endpoint staged resources for a given connection config that have monitored fields.
+    Since endpoint resources themselves are never monitored, we look for endpoints that
+    contain field resources with monitored status.
+
+    Returns:
+        List of endpoint staged resources that contain monitored fields
     """
     # Get all monitor configs for this connection
     monitor_configs = MonitorConfig.filter(
@@ -259,13 +293,21 @@ def get_endpoint_resources(
 
     monitor_config_ids = [mc.key for mc in monitor_configs]
 
-    # Query staged resources for these monitor configs
-    # Only get Endpoint type resources since those represent SaaS endpoints/collections
+    # Get endpoint URNs that have monitored fields
+    endpoint_urns_with_monitored_fields = _get_endpoint_urns_with_monitored_fields(
+        db, monitor_config_ids
+    )
+
+    if not endpoint_urns_with_monitored_fields:
+        return []
+
+    # Now get the actual endpoint resources that have monitored fields
     endpoint_resources = StagedResource.filter(
         db=db,
         conditions=(
             (StagedResource.monitor_config_id.in_(monitor_config_ids))
             & (StagedResource.resource_type == "Endpoint")
+            & (StagedResource.urn.in_(endpoint_urns_with_monitored_fields))
         ),
     ).all()
 
@@ -274,19 +316,19 @@ def get_endpoint_resources(
 
 def merge_saas_config_with_monitored_resources(
     new_saas_config: SaaSConfig,
-    monitored_endpoints: List[StagedResource],
+    monitored_endpoints: list[StagedResource],
     existing_saas_config: Optional[SaaSConfig] = None,
 ) -> SaaSConfig:
     """
-    Merge new SaaS config with endpoint resources from monitors.
+    Merge new SaaS config with endpoint resources that contain monitored fields.
 
     Args:
         new_saas_config: The new SaaS config from template
-        monitored_endpoints: List of endpoint staged resources from monitors
+        monitored_endpoints: List of endpoint staged resources that contain monitored fields
         existing_saas_config: The existing SaaS config that may contain promoted endpoints
 
     Returns:
-        Merged SaaS config with preserved endpoints from monitors
+        Merged SaaS config with preserved endpoints that have monitored fields
     """
     if not monitored_endpoints or not existing_saas_config:
         return new_saas_config
@@ -324,37 +366,182 @@ def merge_saas_config_with_monitored_resources(
     return SaaSConfig(**merged_config_dict)
 
 
-def preserve_monitored_collections_in_dataset_merge(
-    monitored_endpoints: List[StagedResource],
-    customer_dataset: dict[str, Any],
-    upcoming_dataset: dict[str, Any],
-) -> dict[str, Any]:
+def _get_monitored_fields_by_endpoint(
+    db: Session, monitor_config_ids: list[str], endpoint_urns: set[str]
+) -> dict[str, list[StagedResource]]:
     """
-    Preserve monitored collections from customer dataset in the upcoming dataset.
-
-    This ensures that promoted collections with all their fields are preserved
-    when the dataset template is updated.
+    Helper function to get monitored field resources grouped by their endpoint URN.
 
     Args:
-        monitored_endpoints: List of monitored endpoint staged resources
-        customer_dataset: The existing customer dataset (contains promoted collections)
-        upcoming_dataset: The new dataset from template (may be missing promoted collections)
+        db: Database session
+        monitor_config_ids: List of monitor config IDs to search within
+        endpoint_urns: Set of endpoint URNs to get monitored fields for
 
     Returns:
-        Updated upcoming dataset with preserved monitored collections
+        Dictionary mapping endpoint URN to list of monitored field resources
     """
-    if not monitored_endpoints or not customer_dataset.get("collections"):
+    if not endpoint_urns:
+        return {}
+
+    # Get all monitored field resources that belong to the specified endpoints
+    monitored_fields_query = (
+        select(StagedResource, StagedResourceAncestor.ancestor_urn)
+        .join(
+            StagedResourceAncestor,
+            StagedResourceAncestor.descendant_urn == StagedResource.urn,
+        )
+        .where(
+            (StagedResource.monitor_config_id.in_(monitor_config_ids))
+            & (StagedResource.resource_type == "Field")
+            & (StagedResource.diff_status == "monitored")
+            & (StagedResourceAncestor.ancestor_urn.in_(endpoint_urns))
+        )
+    )
+
+    result = db.execute(monitored_fields_query)
+
+    # Group fields by endpoint URN
+    fields_by_endpoint = {}
+    for staged_resource, ancestor_urn in result.fetchall():
+        if ancestor_urn not in fields_by_endpoint:
+            fields_by_endpoint[ancestor_urn] = []
+        fields_by_endpoint[ancestor_urn].append(staged_resource)
+
+    return fields_by_endpoint
+
+
+def _extract_auto_classified_data_categories(classifications: Optional[list[dict[str, Any]]]) -> list[str]:
+    """
+    Extract data categories from auto-classified results.
+    
+    Args:
+        classifications: List of classification objects with 'label' field containing data categories
+        
+    Returns:
+        List of data category labels from classifications
+    """
+    if not classifications:
+        return []
+    
+    auto_classified_categories: list[str] = []
+    for classification in classifications:
+        if isinstance(classification, dict) and "label" in classification:
+            label = classification["label"]
+            if label and isinstance(label, str):
+                auto_classified_categories.append(label)
+    
+    return auto_classified_categories
+
+
+def _build_field_from_staged_resource(field_resource: StagedResource) -> dict[str, Any]:
+    """
+    Build a dataset field from a staged resource.
+
+    Args:
+        field_resource: The field staged resource
+
+    Returns:
+        Dictionary representing a dataset field
+    """
+    field = {
+        "name": field_resource.name,
+    }
+
+    # Add description if available
+    if field_resource.description:
+        field["description"] = field_resource.description
+
+    # Add data categories (combine user-assigned and auto-classified)
+    data_categories: list[str] = []
+    
+    # Start with user-assigned categories (these take precedence)
+    if field_resource.user_assigned_data_categories:
+        data_categories.extend(field_resource.user_assigned_data_categories)
+    
+    # Add auto-classified categories that aren't already present
+    auto_classified_categories = _extract_auto_classified_data_categories(field_resource.classifications or [])
+    for category in auto_classified_categories:
+        if category not in data_categories:
+            data_categories.append(category)
+    
+    # Only add data_categories field if we have any categories
+    if data_categories:
+        field["data_categories"] = data_categories
+
+    # Add data uses if available
+    if field_resource.user_assigned_data_uses:
+        field["data_uses"] = field_resource.user_assigned_data_uses
+
+    # Add data type from meta if available
+    if hasattr(field_resource, 'meta') and field_resource.meta:
+        if isinstance(field_resource.meta, dict) and "data_type" in field_resource.meta:
+            field["fides_meta"]= {"data_type": field_resource.meta["data_type"]}
+
+    return field
+
+
+def _build_collection_from_staged_resources(
+    endpoint: StagedResource,
+    monitored_fields: list[StagedResource]
+) -> dict[str, Any]:
+    """
+    Build a dataset collection from an endpoint and its monitored fields.
+
+    Args:
+        endpoint: The endpoint staged resource
+        monitored_fields: List of monitored field staged resources under this endpoint
+
+    Returns:
+        Dictionary representing a dataset collection
+    """
+    collection = {
+        "name": endpoint.name,
+        "description": None,
+        "data_categories": None,
+        "fields": [],
+        "fides_meta": None,
+    }
+
+    # Add description if available
+    if endpoint.description:
+        collection["description"] = endpoint.description
+
+    # Build fields from monitored staged resources
+    for field_resource in monitored_fields:
+        field_dict = _build_field_from_staged_resource(field_resource)
+        if field_dict:
+            collection["fields"].append(field_dict)
+
+    return collection
+
+
+def preserve_monitored_collections_in_dataset_merge(
+    monitored_endpoints: list[StagedResource],
+    upcoming_dataset: dict[str, Any],
+    db: Session,
+    monitor_config_ids: list[str],
+) -> dict[str, Any]:
+    """
+    Build and preserve collections from monitored staged resources for collections that don't exist in upcoming dataset.
+
+    This creates collections directly from staged resource data (endpoints and their monitored fields)
+    rather than preserving from customer dataset. This ensures we get the latest monitored data
+    with proper classifications and metadata.
+
+    Args:
+        monitored_endpoints: List of endpoint staged resources that contain monitored fields
+        customer_dataset: The existing customer dataset (for reference)
+        upcoming_dataset: The new dataset from template (may be missing promoted collections)
+        db: Database session for querying monitored fields
+        monitor_config_ids: List of monitor config IDs to search within
+
+    Returns:
+        Updated upcoming dataset with built collections for monitored endpoints
+    """
+    if not monitored_endpoints:
         return upcoming_dataset
 
-    # Extract collection names from monitored resources (using name field)
-    monitored_collection_names = {
-        resource.name for resource in monitored_endpoints if resource.name
-    }
-
-    # Get collections from customer and upcoming datasets
-    customer_collections = {
-        col.get("name"): col for col in customer_dataset.get("collections", [])
-    }
+    # Get collections that already exist in upcoming dataset
     upcoming_collections = {
         col.get("name"): col for col in upcoming_dataset.get("collections", [])
     }
@@ -362,16 +549,28 @@ def preserve_monitored_collections_in_dataset_merge(
     # Create a copy of upcoming dataset to modify
     merged_dataset = copy.deepcopy(upcoming_dataset)
 
-    # Preserve monitored collections from customer dataset that aren't in upcoming dataset
-    for collection_name in monitored_collection_names:
-        if (
-            collection_name in customer_collections
-            and collection_name not in upcoming_collections
-        ):
-            # Preserve the full collection from customer dataset (with all fields)
-            merged_dataset["collections"].append(customer_collections[collection_name])
-            logger.info(
-                f"Preserved monitored collection from customer dataset: {collection_name}"
-            )
+    # Get monitored fields grouped by endpoint URN
+    endpoint_urns = {resource.urn for resource in monitored_endpoints}
+    monitored_fields_by_endpoint = _get_monitored_fields_by_endpoint(
+        db, monitor_config_ids, endpoint_urns
+    )
+
+    # Build collections for endpoints that don't exist in upcoming dataset
+    for endpoint in monitored_endpoints:
+        collection_name = endpoint.name
+
+        # Only process if collection doesn't exist in upcoming dataset
+        if collection_name and collection_name not in upcoming_collections:
+            if endpoint.urn in monitored_fields_by_endpoint:
+                # Build collection from staged resources
+                built_collection = _build_collection_from_staged_resources(
+                    endpoint, monitored_fields_by_endpoint[endpoint.urn]
+                )
+
+                if built_collection and built_collection.get("fields"):
+                    merged_dataset["collections"].append(built_collection)
+                    logger.info(
+                        f"Built collection '{collection_name}' with {len(built_collection['fields'])} monitored fields"
+                    )
 
     return merged_dataset
