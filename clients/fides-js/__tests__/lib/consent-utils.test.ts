@@ -439,6 +439,142 @@ describe("shouldResurfaceBanner", () => {
       options: {},
       expected: false,
     },
+    {
+      label: "returns true when user rejected and resurface_behavior includes reject",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["reject"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.REJECT },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns true when user dismissed and resurface_behavior includes dismiss",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["dismiss"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.DISMISS },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns true when user rejected and resurface_behavior includes both reject and dismiss",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["reject", "dismiss"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.REJECT },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns false when user accepted and resurface_behavior only includes reject",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["reject"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.ACCEPT },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false when user rejected and resurface_behavior is null",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: null,
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.REJECT },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false when user rejected and resurface_behavior is undefined",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: undefined,
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.REJECT },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false when user dismissed and resurface_behavior only includes reject",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["reject"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.DISMISS },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns true when user dismissed and resurface_behavior includes both",
+      experience: {
+        ...mockExperience,
+        experience_config: {
+          component: ComponentType.BANNER_AND_MODAL,
+          resurface_behavior: ["reject", "dismiss"],
+        },
+      },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.DISMISS },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
   ])("$label", ({ experience, cookie, savedConsent, options, expected }) => {
     expect(
       shouldResurfaceBanner(
