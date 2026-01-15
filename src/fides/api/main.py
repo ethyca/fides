@@ -135,8 +135,7 @@ app = create_fides_app(lifespan=lifespan)  # type: ignore
 
 
 if CONFIG.dev_mode:
-
-    @app.middleware("http")
+    # @app.middleware("http")
     async def profile_request(request: Request, call_next: Callable) -> Response:
         profiling = request.headers.get("profile-request", False)
         if profiling:
@@ -150,7 +149,7 @@ if CONFIG.dev_mode:
         return await call_next(request)
 
 
-@app.middleware("http")
+# @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     """
     HTTP Middleware that logs analytics events for each call to Fides endpoints.
@@ -229,7 +228,7 @@ async def prepare_and_log_request(
     )
 
 
-@app.middleware("http")
+# @app.middleware("http")
 async def log_request(request: Request, call_next: Callable) -> Response:
     """Log basic information about every request handled by the server."""
     start = datetime.now()
@@ -360,7 +359,7 @@ def start_webserver(port: int = 8080) -> None:
     server.run()
 
 
-@app.middleware("http")
+# @app.middleware("http")
 async def action_to_audit_log(
     request: Request,
     call_next: Callable,

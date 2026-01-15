@@ -93,24 +93,24 @@ def create_fides_app(
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
-    fastapi_app.add_middleware(SecurityHeadersMiddleware)
+    # fastapi_app.add_middleware(SecurityHeadersMiddleware)
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
 
-    if is_rate_limit_enabled:
-        # Validate header before SlowAPI processes the request
-        fastapi_app.add_middleware(RateLimitIPValidationMiddleware)
-        # Required for default rate limiting to work
-        fastapi_app.add_middleware(SlowAPIMiddleware)
-    else:
-        logger.warning(
-            "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
-        )
+    # if is_rate_limit_enabled:
+    #     # Validate header before SlowAPI processes the request
+    #     fastapi_app.add_middleware(RateLimitIPValidationMiddleware)
+    #     # Required for default rate limiting to work
+    #     fastapi_app.add_middleware(SlowAPIMiddleware)
+    # else:
+    #     logger.warning(
+    #         "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
+    #     )
 
-    fastapi_app.add_middleware(
-        GZipMiddleware, minimum_size=1000, compresslevel=5
-    )  # minimum_size is in bytes
+    # fastapi_app.add_middleware(
+    #     GZipMiddleware, minimum_size=1000, compresslevel=5
+    # )  # minimum_size is in bytes
 
     for router in routers:
         fastapi_app.include_router(router)
