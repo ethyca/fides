@@ -11,7 +11,7 @@ import {
   useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -24,10 +24,6 @@ import {
   useConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
 import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
-import {
-  PrivacyRequestModal,
-  usePrivacyRequestModal,
-} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "~/components/PrivacyCard";
 import { useConfig } from "~/features/common/config.slice";
 import {
@@ -62,22 +58,12 @@ const TextOrHtml = ({
 
 const HomePage: NextPage = () => {
   const config = useConfig();
+  const router = useRouter();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const [isConsentVerificationDisabled, setIsConsentVerificationDisabled] =
     useState<boolean>(false);
   const toast = useToast();
-  const {
-    isOpen: isPrivacyModalOpen,
-    onClose: onPrivacyModalClose,
-    onOpen: onPrivacyModalOpen,
-    openAction,
-    currentView: currentPrivacyModalView,
-    setCurrentView: setCurrentPrivacyModalView,
-    privacyRequestId,
-    setPrivacyRequestId,
-    successHandler: privacyModalSuccessHandler,
-  } = usePrivacyRequestModal();
 
   const {
     isOpen: isConsentModalOpenConst,
@@ -142,6 +128,11 @@ const HomePage: NextPage = () => {
     toast,
   ]);
 
+  // Navigate to privacy request page instead of opening modal
+  const handlePrivacyRequestOpen = (index: number) => {
+    router.push(`/privacy-request/${index}`);
+  };
+
   const content: any = [];
 
   config.actions.forEach((action, index) => {
@@ -152,7 +143,7 @@ const HomePage: NextPage = () => {
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onOpen={onPrivacyModalOpen}
+        onOpen={handlePrivacyRequestOpen}
       />,
     );
   });
@@ -255,17 +246,6 @@ const HomePage: NextPage = () => {
           </Stack>
         )}
       </Stack>
-      <PrivacyRequestModal
-        isOpen={isPrivacyModalOpen}
-        onClose={onPrivacyModalClose}
-        openAction={openAction}
-        currentView={currentPrivacyModalView}
-        setCurrentView={setCurrentPrivacyModalView}
-        privacyRequestId={privacyRequestId}
-        setPrivacyRequestId={setPrivacyRequestId}
-        isVerificationRequired={isVerificationRequired}
-        successHandler={privacyModalSuccessHandler}
-      />
 
       <ConsentRequestModal
         isOpen={isConsentModalOpen}

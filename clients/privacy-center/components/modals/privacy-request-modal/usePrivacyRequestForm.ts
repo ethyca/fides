@@ -36,12 +36,14 @@ const usePrivacyRequestForm = ({
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
+  onSuccessWithoutVerification,
 }: {
   onClose: () => void;
   action?: ConfigPrivacyRequestOption;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  onSuccessWithoutVerification?: () => void;
 }) => {
   const settings = useSettings();
   const {
@@ -219,6 +221,13 @@ const usePrivacyRequestForm = ({
               "Your request was successful, please await further instructions.",
             ...SuccessToastOptions,
           });
+          // Call success handler if provided (for page flow), otherwise just close
+          if (onSuccessWithoutVerification) {
+            onSuccessWithoutVerification();
+          } else {
+            onClose();
+          }
+          return;
         } else if (
           (isVerificationRequired &&
             data.succeeded.length &&
@@ -240,10 +249,6 @@ const usePrivacyRequestForm = ({
             "An unhandled error occurred while creating your privacy request",
         });
         return;
-      }
-
-      if (!isVerificationRequired) {
-        onClose();
       }
     },
     validationSchema: Yup.object().shape({

@@ -17,6 +17,7 @@ type PrivacyRequestFormProps = {
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  onSuccessWithoutVerification?: () => void;
 };
 
 const PrivacyRequestForm = ({
@@ -25,6 +26,7 @@ const PrivacyRequestForm = ({
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
+  onSuccessWithoutVerification,
 }: PrivacyRequestFormProps) => {
   const config = useConfig();
 
@@ -55,6 +57,7 @@ const PrivacyRequestForm = ({
     setCurrentView,
     setPrivacyRequestId,
     isVerificationRequired,
+    onSuccessWithoutVerification,
   });
 
   if (!action) {
