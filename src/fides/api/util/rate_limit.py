@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+import json
 from ipaddress import ip_address
-from typing import Optional
+from typing import Any, Awaitable, Callable, MutableMapping, Optional
 
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from loguru import logger
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from fides.config import CONFIG
 
@@ -154,24 +153,81 @@ def safe_rate_limit_key(request: Request) -> str:
     return _resolve_client_ip_from_header(request, strict=False)
 
 
-class RateLimitIPValidationMiddleware(BaseHTTPMiddleware):
+# Type aliases for ASGI
+Scope = MutableMapping[str, Any]
+Message = MutableMapping[str, Any]
+Receive = Callable[[], Awaitable[Message]]
+Send = Callable[[Message], Awaitable[None]]
+ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
+
+
+class RateLimitIPValidationMiddleware:
     """
-    Pre-validate the configured client IP header when rate limiting is enabled.
+    Pure ASGI middleware to pre-validate the configured client IP header when rate limiting is enabled.
 
     If the header is present but invalid, short-circuit the request with 422.
     This keeps SlowAPI's middleware path free of exceptions from the key function.
+
+    This is a high-performance replacement for the BaseHTTPMiddleware-based version.
     """
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore
-        if is_rate_limit_enabled:
-            try:
-                # Triggers parsing/validation; raises on invalid header
-                get_client_ip_from_header(request)
-            except InvalidClientIPError:
-                return JSONResponse(
-                    status_code=422, content={"detail": "Invalid client IP header"}
-                )
-        return await call_next(request)
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        if not is_rate_limit_enabled:
+            await self.app(scope, receive, send)
+            return
+
+        # Check if the IP header is present and valid
+        header_name = CONFIG.security.rate_limit_client_ip_header
+        if header_name:
+            headers = dict(scope.get("headers", []))
+            header_name_bytes = header_name.lower().encode("latin-1")
+            ip_address_from_header = headers.get(header_name_bytes)
+
+            if ip_address_from_header:
+                ip_address_str = ip_address_from_header.decode("latin-1")
+                try:
+                    extracted_ip = _extract_hostname_from_ip(ip_address_str)
+                    if not (extracted_ip and validate_client_ip(extracted_ip)):
+                        raise ValueError("IP failed validation")
+                except ValueError:
+                    logger.error(
+                        "Invalid IP '{}' in header '{}'. Rejecting request.",
+                        ip_address_str,
+                        header_name,
+                    )
+                    # Return 422 error response
+                    await self._send_error_response(send)
+                    return
+
+        await self.app(scope, receive, send)
+
+    async def _send_error_response(self, send: Send) -> None:
+        """Send a 422 error response for invalid client IP."""
+        body = json.dumps({"detail": "Invalid client IP header"}).encode("utf-8")
+
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 422,
+                "headers": [
+                    (b"content-type", b"application/json"),
+                    (b"content-length", str(len(body)).encode("latin-1")),
+                ],
+            }
+        )
+        await send(
+            {
+                "type": "http.response.body",
+                "body": body,
+            }
+        )
 
 
 # Used for rate limiting with Slow API

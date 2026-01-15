@@ -43,6 +43,11 @@ from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.api_router import APIRouter
+from fides.api.util.asgi_middleware import (
+    AnalyticsLoggingMiddleware,
+    AuditLogMiddleware,
+    LogRequestMiddleware,
+)
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
 from fides.api.util.errors import FidesError
@@ -111,6 +116,13 @@ def create_fides_app(
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
+
+    # Pure ASGI middleware for request logging, analytics, and audit logging
+    # These are high-performance replacements for BaseHTTPMiddleware-based versions
+    fastapi_app.add_middleware(LogRequestMiddleware)
+    fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
+    if CONFIG.security.enable_audit_log_resource_middleware:
+        fastapi_app.add_middleware(AuditLogMiddleware)
 
     for router in routers:
         fastapi_app.include_router(router)
