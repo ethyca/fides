@@ -81,16 +81,42 @@
       </h3>
     </main>
     <script>
+      /**
+       * Sanitize a string to be a valid CSS class name.
+       * - Replaces invalid characters with hyphens
+       * - Collapses multiple hyphens
+       * - Trims leading/trailing hyphens
+       * - Prefixes with underscore if starts with digit or hyphen+digit
+       */
+      const toValidClassName = (str) => {
+        let result = str
+          .replace(/[^A-Za-z0-9_-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        if (/^[0-9]/.test(result) || /^-[0-9]/.test(result)) {
+          result = "_" + result;
+        }
+        return result;
+      };
+
       const onInitialized = () => {
         // Add experience config ID and property ID as classes to the body for per-brand CSS styling
         const experienceConfigId =
           window.Fides?.experience?.experience_config?.id;
         if (experienceConfigId) {
-          window.document.body.classList.add(experienceConfigId);
+          try {
+            window.document.body.classList.add(toValidClassName(experienceConfigId));
+          } catch (e) {
+            window.fidesDebugger?.("Failed to add experience config ID as class:", experienceConfigId, e);
+          }
         }
         const propertyId = window.Fides?.experience?.property_id;
         if (propertyId) {
-          window.document.body.classList.add(propertyId);
+          try {
+            window.document.body.classList.add(toValidClassName(propertyId));
+          } catch (e) {
+            window.fidesDebugger?.("Failed to add property ID as class:", propertyId, e);
+          }
         }
 
         let fidesUIShown = false;
