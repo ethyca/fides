@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import update_wrapper
 from types import FunctionType
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
@@ -247,7 +247,7 @@ async def get_current_user(
         return FidesUser(
             id=CONFIG.security.oauth_root_client_id,
             username=CONFIG.security.root_username,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
     return cast(FidesUser, client.user)

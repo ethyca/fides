@@ -24,8 +24,9 @@ from fides.api.common_exceptions import (
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
+from fides.api.service.deps import get_user_service
+from fides.service.user.user_service import UserService
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
@@ -72,6 +73,7 @@ async def acquire_access_token(
     response: Response,
     form_data: OAuth2ClientCredentialsRequestForm = Depends(),
     db: Session = Depends(get_db),
+    user_service: UserService = Depends(get_user_service),
 ) -> AccessToken:
     """Returns an access token if given credentials are correct, raises 401
     exception if not"""
@@ -103,8 +105,11 @@ async def acquire_access_token(
         raise AuthenticationFailure(detail="Authentication Failure")
 
     if basic_credentials:
-        user = FidesUser.get_by(db, field="username", value=basic_credentials.username)
-        if user and user.disabled:  # TODO: Revoke existing session if disabled.
+        # include_deleted=True to explicitly check and reject deleted users
+        user = user_service.get_user_orm_by_username(
+            basic_credentials.username, include_deleted=True
+        )
+        if user and (user.disabled or user.is_deleted):  # TODO: Revoke existing session if disabled.
             raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
