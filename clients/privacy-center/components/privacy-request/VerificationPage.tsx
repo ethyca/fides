@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Flex } from "fidesui";
+import { Flex } from "fidesui";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -35,19 +35,8 @@ const VerificationPage = ({
     router.push(`/privacy-request/${actionIndex}/success`);
   };
 
-  const handleBack = () => {
-    router.push(`/privacy-request/${actionIndex}`);
-  };
-
   return (
     <Flex vertical gap="middle">
-      <Button
-        variant="outlined"
-        onClick={handleBack}
-        style={{ alignSelf: "flex-start" }}
-      >
-        ← Back
-      </Button>
       <VerificationForm
         isOpen
         onClose={handleClose}
