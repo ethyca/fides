@@ -1,4 +1,9 @@
-import { AntTag as Tag, Box, Icons, useDisclosure } from "fidesui";
+import {
+  ChakraBox as Box,
+  Icons,
+  Tag,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { useState } from "react";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";

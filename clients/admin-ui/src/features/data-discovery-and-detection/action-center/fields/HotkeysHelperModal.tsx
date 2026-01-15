@@ -1,9 +1,9 @@
 import {
-  AntDescriptions as Descriptions,
-  AntModal as Modal,
-  AntModalProps as ModalProps,
-  AntTypography as Typography,
+  Descriptions,
   LIST_HOTKEYS,
+  Modal,
+  ModalProps,
+  Typography,
 } from "fidesui";
 
 import { SEARCH_INPUT_HOTKEY } from "~/features/common/SearchInput";
@@ -79,10 +79,10 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
             children: "Open/close details drawer for active field",
           },
           {
-            key: FIELD_ACTION_HOTKEYS.APPROVE,
+            key: FIELD_ACTION_HOTKEYS.REVIEW,
             label: (
               <Typography.Text keyboard>
-                {FIELD_ACTION_HOTKEYS.APPROVE}
+                {FIELD_ACTION_HOTKEYS.REVIEW}
               </Typography.Text>
             ),
             children: "Mark the active field as reviewed",

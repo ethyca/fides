@@ -9,7 +9,12 @@ import {
   CreateAccessManualWebhookRequest,
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
-import { Box, Center, Spinner, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraSpinner as Spinner,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 

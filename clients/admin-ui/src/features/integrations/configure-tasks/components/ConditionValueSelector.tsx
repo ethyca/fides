@@ -1,11 +1,11 @@
 import dayjs, { Dayjs } from "dayjs";
 import {
-  AntDatePicker as DatePicker,
-  AntInput as Input,
-  AntRadio as Radio,
-  AntSelect as Select,
+  DatePicker,
+  Input,
   iso31661,
   LocationSelect,
+  Radio,
+  Select,
 } from "fidesui";
 import { ChangeEvent } from "react";
 
@@ -177,7 +177,7 @@ export const ConditionValueSelector = ({
     const policyOptions =
       policiesData?.items.map((policy) => ({
         label: policy.name,
-        value: policy.key || policy.name,
+        value: policy.key,
       })) ?? [];
 
     return (

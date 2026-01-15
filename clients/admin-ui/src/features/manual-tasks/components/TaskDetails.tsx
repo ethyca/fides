@@ -1,4 +1,4 @@
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+import { Tag, Typography } from "fidesui";
 
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
@@ -28,11 +28,13 @@ const TaskInfoRow = ({
 );
 
 export const TaskDetails = ({ task }: TaskDetailsProps) => {
-  // Map the request type using the existing map
-  const actionType =
-    task.request_type === ManualFieldRequestType.ACCESS
-      ? ActionType.ACCESS
-      : ActionType.ERASURE;
+  // Map the request type to ActionType for display
+  const requestTypeToActionType: Record<ManualFieldRequestType, ActionType> = {
+    [ManualFieldRequestType.ACCESS]: ActionType.ACCESS,
+    [ManualFieldRequestType.ERASURE]: ActionType.ERASURE,
+    [ManualFieldRequestType.CONSENT]: ActionType.CONSENT,
+  };
+  const actionType = requestTypeToActionType[task.request_type];
   const requestTypeDisplay =
     SubjectRequestActionTypeMap.get(actionType) || task.request_type;
 

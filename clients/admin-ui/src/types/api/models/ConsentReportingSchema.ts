@@ -7,6 +7,7 @@ import type { ConsentMethod } from "./ConsentMethod";
 import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 import type { RequestOrigin } from "./RequestOrigin";
+import type { TCFPreferences } from "./TCFPreferences";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
@@ -19,7 +20,7 @@ export type ConsentReportingSchema = {
   phone_number?: string | null;
   external_id?: string | null;
   fides_user_device_id?: string | null;
-  secondary_user_ids?: null;
+  secondary_user_ids?: Record<string, string> | null;
   request_timestamp: string;
   request_origin?: RequestOrigin | null;
   request_status?: PrivacyRequestStatus | null;
@@ -36,6 +37,6 @@ export type ConsentReportingSchema = {
   method?: ConsentMethod | null;
   served_notice_history_id?: string | null;
   notice_name?: string | null;
-  tcf_preferences?: null;
+  tcf_preferences?: TCFPreferences | null;
   property_id?: string | null;
 };

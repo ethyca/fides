@@ -432,9 +432,9 @@ class TestPatchConnections:
 
         assert 200 == response.status_code
 
-        assert (
-            mock_queue.called
-        ), "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -1432,9 +1432,9 @@ class TestDeleteConnection:
             .first()
             is None
         )
-        assert (
-            mock_queue.called
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -1584,11 +1584,14 @@ class TestPutConnectionConfigSecrets:
             json.loads(resp.text)["detail"][0]["msg"]
             == "Input should be a valid integer, unable to parse string as an integer"
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "loc",
-            "msg",
-            "type",
-        }  # Assert url, input, ctx keys have been removed to suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "loc",
+                "msg",
+                "type",
+            }
+        )  # Assert url, input, ctx keys have been removed to suppress sensitive information
 
     def test_put_connection_config_secrets(
         self,
@@ -2037,11 +2040,14 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "type",
-            "loc",
-            "msg",
-        }  # url, input, and ctx have been removed to help suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "type",
+                "loc",
+                "msg",
+            }
+        )  # url, input, and ctx have been removed to help suppress sensitive information
 
     def test_put_connection_config_snowflake_secrets(
         self,
@@ -2097,7 +2103,11 @@ class TestPutConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"url": "example.com", "authorization": "test_authorization123"}
+        payload = {
+            "url": "example.com",
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.put(
             url,
@@ -2115,6 +2125,7 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.secrets == {
             "url": "example.com",
             "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
@@ -2367,7 +2378,7 @@ class TestPutConnectionConfigSecrets:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == f"Unknown dataset 'non_existent_dataset' referenced by external reference"
+            == "Unknown dataset 'non_existent_dataset' referenced by external reference"
         )
 
         db.refresh(saas_example_connection_config)
@@ -2525,7 +2536,10 @@ class TestPatchConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"authorization": "test_authorization123"}
+        payload = {
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.patch(
             url,
@@ -2542,7 +2556,8 @@ class TestPatchConnectionConfigSecrets:
         db.refresh(https_connection_config)
         assert https_connection_config.secrets == {
             "url": "http://example.com",  # original value
-            "authorization": "test_authorization123",  # new value
+            "authorization": "test_authorization123",  # new value,
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None

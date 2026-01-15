@@ -3,7 +3,7 @@ This file invokes a command used to setup infrastructure for use in testing Fide
 and related workflows.
 """
 
-# pylint: disable=inconsistent-return-statements
+# ruff: noqa: RET503
 import argparse
 import subprocess
 import sys

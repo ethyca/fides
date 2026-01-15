@@ -22,6 +22,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
     build_consent_item_hierarchy,
@@ -277,11 +278,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # Delegate async requests
         with get_db() as db:
-            # Guard clause to ensure we only run async access requests for access requests
-            if self.guard_access_request(policy):
-                if async_dsr_strategy := _get_async_dsr_strategy(
-                    db, request_task, query_config, ActionType.access
+            if async_dsr_strategy := _get_async_dsr_strategy(
+                db, request_task, query_config, ActionType.access
+            ):
+                check_guard_access_request = self.guard_access_request(policy)
+                # Guard clause only applies to polling requests
+                # Callback requests should always proceed
+                if (async_dsr_strategy.type == AsyncTaskType.polling) and (
+                    not check_guard_access_request
                 ):
+                    logger.info(
+                        f"Skipping async access request for policy: {policy.name}"
+                    )
+                    return []
+                if check_guard_access_request:
                     return async_dsr_strategy.async_retrieve_data(
                         client=self.create_client(),
                         request_task_id=request_task.id,
@@ -479,7 +489,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
-                postprocessor.strategy, postprocessor.configuration  # type: ignore
+                postprocessor.strategy,
+                postprocessor.configuration,  # type: ignore
             )
             logger.info(
                 "Starting postprocessing of '{}' collection with '{}' strategy.",
@@ -840,12 +851,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 if consent_request.request_override:
                     # if we're dealing with notice-based consent, get_override with the UPDATE_CONSENT request type
                     # else: opt-in/opt-out...
-                    override_function: RequestOverrideFunction = (
-                        SaaSRequestOverrideFactory.get_override(
-                            # query_config.action currently looks at yml "opt_out" or "opt_in" keys
-                            consent_request.request_override,
-                            SaaSRequestType(query_config.action),
-                        )
+                    override_function: RequestOverrideFunction = SaaSRequestOverrideFactory.get_override(
+                        # query_config.action currently looks at yml "opt_out" or "opt_in" keys
+                        consent_request.request_override,
+                        SaaSRequestType(query_config.action),
                     )
                     consent_propagation_status = self._invoke_consent_request_override(
                         override_function,

@@ -184,9 +184,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         )
 
         # register the template in the loader's template dictionary
-        CustomConnectorTemplateLoader.get_connector_templates()[
-            template.key
-        ] = connector_template
+        CustomConnectorTemplateLoader.get_connector_templates()[template.key] = (
+            connector_template
+        )
 
     # pylint: disable=too-many-branches
     @classmethod

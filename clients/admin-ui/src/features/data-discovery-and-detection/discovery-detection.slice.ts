@@ -304,7 +304,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Monitor Field Details",
       ],
     }),
-    approveStagedResources: build.mutation<
+    reviewStagedResources: build.mutation<
       any,
       BulkResourceActionQueryParams & {
         monitor_config_key: string;
@@ -312,7 +312,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     >({
       query: ({ staged_resource_urns, monitor_config_key }) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/${monitor_config_key}/approve`,
+        url: `/plus/discovery-monitor/${monitor_config_key}/review`,
         body: {
           staged_resource_urns,
         },
@@ -417,7 +417,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-        body: urns,
+        body: {
+          urns,
+        },
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
@@ -463,7 +465,7 @@ export const {
   useUnmuteResourceMutation,
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
-  useApproveStagedResourcesMutation,
+  useReviewStagedResourcesMutation,
   useCreateIdentityProviderMonitorMutation,
   usePutIdentityProviderMonitorMutation,
   useGetIdentityProviderMonitorsQuery,

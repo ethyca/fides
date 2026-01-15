@@ -193,9 +193,9 @@ class TestDeleteCollection:
             {"email": "customer-4@example.com"},
             db,
         )
-        assert any(
-            collection.startswith("mongo_test") for collection in results
-        ), "mongo results still returned"
+        assert any(collection.startswith("mongo_test") for collection in results), (
+            "mongo results still returned"
+        )
         assert any(
             collection.startswith("postgres_example_test_dataset")
             for collection in results
@@ -212,16 +212,16 @@ class TestDeleteCollection:
             privacy_request_id=privacy_request.id, dataset_name="mongo_test"
         )
         assert mongo_logs.count() == 9
-        assert (
-            mongo_logs.filter_by(status="complete").count() == 9
-        ), "Mongo collections still visited"
+        assert mongo_logs.filter_by(status="complete").count() == 9, (
+            "Mongo collections still visited"
+        )
 
         db.delete(mongo_connection_config)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_collection_omitted_on_restart_from_failure(
         self,
@@ -455,9 +455,9 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             {"email": "customer-4@example.com"},
             db,
         )
-        assert all(
-            [dataset.startswith("postgres_example") for dataset in results]
-        ), "No mongo results"
+        assert all([dataset.startswith("postgres_example") for dataset in results]), (
+            "No mongo results"
+        )
 
         postgres_logs = db.query(ExecutionLog).filter_by(
             privacy_request_id=privacy_request.id,
@@ -541,9 +541,9 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             {"email": "customer-4@example.com"},
             db,
         )
-        assert not any(
-            collection.startswith("mongo_test") for collection in results
-        ), "mongo results not returned"
+        assert not any(collection.startswith("mongo_test") for collection in results), (
+            "mongo results not returned"
+        )
         assert any(
             collection.startswith("postgres_example_test_dataset")
             for collection in results
@@ -560,16 +560,16 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             privacy_request_id=privacy_request.id, dataset_name="mongo_test"
         )
         assert mongo_logs.count() == 9
-        assert (
-            mongo_logs.filter_by(status="skipped").count() == 9
-        ), "All mongo collections skipped"
+        assert mongo_logs.filter_by(status="skipped").count() == 9, (
+            "All mongo collections skipped"
+        )
 
         db.delete(mongo_connection_config)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_skip_collection_on_restart(
         self,
@@ -1180,7 +1180,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_restart_graph_from_failure_during_erasure(
     db,

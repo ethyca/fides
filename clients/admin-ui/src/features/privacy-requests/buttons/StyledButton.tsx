@@ -1,4 +1,4 @@
-import { AntButton as Button, forwardRef } from "fidesui";
+import { Button, chakraForwardRef as forwardRef } from "fidesui";
 
 /**
  * Provides the default styling props for buttons used by Privacy Request actions.

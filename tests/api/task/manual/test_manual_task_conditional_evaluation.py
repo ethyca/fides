@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from pytest import param
 
+from fides.api.graph.config import CollectionAddress
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
@@ -15,17 +16,31 @@ from fides.api.task.manual.manual_task_conditional_evaluation import (
 )
 
 
+def _email_exists_tree():
+    """Return condition tree dict for email exists condition."""
+    return {
+        "field_address": "postgres_example_test_dataset:customer:email",
+        "operator": "exists",
+        "value": None,
+    }
+
+
+def _city_eq_new_york_tree():
+    """Return condition tree dict for city == New York condition."""
+    return {
+        "field_address": "postgres_example_test_dataset:address:city",
+        "operator": "eq",
+        "value": "New York",
+    }
+
+
 @pytest.fixture
 def email_exists_conditional_dependency(db, manual_task):
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:customer:email",
-            "operator": "exists",
-            "value": None,
-            "sort_order": 1,
+            "condition_tree": _email_exists_tree(),
         },
     )
 
@@ -36,41 +51,71 @@ def city_eq_new_york_conditional_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "postgres_example_test_dataset:address:city",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 2,
+            "condition_tree": _city_eq_new_york_tree(),
         },
     )
+
+
+def _input_group_tree():
+    """Return condition tree dict for input group (email AND city)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_email_exists_tree(), _city_eq_new_york_tree()],
+    }
 
 
 @pytest.fixture
-def input_group_conditional_dependency(
-    db,
-    manual_task,
-    email_exists_conditional_dependency,
-    city_eq_new_york_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def email_and_city_conditional_dependency(db, manual_task):
+    """Create a single dependency with both email and city conditions."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
+            "condition_tree": _input_group_tree(),
         },
     )
 
-    email_exists_conditional_dependency.parent = dependency
-    email_exists_conditional_dependency.sort_order = 3
-    city_eq_new_york_conditional_dependency.parent = dependency
-    dependency.children = [
-        email_exists_conditional_dependency,
-        city_eq_new_york_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
+
+def _email_and_privacy_request_tree():
+    """Return condition tree with email exists AND privacy request conditions."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            _email_exists_tree(),
+            _privacy_request_location_tree(),
+            _privacy_request_access_rule_tree(),
+        ],
+    }
+
+
+@pytest.fixture
+def email_and_privacy_request_conditional_dependency(db, manual_task):
+    """Create a single dependency with email and privacy request conditions."""
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_tree": _email_and_privacy_request_tree(),
+        },
+    )
+
+
+def _privacy_request_location_tree():
+    """Return condition tree dict for privacy_request.location == New York."""
+    return {
+        "field_address": "privacy_request.location",
+        "operator": "eq",
+        "value": "New York",
+    }
+
+
+def _privacy_request_access_rule_tree():
+    """Return condition tree dict for privacy_request.policy.has_access_rule == True."""
+    return {
+        "field_address": "privacy_request.policy.has_access_rule",
+        "operator": "eq",
+        "value": True,
+    }
 
 
 @pytest.fixture
@@ -79,11 +124,7 @@ def privacy_request_location_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.location",
-            "operator": "eq",
-            "value": "New York",
-            "sort_order": 1,
+            "condition_tree": _privacy_request_location_tree(),
         },
     )
 
@@ -94,79 +135,76 @@ def privacy_request_access_rule_dependency(db, manual_task):
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.has_access_rule",
-            "operator": "eq",
-            "value": True,
-            "sort_order": 1,
+            "condition_tree": _privacy_request_access_rule_tree(),
         },
     )
 
 
 @pytest.fixture
 def privacy_request_policy_id_dependency(db, manual_task, policy):
+    condition_tree = {
+        "field_address": "privacy_request.policy.id",
+        "operator": "eq",
+        "value": policy.id,
+    }
     return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "leaf",
-            "field_address": "privacy_request.policy.id",
-            "operator": "eq",
-            "value": policy.id,
+            "condition_tree": condition_tree,
         },
     )
+
+
+def _privacy_request_group_tree():
+    """Return condition tree dict for privacy request group (location AND access_rule)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [
+            _privacy_request_location_tree(),
+            _privacy_request_access_rule_tree(),
+        ],
+    }
 
 
 @pytest.fixture
-def privacy_request_group_conditional_dependency(
-    db,
-    manual_task,
-    privacy_request_location_dependency,
-    privacy_request_access_rule_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def privacy_request_group_conditional_dependency(db, manual_task):
+    """Create a single dependency with the full privacy request group condition tree."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
+            "condition_tree": _privacy_request_group_tree(),
         },
     )
-    privacy_request_location_dependency.parent = dependency
-    privacy_request_access_rule_dependency.parent = dependency
-    dependency.children = [
-        privacy_request_location_dependency,
-        privacy_request_access_rule_dependency,
-    ]
-    db.commit()
-    return dependency
+
+
+def _full_group_tree():
+    """Return condition tree dict for the full group (inputs AND privacy_request)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_input_group_tree(), _privacy_request_group_tree()],
+    }
+
+
+def _full_group_tree():
+    """Return condition tree dict for the full group (inputs AND privacy_request)."""
+    return {
+        "logical_operator": "and",
+        "conditions": [_input_group_tree(), _privacy_request_group_tree()],
+    }
 
 
 @pytest.fixture
-def group_conditional_dependency(
-    db,
-    manual_task,
-    input_group_conditional_dependency,
-    privacy_request_group_conditional_dependency,
-):
-    dependency = ManualTaskConditionalDependency.create(
+def group_conditional_dependency(db, manual_task):
+    """Create a single dependency with the full condition tree."""
+    return ManualTaskConditionalDependency.create(
         db=db,
         data={
             "manual_task_id": manual_task.id,
-            "condition_type": "group",
-            "logical_operator": "and",
-            "sort_order": 1,
+            "condition_tree": _full_group_tree(),
         },
     )
-    input_group_conditional_dependency.parent = dependency
-    privacy_request_group_conditional_dependency.parent = dependency
-    dependency.children = [
-        input_group_conditional_dependency,
-        privacy_request_group_conditional_dependency,
-    ]
-    db.commit()
-    return dependency
 
 
 class TestManualTaskConditionalDependencies:
@@ -262,17 +300,7 @@ class TestManualTaskConditionalDependencies:
 class TestManualTaskDataExtraction:
     """Test the _extract_conditional_dependency_data_from_inputs method in ManualTaskGraphTask"""
 
-    def setup_method(self):
-        """Import CollectionAddress for all test methods"""
-        from fides.api.graph.config import CollectionAddress
-
-        self.CollectionAddress = CollectionAddress
-
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency",
-        "privacy_request_location_dependency",
-        "privacy_request_access_rule_dependency",
-    )
+    @pytest.mark.usefixtures("email_and_privacy_request_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_and_privacy_request(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
@@ -282,9 +310,7 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
             # Create test input data
@@ -305,9 +331,7 @@ class TestManualTaskDataExtraction:
             # Should extract the email field data
             expected = {
                 "postgres_example_test_dataset": {
-                    "customer": {
-                        "email": "customer-1@example.com"  # First non-None value found
-                    }
+                    "customer": {"email": "customer-1@example.com"}
                 },
                 "privacy_request": {
                     "location": None,
@@ -326,9 +350,7 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
             # Create test input data
@@ -349,9 +371,7 @@ class TestManualTaskDataExtraction:
             # Should extract the email field data
             expected = {
                 "postgres_example_test_dataset": {
-                    "customer": {
-                        "email": "customer-1@example.com"  # First non-None value found
-                    }
+                    "customer": {"email": "customer-1@example.com"}
                 }
             }
             assert result == expected
@@ -365,30 +385,29 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
-            # Create test input data with nested structure
+            # Create test input data (nested structure)
             inputs = [
                 [{"id": 1, "profile": {"age": 25, "preferences": {"theme": "dark"}}}]
             ]
 
             # Create a conditional dependency that references a deeply nested field
+            condition_tree = {
+                "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
+                "operator": "eq",
+                "value": "dark",
+            }
             ManualTaskConditionalDependency.create(
                 db=db,
                 data={
                     "manual_task_id": manual_task.id,
-                    "condition_type": "leaf",
-                    "field_address": "postgres_example_test_dataset:customer:profile:preferences:theme",
-                    "operator": "eq",
-                    "value": "dark",
-                    "sort_order": 1,
+                    "condition_tree": condition_tree,
                 },
             )
 
-            # Extract the data
+            # Should extract the nested field data
             result = extract_conditional_dependency_data_from_inputs(
                 *inputs,
                 manual_task=manual_task,
@@ -396,7 +415,6 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
-            # Should extract the nested field data
             expected = {
                 "postgres_example_test_dataset": {
                     "customer": {"profile": {"preferences": {"theme": "dark"}}}
@@ -414,9 +432,7 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
             # Create test input data without the expected field
@@ -431,73 +447,28 @@ class TestManualTaskDataExtraction:
             )
 
             # Should include the field with None value
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": None}  # Field not found, so None
-                }
-            }
+            expected = {"postgres_example_test_dataset": {"customer": {"email": None}}}
             assert result == expected
 
-    @pytest.mark.usefixtures(
-        "email_exists_conditional_dependency", "city_eq_new_york_conditional_dependency"
-    )
+    @pytest.mark.usefixtures("email_and_city_conditional_dependency")
     def test_extract_conditional_dependency_data_from_inputs_multiple_collections(
         self, manual_task_graph_task, db, manual_task, privacy_request
     ):
         """Test extracting from multiple input collections"""
-        # Mock the execution node to have multiple input keys
-        with patch.object(
-            manual_task_graph_task, "execution_node", autospec=True
-        ) as mock_node:
-            mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                ),
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:address"
-                ),
-            ]
-
-            # Create test input data for multiple collections
-            inputs = [
-                [{"id": 1, "email": "customer-1@example.com"}],  # customer collection
-                [{"id": 1, "city": "New York"}],  # address collection
-            ]
-
-            # Extract the data
-            result = extract_conditional_dependency_data_from_inputs(
-                *inputs,
-                manual_task=manual_task,
-                input_keys=mock_node.input_keys,
-                privacy_request=privacy_request,
-            )
-
-            # Should extract data from both collections
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": "customer-1@example.com"},
-                    "address": {"city": "New York"},
-                }
-            }
-            assert result == expected
-
-    @pytest.mark.usefixtures("email_exists_conditional_dependency")
-    def test_extract_conditional_dependency_data_from_inputs_field_address_parsing(
-        self, manual_task_graph_task, db, manual_task, privacy_request
-    ):
-        """Test that FieldAddress.from_string() works correctly"""
         # Mock the execution node to have specific input keys
         with patch.object(
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer"),
+                CollectionAddress.from_string("postgres_example_test_dataset:address"),
             ]
 
-            # Create test input data
-            inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
+            # Create test input data for multiple collections
+            inputs = [
+                [{"id": 1, "email": "customer-1@example.com"}],
+                [{"id": 1, "city": "New York"}],
+            ]
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
@@ -507,10 +478,11 @@ class TestManualTaskDataExtraction:
                 privacy_request=privacy_request,
             )
 
-            # Should correctly parse the field address and extract the data
+            # Should extract the data from both collections
             expected = {
                 "postgres_example_test_dataset": {
-                    "customer": {"email": "customer-1@example.com"}
+                    "customer": {"email": "customer-1@example.com"},
+                    "address": {"city": "New York"},
                 }
             }
             assert result == expected
@@ -525,13 +497,11 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
             # Create empty input data
-            inputs = [[]]  # Empty list for the collection
+            inputs = [[]]
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
@@ -542,11 +512,7 @@ class TestManualTaskDataExtraction:
             )
 
             # Should handle empty inputs gracefully
-            expected = {
-                "postgres_example_test_dataset": {
-                    "customer": {"email": None}  # No data to extract
-                }
-            }
+            expected = {"postgres_example_test_dataset": {"customer": {"email": None}}}
             assert result == expected
 
     def test_extract_conditional_dependency_data_from_inputs_no_conditional_dependencies(
@@ -558,15 +524,11 @@ class TestManualTaskDataExtraction:
             manual_task_graph_task, "execution_node", autospec=True
         ) as mock_node:
             mock_node.input_keys = [
-                self.CollectionAddress.from_string(
-                    "postgres_example_test_dataset:customer"
-                )
+                CollectionAddress.from_string("postgres_example_test_dataset:customer")
             ]
 
             # Create test input data
             inputs = [[{"id": 1, "email": "customer-1@example.com"}]]
-
-            # No conditional dependencies created
 
             # Extract the data
             result = extract_conditional_dependency_data_from_inputs(
@@ -658,17 +620,17 @@ class TestManualTaskDataExtraction:
         result = set_nested_value(field_address, value)
         assert result == expected_result
 
-    def test_evaluate_conditional_dependencies_no_root_condition(self, db, manual_task):
+    def test_evaluate_conditional_dependencies_no_condition_tree(self, db, manual_task):
         """Test evaluating conditional dependencies when no root condition exists"""
         with patch.object(
-            ManualTaskConditionalDependency, "get_root_condition", return_value=None
+            ManualTaskConditionalDependency, "get_condition_tree", return_value=None
         ):
             result = evaluate_conditional_dependencies(
                 db, manual_task, {"test": "data"}
             )
             assert result is None
 
-    def test_evaluate_conditional_dependencies_with_root_condition(
+    def test_evaluate_conditional_dependencies_with_condition_tree(
         self, db, manual_task
     ):
         """Test evaluating conditional dependencies with existing root condition"""
@@ -678,7 +640,7 @@ class TestManualTaskDataExtraction:
         with (
             patch.object(
                 ManualTaskConditionalDependency,
-                "get_root_condition",
+                "get_condition_tree",
                 return_value=mock_root_condition,
             ),
             patch(
@@ -784,10 +746,10 @@ class TestManualTaskDataExtraction:
                     else:
                         # For scalar fields, check equality
                         if expected_result:
-                            assert (
-                                actual_value == expected_value
-                            ), f"Expected {field_path}={expected_value}, got {actual_value}"
+                            assert actual_value == expected_value, (
+                                f"Expected {field_path}={expected_value}, got {actual_value}"
+                            )
                         else:
-                            assert (
-                                actual_value != expected_value
-                            ), f"Expected {field_path}!={expected_value}, but got {actual_value}"
+                            assert actual_value != expected_value, (
+                                f"Expected {field_path}!={expected_value}, but got {actual_value}"
+                            )

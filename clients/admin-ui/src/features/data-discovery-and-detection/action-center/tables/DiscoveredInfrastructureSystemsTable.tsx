@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntList as List,
-  AntMenu as Menu,
-  AntPagination as Pagination,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
+  Button,
+  Checkbox,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  List,
+  Menu,
+  Pagination,
+  Text,
+  Title,
+  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 

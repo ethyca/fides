@@ -1,10 +1,11 @@
-import { AntButton as Button, AntFlex as Flex, useMessage } from "fidesui";
+import { Button, Flex, Tabs, useMessage } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import CustomTaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
+import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
 import { CustomFieldDefinitionWithId } from "~/types/api";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
@@ -80,11 +81,26 @@ const CustomTaxonomyEditDrawer = ({
         </Flex>
       }
     >
-      <CustomTaxonomyDetails
-        taxonomy={taxonomy}
-        onSubmit={handleUpdate}
-        formId={FORM_ID}
-        customFields={customFields}
+      <Tabs
+        items={[
+          {
+            label: "Details",
+            key: "details",
+            children: (
+              <CustomTaxonomyDetails
+                taxonomy={taxonomy}
+                onSubmit={handleUpdate}
+                formId={FORM_ID}
+                customFields={customFields}
+              />
+            ),
+          },
+          {
+            label: "History",
+            key: "history",
+            children: <TaxonomyHistory taxonomyKey={taxonomy.fides_key} />,
+          },
+        ]}
       />
     </DetailsDrawer>
   );

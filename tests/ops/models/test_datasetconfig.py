@@ -326,7 +326,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     dataset_key = dataset_config.fides_key
     collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
-    dsr = FidesDatasetReference(dataset=dataset_key, field=f".")
+    dsr = FidesDatasetReference(dataset=dataset_key, field=".")
     with pytest.raises(ValidationError) as e:
         validate_dataset_reference(db, dsr)
     assert "must include at least two dot-separated components" in e.value.message
@@ -360,9 +360,9 @@ class TestCreateOrUpdate:
 
         ctl_dataset = dataset_config.ctl_dataset
 
-        assert (
-            ctl_dataset.fides_key == "postgres_example_test_dataset"
-        ), "New ctl dataset record created"
+        assert ctl_dataset.fides_key == "postgres_example_test_dataset", (
+            "New ctl dataset record created"
+        )
         assert ctl_dataset.description == postgres_dataset["description"]
         assert ctl_dataset.organization_fides_key == "default_organization"
         assert ctl_dataset.data_categories == postgres_dataset.get("data_categories")
@@ -427,18 +427,18 @@ class TestCreateOrUpdate:
             },
         )
         assert dataset_config.fides_key == "brand_new_fides_key"
-        assert (
-            dataset_config.ctl_dataset_id == current_ctl_dataset_id
-        ), "Dataset config linked to existing ctl dataset"
+        assert dataset_config.ctl_dataset_id == current_ctl_dataset_id, (
+            "Dataset config linked to existing ctl dataset"
+        )
 
         ctl_dataset = dataset_config.ctl_dataset
 
-        assert (
-            ctl_dataset.fides_key == "postgres_example_subscriptions_dataset"
-        ), "Existing ctl dataset fides key"
-        assert (
-            ctl_dataset.description == "New Dataset Description"
-        ), "Updated description"
+        assert ctl_dataset.fides_key == "postgres_example_subscriptions_dataset", (
+            "Existing ctl dataset fides key"
+        )
+        assert ctl_dataset.description == "New Dataset Description", (
+            "Updated description"
+        )
         assert ctl_dataset.name == "New Dataset Name", "Updated name"
 
         assert ctl_dataset.organization_fides_key == "default_organization"
@@ -501,13 +501,13 @@ class TestCreateOrUpdate:
         assert updated_dataset_config.ctl_dataset_id == existing_ctl_dataset_id
         updated_ctl_dataset = updated_dataset_config.ctl_dataset
 
-        assert (
-            updated_ctl_dataset.fides_key != existing_ctl_dataset_fides_key
-        ), "Because we updated based on the ctl_dataset.id, the fides key got changed"
+        assert updated_ctl_dataset.fides_key != existing_ctl_dataset_fides_key, (
+            "Because we updated based on the ctl_dataset.id, the fides key got changed"
+        )
 
-        assert (
-            updated_ctl_dataset.description == "New Dataset Description"
-        ), "Updated description"
+        assert updated_ctl_dataset.description == "New Dataset Description", (
+            "Updated description"
+        )
         assert updated_ctl_dataset.name == "New Dataset Name", "Updated name"
 
         assert updated_ctl_dataset.collections is not None

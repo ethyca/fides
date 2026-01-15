@@ -1,21 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
-import {
-  ColumnDef,
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { Box, Heading, Link, Text } from "fidesui";
+import { ColumnsType, Flex, Table, Typography } from "fidesui";
 import type { NextPage } from "next";
 import { useMemo } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import Layout from "~/features/common/Layout";
-import {
-  DefaultCell,
-  FidesTableV2,
-  TableSkeletonLoader,
-} from "~/features/common/table/v2";
+import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 
 type CNAMERecord = {
@@ -24,35 +14,32 @@ type CNAMERecord = {
   data: string;
 };
 
-const columnHelper = createColumnHelper<CNAMERecord>();
-
 const DomainRecordsPage: NextPage = () => {
-  const columns: ColumnDef<CNAMERecord, any>[] = useMemo(
+  const columns: ColumnsType<CNAMERecord> = useMemo(
     () => [
-      columnHelper.accessor((row) => row.hostName, {
-        header: "Name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-      }),
-      columnHelper.accessor((row) => row.type, {
-        header: "Type",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-      }),
-      columnHelper.accessor((row) => row.data, {
-        header: "Value",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-      }),
-      columnHelper.display({
-        id: "actions",
-        cell: ({ row }) => (
-          <ClipboardButton
-            copyText={row.original.data}
-            type="default"
-            size="small"
-          />
+      {
+        title: "Name",
+        dataIndex: "hostName",
+        key: "hostName",
+      },
+      {
+        title: "Type",
+        dataIndex: "type",
+        key: "type",
+      },
+      {
+        title: "Value",
+        dataIndex: "data",
+        key: "data",
+      },
+      {
+        title: "Actions",
+        dataIndex: "actions",
+        key: "actions",
+        render: (_, { data }) => (
+          <ClipboardButton copyText={data} type="default" size="small" />
         ),
-        header: "Actions",
-        maxSize: 65,
-      }),
+      },
     ],
     [],
   );
@@ -71,43 +58,40 @@ const DomainRecordsPage: NextPage = () => {
     [fidesCloudConfig],
   );
 
-  const tableInstance = useReactTable<CNAMERecord>({
-    getCoreRowModel: getCoreRowModel(),
-    columns,
-    data,
-    columnResizeMode: "onChange",
+  const tableState = useTableState();
+
+  const { tableProps } = useAntTable(tableState, {
+    dataSource: data,
+    totalRows: data.length,
+    isLoading,
   });
 
   return (
     <Layout title="Domain records">
-      <Box data-testid="domain-records">
-        <Heading marginBottom={4} fontSize="2xl">
-          Domain records
-        </Heading>
-        <Box maxWidth="600px">
-          <Text marginBottom={2} fontSize="md">
+      <Flex vertical gap="small" data-testid="domain-records">
+        <Typography.Title level={2}>Domain records</Typography.Title>
+        <Flex vertical>
+          <Typography.Paragraph>
             Set the following record on your DNS provider to continue.
-          </Text>
-          <Text mb={10} fontSize="sm">
+          </Typography.Paragraph>
+          <Typography.Paragraph>
             Please visit{" "}
-            <Link
+            <Typography.Link
               color="complimentary.500"
               href="https://fid.es/manage-dns"
-              isExternal
+              target="_blank"
             >
               docs.ethyca.com
-            </Link>{" "}
+            </Typography.Link>{" "}
             for more information on how to configure Domain records.
-          </Text>
-          {isLoading ? (
-            <Box p={2} borderWidth={1}>
-              <TableSkeletonLoader rowHeight={26} numRows={5} />
-            </Box>
-          ) : (
-            <FidesTableV2<CNAMERecord> tableInstance={tableInstance} />
-          )}
-        </Box>
-      </Box>
+          </Typography.Paragraph>
+          <Table
+            {...tableProps}
+            columns={columns}
+            data-testid="domain-records-table"
+          />
+        </Flex>
+      </Flex>
     </Layout>
   );
 };

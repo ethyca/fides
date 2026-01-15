@@ -3,31 +3,32 @@
 QA scenario for testing integrations with many datasets.
 """
 
-import time
-from typing import List
 import sys
+import time
 from pathlib import Path
+from typing import List
+
 sys.path.append(str(Path(__file__).parent.parent))
-from utils.rich_helpers import create_resources_with_progress
-from utils import QATestScenario, Argument
-from utils.fides_api import generate_dataset, generate_system, generate_connection
-from utils.rich_helpers import delete_resources_with_progress
+from utils import Argument, QATestScenario
+from utils.fides_api import generate_connection, generate_dataset, generate_system
+from utils.rich_helpers import (
+    create_resources_with_progress,
+    delete_resources_with_progress,
+)
 
 
 class IntegrationWithManyDatasets(QATestScenario):
     """QA scenario for testing integrations with many datasets."""
 
     arguments = {
-        'datasets': Argument(
-            type=int,
-            default=60,
-            description="Number of datasets to create"
+        "datasets": Argument(
+            type=int, default=60, description="Number of datasets to create"
         )
     }
 
     def __init__(self, base_url: str = "http://localhost:8080", **kwargs):
         super().__init__(base_url, **kwargs)
-        self.dataset_count = kwargs.get('datasets', 60)
+        self.dataset_count = kwargs.get("datasets", 60)
         self.system_name = "qa_integration_test_system"
         self.connection_key = "qa_test_postgres_connection"
 
@@ -77,7 +78,7 @@ class IntegrationWithManyDatasets(QATestScenario):
 
         print(f"Cleaning up integration test resources...")
         success = True
-        deleted_counts = {'connections': 0, 'systems': 0, 'datasets': 0}
+        deleted_counts = {"connections": 0, "systems": 0, "datasets": 0}
 
         try:
             # Step 1: Delete connections FIRST (cascades delete DatasetConfigs)

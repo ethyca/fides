@@ -1,4 +1,9 @@
-import { AntTabs as Tabs, Box, Heading, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraText as Text,
+  Tabs,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";

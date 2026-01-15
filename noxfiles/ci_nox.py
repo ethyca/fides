@@ -1,5 +1,6 @@
 """Contains the nox sessions used during CI checks."""
 
+from enum import StrEnum
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict
@@ -19,6 +20,10 @@ from constants_nox import (
     WITH_TEST_CONFIG,
 )
 from setup_tests_nox import (
+    CoverageConfig,
+    PytestConfig,
+    ReportConfig,
+    XdistConfig,
     pytest_api,
     pytest_ctl,
     pytest_lib,
@@ -30,54 +35,59 @@ from setup_tests_nox import (
 from utils_nox import db, install_requirements
 
 
+class RuffMode(StrEnum):
+    FORMAT = "format"
+    CHECK = "check"
+    SORT_IMPORTS_ONLY = "sort-imports"
+
+
 ###################
 ## Static Checks ##
 ###################
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
-    session.notify("black(fix)")
-    session.notify("isort(fix)")
+    session.notify("ruff(format)")
+    session.notify("ruff(check)")
     session.notify("mypy")
-    session.notify("pylint")
 
 
 @nox.session()
 @nox.parametrize(
     "mode",
     [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
+        nox.param(RuffMode.FORMAT, id="format"),
+        nox.param(RuffMode.CHECK, id="check"),
+        nox.param(RuffMode.SORT_IMPORTS_ONLY, id="sort-imports"),
     ],
 )
-def black(session: nox.Session, mode: str) -> None:
-    """Run the 'black' style linter."""
+def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
+    """
+    Run the 'ruff' linter and formatter. Supported modes:
+    - `check` (check only)
+    - `format` (sort imports and apply formatting)
+    - `sort-imports` (only sort imports).
+    """
     install_requirements(session)
-    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    ruff_arguments = ["src", "tests", "noxfiles", "scripts", "noxfile.py"]
     if session.posargs:
-        command = ("black", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+        ruff_arguments = session.posargs
 
+    format_command = ("ruff", "format", *ruff_arguments)
+    check_command = ("ruff", "check", *ruff_arguments)
+    sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
-@nox.session()
-@nox.parametrize(
-    "mode",
-    [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
-    ],
-)
-def isort(session: nox.Session, mode: str) -> None:
-    """Run the 'isort' import linter."""
-    install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-    if session.posargs:
-        command = ("isort", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+    if mode == RuffMode.FORMAT:
+        # Format code and sort imports
+        session.run(*format_command)
+        session.run(*sort_imports_command)
+
+    elif mode == RuffMode.CHECK:
+        # Lint code
+        session.run(*check_command)
+
+    elif mode == RuffMode.SORT_IMPORTS_ONLY:
+        session.run(*sort_imports_command)
 
 
 @nox.session()
@@ -86,21 +96,6 @@ def mypy(session: nox.Session) -> None:
     install_requirements(session)
     command = "mypy"
     session.run(command)
-
-
-@nox.session()
-def pylint(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
-    install_requirements(session)
-    command = (
-        "pylint",
-        "src",
-        "noxfiles",
-        "noxfile.py",
-        "--jobs",
-        "0",
-    )
-    session.run(*command)
 
 
 @nox.session()
@@ -406,13 +401,11 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
-    install_requirements(session, True)
-    command = ("pytest", "tests/", "--collect-only")
+    (install_requirements(session, True))
+    command = ("pytest", "--collect-only", "tests/")
     session.run(
         *command,
-        env={
-            "PYTHONDONTWRITEBYTECODE": "1",
-        },
+        env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
     )
     validate_test_coverage(session)
 
@@ -431,8 +424,21 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
-    coverage_arg = "--cov-report=xml"
-    TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
+    pytest_config = PytestConfig(
+        xdist_config=XdistConfig(parallel_runners="auto"),
+        coverage_config=CoverageConfig(
+            report_format="xml",
+            cov_name="fides",
+            skip_on_fail=True,
+            branch_coverage=True,
+        ),
+        report_config=ReportConfig(
+            report_format="xml",
+            report_file="test_report.xml",
+        ),
+    )
+
+    TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
 @nox.session()

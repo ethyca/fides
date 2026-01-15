@@ -37,8 +37,10 @@ from fides.api.cryptography.cryptographic_util import (
     hash_value_with_salt,
 )
 from fides.api.cryptography.identity_salt import get_identity_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -60,7 +62,6 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskInstance,
 )
@@ -468,7 +469,9 @@ class PrivacyRequest(
             "paused_at": self.paused_at.isoformat() if self.paused_at else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "days_left": self.days_left,
-            "custom_fields": self.get_persisted_custom_privacy_request_fields() if self.custom_fields else None,  # type: ignore[attr-defined]
+            "custom_fields": self.get_persisted_custom_privacy_request_fields()
+            if self.custom_fields
+            else None,  # type: ignore[attr-defined]
             "location": self.location,
         }
 
@@ -557,6 +560,9 @@ class PrivacyRequest(
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
+
+        If an identity field with the same field_name already exists for this privacy request,
+        it will be replaced with the new value to prevent duplicate records.
         """
 
         if isinstance(identity, dict):
@@ -575,6 +581,19 @@ class PrivacyRequest(
                         )
                 else:
                     label = None
+
+                # Delete any existing ProvidedIdentity records with the same field_name
+                # to prevent duplicates and ensure the latest value is used
+                existing_identities = (
+                    db.query(ProvidedIdentity)
+                    .filter(
+                        ProvidedIdentity.privacy_request_id == self.id,
+                        ProvidedIdentity.field_name == key,
+                    )
+                    .all()
+                )
+                for existing in existing_identities:
+                    existing.delete(db=db)
 
                 hashed_value = ProvidedIdentity.hash_value(value)
                 provided_identity_data = {
@@ -1375,6 +1394,9 @@ class PrivacyRequest(
             ActionType.erasure: bool(
                 self.policy.get_rules_for_action(action_type=ActionType.erasure)
             ),
+            ActionType.consent: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.consent)
+            ),
         }
 
         if not any(policy_rules.values()):
@@ -1382,13 +1404,7 @@ class PrivacyRequest(
 
         # Build configuration types using list comprehension
         config_types = [
-            (
-                ManualTaskConfigurationType.access_privacy_request
-                if action_type == ActionType.access
-                else ManualTaskConfigurationType.erasure_privacy_request
-            )
-            for action_type, has_rules in policy_rules.items()
-            if has_rules
+            action_type for action_type, has_rules in policy_rules.items() if has_rules
         ]
 
         # Get all relevant manual tasks and configs in one query
@@ -1533,7 +1549,10 @@ class PrivacyRequest(
         value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
         # extract request id to return a map of address:value
         number_of_leading_strings_to_exclude = 2
-        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            for k, v in value_dict.items()
+        }  # type: ignore
 
     def get_consent_results(self) -> Dict[str, int]:
         """For parity, return whether a consent request was sent for third

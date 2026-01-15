@@ -98,9 +98,9 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL
@@ -141,7 +141,9 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        response = test_client.get(url, headers=root_auth_header, allow_redirects=False)
+        response = test_client.get(
+            url, headers=root_auth_header, follow_redirects=False
+        )
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL
@@ -215,9 +217,9 @@ class TestPrivacyCenterDsrPackage:
             response = test_client.get(url)
 
             # We expect 400 for invalid format, not 404
-            assert (
-                response.status_code == HTTP_400_BAD_REQUEST
-            ), f"Expected 400 for invalid ID '{invalid_id}', got {response.status_code}"
+            assert response.status_code == HTTP_400_BAD_REQUEST, (
+                f"Expected 400 for invalid ID '{invalid_id}', got {response.status_code}"
+            )
             assert "Invalid privacy request ID format" in response.json()["detail"]
             assert (
                 "Must start with 'pri_' followed by a valid UUID v4"
@@ -234,9 +236,9 @@ class TestPrivacyCenterDsrPackage:
         response = test_client.get(url)
 
         # Should get 404 for non-existent ID, not 400 for invalid format
-        assert (
-            response.status_code == HTTP_404_NOT_FOUND
-        ), f"Expected 404 for valid UUID format, got {response.status_code}"
+        assert response.status_code == HTTP_404_NOT_FOUND, (
+            f"Expected 404 for valid UUID format, got {response.status_code}"
+        )
         assert "No privacy request found" in response.json()["detail"]
 
     def test_get_access_results_empty_access_result_urls(
@@ -271,16 +273,16 @@ class TestPrivacyCenterDsrPackage:
         db.commit()
 
         # First, verify the endpoint works normally
-        response = test_client.get(url, allow_redirects=False)
-        assert (
-            response.status_code == HTTP_302_FOUND
-        ), "Endpoint should work normally before rate limiting"
+        response = test_client.get(url, follow_redirects=False)
+        assert response.status_code == HTTP_302_FOUND, (
+            "Endpoint should work normally before rate limiting"
+        )
 
         # Make multiple requests rapidly to trigger rate limiting
         # The exact number depends on the rate limit configuration
         responses = []
         for i in range(20):  # Make more requests to ensure we hit rate limits
-            response = test_client.get(url, allow_redirects=False)
+            response = test_client.get(url, follow_redirects=False)
             responses.append(response.status_code)
 
             # Check if we got any rate limit responses (429 Too Many Requests)
@@ -318,7 +320,7 @@ class TestPrivacyCenterDsrPackage:
         )
 
         # The function should raise an error for GCS
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert (
             "Only S3 storage is supported for this endpoint."
@@ -354,9 +356,9 @@ class TestPrivacyCenterDsrPackage:
         test_content, file_name = mock_s3_with_file
 
         # Test the endpoint
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Verify the presigned URL
@@ -367,9 +369,9 @@ class TestPrivacyCenterDsrPackage:
         parsed_url = urllib.parse.urlparse(redirect_url)
 
         # Verify it's an HTTPS URL
-        assert (
-            parsed_url.scheme == "https"
-        ), f"Expected HTTPS scheme, got {parsed_url.scheme}"
+        assert parsed_url.scheme == "https", (
+            f"Expected HTTPS scheme, got {parsed_url.scheme}"
+        )
 
         # Verify it's pointing to S3 (either s3.amazonaws.com or the specific bucket)
         assert parsed_url.netloc in [
@@ -378,14 +380,14 @@ class TestPrivacyCenterDsrPackage:
         ], f"Expected S3 domain, got {parsed_url.netloc}"
 
         # Verify the file name is in the URL
-        assert (
-            file_name in redirect_url
-        ), f"File name {file_name} should be in the presigned URL"
+        assert file_name in redirect_url, (
+            f"File name {file_name} should be in the presigned URL"
+        )
 
         # Verify the bucket name is in the URL
-        assert (
-            "test_bucket" in redirect_url
-        ), "Bucket name should be in the presigned URL"
+        assert "test_bucket" in redirect_url, (
+            "Bucket name should be in the presigned URL"
+        )
 
         # Verify it has the required presigned URL parameters
         # moto uses different parameter names than real AWS
@@ -393,9 +395,9 @@ class TestPrivacyCenterDsrPackage:
 
         # Verify the URL is properly formatted
         assert len(parsed_url.query) > 0, "Presigned URL should have query parameters"
-        assert (
-            len(query_params) >= 3
-        ), f"Presigned URL should have at least 3 parameters, got {len(query_params)}"
+        assert len(query_params) >= 3, (
+            f"Presigned URL should have at least 3 parameters, got {len(query_params)}"
+        )
 
     @pytest.mark.usefixtures("completed_privacy_request")
     def test_get_access_results_s3_auto_auth(
@@ -418,9 +420,9 @@ class TestPrivacyCenterDsrPackage:
         test_content, file_name = mock_s3_auto_auth_with_file
 
         # Test the endpoint
-        # allow_redirects=False prevents the test client from automatically following the redirect,
+        # follow_redirects=False prevents the test client from automatically following the redirect,
         # allowing us to verify the 302 status and Location header without making the actual S3 request
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Verify the presigned URL
@@ -431,9 +433,9 @@ class TestPrivacyCenterDsrPackage:
         parsed_url = urllib.parse.urlparse(redirect_url)
 
         # Verify it's an HTTPS URL
-        assert (
-            parsed_url.scheme == "https"
-        ), f"Expected HTTPS scheme, got {parsed_url.scheme}"
+        assert parsed_url.scheme == "https", (
+            f"Expected HTTPS scheme, got {parsed_url.scheme}"
+        )
 
         # Verify it's pointing to S3
         assert parsed_url.netloc in [
@@ -442,23 +444,23 @@ class TestPrivacyCenterDsrPackage:
         ], f"Expected S3 domain, got {parsed_url.netloc}"
 
         # Verify the file name is in the URL
-        assert (
-            file_name in redirect_url
-        ), f"File name {file_name} should be in the presigned URL"
+        assert file_name in redirect_url, (
+            f"File name {file_name} should be in the presigned URL"
+        )
 
         # Verify the bucket name is in the URL (should be test_bucket for this test)
-        assert (
-            "test_bucket" in redirect_url
-        ), "Bucket name should be in the presigned URL"
+        assert "test_bucket" in redirect_url, (
+            "Bucket name should be in the presigned URL"
+        )
 
         # Verify it has the required presigned URL parameters
         query_params = urllib.parse.parse_qs(parsed_url.query)
 
         # Verify the URL is properly formatted
         assert len(parsed_url.query) > 0, "Presigned URL should have query parameters"
-        assert (
-            len(query_params) >= 3
-        ), f"Presigned URL should have at least 3 parameters, got {len(query_params)}"
+        assert len(query_params) >= 3, (
+            f"Presigned URL should have at least 3 parameters, got {len(query_params)}"
+        )
 
     @pytest.mark.usefixtures("completed_privacy_request")
     def test_get_access_results_full_redirect_flow(
@@ -486,8 +488,8 @@ class TestPrivacyCenterDsrPackage:
         # mock_s3_with_file now returns test_content, file_name
         _, _ = mock_s3_with_file
 
-        # Test the endpoint with allow_redirects=True to follow the full redirect flow
-        response = test_client.get(url, allow_redirects=True)
+        # Test the endpoint with follow_redirects=True to follow the full redirect flow
+        response = test_client.get(url, follow_redirects=True)
 
         # Note: moto may not handle presigned URLs correctly, so we just verify the redirect happened
         # The important part is that the endpoint generated a valid presigned URL
@@ -617,7 +619,7 @@ class TestPrivacyCenterDsrPackage:
         )
         db.commit()
 
-        response = test_client.get(url, allow_redirects=False)
+        response = test_client.get(url, follow_redirects=False)
         assert response.status_code == HTTP_302_FOUND
 
         # Check that we're redirected to a presigned URL

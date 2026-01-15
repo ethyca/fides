@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntPopover as Popover,
+  Button,
+  Checkbox,
+  Divider,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Popover,
 } from "fidesui";
 import { useCallback, useState } from "react";
 
@@ -30,7 +30,13 @@ const formatStatusForDisplay = (
   return status.split("_").map(capitalize).join(" ");
 };
 
-export const InProgressMonitorTasksList = () => {
+export const InProgressMonitorTasksList = ({
+  filters,
+}: {
+  filters?: {
+    monitorId?: string;
+  };
+}) => {
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   const {
@@ -55,7 +61,7 @@ export const InProgressMonitorTasksList = () => {
     listProps,
 
     paginationProps,
-  } = useInProgressMonitorTasksList();
+  } = useInProgressMonitorTasksList({ filters });
 
   const handleStatusesChanged = useCallback(
     (values: Array<ExecutionLogStatus | string>) => {
@@ -113,17 +119,17 @@ export const InProgressMonitorTasksList = () => {
   );
 
   return (
-    <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
+    <>
       {/* Search Row */}
       <Flex justify="space-between" align="center">
         <div className="min-w-[300px]">
           <DebouncedSearchInput
-            value={searchQuery ?? ""}
+            hidden={!!filters?.monitorId}
+            value={filters?.monitorId ?? searchQuery ?? ""}
             onChange={updateSearch}
             placeholder="Search by monitor name..."
           />
         </div>
-
         {/* Filter Popover */}
         <Popover
           content={filterContent}
@@ -140,7 +146,7 @@ export const InProgressMonitorTasksList = () => {
 
       <List
         {...listProps}
-        className="h-full overflow-scroll"
+        className="h-full overflow-y-auto overflow-x-clip" // overflow-x-clip to prevent horizontal scroll. see https://stackoverflow.com/a/69767073/441894
         renderItem={(task: MonitorTaskInProgressResponse) => (
           <List.Item>
             <InProgressMonitorTaskItem task={task} />
@@ -158,6 +164,6 @@ export const InProgressMonitorTasksList = () => {
           paginationProps.pageSizeOptions?.[0]
         }
       />
-    </Flex>
+    </>
   );
 };

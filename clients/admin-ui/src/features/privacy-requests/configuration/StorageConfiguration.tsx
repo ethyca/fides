@@ -1,9 +1,9 @@
 import {
-  AntFlex as Flex,
-  AntRadio as Radio,
-  Box,
-  Heading,
-  Text,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraText as Text,
+  Flex,
+  Radio,
 } from "fidesui";
 import { useEffect, useState } from "react";
 

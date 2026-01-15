@@ -12,6 +12,7 @@ from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
     SaaSConfigNotFoundException,
+    ValidationError,
 )
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
@@ -216,7 +217,9 @@ class ConnectionService:
 
         # SaaS secrets with external references must go through extra validation
         if connection_type == ConnectionType.saas:
-            validate_saas_secrets_external_references(self.db, schema, connection_secrets)  # type: ignore
+            validate_saas_secrets_external_references(
+                self.db, schema, connection_secrets
+            )  # type: ignore
 
         # For dynamic erasure emails we must validate the recipient email address
         if connection_type == ConnectionType.dynamic_erasure_email:
@@ -266,7 +269,6 @@ class ConnectionService:
         verify: Optional[bool],
         merge_with_existing: Optional[bool] = False,
     ) -> TestStatusMessage:
-
         connection_config = self.get_connection_config(connection_key)
 
         # Handle merging with existing secrets
@@ -278,7 +280,8 @@ class ConnectionService:
             merged_secrets = unvalidated_secrets  # type: ignore[assignment]
 
         connection_config.secrets = self.validate_secrets(
-            merged_secrets, connection_config  # type: ignore[arg-type]
+            merged_secrets,
+            connection_config,  # type: ignore[arg-type]
         ).model_dump(mode="json")
 
         # Save validated secrets, regardless of whether they've been verified.

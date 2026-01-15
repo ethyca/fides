@@ -1,5 +1,11 @@
 import ClipboardButton from "common/ClipboardButton";
-import { AntTag as Tag, Box, Divider, Flex, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  Tag,
+} from "fidesui";
 import {
   ExecutionLogStatus,
   ExecutionLogStatusColors,

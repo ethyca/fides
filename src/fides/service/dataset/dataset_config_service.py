@@ -143,7 +143,6 @@ class DatasetConfigService:
     def validate_dataset_config(
         self, connection_config: ConnectionConfig, dataset: FideslangDataset
     ) -> ValidateDatasetResponse:
-
         return DatasetValidator(self.db, dataset, connection_config).validate()
 
     def get_dataset_reachability(

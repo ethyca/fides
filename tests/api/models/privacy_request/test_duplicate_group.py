@@ -30,19 +30,18 @@ GROUP_ID_EMAIL = generate_deterministic_uuid(
 
 
 class TestHelperFunctions:
-
     def test_generate_rule_version(self):
         """Test that rule version generation is stable and unique."""
         version_a1 = generate_rule_version(DUPLICATE_DETECTION_SETTINGS_EMAIL)
         version_a2 = generate_rule_version(DUPLICATE_DETECTION_SETTINGS_EMAIL)
         version_b = generate_rule_version(DUPLICATE_DETECTION_SETTINGS_EMAIL_PHONE)
 
-        assert (
-            version_a1 == version_a2
-        ), "Rule version should be stable for the same config"
-        assert (
-            version_a1 != version_b
-        ), "Different configs should yield different rule versions"
+        assert version_a1 == version_a2, (
+            "Rule version should be stable for the same config"
+        )
+        assert version_a1 != version_b, (
+            "Different configs should yield different rule versions"
+        )
 
     def test_generate_deterministic_uuid(self):
         """Test that deterministic UUID generation is stable and unique."""
@@ -65,7 +64,6 @@ class TestHelperFunctions:
 
 
 class TestDuplicateGroup:
-
     def test_create_duplicate_group(self, db: Session):
         """Test that duplicate group creation is successful."""
         rule_version = generate_rule_version(DUPLICATE_DETECTION_SETTINGS_EMAIL)

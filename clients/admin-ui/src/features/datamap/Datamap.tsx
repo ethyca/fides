@@ -3,7 +3,12 @@
  * For the Data Map Report component, see DatamapReportTable.tsx.
  */
 
-import { Box, Center, Flex, Spinner } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+} from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 

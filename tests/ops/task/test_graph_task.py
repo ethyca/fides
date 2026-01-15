@@ -646,7 +646,7 @@ class TestUpdateErasureMappingFromCache:
         """
         t = [
             GraphDataset(
-                name=f"dr_1",
+                name="dr_1",
                 collections=[
                     Collection(name=f"ds_{i}", fields=generate_field_list(1))
                     for i in range(1, 4)
@@ -671,38 +671,43 @@ class TestUpdateErasureMappingFromCache:
         traversal.traverse(env, collect_tasks_fn)
         erasure_end_nodes = list(graph.nodes.keys())
 
+        # Python 3.13 compatibility: Use string keys instead of CollectionAddress objects
         # the [] and [[]] values don't matter for this test, we just need to verify that they are not modified
-        dsk: Dict[CollectionAddress, Any] = {
-            k: (
+        dsk: Dict[str, Any] = {
+            k.value: (
                 t.erasure_request,
                 [],
                 [[]],
-                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
+                *[
+                    dep.value
+                    for dep in _evaluate_erasure_dependencies(t, erasure_end_nodes)
+                ],
             )
             for k, t in env.items()
         }
-        dsk[TERMINATOR_ADDRESS] = (lambda x: x, *erasure_end_nodes)
-        dsk[ROOT_COLLECTION_ADDRESS] = 0
+        dsk[TERMINATOR_ADDRESS.value] = (
+            lambda x: x,
+            *[node.value for node in erasure_end_nodes],
+        )
+        dsk[ROOT_COLLECTION_ADDRESS.value] = 0
         return dsk
 
     def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
         task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
         update_erasure_mapping_from_cache(dsk, task_resource)
-        (task, retrieved_data, input_list, *erasure_prereqs) = dsk[
-            CollectionAddress("dr_1", "ds_1")
-        ]
+        (task, retrieved_data, input_list, *erasure_prereqs) = dsk["dr_1:ds_1"]
         assert callable(task)
         assert task.__name__ == "erasure_request"
         assert retrieved_data == []
         assert input_list == [[]]
-        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS]
+        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS.value]
 
     def test_update_erasure_mapping_from_cache_with_data(self, dsk, task_resource):
         task_resource.get_all_cached_erasures = lambda: {
             "dr_1:ds_1": 1
         }  # a cache with the results of the ds_1 collection erasure
         update_erasure_mapping_from_cache(dsk, task_resource)
-        assert dsk[CollectionAddress("dr_1", "ds_1")] == 1
+        assert dsk["dr_1:ds_1"] == 1
 
 
 class TestFormatDataUseMapForCaching:

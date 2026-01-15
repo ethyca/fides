@@ -1,5 +1,5 @@
 import { Handle, NodeProps, Position } from "@xyflow/react";
-import { AntButton as Button, AntTypography as Typography } from "fidesui";
+import { Button, Typography } from "fidesui";
 import React from "react";
 
 import styles from "./DatamapSystemNode.module.scss";

@@ -32,6 +32,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery.staged_resource_error import (
     StagedResourceError,
 )
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
@@ -63,7 +64,10 @@ class MonitorFrequency(Enum):
 QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 
-class StagedResourceType(str, Enum):
+from enum import StrEnum
+
+
+class StagedResourceType(StrEnum):
     """
     Enum representing the type of staged resource.
     The resource_type column is a string in the DB, this is just for
@@ -205,7 +209,12 @@ class MonitorConfig(Base):
         server_default="t",
     )
 
-    # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
+    # Many-to-many link to users assigned as stewards for this monitor
+    stewards = relationship(
+        FidesUser,
+        secondary="monitorsteward",
+        lazy="selectin",
+    )
 
     connection_config = relationship(ConnectionConfig)
 

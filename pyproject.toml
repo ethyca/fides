@@ -74,89 +74,96 @@ module = [
 ]
 ignore_missing_imports = true
 
-###########
-## Black ##
-###########
-[tool.black]
-target-version = ["py39"]
+##########
+## Ruff ##
+##########
+[tool.ruff]
+target-version = "py39"
 line-length = 88
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
+src = ["src", "tests", "noxfiles", "scripts"]
 
-    # The following are specific to Black, you probably don't want those.
-    | blib2to3
-    | tests/data
-)/
-'''
-
-###########
-## isort ##
-###########
-[tool.isort]
-known_first_party = ["versioneer"]
-known_third_party = ["nox"]
-profile = "black"
-line_length = 88
-src_paths = ["src", "tests", "noxfiles"]
-
-############
-## Pylint ##
-############
-[tool.pylint.messages_control]
-disable=[
-    "bad-option-value",
-    "broad-except",
-    "broad-exception-raised",
-    "consider-using-f-string",
-    "dangerous-default-value",
-    "duplicate-code",
-    "fixme",
-    "import-error",
-    "import-outside-toplevel",
-    "invalid-name",
-    "line-too-long",
-    "missing-class-docstring",
-    "missing-function-docstring",
-    "missing-module-docstring",
-    "missing-timeout",
-    "no-self-argument",
-    "no-self-use",
-    "raise-missing-from",
-    "too-few-public-methods",
-    "too-many-ancestors",
-    "too-many-arguments",
-    "too-many-locals",
-    "unnecessary-comprehension",
-    "unnecessary-lambda-assignment",
-    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
-    "unused-argument",
+# Exclude directories
+exclude = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "_build",
+    "build",
+    "dist",
+    "tests/data",
+    "src/fides/_version.py",
+    "src/fides/api/alembic/migrations",
 ]
 
-[tool.pylint.reports]
-reports="no"
-output-format="colorized"
+[tool.ruff.lint]
+# Enable specific rule sets that approximate black/isort/pylint behavior
+# See https://docs.astral.sh/ruff/rules/ for details
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+]
 
-[tool.pylint.format]
-max-line-length="88"
+# Disable rules that correspond to pylint's disabled rules or are too strict initially
+ignore = [
+    "E501",    # line-too-long (handled by formatter)
+    "E402",    # module-import-not-at-top-of-file (import-outside-toplevel)
+    "E712",    # true-false-comparison (can be auto-fixed)
+    "E711",    # none-comparison (can be auto-fixed)
+    "E713",    # not-in-test (can be auto-fixed)
+    "E714",    # not-is-test (can be auto-fixed)
+    "E721",    # type-comparison
+    "E722",    # bare-except (broad-except)
+    "E731",    # lambda-assignment (unnecessary-lambda-assignment)
+    "F401",    # unused-import (will be noisy in __init__ files)
+    "F403",    # undefined-local-with-import-star
+    "F405",    # undefined-local-with-import-star-usage
+    "F541",    # f-string-missing-placeholders (can tighten later)
+    "F841",    # unused-variable (can tighten later)
+]
 
-[tool.pylint.basic]
-good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
+# Allow fix for all enabled rules (when `--fix` is provided)
+fixable = ["ALL"]
+unfixable = []
 
-[tool.pylint.ignore]
-ignore="migrations,tests"
+# Allow unused variables when underscore-prefixed
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.pylint.whitelist]
-extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
+[tool.ruff.lint.per-file-ignores]
+# Ignore specific rules in test files
+"tests/**/*.py" = [
+    "ARG",     # Allow unused arguments in tests
+    "B",       # Allow some bugbear rules in tests
+    "PIE",     # Allow some pie rules in tests
+]
+# Ignore import violations in __init__.py files
+"__init__.py" = ["F401", "F403"]
+# Allow some flexibility in scripts and nox files
+"scripts/**/*.py" = ["T201", "T203"]
+"noxfile.py" = ["T201", "T203"]
+"noxfiles/**/*.py" = ["T201", "T203"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["fides", "versioneer"]
+known-third-party = ["nox"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.mccabe]
+# Set complexity threshold to reasonable level
+max-complexity = 15
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Indent with spaces
+indent-style = "space"
+# Like Black, respect magic trailing comma
+skip-magic-trailing-comma = false
+# Like Black, automatically detect line ending
+line-ending = "auto"
 
 ############
 ## Pytest ##
@@ -164,16 +171,14 @@ extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 [tool.pytest.ini_options]
 env = [
   "FIDES__TEST_MODE=true",
-  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute"
+  "FIDES__SECURITY__AUTH_RATE_LIMIT=1000/minute",
+  "PYTHONDONTWRITEBYTECODE=1"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
 addopts = [
-    "--cov=fides",
-    "--cov-branch",
-    "--no-cov-on-fail",
     "-ra",
     "-vv",
     "--disable-pytest-warnings",

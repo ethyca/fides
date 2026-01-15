@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { Page_EventAuditResponse_ } from "~/types/api/models/Page_EventAuditResponse_";
 import { TaxonomyCreate } from "~/types/api/models/TaxonomyCreate";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
@@ -62,6 +63,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     updateTaxonomy: build.mutation<
@@ -76,6 +78,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     deleteTaxonomy: build.mutation<
@@ -83,11 +86,12 @@ const taxonomyApi = baseApi.injectEndpoints({
       { taxonomyType: string; key: string }
     >({
       query: ({ taxonomyType, key }) => ({
-        url: `taxonomies/${taxonomyType}/${key}`,
+        url: `taxonomies/${taxonomyType}/elements/${key}`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, { taxonomyType }) => [
         { type: "Taxonomy", id: taxonomyType },
+        { type: "Taxonomy History", id: taxonomyType },
       ],
     }),
     createCustomTaxonomy: build.mutation<TaxonomyResponse, TaxonomyCreate>({
@@ -107,7 +111,10 @@ const taxonomyApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: () => [{ type: "Taxonomy" }],
+      invalidatesTags: (result, error, { fides_key }) => [
+        { type: "Taxonomy" },
+        { type: "Taxonomy History", id: fides_key },
+      ],
     }),
     deleteCustomTaxonomy: build.mutation<void, string>({
       query: (fides_key) => ({
@@ -115,6 +122,21 @@ const taxonomyApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: () => [{ type: "Taxonomy" }],
+    }),
+    getTaxonomyHistory: build.query<
+      Page_EventAuditResponse_,
+      { fides_key: string; page?: number; size?: number }
+    >({
+      query: ({ fides_key, page, size }) => ({
+        url: `/plus/taxonomies/${fides_key}/history`,
+        params: {
+          page,
+          size,
+        },
+      }),
+      providesTags: (result, error, { fides_key }) => [
+        { type: "Taxonomy History", id: fides_key },
+      ],
     }),
   }),
 });
@@ -129,4 +151,5 @@ export const {
   useCreateCustomTaxonomyMutation,
   useUpdateCustomTaxonomyMutation,
   useDeleteCustomTaxonomyMutation,
+  useGetTaxonomyHistoryQuery,
 } = taxonomyApi;

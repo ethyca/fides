@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import (
+    AwaitingAsyncProcessing,
     AwaitingAsyncTask,
     ClientUnsuccessfulException,
     ConnectionException,
@@ -22,7 +23,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.consent_automation import ConsentAutomation
-from fides.api.models.policy import Policy
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -437,7 +438,9 @@ class TestSaasConnector:
         )
 
         #  Mock adding a new placeholder to the request body for which we don't have a value
-        connector.endpoints["data_management"].requests.update.body = (
+        connector.endpoints[
+            "data_management"
+        ].requests.update.body = (
             '{\n  "unique_id": "<privacy_request_id>", "email": "<test_val>"\n}\n'
         )
 
@@ -819,9 +822,7 @@ class TestSaasConnectorRunConsentRequest:
         saas_example_connection_config,
     ):
         """Can only propagate preferences that have a system wide enforcement level"""
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history_fr_provide_service_frontend_only.save(db)
 
         connector = get_connector(saas_example_connection_config)
@@ -962,9 +963,9 @@ class TestSaasConnectorRunConsentRequest:
 
         assert "No 'opt_in' requests defined" in str(exc)
         db.refresh(privacy_preference_history)
-        assert (
-            privacy_preference_history.affected_system_status == {}
-        ), "Updated to skipped in graph task, not updated here"
+        assert privacy_preference_history.affected_system_status == {}, (
+            "Updated to skipped in graph task, not updated here"
+        )
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(
@@ -1110,6 +1111,23 @@ class TestAsyncConnectors:
     def async_graph(self, saas_example_async_dataset_config, db, privacy_request):
         # Build proper async graph with persisted request tasks
         async_graph = saas_example_async_dataset_config.get_graph()
+        graph = DatasetGraph(async_graph)
+        traversal = Traversal(graph, {"email": "customer-1@example.com"})
+        traversal_nodes = {}
+        end_nodes = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        persist_new_access_request_tasks(
+            db, privacy_request, traversal, traversal_nodes, end_nodes, graph
+        )
+        persist_initial_erasure_request_tasks(
+            db, privacy_request, traversal_nodes, end_nodes, graph
+        )
+
+    @pytest.fixture(scope="function")
+    def async_graph_polling(
+        self, saas_async_polling_example_dataset_config, db, privacy_request
+    ):
+        # Build proper async graph with persisted request tasks for polling tests
+        async_graph = saas_async_polling_example_dataset_config.get_graph()
         graph = DatasetGraph(async_graph)
         traversal = Traversal(graph, {"email": "customer-1@example.com"})
         traversal_nodes = {}
@@ -1306,3 +1324,195 @@ class TestAsyncConnectors:
             )
             == 5
         )
+
+    @mock.patch(
+        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
+    )
+    def test_guard_access_request_with_access_policy(
+        self,
+        mock_create_client,
+        privacy_request,
+        saas_async_polling_example_connection_config,
+        async_graph_polling,
+    ):
+        """
+        Test that guard_access_request allows async access requests to run
+        when the policy has access rules (access request scenario).
+        """
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
+        mock_create_client.return_value = mock.MagicMock()
+
+        # Get access request task
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        # Policy has access rules, so guard should return True and async_retrieve_data should be called
+        with pytest.raises(AwaitingAsyncProcessing):
+            connector.retrieve_data(
+                execution_node,
+                privacy_request.policy,
+                privacy_request,
+                request_task,
+                {},
+            )
+
+    @mock.patch(
+        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
+    )
+    def test_guard_access_request_with_erasure_only_policy(
+        self,
+        mock_create_client,
+        db,
+        privacy_request,
+        saas_async_polling_example_connection_config,
+        async_graph_polling,
+        oauth_client,
+    ):
+        """
+        Test that guard_access_request skips async access requests
+        when the policy has no access rules (erasure-only request scenario).
+        This test ensures coverage of the logger.info and return [] lines.
+        Uses polling async strategy to test the guard clause.
+        """
+        # Create an erasure-only policy (no access rules)
+        erasure_only_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Erasure Only Policy",
+                "key": "erasure_only_policy_test",
+                "client_id": oauth_client.id,
+            },
+        )
+
+        erasure_rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule",
+                "key": "erasure_rule_test",
+                "policy_id": erasure_only_policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+                "client_id": oauth_client.id,
+            },
+        )
+
+        RuleTarget.create(
+            db=db,
+            data={
+                "data_category": "user.name",
+                "rule_id": erasure_rule.id,
+                "client_id": oauth_client.id,
+            },
+        )
+
+        connector: SaaSConnector = get_connector(
+            saas_async_polling_example_connection_config
+        )
+
+        # Get access request task
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        # Verify guard_access_request returns False for erasure-only policy
+        assert connector.guard_access_request(erasure_only_policy) is False
+
+        result = connector.retrieve_data(
+            execution_node,
+            erasure_only_policy,
+            privacy_request,
+            request_task,
+            {},
+        )
+
+        # Should return empty list without calling async_retrieve_data
+        assert result == []
+
+    @mock.patch(
+        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
+    )
+    def test_callback_requests_ignore_guard_clause(
+        self,
+        mock_create_client,
+        db,
+        privacy_request,
+        saas_async_example_connection_config,
+        async_graph,
+        oauth_client,
+    ):
+        """
+        Test that callback requests ignore the guard clause entirely.
+        Even if guard_access_request returns False (erasure-only policy),
+        callback requests should still proceed and raise AwaitingAsyncTask.
+        """
+        # Create an erasure-only policy (no access rules)
+        erasure_only_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Erasure Only Policy Callback Test",
+                "key": "erasure_only_policy_callback_test",
+                "client_id": oauth_client.id,
+            },
+        )
+
+        erasure_rule = Rule.create(
+            db=db,
+            data={
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule Callback Test",
+                "key": "erasure_rule_callback_test",
+                "policy_id": erasure_only_policy.id,
+                "masking_strategy": {
+                    "strategy": "null_rewrite",
+                    "configuration": {},
+                },
+                "client_id": oauth_client.id,
+            },
+        )
+
+        RuleTarget.create(
+            db=db,
+            data={
+                "data_category": "user.name",
+                "rule_id": erasure_rule.id,
+                "client_id": oauth_client.id,
+            },
+        )
+
+        connector: SaaSConnector = get_connector(saas_async_example_connection_config)
+        # Mock the client and its send method to allow async callback flow
+        mock_client = mock.MagicMock()
+        mock_send_response = mock.MagicMock()
+        mock_send_response.json.return_value = {"id": "123"}
+        mock_client.send.return_value = mock_send_response
+        mock_create_client.return_value = mock_client
+
+        # Get access request task
+        request_task = privacy_request.access_tasks.filter(
+            RequestTask.collection_name == "user"
+        ).first()
+        execution_node = ExecutionNode(request_task)
+
+        # Verify guard_access_request returns False for erasure-only policy
+        assert connector.guard_access_request(erasure_only_policy) is False
+
+        # Even though guard_access_request returns False, callback requests
+        # should ignore the guard and always proceed with common requests.
+        connector.retrieve_data(
+            execution_node,
+            erasure_only_policy,
+            privacy_request,
+            request_task,
+            {},
+        )
+
+        # Verify that the async callback flow was triggered (client.send was called)
+        assert mock_client.send.called
