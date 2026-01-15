@@ -1,27 +1,39 @@
 import { NextPage } from "next";
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 
-import FixedLayout from "~/features/common/FixedLayout";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import {
+  ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
+  ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
+} from "~/features/common/nav/routes";
+import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
+import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import { DiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredInfrastructureSystemsTable";
 
-const MonitorResultSystems: NextPage = () => {
-  const router = useRouter();
-  const monitorId = decodeURIComponent(router.query.monitorId as string);
+export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
+  [ActionCenterRoute.ACTIVITY]:
+    ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
+  [ActionCenterRoute.ATTENTION_REQUIRED]:
+    ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
+} as const;
+
+const InfrastructureMonitorResultSystems: NextPage = () => {
+  const params = useParams<{ monitorId: string }>();
+
+  const monitorId = params?.monitorId
+    ? decodeURIComponent(params.monitorId)
+    : undefined;
+  const loading = !monitorId;
 
   return (
-    <FixedLayout title="Action center - Discovered infrastructure systems">
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-      />
-      <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
-    </FixedLayout>
+    <ActionCenterLayout
+      monitorId={monitorId}
+      routeConfig={MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG}
+    >
+      {loading ? null : (
+        <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
+      )}
+    </ActionCenterLayout>
   );
 };
 
-export default MonitorResultSystems;
+export default InfrastructureMonitorResultSystems;
