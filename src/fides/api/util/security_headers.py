@@ -64,7 +64,7 @@ recommended_csp_header_value_for_redoc = re.sub(
         form-action 'self';
         frame-ancestors 'self';
         upgrade-insecure-requests;
-        worker-src: blob:;
+        worker-src blob:;
     """,
 ).strip()
 
