@@ -90,7 +90,8 @@ export interface ChatHistoryEntry {
 }
 
 export interface QuestionResponse {
-  question: string;
+  question: string; // Canonical question (original intent)
+  displayed_as: string | null; // The phrasing shown to user (may vary for freshness)
   answer: string | null;
   answered_by_email: string | null;
   answered_by_display_name: string | null;

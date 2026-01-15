@@ -261,6 +261,7 @@ const SlackIntegrationCard = () => {
         "Coffee or tea?",
         "What's the best thing about working here?",
         "What hobby would you pick up if you had unlimited time?",
+        "Does your organization sell personal information of California residents to third parties, or has it sold such information in the preceding 12 months?",
       ],
     });
 
@@ -635,7 +636,7 @@ const QuestionnaireCard = ({
           {questionnaire.questions.map((q, idx) => (
             <div key={idx} className={styles.qaItem}>
               <Text strong className="block">
-                Q{idx + 1}: {q.question}
+                Q{idx + 1}: {q.displayed_as || q.question}
               </Text>
               {q.answer ? (
                 <Text className="block ml-4">
