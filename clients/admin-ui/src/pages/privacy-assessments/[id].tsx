@@ -22,6 +22,7 @@ import {
   List,
   Divider,
   Badge,
+  Tooltip,
 } from "fidesui";
 import React from "react";
 // TODO: fix this export to be better encapsulated in fidesui
@@ -55,6 +56,7 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
 import { formatIsoLocation, isoStringToEntry } from "fidesui/src/components/data-display/location.utils";
+import { EditableTextBlock } from "./components/EditableTextBlock";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -172,6 +174,51 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [evidenceExpandedSections, setEvidenceExpandedSections] = useState<string[]>([]);
   const [evidenceFilters, setEvidenceFilters] = useState<Record<string, string>>({});
   const [focusedQuestionId, setFocusedQuestionId] = useState<string | null>(null);
+  const [questionsModalOpen, setQuestionsModalOpen] = useState(false);
+  const [selectedSectionKey, setSelectedSectionKey] = useState<string | null>(null);
+
+  // Inline editing state for controller details
+  const [isEditingControllerDetails, setIsEditingControllerDetails] = useState(false);
+  const [editControllerDetails, setEditControllerDetails] = useState({
+    nameOfController: "",
+    subjectTitleOfDPO: "",
+    nameOfControllerContactDPO: "",
+  });
+
+  // Controller details state
+  const [controllerDetails, setControllerDetails] = useState({
+    nameOfController: "Example Corporation",
+    subjectTitleOfDPO: "Data Protection Impact Assessment - Customer Insight AI Module",
+    nameOfControllerContactDPO: "Jane Doe, DPO",
+  });
+
+  // Document content state (replaces form values for editable text blocks)
+  const [documentContent, setDocumentContent] = useState<Record<string, string>>({
+    // Section 1
+    dpiaNeed: "A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling [1]. The processing uses new technologies (AI/ML algorithms) [2] and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms.",
+    // Section 2
+    framework: "GDPR-DPIA",
+    nature: "The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment.",
+    scope: "Names, email addresses, IP addresses, purchase history, and clickstream data.",
+    context: "Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base.",
+    purposes: "",
+    // Section 3
+    stakeholderConsultation: "We will consult with the Data Protection Officer (DPO) and the Information Security team before implementation. Customer feedback will be gathered through opt-in surveys during the initial rollout phase. We will also consult with our data processors (cloud infrastructure provider) to ensure compliance measures are in place. The Legal and Compliance teams will review the processing activities and provide guidance on lawful basis and data subject rights.",
+    // Section 4
+    complianceMeasures: "Lawful basis: Legitimate interests (Article 6(1)(f)) for personalized recommendations to enhance customer experience [1]. The processing achieves the purpose of providing relevant product suggestions, and there is no less intrusive alternative that would achieve the same outcome. Function creep is prevented through strict access controls and regular audits. Data quality is ensured through validation at ingestion points and automated data cleansing processes. Data minimisation is achieved by only processing necessary data fields (purchase history, browsing behavior) [2] and implementing data retention policies (24 months) [3]. Individuals are informed through privacy notices and cookie banners. Data subject rights are supported through a self-service portal for access, rectification, erasure, and objection requests. Processors are contractually bound through Data Processing Agreements (DPAs) with specific security and compliance requirements. International transfers are safeguarded through Standard Contractual Clauses (SCCs) and adequacy decisions where applicable.",
+    // Section 5
+    risks: "",
+    // Section 6
+    measures: "",
+    // Section 7
+    measuresApprovedBy: "",
+    residualRisksApprovedBy: "",
+    dpoAdviceProvided: "",
+    dpoAdviceSummary: "",
+    dpoAdviceAccepted: "",
+    consultationReviewedBy: "",
+    dpiaReviewBy: "",
+  });
 
   // Format region code to display name
   const formatRegionDisplay = (regionCode: string): string => {
@@ -297,7 +344,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   // Get question titles
   const getQuestionTitle = (questionId: string): string => {
     const questionMap: Record<string, string> = {
-      "1": "Why a DPIA is needed",
+      "1": "Identify the need for a DPIA",
       "2": "Describe the processing",
       "3": "Consultation process",
       "4": "Assess necessity and proportionality",
@@ -308,12 +355,150 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     return questionMap[questionId] || `Question ${questionId}`;
   };
 
+  // Helper function to render text with source links
+  const renderTextWithSourceLinks = (text: string, questionId: string) => {
+    const sourcePattern = /\[(\d+)\]/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let sourceIndex = 0;
+
+    while ((match = sourcePattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      const sourceNum = match[1];
+      parts.push(
+        <Button
+          key={`source-${sourceIndex++}`}
+          type="text"
+          style={{
+            padding: "2px 8px",
+            height: "auto",
+            minHeight: "auto",
+            fontSize: 11,
+            fontWeight: 500,
+            color: "#4A6CF7",
+            backgroundColor: "#F0F4FF",
+            border: "1px solid #D6E4FF",
+            borderRadius: 12,
+            lineHeight: 1.2,
+            transition: "all 0.2s ease",
+            verticalAlign: "baseline",
+            margin: "0 2px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#E0E9FF";
+            e.currentTarget.style.transform = "scale(1.05)";
+            e.currentTarget.style.borderColor = "#B8D0FF";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#F0F4FF";
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.borderColor = "#D6E4FF";
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setFocusedQuestionId(questionId);
+            setIsDrawerOpen(true);
+            if (!evidenceExpandedSections.includes(questionId)) {
+              setEvidenceExpandedSections([...evidenceExpandedSections, questionId]);
+            }
+          }}
+        >
+          [{sourceNum}]
+        </Button>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+    return <>{parts}</>;
+  };
+
   const handleExpandAll = () => {
     setExpandedKeys(["1", "2", "3", "4", "5", "6", "7"]);
   };
 
   const handleCollapseAll = () => {
     setExpandedKeys([]);
+  };
+
+  // Questions for each section based on GDPR DPIA template
+  const sectionQuestions: Record<string, string[]> = {
+    "1": [
+      "Why is a DPIA needed for this processing?",
+    ],
+    "2": [
+      "What assessment framework are you using?",
+      "What is the nature of the processing? How will you collect, use, store and delete data? What is the source of the data? Will you be sharing data with anyone? What types of processing identified as likely high risk are involved?",
+      "What is the scope of the processing? What is the nature of the data, and does it include special category or criminal offence data? How much data will you be collecting and using? How often? How long will you keep it? How many individuals are affected? What geographical area does it cover?",
+      "What is the context of the processing? What is the nature of your relationship with the individuals? How much control will they have? Would they expect you to use their data in this way? Do they include children or other vulnerable groups? Are there prior concerns over this type of processing or security flaws?",
+      "What are the purposes of the processing? What do you want to achieve? What is the intended effect on individuals? What are the benefits of the processing – for you, and more broadly?",
+    ],
+    "3": [
+      "How will you consult with relevant stakeholders? When and how will you seek individuals' views – or justify why it's not appropriate to do so? Who else do you need to involve within your organisation? Do you need to ask your processors to assist? Do you plan to consult information security experts, or any other experts?",
+    ],
+    "4": [
+      "What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?",
+    ],
+    "5": [
+      "What is the source of risk? What is the nature of potential impact on individuals? What are the associated compliance and corporate risks? For each risk, what is the likelihood of harm (Remote, possible or probable)? For each risk, what is the severity of harm (Minimal, significant or severe)? What is the overall risk level (Low, medium or high) for each identified risk?",
+    ],
+    "6": [
+      "What additional measures could you take to reduce or eliminate risks identified as medium or high risk? For each risk, what are the options to reduce or eliminate risk? What is the effect on risk (Eliminated, reduced, accepted) for each measure? What is the residual risk (Low, medium, high) after implementing measures? Is the measure approved (Yes/no)?",
+    ],
+    "7": [
+      "Who approved the measures? (Name/date)",
+      "Who approved the residual risks? (Name/date) - If accepting any residual high risk, consult the ICO before going ahead",
+      "Was DPO advice provided? (Name/date) - DPO should advise on compliance, step 6 measures and whether processing can proceed",
+      "What is the summary of DPO advice?",
+      "Was DPO advice accepted or overruled? (Name/date) - If overruled, you must explain your reasons",
+      "Who reviewed consultation responses? (Name/date) - If your decision departs from individuals' views, you must explain your reasons",
+      "Who will keep this DPIA under review? (Name/date) - The DPO should also review ongoing compliance with DPIA",
+    ],
+  };
+
+  const handleOpenQuestions = (sectionKey: string) => {
+    setSelectedSectionKey(sectionKey);
+    setQuestionsModalOpen(true);
+  };
+
+  // Helper to render section title with info icon
+  const renderSectionTitle = (sectionKey: string, title: string, isExpanded: boolean) => {
+    const sectionNumber = sectionKey;
+    return (
+      <Flex align="center" gap="small">
+        <Text strong style={{ fontSize: 16 }}>
+          {sectionNumber}. {title}
+        </Text>
+        <Tooltip title="View questions for this section">
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.Information size={16} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenQuestions(sectionKey);
+            }}
+            style={{
+              padding: "2px 4px",
+              height: "auto",
+              minHeight: "auto",
+              color: palette.FIDESUI_NEUTRAL_500,
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = palette.FIDESUI_MINOS;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = palette.FIDESUI_NEUTRAL_500;
+            }}
+          />
+        </Tooltip>
+      </Flex>
+    );
   };
 
   // Format timestamp for display
@@ -448,8 +633,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   }, [evidenceSearchQuery, evidenceByQuestion]);
 
   const sections = [
-    { key: "1", title: "Identify the need for a DPIA", fields: ["projectOverview", "dpiaNeed"] },
-    { key: "2", title: "Describe the processing", fields: ["projectName", "framework", "nature", "scope", "context", "purposes"] },
+    { key: "1", title: "Identify the need for a DPIA", fields: ["dpiaNeed"] },
+    { key: "2", title: "Describe the processing", fields: ["framework", "nature", "scope", "context", "purposes"] },
     { key: "3", title: "Consultation process", fields: ["stakeholderConsultation"] },
     { key: "4", title: "Assess necessity and proportionality", fields: ["complianceMeasures"] },
     { key: "5", title: "Identify and assess risks", fields: ["risks"] },
@@ -512,25 +697,23 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       const formValues = form.getFieldsValue(true);
 
       // Generate summaries for all completed sections (1, 2, 4) that have initial values
-      // Section 1: projectOverview, dpiaNeed
+      // Section 1: dpiaNeed
       const section1Values = {
-        projectOverview: formValues.projectOverview || "The Customer Insight AI Module is a machine learning system designed to analyze customer purchase history and browsing behavior to generate personalized product recommendations. This project involves automated processing of personal data through AI algorithms to enhance customer experience and increase sales conversion rates.",
         dpiaNeed: formValues.dpiaNeed || "A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling. The processing uses new technologies (AI/ML algorithms) and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms.",
       };
-      if (section1Values.projectOverview || section1Values.dpiaNeed) {
+      if (section1Values.dpiaNeed) {
         generateSummaryForSection("1", section1Values);
       }
 
-      // Section 2: projectName, framework, nature, scope, context, purposes
+      // Section 2: framework, nature, scope, context, purposes
       const section2Values = {
-        projectName: formValues.projectName || "Customer Insight AI Module",
         framework: formValues.framework || "GDPR-DPIA",
         nature: formValues.nature || "The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment.",
         scope: formValues.scope || "Names, email addresses, IP addresses, purchase history, and clickstream data.",
         context: formValues.context || "Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base.",
         purposes: formValues.purposes || "",
       };
-      if (section2Values.projectName || section2Values.framework || section2Values.nature || section2Values.scope || section2Values.context) {
+      if (section2Values.framework || section2Values.nature || section2Values.scope || section2Values.context) {
         generateSummaryForSection("2", section2Values);
       }
 
@@ -943,6 +1126,152 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             </Flex>
           </Flex>
 
+          {/* Controller Details Section - Compact Inline */}
+          <div
+            style={{
+              marginBottom: 20,
+              padding: "10px 14px",
+              backgroundColor: palette.FIDESUI_BG_CORINTH,
+              borderRadius: 6,
+              border: `1px solid ${palette.FIDESUI_NEUTRAL_200}`,
+              position: "relative",
+            }}
+          >
+            <Flex gap="middle" wrap="wrap" align="center" justify="space-between" style={{ fontSize: 13, lineHeight: 1.5 }}>
+              <Flex gap="middle" wrap="wrap" align="center" style={{ flex: 1 }}>
+                <Flex align="center" gap="small">
+                  <Text type="secondary" style={{ fontSize: 12, color: palette.FIDESUI_NEUTRAL_600, whiteSpace: "nowrap" }}>
+                    Controller:
+                  </Text>
+                  {isEditingControllerDetails ? (
+                    <Input
+                      value={editControllerDetails.nameOfController}
+                      onChange={(e) =>
+                        setEditControllerDetails({ ...editControllerDetails, nameOfController: e.target.value })
+                      }
+                      placeholder="Enter controller name"
+                      style={{
+                        fontSize: 13,
+                        padding: "2px 6px",
+                        height: "auto",
+                        minHeight: "auto",
+                        width: 200,
+                      }}
+                    />
+                  ) : (
+                    <Text style={{ color: "#1A1F36", minWidth: 200, display: "inline-block" }}>
+                      {controllerDetails.nameOfController || (
+                        <span style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}>
+                          Enter controller name
+                        </span>
+                      )}
+                    </Text>
+                  )}
+                </Flex>
+                <Divider type="vertical" style={{ height: 14, margin: "0 4px" }} />
+                <Flex align="center" gap="small">
+                  <Text type="secondary" style={{ fontSize: 12, color: palette.FIDESUI_NEUTRAL_600, whiteSpace: "nowrap" }}>
+                    DPO Title:
+                  </Text>
+                  {isEditingControllerDetails ? (
+                    <Input
+                      value={editControllerDetails.subjectTitleOfDPO}
+                      onChange={(e) =>
+                        setEditControllerDetails({ ...editControllerDetails, subjectTitleOfDPO: e.target.value })
+                      }
+                      placeholder="Enter DPO subject/title"
+                      style={{
+                        fontSize: 13,
+                        padding: "2px 6px",
+                        height: "auto",
+                        minHeight: "auto",
+                        width: 300,
+                      }}
+                    />
+                  ) : (
+                    <Text style={{ color: "#1A1F36", minWidth: 300, display: "inline-block" }}>
+                      {controllerDetails.subjectTitleOfDPO || (
+                        <span style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}>
+                          Enter DPO subject/title
+                        </span>
+                      )}
+                    </Text>
+                  )}
+                </Flex>
+                <Divider type="vertical" style={{ height: 14, margin: "0 4px" }} />
+                <Flex align="center" gap="small">
+                  <Text type="secondary" style={{ fontSize: 12, color: palette.FIDESUI_NEUTRAL_600, whiteSpace: "nowrap" }}>
+                    Contact:
+                  </Text>
+                  {isEditingControllerDetails ? (
+                    <Input
+                      value={editControllerDetails.nameOfControllerContactDPO}
+                      onChange={(e) =>
+                        setEditControllerDetails({
+                          ...editControllerDetails,
+                          nameOfControllerContactDPO: e.target.value,
+                        })
+                      }
+                      placeholder="Enter contact name"
+                      style={{
+                        fontSize: 13,
+                        padding: "2px 6px",
+                        height: "auto",
+                        minHeight: "auto",
+                        width: 200,
+                      }}
+                    />
+                  ) : (
+                    <Text style={{ color: "#1A1F36", minWidth: 200, display: "inline-block" }}>
+                      {controllerDetails.nameOfControllerContactDPO || (
+                        <span style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}>
+                          Enter contact name
+                        </span>
+                      )}
+                    </Text>
+                  )}
+                </Flex>
+              </Flex>
+              {isEditingControllerDetails ? (
+                <Flex gap="small" align="center">
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setControllerDetails(editControllerDetails);
+                      setIsEditingControllerDetails(false);
+                    }}
+                    icon={<CheckOutlined />}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setEditControllerDetails(controllerDetails);
+                      setIsEditingControllerDetails(false);
+                    }}
+                    icon={<CloseOutlined />}
+                  >
+                    Cancel
+                  </Button>
+                </Flex>
+              ) : (
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<Icons.Edit size={16} />}
+                  onClick={() => {
+                    setEditControllerDetails(controllerDetails);
+                    setIsEditingControllerDetails(true);
+                  }}
+                  style={{ flexShrink: 0 }}
+                >
+                  Edit
+                </Button>
+              )}
+            </Flex>
+          </div>
+
           <Form form={form} layout="vertical" onValuesChange={handleFormValuesChange}>
           <Collapse
             activeKey={expandedKeys}
@@ -959,15 +1288,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("1") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>1. Identify the need for a DPIA</Text>
+                      {renderSectionTitle("1", "Identify the need for a DPIA", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            1. Identify the need for a DPIA
-                          </Text>
+                          {renderSectionTitle("1", "Identify the need for a DPIA", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -975,7 +1302,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 4 }}>JG</Tag>
                           </Text>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
-                            <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>2/2</span>
+                            <Text strong>Fields:</Text> <span style={{ marginLeft: 4 }}>1/1</span>
                           </Text>
                           <Flex gap="small" align="center" style={{ fontSize: 11, color: palette.FIDESUI_NEUTRAL_600 }}>
                             <div
@@ -1090,49 +1417,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
-                            <Text strong>
-                              Project overview {renderTextWithSources("See evidence [1]", "2")}
-                            </Text>
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                        <Text strong>
+                          Identify the need for a DPIA
+                        </Text>
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                           </Flex>
-                        }
-                        name="projectOverview"
-                        initialValue="The Customer Insight AI Module is a machine learning system designed to analyze customer purchase history and browsing behavior [1] to generate personalized product recommendations. This project involves automated processing of personal data through AI algorithms to enhance customer experience and increase sales conversion rates."
-                      >
-                        <Input.TextArea
-                          rows={4}
-                          placeholder="Explain broadly what the project aims to achieve and what type of processing it involves. You may find it helpful to refer or link to other documents, such as a project proposal."
-                        />
-                      </Form.Item>
-                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
-                        {renderTextWithSources("[1] System inventory data", "2")}
-                      </Text>
-                    </div>
-
-                    <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
-                            <Text strong>
-                              Why a DPIA is needed {renderTextWithSources("See evidence [1] [2]", "1")}
-                            </Text>
-                            <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                          </Flex>
-                        }
-                        name="dpiaNeed"
-                        initialValue="A DPIA is required because this project involves systematic and extensive evaluation of personal aspects relating to natural persons based on automated processing, including profiling [1]. The processing uses new technologies (AI/ML algorithms) [2] and involves processing of personal data on a large scale, including special category data. The automated decision-making aspects and the scale of data processing present potential high risks to individuals' rights and freedoms."
-                      >
-                        <Input.TextArea
-                          rows={4}
+                      <EditableTextBlock
+                        value={documentContent.dpiaNeed}
+                        onChange={(value) => setDocumentContent({ ...documentContent, dpiaNeed: value })}
                           placeholder="Summarise why you identified the need for a DPIA."
-                        />
-                      </Form.Item>
-                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
-                        {renderTextWithSources("[1] GDPR Article 35 requirements [2] AI/ML processing classification", "1")}
-                      </Text>
+                        renderContent={(text) => renderTextWithSourceLinks(text, "1")}
+                        onComment={(selection) => {
+                          // TODO: Open comment modal/thread
+                          console.log("Comment on selection:", selection);
+                        }}
+                        onRequestInput={(selection) => {
+                          // TODO: Open team input request
+                          console.log("Request input for selection:", selection);
+                        }}
+                      />
                     </div>
                   </Space>
               </Space>
@@ -1143,15 +1447,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("2") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>2. Describe the processing</Text>
+                      {renderSectionTitle("2", "Describe the processing", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            2. Describe the processing
-                          </Text>
+                          {renderSectionTitle("2", "Describe the processing", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1272,48 +1574,23 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </Flex>
                 </Card>
 
-                <Form layout="vertical">
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Flex gap="middle" align="flex-start">
-                        <Form.Item
-                          label={
-                            <Flex justify="space-between" align="center">
-                              <Text strong>Project name</Text>
-                              <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
-                            </Flex>
-                          }
-                          name="projectName"
-                          initialValue="Customer Insight AI Module"
-                          style={{ flex: 1 }}
-                        >
-                          <Input />
-                        </Form.Item>
-                        <Form.Item
-                          label={
-                            <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                               <Text strong>Assessment Framework</Text>
                               <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                             </Flex>
-                          }
-                          name="framework"
-                          initialValue="GDPR-DPIA"
-                          style={{ flex: 1 }}
-                        >
-                          <Select
-                            options={[
-                              { value: "GDPR-DPIA", label: "GDPR - Data Protection Impact Assessment" },
-                              { value: "CCPA-PIA", label: "CCPA Privacy Impact Assessment" },
-                            ]}
-                          />
-                        </Form.Item>
-                      </Flex>
+                      <EditableTextBlock
+                        value={documentContent.framework}
+                        onChange={(value) => setDocumentContent({ ...documentContent, framework: value })}
+                        placeholder="Enter assessment framework"
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                      />
                     </div>
 
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                             <Text strong>Nature of processing</Text>
                             <Flex gap="small" align="center">
                               <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
@@ -1324,94 +1601,63 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               </Text>
                             </Flex>
                           </Flex>
-                        }
-                        name="nature"
-                      >
-                        <Input.TextArea
-                          rows={6}
-                          defaultValue="The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment."
+                      <EditableTextBlock
+                        value={documentContent.nature}
+                        onChange={(value) => setDocumentContent({ ...documentContent, nature: value })}
                           placeholder="How will you collect, use, store and delete data? What is the source of the data? Will you be sharing data with anyone? What types of processing identified as likely high risk are involved?"
+                        renderContent={(text) => renderTextWithSourceLinks(text, "2")}
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                         />
-                      </Form.Item>
                     </div>
 
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                             <Text strong>Scope of the processing</Text>
                             <Tag color={CUSTOM_TAG_COLOR.CORINTH} style={{ marginLeft: 8 }}>
                               JG + AI
                             </Tag>
                           </Flex>
-                        }
-                        name="scope"
-                      >
-                        <div>
-                          <Flex gap="small" wrap="wrap" style={{ marginBottom: 12 }}>
-                            <Tag
-                              color={CUSTOM_TAG_COLOR.MARBLE}
-                              closable
-                              onClose={() => {}}
-                            >
-                              Personal Identifiable Information (PII)
-                            </Tag>
-                            <Tag
-                              color={CUSTOM_TAG_COLOR.MARBLE}
-                              closable
-                              onClose={() => {}}
-                            >
-                              Behavioral Data
-                            </Tag>
-                            <Button type="dashed" size="small" icon={<PlusOutlined />}>
-                              Add Category
-                            </Button>
-                          </Flex>
-                          <Input.TextArea
-                            rows={4}
-                            defaultValue="Names, email addresses, IP addresses, purchase history, and clickstream data."
+                      <EditableTextBlock
+                        value={documentContent.scope}
+                        onChange={(value) => setDocumentContent({ ...documentContent, scope: value })}
                             placeholder="What is the nature of the data, and does it include special category or criminal offence data? How much data will you be collecting and using? How often? How long will you keep it? How many individuals are affected? What geographical area does it cover?"
+                        renderContent={(text) => renderTextWithSourceLinks(text, "2")}
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                           />
-                        </div>
-                      </Form.Item>
                     </div>
 
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                             <Text strong>Context of the processing</Text>
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                           </Flex>
-                        }
-                        name="context"
-                      >
-                        <Input.TextArea
-                          rows={4}
-                          defaultValue="Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base."
+                      <EditableTextBlock
+                        value={documentContent.context}
+                        onChange={(value) => setDocumentContent({ ...documentContent, context: value })}
                           placeholder="What is the nature of your relationship with the individuals? How much control will they have? Would they expect you to use their data in this way? Do they include children or other vulnerable groups? Are there prior concerns over this type of processing or security flaws?"
+                        renderContent={(text) => renderTextWithSourceLinks(text, "2")}
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                         />
-                      </Form.Item>
                     </div>
 
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                             <Text strong>Purposes of the processing</Text>
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                           </Flex>
-                        }
-                        name="purposes"
-                      >
-                        <Input.TextArea
-                          rows={4}
+                      <EditableTextBlock
+                        value={documentContent.purposes}
+                        onChange={(value) => setDocumentContent({ ...documentContent, purposes: value })}
                           placeholder="What do you want to achieve? What is the intended effect on individuals? What are the benefits of the processing – for you, and more broadly?"
+                        renderContent={(text) => renderTextWithSourceLinks(text, "2")}
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                         />
-                      </Form.Item>
                     </div>
                   </Space>
-                </Form>
               </Space>
             </Panel>
 
@@ -1420,15 +1666,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("3") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>3. Consultation process</Text>
+                      {renderSectionTitle("3", "Consultation process", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            3. Consultation process
-                          </Text>
+                          {renderSectionTitle("3", "Consultation process", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1538,27 +1782,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   </Flex>
                 </Card>
 
-                <Form layout="vertical">
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                             <Text strong>Stakeholder consultation</Text>
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                           </Flex>
-                        }
-                        name="stakeholderConsultation"
-                        initialValue="We will consult with the Data Protection Officer (DPO) and the Information Security team before implementation. Customer feedback will be gathered through opt-in surveys during the initial rollout phase. We will also consult with our data processors (cloud infrastructure provider) to ensure compliance measures are in place. The Legal and Compliance teams will review the processing activities and provide guidance on lawful basis and data subject rights."
-                      >
-                        <Input.TextArea
-                          rows={6}
+                      <EditableTextBlock
+                        value={documentContent.stakeholderConsultation}
+                        onChange={(value) => setDocumentContent({ ...documentContent, stakeholderConsultation: value })}
                           placeholder="Consider how to consult with relevant stakeholders: describe when and how you will seek individuals' views – or justify why it's not appropriate to do so. Who else do you need to involve within your organisation? Do you need to ask your processors to assist? Do you plan to consult information security experts, or any other experts?"
+                        renderContent={(text) => renderTextWithSourceLinks(text, "3")}
+                        onComment={(selection) => console.log("Comment on selection:", selection)}
+                        onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                         />
-                      </Form.Item>
                     </div>
                   </Space>
-                </Form>
               </Space>
             </Panel>
 
@@ -1567,15 +1806,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("4") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>Assess necessity and proportionality</Text>
+                      {renderSectionTitle("4", "Assess necessity and proportionality", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            4. Assess necessity and proportionality
-                          </Text>
+                          {renderSectionTitle("4", "Assess necessity and proportionality", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1699,28 +1936,28 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <Form layout="vertical">
                   <Space direction="vertical" size="large" style={{ width: "100%" }}>
                     <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                      <Form.Item
-                        label={
-                          <Flex justify="space-between" align="center">
-                            <Text strong>
-                              Compliance and proportionality measures {renderTextWithSources("See evidence [1] [2]", "4")}
-                            </Text>
+                      <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                        <Text strong>
+                          Compliance and proportionality measures
+                        </Text>
                             <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 8 }}>
                               AI
                             </Tag>
                           </Flex>
-                        }
-                        name="complianceMeasures"
-                        initialValue="Lawful basis: Legitimate interests (Article 6(1)(f)) for personalized recommendations to enhance customer experience [1]. The processing achieves the purpose of providing relevant product suggestions, and there is no less intrusive alternative that would achieve the same outcome. Function creep is prevented through strict access controls and regular audits. Data quality is ensured through validation at ingestion points and automated data cleansing processes. Data minimisation is achieved by only processing necessary data fields (purchase history, browsing behavior) [2] and implementing data retention policies (24 months) [3]. Individuals are informed through privacy notices and cookie banners. Data subject rights are supported through a self-service portal for access, rectification, erasure, and objection requests. Processors are contractually bound through Data Processing Agreements (DPAs) with specific security and compliance requirements. International transfers are safeguarded through Standard Contractual Clauses (SCCs) and adequacy decisions where applicable."
-                      >
-                        <Input.TextArea
-                          rows={8}
+                      <EditableTextBlock
+                        value={documentContent.complianceMeasures}
+                        onChange={(value) => setDocumentContent({ ...documentContent, complianceMeasures: value })}
                           placeholder="What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?"
-                        />
-                      </Form.Item>
-                      <Text type="secondary" style={{ fontSize: 11, marginTop: -8, marginBottom: 8, display: "block" }}>
-                        {renderTextWithSources("[1] Legal basis assessment [2] Data classification [3] Retention policy document", "4")}
-                      </Text>
+                        renderContent={(text) => renderTextWithSourceLinks(text, "4")}
+                        onComment={(selection) => {
+                          // TODO: Open comment modal/thread
+                          console.log("Comment on selection:", selection);
+                        }}
+                        onRequestInput={(selection) => {
+                          // TODO: Open team input request
+                          console.log("Request input for selection:", selection);
+                        }}
+                      />
                     </div>
                   </Space>
                 </Form>
@@ -1732,15 +1969,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("5") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>Identify and assess risks</Text>
+                      {renderSectionTitle("5", "Identify and assess risks", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            5. Identify and assess risks
-                          </Text>
+                          {renderSectionTitle("5", "Identify and assess risks", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1763,29 +1998,25 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               }
               key="5"
             >
-              <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Risk assessment</Text>
                           <Flex gap="small">
                             <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                             <Tag color={CUSTOM_TAG_COLOR.MINOS} style={{ marginLeft: 4 }}>AI</Tag>
                           </Flex>
                         </Flex>
-                      }
-                      name="risks"
-                    >
-                      <Input.TextArea
-                        rows={8}
+                    <EditableTextBlock
+                      value={documentContent.risks}
+                      onChange={(value) => setDocumentContent({ ...documentContent, risks: value })}
                         placeholder="Describe source of risk and nature of potential impact on individuals. Include associated compliance and corporate risks as necessary. For each risk, assess the likelihood of harm (Remote, possible or probable) and severity of harm (Minimal, significant or severe) to determine overall risk (Low, medium or high)."
+                      renderContent={(text) => renderTextWithSourceLinks(text, "5")}
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                       />
-                    </Form.Item>
                   </div>
                 </Space>
-              </Form>
             </Panel>
 
             <Panel
@@ -1793,15 +2024,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("6") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>6. Identify measures to reduce risk</Text>
+                      {renderSectionTitle("6", "Identify measures to reduce risk", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            6. Identify measures to reduce risk
-                          </Text>
+                          {renderSectionTitle("6", "Identify measures to reduce risk", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1818,26 +2047,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               }
               key="6"
             >
-              <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Measures to reduce or eliminate risk</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="measures"
-                    >
-                      <Input.TextArea
-                        rows={8}
+                    <EditableTextBlock
+                      value={documentContent.measures}
+                      onChange={(value) => setDocumentContent({ ...documentContent, measures: value })}
                         placeholder="Identify additional measures you could take to reduce or eliminate risks identified as medium or high risk in step 5. For each risk, describe: Options to reduce or eliminate risk, Effect on risk (Eliminated, reduced, accepted), Residual risk (Low, medium, high), and whether the measure is approved (Yes/no)."
+                      renderContent={(text) => renderTextWithSourceLinks(text, "6")}
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
                       />
-                    </Form.Item>
                   </div>
                 </Space>
-              </Form>
             </Panel>
 
             <Panel
@@ -1845,15 +2070,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 <>
                   {expandedKeys.includes("7") ? (
                     <Flex justify="space-between" align="center" style={{ width: "100%", paddingRight: 140 }}>
-                    <Text strong style={{ fontSize: 16 }}>7. Sign off and record outcomes</Text>
+                      {renderSectionTitle("7", "Sign off and record outcomes", true)}
                     </Flex>
                   ) : (
                     <Flex gap="large" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Flex justify="space-between" align="center" style={{ marginBottom: 12, alignItems: "center" }}>
-                          <Text strong style={{ fontSize: 16 }}>
-                            7. Sign off and record outcomes
-                          </Text>
+                          {renderSectionTitle("7", "Sign off and record outcomes", false)}
                         </Flex>
                         <Flex gap="middle" align="center" wrap="wrap" style={{ marginBottom: 8 }}>
                           <Text type="secondary" style={{ fontSize: 11, lineHeight: "16px", display: "inline-flex", alignItems: "center" }}>
@@ -1870,107 +2093,105 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               }
               key="7"
             >
-              <Form layout="vertical">
                 <Space direction="vertical" size="large" style={{ width: "100%" }}>
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Measures approved by</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="measuresApprovedBy"
-                    >
-                      <Input placeholder="Name/date - Integrate actions back into project plan, with date and responsibility for completion" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.measuresApprovedBy}
+                      onChange={(value) => setDocumentContent({ ...documentContent, measuresApprovedBy: value })}
+                      placeholder="Name/date - Integrate actions back into project plan, with date and responsibility for completion"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Residual risks approved by</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="residualRisksApprovedBy"
-                    >
-                      <Input placeholder="Name/date - If accepting any residual high risk, consult the ICO before going ahead" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.residualRisksApprovedBy}
+                      onChange={(value) => setDocumentContent({ ...documentContent, residualRisksApprovedBy: value })}
+                      placeholder="Name/date - If accepting any residual high risk, consult the ICO before going ahead"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>DPO advice provided</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="dpoAdviceProvided"
-                    >
-                      <Input placeholder="Name/date - DPO should advise on compliance, step 6 measures and whether processing can proceed" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.dpoAdviceProvided}
+                      onChange={(value) => setDocumentContent({ ...documentContent, dpoAdviceProvided: value })}
+                      placeholder="Name/date - DPO should advise on compliance, step 6 measures and whether processing can proceed"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Summary of DPO advice</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="dpoAdviceSummary"
-                    >
-                      <Input.TextArea rows={3} />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.dpoAdviceSummary}
+                      onChange={(value) => setDocumentContent({ ...documentContent, dpoAdviceSummary: value })}
+                      placeholder="Enter summary of DPO advice"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>DPO advice accepted or overruled by</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="dpoAdviceAccepted"
-                    >
-                      <Input placeholder="Name/date - If overruled, you must explain your reasons" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.dpoAdviceAccepted}
+                      onChange={(value) => setDocumentContent({ ...documentContent, dpoAdviceAccepted: value })}
+                      placeholder="Name/date - If overruled, you must explain your reasons"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>Consultation responses reviewed by</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="consultationReviewedBy"
-                    >
-                      <Input placeholder="Name/date - If your decision departs from individuals' views, you must explain your reasons" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.consultationReviewedBy}
+                      onChange={(value) => setDocumentContent({ ...documentContent, consultationReviewedBy: value })}
+                      placeholder="Name/date - If your decision departs from individuals' views, you must explain your reasons"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
 
                   <div style={{ backgroundColor: palette.FIDESUI_BG_CORINTH, padding: 16, borderRadius: 8 }}>
-                    <Form.Item
-                      label={
-                        <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                           <Text strong>This DPIA will be kept under review by</Text>
                           <Tag color={CUSTOM_TAG_COLOR.MARBLE} style={{ marginLeft: 8 }}>JG</Tag>
                         </Flex>
-                      }
-                      name="dpiaReviewBy"
-                    >
-                      <Input placeholder="Name/date - The DPO should also review ongoing compliance with DPIA" />
-                    </Form.Item>
+                    <EditableTextBlock
+                      value={documentContent.dpiaReviewBy}
+                      onChange={(value) => setDocumentContent({ ...documentContent, dpiaReviewBy: value })}
+                      placeholder="Name/date - The DPO should also review ongoing compliance with DPIA"
+                      onComment={(selection) => console.log("Comment on selection:", selection)}
+                      onRequestInput={(selection) => console.log("Request input for selection:", selection)}
+                    />
                   </div>
                 </Space>
-              </Form>
             </Panel>
           </Collapse>
           </Form>
@@ -2645,6 +2866,47 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             />
           </div>
         </Space>
+      </Modal>
+
+      {/* Questions Modal */}
+      <Modal
+        title={
+          <Flex align="center" gap="small">
+            <Icons.Information size={20} style={{ color: palette.FIDESUI_MINOS }} />
+            <Text strong style={{ fontSize: 18 }}>
+              {selectedSectionKey ? `${selectedSectionKey}. ${sections.find(s => s.key === selectedSectionKey)?.title}` : "Questions"}
+            </Text>
+          </Flex>
+        }
+        open={questionsModalOpen}
+        onCancel={() => {
+          setQuestionsModalOpen(false);
+          setSelectedSectionKey(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setQuestionsModalOpen(false);
+            setSelectedSectionKey(null);
+          }}>
+            Close
+          </Button>,
+        ]}
+        width={600}
+        styles={{
+          body: {
+            padding: "20px 24px",
+          },
+        }}
+      >
+        {selectedSectionKey && sectionQuestions[selectedSectionKey] && (
+          <div style={{ lineHeight: 1.8 }}>
+            {sectionQuestions[selectedSectionKey].map((question, index) => (
+              <Text key={index} style={{ fontSize: 14, color: "#1A1F36", display: "block", marginBottom: index < sectionQuestions[selectedSectionKey].length - 1 ? 16 : 0 }}>
+                {question}
+              </Text>
+            ))}
+          </div>
+        )}
       </Modal>
     </Layout>
   );
