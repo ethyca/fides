@@ -1,6 +1,8 @@
+import { Result } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
 
+import { useFeatures } from "~/features/common/features";
 import {
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
@@ -16,13 +18,24 @@ export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
     ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
 } as const;
 
+export const HELIOS_ACCESS_ERROR =
+  "Attempting to access monitor results without the required feature flag enabled";
+
 const InfrastructureMonitorResultSystems: NextPage = () => {
+  const {
+    flags: { heliosV2 },
+  } = useFeatures();
   const params = useParams<{ monitorId: string }>();
 
   const monitorId = params?.monitorId
     ? decodeURIComponent(params.monitorId)
     : undefined;
   const loading = !monitorId;
+  const error = !heliosV2 && HELIOS_ACCESS_ERROR;
+
+  if (error) {
+    return <Result status="error" title={error} />;
+  }
 
   return (
     <ActionCenterLayout
