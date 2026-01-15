@@ -106,7 +106,7 @@ const loadEnvironmentVariables = () => {
       process.env.FIDES_PRIVACY_CENTER__GEOLOCATION_API_URL || "",
     OVERLAY_PARENT_ID:
       process.env.FIDES_PRIVACY_CENTER__OVERLAY_PARENT_ID || null,
-    MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || null,
+    MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || "",
     PRIVACY_CENTER_URL:
       process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
       "http://localhost:3000",
