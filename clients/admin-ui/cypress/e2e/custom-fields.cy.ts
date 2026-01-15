@@ -79,13 +79,9 @@ describe("Custom Fields V2", () => {
             .should("be.visible")
             .within(() => {
               // Should not contain the matching taxonomy location
-              cy.contains(
-                VALUE_TYPE_RESOURCE_TYPE_MAP[TaxonomyTypeEnum.DATA_CATEGORY],
-              ).should("not.exist");
+              cy.contains("taxonomy:data category").should("not.exist");
               // Should still contain other locations
-              cy.contains(RESOURCE_TYPE_MAP[LegacyResourceTypes.SYSTEM]).should(
-                "exist",
-              );
+              cy.contains("system:information").should("exist");
             });
         });
     });
