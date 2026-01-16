@@ -534,13 +534,11 @@ def preserve_monitored_collections_in_dataset_merge(
     Build and preserve collections from monitored staged resources for collections that don't exist in upcoming dataset.
 
     This creates collections directly from staged resource data (endpoints and their monitored fields)
-    rather than preserving from customer dataset. This ensures we get the latest monitored data
-    with proper classifications and metadata.
+    ensuring we get the latest monitored data with proper classifications and metadata.
 
     Args:
         monitored_endpoints: List of endpoint staged resources that contain monitored fields
-        customer_dataset: The existing customer dataset (for reference)
-        upcoming_dataset: The new dataset from template (may be missing promoted collections)
+        upcoming_dataset: The new dataset from template
         db: Database session for querying monitored fields
         monitor_config_ids: List of monitor config IDs to search within
 
