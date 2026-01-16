@@ -1,5 +1,5 @@
-type: Added
-description: Added alpha feature flag for Data Protection Assessments feature
+type: Developer Experience
+description: Added alpha feature flag for Data Protection Assessments
 pr: 7232
 labels: []
 
