@@ -756,6 +756,25 @@ def run_privacy_request(
                         privacy_request.save(db=session)
                         return
 
+                    consent_rules = policy.get_rules_for_action(
+                        action_type=ActionType.consent
+                    )
+
+                    if (
+                        privacy_request.finalized_at is None
+                        and consent_rules
+                        and CONFIG.execution.erasure_request_finalization_required
+                    ):
+                        logger.info(
+                            "Marking privacy request '{}' as requires manual finalization.",
+                            privacy_request.id,
+                        )
+                        privacy_request.status = (
+                            PrivacyRequestStatus.requires_manual_finalization
+                        )
+                        privacy_request.save(db=session)
+                        return
+
                     # Finally, mark the request as complete
                     if privacy_request.finalized_at:
                         logger.info(
