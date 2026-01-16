@@ -5,7 +5,7 @@ import {
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
-import PrivacyRequestFormPageClient from "~/components/privacy-request/PrivacyRequestFormPageClient";
+import PrivacyRequestFormPage from "~/components/privacy-request/PrivacyRequestFormPage";
 import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import { NextSearchParams } from "~/types/next";
 
@@ -30,10 +30,7 @@ const PrivacyRequestPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PrivacyRequestLayout>
-        <PrivacyRequestFormPageClient
-          actionIndex={actionIndex}
-          searchParams={searchParams}
-        />
+        <PrivacyRequestFormPage actionIndex={actionIndex} />
       </PrivacyRequestLayout>
     </LoadServerEnvironmentIntoStores>
   );
