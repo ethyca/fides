@@ -6,7 +6,7 @@ import {
 } from "~/app/server-utils";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
-import VerificationPageClient from "~/components/privacy-request/VerificationPageClient";
+import VerificationPage from "~/components/privacy-request/VerificationPage";
 import { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
@@ -30,7 +30,7 @@ const PrivacyRequestVerifyPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PrivacyRequestLayout title="Enter verification code">
-        <VerificationPageClient actionIndex={actionIndex} />
+        <VerificationPage actionIndex={actionIndex} />
       </PrivacyRequestLayout>
     </LoadServerEnvironmentIntoStores>
   );
