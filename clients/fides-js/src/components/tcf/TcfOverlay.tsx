@@ -275,6 +275,7 @@ export const TcfOverlay = () => {
 
       // Set the locale to the best locale
       setCurrentLocale(bestLocale);
+      window.Fides.locale = bestLocale;
 
       const shouldUseEnglish = bestLocale === DEFAULT_LOCALE;
       if (shouldUseEnglish) {

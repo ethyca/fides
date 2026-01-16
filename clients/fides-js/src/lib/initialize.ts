@@ -32,6 +32,7 @@ import {
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
 } from "./cookie";
+import { dispatchLocaleEvent } from "./events";
 import {
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
@@ -369,6 +370,11 @@ export const initialize = async ({
         }
         fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
         searchForElement(modalLinkId).then((foundElement) => {
+          // The overlay normally dispatches the FidesLocaleUpdated event when the locale is first set.
+          // Since we're not rendering the overlay here, we need to dispatch the event manually once the modal link is found.
+          // If we dispatch it earlier, any listeners on the page may not be ready to receive the event yet.
+          dispatchLocaleEvent(i18n.locale);
+
           fidesDebugger("Modal link element found, updating it to show");
           document.body.classList.add("fides-overlay-modal-link-shown");
           foundElement.classList.add("fides-modal-link-shown");

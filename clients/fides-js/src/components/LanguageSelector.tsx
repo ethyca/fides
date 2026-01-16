@@ -6,7 +6,6 @@ import {
   useState,
 } from "preact/hooks";
 
-import type { FidesLocaleEvent } from "../docs/fides-event";
 import { FidesInitOptions } from "../lib/consent-types";
 import {
   DEFAULT_LOCALE,
@@ -17,8 +16,6 @@ import { useI18n } from "../lib/i18n/i18n-context";
 import { GVLContext } from "../lib/tcf/gvl-context";
 import { fetchGvlTranslations } from "../services/api";
 import MenuItem from "./MenuItem";
-
-export const FIDES_LOCALE_UPDATED_EVENT = "FidesLocaleUpdated";
 
 interface LanguageSelectorProps {
   availableLocales: Locale[];
@@ -42,30 +39,6 @@ const LanguageSelector = ({
     setIsOpen(!isOpen);
   };
 
-  /**
-   * Dispatch the FidesLocaleUpdated event to notify listeners of locale changes
-   */
-  const dispatchLocaleEvent = (locale: string) => {
-    if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
-      const perfMark = performance?.mark?.("FidesLocaleUpdated");
-      const timestamp = perfMark?.startTime;
-      const event: FidesLocaleEvent = new CustomEvent(
-        FIDES_LOCALE_UPDATED_EVENT,
-        {
-          detail: {
-            locale,
-            timestamp,
-          },
-          bubbles: true,
-        },
-      );
-      window.dispatchEvent(event);
-      fidesDebugger(
-        `Dispatched FidesLocaleUpdated event for locale: ${locale} (${timestamp?.toFixed(2)}ms)`,
-      );
-    }
-  };
-
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
       if (isTCF) {
@@ -83,7 +56,6 @@ const LanguageSelector = ({
             availableLocales || [DEFAULT_LOCALE],
           );
           setCurrentLocale(locale);
-          dispatchLocaleEvent(locale);
           fidesDebugger(`Fides locale updated to ${locale}`);
         } else {
           // eslint-disable-next-line no-console
@@ -91,7 +63,6 @@ const LanguageSelector = ({
         }
       } else {
         setCurrentLocale(locale);
-        dispatchLocaleEvent(locale);
         fidesDebugger(`Fides locale updated to ${locale}`);
       }
     }
