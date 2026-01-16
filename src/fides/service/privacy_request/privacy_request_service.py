@@ -966,8 +966,7 @@ def queue_privacy_request(
     )
 
     try:
-        # TEMP: Uncomment to test scheduling failure UI
-        # raise Exception("Simulated scheduling failure for testing")
+        task = run_privacy_request.apply_async(
         task = run_privacy_request.apply_async(
             queue=DSR_QUEUE_NAME,
             kwargs={

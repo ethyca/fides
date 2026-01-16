@@ -1234,7 +1234,7 @@ def run_webhooks_and_report_status(
             privacy_request.cache_failed_checkpoint_details(current_step)
             return False
         except PydanticValidationError as exc:
-            error_message = f"Webhook '{webhook.key}' returned an invalid response format"
+            error_message = f"Webhook '{webhook.key}' returned an invalid response format: {str(exc)}"
             logger.error(
                 "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
                 privacy_request.id,
