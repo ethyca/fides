@@ -126,7 +126,6 @@
       <h2>Consent Modal Link</h2>
       <pre><button id="fides-modal-link"></button></pre>
       <script>
-        // Update label on locale change and initialization
         window.addEventListener("FidesLocaleUpdated", () => {
           document.getElementById("fides-modal-link").textContent =
             Fides.getModalLinkLabel();

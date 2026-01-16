@@ -139,19 +139,10 @@ export interface Fides {
    * ```html
    * <button id="fides-modal-link" class="footer__link"></button>
    * <script>
-   *   const setFidesModalLinkLabel = () => {
+   *   window.addEventListener("FidesLocaleUpdated", () => {
    *     document.getElementById("fides-modal-link").textContent =
    *       Fides.getModalLinkLabel();
-   *   };
-   *
-   *   // Update label on locale change and initialization
-   *   window.addEventListener("FidesLocaleUpdated", setFidesModalLinkLabel);
-   *   window.addEventListener("FidesInitialized", setFidesModalLinkLabel);
-   *
-   *   // Set immediately if already initialized
-   *   if (Fides.initialized) {
-   *     setFidesModalLinkLabel();
-   *   }
+   *   });
    * </script>
    * ```
    */
