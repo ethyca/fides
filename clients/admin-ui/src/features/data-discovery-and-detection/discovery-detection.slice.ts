@@ -5,6 +5,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
+  EditableMonitorConfig,
   MonitorConfig,
   MonitorFrequency,
   Page_MonitorStatusResponse_,
@@ -116,7 +117,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Discovery Monitor Configs"],
     }),
-    putDiscoveryMonitor: build.mutation<MonitorConfig, MonitorConfig>({
+    putDiscoveryMonitor: build.mutation<MonitorConfig, EditableMonitorConfig>({
       query: (body) => ({
         method: "PUT",
         url: `/plus/discovery-monitor`,
