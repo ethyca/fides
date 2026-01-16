@@ -891,6 +891,9 @@ class PrivacyRequestService:
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
 
 
+SCHEDULING_DATASET_NAME = "Privacy request scheduling"
+
+
 def _handle_scheduling_failure(
     privacy_request_id: str,
     error_message: str,
@@ -911,7 +914,7 @@ def _handle_scheduling_failure(
             privacy_request.add_error_execution_log(
                 db,
                 connection_key=None,
-                dataset_name="Privacy request scheduling",
+                dataset_name=SCHEDULING_DATASET_NAME,
                 collection_name=None,
                 message=error_message,
                 action_type=privacy_request.policy.get_action_type(),
@@ -925,27 +928,41 @@ def _handle_scheduling_failure(
             )
 
 
-def _log_scheduling_success(privacy_request_id: str) -> None:
-    """Log a successful privacy request scheduling.
+def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
+    """Log a success only if there was a previous scheduling failure.
 
-    Creates an ExecutionLog entry for visibility in the activity timeline,
-    which will clear any previous scheduling error styling in the UI.
+    This clears the error styling in the UI activity timeline when a retry succeeds.
     """
     from fides.api.api.deps import (  # pylint: disable=cyclic-import
         get_autoclose_db_session as get_db,
     )
 
     with get_db() as db:
-        privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
-        if privacy_request:
-            privacy_request.add_success_execution_log(
-                db,
-                connection_key=None,
-                dataset_name="Privacy request scheduling",
-                collection_name=None,
-                message="Privacy request successfully queued for processing",
-                action_type=privacy_request.policy.get_action_type(),
+        # Check if the most recent scheduling log is an error
+        latest_scheduling_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request_id,
+                ExecutionLog.dataset_name == SCHEDULING_DATASET_NAME,
             )
+            .order_by(ExecutionLog.created_at.desc())
+            .first()
+        )
+
+        if (
+            latest_scheduling_log
+            and latest_scheduling_log.status == ExecutionLogStatus.error
+        ):
+            privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+            if privacy_request:
+                privacy_request.add_success_execution_log(
+                    db,
+                    connection_key=None,
+                    dataset_name=SCHEDULING_DATASET_NAME,
+                    collection_name=None,
+                    message="Privacy request successfully queued for processing",
+                    action_type=privacy_request.policy.get_action_type(),
+                )
 
 
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -976,8 +993,8 @@ def queue_privacy_request(
         )
         cache_task_tracking_key(privacy_request_id, task.task_id)
 
-        # Add success execution log to clear any previous scheduling error in the UI
-        _log_scheduling_success(privacy_request_id)
+        # Clear any previous scheduling failure in the activity timeline
+        _clear_scheduling_failure_if_exists(privacy_request_id)
 
         return task.task_id
     except Exception as exc:
