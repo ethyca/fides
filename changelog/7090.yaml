@@ -1,0 +1,7 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Policy conditional dependencies model.
+pr: 7090 # PR number
+labels: ["db-migration"] # Optional: ["high-risk", "db-migration"]
