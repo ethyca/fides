@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Set
 import networkx
 from loguru import logger
 from networkx import NetworkXNoCycle
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, defer
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
@@ -266,11 +266,19 @@ def persist_new_access_request_tasks(
     logger.info(
         "Creating access request tasks for privacy request {}.", privacy_request.id
     )
+    logger.info("Building access networkx digraph with {} nodes", len(traversal_nodes))
     graph: networkx.DiGraph = build_access_networkx_digraph(
         traversal_nodes, end_nodes, traversal
     )
+    logger.info("Networkx digraph built, performing topological sort")
 
-    for node in list(networkx.topological_sort(graph)):
+    sorted_nodes = list(networkx.topological_sort(graph))
+    logger.info("Topological sort complete. Creating {} RequestTask objects", len(sorted_nodes))
+
+    for idx, node in enumerate(sorted_nodes):
+        if idx > 0 and idx % 1000 == 0:
+            logger.info("Created {} / {} request tasks", idx, len(sorted_nodes))
+
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
         ):
@@ -290,6 +298,7 @@ def persist_new_access_request_tasks(
             },
         )
 
+    logger.info("All request tasks created, fetching root task")
     root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.access)
 
     return [root_task]
@@ -376,7 +385,11 @@ def update_erasure_tasks_with_access_data(
         privacy_request.id,
     )
 
-    for request_task in privacy_request.erasure_tasks:
+    # Defer large columns except _data_for_erasures which we're setting
+    erasure_tasks_query = RequestTask.query_with_deferred_data(
+        privacy_request.erasure_tasks, defer_erasure_data=False
+    )
+    for request_task in erasure_tasks_query:
         # I pull access data saved in the format suitable for erasures
         # off of the access nodes to be saved onto the erasure nodes.
         retrieved_task_data = _get_data_for_erasures(
@@ -463,12 +476,22 @@ def run_access_request(
         )
     else:
         try:
+            logger.info(
+                "Starting Traversal object creation with {} collections",
+                len(graph.nodes)
+            )
             traversal: Traversal = Traversal(graph, identity, policy=policy)
+            logger.info("Traversal object created, starting graph traversal")
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
             end_nodes: List[CollectionAddress] = traversal.traverse(
                 traversal_nodes, collect_tasks_fn
+            )
+            logger.info(
+                "Graph traversal complete. Found {} traversal nodes and {} end nodes",
+                len(traversal_nodes),
+                len(end_nodes)
             )
 
             # Snapshot manual task field instances for this privacy request
@@ -477,9 +500,11 @@ def run_access_request(
             )
 
             # Save Access Request Tasks to the database
+            logger.info("Starting to persist access request tasks to database")
             ready_tasks = persist_new_access_request_tasks(
                 session, privacy_request, traversal, traversal_nodes, end_nodes, graph
             )
+            logger.info("Access request tasks persisted successfully")
 
             if (
                 policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -621,11 +646,13 @@ def get_existing_ready_tasks(
     of creating new ones
     """
     ready: List[RequestTask] = []
-    request_tasks: Query = privacy_request.get_tasks_by_action(action_type)
-    if request_tasks.count():
-        incomplete_tasks: Query = request_tasks.filter(
+    request_task_count: int = privacy_request.get_tasks_by_action(action_type).count()
+    if request_task_count > 0:
+        # Defer loading large JSON columns to prevent OOM when reprocessing DSRs with many tasks
+        base_query = privacy_request.get_tasks_by_action(action_type).filter(
             RequestTask.status.notin_(COMPLETED_EXECUTION_LOG_STATUSES)
         )
+        incomplete_tasks: Query = RequestTask.query_with_deferred_data(base_query)
 
         for task in incomplete_tasks:
             # Checks if both upstream tasks are complete and the task is not currently in-flight (if using workers)

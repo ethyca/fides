@@ -36,6 +36,7 @@ from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
+from fides.api.util.dsr_memory_tracker import memory_tracking_context
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
 
@@ -321,8 +322,28 @@ def run_access_node(
                                 graph_task.execution_node.input_keys, upstream_results
                             )
                         )
-                        # Run the main access function
-                        graph_task.access_request(*upstream_access_data)
+
+                        # Memory tracking for access task
+                        with memory_tracking_context(
+                            task_name="run_access_node",
+                            task_id=self.request.id,
+                            privacy_request_id=privacy_request_id,
+                            privacy_request_task_id=privacy_request_task_id,
+                            collection_address=request_task.collection_address,
+                            session=session,
+                        ) as metrics:
+                            # Run the main access function
+                            graph_task.access_request(*upstream_access_data)
+
+                            # Capture metrics
+                            access_data = request_task.get_access_data() or []
+                            metrics.rows = len(access_data)
+                            from fides.api.util.dsr_memory_tracker import MemoryTracker
+
+                            tracker = MemoryTracker()
+                            metrics.payload_size_bytes = tracker.estimate_payload_size(
+                                access_data
+                            )
 
         queue_downstream_tasks_with_retries(
             self,
@@ -457,7 +478,21 @@ def run_consent_node(
                         # data stored in access_data)
                         access_data = upstream_results[0].get_access_data() or []
 
-                    graph_task.consent_request(access_data[0] if access_data else {})
+                    # Memory tracking for consent task
+                    with memory_tracking_context(
+                        task_name="run_consent_node",
+                        task_id=self.request.id,
+                        privacy_request_id=privacy_request_id,
+                        privacy_request_task_id=privacy_request_task_id,
+                        collection_address=request_task.collection_address,
+                        session=session,
+                    ) as metrics:
+                        graph_task.consent_request(
+                            access_data[0] if access_data else {}
+                        )
+
+                        # Consent tasks typically don't process many rows
+                        metrics.rows = 1 if access_data else 0
 
     queue_downstream_tasks_with_retries(
         self,

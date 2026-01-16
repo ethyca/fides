@@ -85,6 +85,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
+from fides.api.util.dsr_memory_tracker import log_memory_snapshot
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -507,11 +508,24 @@ def run_privacy_request(
                     )
                     .all()
                 )
+
+                log_memory_snapshot("after_dataset_load", session=session, extra_data={
+                    "privacy_request_id": privacy_request_id,
+                    "phase": "graph_creation",
+                    "dataset_count": len(datasets)
+                })
+
                 dataset_graphs = [
                     dataset_config.get_graph()
                     for dataset_config in datasets
                     if not dataset_config.connection_config.disabled
                 ]
+
+                log_memory_snapshot("after_graph_build", session=session, extra_data={
+                    "privacy_request_id": privacy_request_id,
+                    "phase": "graph_creation",
+                    "graph_count": len(dataset_graphs)
+                })
 
                 # Add manual task artificial graphs to dataset graphs
                 # Only include manual tasks with access or erasure configs
@@ -521,6 +535,15 @@ def run_privacy_request(
                 dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
+
+                # Get collection count for logging
+                collection_count = sum(len(g.collections) for g in dataset_graphs)
+                log_memory_snapshot("after_graph_merge", session=session, extra_data={
+                    "privacy_request_id": privacy_request_id,
+                    "phase": "graph_creation",
+                    "total_collections": collection_count,
+                    "total_graphs": len(dataset_graphs)
+                })
 
                 # Add success log for dataset configuration
                 privacy_request.add_success_execution_log(
@@ -575,7 +598,6 @@ def run_privacy_request(
 
                 # Upload Access Results CHECKPOINT
                 access_result_urls: list[str] = []
-                raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
                     (
                         policy.get_rules_for_action(action_type=ActionType.access)
@@ -591,9 +613,26 @@ def run_privacy_request(
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access
                     )
+
+                    # Only load access results if we're actually going to use them
+                    raw_access_results: dict = privacy_request.get_raw_access_results()
+
+                    log_memory_snapshot("before_result_filtering", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "post_traversal",
+                        "result_collection_count": len(raw_access_results)
+                    })
+
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
+
+                    log_memory_snapshot("after_result_filtering", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "post_traversal",
+                        "filtered_collection_count": len(filtered_access_results)
+                    })
+
                     access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
@@ -603,6 +642,12 @@ def run_privacy_request(
                         manual_webhook_access_results,
                         fides_connector_datasets,
                     )
+
+                    log_memory_snapshot("after_upload_and_package", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "post_traversal",
+                        "result_urls_count": len(access_result_urls)
+                    })
 
                 # Erasure CHECKPOINT
                 if policy.get_rules_for_action(
