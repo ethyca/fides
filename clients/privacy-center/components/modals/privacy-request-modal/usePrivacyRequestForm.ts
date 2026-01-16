@@ -227,7 +227,6 @@ const usePrivacyRequestForm = ({
           } else {
             onClose();
           }
-          return;
         } else if (
           (isVerificationRequired &&
             data.succeeded.length &&
@@ -248,7 +247,6 @@ const usePrivacyRequestForm = ({
           title:
             "An unhandled error occurred while creating your privacy request",
         });
-        return;
       }
     },
     validationSchema: Yup.object().shape({

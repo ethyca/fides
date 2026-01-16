@@ -1,19 +1,17 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import PrivacyRequestFormPage from "./PrivacyRequestFormPage";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+
+import PrivacyRequestFormPage from "./PrivacyRequestFormPage";
 
 type PrivacyRequestFormPageClientProps = {
   actionIndex: string;
-  searchParams: URLSearchParams | null;
 };
 
 const PrivacyRequestFormPageClient = ({
   actionIndex,
-  searchParams,
 }: PrivacyRequestFormPageClientProps) => {
   const parsedActionIndex = parseInt(actionIndex, 10);
   const [isVerificationRequired, setIsVerificationRequired] =
@@ -29,14 +27,13 @@ const PrivacyRequestFormPageClient = ({
     }
   }, [getIdVerificationConfigQuery]);
 
-  if (isNaN(parsedActionIndex)) {
+  if (Number.isNaN(parsedActionIndex)) {
     return null;
   }
 
   return (
     <PrivacyRequestFormPage
       actionIndex={parsedActionIndex}
-      searchParams={searchParams}
       isVerificationRequired={isVerificationRequired}
     />
   );

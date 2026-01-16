@@ -16,13 +16,10 @@ export const generateMetadata = getPageMetadata;
  * Full-page view showing request submitted confirmation
  */
 const PrivacyRequestSuccessPage = async ({
-  params,
   searchParams,
 }: {
-  params: Promise<{ actionIndex: string }>;
   searchParams: NextSearchParams;
 }) => {
-  const { actionIndex } = await params;
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });

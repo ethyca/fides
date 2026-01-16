@@ -29,7 +29,7 @@ const VerificationPageClient = ({
     }
   }, [parsedActionIndex, router]);
 
-  if (isNaN(parsedActionIndex) || !privacyRequestId) {
+  if (Number.isNaN(parsedActionIndex) || !privacyRequestId) {
     return null;
   }
 

@@ -5,8 +5,8 @@ import {
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
-import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import PrivacyRequestFormPageClient from "~/components/privacy-request/PrivacyRequestFormPageClient";
+import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;

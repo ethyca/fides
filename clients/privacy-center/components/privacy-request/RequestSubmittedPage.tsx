@@ -23,7 +23,12 @@ const RequestSubmittedPage = () => {
         Thanks for your request. A member of our team will review and be in
         contact with you shortly.
       </Text>
-      <Button type="primary" onClick={handleContinue} block style={{ marginTop: "24px" }}>
+      <Button
+        type="primary"
+        onClick={handleContinue}
+        block
+        style={{ marginTop: "24px" }}
+      >
         Continue
       </Button>
     </Flex>

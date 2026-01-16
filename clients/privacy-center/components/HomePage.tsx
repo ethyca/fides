@@ -12,7 +12,7 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import sanitizeHTML from "~/common/sanitize-html";
@@ -133,7 +133,7 @@ const HomePage: NextPage = () => {
     router.push(`/privacy-request/${index}`);
   };
 
-  const content: any = [];
+  const content: ReactNode[] = [];
 
   config.actions.forEach((action, index) => {
     content.push(

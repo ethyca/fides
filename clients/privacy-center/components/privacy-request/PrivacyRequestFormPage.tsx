@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 import { useConfig } from "~/features/common/config.slice";
@@ -10,13 +10,11 @@ import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestFo
 
 type PrivacyRequestFormPageProps = {
   actionIndex: number;
-  searchParams: URLSearchParams | null;
   isVerificationRequired: boolean;
 };
 
 const PrivacyRequestFormPage = ({
   actionIndex,
-  searchParams,
   isVerificationRequired,
 }: PrivacyRequestFormPageProps) => {
   const config = useConfig();
