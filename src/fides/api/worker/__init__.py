@@ -22,9 +22,7 @@ from fides.api.tasks import (
 
 
 def start_worker(
-    queues: Optional[str] = None,
-    exclude_queues: Optional[str] = None,
-    concurrency: int = 2,
+    queues: Optional[str] = None, exclude_queues: Optional[str] = None
 ) -> None:
     """
     Start a Celery worker. Optionally provide a list of queues for the worker to consume,
@@ -75,7 +73,7 @@ def start_worker(
             "--quiet",  # Disable Celery startup banner
             "worker",
             "--loglevel=info",
-            f"--concurrency={concurrency}",
+            "--concurrency=2",
             f"--queues={worker_queues}",
         ]
     )

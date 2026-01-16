@@ -19,6 +19,7 @@ import signal
 import threading
 import time
 import tracemalloc
+from celery import current_task, current_app
 from datetime import datetime
 from functools import wraps
 from types import FrameType, TracebackType
@@ -99,7 +100,6 @@ def _capture_heap_dump() -> None:
 
         # Section 0: Task Context (optional - only if running in Celery)
         try:
-            from celery import current_task  # type: ignore
 
             if current_task and hasattr(current_task, "request"):
                 task_name = getattr(current_task, "name", "unknown")
@@ -138,8 +138,6 @@ def _capture_heap_dump() -> None:
 
                 # Show all active tasks on this worker (concurrency check)
                 try:
-                    from celery import current_app  # type: ignore
-
                     # Get the worker's current state
                     inspector = current_app.control.inspect(timeout=0.5)
                     if inspector:
