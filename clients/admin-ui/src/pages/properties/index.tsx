@@ -1,22 +1,14 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { ChakraText as Text } from "fidesui";
+import { Typography } from "fidesui";
 import type { NextPage } from "next";
-import { useCallback, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { PropertiesTable } from "~/features/properties/PropertiesTable";
+import PropertiesTable from "~/features/properties/PropertiesTable";
+import usePropertiesTable from "~/features/properties/usePropertiesTable";
 
 const PropertiesPage: NextPage = () => {
-  const [error, setError] = useState<
-    FetchBaseQueryError | SerializedError | null
-  >(null);
-
-  const onError = useCallback((e: FetchBaseQueryError | SerializedError) => {
-    setError(e);
-  }, []);
+  const { error } = usePropertiesTable();
 
   if (error) {
     return (
@@ -30,13 +22,13 @@ const PropertiesPage: NextPage = () => {
   return (
     <Layout title="Properties">
       <PageHeader heading="Properties">
-        <Text fontSize="sm" width={{ base: "100%", lg: "60%" }}>
+        <Typography.Text>
           Review and manage your properties below. Properties are the locations
           you have configured for consent management such as a website or mobile
           app.
-        </Text>
+        </Typography.Text>
       </PageHeader>
-      <PropertiesTable onError={onError} />
+      <PropertiesTable />
     </Layout>
   );
 };

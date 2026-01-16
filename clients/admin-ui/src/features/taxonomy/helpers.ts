@@ -49,6 +49,8 @@ export const taxonomyTypeToResourceType = (taxonomyType: string) => {
       return LegacyResourceTypes.DATA_SUBJECT;
     case TaxonomyTypeEnum.DATA_USE:
       return LegacyResourceTypes.DATA_USE;
+    case TaxonomyTypeEnum.SYSTEM_GROUP:
+      return "system group";
 
     default:
       // Non-legacy taxonomy types can be any string

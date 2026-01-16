@@ -398,9 +398,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
@@ -442,9 +442,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
@@ -488,9 +488,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == []
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == []
 
         db.refresh(permissions)

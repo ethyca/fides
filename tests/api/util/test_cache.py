@@ -167,7 +167,6 @@ class TestGetReadOnlyCache:
             patch("fides.api.util.cache.FidesopsRedis") as MockRedis,
             patch("fides.api.util.cache.get_cache") as mock_get_cache,
         ):
-
             mock_redis_instance = MagicMock()
             MockRedis.return_value = mock_redis_instance
 
@@ -199,7 +198,6 @@ class TestGetReadOnlyCache:
             patch("fides.api.util.cache.FidesopsRedis") as MockRedis,
             patch("fides.api.util.cache.get_cache") as mock_get_cache,
         ):
-
             mock_redis_instance = MagicMock()
             MockRedis.return_value = mock_redis_instance
 

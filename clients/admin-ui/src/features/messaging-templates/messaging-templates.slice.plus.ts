@@ -1,4 +1,5 @@
 import { baseApi } from "common/api.slice";
+import { sortBy } from "lodash";
 
 import {
   MessagingTemplateCreate,
@@ -19,6 +20,14 @@ const messagingTemplatesPlusApi = baseApi.injectEndpoints({
         url: `plus/messaging/templates/summary`,
         params,
       }),
+      transformResponse: (
+        response: Page_MessagingTemplateWithPropertiesSummary_,
+      ) => {
+        return {
+          ...response,
+          items: sortBy(response.items, "id"),
+        };
+      },
       providesTags: () => ["Property-Specific Messaging Templates"],
     }),
     // Full update existing template
