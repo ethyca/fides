@@ -6,8 +6,8 @@ import {
   ACTION_CENTER_ACTIVITY_ROUTE,
   ACTION_CENTER_ROUTE,
 } from "~/features/common/nav/routes";
-import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import MonitorList from "~/features/data-discovery-and-detection/action-center/MonitorList";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";

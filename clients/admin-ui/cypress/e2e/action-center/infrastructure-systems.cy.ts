@@ -1,7 +1,4 @@
-import {
-  stubPlus,
-  stubTaxonomyEntities,
-} from "cypress/support/stubs";
+import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 
@@ -38,4 +35,3 @@ describe("Action center infrastructure systems", () => {
     });
   });
 });
-

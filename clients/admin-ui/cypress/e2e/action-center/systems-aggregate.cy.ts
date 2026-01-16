@@ -269,10 +269,14 @@ describe("Action center system aggregate results", () => {
       stubPlus(true);
       stubWebsiteMonitor();
       stubTaxonomyEntities();
-      cy.intercept("GET", "/api/v1/plus/discovery-monitor/system-aggregate-results*", {
-        statusCode: 500,
-        body: { detail: "Internal server error" },
-      }).as("getSystemAggregateResultsError");
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/system-aggregate-results*",
+        {
+          statusCode: 500,
+          body: { detail: "Internal server error" },
+        },
+      ).as("getSystemAggregateResultsError");
     });
 
     it("should display error page when fetching system aggregate results fails", () => {
