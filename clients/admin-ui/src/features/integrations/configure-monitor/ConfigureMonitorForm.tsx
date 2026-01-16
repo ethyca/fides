@@ -9,6 +9,10 @@ import { useEffect, useState } from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
+import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
@@ -105,7 +109,8 @@ const ConfigureMonitorForm = ({
   const llmClassifierFeatureEnabled = !!flags.heliosV2;
 
   const isInfrastructureMonitor =
-    integrationOption.identifier === ConnectionType.OKTA;
+    getMonitorType(integrationOption.identifier as ConnectionType) ===
+    MONITOR_TYPES.INFRASTRUCTURE;
 
   /**
    * Show the LLM classifier option if the feature is enabled and the monitor is not an infrastructure monitor.
