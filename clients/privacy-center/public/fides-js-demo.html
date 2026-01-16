@@ -140,6 +140,12 @@
 
       <h2>Locale</h2>
       <pre id="consent-locale"></pre>
+      <script>
+        window.addEventListener("FidesLocaleUpdated", (evt) => {
+          document.getElementById("consent-locale").textContent =
+            evt.detail.locale;
+        });
+      </script>
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
@@ -185,13 +191,6 @@
         // Pretty-print the fides geolocation object and add it to the page.
         document.getElementById("consent-geolocation").textContent =
           JSON.stringify(Fides.geolocation, null, 2);
-
-        // Pretty-print the fides geolocation object and add it to the page.
-        document.getElementById("consent-locale").textContent = JSON.stringify(
-          Fides.locale,
-          null,
-          2,
-        );
 
         // Pretty-print the fides options object and add it to the page.
         document.getElementById("consent-options").textContent = JSON.stringify(
