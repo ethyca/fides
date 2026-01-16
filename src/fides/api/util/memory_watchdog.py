@@ -18,6 +18,8 @@ import os
 import signal
 import threading
 import time
+import tracemalloc
+from datetime import datetime
 from functools import wraps
 from types import FrameType, TracebackType
 from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
@@ -66,12 +68,15 @@ def _capture_heap_dump() -> None:
     threshold is exceeded, just before task termination.
 
     The report includes:
-    - Process memory stats (RSS, VMS)
+    - Process memory stats (RSS, VMS, memory percentage)
+    - Optional: Celery task context (if running in Celery)
+    - Optional: tracemalloc stats (if enabled)
+    - Optional: SQLAlchemy identity map size (if database session available)
     - Top 10 object type counts (spot anomalies like 100k of a custom class)
     - Garbage collector stats (uncollectable objects indicate leaks)
 
-    All exceptions are caught to ensure heap dump failures don't prevent graceful
-    task termination.
+    All enhancements are optional and fail gracefully. This works for any Python
+    process (Celery tasks, scripts, background jobs, etc.).
     """
     try:
         # Force garbage collection to get accurate counts
@@ -83,30 +88,156 @@ def _capture_heap_dump() -> None:
             "MEMORY DUMP",
             "=" * 80,
             "",
+            f"Timestamp: {datetime.utcnow().isoformat()}Z",
+            f"PID:       {os.getpid()}",
+            "",
         ]
+
+        # Section 0: Task Context (optional - only if running in Celery)
+        try:
+            from celery import current_task  # type: ignore
+
+            if current_task and hasattr(current_task, "request"):
+                task_name = getattr(current_task, "name", "unknown")
+                task_id = getattr(current_task.request, "id", "unknown")
+                queue_name = "unknown"
+
+                if hasattr(current_task.request, "delivery_info"):
+                    delivery_info = current_task.request.delivery_info
+                    queue_name = delivery_info.get("routing_key", "unknown")
+
+                # Extract task arguments if available (for DSR tasks)
+                task_args = ""
+                task_kwargs = ""
+                if hasattr(current_task.request, "args"):
+                    task_args = str(current_task.request.args)[:100]  # Limit length
+                if hasattr(current_task.request, "kwargs"):
+                    # Redact sensitive data, just show keys
+                    kwargs_dict = current_task.request.kwargs
+                    if isinstance(kwargs_dict, dict):
+                        task_kwargs = str(list(kwargs_dict.keys()))[:100]
+
+                report_lines.extend(
+                    [
+                        "TASK CONTEXT",
+                        "-" * 80,
+                        f"Task Name:  {task_name}",
+                        f"Task ID:    {task_id}",
+                        f"Queue:      {queue_name}",
+                    ]
+                )
+                if task_args:
+                    report_lines.append(f"Args:       {task_args}")
+                if task_kwargs:
+                    report_lines.append(f"Kwargs:     {task_kwargs}")
+                report_lines.append("")
+
+                # Show all active tasks on this worker (concurrency check)
+                try:
+                    from celery import current_app  # type: ignore
+
+                    # Get the worker's current state
+                    inspector = current_app.control.inspect(timeout=0.5)
+                    if inspector:
+                        active_tasks = inspector.active()
+                        if active_tasks:
+                            # active_tasks is a dict: {worker_name: [list of tasks]}
+                            total_active = sum(
+                                len(tasks) for tasks in active_tasks.values()
+                            )
+                            report_lines.extend(
+                                [
+                                    "CONCURRENT TASKS",
+                                    "-" * 80,
+                                    f"Active tasks on worker: {total_active}",
+                                ]
+                            )
+
+                            # Show brief info about each active task
+                            for worker_name, tasks in active_tasks.items():
+                                for task in tasks[:5]:  # Limit to 5 for brevity
+                                    task_name_short = task.get("name", "unknown").split(
+                                        "."
+                                    )[-1]
+                                    task_id_short = task.get("id", "unknown")[:8]
+                                    report_lines.append(
+                                        f"  - {task_name_short} [{task_id_short}...]"
+                                    )
+                                if len(tasks) > 5:
+                                    report_lines.append(
+                                        f"  ... and {len(tasks) - 5} more"
+                                    )
+                            report_lines.append("")
+                except Exception as exc:
+                    # Inspector may fail or timeout - don't let it break the dump
+                    logger.debug("Failed to get concurrent task info: {}", exc)
+
+        except (ImportError, AttributeError, RuntimeError):
+            # Not in Celery context or Celery not available - that's fine
+            pass
 
         # Section 1: Process Memory Stats
         try:
             process = psutil.Process()
             mem_info = process.memory_info()
+            mem_percent = _system_memory_percent()
+            cgroup_in_use = _cgroup_memory_percent() is not None
+
             report_lines.extend(
                 [
                     "PROCESS MEMORY STATS",
                     "-" * 80,
                     f"RSS (Resident Set Size):  {mem_info.rss / 1024 / 1024:.1f} MiB",
                     f"VMS (Virtual Memory):     {mem_info.vms / 1024 / 1024:.1f} MiB",
+                    f"Memory Percent:           {mem_percent:.1f}%",
+                    f"Using cgroup metrics:     {cgroup_in_use}",
                     "",
                 ]
             )
         except Exception as exc:
             logger.debug("Failed to get process memory stats: {}", exc)
 
-        # Section 2: Object Type Counts (most actionable for finding leaks)
-        type_stats = objgraph.most_common_types(limit=10)
+        # Section 2: tracemalloc Stats (optional - only if enabled)
+        try:
+            if tracemalloc.is_tracing():
+                current, peak = tracemalloc.get_traced_memory()
+                report_lines.extend(
+                    [
+                        "TRACEMALLOC STATS",
+                        "-" * 80,
+                        f"Current:  {current / 1024 / 1024:.1f} MiB",
+                        f"Peak:     {peak / 1024 / 1024:.1f} MiB",
+                        "",
+                    ]
+                )
+        except Exception as exc:
+            logger.debug("Failed to get tracemalloc stats: {}", exc)
+
+        # Section 3: SQLAlchemy Identity Map (optional - only if session available)
+        try:
+            from fides.api.api.deps import get_autoclose_db_session  # type: ignore
+
+            with get_autoclose_db_session() as session:
+                if hasattr(session, "identity_map"):
+                    identity_map_size = len(session.identity_map)
+                    report_lines.extend(
+                        [
+                            "SQLALCHEMY SESSION STATE",
+                            "-" * 80,
+                            f"Identity Map Size:  {identity_map_size:,} objects",
+                            "",
+                        ]
+                    )
+        except (ImportError, AttributeError, Exception) as exc:
+            # SQLAlchemy not available or no session - that's fine
+            logger.debug("Failed to get SQLAlchemy stats: {}", exc)
+
+        # Section 4: Object Type Counts (most actionable for finding leaks)
+        type_stats = objgraph.most_common_types(limit=20)  # Increased from 10 to 20
 
         report_lines.extend(
             [
-                "OBJECT TYPE COUNTS (Top 10)",
+                "OBJECT TYPE COUNTS (Top 20)",
                 "-" * 80,
             ]
         )
@@ -122,7 +253,38 @@ def _capture_heap_dump() -> None:
 
         report_lines.append("")
 
-        # Section 3: Garbage Collector Stats
+        # Section 4a: Application-Specific Objects (cheap targeted counts)
+        # These use objgraph.count() which is very fast - O(1) dictionary lookups
+        try:
+            app_object_counts = {
+                "Row": objgraph.count("Row"),  # SQLAlchemy query results
+                "RowProxy": objgraph.count("RowProxy"),
+                "RequestTask": objgraph.count("RequestTask"),
+                "PrivacyRequest": objgraph.count("PrivacyRequest"),
+                "GraphTask": objgraph.count("GraphTask"),
+                "ExecutionNode": objgraph.count("ExecutionNode"),
+                "CollectionAddress": objgraph.count("CollectionAddress"),
+            }
+
+            # Only show if any are found
+            found_objects = {k: v for k, v in app_object_counts.items() if v > 0}
+            if found_objects:
+                report_lines.extend(
+                    [
+                        "APPLICATION-SPECIFIC OBJECTS",
+                        "-" * 80,
+                    ]
+                )
+                max_name_len = max(len(name) for name in found_objects.keys())
+                for obj_name, count in sorted(
+                    found_objects.items(), key=lambda x: x[1], reverse=True
+                ):
+                    report_lines.append(f"{obj_name:<{max_name_len}}  {count:>10,}")
+                report_lines.append("")
+        except Exception as exc:
+            logger.debug("Failed to get application object counts: {}", exc)
+
+        # Section 5: Garbage Collector Stats
         gc_count = gc.get_count()
 
         report_lines.extend(
@@ -335,6 +497,11 @@ def memory_limiter(
                 raise
             finally:
                 watchdog.stop()
+                # Aggressive memory cleanup after task completion to prevent accumulation
+                # This is critical for workers processing many tasks or large graphs
+                import gc
+                gc.collect()  # Force garbage collection
+                gc.collect()  # Run twice to catch circular references
 
         return wrapper  # type: ignore[return-value]
 

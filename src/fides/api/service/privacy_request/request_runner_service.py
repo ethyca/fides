@@ -465,6 +465,18 @@ def run_privacy_request(
             if privacy_request.status == PrivacyRequestStatus.duplicate:
                 return
 
+            # CRITICAL: If resuming from a checkpoint, aggressively clean memory first
+            # This helps clear any accumulated baseline from previous runs before loading graph
+            if resume_step:
+                logger.info(
+                    "Resuming from checkpoint - forcing garbage collection to clear accumulated memory"
+                )
+                import gc
+                gc.collect()
+                gc.collect()
+                # Also clear SQLAlchemy session identity map
+                session.expunge_all()
+
             logger.info("Dispatching privacy request")
             privacy_request.start_processing(session)
 
@@ -508,69 +520,95 @@ def run_privacy_request(
                 )
 
             try:
+                # CRITICAL OPTIMIZATION: Skip graph loading if resuming from a late checkpoint
+                # Graph is only needed for:
+                # - Creating access tasks (access checkpoint)
+                # - Creating erasure tasks (erasure checkpoint)
+                # - Filtering access results (upload_access checkpoint)
+                # For later checkpoints, tasks are already created and results already filtered
+                skip_graph_loading = False
+                if resume_step and resume_step in [
+                    # These checkpoints are AFTER all graph-dependent operations
+                    CurrentStep.finalize_erasure,
+                    CurrentStep.consent,
+                    CurrentStep.finalize_consent,
+                    CurrentStep.email_post_send,
+                    CurrentStep.post_webhooks,
+                    CurrentStep.finalization,
+                ]:
+                    logger.info(
+                        "Skipping graph loading - resuming from late checkpoint '{}' which doesn't require graph",
+                        resume_step,
+                    )
+                    skip_graph_loading = True
+
                 # Track memory during graph creation (can be significant with 11,000+ collections)
                 from fides.api.util.dsr_memory_tracker import log_memory_snapshot
 
-                log_memory_snapshot("before_dataset_load", session=session, extra_data={
-                    "privacy_request_id": privacy_request_id,
-                    "phase": "graph_creation"
-                })
+                if not skip_graph_loading:
+                    log_memory_snapshot("before_dataset_load", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "graph_creation"
+                    })
 
-                # Eager load connection_config and ctl_dataset to avoid N+1 queries
-                datasets = (
-                    session.query(DatasetConfig)
-                    .options(
-                        selectinload(DatasetConfig.connection_config),
-                        selectinload(DatasetConfig.ctl_dataset),
+                    # Eager load connection_config and ctl_dataset to avoid N+1 queries
+                    datasets = (
+                        session.query(DatasetConfig)
+                        .options(
+                            selectinload(DatasetConfig.connection_config),
+                            selectinload(DatasetConfig.ctl_dataset),
+                        )
+                        .all()
                     )
-                    .all()
-                )
 
-                log_memory_snapshot("after_dataset_load", session=session, extra_data={
-                    "privacy_request_id": privacy_request_id,
-                    "phase": "graph_creation",
-                    "dataset_count": len(datasets)
-                })
+                    log_memory_snapshot("after_dataset_load", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "graph_creation",
+                        "dataset_count": len(datasets)
+                    })
 
-                dataset_graphs = [
-                    dataset_config.get_graph()
-                    for dataset_config in datasets
-                    if not dataset_config.connection_config.disabled
-                ]
+                    dataset_graphs = [
+                        dataset_config.get_graph()
+                        for dataset_config in datasets
+                        if not dataset_config.connection_config.disabled
+                    ]
 
-                log_memory_snapshot("after_graph_build", session=session, extra_data={
-                    "privacy_request_id": privacy_request_id,
-                    "phase": "graph_creation",
-                    "graph_count": len(dataset_graphs)
-                })
+                    log_memory_snapshot("after_graph_build", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "graph_creation",
+                        "graph_count": len(dataset_graphs)
+                    })
 
-                # Add manual task artificial graphs to dataset graphs
-                # Only include manual tasks with access or erasure configs
-                manual_task_graphs = create_manual_task_artificial_graphs(
-                    session, config_types=[ActionType.access, ActionType.erasure]
-                )
-                dataset_graphs.extend(manual_task_graphs)
+                    # Add manual task artificial graphs to dataset graphs
+                    # Only include manual tasks with access or erasure configs
+                    manual_task_graphs = create_manual_task_artificial_graphs(
+                        session, config_types=[ActionType.access, ActionType.erasure]
+                    )
+                    dataset_graphs.extend(manual_task_graphs)
 
-                dataset_graph = DatasetGraph(*dataset_graphs)
+                    dataset_graph = DatasetGraph(*dataset_graphs)
 
-                # Get collection count for logging
-                collection_count = sum(len(g.collections) for g in dataset_graphs)
-                log_memory_snapshot("after_graph_merge", session=session, extra_data={
-                    "privacy_request_id": privacy_request_id,
-                    "phase": "graph_creation",
-                    "total_collections": collection_count,
-                    "total_graphs": len(dataset_graphs)
-                })
+                    # Get collection count for logging
+                    collection_count = sum(len(g.collections) for g in dataset_graphs)
+                    log_memory_snapshot("after_graph_merge", session=session, extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": "graph_creation",
+                        "total_collections": collection_count,
+                        "total_graphs": len(dataset_graphs)
+                    })
 
-                # Add success log for dataset configuration
-                privacy_request.add_success_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Dataset reference validation",
-                    collection_name=None,
-                    message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                )
+                    # Add success log for dataset configuration
+                    privacy_request.add_success_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset reference validation",
+                        collection_name=None,
+                        message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+                else:
+                    # Skipped graph loading - set to None, will only be needed if we hit access checkpoint
+                    dataset_graph = None
 
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value
@@ -615,7 +653,6 @@ def run_privacy_request(
 
                 # Upload Access Results CHECKPOINT
                 access_result_urls: list[str] = []
-                raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
                     (
                         policy.get_rules_for_action(action_type=ActionType.access)
@@ -631,6 +668,9 @@ def run_privacy_request(
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access
                     )
+
+                    # Only load access results if we're actually going to use them
+                    raw_access_results: dict = privacy_request.get_raw_access_results()
 
                     # Track memory before result processing
                     from fides.api.util.dsr_memory_tracker import log_memory_snapshot

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Set
 import networkx
 from loguru import logger
 from networkx import NetworkXNoCycle
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, defer
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
@@ -385,7 +385,11 @@ def update_erasure_tasks_with_access_data(
         privacy_request.id,
     )
 
-    for request_task in privacy_request.erasure_tasks:
+    # Defer large columns except _data_for_erasures which we're setting
+    erasure_tasks_query = RequestTask.query_with_deferred_data(
+        privacy_request.erasure_tasks, defer_erasure_data=False
+    )
+    for request_task in erasure_tasks_query:
         # I pull access data saved in the format suitable for erasures
         # off of the access nodes to be saved onto the erasure nodes.
         retrieved_task_data = _get_data_for_erasures(
@@ -642,11 +646,13 @@ def get_existing_ready_tasks(
     of creating new ones
     """
     ready: List[RequestTask] = []
-    request_tasks: Query = privacy_request.get_tasks_by_action(action_type)
-    if request_tasks.count():
-        incomplete_tasks: Query = request_tasks.filter(
+    request_task_count: int = privacy_request.get_tasks_by_action(action_type).count()
+    if request_task_count > 0:
+        # Defer loading large JSON columns to prevent OOM when reprocessing DSRs with many tasks
+        base_query = privacy_request.get_tasks_by_action(action_type).filter(
             RequestTask.status.notin_(COMPLETED_EXECUTION_LOG_STATUSES)
         )
+        incomplete_tasks: Query = RequestTask.query_with_deferred_data(base_query)
 
         for task in incomplete_tasks:
             # Checks if both upstream tasks are complete and the task is not currently in-flight (if using workers)
