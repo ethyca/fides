@@ -2,9 +2,11 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy.orm import Query, Session, selectinload
 from starlette.responses import StreamingResponse
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -1152,8 +1154,6 @@ def _process_privacy_request_restart(
             privacy_request.id,
             exc,
         )
-        from fastapi import HTTPException
-        from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
