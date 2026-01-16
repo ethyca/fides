@@ -85,6 +85,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
+from fides.api.util.dsr_memory_tracker import log_memory_snapshot
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -331,16 +332,6 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     manual_data_access_results: ManualWebhookResults,
     fides_connector_datasets: set[str],
 ) -> list[str]:
-    """
-    Process and upload access results, including package generation.
-
-    This can be memory-intensive with large result sets due to:
-    - Result filtering by data category
-    - HTML report generation
-    - ZIP package creation
-    - File uploads to storage
-    """
-    from fides.api.util.dsr_memory_tracker import log_memory_snapshot
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
     # Remove manual webhook attachments and request task attachments from the list of attachments
@@ -465,18 +456,6 @@ def run_privacy_request(
             if privacy_request.status == PrivacyRequestStatus.duplicate:
                 return
 
-            # CRITICAL: If resuming from a checkpoint, aggressively clean memory first
-            # This helps clear any accumulated baseline from previous runs before loading graph
-            if resume_step:
-                logger.info(
-                    "Resuming from checkpoint - forcing garbage collection to clear accumulated memory"
-                )
-                import gc
-                gc.collect()
-                gc.collect()
-                # Also clear SQLAlchemy session identity map
-                session.expunge_all()
-
             logger.info("Dispatching privacy request")
             privacy_request.start_processing(session)
 
@@ -541,9 +520,6 @@ def run_privacy_request(
                         resume_step,
                     )
                     skip_graph_loading = True
-
-                # Track memory during graph creation (can be significant with 11,000+ collections)
-                from fides.api.util.dsr_memory_tracker import log_memory_snapshot
 
                 if not skip_graph_loading:
                     log_memory_snapshot("before_dataset_load", session=session, extra_data={
@@ -671,9 +647,6 @@ def run_privacy_request(
 
                     # Only load access results if we're actually going to use them
                     raw_access_results: dict = privacy_request.get_raw_access_results()
-
-                    # Track memory before result processing
-                    from fides.api.util.dsr_memory_tracker import log_memory_snapshot
 
                     log_memory_snapshot("before_result_filtering", session=session, extra_data={
                         "privacy_request_id": privacy_request_id,

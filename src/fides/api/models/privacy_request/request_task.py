@@ -209,18 +209,6 @@ class RequestTask(WorkerTask, Base):
 
         Returns:
             Query with deferred large columns
-
-        Example:
-            # Defer all large columns
-            query = RequestTask.query_with_deferred_data(
-                db.query(RequestTask).filter(RequestTask.status == ExecutionLogStatus.pending)
-            )
-
-            # Don't defer erasure data if you need to update it
-            query = RequestTask.query_with_deferred_data(
-                db.query(RequestTask).filter(...),
-                defer_erasure_data=False
-            )
         """
         # Always defer these columns - they're large and rarely needed for task orchestration
         query = query.options(
