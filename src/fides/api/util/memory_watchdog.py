@@ -28,6 +28,9 @@ import objgraph  # type: ignore
 import psutil  # type: ignore
 from loguru import logger
 
+from fides.api.api.deps import get_autoclose_db_session  # type: ignore
+from fides.config.config_proxy import ConfigProxy
+
 F = TypeVar("F", bound=Callable[..., Any])
 
 
@@ -39,10 +42,8 @@ def get_memory_watchdog_enabled() -> bool:
         bool: True if memory_watchdog_enabled is enabled, False otherwise (defaults to False)
     """
     try:
-        from fides.api.api.deps import get_autoclose_db_session as get_db
-        from fides.config.config_proxy import ConfigProxy
 
-        with get_db() as db:
+        with get_autoclose_db_session() as db:
             config_proxy = ConfigProxy(db)
             # ConfigProxy returns None when no config record exists, so we must handle None explicitly
             value = getattr(config_proxy.execution, "memory_watchdog_enabled")
@@ -77,7 +78,7 @@ def _capture_heap_dump() -> None:
 
     All exceptions are caught to ensure heap dump failures don't prevent graceful
     task termination.
-    
+
     All enhancements are optional and fail gracefully. This works for any Python
     process (Celery tasks, scripts, background jobs, etc.).
     """
@@ -218,8 +219,6 @@ def _capture_heap_dump() -> None:
 
         # Section 3: SQLAlchemy Identity Map (optional - only if session available)
         try:
-            from fides.api.api.deps import get_autoclose_db_session  # type: ignore
-
             with get_autoclose_db_session() as session:
                 if hasattr(session, "identity_map"):
                     identity_map_size = len(session.identity_map)
@@ -500,11 +499,6 @@ def memory_limiter(
                 raise
             finally:
                 watchdog.stop()
-                # Aggressive memory cleanup after task completion to prevent accumulation
-                # This is critical for workers processing many tasks or large graphs
-                import gc
-                gc.collect()  # Force garbage collection
-                gc.collect()  # Run twice to catch circular references
 
         return wrapper  # type: ignore[return-value]
 
