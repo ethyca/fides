@@ -6,14 +6,17 @@ from deepdiff import DeepDiff
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource, StagedResourceAncestor
+from fides.api.models.detection_discovery.core import (
+    MonitorConfig,
+    StagedResource,
+    StagedResourceAncestor,
+)
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import ConnectionConfig
 from fides.api.util.saas_util import replace_dataset_placeholders
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 
 def _get_fields(field: dict[str, Any]) -> list[dict[str, Any]]:
@@ -163,6 +166,7 @@ def _merge_collection(
 
     return merged_collection
 
+
 # Normalize stored and upcoming datasets to have the same complete structure as customer dataset
 # This ensures consistent field comparison by using the same Pydantic model serialization
 def normalize_dataset(
@@ -174,10 +178,9 @@ def normalize_dataset(
         logger.warning(f"{dataset_name} normalization failed validation: {e}")
         return None
     except Exception as e:
-        logger.warning(
-            f"{dataset_name} normalization failed with unknown error: {e}"
-        )
+        logger.warning(f"{dataset_name} normalization failed with unknown error: {e}")
         return None
+
 
 def merge_datasets(
     customer_dataset: dict[str, Any],
@@ -188,7 +191,6 @@ def merge_datasets(
     """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
     stored_dataset_copy = copy.deepcopy(stored_dataset)
     upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
-
 
     normalized_stored_dataset = normalize_dataset(stored_dataset_copy, "stored")
     normalized_upcoming_dataset = normalize_dataset(upcoming_dataset_copy, "upcoming")
@@ -257,15 +259,19 @@ def _get_endpoint_urns_with_monitored_fields(
     # Find all field resources that are monitored for these monitor configs
     # Then get their ancestor URNs (which will be endpoint URNs) using StagedResourceAncestor
     # This gives us endpoints that contain at least one monitored field
-    monitored_fields_query = select(StagedResourceAncestor.ancestor_urn).where(
-        StagedResourceAncestor.descendant_urn.in_(
-            select(StagedResource.urn).where(
-                (StagedResource.monitor_config_id.in_(monitor_config_ids))
-                & (StagedResource.resource_type == "Field")
-                & (StagedResource.diff_status == "monitored")
+    monitored_fields_query = (
+        select(StagedResourceAncestor.ancestor_urn)
+        .where(
+            StagedResourceAncestor.descendant_urn.in_(
+                select(StagedResource.urn).where(
+                    (StagedResource.monitor_config_id.in_(monitor_config_ids))
+                    & (StagedResource.resource_type == "Field")
+                    & (StagedResource.diff_status == "monitored")
+                )
             )
         )
-    ).distinct()
+        .distinct()
+    )
 
     result = db.execute(monitored_fields_query)
     return set(result.scalars().all())
@@ -410,26 +416,28 @@ def _get_monitored_fields_by_endpoint(
     return fields_by_endpoint
 
 
-def _extract_auto_classified_data_categories(classifications: Optional[list[dict[str, Any]]]) -> list[str]:
+def _extract_auto_classified_data_categories(
+    classifications: Optional[list[dict[str, Any]]],
+) -> list[str]:
     """
     Extract data categories from auto-classified results.
-    
+
     Args:
         classifications: List of classification objects with 'label' field containing data categories
-        
+
     Returns:
         List of data category labels from classifications
     """
     if not classifications:
         return []
-    
+
     auto_classified_categories: list[str] = []
     for classification in classifications:
         if isinstance(classification, dict) and "label" in classification:
             label = classification["label"]
             if label and isinstance(label, str):
                 auto_classified_categories.append(label)
-    
+
     return auto_classified_categories
 
 
@@ -453,17 +461,19 @@ def _build_field_from_staged_resource(field_resource: StagedResource) -> dict[st
 
     # Add data categories (combine user-assigned and auto-classified)
     data_categories: list[str] = []
-    
+
     # Start with user-assigned categories (these take precedence)
     if field_resource.user_assigned_data_categories:
         data_categories.extend(field_resource.user_assigned_data_categories)
-    
+
     # Add auto-classified categories that aren't already present
-    auto_classified_categories = _extract_auto_classified_data_categories(field_resource.classifications or [])
+    auto_classified_categories = _extract_auto_classified_data_categories(
+        field_resource.classifications or []
+    )
     for category in auto_classified_categories:
         if category not in data_categories:
             data_categories.append(category)
-    
+
     # Only add data_categories field if we have any categories
     if data_categories:
         field["data_categories"] = data_categories
@@ -473,16 +483,15 @@ def _build_field_from_staged_resource(field_resource: StagedResource) -> dict[st
         field["data_uses"] = field_resource.user_assigned_data_uses
 
     # Add data type from meta if available
-    if hasattr(field_resource, 'meta') and field_resource.meta:
+    if hasattr(field_resource, "meta") and field_resource.meta:
         if isinstance(field_resource.meta, dict) and "data_type" in field_resource.meta:
-            field["fides_meta"]= {"data_type": field_resource.meta["data_type"]}
+            field["fides_meta"] = {"data_type": field_resource.meta["data_type"]}
 
     return field
 
 
 def _build_collection_from_staged_resources(
-    endpoint: StagedResource,
-    monitored_fields: list[StagedResource]
+    endpoint: StagedResource, monitored_fields: list[StagedResource]
 ) -> dict[str, Any]:
     """
     Build a dataset collection from an endpoint and its monitored fields.

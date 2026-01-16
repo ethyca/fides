@@ -711,7 +711,9 @@ class ConnectionService:
                 # Get monitor config IDs for this connection
                 monitor_configs = MonitorConfig.filter(
                     db=self.db,
-                    conditions=(MonitorConfig.connection_config_id == connection_config.id),
+                    conditions=(
+                        MonitorConfig.connection_config_id == connection_config.id
+                    ),
                 ).all()
                 monitor_config_ids = [mc.key for mc in monitor_configs]
 

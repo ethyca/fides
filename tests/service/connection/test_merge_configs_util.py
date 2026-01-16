@@ -1,13 +1,16 @@
 """Tests for merge_configs_util functions."""
 
-import copy
 from typing import Any, Dict, List
 
 import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.detection_discovery.core import MonitorConfig, StagedResource
+from fides.api.models.detection_discovery.core import (
+    MonitorConfig,
+    StagedResource,
+    StagedResourceAncestor,
+)
 from fides.api.schemas.saas.saas_config import (
     ClientConfig,
     ConnectorParam,
@@ -18,7 +21,8 @@ from fides.api.schemas.saas.saas_config import (
     SaaSRequestMap,
 )
 from fides.service.connection.merge_configs_util import (
-    get_endpoint_resources,
+    _build_field_from_staged_resource,
+    _extract_auto_classified_data_categories,
     merge_saas_config_with_monitored_resources,
     preserve_monitored_collections_in_dataset_merge,
 )
@@ -268,12 +272,174 @@ class TestMergeSaaSConfigWithMonitoredResources:
         assert custom_endpoint.requests.update.method == "PUT"
 
 
+class TestExtractAutoClassifiedDataCategories:
+    """Test _extract_auto_classified_data_categories function."""
+
+    def test_extract_with_valid_classifications(self):
+        """Test extracting categories from valid classifications."""
+        classifications = [
+            {"label": "user.contact.email", "confidence": 0.95},
+            {"label": "user.name", "confidence": 0.88},
+            {"label": "system.operations", "confidence": 0.75},
+        ]
+
+        result = _extract_auto_classified_data_categories(classifications)
+
+        assert result == ["user.contact.email", "user.name", "system.operations"]
+
+    def test_extract_with_empty_classifications(self):
+        """Test extracting categories from empty classifications."""
+        result = _extract_auto_classified_data_categories([])
+        assert result == []
+
+    def test_extract_with_none_classifications(self):
+        """Test extracting categories from None classifications."""
+        result = _extract_auto_classified_data_categories(None)
+        assert result == []
+
+    def test_extract_filters_invalid_entries(self):
+        """Test that invalid entries are filtered out."""
+        classifications = [
+            {"label": "user.contact.email", "confidence": 0.95},  # Valid
+            {"confidence": 0.88},  # Missing label
+            {"label": "", "confidence": 0.75},  # Empty label
+            {"label": None, "confidence": 0.65},  # None label
+            {"label": 123, "confidence": 0.55},  # Non-string label
+            "invalid_entry",  # Not a dict
+        ]
+
+        result = _extract_auto_classified_data_categories(classifications)
+
+        assert result == ["user.contact.email"]
+
+class TestBuildFieldFromStagedResource:
+    """Test _build_field_from_staged_resource function."""
+
+    def test_build_field_with_user_assigned_categories_only(self):
+        """Test building field with only user-assigned categories."""
+        field_resource = StagedResource(
+            name="email_field",
+            urn="test:endpoint:email_field",
+            resource_type="Field",
+            user_assigned_data_categories=["user.contact.email"],
+            classifications=None,
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "email_field"
+        assert result["data_categories"] == ["user.contact.email"]
+
+    def test_build_field_with_auto_classified_categories_only(self):
+        """Test building field with only auto-classified categories."""
+        field_resource = StagedResource(
+            name="name_field",
+            urn="test:endpoint:name_field",
+            resource_type="Field",
+            user_assigned_data_categories=None,
+            classifications=[
+                {"label": "user.name", "confidence": 0.95},
+                {"label": "user.contact", "confidence": 0.75},
+            ],
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "name_field"
+        assert result["data_categories"] == ["user.name", "user.contact"]
+
+    def test_build_field_combines_categories_without_duplicates(self):
+        """Test that user-assigned and auto-classified categories are combined without duplicates."""
+        field_resource = StagedResource(
+            name="email_field",
+            urn="test:endpoint:email_field",
+            resource_type="Field",
+            user_assigned_data_categories=["user.contact.email", "user.provided"],
+            classifications=[
+                {"label": "user.contact.email", "confidence": 0.95},  # Duplicate
+                {"label": "system.operations", "confidence": 0.75},  # New
+            ],
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "email_field"
+        # User-assigned takes precedence, auto-classified added if not duplicate
+        assert result["data_categories"] == [
+            "user.contact.email",
+            "user.provided",
+            "system.operations",
+        ]
+
+    def test_build_field_with_no_categories(self):
+        """Test building field with no categories at all."""
+        field_resource = StagedResource(
+            name="id_field",
+            urn="test:endpoint:id_field",
+            resource_type="Field",
+            user_assigned_data_categories=None,
+            classifications=None,
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "id_field"
+        assert "data_categories" not in result  # Should not include empty categories
+
+    def test_build_field_with_description_and_uses(self):
+        """Test building field with description and data uses."""
+        field_resource = StagedResource(
+            name="user_email",
+            urn="test:endpoint:user_email",
+            resource_type="Field",
+            description="User's email address",
+            user_assigned_data_categories=["user.contact.email"],
+            user_assigned_data_uses=["marketing.advertising"],
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "user_email"
+        assert result["description"] == "User's email address"
+        assert result["data_categories"] == ["user.contact.email"]
+        assert result["data_uses"] == ["marketing.advertising"]
+
+    def test_build_field_with_meta_data_type(self):
+        """Test building field with meta data type."""
+        field_resource = StagedResource(
+            name="age_field",
+            urn="test:endpoint:age_field",
+            resource_type="Field",
+            meta={"data_type": "integer", "other_meta": "value"},
+        )
+
+        result = _build_field_from_staged_resource(field_resource)
+
+        assert result["name"] == "age_field"
+        assert result["fides_meta"] == {"data_type": "integer"}
+
+
 class TestPreserveMonitoredCollectionsInDatasetMerge:
     """Test preserve_monitored_collections_in_dataset_merge function."""
 
     @pytest.fixture
-    def base_dataset(self) -> Dict[str, Any]:
-        """Create a basic dataset structure for testing."""
+    def monitor_config(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> MonitorConfig:
+        """Create a monitor config for testing."""
+        config = MonitorConfig.create(
+            db=db,
+            data={
+                "key": "test_monitor_config",
+                "name": "Test Monitor Config",
+                "connection_config_id": connection_config.id,
+            },
+        )
+        return config
+
+    @pytest.fixture
+    def upcoming_dataset(self) -> Dict[str, Any]:
+        """Create an upcoming dataset from template."""
         return {
             "fides_key": "test_dataset",
             "name": "Test Dataset",
@@ -284,395 +450,264 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
                     "fields": [
                         {"name": "id", "data_type": "string"},
                         {"name": "email", "data_type": "string"},
-                        {"name": "name", "data_type": "string"},
                     ],
                 },
                 {
-                    "name": "orders",
+                    "name": "products",
                     "fields": [
                         {"name": "id", "data_type": "string"},
-                        {"name": "user_id", "data_type": "string"},
-                        {"name": "total", "data_type": "number"},
+                        {"name": "name", "data_type": "string"},
                     ],
                 },
             ],
         }
 
     @pytest.fixture
-    def customer_dataset(self, base_dataset: Dict[str, Any]) -> Dict[str, Any]:
-        """Create a customer dataset with additional monitored collections."""
-        dataset = copy.deepcopy(base_dataset)
-
-        # Add a custom collection that was promoted from monitoring
-        dataset["collections"].append(
-            {
-                "name": "custom_collection",
-                "fields": [
-                    {"name": "id", "data_type": "string"},
-                    {"name": "custom_field", "data_type": "string"},
-                    {"name": "metadata", "data_type": "object"},
-                ],
-            }
+    def connection_config(self, db: Session) -> ConnectionConfig:
+        """Create a connection config for testing."""
+        return ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_connection",
+                "name": "Test Connection",
+                "connection_type": "saas",
+                "access": "write",
+            },
         )
 
-        # Modify an existing collection to show it gets replaced by upcoming
-        dataset["collections"][0]["fields"].append(
-            {"name": "old_field", "data_type": "string"}
-        )
-
-        return dataset
-
-    @pytest.fixture
-    def upcoming_dataset(self, base_dataset: Dict[str, Any]) -> Dict[str, Any]:
-        """Create an upcoming dataset from template (without custom collections)."""
-        dataset = copy.deepcopy(base_dataset)
-
-        # Add a new collection that wasn't in the customer dataset
-        dataset["collections"].append(
-            {
-                "name": "products",
-                "fields": [
-                    {"name": "id", "data_type": "string"},
-                    {"name": "name", "data_type": "string"},
-                    {"name": "price", "data_type": "number"},
-                ],
-            }
-        )
-
-        return dataset
-
-    @pytest.fixture
-    def monitored_collections(self) -> List[StagedResource]:
-        """Create monitored collection staged resources."""
-        return [
-            StagedResource(
-                name="custom_collection",
-                urn="test_dataset:custom_collection",
-                resource_type="Endpoint",
-            ),
-            StagedResource(
-                name="users",  # This exists in both datasets
-                urn="test_dataset:users",
-                resource_type="Endpoint",
-            ),
-        ]
-
-    def test_preserve_monitored_collections(
+    def test_preserve_builds_collections_from_staged_resources(
         self,
-        customer_dataset: Dict[str, Any],
+        db: Session,
+        monitor_config: MonitorConfig,
         upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
     ):
-        """Test that monitored collections from customer dataset are preserved."""
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
+        """Test that collections are built from staged resources for missing collections."""
+        # Create endpoint staged resource for a collection not in upcoming dataset
+        endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:custom_collection",
+                "name": "custom_collection",
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+                "description": "Custom monitored collection",
+            },
         )
 
-        # Should have all collections from upcoming dataset plus the preserved custom collection
-        collection_names = {col["name"] for col in result["collections"]}
-        assert collection_names == {"users", "orders", "products", "custom_collection"}
+        # Create monitored field staged resources
+        email_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:custom_collection:email",
+                "name": "email",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "description": "User email address",
+                "user_assigned_data_categories": ["user.contact.email"],
+                "classifications": [{"label": "user.contact", "confidence": 0.85}],
+            },
+        )
 
-        # Verify the custom collection was preserved with correct structure
+        name_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:custom_collection:name",
+                "name": "name",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "user_assigned_data_categories": ["user.name"],
+            },
+        )
+
+        # Create ancestor relationships
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": email_field.urn,
+            },
+        )
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": name_field.urn,
+            },
+        )
+
+        result = preserve_monitored_collections_in_dataset_merge(
+            monitored_endpoints=[endpoint],
+            upcoming_dataset=upcoming_dataset,
+            db=db,
+            monitor_config_ids=[monitor_config.key],
+        )
+
+        # Should have all collections from upcoming dataset plus the built custom collection
+        collection_names = {col["name"] for col in result["collections"]}
+        assert collection_names == {"users", "products", "custom_collection"}
+
+        # Verify the custom collection was built with correct structure
         custom_collection = next(
             col for col in result["collections"] if col["name"] == "custom_collection"
         )
-        assert len(custom_collection["fields"]) == 3
-        field_names = {field["name"] for field in custom_collection["fields"]}
-        assert field_names == {"id", "custom_field", "metadata"}
+        assert custom_collection["name"] == "custom_collection"
+        assert custom_collection["description"] == "Custom monitored collection"
+        assert len(custom_collection["fields"]) == 2
 
-    def test_preserve_uses_upcoming_dataset_for_existing_collections(
+        # Verify field details
+        field_names = {field["name"] for field in custom_collection["fields"]}
+        assert field_names == {"email", "name"}
+
+        # Check email field details
+        email_field_dict = next(
+            field for field in custom_collection["fields"] if field["name"] == "email"
+        )
+        assert email_field_dict["description"] == "User email address"
+        # Should combine user-assigned and auto-classified categories
+        assert email_field_dict["data_categories"] == [
+            "user.contact.email",
+            "user.contact",
+        ]
+
+        # Check name field details
+        name_field_dict = next(
+            field for field in custom_collection["fields"] if field["name"] == "name"
+        )
+        assert name_field_dict["data_categories"] == ["user.name"]
+
+    def test_preserve_no_monitored_endpoints(
         self,
-        customer_dataset: Dict[str, Any],
+        db: Session,
+        monitor_config: MonitorConfig,
         upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
     ):
-        """Test that existing collections in upcoming dataset take precedence over customer dataset."""
+        """Test behavior when there are no monitored endpoints."""
         result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
+            monitored_endpoints=[],
             upcoming_dataset=upcoming_dataset,
+            db=db,
+            monitor_config_ids=[monitor_config.key],
         )
 
-        # The users collection should use the upcoming dataset structure, not customer
+        # Should return upcoming dataset unchanged
+        assert result == upcoming_dataset
+
+    def test_preserve_only_missing_collections(
+        self,
+        db: Session,
+        monitor_config: MonitorConfig,
+        upcoming_dataset: Dict[str, Any],
+    ):
+        """Test that only collections missing from upcoming dataset are built."""
+        # Create endpoint for collection that already exists in upcoming dataset
+        existing_endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:users",
+                "name": "users",  # Already exists in upcoming dataset
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+            },
+        )
+
+        # Create endpoint for collection that doesn't exist in upcoming dataset
+        new_endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:orders",
+                "name": "orders",  # Doesn't exist in upcoming dataset
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+            },
+        )
+
+        # Create monitored fields for both endpoints
+        user_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:users:email",
+                "name": "email",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+            },
+        )
+
+        order_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:orders:total",
+                "name": "total",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+            },
+        )
+
+        # Create ancestor relationships
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": existing_endpoint.urn,
+                "descendant_urn": user_field.urn,
+            },
+        )
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": new_endpoint.urn,
+                "descendant_urn": order_field.urn,
+            },
+        )
+
+        result = preserve_monitored_collections_in_dataset_merge(
+            monitored_endpoints=[existing_endpoint, new_endpoint],
+            upcoming_dataset=upcoming_dataset,
+            db=db,
+            monitor_config_ids=[monitor_config.key],
+        )
+
+        # Should have collections from upcoming dataset plus only the new orders collection
+        collection_names = {col["name"] for col in result["collections"]}
+        assert collection_names == {"users", "products", "orders"}
+
+        # The users collection should be from upcoming dataset (not built from staged resources)
         users_collection = next(
             col for col in result["collections"] if col["name"] == "users"
         )
+        # Should have the original fields from upcoming dataset
         field_names = {field["name"] for field in users_collection["fields"]}
-        assert "old_field" not in field_names  # Not from customer dataset
-        assert field_names == {"id", "email", "name"}  # From upcoming dataset
+        assert field_names == {"id", "email"}
 
-    def test_preserve_only_monitored_collections(
+    def test_preserve_endpoint_without_monitored_fields(
         self,
-        customer_dataset: Dict[str, Any],
+        db: Session,
+        monitor_config: MonitorConfig,
         upcoming_dataset: Dict[str, Any],
     ):
-        """Test that only monitored collections are preserved, not all customer collections."""
-        # Create monitored collections that don't include custom_collection
-        monitored_collections = [
-            StagedResource(
-                name="users",
-                urn="test_dataset:users",
-                resource_type="Endpoint",
-            ),
-        ]
-
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
+        """Test that endpoints without monitored fields don't create collections."""
+        # Create endpoint staged resource
+        endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_connector:empty_collection",
+                "name": "empty_collection",
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+            },
         )
 
-        # Should not preserve custom_collection since it's not monitored
+        # Don't create any monitored fields for this endpoint
+
+        result = preserve_monitored_collections_in_dataset_merge(
+            monitored_endpoints=[endpoint],
+            upcoming_dataset=upcoming_dataset,
+            db=db,
+            monitor_config_ids=[monitor_config.key],
+        )
+
+        # Should only have collections from upcoming dataset (no empty collection built)
         collection_names = {col["name"] for col in result["collections"]}
-        assert "custom_collection" not in collection_names
-        assert collection_names == {"users", "orders", "products"}
-
-    def test_preserve_maintains_collection_structure(
-        self,
-        customer_dataset: Dict[str, Any],
-        upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
-    ):
-        """Test that preserved collections maintain their complete structure."""
-        # Add more complex structure to customer dataset's custom collection
-        custom_collection = next(
-            col
-            for col in customer_dataset["collections"]
-            if col["name"] == "custom_collection"
-        )
-        custom_collection.update(
-            {
-                "description": "Custom collection from monitoring",
-                "data_categories": ["user.custom"],
-                "fields": [
-                    {
-                        "name": "id",
-                        "data_type": "string",
-                        "data_categories": ["system.operations"],
-                    },
-                    {
-                        "name": "custom_field",
-                        "data_type": "string",
-                        "data_categories": ["user.custom"],
-                        "description": "Custom field from API",
-                    },
-                    {
-                        "name": "metadata",
-                        "data_type": "object",
-                        "fields": [
-                            {"name": "created_at", "data_type": "datetime"},
-                            {"name": "updated_at", "data_type": "datetime"},
-                        ],
-                    },
-                ],
-            }
-        )
-
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        # Verify the preserved collection maintains all its properties
-        preserved_collection = next(
-            col for col in result["collections"] if col["name"] == "custom_collection"
-        )
-        assert (
-            preserved_collection["description"] == "Custom collection from monitoring"
-        )
-        assert preserved_collection["data_categories"] == ["user.custom"]
-
-        # Check field structure is preserved
-        custom_field = next(
-            field
-            for field in preserved_collection["fields"]
-            if field["name"] == "custom_field"
-        )
-        assert custom_field["data_categories"] == ["user.custom"]
-        assert custom_field["description"] == "Custom field from API"
-
-        # Check nested field structure is preserved
-        metadata_field = next(
-            field
-            for field in preserved_collection["fields"]
-            if field["name"] == "metadata"
-        )
-        assert len(metadata_field["fields"]) == 2
-        nested_field_names = {field["name"] for field in metadata_field["fields"]}
-        assert nested_field_names == {"created_at", "updated_at"}
-
-    def test_preserve_does_not_modify_original_datasets(
-        self,
-        customer_dataset: Dict[str, Any],
-        upcoming_dataset: Dict[str, Any],
-        monitored_collections: List[StagedResource],
-    ):
-        """Test that function does not modify the original dataset dictionaries."""
-        original_customer = copy.deepcopy(customer_dataset)
-        original_upcoming = copy.deepcopy(upcoming_dataset)
-
-        result = preserve_monitored_collections_in_dataset_merge(
-            monitored_endpoints=monitored_collections,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-        )
-
-        # Original datasets should be unchanged
-        assert customer_dataset == original_customer
-        assert upcoming_dataset == original_upcoming
-
-        # Result should be different from upcoming dataset
-        assert result != upcoming_dataset
-        assert len(result["collections"]) > len(upcoming_dataset["collections"])
-
-
-class TestGetEndpointResourcesIntegration:
-    """Integration tests for get_endpoint_resources function with database."""
-
-    @pytest.fixture
-    def test_monitor_config(
-        self, db: Session, connection_config: ConnectionConfig
-    ) -> MonitorConfig:
-        """Create a test MonitorConfig."""
-        monitor_config = MonitorConfig.create(
-            db=db,
-            data={
-                "key": "test_monitor_integration",
-                "name": "Test Monitor Integration",
-                "connection_config_id": connection_config.id,
-                "databases": ["test_db"],
-                "excluded_databases": [],
-            },
-        )
-        return monitor_config
-
-    @pytest.fixture
-    def endpoint_staged_resources(
-        self, db: Session, test_monitor_config: MonitorConfig
-    ) -> List[StagedResource]:
-        """Create StagedResource records with correct resource_type in database."""
-        resources = []
-
-        # Create endpoint resources with correct "Endpoint" resource_type
-        for name in ["users", "orders", "custom_endpoint"]:
-            resource = StagedResource.create(
-                db=db,
-                data={
-                    "urn": f"{test_monitor_config.key}:{name}",
-                    "name": name,
-                    "resource_type": "Endpoint",  # Correct capitalized value
-                    "monitor_config_id": test_monitor_config.key,
-                },
-            )
-            resources.append(resource)
-
-        # Create a non-endpoint resource that should NOT be returned
-        non_endpoint_resource = StagedResource.create(
-            db=db,
-            data={
-                "urn": f"{test_monitor_config.key}:some_table",
-                "name": "some_table",
-                "resource_type": "Table",  # Different resource type
-                "monitor_config_id": test_monitor_config.key,
-            },
-        )
-        resources.append(non_endpoint_resource)
-
-        return resources
-
-    @pytest.fixture
-    def wrong_case_staged_resources(
-        self, db: Session, test_monitor_config: MonitorConfig
-    ) -> List[StagedResource]:
-        """Create StagedResource records with WRONG resource_type case (would cause bug)."""
-        resources = []
-
-        # Create resources with WRONG lowercase "endpoint" - this would cause the bug
-        for name in ["wrong_case_endpoint1", "wrong_case_endpoint2"]:
-            resource = StagedResource.create(
-                db=db,
-                data={
-                    "urn": f"{test_monitor_config.key}:{name}",
-                    "name": name,
-                    "resource_type": "endpoint",  # Wrong lowercase - this is the bug!
-                    "monitor_config_id": test_monitor_config.key,
-                },
-            )
-            resources.append(resource)
-
-        return resources
-
-    def test_get_endpoint_resources_returns_correct_resources(
-        self,
-        db: Session,
-        connection_config: ConnectionConfig,
-        test_monitor_config: MonitorConfig,
-        endpoint_staged_resources: List[StagedResource],
-    ):
-        """Test that get_endpoint_resources returns only Endpoint type resources."""
-        result = get_endpoint_resources(db, connection_config)
-
-        # Should return 3 endpoint resources (users, orders, custom_endpoint)
-        # Should NOT return the Table resource (some_table)
-        assert len(result) == 3
-
-        returned_names = {r.name for r in result}
-        assert returned_names == {"users", "orders", "custom_endpoint"}
-
-        # Verify all returned resources have correct resource_type
-        for resource in result:
-            assert resource.resource_type == "Endpoint"
-            assert resource.monitor_config_id == test_monitor_config.key
-
-    def test_get_endpoint_resources_ignores_wrong_case_resources(
-        self,
-        db: Session,
-        connection_config: ConnectionConfig,
-        test_monitor_config: MonitorConfig,
-        endpoint_staged_resources: List[StagedResource],
-        wrong_case_staged_resources: List[StagedResource],
-    ):
-        """Test that resources with wrong case resource_type are ignored (demonstrates the bug fix)."""
-        result = get_endpoint_resources(db, connection_config)
-
-        # Should only return the 3 correctly-cased "Endpoint" resources
-        # Should NOT return the 2 wrong-cased "endpoint" resources
-        assert len(result) == 3
-
-        returned_names = {r.name for r in result}
-        assert returned_names == {"users", "orders", "custom_endpoint"}
-
-        # Verify wrong-case resources are NOT returned
-        assert "wrong_case_endpoint1" not in returned_names
-        assert "wrong_case_endpoint2" not in returned_names
-
-    def test_get_endpoint_resources_with_no_monitor_configs(
-        self, db: Session, connection_config: ConnectionConfig
-    ):
-        """Test that function returns empty list when no monitor configs exist."""
-        result = get_endpoint_resources(db, connection_config)
-        assert result == []
-
-    def test_get_endpoint_resources_with_no_endpoint_resources(
-        self,
-        db: Session,
-        connection_config: ConnectionConfig,
-        test_monitor_config: MonitorConfig,
-    ):
-        """Test that function returns empty list when no endpoint resources exist."""
-        # Create only non-endpoint resources
-        StagedResource.create(
-            db=db,
-            data={
-                "urn": f"{test_monitor_config.key}:some_table",
-                "name": "some_table",
-                "resource_type": "Table",
-                "monitor_config_id": test_monitor_config.key,
-            },
-        )
-
-        result = get_endpoint_resources(db, connection_config)
-        assert result == []
+        assert collection_names == {"users", "products"}
