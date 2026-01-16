@@ -180,15 +180,18 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @click.pass_context
 @click.option("--queues", "-q", type=str, default="")
 @click.option("--exclude-queues", type=str, default="")
+@click.option("--concurrency", "-c", type=int, default=2)
 @with_analytics
-def worker(ctx: click.Context, queues: str = "", exclude_queues: str = "") -> None:
+def worker(
+    ctx: click.Context, queues: str = "", exclude_queues: str = "", concurrency: int = 2
+) -> None:
     """
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
     from fides.api.worker import start_worker
 
-    start_worker(queues, exclude_queues)
+    start_worker(queues, exclude_queues, concurrency)
 
 
 @click.command()  # type: ignore
