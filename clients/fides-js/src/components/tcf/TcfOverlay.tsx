@@ -23,7 +23,7 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
-import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
+import { tcfCookieIsProperlySet } from "../../lib/cookie";
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
@@ -648,10 +648,14 @@ export const TcfOverlay = () => {
   );
 
   const handleDismiss = useCallback(() => {
-    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+    // For TCF experiences, check if a proper TCF cookie exists (with fides_string,
+    // tcf_consent, or tcf_version_hash), not just if cookie.consent is set.
+    // This is important because GPC may automatically set cookie.consent for custom
+    // notices without setting TCF-specific fields.
+    if (!tcfCookieIsProperlySet(parsedCookie)) {
       handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
     }
-  }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
+  }, [handleUpdateAllPreferences, draftIds, parsedCookie]);
 
   const handleToggleChange = useCallback(
     (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {
