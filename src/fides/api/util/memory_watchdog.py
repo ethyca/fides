@@ -75,6 +75,9 @@ def _capture_heap_dump() -> None:
     - Top 10 object type counts (spot anomalies like 100k of a custom class)
     - Garbage collector stats (uncollectable objects indicate leaks)
 
+    All exceptions are caught to ensure heap dump failures don't prevent graceful
+    task termination.
+    
     All enhancements are optional and fail gracefully. This works for any Python
     process (Celery tasks, scripts, background jobs, etc.).
     """
