@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, Flex, Icons } from "fidesui";
-import { CheckOutlined, CloseOutlined, CommentOutlined, SlackOutlined } from "@ant-design/icons";
+import type { TextAreaRef } from "antd/es/input/TextArea";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  CommentOutlined,
+  SlackOutlined,
+} from "@ant-design/icons";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 interface EditableTextBlockProps {
@@ -10,7 +16,11 @@ interface EditableTextBlockProps {
   readOnly?: boolean;
   showEditButton?: boolean;
   onComment?: (selection: { text: string; start: number; end: number }) => void;
-  onRequestInput?: (selection: { text: string; start: number; end: number }) => void;
+  onRequestInput?: (selection: {
+    text: string;
+    start: number;
+    end: number;
+  }) => void;
   renderContent?: (text: string) => React.ReactNode; // Optional function to render text with formatting/links
   style?: React.CSSProperties;
 }
@@ -28,10 +38,17 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
-  const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
-  const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null);
+  const [selectedText, setSelectedText] = useState<{
+    text: string;
+    start: number;
+    end: number;
+  } | null>(null);
+  const [toolbarPosition, setToolbarPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<any>(null);
+  const textareaRef = useRef<TextAreaRef>(null);
 
   useEffect(() => {
     setEditValue(value);
@@ -78,7 +95,10 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
 
     // Check if selection is within our text block
     const range = selection.getRangeAt(0);
-    if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) {
+    if (
+      !textRef.current ||
+      !textRef.current.contains(range.commonAncestorContainer)
+    ) {
       setSelectedText(null);
       setToolbarPosition(null);
       return;
@@ -213,15 +233,22 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
           position: "relative",
           lineHeight: 1.6,
           color: value ? "inherit" : palette.FIDESUI_NEUTRAL_500,
-          paddingRight: showEditButton && !readOnly ? 40 : (style?.paddingRight || 12),
+          paddingRight:
+            showEditButton && !readOnly ? 40 : style?.paddingRight || 12,
           display: style?.display || "block",
           ...style,
         }}
       >
         {value ? (
-          renderContent ? renderContent(value) : value
+          renderContent ? (
+            renderContent(value)
+          ) : (
+            value
+          )
         ) : (
-          <span style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}>
+          <span
+            style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}
+          >
             {placeholder}
           </span>
         )}

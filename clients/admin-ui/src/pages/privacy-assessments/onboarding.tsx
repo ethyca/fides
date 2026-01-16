@@ -9,10 +9,7 @@ import {
   Typography,
   Upload,
 } from "fidesui";
-import {
-  SearchOutlined,
-  CloudUploadOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, CloudUploadOutlined } from "@ant-design/icons";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -26,12 +23,36 @@ const { Title, Text } = Typography;
 const ONBOARDING_COMPLETE_KEY = "privacy-assessments-onboarding-complete";
 
 const frameworks = [
-  { id: "gdpr", label: "GDPR", description: "General Data Protection Regulation (EU)" },
-  { id: "ccpa", label: "CCPA / CPRA", description: "California Consumer Privacy Act" },
-  { id: "hipaa", label: "HIPAA", description: "Health Insurance Portability Act" },
-  { id: "nist", label: "NIST AI RMF", description: "AI Risk Management Framework" },
-  { id: "eu-ai", label: "EU AI Act", description: "Artificial Intelligence Act" },
-  { id: "iso", label: "ISO 42001", description: "AI Management System Standard" },
+  {
+    id: "gdpr",
+    label: "GDPR",
+    description: "General Data Protection Regulation (EU)",
+  },
+  {
+    id: "ccpa",
+    label: "CCPA / CPRA",
+    description: "California Consumer Privacy Act",
+  },
+  {
+    id: "hipaa",
+    label: "HIPAA",
+    description: "Health Insurance Portability Act",
+  },
+  {
+    id: "nist",
+    label: "NIST AI RMF",
+    description: "AI Risk Management Framework",
+  },
+  {
+    id: "eu-ai",
+    label: "EU AI Act",
+    description: "Artificial Intelligence Act",
+  },
+  {
+    id: "iso",
+    label: "ISO 42001",
+    description: "AI Management System Standard",
+  },
 ];
 
 const regions = [
@@ -91,7 +112,9 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
           { title: "Setup" },
         ]}
       />
-      <div style={{ padding: "40px", display: "flex", justifyContent: "center" }}>
+      <div
+        style={{ padding: "40px", display: "flex", justifyContent: "center" }}
+      >
         <div style={{ maxWidth: 900, width: "100%" }}>
           <Space direction="vertical" size={32} style={{ width: "100%" }}>
             <div style={{ marginBottom: 48, textAlign: "center" }}>
@@ -100,9 +123,12 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
               </Title>
 
               <Text style={{ fontSize: 16, lineHeight: 1.6, display: "block" }}>
-                Privacy assessments help you identify and mitigate risks in your data processing activities.
-                Our AI tool analyzes your operations against relevant regulations and generates compliance documentation.
-                Configure your operational regions, target frameworks, and optionally upload historical assessments to get started.
+                Privacy assessments help you identify and mitigate risks in your
+                data processing activities. Our AI tool analyzes your operations
+                against relevant regulations and generates compliance
+                documentation. Configure your operational regions, target
+                frameworks, and optionally upload historical assessments to get
+                started.
               </Text>
             </div>
 
@@ -117,8 +143,12 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                   <Title level={4} style={{ marginBottom: 12 }}>
                     Operational regions
                   </Title>
-                  <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
-                    These regions determine jurisdictional priorities for AI risk analysis.
+                  <Text
+                    type="secondary"
+                    style={{ marginBottom: 20, display: "block", fontSize: 12 }}
+                  >
+                    These regions determine jurisdictional priorities for AI
+                    risk analysis.
                   </Text>
                   {selectedRegions.length > 0 && (
                     <Flex gap="small" wrap style={{ marginBottom: 16 }}>
@@ -141,7 +171,10 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                     onPressEnter={() => {
                       if (filteredRegions.length > 0) {
                         handleAddRegion(filteredRegions[0]);
-                      } else if (regionSearch.trim() && !selectedRegions.includes(regionSearch.trim())) {
+                      } else if (
+                        regionSearch.trim() &&
+                        !selectedRegions.includes(regionSearch.trim())
+                      ) {
                         handleAddRegion(regionSearch.trim());
                       }
                     }}
@@ -190,11 +223,19 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
             >
               <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <div>
-                  <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    style={{ marginBottom: 12 }}
+                  >
                     <Title level={4} style={{ margin: 0 }}>
                       Target frameworks & regulations
                     </Title>
-                    <Button type="link" onClick={handleSelectAllFrameworks} style={{ padding: 0 }}>
+                    <Button
+                      type="link"
+                      onClick={handleSelectAllFrameworks}
+                      style={{ padding: 0 }}
+                    >
                       Select all that apply
                     </Button>
                   </Flex>
@@ -213,10 +254,15 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                           checked={selectedFrameworks.includes(framework.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedFrameworks([...selectedFrameworks, framework.id]);
+                              setSelectedFrameworks([
+                                ...selectedFrameworks,
+                                framework.id,
+                              ]);
                             } else {
                               setSelectedFrameworks(
-                                selectedFrameworks.filter((f) => f !== framework.id),
+                                selectedFrameworks.filter(
+                                  (f) => f !== framework.id,
+                                ),
                               );
                             }
                           }}
@@ -246,7 +292,11 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
             >
               <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 <div>
-                  <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    style={{ marginBottom: 12 }}
+                  >
                     <Title level={4} style={{ margin: 0 }}>
                       Upload historical assessments
                     </Title>
@@ -254,12 +304,19 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                       Optional
                     </Text>
                   </Flex>
-                  <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
-                    Upload previous assessments to help the AI learn your organization's specific writing style, tone, and formatting preferences.
+                  <Text
+                    type="secondary"
+                    style={{ marginBottom: 20, display: "block", fontSize: 12 }}
+                  >
+                    Upload previous assessments to help the AI learn your
+                    organization's specific writing style, tone, and formatting
+                    preferences.
                   </Text>
                   <Upload.Dragger>
                     <p>
-                      <CloudUploadOutlined style={{ fontSize: 48, color: "#9ca3af" }} />
+                      <CloudUploadOutlined
+                        style={{ fontSize: 48, color: "#9ca3af" }}
+                      />
                     </p>
                     <p style={{ marginTop: 16 }}>
                       <Text strong>Click to upload or drag and drop</Text>
@@ -270,18 +327,18 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                       </Text>
                     </p>
                   </Upload.Dragger>
-              </div>
-            </Space>
-          </Card>
+                </div>
+              </Space>
+            </Card>
 
-          <Flex justify="flex-end" gap="middle" style={{ marginTop: 32 }}>
-            <Button onClick={handleCancel} size="large">
-              Cancel
-            </Button>
-            <Button type="primary" onClick={handleSave} size="large">
-              Save
-            </Button>
-          </Flex>
+            <Flex justify="flex-end" gap="middle" style={{ marginTop: 32 }}>
+              <Button onClick={handleCancel} size="large">
+                Cancel
+              </Button>
+              <Button type="primary" onClick={handleSave} size="large">
+                Save
+              </Button>
+            </Flex>
           </Space>
         </div>
       </div>

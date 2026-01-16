@@ -140,12 +140,36 @@ const mockAssessments = {
 };
 
 const frameworks = [
-  { id: "gdpr", label: "GDPR", description: "General Data Protection Regulation (EU)" },
-  { id: "ccpa", label: "CCPA / CPRA", description: "California Consumer Privacy Act" },
-  { id: "hipaa", label: "HIPAA", description: "Health Insurance Portability Act" },
-  { id: "nist", label: "NIST AI RMF", description: "AI Risk Management Framework" },
-  { id: "eu-ai", label: "EU AI Act", description: "Artificial Intelligence Act" },
-  { id: "iso", label: "ISO 42001", description: "AI Management System Standard" },
+  {
+    id: "gdpr",
+    label: "GDPR",
+    description: "General Data Protection Regulation (EU)",
+  },
+  {
+    id: "ccpa",
+    label: "CCPA / CPRA",
+    description: "California Consumer Privacy Act",
+  },
+  {
+    id: "hipaa",
+    label: "HIPAA",
+    description: "Health Insurance Portability Act",
+  },
+  {
+    id: "nist",
+    label: "NIST AI RMF",
+    description: "AI Risk Management Framework",
+  },
+  {
+    id: "eu-ai",
+    label: "EU AI Act",
+    description: "Artificial Intelligence Act",
+  },
+  {
+    id: "iso",
+    label: "ISO 42001",
+    description: "AI Management System Standard",
+  },
 ];
 
 const regions = [
@@ -162,11 +186,19 @@ const PrivacyAssessmentsPage: NextPage = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [selectedRegions, setSelectedRegions] = useState<string[]>(["United States", "European Union"]);
-  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>(["gdpr", "ccpa"]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([
+    "United States",
+    "European Union",
+  ]);
+  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([
+    "gdpr",
+    "ccpa",
+  ]);
   const [regionSearch, setRegionSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [viewedAssessments, setViewedAssessments] = useState<Set<string>>(new Set());
+  const [viewedAssessments, setViewedAssessments] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Load viewed assessments from localStorage on mount
   // Initialize with half of assessments already viewed (so half are "new")
@@ -186,14 +218,23 @@ const PrivacyAssessmentsPage: NextPage = () => {
       } catch (e) {
         // If parsing fails, initialize with half viewed
         const allAssessmentIds = getAllAssessmentIds();
-        const halfViewed = allAssessmentIds.slice(0, Math.ceil(allAssessmentIds.length / 2));
+        const halfViewed = allAssessmentIds.slice(
+          0,
+          Math.ceil(allAssessmentIds.length / 2),
+        );
         setViewedAssessments(new Set(halfViewed));
-        localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(halfViewed));
+        localStorage.setItem(
+          VIEWED_ASSESSMENTS_KEY,
+          JSON.stringify(halfViewed),
+        );
       }
     } else {
       // First time: initialize with half viewed
       const allAssessmentIds = getAllAssessmentIds();
-      const halfViewed = allAssessmentIds.slice(0, Math.ceil(allAssessmentIds.length / 2));
+      const halfViewed = allAssessmentIds.slice(
+        0,
+        Math.ceil(allAssessmentIds.length / 2),
+      );
       setViewedAssessments(new Set(halfViewed));
       localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(halfViewed));
     }
@@ -220,7 +261,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
 
   const handleToggleFramework = (frameworkId: string) => {
     if (selectedFrameworks.includes(frameworkId)) {
-      setSelectedFrameworks(selectedFrameworks.filter((f) => f !== frameworkId));
+      setSelectedFrameworks(
+        selectedFrameworks.filter((f) => f !== frameworkId),
+      );
     } else {
       setSelectedFrameworks([...selectedFrameworks, frameworkId]);
     }
@@ -241,7 +284,10 @@ const PrivacyAssessmentsPage: NextPage = () => {
     const newViewed = new Set(viewedAssessments);
     newViewed.add(id);
     setViewedAssessments(newViewed);
-    localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(Array.from(newViewed)));
+    localStorage.setItem(
+      VIEWED_ASSESSMENTS_KEY,
+      JSON.stringify(Array.from(newViewed)),
+    );
 
     router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/${id}`);
   };
@@ -278,9 +324,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     };
     return (
       <div style={{ display: "inline-block" }}>
-        <Tag color={colors[risk] || CUSTOM_TAG_COLOR.DEFAULT}>
-          {risk} risk
-        </Tag>
+        <Tag color={colors[risk] ?? CUSTOM_TAG_COLOR.DEFAULT}>{risk} risk</Tag>
       </div>
     );
   };
@@ -318,7 +362,12 @@ const PrivacyAssessmentsPage: NextPage = () => {
             marginTop: "16px",
           }}
         >
-          <Flex gap="middle" align="center" justify="space-between" wrap={false}>
+          <Flex
+            gap="middle"
+            align="center"
+            justify="space-between"
+            wrap={false}
+          >
             <Input
               placeholder="Search templates or assessments..."
               prefix={<SearchOutlined />}
@@ -406,161 +455,180 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 {template.assessments
                   .filter((assessment) => {
                     if (statusFilter === "all") return true;
-                    if (statusFilter === "new") return isNewAssessment(assessment.id);
-                    if (statusFilter === "updated") return assessment.status === "updated";
-                    if (statusFilter === "outdated") return assessment.status === "outdated";
+                    if (statusFilter === "new")
+                      return isNewAssessment(assessment.id);
+                    if (statusFilter === "updated")
+                      return assessment.status === "updated";
+                    if (statusFilter === "outdated")
+                      return assessment.status === "outdated";
                     return true;
                   })
                   .map((assessment) => (
-                  <Card
-                    key={assessment.id}
-                    hoverable
-                    style={{
-                      width: "calc((100% - 48px) / 4)",
-                      minWidth: 280,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleAssessmentClick(assessment.id)}
-                  >
-                    <Flex vertical gap="small">
-                      <Flex justify="space-between" align="flex-start" gap="small">
-                        <Title
-                          level={5}
+                    <Card
+                      key={assessment.id}
+                      hoverable
+                      style={{
+                        width: "calc((100% - 48px) / 4)",
+                        minWidth: 280,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleAssessmentClick(assessment.id)}
+                    >
+                      <Flex vertical gap="small">
+                        <Flex
+                          justify="space-between"
+                          align="flex-start"
+                          gap="small"
+                        >
+                          <Title
+                            level={5}
+                            style={{
+                              margin: 0,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              flex: 1,
+                            }}
+                          >
+                            {assessment.name}
+                          </Title>
+                          {isNewAssessment(assessment.id) && (
+                            <Flex
+                              align="center"
+                              gap="small"
+                              style={{
+                                flexShrink: 0,
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>New</Text>
+                            </Flex>
+                          )}
+                        </Flex>
+                        <Text
+                          type="secondary"
                           style={{
-                            margin: 0,
+                            fontSize: 14,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            flex: 1,
                           }}
                         >
-                          {assessment.name}
-                        </Title>
-                        {isNewAssessment(assessment.id) && (
+                          Evaluation of data processing activities.
+                        </Text>
+                        {getRiskTag(assessment.riskLevel)}
+                        <div
+                          style={{
+                            marginTop: 16,
+                            paddingTop: 16,
+                            borderTop: "1px solid #f0f0f0",
+                          }}
+                        >
                           <Flex
-                            align="center"
-                            gap="small"
+                            justify="space-between"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              Completeness
+                            </Text>
+                            <Text strong style={{ fontSize: 12 }}>
+                              {assessment.completeness}%
+                            </Text>
+                          </Flex>
+                          <div
                             style={{
-                              flexShrink: 0,
-                              fontSize: 11,
-                              color: palette.FIDESUI_NEUTRAL_600,
+                              height: 6,
+                              backgroundColor: "#f0f0f0",
+                              borderRadius: 3,
+                              overflow: "hidden",
                             }}
                           >
                             <div
                               style={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: "50%",
-                                backgroundColor: palette.FIDESUI_SUCCESS,
+                                height: "100%",
+                                width: `${assessment.completeness}%`,
+                                backgroundColor: palette.FIDESUI_MINOS,
                               }}
                             />
-                            <Text style={{ fontSize: 11 }}>New</Text>
-                          </Flex>
-                        )}
-                      </Flex>
-                      <Text
-                        type="secondary"
-                        style={{
-                          fontSize: 14,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        Evaluation of data processing activities.
-                      </Text>
-                      {getRiskTag(assessment.riskLevel)}
-                      <div
-                        style={{
-                          marginTop: 16,
-                          paddingTop: 16,
-                          borderTop: "1px solid #f0f0f0",
-                        }}
-                      >
-                        <Flex justify="space-between" style={{ marginBottom: 8 }}>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            Completeness
-                          </Text>
-                          <Text strong style={{ fontSize: 12 }}>
-                            {assessment.completeness}%
-                          </Text>
-                        </Flex>
-                        <div
-                          style={{
-                            height: 6,
-                            backgroundColor: "#f0f0f0",
-                            borderRadius: 3,
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              height: "100%",
-                              width: `${assessment.completeness}%`,
-                              backgroundColor: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                        </div>
-                        <Flex
-                          justify="space-between"
-                          align="center"
-                          style={{ marginTop: 8 }}
-                        >
-                          <Flex align="center" gap="small">
-                            <div
-                              style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: "50%",
-                                backgroundColor: palette.FIDESUI_MINOS,
-                                color: "white",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 10,
-                                fontWeight: 700,
-                              }}
-                            >
-                              {assessment.owner}
-                            </div>
-                            {getStatusText(assessment.status, assessment.statusTime) && (
-                              <Text
+                          </div>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginTop: 8 }}
+                          >
+                            <Flex align="center" gap="small">
+                              <div
                                 style={{
-                                  fontSize: 11,
-                                  color: getStatusColor(assessment.status),
+                                  width: 20,
+                                  height: 20,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_MINOS,
+                                  color: "white",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: 10,
+                                  fontWeight: 700,
                                 }}
                               >
-                                {getStatusText(assessment.status, assessment.statusTime)}
-                              </Text>
-                            )}
-                          </Flex>
-                          <Flex align="center" gap="small">
-                            <Tooltip title="Request input from your team via Slack">
+                                {assessment.owner}
+                              </div>
+                              {getStatusText(
+                                assessment.status,
+                                assessment.statusTime,
+                              ) && (
+                                <Text
+                                  style={{
+                                    fontSize: 11,
+                                    color: getStatusColor(assessment.status),
+                                  }}
+                                >
+                                  {getStatusText(
+                                    assessment.status,
+                                    assessment.statusTime,
+                                  )}
+                                </Text>
+                              )}
+                            </Flex>
+                            <Flex align="center" gap="small">
+                              <Tooltip title="Request input from your team via Slack">
+                                <Button
+                                  type="text"
+                                  icon={<SlackOutlined />}
+                                  size="small"
+                                  style={{
+                                    padding: "4px 8px",
+                                    color: palette.FIDESUI_NEUTRAL_600,
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Handle Slack conversation initiation
+                                  }}
+                                />
+                              </Tooltip>
                               <Button
-                                type="text"
-                                icon={<SlackOutlined />}
-                                size="small"
-                                style={{
-                                  padding: "4px 8px",
-                                  color: palette.FIDESUI_NEUTRAL_600,
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Handle Slack conversation initiation
-                                }}
-                              />
-                            </Tooltip>
-                            <Button type="link" style={{ padding: 0, fontSize: 12 }}>
-                              Resume
-                            </Button>
+                                type="link"
+                                style={{ padding: 0, fontSize: 12 }}
+                              >
+                                Resume
+                              </Button>
+                            </Flex>
                           </Flex>
-                        </Flex>
-                      </div>
-                    </Flex>
-                  </Card>
-                ))}
+                        </div>
+                      </Flex>
+                    </Card>
+                  ))}
                 <Card
                   hoverable
                   style={{
@@ -596,18 +664,37 @@ const PrivacyAssessmentsPage: NextPage = () => {
         okText="Save"
         width={800}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%", marginTop: 24 }}>
-          <div style={{ padding: "16px", backgroundColor: palette.FIDESUI_BG_CORINTH, borderRadius: 8, marginBottom: 8 }}>
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: "100%", marginTop: 24 }}
+        >
+          <div
+            style={{
+              padding: "16px",
+              backgroundColor: palette.FIDESUI_BG_CORINTH,
+              borderRadius: 8,
+              marginBottom: 8,
+            }}
+          >
             <Text style={{ fontSize: 14, lineHeight: 1.6 }}>
-              The selections you make here and any historical assessments you upload will be used to train our LLM to understand your organization's specific compliance needs, risk profile, and processing patterns. This enables the AI to generate more accurate and tailored privacy assessments.
+              The selections you make here and any historical assessments you
+              upload will be used to train our LLM to understand your
+              organization's specific compliance needs, risk profile, and
+              processing patterns. This enables the AI to generate more accurate
+              and tailored privacy assessments.
             </Text>
           </div>
           <div>
             <Title level={4} style={{ marginBottom: 12 }}>
               Operational regions
             </Title>
-            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
-              These regions determine jurisdictional priorities for AI risk analysis.
+            <Text
+              type="secondary"
+              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
+            >
+              These regions determine jurisdictional priorities for AI risk
+              analysis.
             </Text>
             {selectedRegions.length > 0 && (
               <Flex gap="small" wrap style={{ marginBottom: 16 }}>
@@ -630,7 +717,10 @@ const PrivacyAssessmentsPage: NextPage = () => {
               onPressEnter={() => {
                 if (filteredRegions.length > 0) {
                   handleAddRegion(filteredRegions[0]);
-                } else if (regionSearch.trim() && !selectedRegions.includes(regionSearch.trim())) {
+                } else if (
+                  regionSearch.trim() &&
+                  !selectedRegions.includes(regionSearch.trim())
+                ) {
                   handleAddRegion(regionSearch.trim());
                 }
               }}
@@ -656,16 +746,30 @@ const PrivacyAssessmentsPage: NextPage = () => {
           </div>
 
           <div>
-            <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+            <Flex
+              justify="space-between"
+              align="center"
+              style={{ marginBottom: 12 }}
+            >
               <Title level={4} style={{ margin: 0 }}>
                 Target frameworks & regulations
               </Title>
-              <Button type="link" onClick={handleSelectAllFrameworks} style={{ padding: 0 }}>
-                {selectedFrameworks.length === frameworks.length ? "Deselect all" : "Select all"}
+              <Button
+                type="link"
+                onClick={handleSelectAllFrameworks}
+                style={{ padding: 0 }}
+              >
+                {selectedFrameworks.length === frameworks.length
+                  ? "Deselect all"
+                  : "Select all"}
               </Button>
             </Flex>
-            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
-              Select the privacy frameworks and regulations that apply to your organization.
+            <Text
+              type="secondary"
+              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
+            >
+              Select the privacy frameworks and regulations that apply to your
+              organization.
             </Text>
             <Space direction="vertical" size="small" style={{ width: "100%" }}>
               {frameworks.map((framework) => (
@@ -688,7 +792,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
                         {framework.description}
                       </Text>
                     </div>
-                    <Checkbox checked={selectedFrameworks.includes(framework.id)} />
+                    <Checkbox
+                      checked={selectedFrameworks.includes(framework.id)}
+                    />
                   </Flex>
                 </Card>
               ))}
@@ -699,8 +805,12 @@ const PrivacyAssessmentsPage: NextPage = () => {
             <Title level={4} style={{ marginBottom: 12 }}>
               Upload historical assessments
             </Title>
-            <Text type="secondary" style={{ marginBottom: 20, display: "block", fontSize: 12 }}>
-              Upload previous privacy assessments to help the AI understand your existing compliance posture.
+            <Text
+              type="secondary"
+              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
+            >
+              Upload previous privacy assessments to help the AI understand your
+              existing compliance posture.
             </Text>
             <Upload.Dragger
               multiple
@@ -708,7 +818,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
               style={{ padding: 20 }}
             >
               <p>
-                <CloudUploadOutlined style={{ fontSize: 48, color: "#1890ff" }} />
+                <CloudUploadOutlined
+                  style={{ fontSize: 48, color: "#1890ff" }}
+                />
               </p>
               <Text type="secondary" style={{ display: "block", marginTop: 8 }}>
                 Click or drag files to this area to upload
