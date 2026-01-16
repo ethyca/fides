@@ -104,6 +104,15 @@ const ConfigureMonitorForm = ({
    */
   const llmClassifierFeatureEnabled = !!flags.heliosV2;
 
+  const isInfrastructureMonitor =
+    integrationOption.identifier === ConnectionType.OKTA;
+
+  /**
+   * Show the LLM classifier option if the feature is enabled and the monitor is not an infrastructure monitor.
+   * Infrastructure monitors (e.g., Okta) don't use classification.
+   */
+  const showLLMOption = llmClassifierFeatureEnabled && !isInfrastructureMonitor;
+
   const { data: appConfig } = useGetConfigurationSettingsQuery(
     {
       api_set: false,
@@ -282,7 +291,7 @@ const ConfigureMonitorForm = ({
           showTime
         />
       </Form.Item>
-      {llmClassifierFeatureEnabled && (
+      {showLLMOption && (
         <>
           <Form.Item
             name="use_llm_classifier"
