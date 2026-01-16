@@ -235,7 +235,16 @@ const CustomFieldForm = ({
         <Input.TextArea rows={2} data-testid="input-description" />
       </Form.Item>
 
-      <Form.Item label="Template" name="template">
+      <Form.Item
+        label="Template"
+        name="template"
+        rules={[
+          {
+            required: true,
+            message: "Select a template",
+          },
+        ]}
+      >
         <Select
           options={[
             { label: "Custom", value: CUSTOM_TEMPLATE_VALUE },
@@ -269,7 +278,7 @@ const CustomFieldForm = ({
         />
       </Form.Item>
 
-      {!!name && selectedTemplate === CUSTOM_TEMPLATE_VALUE && (
+      {selectedTemplate === CUSTOM_TEMPLATE_VALUE && (
         <>
           <Form.Item
             label="Field type"
