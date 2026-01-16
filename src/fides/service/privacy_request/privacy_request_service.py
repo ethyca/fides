@@ -967,7 +967,6 @@ def queue_privacy_request(
 
     try:
         task = run_privacy_request.apply_async(
-        task = run_privacy_request.apply_async(
             queue=DSR_QUEUE_NAME,
             kwargs={
                 "privacy_request_id": privacy_request_id,
