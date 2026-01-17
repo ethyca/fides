@@ -190,12 +190,40 @@ def build_consent_networkx_digraph(
     return networkx_graph
 
 
+def compute_all_descendants(
+    graph: networkx.DiGraph,
+) -> Dict[CollectionAddress, Set[CollectionAddress]]:
+    """
+    Compute descendants for ALL nodes in O(N+E) using reverse topological order.
+
+    This is much more efficient than calling networkx.descendants() for each node,
+    which would be O(N * (N+E)) = O(N²) for a graph with N nodes.
+
+    By processing in reverse topological order (leaves first), we can compute
+    each node's descendants as the union of its children's descendants plus
+    its direct children.
+    """
+    all_descendants: Dict[CollectionAddress, Set[CollectionAddress]] = {
+        node: set() for node in graph.nodes
+    }
+
+    # Process nodes in reverse topological order (leaves first)
+    for node in reversed(list(networkx.topological_sort(graph))):
+        # This node's descendants = union of (each child + child's descendants)
+        for child in graph.successors(node):
+            all_descendants[node].add(child)
+            all_descendants[node].update(all_descendants[child])
+
+    return all_descendants
+
+
 def base_task_data(
     graph: networkx.DiGraph,
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     node: CollectionAddress,
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
+    all_descendants: Dict[CollectionAddress, Set[CollectionAddress]],
 ) -> Dict:
     """Build a dictionary of common RequestTask attributes that are shared for building
     access, consent, and erasure tasks"""
@@ -235,8 +263,9 @@ def base_task_data(
         "downstream_tasks": sorted(
             [downstream.value for downstream in graph.successors(node)]
         ),
+        # Use pre-computed descendants instead of calling networkx.descendants per node
         "all_descendant_tasks": sorted(
-            [descend.value for descend in list(networkx.descendants(graph, node))]
+            [descend.value for descend in all_descendants.get(node, set())]
         ),
         "collection_address": node.value,
         "dataset_name": node.dataset,
@@ -270,6 +299,9 @@ def persist_new_access_request_tasks(
         traversal_nodes, end_nodes, traversal
     )
 
+    # Pre-compute all descendants in O(N+E) instead of O(N²)
+    all_descendants = compute_all_descendants(graph)
+
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
@@ -280,7 +312,12 @@ def persist_new_access_request_tasks(
             session,
             data={
                 **base_task_data(
-                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                    graph,
+                    dataset_graph,
+                    privacy_request,
+                    node,
+                    traversal_nodes,
+                    all_descendants,
                 ),
                 "access_data": (
                     [traversal.seed_data] if node == ROOT_COLLECTION_ADDRESS else []
@@ -314,6 +351,9 @@ def persist_initial_erasure_request_tasks(
     )
     graph: networkx.DiGraph = build_erasure_networkx_digraph(traversal_nodes, end_nodes)
 
+    # Pre-compute all descendants in O(N+E) instead of O(N²)
+    all_descendants = compute_all_descendants(graph)
+
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.erasure, collection_address=node
@@ -324,7 +364,12 @@ def persist_initial_erasure_request_tasks(
             session,
             data={
                 **base_task_data(
-                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                    graph,
+                    dataset_graph,
+                    privacy_request,
+                    node,
+                    traversal_nodes,
+                    all_descendants,
                 ),
                 "action_type": ActionType.erasure,
             },
@@ -402,6 +447,9 @@ def persist_new_consent_request_tasks(
     """
     graph: networkx.DiGraph = build_consent_networkx_digraph(traversal_nodes)
 
+    # Pre-compute all descendants in O(N+E) instead of O(N²)
+    all_descendants = compute_all_descendants(graph)
+
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.consent, collection_address=node
@@ -411,7 +459,12 @@ def persist_new_consent_request_tasks(
             session,
             data={
                 **base_task_data(
-                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                    graph,
+                    dataset_graph,
+                    privacy_request,
+                    node,
+                    traversal_nodes,
+                    all_descendants,
                 ),
                 # Consent nodes take in identity data from their upstream root node
                 "access_data": ([identity] if node == ROOT_COLLECTION_ADDRESS else []),

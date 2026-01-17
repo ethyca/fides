@@ -90,10 +90,12 @@ class BaseTraversal:
         *,
         policy: Optional[Policy] = None,
         node_filters: Optional[List[NodeFilter]] = None,
+        skip_verification: bool = False,
     ):
         self.graph = graph
         self.seed_data = data
         self.policy = policy
+        self._skip_verification = skip_verification
 
         # Node filters are used to allow unreachable nodes to be ignored
         # if they don't apply to the given scenario
@@ -109,6 +111,11 @@ class BaseTraversal:
             self.edges_by_node[edge.f1.collection_address()].append(edge)
             self.edges_by_node[edge.f2.collection_address()].append(edge)
 
+        # Pre-build dataset -> collections index for O(1) lookup (Fix for O(N²))
+        self._collections_by_dataset: Dict[str, Set[str]] = defaultdict(set)
+        for addr in self.traversal_node_dict.keys():
+            self._collections_by_dataset[addr.dataset].add(addr.value)
+
         # Pre-compute string versions of node dependencies
         # This avoids expensive hash operations during traversal
         self.node_after_str: Dict[str, Set[str]] = {}
@@ -119,12 +126,11 @@ class BaseTraversal:
             self.node_after_str[addr.value] = {
                 dep.value for dep in traversal_node.node.collection.after
             }
-            # Dataset-level after dependencies (need to find all collections in those datasets)
-            dataset_deps = set()
+            # Dataset-level after dependencies - use pre-built index for O(1) lookup
+            dataset_deps: Set[str] = set()
             for dataset_name in traversal_node.node.dataset.after:
-                for other_addr in self.traversal_node_dict.keys():
-                    if other_addr.dataset == dataset_name:
-                        dataset_deps.add(other_addr.value)
+                # O(1) lookup instead of O(N) scan
+                dataset_deps.update(self._collections_by_dataset.get(dataset_name, set()))
             self.dataset_after_str[addr.value] = dataset_deps
 
         # Add root node to the pre-computed dependencies (it has no dependencies)
@@ -166,7 +172,8 @@ class BaseTraversal:
                 self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(edge)
                 self.edges_by_node[addr].append(edge)
 
-        self._verify_traversal()
+        if not self._skip_verification:
+            self._verify_traversal()
 
     def _verify_traversal(self) -> None:
         """Verify that a valid traversal exists. This method simply assembles a traversal
