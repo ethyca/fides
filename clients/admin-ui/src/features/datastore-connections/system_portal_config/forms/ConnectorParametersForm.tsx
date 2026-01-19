@@ -289,7 +289,8 @@ export const ConnectorParametersForm = ({
                   </Button>
                 ) : null}
                 {isPlusEnabled &&
-                  SystemType.DATABASE === connectionOption.type &&
+                  (SystemType.DATABASE === connectionOption.type ||
+                    SystemType.SAAS === connectionOption.type) &&
                   !_.isEmpty(initialDatasets) && (
                     <Button onClick={() => onTestDatasetsClick()}>
                       Test datasets

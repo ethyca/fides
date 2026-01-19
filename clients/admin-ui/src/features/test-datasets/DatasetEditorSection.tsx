@@ -24,8 +24,10 @@ import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   useGetDatasetReachabilityQuery,
+  useGetDatastoreConnectionByKeyQuery,
+  usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { Dataset } from "~/types/api";
+import { Dataset, SystemType } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -58,6 +60,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
 
   const [editorContent, setEditorContent] = useState<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
@@ -69,7 +72,18 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     refetch: refetchDatasets,
   } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
     skip: !connectionKey,
+    refetchOnReconnect: true,
+    refetchOnFocus: true,
   });
+
+  const { data: connectionConfig } = useGetDatastoreConnectionByKeyQuery(
+    connectionKey,
+    {
+      skip: !connectionKey,
+      refetchOnReconnect: true,
+      refetchOnFocus: true,
+    },
+  );
 
   const { data: reachability, refetch: refetchReachability } =
     useGetDatasetReachabilityQuery(
@@ -80,6 +94,8 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       },
       {
         skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
+        refetchOnReconnect: true,
+        refetchOnFocus: true,
       },
     );
 
@@ -166,22 +182,63 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       return;
     }
 
-    // Then handle the API update
-    const result = await updateDataset(datasetValues);
+    // Use different endpoints based on connection type
+    const isSaasConnection = connectionConfig?.connection_type === SystemType.SAAS;
 
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
+    if (isSaasConnection) {
+      // For SaaS integrations, use connection-specific endpoint
+      const result = await patchConnectionDatasets({
+        connection_key: connectionKey,
+        datasets: [datasetValues],
+      });
+
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
+      }
+
+      // Check if the update was successful
+      if (result.data.failed && result.data.failed.length > 0) {
+        toast(errorToastParams(result.data.failed[0].message));
+        return;
+      }
+
+      // Update the current dataset with the successful result
+      if (result.data.succeeded && result.data.succeeded.length > 0) {
+        dispatch(
+          setCurrentDataset({
+            fides_key: currentDataset.fides_key,
+            ctl_dataset: result.data.succeeded[0],
+          }),
+        );
+      }
+    } else {
+      // For database integrations, use global dataset endpoint
+      const result = await updateDataset(datasetValues);
+
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
+      }
+
+      dispatch(
+        setCurrentDataset({
+          fides_key: currentDataset.fides_key,
+          ctl_dataset: result.data,
+        }),
+      );
+    }
+    toast(successToastParams("Successfully modified dataset"));
+
+    // Refresh datasets and update editor content
+    const { data } = await refetchDatasets();
+    const refreshedDataset = data?.items.find(
+      (item) => item.fides_key === currentDataset?.fides_key,
+    );
+    if (refreshedDataset?.ctl_dataset) {
+      setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
     }
 
-    dispatch(
-      setCurrentDataset({
-        fides_key: currentDataset.fides_key,
-        ctl_dataset: result.data,
-      }),
-    );
-    toast(successToastParams("Successfully modified dataset"));
-    await refetchDatasets();
     await refetchReachability();
   };
 
