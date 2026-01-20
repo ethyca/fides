@@ -101,6 +101,9 @@ const PrivacyConsultantChat = () => {
       return;
     }
 
+    // Capture existing messages before state updates for conversation history
+    const existingMessages = activeConversation?.messages ?? [];
+
     setInputValue("");
 
     // Create a new conversation if none exists
@@ -133,7 +136,13 @@ const PrivacyConsultantChat = () => {
     );
 
     try {
-      const response = await askPrivacyExpert({ question: content }).unwrap();
+      const response = await askPrivacyExpert({
+        question: content,
+        messages: existingMessages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+      }).unwrap();
 
       // Add assistant message
       const assistantMessage: Message = {
