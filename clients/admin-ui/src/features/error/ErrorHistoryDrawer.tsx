@@ -5,7 +5,7 @@
  * a customer's machine. Shows the last N errors with expandable details.
  */
 
-import { Button, Drawer, Empty, Flex, List, Space, Typography } from "fidesui";
+import { Button, Drawer, Empty, Flex, List, Space, Tag, Typography } from "fidesui";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -69,28 +69,37 @@ const ErrorHistoryItem = ({ error }: { error: ErrorLogEntry }) => {
         borderBottom: "1px solid #f0f0f0",
       }}
     >
-      {/* Header row */}
-      <Flex justify="space-between" align="flex-start">
-        <Space direction="vertical" size={0}>
-          {/* Status and message */}
-          <Text>
+      <List.Item.Meta title={
+        <div>
+          <Flex className={"grow"}>
             {error.status !== undefined && (
-              <Text strong style={{ marginRight: 8 }}>
-                [{error.status}]
-              </Text>
+              <>
+                <Tag color="error" style={{ marginRight: 8 }}>
+                  {error.status}
+                </Tag>
+                <Text>
+                  {JSON.parse(error.rawData)?.type}
+                </Text>
+                <Text type="secondary" style={{ fontSize: 12 }} className={"self-end"}>
+                  {formatRelativeTime(error.timestamp)}
+                </Text>
+              </>
             )}
-            {error.message}
-          </Text>
+          </Flex>
+        </div>
+      }
+        description={
+          <div>
+            <Flex justify="space-between" align="flex-start">
+              {/* Status and message */}
+              {error.message}
 
-          {/* Endpoint and timestamp */}
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {error.endpoint} • {formatRelativeTime(error.timestamp)}
-          </Text>
-        </Space>
-
-        {/* Copy button */}
-        <ClipboardButton copyText={rawData} size="small" />
-      </Flex>
+            </Flex>
+            <ClipboardButton copyText={rawData} size="small" />
+          </div>
+        }
+      />
+      {/* Header row */}
 
       {/* Expandable details */}
       <div style={{ marginTop: 8 }}>
@@ -172,12 +181,12 @@ const ErrorHistoryDrawer = ({ open, onClose }: ErrorHistoryDrawerProps) => {
       title={
         <Flex justify="space-between" align="center">
           <span>Error history ({errorCount})</span>
-          {errorCount > 0 && (
-            <Button size="small" onClick={handleClearAll}>
-              Clear all
-            </Button>
-          )}
         </Flex>
+      }
+      footer={
+        <Button size="small" onClick={handleClearAll} type="primary" disabled={errorCount <= 0}>
+          Clear all
+        </Button>
       }
     >
       {errors.length === 0 ? (
