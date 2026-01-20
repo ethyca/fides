@@ -14,6 +14,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAskPrivacyExpertMutation } from "~/features/plus/plus.slice";
 
+import { parseMarkdown } from "./parseMarkdown";
 import styles from "./PrivacyConsultantChat.module.scss";
 
 const MAX_MESSAGES = 40;
@@ -262,7 +263,7 @@ const PrivacyConsultantChat = () => {
                         : styles.assistantMessage
                     }
                   >
-                    <Text>{msg.content}</Text>
+                    <Text>{parseMarkdown(msg.content)}</Text>
                   </div>
                 </Flex>
               ))}
