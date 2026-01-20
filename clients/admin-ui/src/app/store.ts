@@ -34,6 +34,7 @@ import { dataUseSlice } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
 import { datasetSlice } from "~/features/dataset";
 import { datastoreConnectionSlice } from "~/features/datastore-connections";
+import { errorSlice } from "~/features/error/error.slice";
 import { locationsSlice } from "~/features/locations/locations.slice";
 import { manualTasksSlice } from "~/features/manual-tasks/manual-tasks.slice";
 import { organizationSlice } from "~/features/organization";
@@ -102,6 +103,7 @@ const reducer = {
   [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
+  [errorSlice.name]: errorSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;

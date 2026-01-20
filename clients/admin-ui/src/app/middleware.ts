@@ -3,6 +3,7 @@ import { createChakraStandaloneToast as createStandaloneToast } from "fidesui";
 
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { selectApplicationConfig } from "~/features/config-settings/config-settings.slice";
+import { errorSlice } from "~/features/error/error.slice";
 import { ErrorNotificationMode } from "~/types/api";
 
 const printReduxError = (action: unknown) =>
@@ -21,7 +22,7 @@ const errorLoggingFunctions: Record<
   toast: (action) => {
     toast({
       status: "error",
-      title: "An error occured",
+      title: "An error occurred",
       description:
         "An error occurred please check the console for more detail.",
     });
@@ -30,7 +31,7 @@ const errorLoggingFunctions: Record<
 };
 
 export const rtkQueryErrorLogger: Middleware =
-  (state) => (next) => (action) => {
+  (state) => (next) => (action: any) => {
     if (isRejectedWithValue(action)) {
       const applicationState = selectApplicationConfig({ api_set: false })(
         state.getState(),
@@ -39,6 +40,12 @@ export const rtkQueryErrorLogger: Middleware =
         applicationState?.admin_ui?.error_notification_mode ??
         ErrorNotificationMode.CONSOLE_ONLY;
 
+      state.dispatch(
+        errorSlice.actions.addError({
+          status: action.payload?.status,
+          detail: action.payload?.data?.detail,
+        }),
+      );
       errorLoggingFunctions[loggingMode](action);
     }
     next(action);
