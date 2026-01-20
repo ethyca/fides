@@ -38,10 +38,12 @@ import {
   DownloadOutlined,
   ExportOutlined,
   SearchOutlined,
+  DownOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
 import { SlackOutlined } from "@ant-design/icons";
-import { Bubble } from "@ant-design/x/lib/bubble";
-import { Sources } from "@ant-design/x/lib/sources";
+import Bubble from "@ant-design/x/lib/bubble";
+import Sources from "@ant-design/x/lib/sources";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -176,6 +178,20 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [focusedQuestionId, setFocusedQuestionId] = useState<string | null>(
     null,
   );
+  // Track expanded items per section (for "Show X more" functionality)
+  const [expandedSystemItems, setExpandedSystemItems] = useState<
+    Record<string, boolean>
+  >({});
+  const [expandedHumanItems, setExpandedHumanItems] = useState<
+    Record<string, boolean>
+  >({});
+  // Track collapsed/expanded state for section cards
+  const [collapsedSystemSections, setCollapsedSystemSections] = useState<
+    Record<string, boolean>
+  >({});
+  const [collapsedHumanSections, setCollapsedHumanSections] = useState<
+    Record<string, boolean>
+  >({});
   const [questionsModalOpen, setQuestionsModalOpen] = useState(false);
   const [selectedSectionKey, setSelectedSectionKey] = useState<string | null>(
     null,
@@ -340,20 +356,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     },
   ];
 
-  // Group evidence by question
+  // Group evidence by question - merge analysis into system
   const evidenceByQuestion = useMemo(() => {
     const grouped: Record<
       string,
       {
-        system: SystemEvidenceItem[];
+        system: (SystemEvidenceItem | AnalysisEvidenceItem)[];
         human: HumanEvidenceItem[];
-        analysis: AnalysisEvidenceItem[];
       }
     > = {};
 
     allEvidence.forEach((item) => {
       if (!grouped[item.questionId]) {
-        grouped[item.questionId] = { system: [], human: [], analysis: [] };
+        grouped[item.questionId] = { system: [], human: [] };
       }
 
       if (item.type === "system") {
@@ -361,7 +376,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       } else if (item.type === "human") {
         grouped[item.questionId].human.push(item as HumanEvidenceItem);
       } else if (item.type === "analysis") {
-        grouped[item.questionId].analysis.push(item as AnalysisEvidenceItem);
+        // Merge analysis items into system-derived data
+        grouped[item.questionId].system.push(item as AnalysisEvidenceItem);
       }
     });
 
@@ -558,7 +574,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       const filteredSystem = evidence.system.filter(
         (item) =>
           item.content.toLowerCase().includes(query) ||
-          item.source.system?.toLowerCase().includes(query) ||
+          (item.type === "system" &&
+            item.source.system?.toLowerCase().includes(query)) ||
+          (item.type === "analysis" &&
+            item.source.model?.toLowerCase().includes(query)) ||
           item.subtype.toLowerCase().includes(query),
       );
 
@@ -572,24 +591,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             item.participants.some((p) => p.toLowerCase().includes(query))),
       );
 
-      const filteredAnalysis = evidence.analysis.filter(
-        (item) =>
-          item.content.toLowerCase().includes(query) ||
-          (item.source.model &&
-            item.source.model.toLowerCase().includes(query)) ||
-          item.subtype.toLowerCase().includes(query),
-      );
-
       // Only include question if it has filtered results
-      if (
-        filteredSystem.length > 0 ||
-        filteredHuman.length > 0 ||
-        filteredAnalysis.length > 0
-      ) {
+      if (filteredSystem.length > 0 || filteredHuman.length > 0) {
         filtered[questionId] = {
           system: filteredSystem,
           human: filteredHuman,
-          analysis: filteredAnalysis,
         };
       }
     });
@@ -3505,216 +3511,529 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             {Object.entries(filteredEvidenceByQuestion).map(
               ([questionId, evidence]) => {
+                const systemKey = `${questionId}-system`;
+                const humanKey = `${questionId}-human`;
+                const isSystemExpanded = expandedSystemItems[systemKey] ?? false;
+                const isHumanExpanded = expandedHumanItems[humanKey] ?? false;
+                // Default to collapsed (true = collapsed, false = expanded)
+                const isSystemCollapsed = collapsedSystemSections[systemKey] ?? true;
+                const isHumanCollapsed = collapsedHumanSections[humanKey] ?? true;
+                const DEFAULT_ITEMS_TO_SHOW = 2;
+
+                // Combine system and analysis items, sort by timestamp (newest first)
+                const allSystemItems = [...evidence.system].sort(
+                  (a, b) =>
+                    new Date(b.timestamp).getTime() -
+                    new Date(a.timestamp).getTime(),
+                );
+                const visibleSystemItems = isSystemExpanded
+                  ? allSystemItems
+                  : allSystemItems.slice(0, DEFAULT_ITEMS_TO_SHOW);
+                const remainingSystemCount =
+                  allSystemItems.length - DEFAULT_ITEMS_TO_SHOW;
+
+                const visibleHumanItems = isHumanExpanded
+                  ? evidence.human
+                  : evidence.human.slice(0, DEFAULT_ITEMS_TO_SHOW);
+                const remainingHumanCount =
+                  evidence.human.length - DEFAULT_ITEMS_TO_SHOW;
+
+                const renderSystemItem = (
+                  item: SystemEvidenceItem | AnalysisEvidenceItem,
+                ) => {
+                  const isAnalysis = item.type === "analysis";
+                  const systemRefs =
+                    isAnalysis && item.references
+                      ? evidence.system.filter((e) =>
+                          item.references?.includes(e.id),
+                        )
+                      : [];
+                  const humanRefs =
+                    isAnalysis && item.references
+                      ? evidence.human.filter((e) =>
+                          item.references?.includes(e.id),
+                        )
+                      : [];
+                  const allRefs = [...systemRefs, ...humanRefs];
+
+                  if (isAnalysis) {
+                    return (
+                      <Card
+                        key={item.id}
+                        size="small"
+                        style={{
+                          backgroundColor: "#FFFFFF",
+                          border: "1px solid #E8EBED",
+                          borderRadius: 8,
+                          transition: "all 0.15s ease",
+                          marginBottom: 8,
+                        }}
+                        hoverable
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = "#D1D9E6";
+                          e.currentTarget.style.boxShadow =
+                            "0 1px 3px rgba(0, 0, 0, 0.04)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "#E8EBED";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
+                        <Flex
+                          justify="space-between"
+                          align="flex-start"
+                          style={{ marginBottom: 12 }}
+                        >
+                          <Tag
+                            color={CUSTOM_TAG_COLOR.MINOS}
+                            style={{ margin: 0, fontSize: 11 }}
+                          >
+                            {item.subtype === "summary" && "Summary"}
+                            {item.subtype === "inference" && "Inference"}
+                            {item.subtype === "risk-assessment" &&
+                              "Risk assessment"}
+                            {item.subtype === "compliance-check" &&
+                              "Compliance check"}
+                          </Tag>
+                        </Flex>
+                        <Descriptions
+                          column={1}
+                          size="small"
+                          items={[
+                            {
+                              key: "generated",
+                              label: "Generated",
+                              children: formatTimestamp(item.timestamp),
+                            },
+                            {
+                              key: "model",
+                              label: "Model",
+                              children: item.source.model,
+                            },
+                            {
+                              key: "confidence",
+                              label: "Confidence",
+                              children: `${item.confidence}%`,
+                            },
+                          ]}
+                        />
+                        <Divider
+                          style={{
+                            margin: "12px 0",
+                            borderColor: "#E8EBED",
+                          }}
+                        />
+                        <Bubble content={item.content} />
+                        {allRefs.length > 0 && (
+                          <>
+                            <Divider
+                              style={{
+                                margin: "12px 0",
+                                borderColor: "#E8EBED",
+                              }}
+                            />
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 13,
+                                display: "block",
+                                marginBottom: 8,
+                                color: "#1A1F36",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Sources:
+                            </Text>
+                            <Sources
+                              items={allRefs.map((ref, idx) => ({
+                                key: ref.id ?? idx,
+                                title:
+                                  ref.content.substring(0, 60) +
+                                  (ref.content.length > 60 ? "..." : ""),
+                                description:
+                                  ref.type === "system"
+                                    ? `${ref.source.system} • ${formatTimestamp(ref.timestamp)}`
+                                    : `${
+                                        "person" in ref.source
+                                          ? ref.source.person.name
+                                          : "Unknown"
+                                      } • ${formatTimestamp(ref.timestamp)}`,
+                              }))}
+                            />
+                          </>
+                        )}
+                      </Card>
+                    );
+                  }
+
+                  return (
+                    <List.Item
+                      key={item.id}
+                      style={{
+                        padding: "16px",
+                        marginBottom: 8,
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: 8,
+                        border: "1px solid #E8EBED",
+                        transition: "all 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "#D1D9E6";
+                        e.currentTarget.style.boxShadow =
+                          "0 1px 3px rgba(0, 0, 0, 0.04)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "#E8EBED";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      <List.Item.Meta
+                        title={
+                          <Flex vertical gap="small" style={{ flex: 1 }}>
+                            <Flex align="center" gap="small">
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.MINOS}
+                                style={{
+                                  margin: 0,
+                                  fontSize: 11,
+                                }}
+                              >
+                                {item.subtype === "data-classification" &&
+                                  "Data classification"}
+                                {item.subtype === "system-inventory" &&
+                                  "System inventory"}
+                                {item.subtype === "policy-document" &&
+                                  "Policy document"}
+                                {item.subtype === "compliance-monitor" &&
+                                  "Compliance monitor"}
+                              </Tag>
+                            </Flex>
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 13,
+                                color: "#1A1F36",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {item.content}
+                            </Text>
+                            <Descriptions
+                              column={1}
+                              size="small"
+                              items={[
+                                {
+                                  key: "source",
+                                  label: "Source",
+                                  children: item.source.system,
+                                },
+                                {
+                                  key: "extracted",
+                                  label: "Extracted",
+                                  children: formatTimestamp(item.timestamp),
+                                },
+                                ...(item.confidence
+                                  ? [
+                                      {
+                                        key: "confidence",
+                                        label: "Confidence",
+                                        children: `${item.confidence}%`,
+                                      },
+                                    ]
+                                  : []),
+                              ]}
+                            />
+                          </Flex>
+                        }
+                      />
+                    </List.Item>
+                  );
+                };
+
                 const collapseContent = (
                   <>
-                    <Collapse
-                      key={questionId}
-                      activeKey={
-                        evidenceExpandedSections.includes(questionId)
-                          ? [questionId]
-                          : []
-                      }
-                      onChange={(keys) => {
-                        if (keys.includes(questionId)) {
-                          setEvidenceExpandedSections([
-                            ...evidenceExpandedSections,
-                            questionId,
-                          ]);
-                        } else {
-                          setEvidenceExpandedSections(
-                            evidenceExpandedSections.filter(
-                              (k) => k !== questionId,
-                            ),
-                          );
-                        }
+                    {/* Question Title */}
+                    <Text
+                      strong
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#1A1F36",
+                        display: "block",
+                        marginBottom: 20,
                       }}
-                      ghost
                     >
-                      <Panel
-                        key={questionId}
-                        header={
-                          <Text
-                            strong
+                      {getQuestionTitle(questionId)}
+                    </Text>
+
+                    {/* System-Derived Data Section */}
+                    {allSystemItems.length > 0 && (
+                      <div style={{ marginBottom: 8 }}>
+                        <Flex
+                          align="center"
+                          justify="space-between"
+                          style={{ marginBottom: 12 }}
+                        >
+                          <Flex align="center" gap="small">
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 600,
+                                color: "#1A1F36",
+                              }}
+                            >
+                              System-derived data
+                            </Text>
+                            <Button
+                              type="text"
+                              size="small"
+                              onClick={() => {
+                                setCollapsedSystemSections({
+                                  ...collapsedSystemSections,
+                                  [systemKey]: !isSystemCollapsed,
+                                });
+                              }}
+                              style={{
+                                padding: "0 4px",
+                                height: "auto",
+                                fontSize: 12,
+                                color: CUSTOM_TAG_COLOR.MINOS,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                              }}
+                              icon={
+                                isSystemCollapsed ? (
+                                  <RightOutlined
+                                    style={{
+                                      fontSize: 10,
+                                      transition: "transform 0.2s",
+                                    }}
+                                  />
+                                ) : (
+                                  <DownOutlined
+                                    style={{
+                                      fontSize: 10,
+                                      transition: "transform 0.2s",
+                                    }}
+                                  />
+                                )
+                              }
+                            >
+                              {isSystemCollapsed ? "Show" : "Hide"}
+                            </Button>
+                          </Flex>
+                          <Badge
+                            count={allSystemItems.length}
                             style={{
-                              fontSize: 15,
-                              fontWeight: 600,
-                              color: "#1A1F36",
+                              backgroundColor: CUSTOM_TAG_COLOR.MINOS,
                             }}
-                          >
-                            {getQuestionTitle(questionId)}
-                          </Text>
-                        }
-                      >
+                          />
+                        </Flex>
+                        <Text
+                          type="secondary"
+                          style={{
+                            fontSize: 13,
+                            display: "block",
+                            marginBottom: 16,
+                            color: "#6B7280",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Automated data points extracted from system
+                          inventory, classifications, policies, and monitoring
+                          systems, including inferences and summaries generated
+                          from system data and human input.
+                        </Text>
                         <Collapse
+                          activeKey={isSystemCollapsed ? [] : [systemKey]}
+                          onChange={(keys) => {
+                            setCollapsedSystemSections({
+                              ...collapsedSystemSections,
+                              [systemKey]: !keys.includes(systemKey),
+                            });
+                          }}
                           ghost
                           style={{
                             backgroundColor: "transparent",
                           }}
                         >
-                          {/* System-Derived Data Subsection */}
-                          {evidence.system.length > 0 && (
-                            <Panel
-                              key={`${questionId}-system`}
-                              header={
-                                <Text
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 500,
-                                    color: "#4A5568",
-                                  }}
-                                >
-                                  System-Derived Data
-                                </Text>
-                              }
+                          <Panel
+                            key={systemKey}
+                            header={null}
+                            showArrow={false}
+                            style={{ padding: 0 }}
+                          >
+                            <Space
+                              direction="vertical"
+                              size="middle"
+                              style={{ width: "100%" }}
                             >
-                              <Text
-                                type="secondary"
-                                style={{
-                                  fontSize: 13,
-                                  display: "block",
-                                  marginBottom: 12,
-                                  color: "#6B7280",
-                                  lineHeight: 1.6,
-                                }}
-                              >
-                                Automated data points extracted from system
-                                inventory, classifications, policies, and
-                                monitoring systems.
-                              </Text>
-                              <List
-                                dataSource={evidence.system}
-                                renderItem={(item) => (
-                                  <List.Item
+                              {visibleSystemItems.map((item) => (
+                                <div key={item.id}>
+                                  {item.type === "analysis" ? (
+                                    renderSystemItem(item)
+                                  ) : (
+                                    <List
+                                      dataSource={[item]}
+                                      renderItem={renderSystemItem}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                              {!isSystemExpanded &&
+                                remainingSystemCount > 0 && (
+                                  <Button
+                                    type="link"
+                                    onClick={() => {
+                                      setExpandedSystemItems({
+                                        ...expandedSystemItems,
+                                        [systemKey]: true,
+                                      });
+                                    }}
                                     style={{
-                                      padding: "16px",
-                                      marginBottom: 8,
-                                      backgroundColor: "#FFFFFF",
-                                      borderRadius: 8,
-                                      border: "1px solid #E8EBED",
-                                      transition: "all 0.15s ease",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.borderColor =
-                                        "#D1D9E6";
-                                      e.currentTarget.style.boxShadow =
-                                        "0 1px 3px rgba(0, 0, 0, 0.04)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.borderColor =
-                                        "#E8EBED";
-                                      e.currentTarget.style.boxShadow = "none";
+                                      padding: 0,
+                                      height: "auto",
+                                      fontSize: 13,
+                                      color: CUSTOM_TAG_COLOR.MINOS,
                                     }}
                                   >
-                                    <List.Item.Meta
-                                      title={
-                                        <Flex
-                                          vertical
-                                          gap="small"
-                                          style={{ flex: 1 }}
-                                        >
-                                          <Flex align="center" gap="small">
-                                            <Tag
-                                              color={CUSTOM_TAG_COLOR.MINOS}
-                                              style={{
-                                                margin: 0,
-                                                fontSize: 11,
-                                              }}
-                                            >
-                                              {item.subtype ===
-                                                "data-classification" &&
-                                                "Data Classification"}
-                                              {item.subtype ===
-                                                "system-inventory" &&
-                                                "System Inventory"}
-                                              {item.subtype ===
-                                                "policy-document" &&
-                                                "Policy Document"}
-                                              {item.subtype ===
-                                                "compliance-monitor" &&
-                                                "Compliance Monitor"}
-                                            </Tag>
-                                          </Flex>
-                                          <Text
-                                            strong
-                                            style={{
-                                              fontSize: 13,
-                                              color: "#1A1F36",
-                                              lineHeight: 1.6,
-                                            }}
-                                          >
-                                            {item.content}
-                                          </Text>
-                                          <Descriptions
-                                            column={1}
-                                            size="small"
-                                            items={[
-                                              {
-                                                key: "source",
-                                                label: "Source",
-                                                children: item.source.system,
-                                              },
-                                              {
-                                                key: "extracted",
-                                                label: "Extracted",
-                                                children: formatTimestamp(
-                                                  item.timestamp,
-                                                ),
-                                              },
-                                              ...(item.confidence
-                                                ? [
-                                                    {
-                                                      key: "confidence",
-                                                      label: "Confidence",
-                                                      children: `${item.confidence}%`,
-                                                    },
-                                                  ]
-                                                : []),
-                                            ]}
-                                          />
-                                        </Flex>
-                                      }
-                                    />
-                                  </List.Item>
+                                    Show {remainingSystemCount} more
+                                    {remainingSystemCount === 1
+                                      ? " item"
+                                      : " items"}
+                                  </Button>
                                 )}
-                              />
-                            </Panel>
-                          )}
+                              {isSystemExpanded &&
+                                remainingSystemCount > 0 && (
+                                  <Button
+                                    type="link"
+                                    onClick={() => {
+                                      setExpandedSystemItems({
+                                        ...expandedSystemItems,
+                                        [systemKey]: false,
+                                      });
+                                    }}
+                                    style={{
+                                      padding: 0,
+                                      height: "auto",
+                                      fontSize: 13,
+                                      color: CUSTOM_TAG_COLOR.MINOS,
+                                    }}
+                                  >
+                                    Show less
+                                  </Button>
+                                )}
+                            </Space>
+                          </Panel>
+                        </Collapse>
+                      </div>
+                    )}
 
-                          {/* Human Input Subsection */}
-                          {evidence.human.length > 0 && (
-                            <Panel
-                              key={`${questionId}-human`}
-                              header={
-                                <Text
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 500,
-                                    color: "#4A5568",
-                                  }}
-                                >
-                                  Human Input
-                                </Text>
+                    {/* Human Input Section */}
+                    {evidence.human.length > 0 && (
+                      <div style={{ marginBottom: 8 }}>
+                        <Flex
+                          align="center"
+                          justify="space-between"
+                          style={{ marginBottom: 12 }}
+                        >
+                          <Flex align="center" gap="small">
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 600,
+                                color: "#1A1F36",
+                              }}
+                            >
+                              Human input
+                            </Text>
+                            <Button
+                              type="text"
+                              size="small"
+                              onClick={() => {
+                                setCollapsedHumanSections({
+                                  ...collapsedHumanSections,
+                                  [humanKey]: !isHumanCollapsed,
+                                });
+                              }}
+                              style={{
+                                padding: "0 4px",
+                                height: "auto",
+                                fontSize: 12,
+                                color: CUSTOM_TAG_COLOR.MINOS,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                              }}
+                              icon={
+                                isHumanCollapsed ? (
+                                  <RightOutlined
+                                    style={{
+                                      fontSize: 10,
+                                      transition: "transform 0.2s",
+                                    }}
+                                  />
+                                ) : (
+                                  <DownOutlined
+                                    style={{
+                                      fontSize: 10,
+                                      transition: "transform 0.2s",
+                                    }}
+                                  />
+                                )
                               }
                             >
-                              <Text
-                                type="secondary"
-                                style={{
-                                  fontSize: 13,
-                                  display: "block",
-                                  marginBottom: 12,
-                                  color: "#6B7280",
-                                  lineHeight: 1.6,
-                                }}
-                              >
-                                Manual entries and stakeholder communications
-                                that inform this assessment.
-                              </Text>
-                              <Space
-                                direction="vertical"
-                                size="middle"
-                                style={{ width: "100%" }}
-                              >
-                                {evidence.human.map((item) => (
+                              {isHumanCollapsed ? "Show" : "Hide"}
+                            </Button>
+                          </Flex>
+                          <Badge
+                            count={evidence.human.length}
+                            style={{
+                              backgroundColor: CUSTOM_TAG_COLOR.MINOS,
+                            }}
+                          />
+                        </Flex>
+                        <Text
+                          type="secondary"
+                          style={{
+                            fontSize: 13,
+                            display: "block",
+                            marginBottom: 16,
+                            color: "#6B7280",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Manual entries and stakeholder communications that
+                          inform this assessment.
+                        </Text>
+                        <Collapse
+                          activeKey={isHumanCollapsed ? [] : [humanKey]}
+                          onChange={(keys) => {
+                            setCollapsedHumanSections({
+                              ...collapsedHumanSections,
+                              [humanKey]: !keys.includes(humanKey),
+                            });
+                          }}
+                          ghost
+                          style={{
+                            backgroundColor: "transparent",
+                          }}
+                        >
+                          <Panel
+                            key={humanKey}
+                            header={null}
+                            showArrow={false}
+                            style={{ padding: 0 }}
+                          >
+                            <Space
+                              direction="vertical"
+                              size="middle"
+                              style={{ width: "100%" }}
+                            >
+                              {visibleHumanItems.map((item) => (
                                   <Card
                                     key={item.id}
                                     size="small"
@@ -3749,7 +4068,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                             color={CUSTOM_TAG_COLOR.MINOS}
                                             style={{ margin: 0, fontSize: 11 }}
                                           >
-                                            Manual Entry
+                                            Manual entry
                                           </Tag>
                                           {item.status && (
                                             <Tag
@@ -3770,7 +4089,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                                 "Verified"}
                                               {item.status ===
                                                 "pending-review" &&
-                                                "Pending Review"}
+                                                "Pending review"}
                                               {item.status === "draft" &&
                                                 "Draft"}
                                             </Tag>
@@ -3817,7 +4136,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                             color={CUSTOM_TAG_COLOR.MINOS}
                                             style={{ margin: 0, fontSize: 11 }}
                                           >
-                                            Stakeholder Communication
+                                            Stakeholder communication
                                           </Tag>
                                         </Flex>
                                         <Descriptions
@@ -3843,14 +4162,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                             },
                                             {
                                               key: "date",
-                                              label: "Date Range",
+                                              label: "Date range",
                                               children: formatTimestamp(
                                                 item.timestamp,
                                               ),
                                             },
                                             {
                                               key: "messages",
-                                              label: "Message Count",
+                                              label: "Message count",
                                               children:
                                                 item.threadMessages?.length.toString() ??
                                                 "0",
@@ -3865,7 +4184,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                               items={[
                                                 {
                                                   key: "thread",
-                                                  label: `View ${item.threadMessages.length} messages`,
+                                                  label: `View ${item.threadMessages.length} message${item.threadMessages.length === 1 ? "" : "s"}`,
                                                   children: (
                                                     <List
                                                       size="small"
@@ -3938,173 +4257,52 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                     )}
                                   </Card>
                                 ))}
-                              </Space>
-                            </Panel>
-                          )}
-
-                          {/* Analysis & Synthesis Subsection */}
-                          {evidence.analysis.length > 0 && (
-                            <Panel
-                              key={`${questionId}-analysis`}
-                              header={
-                                <Text
+                              {!isHumanExpanded && remainingHumanCount > 0 && (
+                                <Button
+                                  type="link"
+                                  onClick={() => {
+                                    setExpandedHumanItems({
+                                      ...expandedHumanItems,
+                                      [humanKey]: true,
+                                    });
+                                  }}
                                   style={{
+                                    padding: 0,
+                                    height: "auto",
                                     fontSize: 13,
-                                    fontWeight: 500,
-                                    color: "#4A5568",
+                                    color: CUSTOM_TAG_COLOR.MINOS,
                                   }}
                                 >
-                                  Analysis & Synthesis
-                                </Text>
-                              }
-                            >
-                              <Text
-                                type="secondary"
-                                style={{
-                                  fontSize: 13,
-                                  display: "block",
-                                  marginBottom: 12,
-                                  color: "#6B7280",
-                                  lineHeight: 1.6,
-                                }}
-                              >
-                                Inferences and summaries generated from system
-                                data and human input.
-                              </Text>
-                              <Space
-                                direction="vertical"
-                                size="middle"
-                                style={{ width: "100%" }}
-                              >
-                                {evidence.analysis.map((item) => {
-                                  const systemRefs = evidence.system.filter(
-                                    (e) => item.references?.includes(e.id),
-                                  );
-                                  const humanRefs = evidence.human.filter((e) =>
-                                    item.references?.includes(e.id),
-                                  );
-                                  const allRefs = [...systemRefs, ...humanRefs];
-
-                                  return (
-                                    <Card
-                                      key={item.id}
-                                      size="small"
-                                      style={{
-                                        backgroundColor: "#FFFFFF",
-                                        border: "1px solid #E8EBED",
-                                        borderRadius: 8,
-                                        transition: "all 0.15s ease",
-                                        marginBottom: 8,
-                                      }}
-                                      hoverable
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.borderColor =
-                                          "#D1D9E6";
-                                        e.currentTarget.style.boxShadow =
-                                          "0 1px 3px rgba(0, 0, 0, 0.04)";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.borderColor =
-                                          "#E8EBED";
-                                        e.currentTarget.style.boxShadow =
-                                          "none";
-                                      }}
-                                    >
-                                      <Flex
-                                        justify="space-between"
-                                        align="flex-start"
-                                        style={{ marginBottom: 12 }}
-                                      >
-                                        <Tag
-                                          color={CUSTOM_TAG_COLOR.MINOS}
-                                          style={{ margin: 0, fontSize: 11 }}
-                                        >
-                                          {item.subtype === "summary" &&
-                                            "Summary"}
-                                          {item.subtype === "inference" &&
-                                            "Inference"}
-                                          {item.subtype === "risk-assessment" &&
-                                            "Risk Assessment"}
-                                          {item.subtype ===
-                                            "compliance-check" &&
-                                            "Compliance Check"}
-                                        </Tag>
-                                      </Flex>
-                                      <Descriptions
-                                        column={1}
-                                        size="small"
-                                        items={[
-                                          {
-                                            key: "generated",
-                                            label: "Generated",
-                                            children: formatTimestamp(
-                                              item.timestamp,
-                                            ),
-                                          },
-                                          {
-                                            key: "model",
-                                            label: "Model",
-                                            children: item.source.model,
-                                          },
-                                          {
-                                            key: "confidence",
-                                            label: "Confidence",
-                                            children: `${item.confidence}%`,
-                                          },
-                                        ]}
-                                      />
-                                      <Divider
-                                        style={{
-                                          margin: "12px 0",
-                                          borderColor: "#E8EBED",
-                                        }}
-                                      />
-                                      <Bubble content={item.content} />
-                                      {allRefs.length > 0 && (
-                                        <>
-                                          <Divider
-                                            style={{
-                                              margin: "12px 0",
-                                              borderColor: "#E8EBED",
-                                            }}
-                                          />
-                                          <Text
-                                            strong
-                                            style={{
-                                              fontSize: 13,
-                                              display: "block",
-                                              marginBottom: 8,
-                                              color: "#1A1F36",
-                                              fontWeight: 500,
-                                            }}
-                                          >
-                                            Sources:
-                                          </Text>
-                                          <Sources
-                                            items={allRefs.map((ref, idx) => ({
-                                              key: ref.id ?? idx,
-                                              title:
-                                                ref.content.substring(0, 60) +
-                                                (ref.content.length > 60
-                                                  ? "..."
-                                                  : ""),
-                                              description:
-                                                ref.type === "system"
-                                                  ? `${ref.source.system} • ${formatTimestamp(ref.timestamp)}`
-                                                  : `${ref.source.person.name} • ${formatTimestamp(ref.timestamp)}`,
-                                            }))}
-                                          />
-                                        </>
-                                      )}
-                                    </Card>
-                                  );
-                                })}
-                              </Space>
-                            </Panel>
-                          )}
+                                  Show {remainingHumanCount} more
+                                  {remainingHumanCount === 1
+                                    ? " item"
+                                    : " items"}
+                                </Button>
+                              )}
+                              {isHumanExpanded && remainingHumanCount > 0 && (
+                                <Button
+                                  type="link"
+                                  onClick={() => {
+                                    setExpandedHumanItems({
+                                      ...expandedHumanItems,
+                                      [humanKey]: false,
+                                    });
+                                  }}
+                                  style={{
+                                    padding: 0,
+                                    height: "auto",
+                                    fontSize: 13,
+                                    color: CUSTOM_TAG_COLOR.MINOS,
+                                  }}
+                                >
+                                  Show less
+                                </Button>
+                              )}
+                            </Space>
+                          </Panel>
                         </Collapse>
-                      </Panel>
-                    </Collapse>
+                      </div>
+                    )}
                   </>
                 );
 
