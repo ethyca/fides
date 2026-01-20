@@ -1,4 +1,5 @@
 /**
+ * @TODO: Cleanup AI generated code and comments.
  * EnhancedErrorToast - A detailed error toast for debugging
  *
  * This component provides Forward Deployment Engineers with actionable error
