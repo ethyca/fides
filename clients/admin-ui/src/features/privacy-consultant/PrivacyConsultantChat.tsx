@@ -27,7 +27,7 @@ const MODEL_OPTIONS = [
   { value: "openrouter/tencent/hunyuan-a13b-instruct", label: "Hunyuan A13B" },
 ];
 
-const DEFAULT_MODEL = "openrouter/anthropic/claude-opus-4.5";
+const DEFAULT_MODEL = "openrouter/google/gemini-2.5-flash";
 
 interface Message {
   id: string;
