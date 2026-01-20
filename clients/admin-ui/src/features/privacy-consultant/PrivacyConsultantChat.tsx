@@ -1,15 +1,20 @@
 import {
-  Bubble,
-  Conversations,
-  ConversationsProps,
-  Prompts,
-  Sender,
-  Welcome,
-} from "@ant-design/x";
-import { Alert, Button, Flex, Icons } from "fidesui";
-import React, { useState } from "react";
+  Alert,
+  Button,
+  Card,
+  Flex,
+  Icons,
+  Input,
+  Menu,
+  Spin,
+  Text,
+  Title,
+} from "fidesui";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAskPrivacyExpertMutation } from "~/features/plus/plus.slice";
+
+import styles from "./PrivacyConsultantChat.module.scss";
 
 const MAX_MESSAGES = 40;
 
@@ -28,15 +33,15 @@ interface Conversation {
 const EXAMPLE_PROMPTS = [
   {
     key: "1",
-    description: "What data categories does GDPR regulate?",
+    label: "What data categories does GDPR regulate?",
   },
   {
     key: "2",
-    description: "How should I handle user consent for marketing emails?",
+    label: "How should I handle user consent for marketing emails?",
   },
   {
     key: "3",
-    description: "What are the key differences between GDPR and CCPA?",
+    label: "What are the key differences between GDPR and CCPA?",
   },
 ];
 
@@ -45,14 +50,27 @@ const PrivacyConsultantChat = () => {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
+  const [inputValue, setInputValue] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [askPrivacyExpert, { isLoading }] = useAskPrivacyExpertMutation();
 
   const activeConversation = conversations.find(
     (c) => c.id === activeConversationId,
   );
-  const messages = activeConversation?.messages ?? [];
+  const messages = useMemo(
+    () => activeConversation?.messages ?? [],
+    [activeConversation?.messages],
+  );
   const isAtLimit = messages.length >= MAX_MESSAGES;
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length]);
 
   const createNewConversation = () => {
     const newId = crypto.randomUUID();
@@ -66,9 +84,11 @@ const PrivacyConsultantChat = () => {
   };
 
   const handleSend = async (content: string) => {
-    if (!content.trim() || isAtLimit) {
+    if (!content.trim() || isAtLimit || isLoading) {
       return;
     }
+
+    setInputValue("");
 
     // Create a new conversation if none exists
     let currentConversationId = activeConversationId;
@@ -134,68 +154,107 @@ const PrivacyConsultantChat = () => {
     }
   };
 
-  const handlePromptClick = (info: {
-    data: { key?: string; description?: React.ReactNode };
-  }) => {
-    if (typeof info.data.description === "string") {
-      handleSend(info.data.description);
+  const handlePromptClick = (prompt: string) => {
+    handleSend(prompt);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(inputValue);
     }
   };
 
-  const conversationItems: ConversationsProps["items"] = conversations.map(
-    (c) => ({
-      key: c.id,
-      label: c.title,
-    }),
-  );
-
-  const handleConversationChange = (key: string) => {
-    setActiveConversationId(key);
-  };
-
-  const bubbleItems = messages.map((msg) => ({
-    key: msg.id,
-    content: msg.content,
-    placement: msg.role === "user" ? ("end" as const) : ("start" as const),
-    role: msg.role,
+  const conversationMenuItems = conversations.map((c) => ({
+    key: c.id,
+    label: c.title,
+    icon: <Icons.Chat size={16} />,
   }));
 
   return (
-    <Flex className="h-full">
+    <Flex className={styles.container}>
       {/* Left sidebar */}
-      <Flex vertical className="w-64">
+      <Flex vertical className={styles.sidebar} gap={8}>
         <Button
           type="primary"
           onClick={createNewConversation}
           data-testid="new-chat-btn"
-          icon={<Icons.Add />}
+          icon={<Icons.Add size={16} />}
+          block
         >
           New chat
         </Button>
-        <Conversations
-          items={conversationItems}
-          activeKey={activeConversationId ?? undefined}
-          onActiveChange={handleConversationChange}
+        <Menu
+          mode="inline"
+          selectedKeys={activeConversationId ? [activeConversationId] : []}
+          onClick={({ key }) => setActiveConversationId(key)}
+          items={conversationMenuItems}
+          className={styles.conversationMenu}
         />
       </Flex>
 
       {/* Right chat area */}
-      <Flex vertical flex={1}>
+      <Flex vertical flex={1} className={styles.chatArea}>
         {/* Message area */}
-        <Flex vertical flex={1} className="overflow-y-auto">
+        <Flex vertical flex={1} className={styles.messageArea}>
           {messages.length === 0 ? (
-            <Flex vertical align="center" justify="center" flex={1}>
-              <Welcome
-                title="Privacy consultant"
-                description="Ask questions about privacy regulations, compliance, and best practices."
-              />
-              <Prompts
-                items={EXAMPLE_PROMPTS}
-                onItemClick={handlePromptClick}
-              />
+            <Flex
+              vertical
+              align="center"
+              justify="center"
+              flex={1}
+              gap={24}
+              className={styles.welcomeContainer}
+            >
+              <Flex vertical align="center" gap={8}>
+                <Icons.Chat size={48} />
+                <Title level={3}>Privacy consultant</Title>
+                <Text type="secondary">
+                  Ask questions about privacy regulations, compliance, and best
+                  practices.
+                </Text>
+              </Flex>
+              <Flex gap={12} wrap="wrap" justify="center">
+                {EXAMPLE_PROMPTS.map((prompt) => (
+                  <Card
+                    key={prompt.key}
+                    hoverable
+                    size="small"
+                    className={styles.promptCard}
+                    onClick={() => handlePromptClick(prompt.label)}
+                  >
+                    <Text>{prompt.label}</Text>
+                  </Card>
+                ))}
+              </Flex>
             </Flex>
           ) : (
-            <Bubble.List items={bubbleItems} autoScroll />
+            <Flex vertical gap={16} className={styles.messageList}>
+              {messages.map((msg) => (
+                <Flex
+                  key={msg.id}
+                  justify={msg.role === "user" ? "flex-end" : "flex-start"}
+                >
+                  <div
+                    className={
+                      msg.role === "user"
+                        ? styles.userMessage
+                        : styles.assistantMessage
+                    }
+                  >
+                    <Text>{msg.content}</Text>
+                  </div>
+                </Flex>
+              ))}
+              {isLoading && (
+                <Flex justify="flex-start">
+                  <div className={styles.assistantMessage}>
+                    <Spin size="small" />
+                  </div>
+                </Flex>
+              )}
+              <div ref={messagesEndRef} />
+            </Flex>
           )}
         </Flex>
 
@@ -209,15 +268,32 @@ const PrivacyConsultantChat = () => {
         )}
 
         {/* Input area */}
-        <Sender
-          loading={isLoading}
-          disabled={isAtLimit}
-          onSubmit={handleSend}
-          placeholder={
-            isAtLimit ? "Message limit reached" : "Ask your privacy question..."
-          }
-          data-testid="chat-sender"
-        />
+        <Flex gap={8} className={styles.inputArea}>
+          <Input.TextArea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              isAtLimit
+                ? "Message limit reached"
+                : "Ask your privacy question..."
+            }
+            disabled={isAtLimit}
+            autoSize={{ minRows: 1, maxRows: 4 }}
+            data-testid="chat-input"
+            className={styles.chatInput}
+            aria-label="Chat message input"
+          />
+          <Button
+            type="primary"
+            onClick={() => handleSend(inputValue)}
+            loading={isLoading}
+            disabled={isAtLimit || !inputValue.trim()}
+            icon={<Icons.Send size={16} />}
+            data-testid="chat-send-btn"
+            aria-label="Send message"
+          />
+        </Flex>
       </Flex>
     </Flex>
   );

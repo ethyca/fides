@@ -1,0 +1,71 @@
+.container {
+  height: 100%;
+}
+
+.sidebar {
+  width: 256px;
+  padding: 16px;
+  border-right: 1px solid var(--ant-color-border);
+  background: var(--ant-color-bg-container);
+}
+
+.conversationMenu {
+  flex: 1;
+  border-inline-end: none !important;
+  overflow-y: auto;
+}
+
+.chatArea {
+  background: var(--ant-color-bg-layout);
+}
+
+.messageArea {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.welcomeContainer {
+  text-align: center;
+}
+
+.promptCard {
+  max-width: 280px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--ant-color-primary);
+  }
+}
+
+.messageList {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.userMessage {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ant-color-primary);
+  color: var(--ant-color-white);
+}
+
+.assistantMessage {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+}
+
+.inputArea {
+  padding: 16px 24px;
+  border-top: 1px solid var(--ant-color-border);
+  background: var(--ant-color-bg-container);
+}
+
+.chatInput {
+  flex: 1;
+}
