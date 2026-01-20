@@ -1,11 +1,10 @@
 import {
   Button,
-  ChakraBellIcon as BellIcon,
-  ChakraText as Text,
   Divider,
   Drawer,
   Flex,
   Form,
+  Icons,
   InputNumber,
   Space,
   Switch,
@@ -91,14 +90,14 @@ const ConfigureAlerts = () => {
         onClick={() => setIsOpen(true)}
         title="Configure alerts"
         aria-label="Configure alerts"
-        icon={<BellIcon />}
+        icon={<Icons.Notification />}
       />
       <Drawer
         open={isOpen}
         onClose={handleClose}
         placement="right"
         width={480}
-        title="DSR notifications"
+        title="Request notifications"
         footer={
           <Flex gap="small" justify="flex-end">
             <Button onClick={handleClose}>Cancel</Button>
@@ -113,12 +112,10 @@ const ConfigureAlerts = () => {
         }
       >
         <Form layout="vertical" onFinish={handleSubmit}>
-          <Text fontSize="sm" color="gray.600" mb={4}>
-            Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors.
-          </Text>
-          <Space direction="vertical" size="middle" className="w-full">
+          <Form.Item help="Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors." style={{ marginBottom: 16, marginTop: -24, paddingTop: 0 }} />
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             <Form.Item style={{ marginBottom: 0 }}>
-              <Flex justify="space-between" align="center" className="w-full">
+              <Flex justify="space-between" align="center" style={{ width: "100%" }}>
                 <span>Enable email notifications</span>
                 <Switch
                   size="small"
@@ -133,13 +130,13 @@ const ConfigureAlerts = () => {
               </Flex>
             </Form.Item>
 
-            <Divider style={{ marginTop: 8, marginBottom: 12 }} />
+            <Divider style={{ margin: "8px 0 12px 0" }} />
 
             <Form.Item
               label={
-                <Flex align="center">
+                <Flex align="center" gap={4}>
                   <span>Email addresses</span>
-                  <InfoTooltip label="Type or paste email addresses separated by commas and press Enter or Tab to add them" className="ml-1" />
+                  <InfoTooltip label="Type or paste email addresses separated by commas and press Enter or Tab to add them" />
                 </Flex>
               }
               required={notify}
@@ -156,18 +153,18 @@ const ConfigureAlerts = () => {
 
             {notify && (
               <>
-                <Divider style={{ marginTop: 16, marginBottom: 0 }} />
+                <Divider style={{ margin: "16px 0 0 0" }} />
                 <Form.Item
                   label="Notification frequency"
                   help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
                 >
-                  <Flex align="center" gap={0}>
+                  <Flex align="center" gap={8}>
                     <span>Send notification after</span>
                     <InputNumber
                       min={DEFAULT_MIN_ERROR_COUNT}
                       value={minErrorCount}
-                      onChange={(value) => setMinErrorCount(value || DEFAULT_MIN_ERROR_COUNT)}
-                      style={{ width: 80, marginLeft: 8, marginRight: 8 }}
+                      onChange={(value) => setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)}
+                      style={{ width: 80 }}
                     />
                     <span>error(s)</span>
                   </Flex>
