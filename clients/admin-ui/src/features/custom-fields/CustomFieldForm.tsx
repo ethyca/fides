@@ -79,7 +79,6 @@ const CustomFieldForm = ({
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const valueType = Form.useWatch("value_type", form);
   const selectedTemplate = Form.useWatch("template", form);
-  const name = Form.useWatch("name", form);
   const router = useRouter();
   const { resource_type: queryResourceType } = router.query;
 
