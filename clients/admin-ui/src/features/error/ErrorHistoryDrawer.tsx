@@ -3,13 +3,32 @@
  *
  * Allows FDEs to view errors that occurred before they connected to
  * a customer's machine. Shows the last N errors with expandable details.
+ *
+ * Features:
+ * - View error history with status, message, endpoint
+ * - Expand to see full error details
+ * - Copy error data to clipboard
+ * - Download error report bundle (JSON)
  */
 
-import { Button, Drawer, Empty, Flex, List, Space, Tag, Typography } from "fidesui";
+import {
+  Button,
+  Drawer,
+  Empty,
+  Flex,
+  Icons,
+  List,
+  Space,
+  Tag,
+  Tooltip,
+  Typography,
+  useMessage,
+} from "fidesui";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
+import { downloadErrorReport } from "~/features/common/utils/errorReportUtils";
 
 import {
   clearErrors,
@@ -47,10 +66,18 @@ const formatRelativeTime = (timestamp: number): string => {
  */
 const MAX_PREVIEW_LENGTH = 100;
 
+interface ErrorHistoryItemProps {
+  error: ErrorLogEntry;
+  onDownloadReport: (error: ErrorLogEntry) => void;
+}
+
 /**
  * Single error entry item component
  */
-const ErrorHistoryItem = ({ error }: { error: ErrorLogEntry }) => {
+const ErrorHistoryItem = ({
+  error,
+  onDownloadReport,
+}: ErrorHistoryItemProps) => {
   const [expanded, setExpanded] = useState(false);
 
   // Defensive: handle old entries that may not have rawData
@@ -167,9 +194,21 @@ const ErrorHistoryDrawer = ({ open, onClose }: ErrorHistoryDrawerProps) => {
   const dispatch = useAppDispatch();
   const errors = useAppSelector(selectErrors);
   const errorCount = useAppSelector(selectErrorCount);
+  const messageApi = useMessage();
 
   const handleClearAll = () => {
     dispatch(clearErrors());
+  };
+
+  const handleDownloadReport = (error: ErrorLogEntry) => {
+    downloadErrorReport({
+      status: error.status,
+      message: error.message,
+      endpoint: error.endpoint,
+      rawData: error.rawData ?? "",
+      timestamp: error.timestamp,
+    });
+    messageApi.success("Error report downloaded");
   };
 
   return (
@@ -198,7 +237,11 @@ const ErrorHistoryDrawer = ({ open, onClose }: ErrorHistoryDrawerProps) => {
         <List
           dataSource={errors}
           renderItem={(error) => (
-            <ErrorHistoryItem key={error.id} error={error} />
+            <ErrorHistoryItem
+              key={error.id}
+              error={error}
+              onDownloadReport={handleDownloadReport}
+            />
           )}
           split={false}
         />
