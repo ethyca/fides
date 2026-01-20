@@ -64,6 +64,7 @@
   padding: 12px 16px;
   border-radius: 16px 16px 4px 16px;
   background: var(--ant-color-primary);
+  white-space: pre-wrap;
 
   :global(.ant-typography) {
     color: var(--ant-color-white);
@@ -76,6 +77,7 @@
   border-radius: 16px 16px 16px 4px;
   background: var(--ant-color-bg-container);
   border: 1px solid var(--ant-color-border);
+  white-space: pre-wrap;
 }
 
 .inputArea {
