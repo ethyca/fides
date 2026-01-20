@@ -70,6 +70,15 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
 
+      - name: Remove GCC 13
+        run: sudo apt remove -y gcc-13 g++-13
+
+      - name: Install Debian packages required
+        run: sudo apt install -y build-essential gcc-12 g++-12
+
+      - name: Ensure GCC 12 is default
+        run: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 120 --slave /usr/bin/g++ g++ /usr/bin/g++-12
+
       - name: Install Nox
         run: pip install nox>=2022
 
@@ -77,12 +86,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-nox-${{ github.job }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
+            ${{ runner.os }}-nox-${{ github.job }}-
 
       - name: Run Static Check
-        run: nox -s collect_tests
+        run: nox -s collect_tests_ex_cls
 
   Validate-API-Types:
     needs: Check-Backend-Changes
