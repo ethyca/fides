@@ -18,13 +18,11 @@ import {
   Flex,
   Icons,
   List,
-  Space,
   Tag,
   Tooltip,
   Typography,
   useMessage,
 } from "fidesui";
-import { useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { downloadErrorReport } from "~/features/common/utils/errorReportUtils";
@@ -112,14 +110,9 @@ const ErrorHistoryItem = ({
         }
         description={
           <div>
-            <Paragraph
-              ellipsis={{
-                rows: 3,
-                expandable: true,
-                symbol: "more",
-              }}
-              copyable
-            >
+            <Paragraph copyable={{
+              text: error.rawData
+            }} >
               {/* Status and message */}
               {error.message}
             </Paragraph>
