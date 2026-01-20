@@ -43,7 +43,7 @@ const showEnhancedErrorToast = (action: unknown) => {
   // Use endpoint as toast ID to prevent spam from repeated failures
   const toastId = `error-${errorProps.endpoint}`;
 
-  toast({
+  errorProps.status !== 404 && toast({
     id: toastId,
     status: "error",
     duration: null, // User must dismiss manually. After we have it on storage, lets give it 5 secs
