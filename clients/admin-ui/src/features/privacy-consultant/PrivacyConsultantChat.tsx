@@ -6,6 +6,7 @@ import {
   Icons,
   Input,
   Menu,
+  Select,
   Spin,
   Text,
   Title,
@@ -18,6 +19,15 @@ import { parseMarkdown } from "./parseMarkdown";
 import styles from "./PrivacyConsultantChat.module.scss";
 
 const MAX_MESSAGES = 40;
+
+const MODEL_OPTIONS = [
+  { value: "openrouter/anthropic/claude-opus-4.5", label: "Claude Opus 4.5" },
+  { value: "openrouter/google/gemini-2.5-flash", label: "Gemini Flash" },
+  { value: "openrouter/openai/gpt-5.2-chat", label: "GPT-5.2" },
+  { value: "openrouter/tencent/hunyuan-a13b-instruct", label: "Hunyuan A13B" },
+];
+
+const DEFAULT_MODEL = "openrouter/anthropic/claude-opus-4.5";
 
 interface Message {
   id: string;
@@ -64,6 +74,7 @@ const PrivacyConsultantChat = () => {
     string | null
   >(null);
   const [inputValue, setInputValue] = useState("");
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [askPrivacyExpert, { isLoading }] = useAskPrivacyExpertMutation();
@@ -142,6 +153,7 @@ const PrivacyConsultantChat = () => {
           role: msg.role,
           content: msg.content,
         })),
+        model: selectedModel,
       }).unwrap();
 
       // Add assistant message
@@ -217,6 +229,18 @@ const PrivacyConsultantChat = () => {
 
       {/* Right chat area */}
       <Flex vertical flex={1} className={styles.chatArea}>
+        {/* Header with model selector */}
+        <Flex justify="flex-end" className={styles.chatHeader}>
+          <Select
+            value={selectedModel}
+            onChange={setSelectedModel}
+            options={MODEL_OPTIONS}
+            style={{ width: 180 }}
+            data-testid="model-selector"
+            aria-label="Select AI model"
+          />
+        </Flex>
+
         {/* Message area */}
         <Flex vertical flex={1} className={styles.messageArea}>
           {messages.length === 0 ? (
