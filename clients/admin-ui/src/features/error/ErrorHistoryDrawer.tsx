@@ -26,9 +26,10 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { downloadErrorReport } from "~/features/common/utils/errorReportUtils";
+
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
 import {
   clearErrors,
@@ -37,7 +38,7 @@ import {
   selectErrors,
 } from "./error.slice";
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 /**
  * Formats a timestamp into a relative time string (e.g., "2 min ago")
@@ -64,7 +65,6 @@ const formatRelativeTime = (timestamp: number): string => {
 /**
  * Maximum characters to display in the collapsed raw data preview.
  */
-const MAX_PREVIEW_LENGTH = 100;
 
 interface ErrorHistoryItemProps {
   error: ErrorLogEntry;
@@ -78,16 +78,6 @@ const ErrorHistoryItem = ({
   error,
   onDownloadReport,
 }: ErrorHistoryItemProps) => {
-  const [expanded, setExpanded] = useState(false);
-
-  // Defensive: handle old entries that may not have rawData
-  const rawData = error.rawData ?? JSON.stringify(error, null, 2);
-
-  const previewData =
-    rawData.length > MAX_PREVIEW_LENGTH
-      ? `${rawData.substring(0, MAX_PREVIEW_LENGTH)}...`
-      : rawData;
-
   return (
     <List.Item
       style={{
@@ -96,99 +86,57 @@ const ErrorHistoryItem = ({
         borderBottom: "1px solid #f0f0f0",
       }}
     >
-      <List.Item.Meta title={
-        <div>
-          <Flex className={"grow"}>
-            {error.status !== undefined && (
-              <>
-                <Tag color="error" style={{ marginRight: 8 }}>
-                  {error.status}
-                </Tag>
-                <Text className="flex-1">
-                  {JSON.parse(error.rawData)?.type}
-                </Text>
-                <Text type="secondary" style={{ fontSize: 12 }} className={"self-end"}>
-                  {formatRelativeTime(error.timestamp)}
-                </Text>
-              </>
-            )}
-          </Flex>
-        </div>
-      }
-        description={
+      <List.Item.Meta
+        title={
           <div>
-            <Flex justify="space-between" align="flex-start">
-              {/* Status and message */}
-              {error.message}
+            <Flex className="grow">
+              {error.status !== undefined && (
+                <>
+                  <Tag color="error" style={{ marginRight: 8 }}>
+                    {error.status}
+                  </Tag>
+                  <Text className="flex-1">
+                    {JSON.parse(error.rawData)?.type}
+                  </Text>
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 12 }}
+                    className="self-end"
+                  >
+                    {formatRelativeTime(error.timestamp)}
+                  </Text>
+                </>
+              )}
             </Flex>
-            <Space size={4} style={{ marginTop: 8 }}>
-              <ClipboardButton copyText={rawData} size="small" />
-              <Tooltip title="Download error report">
-                <Button
-                  size="small"
-                  type="text"
-                  icon={<Icons.Download />}
-                  onClick={() => onDownloadReport(error)}
-                  data-testid="download-report-btn"
-                />
-              </Tooltip>
-            </Space>
           </div>
         }
+        description={
+          <div>
+            <Paragraph
+              ellipsis={{
+                rows: 3,
+                expandable: true,
+                symbol: "more",
+              }}
+              copyable
+            >
+              {/* Status and message */}
+              {error.message}
+            </Paragraph>
+            <Tooltip title="Download error report" className="inline">
+              <Button
+                size="small"
+                type="text"
+                icon={<Icons.Download />}
+                onClick={() => onDownloadReport(error)}
+                data-testid="download-report-btn"
+              />
+            </Tooltip>
+
+          </div >
+        }
       />
-      {/* Header row */}
-
-      {/* Expandable details */}
-      <div style={{ marginTop: 8 }}>
-        <details
-          open={expanded}
-          onToggle={(e) => setExpanded((e.target as HTMLDetailsElement).open)}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              fontSize: 12,
-              color: "#8c8c8c",
-              userSelect: "none",
-            }}
-          >
-            {expanded ? "Hide details" : "Show details"}
-          </summary>
-
-          <div
-            style={{
-              marginTop: 8,
-              padding: 8,
-              backgroundColor: "#fafafa",
-              borderRadius: 4,
-              fontSize: 11,
-              fontFamily: "monospace",
-              maxHeight: 150,
-              overflowY: "auto",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {rawData}
-          </div>
-        </details>
-
-        {/* Collapsed preview when not expanded */}
-        {!expanded && (
-          <Text
-            type="secondary"
-            style={{
-              fontSize: 11,
-              fontFamily: "monospace",
-              display: "block",
-              marginTop: 4,
-            }}
-          >
-            {previewData}
-          </Text>
-        )}
-      </div>
-    </List.Item>
+    </List.Item >
   );
 };
 
@@ -233,7 +181,12 @@ const ErrorHistoryDrawer = ({ open, onClose }: ErrorHistoryDrawerProps) => {
         </Flex>
       }
       footer={
-        <Button size="small" onClick={handleClearAll} type="primary" disabled={errorCount <= 0}>
+        <Button
+          size="small"
+          onClick={handleClearAll}
+          type="primary"
+          disabled={errorCount <= 0}
+        >
           Clear all
         </Button>
       }
@@ -245,7 +198,7 @@ const ErrorHistoryDrawer = ({ open, onClose }: ErrorHistoryDrawerProps) => {
         />
       ) : (
         <List
-          dataSource={errors}
+          dataSource={errors.filter((error) => error.status !== 404)}
           renderItem={(error) => (
             <ErrorHistoryItem
               key={error.id}

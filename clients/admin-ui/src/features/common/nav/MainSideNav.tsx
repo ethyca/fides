@@ -12,11 +12,11 @@ import { useState } from "react";
 
 import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { selectErrorCount } from "~/features/error/error.slice";
-import ErrorHistoryDrawer from "~/features/error/ErrorHistoryDrawer";
 import { LOGIN_ROUTE } from "~/constants";
 import { logout, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+import { selectErrorCount } from "~/features/error/error.slice";
+import ErrorHistoryDrawer from "~/features/error/ErrorHistoryDrawer";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import AccountDropdownMenu from "./AccountDropdownMenu";
@@ -167,9 +167,10 @@ export const UnconnectedMainSideNav = ({
           <Badge
             count={errorCount}
             classNames={{
-              'indicator': "shadow-none"
+              indicator: "shadow-none",
             }}
-            size="small" offset={[-5, 5]}
+            size="small"
+            offset={[-5, 5]}
           >
             <Button
               type="primary"
