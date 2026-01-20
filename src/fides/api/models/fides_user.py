@@ -26,6 +26,7 @@ from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
+    from fides.api.models.agent import AgentConversation
     from fides.api.models.fides_user_permissions import FidesUserPermissions
     from fides.api.models.fides_user_respondent_email_verification import (
         FidesUserRespondentEmailVerification,
@@ -98,6 +99,14 @@ class FidesUser(Base):
         primaryjoin="and_(FidesUser.id == foreign(ManualTaskReference.reference_id), "
         "ManualTaskReference.reference_type == 'assigned_user')",
         viewonly=True,
+    )
+
+    # Agent conversations relationship
+    agent_conversations = relationship(
+        "AgentConversation",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
     )
 
     @property

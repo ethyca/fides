@@ -43,6 +43,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         exact: true,
         scopes: [],
       },
+      {
+        title: "Assistant",
+        path: routes.ASSISTANT_ROUTE,
+        requiresPlus: true,
+        scopes: [],
+      },
     ],
   },
   {
@@ -304,6 +310,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "About Fides",
         path: routes.ABOUT_ROUTE,
         scopes: [ScopeRegistryEnum.USER_READ], // temporary scope while we don't have a scope for beta features
+      },
+      {
+        title: "Assistant",
+        path: routes.ASSISTANT_SETTINGS_ROUTE,
+        requiresPlus: true,
+        scopes: [],
       },
     ],
   },

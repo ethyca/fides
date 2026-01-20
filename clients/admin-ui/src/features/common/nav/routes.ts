@@ -105,3 +105,7 @@ export const FIDES_JS_DOCS = "/fides-js-docs";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
+
+// AI Assistant
+export const ASSISTANT_ROUTE = "/assistant";
+export const ASSISTANT_SETTINGS_ROUTE = "/settings/assistant";

@@ -47,6 +47,7 @@ import { systemGroupSlice } from "~/features/system/system-groups.slice";
 import { dataCategorySlice } from "~/features/taxonomy/data-category.slice";
 import { datasetTestSlice } from "~/features/test-datasets";
 import { userManagementSlice } from "~/features/user-management";
+import { agentSlice } from "~/features/agent/agent.slice";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -102,6 +103,7 @@ const reducer = {
   [systemGroupSlice.name]: systemGroupSlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
+  [agentSlice.name]: agentSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
