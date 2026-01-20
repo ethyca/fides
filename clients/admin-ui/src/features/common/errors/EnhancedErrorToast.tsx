@@ -161,9 +161,9 @@ const EnhancedErrorToast = ({
             >
               {displayData}
             </Text>
-            <Box position="absolute" top={1} right={1}>
-              <ClipboardButton copyText={rawData} size="small" />
-            </Box>
+          </Box>
+          <Box position="absolute" top={1} right={1}>
+            <ClipboardButton copyText={rawData} size="small" />
           </Box>
         </details>
       </Box>

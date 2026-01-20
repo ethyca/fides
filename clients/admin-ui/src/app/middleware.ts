@@ -43,20 +43,20 @@ const showEnhancedErrorToast = (action: unknown) => {
   // Use endpoint as toast ID to prevent spam from repeated failures
   const toastId = `error-${errorProps.endpoint}`;
 
-  errorProps.status !== 404 && toast({
-    id: toastId,
-    status: "error",
-    duration: null, // User must dismiss manually. After we have it on storage, lets give it 5 secs
-    isClosable: true,
-    render: ({ onClose }) =>
-      EnhancedErrorToast({
-        status: errorProps.status,
-        message: errorProps.message,
-        endpoint: errorProps.endpoint,
-        rawData: errorProps.rawData,
-        onClose,
-      }),
-  });
+  errorProps.status !== 404 &&
+    toast({
+      id: toastId,
+      status: "error",
+      duration: null, // User must dismiss manually. After we have it on storage, lets give it 5 secs isClosable: true,
+      render: ({ onClose }) =>
+        EnhancedErrorToast({
+          status: errorProps.status,
+          message: errorProps.message,
+          endpoint: errorProps.endpoint,
+          rawData: errorProps.rawData,
+          onClose,
+        }),
+    });
 
   // Still log to console for DevTools debugging
   printReduxError(action);
