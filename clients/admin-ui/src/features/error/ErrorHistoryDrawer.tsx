@@ -24,10 +24,8 @@ import {
   useMessage,
 } from "fidesui";
 
-import ClipboardButton from "~/features/common/ClipboardButton";
-import { downloadErrorReport } from "~/features/common/utils/errorReportUtils";
-
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { downloadErrorReport } from "~/features/common/utils/errorReportUtils";
 
 import {
   clearErrors,
@@ -110,9 +108,11 @@ const ErrorHistoryItem = ({
         }
         description={
           <div>
-            <Paragraph copyable={{
-              text: error.rawData
-            }} >
+            <Paragraph
+              copyable={{
+                text: error.rawData,
+              }}
+            >
               {/* Status and message */}
               {error.message}
             </Paragraph>
@@ -125,11 +125,10 @@ const ErrorHistoryItem = ({
                 data-testid="download-report-btn"
               />
             </Tooltip>
-
-          </div >
+          </div>
         }
       />
-    </List.Item >
+    </List.Item>
   );
 };
 
