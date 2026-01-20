@@ -143,6 +143,7 @@ const persistConfig = {
     healthApi.reducerPath,
     v3Api.reducerPath,
     dictSuggestionsSlice.name,
+    errorSlice.name, // Error history should not persist across refreshes
   ],
 };
 

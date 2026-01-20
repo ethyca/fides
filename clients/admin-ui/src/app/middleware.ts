@@ -76,25 +76,35 @@ const errorLoggingFunctions: Record<
 /**
  * RTK Query error logging middleware.
  *
- * Intercepts rejected RTK Query actions and routes them to the appropriate
- * error handler based on the application's error_notification_mode config.
+ * Intercepts rejected RTK Query actions and:
+ * 1. Stores error in Redux for history (BOTH modes)
+ * 2. Routes to appropriate handler based on error_notification_mode config
  */
 export const rtkQueryErrorLogger: Middleware =
-  (state) => (next) => (action: any) => {
+  (store) => (next) => (action) => {
     if (isRejectedWithValue(action)) {
+      // Parse the error action to extract useful info
+      const errorProps = parseRTKErrorAction(action);
+
+      // Store error in Redux history (works for BOTH modes)
+      store.dispatch(
+        errorSlice.actions.addError({
+          status: errorProps.status,
+          message: errorProps.message,
+          endpoint: errorProps.endpoint,
+          rawData: errorProps.rawData,
+        }),
+      );
+
+      // Get notification mode from config
       const applicationState = selectApplicationConfig({ api_set: false })(
-        state.getState(),
+        store.getState(),
       );
       const loggingMode =
         applicationState?.admin_ui?.error_notification_mode ??
         ErrorNotificationMode.CONSOLE_ONLY;
 
-      state.dispatch(
-        errorSlice.actions.addError({
-          status: action.payload?.status,
-          detail: action.payload?.data?.detail,
-        }),
-      );
+      // Handle based on mode (toast or console)
       errorLoggingFunctions[loggingMode](action);
     }
     next(action);
