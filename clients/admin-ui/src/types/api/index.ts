@@ -64,6 +64,7 @@ export type { BulkSoftDeletePrivacyRequests } from "./models/BulkSoftDeletePriva
 export type { BulkUpdateFailed } from "./models/BulkUpdateFailed";
 export type { CheckpointActionRequiredDetails } from "./models/CheckpointActionRequiredDetails";
 export type { Classification } from "./models/Classification";
+export type { ConversationMessage } from "./models/ConversationMessage";
 export type { ClassificationResponse } from "./models/ClassificationResponse";
 export { ClassificationStatus } from "./models/ClassificationStatus";
 export type { ClassifyCollection } from "./models/ClassifyCollection";
