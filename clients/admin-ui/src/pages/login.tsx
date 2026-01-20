@@ -32,6 +32,7 @@ import {
 } from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { getErrorMessage } from "~/features/common/helpers";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
@@ -138,10 +139,13 @@ const useLogin = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
+      const errorMsg = getErrorMessage(
+        error,
+        "Login failed. Please check your credentials and try again.",
+      );
       toast({
         status: "error",
-        description:
-          "Login failed. Please check your credentials and try again.",
+        description: errorMsg,
       });
     }
   };
