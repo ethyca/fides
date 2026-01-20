@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -985,13 +986,46 @@ def _trigger_pre_approval_webhooks(
 ) -> None:
     """
     Shared method to trigger all configured pre-approval webhooks for a given privacy request.
+    Webhooks are triggered in parallel for faster response times.
     """
     pre_approval_webhooks = db.query(PreApprovalWebhook).all()
-    for webhook in pre_approval_webhooks:
-        privacy_request.trigger_pre_approval_webhook(
-            webhook=webhook,
-            policy_action=privacy_request.policy.get_action_type(),
-        )
+
+    if not pre_approval_webhooks:
+        return
+
+    def trigger_single_webhook(webhook: PreApprovalWebhook) -> None:
+        """Helper function to trigger a single webhook with error handling."""
+        try:
+            privacy_request.trigger_pre_approval_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
+        except Exception as exc:
+            logger.error(
+                "Error triggering pre-approval webhook '{}' for privacy request '{}': {}",
+                webhook.key,
+                privacy_request.id,
+                exc,
+            )
+
+    # Trigger all webhooks in parallel with a reasonable max_workers limit
+    max_workers = min(len(pre_approval_webhooks), 10)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(trigger_single_webhook, webhook)
+            for webhook in pre_approval_webhooks
+        ]
+        # Wait for all webhooks to complete and collect any exceptions
+        for future in as_completed(futures):
+            try:
+                future.result()  # This will re-raise any exceptions from the thread
+            except Exception as exc:
+                # Already logged in trigger_single_webhook, but ensure we don't miss anything
+                logger.error(
+                    "Unexpected error in pre-approval webhook execution for privacy request '{}': {}",
+                    privacy_request.id,
+                    exc,
+                )
 
 
 def _requeue_privacy_request(

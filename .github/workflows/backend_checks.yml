@@ -84,8 +84,277 @@ jobs:
       - name: Run Static Check
         run: nox -s collect_tests
 
+  Validate-API-Types:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install TypeScript dependencies
+        run: |
+          npm install -g typescript ts-node
+          npm install --no-save @types/node
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install nox>=2022
+
+      - name: Install fides dependencies (for schema generation)
+        run: |
+          pip install -e .
+          pip install -r requirements.txt
+
+      - name: Generate OpenAPI schema (without starting server)
+        run: |
+          python scripts/generate_openapi_schema.py openapi.json
+          echo "✅ OpenAPI schema generated"
+        env:
+          FIDES__TEST_MODE: "true"
+          FIDES__SECURITY__APP_ENCRYPTION_KEY: "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+          FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
+          FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: "fidesadminsecret"
+
+      - name: Validate Admin UI types
+        run: |
+          echo "🔍 Validating Admin UI TypeScript types..."
+          ts-node --project scripts/tsconfig.json scripts/validate_api_types.ts \
+            openapi.json \
+            clients/admin-ui/src/types/api \
+            2>&1 | tee admin-ui-validation.log
+        continue-on-error: true
+        id: validate-admin-ui
+
+      - name: Validate Privacy Center types
+        run: |
+          echo "🔍 Validating Privacy Center TypeScript types..."
+          ts-node --project scripts/tsconfig.json scripts/validate_api_types.ts \
+            openapi.json \
+            clients/privacy-center/types/api \
+            2>&1 | tee privacy-center-validation.log
+        continue-on-error: true
+        id: validate-privacy-center
+
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-type-validation-logs
+          path: |
+            admin-ui-validation.log
+            privacy-center-validation.log
+            openapi.json
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Unique marker to identify our comment
+            const COMMENT_MARKER = '<!-- api-type-validation-comment -->';
+
+            const adminUiLogDisplay = fs.existsSync('admin-ui-validation.log')
+              ? fs.readFileSync('admin-ui-validation.log', 'utf8')
+              : 'No validation log found';
+
+            const privacyCenterLogDisplay = fs.existsSync('privacy-center-validation.log')
+              ? fs.readFileSync('privacy-center-validation.log', 'utf8')
+              : 'No validation log found';
+
+            // Parse validation results from logs (don't rely on step outcome)
+            const adminUiLog = fs.existsSync('admin-ui-validation.log')
+              ? fs.readFileSync('admin-ui-validation.log', 'utf8')
+              : '';
+            const privacyCenterLog = fs.existsSync('privacy-center-validation.log')
+              ? fs.readFileSync('privacy-center-validation.log', 'utf8')
+              : '';
+
+            // Count errors and warnings from logs
+            const countErrors = (log) => {
+              const match = log.match(/Errors:\s+(\d+)/);
+              return match ? parseInt(match[1]) : 0;
+            };
+
+            const countWarnings = (log) => {
+              const match = log.match(/Warnings:\s+(\d+)/);
+              return match ? parseInt(match[1]) : 0;
+            };
+
+            const countMissingFields = (log) => {
+              const matches = log.match(/\[missing_field\]/g);
+              return matches ? matches.length : 0;
+            };
+
+            const adminUiErrors = countErrors(adminUiLog);
+            const adminUiWarnings = countWarnings(adminUiLog);
+            const privacyCenterErrors = countErrors(privacyCenterLog);
+            const privacyCenterWarnings = countWarnings(privacyCenterLog);
+
+            const totalErrors = adminUiErrors + privacyCenterErrors;
+            const totalWarnings = adminUiWarnings + privacyCenterWarnings;
+            const totalMissingFields = countMissingFields(adminUiLog) + countMissingFields(privacyCenterLog);
+
+            const adminUiHasIssues = adminUiErrors > 0 || adminUiWarnings > 0;
+            const privacyCenterHasIssues = privacyCenterErrors > 0 || privacyCenterWarnings > 0;
+            const hasAnyIssues = totalErrors > 0 || totalWarnings > 0;
+
+            // Build comment body
+            let comment = COMMENT_MARKER + '\n## 🔍 API Type Validation Results\n\n';
+
+            if (!hasAnyIssues) {
+              comment += '✅ All TypeScript types match the backend API schemas!\n\n';
+            } else {
+              comment += '⚠️  Type mismatches detected (non-blocking check)\n\n';
+
+              // Add prominent warning if many missing fields
+              if (totalMissingFields > 10) {
+                comment += '> [!WARNING]\n';
+                comment += `> **${totalMissingFields} missing fields detected!** This usually means TypeScript types are out of sync.\n`;
+                comment += '> **Most likely fix:** Regenerate the TypeScript types (see below).\n\n';
+              }
+
+              comment += '### 🔧 To fix these issues:\n';
+              comment += '```bash\n';
+              comment += 'cd clients\n';
+              comment += 'npm run openapi:generate\n';
+              comment += 'git add -A\n';
+              comment += 'git commit -m "chore: regenerate TypeScript types from OpenAPI schema"\n';
+              comment += '```\n\n';
+              comment += '⚠️  **Important:** Review the changes carefully before committing!\n';
+              comment += '- Check for breaking changes in existing types\n';
+              comment += '- Verify manual overrides are preserved\n';
+              comment += '- Test affected frontend components\n\n';
+              comment += `📎 [View full logs in artifacts](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n`;
+            }
+
+            // Add brief status and link to artifacts
+            comment += '### Validation Status:\n\n';
+
+            if (adminUiHasIssues) {
+              comment += `- **Admin UI**: ⚠️ ${adminUiErrors} error(s), ${adminUiWarnings} warning(s)\n`;
+            } else {
+              comment += `- **Admin UI**: ✅ Passed\n`;
+            }
+
+            if (privacyCenterHasIssues) {
+              comment += `- **Privacy Center**: ⚠️ ${privacyCenterErrors} error(s), ${privacyCenterWarnings} warning(s)\n\n`;
+            } else {
+              comment += `- **Privacy Center**: ✅ Passed\n\n`;
+            }
+
+            comment += `📎 **[View full validation logs](${context.payload.repository.html_url}/actions/runs/${context.runId})**\n`;
+            comment += '> Click "Summary" → Download "api-type-validation-logs" artifact\n\n';
+
+            // Repeat fix instructions at the bottom for easy access
+            if (hasAnyIssues) {
+              comment += '---\n\n';
+              comment += '### 🔧 Quick Fix:\n';
+              comment += '```bash\n';
+              comment += 'cd clients\n';
+              comment += 'npm run openapi:generate\n';
+              comment += 'git add -A\n';
+              comment += 'git commit -m "chore: regenerate TypeScript types"\n';
+              comment += '```\n';
+            }
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(c => c.body?.includes(COMMENT_MARKER));
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+              console.log('Updated existing comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+              console.log('Created new comment');
+            }
+
+      - name: Generate validation summary
+        if: always()
+        run: |
+          echo "## 🔍 API Type Validation Summary" >> $GITHUB_STEP_SUMMARY
+
+          admin_ui_failed=false
+          privacy_center_failed=false
+
+          if [ "${{ steps.validate-admin-ui.outcome }}" = "failure" ]; then
+            admin_ui_failed=true
+          fi
+
+          if [ "${{ steps.validate-privacy-center.outcome }}" = "failure" ]; then
+            privacy_center_failed=true
+          fi
+
+          if [ "$admin_ui_failed" = true ] || [ "$privacy_center_failed" = true ]; then
+            # Count missing fields
+            missing_count=$(grep -c "\[missing_field\]" admin-ui-validation.log privacy-center-validation.log 2>/dev/null || echo "0")
+
+            echo "⚠️  **Type mismatches detected** (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$missing_count" -gt 10 ]; then
+              echo "### ⚠️ $missing_count missing fields detected!" >> $GITHUB_STEP_SUMMARY
+              echo "This usually means TypeScript types are out of sync with the backend." >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            echo "### 🔧 Quick Fix:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "cd clients" >> $GITHUB_STEP_SUMMARY
+            echo "npm run openapi:generate" >> $GITHUB_STEP_SUMMARY
+            echo "git add -A" >> $GITHUB_STEP_SUMMARY
+            echo "git commit -m \"chore: regenerate TypeScript types from OpenAPI schema\"" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Review changes carefully before committing!**" >> $GITHUB_STEP_SUMMARY
+            echo "- Check for breaking changes" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify manual overrides are preserved" >> $GITHUB_STEP_SUMMARY
+            echo "- Test affected components" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📎 See artifacts for full validation logs" >> $GITHUB_STEP_SUMMARY
+
+            # Set output for status check
+            echo "::warning title=API Type Validation::$missing_count type mismatches detected. Run 'npm run openapi:generate' in clients/ to fix."
+          else
+            echo "✅ **All TypeScript types match the backend API schemas!**" >> $GITHUB_STEP_SUMMARY
+            echo "::notice title=API Type Validation::All types are in sync"
+          fi
+
   Build:
-    needs: [Check-Backend-Changes, Collect-Tests]
+    needs: [Check-Backend-Changes, Collect-Tests, Validate-API-Types]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -657,6 +926,7 @@ jobs:
     if: always()
     needs:
       - Collect-Tests
+      - Validate-API-Types
       - Build
       - Performance-Checks
       - Check-Container-Startup
@@ -668,6 +938,7 @@ jobs:
       - name: Check job results
         run: |
           echo "Collect-Tests: ${{ needs.Collect-Tests.result }}"
+          echo "Validate-API-Types: ${{ needs.Validate-API-Types.result }}"
           echo "Build: ${{ needs.Build.result }}"
           echo "Performance-Checks: ${{ needs.Performance-Checks.result }}"
           echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
@@ -700,6 +971,11 @@ jobs:
           # Performance checks can fail without blocking (continue-on-error: true)
           if [ "${{ needs.Performance-Checks.result }}" == "failure" ]; then
             echo "⚠️ Performance checks failed but not blocking"
+          fi
+
+          # API type validation can fail without blocking (informational check)
+          if [ "${{ needs.Validate-API-Types.result }}" == "failure" ]; then
+            echo "⚠️ API type validation found mismatches but not blocking"
           fi
 
           echo "✅ All required backend checks passed or were skipped"

@@ -1481,3 +1481,165 @@ class TestPrivacyRequestService:
             expected_batch = request_ids[start_idx : start_idx + len(batch)]
             assert batch == expected_batch
             start_idx += len(batch)
+
+@patch(
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequest.trigger_pre_approval_webhook"
+    )
+    def test_trigger_pre_approval_webhooks_parallel_execution(
+        self,
+        mock_trigger_webhook,
+        db: Session,
+        pre_approval_webhooks: List[PreApprovalWebhook],
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that pre-approval webhooks are triggered in parallel."""
+        from fides.service.privacy_request.privacy_request_service import (
+            _trigger_pre_approval_webhooks,
+        )
+
+        # Configure mock to track call timing
+        call_times = []
+
+        def track_call_time(webhook, policy_action):
+            import time
+
+            call_times.append(time.time())
+            # Simulate some processing time
+            time.sleep(0.1)
+
+        mock_trigger_webhook.side_effect = track_call_time
+
+        # Trigger webhooks
+        _trigger_pre_approval_webhooks(db, privacy_request)
+
+        # Verify all webhooks were called
+        assert mock_trigger_webhook.call_count == len(pre_approval_webhooks)
+
+        # Verify webhooks were called with correct parameters
+        for i, webhook in enumerate(pre_approval_webhooks):
+            call_args = mock_trigger_webhook.call_args_list[i]
+            assert call_args[1]["webhook"] == webhook
+            assert call_args[1]["policy_action"] == privacy_request.policy.get_action_type()
+
+        # Verify parallel execution: all calls should start within a short time window
+        # (much less than serial execution would take)
+        if len(call_times) > 1:
+            time_span = max(call_times) - min(call_times)
+            # If serial, this would be ~0.2s (0.1s * 2 webhooks)
+            # If parallel, should be < 0.15s (allowing for some overhead)
+            assert time_span < 0.15, f"Webhooks appear to be executing serially (time span: {time_span}s)"
+
+    @patch(
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequest.trigger_pre_approval_webhook"
+    )
+    def test_trigger_pre_approval_webhooks_handles_errors(
+        self,
+        mock_trigger_webhook,
+        db: Session,
+        pre_approval_webhooks: List[PreApprovalWebhook],
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that errors in one webhook don't prevent others from executing."""
+        from fides.service.privacy_request.privacy_request_service import (
+            _trigger_pre_approval_webhooks,
+        )
+
+        # Make the first webhook fail
+        def side_effect_with_error(webhook, policy_action):
+            if webhook.key == pre_approval_webhooks[0].key:
+                raise Exception("Webhook execution failed")
+
+        mock_trigger_webhook.side_effect = side_effect_with_error
+
+        # Should not raise an exception even though one webhook fails
+        _trigger_pre_approval_webhooks(db, privacy_request)
+
+        # Verify all webhooks were attempted
+        assert mock_trigger_webhook.call_count == len(pre_approval_webhooks)
+
+    def test_trigger_pre_approval_webhooks_empty_list(
+        self,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test that triggering webhooks with no configured webhooks completes successfully."""
+        from fides.service.privacy_request.privacy_request_service import (
+            _trigger_pre_approval_webhooks,
+        )
+
+        # Ensure no webhooks exist
+        for webhook in PreApprovalWebhook.all(db):
+            webhook.delete(db)
+        db.commit()
+
+        # Should complete without error
+        _trigger_pre_approval_webhooks(db, privacy_request)
+
+
+# Unit tests outside of the integration test class
+@patch(
+    "fides.service.privacy_request.privacy_request_service.PrivacyRequest.trigger_pre_approval_webhook"
+)
+def test_trigger_pre_approval_webhooks_parallel_execution_unit(
+    mock_trigger_webhook,
+    db: Session,
+    pre_approval_webhooks: List[PreApprovalWebhook],
+    privacy_request: PrivacyRequest,
+):
+    """Unit test that pre-approval webhooks are triggered in parallel."""
+    from fides.service.privacy_request.privacy_request_service import (
+        _trigger_pre_approval_webhooks,
+    )
+
+    # Configure mock to track call timing
+    call_times = []
+
+    def track_call_time(webhook, policy_action):
+        import time
+
+        call_times.append(time.time())
+        # Simulate some processing time
+        time.sleep(0.1)
+
+    mock_trigger_webhook.side_effect = track_call_time
+
+    # Trigger webhooks
+    _trigger_pre_approval_webhooks(db, privacy_request)
+
+    # Verify all webhooks were called
+    assert mock_trigger_webhook.call_count == len(pre_approval_webhooks)
+
+    # Verify parallel execution: all calls should start within a short time window
+    if len(call_times) > 1:
+        time_span = max(call_times) - min(call_times)
+        # If serial, this would be ~0.2s (0.1s * 2 webhooks)
+        # If parallel, should be < 0.15s (allowing for some overhead)
+        assert time_span < 0.15, f"Webhooks appear to be executing serially (time span: {time_span}s)"
+
+
+@patch(
+    "fides.service.privacy_request.privacy_request_service.PrivacyRequest.trigger_pre_approval_webhook"
+)
+def test_trigger_pre_approval_webhooks_handles_errors_unit(
+    mock_trigger_webhook,
+    db: Session,
+    pre_approval_webhooks: List[PreApprovalWebhook],
+    privacy_request: PrivacyRequest,
+):
+    """Unit test that errors in one webhook don't prevent others from executing."""
+    from fides.service.privacy_request.privacy_request_service import (
+        _trigger_pre_approval_webhooks,
+    )
+
+    # Make the first webhook fail
+    def side_effect_with_error(webhook, policy_action):
+        if webhook.key == pre_approval_webhooks[0].key:
+            raise Exception("Webhook execution failed")
+
+        mock_trigger_webhook.side_effect = side_effect_with_error
+
+    # Should not raise an exception even though one webhook fails
+    _trigger_pre_approval_webhooks(db, privacy_request)
+
+    # Verify all webhooks were attempted
+    assert mock_trigger_webhook.call_count == len(pre_approval_webhooks)
