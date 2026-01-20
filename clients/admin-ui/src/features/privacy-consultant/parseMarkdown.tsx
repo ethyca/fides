@@ -2,6 +2,7 @@ import React from "react";
 
 /**
  * Simple markdown parser that supports basic formatting:
+ * - [text](url) links
  * - **bold** or __bold__
  * - *italic* or _italic_
  * - `code`
@@ -20,6 +21,30 @@ export const parseMarkdown = (text: string): React.ReactNode => {
 
       // Process inline formatting
       while (remaining.length > 0) {
+        // Match [text](url) links
+        const linkMatch = remaining.match(/^(.*?)\[([^\]]+)\]\(([^)]+)\)(.*)$/s);
+        if (linkMatch) {
+          if (linkMatch[1]) {
+            elements.push(
+              <React.Fragment key={`text-${keyIndex++}`}>
+                {linkMatch[1]}
+              </React.Fragment>,
+            );
+          }
+          elements.push(
+            <a
+              key={`link-${keyIndex++}`}
+              href={linkMatch[3]}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {linkMatch[2]}
+            </a>,
+          );
+          remaining = linkMatch[4];
+          continue;
+        }
+
         // Match **bold** or __bold__
         const boldMatch = remaining.match(/^(.*?)(\*\*|__)(.+?)\2(.*)$/s);
         if (boldMatch) {
