@@ -150,9 +150,6 @@ const EnhancedErrorToast = ({
             position="relative"
           >
             {/* Copy button - copies FULL rawData, not truncated version */}
-            <Box position="absolute" top={1} right={1}>
-              <ClipboardButton copyText={rawData} size="small" />
-            </Box>
 
             {/* Raw error data (may be truncated for display) */}
             <Text
@@ -164,6 +161,9 @@ const EnhancedErrorToast = ({
             >
               {displayData}
             </Text>
+            <Box position="absolute" top={1} right={1}>
+              <ClipboardButton copyText={rawData} size="small" />
+            </Box>
           </Box>
         </details>
       </Box>
