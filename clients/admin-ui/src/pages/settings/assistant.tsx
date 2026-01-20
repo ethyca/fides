@@ -1,12 +1,12 @@
 import {
   ChakraBox as Box,
   ChakraFlex as Flex,
+  ChakraHeading as Heading,
+  ChakraSpinner as Spinner,
   ChakraText as Text,
+  ChakraVStack as VStack,
   Button,
-  Heading,
-  Spinner,
-  VStack,
-  useToast,
+  useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
 

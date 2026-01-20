@@ -1,4 +1,5 @@
 from fides.api.api.v1.endpoints import (
+    agent_endpoints,
     config_endpoints,
     connection_endpoints,
     connection_type_endpoints,
@@ -29,6 +30,7 @@ from fides.api.api.v1.endpoints import (
 from fides.api.util.api_router import APIRouter
 
 api_router = APIRouter()
+api_router.include_router(agent_endpoints.router)
 api_router.include_router(config_endpoints.router)
 api_router.include_router(connection_type_endpoints.router)
 api_router.include_router(connection_endpoints.router)

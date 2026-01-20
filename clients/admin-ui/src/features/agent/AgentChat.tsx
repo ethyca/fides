@@ -156,6 +156,7 @@ export default function AgentChat() {
         <Box p={4} borderBottom="1px solid" borderColor="gray.200">
           <Button
             colorScheme="primary"
+            variant="outline"
             size="sm"
             w="100%"
             onClick={handleNewConversation}

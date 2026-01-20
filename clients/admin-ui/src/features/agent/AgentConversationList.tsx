@@ -109,6 +109,7 @@ export default function AgentConversationList({
               fontSize="sm"
               fontWeight={selectedId === conversation.id ? "medium" : "normal"}
               noOfLines={1}
+              color="gray.800"
             >
               {conversation.title || "New Conversation"}
             </Text>
