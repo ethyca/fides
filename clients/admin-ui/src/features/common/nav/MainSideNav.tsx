@@ -2,6 +2,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraVStack as VStack,
+  Flex,
   Icons,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -52,9 +53,12 @@ export const UnconnectedMainSideNav = ({
             <NextLink
               href={child.path}
               data-testid={`${child.title}-nav-link`}
-              className="ml-4 pl-0.5"
+              className="ml-4 block pl-0.5"
             >
-              {child.title}
+              <Flex align="center">
+                <span>{child.title}</span>
+                {child.icon && <span className="ml-2">{child.icon}</span>}
+              </Flex>
             </NextLink>
           ),
         })),

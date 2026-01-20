@@ -1,5 +1,6 @@
 // Home page
 export const INDEX_ROUTE = "/";
+export const PRIVACY_CONSULTANT_ROUTE = "/privacy-consultant";
 
 // Data map group
 export const ADD_SYSTEMS_ROUTE = "/add-systems";

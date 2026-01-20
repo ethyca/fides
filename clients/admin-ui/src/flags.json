@@ -76,5 +76,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "aiPrivacyConsultant": {
+    "label": "Privacy Consultant",
+    "description": "Privacy consulting assistant",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

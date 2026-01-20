@@ -1,4 +1,4 @@
-import { Icons } from "fidesui";
+import { Icons, SparkleIcon } from "fidesui";
 import { ReactNode } from "react";
 
 import { FlagNames } from "~/features/common/features";
@@ -24,6 +24,8 @@ export type NavConfigRoute = {
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
+  /** Optional icon to display next to the route in the navigation */
+  icon?: ReactNode;
 };
 
 export type NavConfigGroup = {
@@ -42,6 +44,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: "/",
         exact: true,
         scopes: [],
+      },
+      {
+        title: "Privacy Consultant",
+        path: routes.PRIVACY_CONSULTANT_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+        requiresFlag: "aiPrivacyConsultant",
+        icon: <SparkleIcon />,
       },
     ],
   },
@@ -365,6 +375,8 @@ export type NavGroupChild = {
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
+  /** Optional icon to display next to the route in the navigation */
+  icon?: ReactNode;
 };
 
 export type NavGroup = {
@@ -521,6 +533,7 @@ const configureNavRoute = ({
     path: route.path,
     exact: route.exact,
     hidden: route.hidden,
+    icon: route.icon,
     children,
   };
 
