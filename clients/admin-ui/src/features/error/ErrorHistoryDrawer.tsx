@@ -120,9 +120,19 @@ const ErrorHistoryItem = ({
             <Flex justify="space-between" align="flex-start">
               {/* Status and message */}
               {error.message}
-
             </Flex>
-            <ClipboardButton copyText={rawData} size="small" />
+            <Space size={4} style={{ marginTop: 8 }}>
+              <ClipboardButton copyText={rawData} size="small" />
+              <Tooltip title="Download error report">
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Icons.Download />}
+                  onClick={() => onDownloadReport(error)}
+                  data-testid="download-report-btn"
+                />
+              </Tooltip>
+            </Space>
           </div>
         }
       />
