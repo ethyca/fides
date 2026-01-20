@@ -36,6 +36,8 @@ import {
   HealthCheck,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
+  PrivacyExpertRequest,
+  PrivacyExpertResponse,
   SystemPurposeSummary,
   SystemScannerStatus,
   SystemScanResponse,
@@ -536,11 +538,25 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    /**
+     * LLM Privacy Expert endpoint
+     */
+    askPrivacyExpert: build.mutation<
+      PrivacyExpertResponse,
+      PrivacyExpertRequest
+    >({
+      query: (body) => ({
+        url: `plus/llm/privacy-expert`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
 export const {
   useAddCustomFieldDefinitionMutation,
+  useAskPrivacyExpertMutation,
   useCreateClassifyInstanceMutation,
   useDeleteCustomFieldMutation,
   useDeleteCustomFieldDefinitionMutation,

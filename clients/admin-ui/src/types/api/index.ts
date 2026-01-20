@@ -462,6 +462,8 @@ export type { PrivacyDeclarationResponse } from "./models/PrivacyDeclarationResp
 export type { PrivacyExperienceGPPSettings } from "./models/PrivacyExperienceGPPSettings";
 export type { PrivacyExperienceMetaResponse } from "./models/PrivacyExperienceMetaResponse";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
+export type { PrivacyExpertRequest } from "./models/PrivacyExpertRequest";
+export type { PrivacyExpertResponse } from "./models/PrivacyExpertResponse";
 export type { PrivacyNoticeCreation } from "./models/PrivacyNoticeCreation";
 export type { PrivacyNoticeDisabledResponse } from "./models/PrivacyNoticeDisabledResponse";
 export type { PrivacyNoticeDisabledUpdate } from "./models/PrivacyNoticeDisabledUpdate";
