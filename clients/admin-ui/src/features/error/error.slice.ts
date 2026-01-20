@@ -67,7 +67,7 @@ export const errorSlice = createSlice({
       const truncatedRawData =
         payload.rawData && payload.rawData.length > MAX_RAW_DATA_LENGTH
           ? `${payload.rawData.substring(0, MAX_RAW_DATA_LENGTH)}\n\n[truncated - ${payload.rawData.length} chars total]`
-          : payload.rawData ?? "";
+          : (payload.rawData ?? "");
 
       const newEntry: ErrorLogEntry = {
         id: `error-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
