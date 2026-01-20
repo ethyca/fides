@@ -133,36 +133,50 @@ const ErrorHistoryItem = ({
         }
       />
 
-      {/* Suggestions for this error */}
+      {/* Suggestions for this error - collapsible */}
       {suggestions && (
-        <Alert
-          type="info"
-          showIcon
-          icon={<Icons.Idea />}
-          style={{ marginTop: 8 }}
-          message={
-            <Space direction="vertical" size={4}>
-              <Text strong style={{ fontSize: 12 }}>
-                {suggestions.title}
-              </Text>
-              <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12 }}>
-                {suggestions.suggestions.map((suggestion) => (
-                  <li key={suggestion}>{suggestion}</li>
-                ))}
-              </ul>
-              {suggestions.docLink && (
-                <a
-                  href={suggestions.docLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontSize: 12 }}
-                >
-                  View documentation →
-                </a>
-              )}
-            </Space>
-          }
-        />
+        <details style={{ marginTop: 8 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              fontSize: 12,
+              color: "#1890ff",
+              userSelect: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <Icons.Idea size={14} />
+            View suggestions
+          </summary>
+          <Alert
+            type="info"
+            style={{ marginTop: 8 }}
+            message={
+              <Space direction="vertical" size={4}>
+                <Text strong style={{ fontSize: 12 }}>
+                  {suggestions.title}
+                </Text>
+                <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12 }}>
+                  {suggestions.suggestions.map((suggestion) => (
+                    <li key={suggestion}>{suggestion}</li>
+                  ))}
+                </ul>
+                {suggestions.docLink && (
+                  <a
+                    href={suggestions.docLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: 12 }}
+                  >
+                    View documentation →
+                  </a>
+                )}
+              </Space>
+            }
+          />
+        </details>
       )}
     </List.Item>
   );
