@@ -12,6 +12,7 @@
  */
 
 import {
+  Alert,
   Button,
   Drawer,
   Empty,
@@ -33,6 +34,7 @@ import {
   selectErrorCount,
   selectErrors,
 } from "./error.slice";
+import { getErrorSuggestions } from "./errorSuggestions";
 
 const { Text, Paragraph } = Typography;
 
@@ -74,6 +76,8 @@ const ErrorHistoryItem = ({
   error,
   onDownloadReport,
 }: ErrorHistoryItemProps) => {
+  const suggestions = getErrorSuggestions(error.status);
+
   return (
     <List.Item
       style={{
@@ -128,6 +132,38 @@ const ErrorHistoryItem = ({
           </div>
         }
       />
+
+      {/* Suggestions for this error */}
+      {suggestions && (
+        <Alert
+          type="info"
+          showIcon
+          icon={<Icons.Idea />}
+          style={{ marginTop: 8 }}
+          message={
+            <Space direction="vertical" size={4}>
+              <Text strong style={{ fontSize: 12 }}>
+                {suggestions.title}
+              </Text>
+              <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12 }}>
+                {suggestions.suggestions.map((suggestion) => (
+                  <li key={suggestion}>{suggestion}</li>
+                ))}
+              </ul>
+              {suggestions.docLink && (
+                <a
+                  href={suggestions.docLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 12 }}
+                >
+                  View documentation →
+                </a>
+              )}
+            </Space>
+          }
+        />
+      )}
     </List.Item>
   );
 };
