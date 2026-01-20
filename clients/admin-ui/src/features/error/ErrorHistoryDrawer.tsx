@@ -77,7 +77,7 @@ const ErrorHistoryItem = ({ error }: { error: ErrorLogEntry }) => {
                 <Tag color="error" style={{ marginRight: 8 }}>
                   {error.status}
                 </Tag>
-                <Text>
+                <Text className="flex-1">
                   {JSON.parse(error.rawData)?.type}
                 </Text>
                 <Text type="secondary" style={{ fontSize: 12 }} className={"self-end"}>

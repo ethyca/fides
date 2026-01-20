@@ -164,7 +164,13 @@ export const UnconnectedMainSideNav = ({
             aria-label="Help"
           />
           {/* Error history button - shows badge when errors exist */}
-          <Badge count={errorCount} size="small" offset={[-5, 5]}>
+          <Badge
+            count={errorCount}
+            classNames={{
+              'indicator': "shadow-none"
+            }}
+            size="small" offset={[-5, 5]}
+          >
             <Button
               type="primary"
               className="border-none bg-transparent hover:!bg-gray-700"
