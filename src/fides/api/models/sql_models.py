@@ -51,6 +51,12 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.models.policy_v2 import (  # noqa: F401
+    PolicyV2,
+    PolicyV2Rule,
+    PolicyV2RuleMatch,
+    PolicyV2RuleConstraint,
+)
 from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
 

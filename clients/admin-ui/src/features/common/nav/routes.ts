@@ -104,5 +104,10 @@ export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 
+// Policy Engine v2 routes
+export const POLICIES_V2_ROUTE = "/policies-v2";
+export const POLICY_V2_DETAIL_ROUTE = "/policies-v2/[fidesKey]";
+export const POLICY_V2_NEW_ROUTE = "/policies-v2/new";
+
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";

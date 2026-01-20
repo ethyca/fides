@@ -155,6 +155,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
+      {
+        title: "Policy Engine v2",
+        path: routes.POLICIES_V2_ROUTE,
+        requiresPlus: true,
+        scopes: [], // TODO: Add POLICY_V2_READ scope once backend returns it
+      },
     ],
   },
   {

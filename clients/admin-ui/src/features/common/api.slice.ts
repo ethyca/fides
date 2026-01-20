@@ -97,6 +97,7 @@ export const baseApi = createApi({
     "Privacy Assessment Questionnaire",
     "Privacy Assessment Evidence",
     "User Monitors",
+    "Policies V2",
   ],
   endpoints: () => ({}),
 });
