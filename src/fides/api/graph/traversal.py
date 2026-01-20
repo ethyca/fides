@@ -281,7 +281,8 @@ class BaseTraversal:
 
                         # Check if this edge spans between the two nodes (bidirectional check)
                         if edge.spans(
-                            finished_node_address, cast(TraversalNode, n).address  # type: ignore[redundant-cast]
+                            finished_node_address,
+                            cast(TraversalNode, n).address,  # type: ignore[redundant-cast]
                         ):
                             completed_edges.add(edge)
                             deleted_edges_tracker[edge] = True
@@ -329,7 +330,7 @@ class BaseTraversal:
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
-                    [{', '.join([str(tn.address) for tn in running_node_queue.data])}]""",
+                    [{", ".join([str(tn.address) for tn in running_node_queue.data])}]""",
                 )
 
         # Convert back to CollectionAddress set for filtering

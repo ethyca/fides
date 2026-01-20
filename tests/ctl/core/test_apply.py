@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 """Unit tests for the Commands module."""
+
 from typing import Dict, Generator, List
 
 import fideslang as models

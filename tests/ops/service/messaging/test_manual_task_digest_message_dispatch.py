@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 from sqlalchemy.orm import Session
+from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.schemas.messaging.messaging import (
@@ -12,7 +13,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from tests.ops.test_helpers.email_test_utils import assert_url_hostname_present
 
 
 @pytest.mark.unit

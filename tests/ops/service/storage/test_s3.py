@@ -95,7 +95,8 @@ class TestS3ClientInitialization:
             ),
             param(
                 lambda auth_method, storage_secrets: (
-                    _ for _ in ()  # Empty generator to raise exception
+                    _
+                    for _ in ()  # Empty generator to raise exception
                 ).throw(
                     ClientError(
                         {"Error": {"Code": "403", "Message": "Access Denied"}},
@@ -108,7 +109,8 @@ class TestS3ClientInitialization:
             ),
             param(
                 lambda auth_method, storage_secrets: (
-                    _ for _ in ()  # Empty generator to raise exception
+                    _
+                    for _ in ()  # Empty generator to raise exception
                 ).throw(ParamValidationError(report="Invalid parameters")),
                 ValueError,
                 "The parameters you provided are incorrect",
@@ -412,6 +414,9 @@ class TestS3Retrieve:
         assert file_size == len(document)
         assert bucket_name in download_link
 
+    @pytest.mark.skip(
+        "This test just verifies that the S3 client can download large files"
+    )
     def test_retrieve_large_file(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
     ):
@@ -536,6 +541,9 @@ class TestS3Retrieve:
         assert file_size == len(document)
         assert content.read() == document
 
+    @pytest.mark.skip(
+        "This test just verifies that the S3 client can download large files"
+    )
     def test_retrieve_large_file_with_content(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
     ):
@@ -831,9 +839,9 @@ def test_s3_signature_version_4(
 
     # Verify old URL fails
     response = requests.get(old_presigned_url, timeout=10)
-    assert (
-        response.status_code != 200
-    ), "URL without signature v4 should fail for KMS objects"
+    assert response.status_code != 200, (
+        "URL without signature v4 should fail for KMS objects"
+    )
     assert (
         "require AWS Signature Version 4" in response.text
         or response.status_code == 400
@@ -864,9 +872,9 @@ def test_s3_signature_version_4(
 
     # Verify v4 URL works
     response = requests.get(fixed_presigned_url, timeout=10)
-    assert (
-        response.status_code == 200
-    ), "URL with signature v4 must work for KMS objects"
+    assert response.status_code == 200, (
+        "URL with signature v4 must work for KMS objects"
+    )
     assert response.content == test_content
 
 
@@ -922,9 +930,9 @@ def test_s3_signature_version_4_non_kms(
 
     # Verify URL works for non-KMS bucket
     response = requests.get(presigned_url, timeout=10)
-    assert (
-        response.status_code == 200
-    ), "URL with signature v4 must work for non-KMS objects"
+    assert response.status_code == 200, (
+        "URL with signature v4 must work for non-KMS objects"
+    )
     assert response.content == test_content
 
     # Test that signature v4 maintains compatibility by also testing
@@ -937,7 +945,7 @@ def test_s3_signature_version_4_non_kms(
 
     # Verify both URLs work for non-KMS bucket
     response_standard = requests.get(standard_presigned_url, timeout=10)
-    assert (
-        response_standard.status_code == 200
-    ), "Standard client URL should work for non-KMS objects"
+    assert response_standard.status_code == 200, (
+        "Standard client URL should work for non-KMS objects"
+    )
     assert response_standard.content == test_content

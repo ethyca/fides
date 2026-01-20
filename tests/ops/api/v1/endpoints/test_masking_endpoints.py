@@ -298,9 +298,9 @@ class TestMaskValues:
         )
         assert 200 == response.status_code
         assert response.json()["plain"] == ["check"]
-        assert response.json()["masked_values"] != [
-            rewrite_val
-        ], "Final value is hashed, because that was the last strategy"
+        assert response.json()["masked_values"] != [rewrite_val], (
+            "Final value is hashed, because that was the last strategy"
+        )
 
         switch_order = {
             "values": [value],
@@ -320,9 +320,9 @@ class TestMaskValues:
         )
         assert 200 == response.status_code
         assert response.json()["plain"] == ["check"]
-        assert response.json()["masked_values"] == [
-            rewrite_val
-        ], "Final value is rewrite value, because that was the last strategy specified"
+        assert response.json()["masked_values"] == [rewrite_val], (
+            "Final value is rewrite value, because that was the last strategy specified"
+        )
 
     def test_flexible_config(self, api_client: TestClient, generate_auth_header):
         auth_header = generate_auth_header(scopes=[MASKING_EXEC])

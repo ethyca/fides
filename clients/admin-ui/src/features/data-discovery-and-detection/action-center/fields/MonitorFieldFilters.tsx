@@ -1,6 +1,6 @@
 import { Filter, TreeDataNode as DataNode } from "fidesui";
 import { uniq } from "lodash";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -10,8 +10,8 @@ import { useLazyGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import {
+  DEFAULT_FILTER_STATUSES,
   FIELDS_FILTER_SECTION_KEYS,
-  getFilterableStatuses,
   RESOURCE_STATUS,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
@@ -174,32 +174,6 @@ export const MonitorFieldFilters = ({
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([
     FIELDS_FILTER_SECTION_KEYS.STATUS,
   ]);
-
-  // Sync local state when external state changes
-  useEffect(() => {
-    setLocalResourceStatus(resourceStatus);
-  }, [resourceStatus]);
-
-  useEffect(() => {
-    setLocalConfidenceBucket(confidenceBucket);
-  }, [confidenceBucket]);
-
-  useEffect(() => {
-    setLocalDataCategory(dataCategory);
-  }, [dataCategory]);
-
-  // Reset filters to default state when stagedResourceUrn changes (but not on initial mount)
-  // Use join to compare array contents, not reference
-  const stagedResourceUrnKey = stagedResourceUrn.join(",");
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    resetToInitialState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagedResourceUrnKey]);
 
   const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
     useGetDatastoreFiltersQuery(
@@ -388,7 +362,7 @@ export const MonitorFieldFilters = ({
   const handleReset = () => {
     // Reset to initial state (preselect statuses except excluded ones)
     resetToInitialState();
-    setLocalResourceStatus(getFilterableStatuses([...RESOURCE_STATUS]));
+    setLocalResourceStatus(DEFAULT_FILTER_STATUSES);
     setLocalConfidenceBucket([]);
     setLocalDataCategory([]);
   };

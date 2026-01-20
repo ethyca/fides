@@ -8,7 +8,6 @@ import {
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
-  MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -23,6 +22,7 @@ import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/Data
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
+import { MonitorTaskInProgressResponse } from "~/types/api/models/MonitorTaskInProgressResponse";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginatedResponse,

@@ -41,10 +41,12 @@ class HTTPSConnector(BaseConnector[None]):
         self,
         request_body: Dict[str, Any],
         response_expected: bool,
-        additional_headers: Dict[str, Any] = {},
+        additional_headers: Dict[str, str] = {},
     ) -> Optional[Dict[str, Any]]:
         """Calls a client-defined endpoint and returns the data that it responds with"""
         config = HttpsSchema(**self.configuration.secrets or {})
+
+        headers = (config.headers or {}) | additional_headers
 
         def _request_with_oauth() -> requests.Response:
             """Helper function to make a request with OAuth2 authentication"""
@@ -64,14 +66,14 @@ class HTTPSConnector(BaseConnector[None]):
                 )
 
             return session_client.post(
-                url=config.url, headers=additional_headers, json=request_body
+                url=config.url, headers=headers, json=request_body
             )
 
         def _request_without_oauth() -> requests.Response:
             """Helper function to make a request without OAuth2 authentication"""
-            headers = self.build_authorization_header()
-            headers.update(additional_headers)
-            return requests.post(url=config.url, headers=headers, json=request_body)
+            all_headers = self.build_authorization_header()
+            all_headers.update(headers)
+            return requests.post(url=config.url, headers=all_headers, json=request_body)
 
         oauth_config = self.configuration.oauth_config
 
@@ -105,8 +107,8 @@ class HTTPSConnector(BaseConnector[None]):
 
             return {}
 
-        except requests.ConnectionError:
-            logger.error("HTTPS client received a connection error.")
+        except requests.ConnectionError as ex:
+            logger.error(f"HTTPS client received a connection error. {Pii(ex)}")
             raise ClientUnsuccessfulException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR
             )

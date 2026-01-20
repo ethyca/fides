@@ -11,7 +11,6 @@ from nox.command import CommandFailed
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
     EXEC_IT,
-    RUN_CYPRESS_TESTS,
     START_APP,
     START_APP_REMOTE_DEBUG,
 )
@@ -36,7 +35,7 @@ def shell(session: Session) -> None:
         )
 
 
-# pylint: disable=too-many-branches
+# ruff: noqa: PLR0912
 @nox_session()
 def dev(session: Session) -> None:
     """
@@ -148,26 +147,6 @@ def dev(session: Session) -> None:
 
 
 @nox_session()
-def cypress_tests(session: Session) -> None:
-    """
-    End-to-end Cypress tests designed to be run as part of the 'e2e_test' session.
-    """
-    session.log("Running Cypress tests...")
-    session.run(*RUN_CYPRESS_TESTS, external=True)
-
-
-@nox_session()
-def e2e_test(session: Session) -> None:
-    """
-    Spins up the fides_env session and runs Cypress E2E tests against it.
-    """
-    session.log("Running end-to-end tests...")
-    session.notify("fides_env(test)", posargs=["keep_alive"])
-    session.notify("cypress_tests")
-    session.notify("teardown")
-
-
-@nox_session()
 @parametrize(
     "fides_image",
     [
@@ -246,7 +225,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         if index == 0:
             continue
         session.log(
-            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index-1]['time']:.2f}s"
+            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index - 1]['time']:.2f}s"
         )
     session.log(
         f"      | {'Total':20} | {timestamps[-1]['time'] - timestamps[0]['time']:.2f}s"

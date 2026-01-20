@@ -21,10 +21,14 @@ export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
+export const ACTION_CENTER_ACTIVITY_ROUTE =
+  "/data-discovery/action-center/activity";
 export const ACTION_CENTER_WEBSITE_MONITOR_ROUTE =
   "/data-discovery/action-center/website/[monitorId]";
 export const ACTION_CENTER_DATASTORE_MONITOR_ROUTE =
   "/data-discovery/action-center/datastore/[monitorId]";
+export const ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE =
+  "/data-discovery/action-center/datastore/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";

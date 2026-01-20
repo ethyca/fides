@@ -19,7 +19,10 @@ from fides.config import CONFIG
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 
-class DBActions(str, Enum):
+from enum import StrEnum
+
+
+class DBActions(StrEnum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
 
     upgrade = "upgrade"
@@ -46,7 +49,11 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
 
     if action == DBActions.downgrade:
         try:
-            migrate_db(database_url=CONFIG.database.sync_database_uri, revision=revision, downgrade=True)  # type: ignore[arg-type]
+            migrate_db(
+                database_url=CONFIG.database.sync_database_uri,
+                revision=revision,
+                downgrade=True,
+            )  # type: ignore[arg-type]
             action_text = "downgrade"
         except Exception as e:
             logger.exception("Database downgrade failed")

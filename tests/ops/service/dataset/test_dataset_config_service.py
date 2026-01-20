@@ -5,13 +5,13 @@ import pytest
 from pytest import FixtureRequest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
+from tests.conftest import wait_for_tasks_to_complete
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
 from fides.service.dataset.dataset_config_service import DatasetConfigService
-from tests.conftest import wait_for_tasks_to_complete
 
 
 def make_dataset_invalid(db: Session, dataset_config: DatasetConfig) -> None:
@@ -34,7 +34,6 @@ def dataset_config_service(db: Session) -> DatasetConfigService:
 
 
 class TestGetDatasetReachability:
-
     @pytest.mark.parametrize(
         "dataset_config, expected",
         [
@@ -173,7 +172,6 @@ class TestGetDatasetReachability:
 
 
 class TestGetIdentitiesAndReferences:
-
     @pytest.mark.parametrize(
         "dataset_config, expected_required_identities",
         [

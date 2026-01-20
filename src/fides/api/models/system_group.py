@@ -1,9 +1,8 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 from citext import CIText
-from sqlalchemy import ARRAY, Column
+from sqlalchemy import ARRAY, Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
@@ -12,7 +11,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
-class CustomTaxonomyColor(str, Enum):
+class CustomTaxonomyColor(StrEnum):
     WHITE = "taxonomy_white"
     RED = "taxonomy_red"
     ORANGE = "taxonomy_orange"

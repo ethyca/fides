@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import List, Optional
 
 from pydantic import BaseModel, field_validator, model_validator
 
 
-class RateLimitPeriod(str, Enum):
+class RateLimitPeriod(StrEnum):
     """
     Defines the periods supported by rate limit config
     """
@@ -45,9 +45,9 @@ class RateLimitConfig(BaseModel):
         enabled: Optional[bool] = self.enabled
 
         if enabled:
-            assert (
-                limits and len(limits) > 0
-            ), "limits must be set if rate limiter is enabled"
+            assert limits and len(limits) > 0, (
+                "limits must be set if rate limiter is enabled"
+            )
         if not enabled:
             assert not limits, "limits cannot be set if enabled is false"
         return self

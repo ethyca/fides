@@ -2,10 +2,12 @@ import { Button, Flex, Tabs, useMessage } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { FIDES_KEY_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
 import CustomTaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
 import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
 import { CustomFieldDefinitionWithId } from "~/types/api";
 import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
@@ -31,8 +33,13 @@ const CustomTaxonomyEditDrawer = ({
   const messageApi = useMessage();
   const { sortedCustomFieldDefinitionIds, idToCustomFieldDefinition } =
     useCustomFields({
-      resourceType: taxonomy.fides_key,
+      resourceType:
+        FIDES_KEY_RESOURCE_TYPE_MAP[taxonomy.fides_key] ?? taxonomy.fides_key,
     });
+
+  const isCustom = !Object.values(TaxonomyTypeEnum).includes(
+    taxonomy.fides_key as TaxonomyTypeEnum,
+  );
 
   const customFields = sortedCustomFieldDefinitionIds
     .map(
@@ -69,7 +76,7 @@ const CustomTaxonomyEditDrawer = ({
       destroyOnHidden
       footer={
         <Flex justify="space-between" className="w-full">
-          <Button onClick={onDelete}>Delete</Button>
+          {isCustom && <Button onClick={onDelete}>Delete</Button>}
           <Button
             type="primary"
             htmlType="submit"
@@ -92,6 +99,7 @@ const CustomTaxonomyEditDrawer = ({
                 onSubmit={handleUpdate}
                 formId={FORM_ID}
                 customFields={customFields}
+                isCustom={isCustom}
               />
             ),
           },

@@ -350,7 +350,9 @@ class TestSaaSQueryConfig:
         saas_config: Optional[SaaSConfig] = (
             saas_example_connection_config.get_saas_config()
         )
-        saas_config.endpoints[2].requests.update.body = (
+        saas_config.endpoints[
+            2
+        ].requests.update.body = (
             '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
         )
         body_param_value = ParamValue(

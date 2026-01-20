@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Switch from black, isort and pylint to ruff for formatting and linting
+pr: 7198 # PR number
+labels: []

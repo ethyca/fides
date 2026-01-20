@@ -108,7 +108,9 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
+    ],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
