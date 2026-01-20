@@ -26,16 +26,31 @@
 
 .welcomeContainer {
   text-align: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-.promptCard {
-  max-width: 280px;
+.welcomeText {
+  max-width: 600px;
+}
+
+.capabilityCard {
+  width: 300px;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: left;
 
   &:hover {
     border-color: var(--ant-color-primary);
   }
+}
+
+.examplePrompt {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ant-color-text-tertiary);
+  margin-top: 8px;
 }
 
 .messageList {

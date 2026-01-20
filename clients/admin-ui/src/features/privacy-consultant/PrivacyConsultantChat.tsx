@@ -30,18 +30,30 @@ interface Conversation {
   messages: Message[];
 }
 
-const EXAMPLE_PROMPTS = [
+const CAPABILITIES = [
   {
-    key: "1",
-    label: "What data categories does GDPR regulate?",
+    key: "consent",
+    title: "Validate Consent",
+    description:
+      "Check if your opt-in flows meet legal requirements for the specific data being collected.",
+    examplePrompt:
+      "I'm adding a location-tracking feature to our mobile app for a new rewards program. Can you check our current Consent & Cookie configuration to see if our existing 'opt-in' banner covers this, or do I need to create a new one?",
   },
   {
-    key: "2",
-    label: "How should I handle user consent for marketing emails?",
+    key: "systems",
+    title: "Map Systems",
+    description:
+      "Identify where the data lives and who is responsible for it (The Data Map).",
+    examplePrompt:
+      "I need to share 'purchase history' and 'user profiles' with an external financial vendor for reward disbursement. Which of our internal data systems currently hold these labels, and who are the data stewards I need to notify?",
   },
   {
-    key: "3",
-    label: "What are the key differences between GDPR and CCPA?",
+    key: "risk",
+    title: "Assess Risk",
+    description:
+      "Determine if the project triggers a legal requirement like a Data Protection Impact Assessment (DPIA).",
+    examplePrompt:
+      "We are planning to link behavioral 'in-app activity' data to a new third-party payment processor. Based on our Fideslang data uses, does this new processing trigger a DPIA requirement, or is our current risk assessment sufficient?",
   },
 ];
 
@@ -203,27 +215,35 @@ const PrivacyConsultantChat = () => {
               align="center"
               justify="center"
               flex={1}
-              gap={24}
+              gap={32}
               className={styles.welcomeContainer}
             >
-              <Flex vertical align="center" gap={8}>
-                <Icons.Chat size={48} />
-                <Title level={3}>Privacy consultant</Title>
-                <Text type="secondary">
-                  Ask questions about privacy regulations, compliance, and best
-                  practices.
+              <Flex vertical align="center" gap={16}>
+                <Title level={2}>Welcome to Hermes</Title>
+                <Text type="secondary" className={styles.welcomeText}>
+                  I am integrated with Fides and synced with your current Data
+                  Map and Privacy Center.
+                </Text>
+                <Text type="secondary" className={styles.welcomeText}>
+                  Tell me about the new product or feature you are building. I
+                  will help you:
                 </Text>
               </Flex>
-              <Flex gap={12} wrap="wrap" justify="center">
-                {EXAMPLE_PROMPTS.map((prompt) => (
+              <Flex gap={16} wrap="wrap" justify="center">
+                {CAPABILITIES.map((capability) => (
                   <Card
-                    key={prompt.key}
+                    key={capability.key}
                     hoverable
-                    size="small"
-                    className={styles.promptCard}
-                    onClick={() => handlePromptClick(prompt.label)}
+                    className={styles.capabilityCard}
+                    onClick={() => handlePromptClick(capability.examplePrompt)}
                   >
-                    <Text>{prompt.label}</Text>
+                    <Flex vertical gap={8}>
+                      <Title level={5}>{capability.title}</Title>
+                      <Text type="secondary">{capability.description}</Text>
+                      <Text className={styles.examplePrompt}>
+                        {capability.examplePrompt}
+                      </Text>
+                    </Flex>
                   </Card>
                 ))}
               </Flex>
