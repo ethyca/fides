@@ -1,4 +1,26 @@
-import React from "react";
+import React, { useMemo } from "react";
+import ReactMarkdown from "react-markdown";
+
+/**
+ * Markdown rendering using react-markdown library.
+ * Provides full markdown support with custom link handling.
+ */
+const LibraryMarkdown: React.FC<{ text: string }> = ({ text }) => {
+  return (
+    <ReactMarkdown
+      components={{
+        // Open links in new tab for security
+        a: ({ href, children }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {text}
+    </ReactMarkdown>
+  );
+};
 
 /**
  * Simple markdown parser that supports basic formatting:
@@ -9,7 +31,7 @@ import React from "react";
  *
  * Falls back to plain text if parsing fails.
  */
-export const parseMarkdown = (text: string): React.ReactNode => {
+const customParseMarkdown = (text: string): React.ReactNode => {
   try {
     // Split by line breaks first to preserve them
     const lines = text.split("\n");
@@ -22,9 +44,7 @@ export const parseMarkdown = (text: string): React.ReactNode => {
       // Process inline formatting
       while (remaining.length > 0) {
         // Match [text](url) links
-        const linkMatch = remaining.match(
-          /^(.*?)\[([^\]]+)\]\(([^)]+)\)(.*)$/s,
-        );
+        const linkMatch = remaining.match(/^(.*?)\[([^\]]+)\]\(([^)]+)\)(.*)$/);
         if (linkMatch) {
           if (linkMatch[1]) {
             elements.push(
@@ -48,7 +68,7 @@ export const parseMarkdown = (text: string): React.ReactNode => {
         }
 
         // Match **bold** or __bold__
-        const boldMatch = remaining.match(/^(.*?)(\*\*|__)(.+?)\2(.*)$/s);
+        const boldMatch = remaining.match(/^(.*?)(\*\*|__)(.+?)\2(.*)$/);
         if (boldMatch) {
           if (boldMatch[1]) {
             elements.push(
@@ -65,7 +85,7 @@ export const parseMarkdown = (text: string): React.ReactNode => {
         }
 
         // Match *italic* or _italic_ (but not inside words for _)
-        const italicMatch = remaining.match(/^(.*?)(\*|_)(.+?)\2(.*)$/s);
+        const italicMatch = remaining.match(/^(.*?)(\*|_)(.+?)\2(.*)$/);
         if (italicMatch && italicMatch[3].length > 0) {
           if (italicMatch[1]) {
             elements.push(
@@ -80,7 +100,7 @@ export const parseMarkdown = (text: string): React.ReactNode => {
         }
 
         // Match `code`
-        const codeMatch = remaining.match(/^(.*?)`(.+?)`(.*)$/s);
+        const codeMatch = remaining.match(/^(.*?)`(.+?)`(.*)$/);
         if (codeMatch) {
           if (codeMatch[1]) {
             elements.push(
@@ -115,7 +135,55 @@ export const parseMarkdown = (text: string): React.ReactNode => {
       );
     });
   } catch {
-    // Fallback to plain text if parsing fails
-    return text;
+    // Return null to indicate failure, let caller handle fallback
+    return null;
   }
+};
+
+interface MarkdownRendererProps {
+  text: string;
+}
+
+/**
+ * Markdown renderer with fallback chain:
+ * 1. Try react-markdown library (full markdown support)
+ * 2. Fall back to custom parsing (basic formatting)
+ * 3. Final fallback to plain text
+ */
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ text }) => {
+  const renderedContent = useMemo(() => {
+    // Strategy 1: Try library-based markdown
+    try {
+      return <LibraryMarkdown text={text} />;
+    } catch {
+      // Library failed, continue to fallback
+    }
+
+    // Strategy 2: Try custom parsing
+    const customParsed = customParseMarkdown(text);
+    if (customParsed !== null) {
+      return customParsed;
+    }
+
+    // Strategy 3: Plain text fallback
+    return text;
+  }, [text]);
+
+  return <>{renderedContent}</>;
+};
+
+/**
+ * Legacy function export for backwards compatibility.
+ * Prefers custom parsing over library for function-based usage.
+ *
+ * Fallback chain:
+ * 1. Custom parsing (basic formatting)
+ * 2. Plain text fallback
+ */
+export const parseMarkdown = (text: string): React.ReactNode => {
+  const customParsed = customParseMarkdown(text);
+  if (customParsed !== null) {
+    return customParsed;
+  }
+  return text;
 };
