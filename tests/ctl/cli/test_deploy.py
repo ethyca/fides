@@ -1,7 +1,9 @@
+from subprocess import CalledProcessError
 from unittest import mock
 
 import pytest
 
+import fides
 from fides.core import deploy
 
 
@@ -35,14 +37,14 @@ class TestDeploy:
         mock_sys.base_prefix = (
             "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
         )
-        assert deploy.check_virtualenv() == False
+        assert deploy.check_virtualenv() is False
 
         # Emulate virtual environment
         mock_sys.prefix = "/Users/fidesuser/fides/venv"
         mock_sys.base_prefix = (
             "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9"
         )
-        assert deploy.check_virtualenv() == True
+        assert deploy.check_virtualenv() is True
 
 
 @pytest.mark.unit
@@ -51,3 +53,51 @@ class TestCheckDockerVersion:
         with pytest.raises(SystemExit):
             result = deploy.check_docker_version("30.1.24")
             assert result
+
+
+@pytest.mark.unit
+@mock.patch("fides.core.deploy.run_shell")
+def test_pull_specific_docker_image_with_custom_image(mock_run_shell):
+    custom_image = "registry.example.com/fides:2.54.0"
+    version = "2.54.0"
+
+    with mock.patch.object(fides, "__version__", version):
+        deploy.pull_specific_docker_image(custom_image)
+
+    expected_calls = [
+        mock.call(f"docker pull {custom_image}"),
+        mock.call("docker tag registry.example.com/fides:2.54.0 ethyca/fides:local"),
+        mock.call("docker pull ethyca/fides-privacy-center:2.54.0"),
+        mock.call(
+            "docker tag ethyca/fides-privacy-center:2.54.0 ethyca/fides-privacy-center:local"
+        ),
+        mock.call("docker pull ethyca/fides-sample-app:2.54.0"),
+        mock.call(
+            "docker tag ethyca/fides-sample-app:2.54.0 ethyca/fides-sample-app:local"
+        ),
+    ]
+    assert mock_run_shell.call_args_list == expected_calls
+
+
+@pytest.mark.unit
+@mock.patch("fides.core.deploy.run_shell")
+def test_pull_specific_docker_image_custom_image_fallback(mock_run_shell):
+    custom_image = "registry.example.com/fides:2.54.0"
+    version = "2.54.0"
+
+    def side_effect(command):  # pylint: disable=unused-argument
+        if command in {
+            "docker pull ethyca/fides-privacy-center:2.54.0",
+            "docker pull ethyca/fides-sample-app:2.54.0",
+        }:
+            raise CalledProcessError(1, command)
+
+    mock_run_shell.side_effect = side_effect
+
+    with mock.patch.object(fides, "__version__", version):
+        deploy.pull_specific_docker_image(custom_image)
+
+    called_commands = {call.args[0] for call in mock_run_shell.call_args_list}
+    assert "docker pull ethyca/fides-privacy-center:dev" in called_commands
+    assert "docker pull ethyca/fides-sample-app:dev" in called_commands
+    assert "docker pull ethyca/fides:dev" not in called_commands
