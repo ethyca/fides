@@ -28,7 +28,9 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 
+import { Result } from "fidesui";
 import Layout from "~/features/common/Layout";
+import { useFeatures } from "~/features/common/features";
 import {
   PRIVACY_ASSESSMENTS_ROUTE,
   PRIVACY_ASSESSMENTS_ONBOARDING_ROUTE,
@@ -183,6 +185,19 @@ const regions = [
 const VIEWED_ASSESSMENTS_KEY = "privacy-assessments-viewed";
 
 const PrivacyAssessmentsPage: NextPage = () => {
+  const { flags } = useFeatures();
+
+  if (!flags.alphaDataProtectionAssessments) {
+    return (
+      <Layout title="Privacy Assessments">
+        <Result
+          status="error"
+          title="Feature not available"
+          subTitle="This feature is currently behind a feature flag and is not enabled."
+        />
+      </Layout>
+    );
+  }
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);

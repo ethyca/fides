@@ -42,14 +42,14 @@ import {
   RightOutlined,
 } from "@ant-design/icons";
 import { SlackOutlined } from "@ant-design/icons";
-import Bubble from "@ant-design/x/lib/bubble";
-import Sources from "@ant-design/x/lib/sources";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState, useEffect, useMemo } from "react";
 
+import { Result } from "fidesui";
 import Layout from "~/features/common/Layout";
+import { useFeatures } from "~/features/common/features";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
@@ -164,7 +164,20 @@ const generateSectionSummary = async (
 };
 
 const PrivacyAssessmentDetailPage: NextPage = () => {
+  const { flags } = useFeatures();
   const router = useRouter();
+
+  if (!flags.alphaDataProtectionAssessments) {
+    return (
+      <Layout title="Privacy Assessment">
+        <Result
+          status="error"
+          title="Feature not available"
+          subTitle="This feature is currently behind a feature flag and is not enabled."
+        />
+      </Layout>
+    );
+  }
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -452,7 +465,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             }
           }}
         >
-          [{sourceNum}]
+          {sourceNum}
         </Button>,
       );
       lastIndex = match.index + match[0].length;
@@ -3623,7 +3636,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             borderColor: "#E8EBED",
                           }}
                         />
-                        <Bubble content={item.content} />
+                        <Text style={{ fontSize: 14, color: "#1A1F36", lineHeight: "1.6" }}>
+                          {item.content}
+                        </Text>
                         {allRefs.length > 0 && (
                           <>
                             <Divider
@@ -3644,8 +3659,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Sources:
                             </Text>
-                            <Sources
-                              items={allRefs.map((ref, idx) => ({
+                            <List
+                              size="small"
+                              dataSource={allRefs.map((ref, idx) => ({
                                 key: ref.id ?? idx,
                                 title:
                                   ref.content.substring(0, 60) +
@@ -3659,6 +3675,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                           : "Unknown"
                                       } • ${formatTimestamp(ref.timestamp)}`,
                               }))}
+                              renderItem={(item) => (
+                                <List.Item>
+                                  <List.Item.Meta
+                                    title={item.title}
+                                    description={item.description}
+                                  />
+                                </List.Item>
+                              )}
                             />
                           </>
                         )}

@@ -130,6 +130,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy Assessments",
         path: routes.PRIVACY_ASSESSMENTS_ROUTE,
         scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
       },
     ],
   },

@@ -14,7 +14,9 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { Result } from "fidesui";
 import Layout from "~/features/common/Layout";
+import { useFeatures } from "~/features/common/features";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
@@ -64,10 +66,23 @@ const regions = [
 ];
 
 const PrivacyAssessmentsOnboardingPage: NextPage = () => {
+  const { flags } = useFeatures();
   const router = useRouter();
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([]);
   const [regionSearch, setRegionSearch] = useState("");
+
+  if (!flags.alphaDataProtectionAssessments) {
+    return (
+      <Layout title="Privacy Assessments Setup">
+        <Result
+          status="error"
+          title="Feature not available"
+          subTitle="This feature is currently behind a feature flag and is not enabled."
+        />
+      </Layout>
+    );
+  }
 
   const handleSave = () => {
     localStorage.setItem(ONBOARDING_COMPLETE_KEY, "true");
