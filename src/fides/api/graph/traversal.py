@@ -101,21 +101,33 @@ class BaseTraversal:
         # if they don't apply to the given scenario
         self.node_filters = node_filters or []
 
+        num_nodes = len(graph.nodes)
+        num_edges = len(graph.edges)
+        logger.info(
+            "Initializing BaseTraversal with {} nodes and {} edges",
+            num_nodes,
+            num_edges,
+        )
+
+        logger.debug("Step 1/5: Building traversal node dict...")
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
 
+        logger.debug("Step 2/5: Pre-indexing edges by node address...")
         # Pre-index edges by node address for O(1) lookup
         self.edges_by_node: Dict[CollectionAddress, List[Edge]] = defaultdict(list)
         for edge in self.edges:
             self.edges_by_node[edge.f1.collection_address()].append(edge)
             self.edges_by_node[edge.f2.collection_address()].append(edge)
 
+        logger.debug("Step 3/5: Building dataset->collections index...")
         # Pre-build dataset -> collections index for O(1) lookup (Fix for O(N²))
         self._collections_by_dataset: Dict[str, Set[str]] = defaultdict(set)
         for addr in self.traversal_node_dict.keys():
             self._collections_by_dataset[addr.dataset].add(addr.value)
 
+        logger.debug("Step 4/5: Pre-computing node dependencies...")
         # Pre-compute string versions of node dependencies
         # This avoids expensive hash operations during traversal
         self.node_after_str: Dict[str, Set[str]] = {}
@@ -136,6 +148,7 @@ class BaseTraversal:
         # Add root node to the pre-computed dependencies (it has no dependencies)
         self.node_after_str[ROOT_COLLECTION_ADDRESS.value] = set()
         self.dataset_after_str[ROOT_COLLECTION_ADDRESS.value] = set()
+        logger.debug("Step 5/5: Adding seed and manual task edges...")
 
         for (
             start_field_address,
@@ -171,6 +184,8 @@ class BaseTraversal:
                 # Add to edge index
                 self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(edge)
                 self.edges_by_node[addr].append(edge)
+
+        logger.info("BaseTraversal initialization complete")
 
         if not self._skip_verification:
             self._verify_traversal()
@@ -233,8 +248,8 @@ class BaseTraversal:
         Returns a list of termination traversal_node addresses so that we can
         take action on completed traversal.
         """
-        if environment:
-            logger.info("Starting traversal")
+        total_nodes = len(self.traversal_node_dict)
+        logger.info("Starting traversal of {} nodes", total_nodes)
 
         # Track which nodes are finished
         finished_nodes: Dict[CollectionAddress, TraversalNode] = {}
@@ -243,11 +258,15 @@ class BaseTraversal:
         # Track deleted edges (same as original algorithm)
         deleted_edges_tracker: Dict[Edge, bool] = {}
 
+        logger.debug("Traverse step 1/3: Computing blocked_by counts...")
         # Compute "blocked by" count for each node based on 'after' dependencies
         # blocked_by[addr] = number of unfinished nodes that must run before addr
         blocked_by: Dict[str, int] = {}
 
-        for addr_str in self.node_after_str.keys():
+        # Pre-compute the set of all node keys once (O(N) instead of O(N²))
+        all_node_keys: Set[str] = set(self.node_after_str.keys())
+
+        for addr_str in all_node_keys:
             if addr_str == ROOT_COLLECTION_ADDRESS.value:
                 blocked_by[addr_str] = 0
                 continue
@@ -258,14 +277,15 @@ class BaseTraversal:
             all_deps = after_deps | dataset_deps
 
             # Only count dependencies that are actually in our graph
-            valid_deps = all_deps & set(self.node_after_str.keys())
+            valid_deps = all_deps & all_node_keys
             blocked_by[addr_str] = len(valid_deps)
 
+        logger.debug("Traverse step 2/3: Building reverse dependency map...")
         # Build reverse dependency map: when node X finishes, which nodes become unblocked?
         # unblocks[X] = set of nodes that are waiting for X
         unblocks: Dict[str, Set[str]] = defaultdict(set)
 
-        for addr_str in self.node_after_str.keys():
+        for addr_str in all_node_keys:
             if addr_str == ROOT_COLLECTION_ADDRESS.value:
                 continue
 
@@ -274,9 +294,10 @@ class BaseTraversal:
             all_deps = after_deps | dataset_deps
 
             for dep in all_deps:
-                if dep in self.node_after_str:  # Valid dependency
+                if dep in all_node_keys:  # Valid dependency (O(1) set lookup)
                     unblocks[dep].add(addr_str)
 
+        logger.debug("Traverse step 3/3: Processing nodes...")
         # Ready queue: nodes with no blocking 'after' dependencies
         # We still need to check edge-based reachability dynamically
         ready_queue: deque[TraversalNode] = deque()
@@ -289,6 +310,10 @@ class BaseTraversal:
 
         # Pending queue: nodes discovered but blocked by 'after' dependencies
         pending: Dict[str, TraversalNode] = {}
+
+        # Progress logging
+        nodes_processed = 0
+        log_interval = max(1, total_nodes // 10)  # Log ~10 times during traversal
 
         while ready_queue or pending:
             # Try to get a node from the ready queue
@@ -323,6 +348,16 @@ class BaseTraversal:
             node_run_fn(current_node, environment)
             finished_nodes[current_node.address] = current_node
             finished_str.add(current_node.address.value)
+
+            # Progress logging
+            nodes_processed += 1
+            if nodes_processed == 1 or nodes_processed % log_interval == 0:
+                logger.info(
+                    "Traversal progress: {}/{} nodes ({:.1f}%)",
+                    nodes_processed,
+                    total_nodes,
+                    nodes_processed / total_nodes * 100 if total_nodes > 0 else 0,
+                )
 
             # Update blocked_by counts for nodes waiting on this one
             for waiting_addr in unblocks.get(current_node.address.value, set()):
@@ -440,8 +475,11 @@ class BaseTraversal:
         end_nodes = [
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
-        if environment:
-            logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
+        logger.info(
+            "Traversal complete: {} nodes processed, {} end nodes",
+            len(finished_nodes),
+            len(end_nodes),
+        )
         return end_nodes
 
     def _traverse_legacy(  # pylint: disable=R0914
