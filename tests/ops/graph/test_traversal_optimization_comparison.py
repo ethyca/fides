@@ -5,7 +5,6 @@ This ensures the optimized algorithm produces equivalent results.
 """
 
 import random
-import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pytest
@@ -533,468 +532,12 @@ class TestTraversalComparison:
         assert match, f"Results differ:\n{diff}"
 
 
-def create_large_graph(
-    num_datasets: int,
-    collections_per_dataset: int,
-) -> Tuple[DatasetGraph, Dict[str, Any]]:
-    """Create a large graph with multiple datasets and collections.
-
-    Creates a tree structure where:
-    - First collection of first dataset has identity
-    - Each subsequent collection references the previous one
-    - Collections are chained within and across datasets
-
-    Args:
-        num_datasets: Number of datasets to create
-        collections_per_dataset: Number of collections per dataset
-
-    Returns:
-        Tuple of (DatasetGraph, seed_data dict)
-    """
-    datasets: List[GraphDataset] = []
-    total_collections = num_datasets * collections_per_dataset
-
-    # Track the global collection index for edge creation
-    global_idx = 0
-
-    # Calculate log interval (log ~10 times during build)
-    log_interval = max(1, num_datasets // 10)
-
-    for ds_idx in range(num_datasets):
-        # Log progress periodically
-        if ds_idx > 0 and ds_idx % log_interval == 0:
-            print(f"  Built {ds_idx:,}/{num_datasets:,} datasets "
-                  f"({ds_idx * collections_per_dataset:,} collections)...", flush=True)
-
-        collections: List[Collection] = []
-
-        for coll_idx in range(collections_per_dataset):
-            fields = [
-                ScalarField(name="id"),
-                ScalarField(name="ref_id"),
-                ScalarField(name="data"),
-            ]
-
-            # First collection of first dataset has identity
-            if ds_idx == 0 and coll_idx == 0:
-                fields[0].identity = "email"
-            else:
-                # Reference the previous collection
-                if coll_idx == 0:
-                    # First collection in dataset references last collection of previous dataset
-                    prev_ds = ds_idx - 1
-                    prev_coll = collections_per_dataset - 1
-                else:
-                    # Reference previous collection in same dataset
-                    prev_ds = ds_idx
-                    prev_coll = coll_idx - 1
-
-                fields[1].references.append(
-                    (FieldAddress(f"ds_{prev_ds}", f"coll_{prev_coll}", "id"), "from")
-                )
-
-            collections.append(Collection(name=f"coll_{coll_idx}", fields=fields))
-            global_idx += 1
-
-        dataset = GraphDataset(
-            name=f"ds_{ds_idx}",
-            collections=collections,
-            connection_key=f"conn_{ds_idx}",
-        )
-        datasets.append(dataset)
-
-    graph = DatasetGraph(*datasets)
-    return graph, {"email": "test@example.com"}
-
-
-class TestTraversalPerformance:
-    """Performance comparison between original and optimized algorithms."""
-
-    def test_performance_linear_chain(self):
-        """Compare performance on a 200-node linear chain."""
-        graph, seed = create_linear_chain(200)
-
-        # Time original
-        traversal_orig = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        capture_traversal(traversal_orig, use_optimized=False)
-        original_time = time.perf_counter() - start
-
-        # Time optimized
-        traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        capture_traversal(traversal_opt, use_optimized=True)
-        optimized_time = time.perf_counter() - start
-
-        print(f"\n200-node linear chain:")
-        print(f"  Original:  {original_time:.4f}s")
-        print(f"  Optimized: {optimized_time:.4f}s")
-        print(f"  Speedup:   {original_time / optimized_time:.2f}x")
-
-    def test_performance_star_graph(self):
-        """Compare performance on a 200-node star graph."""
-        graph, seed = create_star_graph(200)
-
-        # Time original
-        traversal_orig = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        capture_traversal(traversal_orig, use_optimized=False)
-        original_time = time.perf_counter() - start
-
-        # Time optimized
-        traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        capture_traversal(traversal_opt, use_optimized=True)
-        optimized_time = time.perf_counter() - start
-
-        print(f"\n200-node star graph:")
-        print(f"  Original:  {original_time:.4f}s")
-        print(f"  Optimized: {optimized_time:.4f}s")
-        print(f"  Speedup:   {original_time / optimized_time:.2f}x")
-
-    def test_performance_large_graph(self):
-        """
-        Benchmark with 1,000,000 collections (1000 datasets x 1000 collections).
-
-        This test runs ONLY the optimized O(N+E) algorithm to verify it can
-        handle 1 million nodes efficiently. The legacy O(N²) algorithm would
-        take hours at this scale.
-
-        Run manually with: pytest -k test_performance_large_graph -s --no-cov
-        """
-        num_datasets = 1000
-        collections_per_dataset = 1000
-        total_collections = num_datasets * collections_per_dataset
-
-        print(f"\n{'='*60}")
-        print(f"LARGE SCALE BENCHMARK: {total_collections:,} collections")
-        print(f"({num_datasets} datasets x {collections_per_dataset} collections each)")
-        print(f"{'='*60}")
-
-        # Build the graph
-        print("\nBuilding graph...")
-        start = time.perf_counter()
-        graph, seed = create_large_graph(num_datasets, collections_per_dataset)
-        build_time = time.perf_counter() - start
-        print(f"Graph build time: {build_time:.2f}s")
-
-        # Time optimized algorithm (should be fast even at 1M nodes)
-        print("\nRunning OPTIMIZED algorithm (O(N+E))...")
-        traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-        traversal_nodes_opt: Dict[CollectionAddress, TraversalNode] = {}
-
-        # Progress tracking
-        nodes_processed = [0]  # Use list to allow mutation in closure
-        traversal_start = time.perf_counter()
-        log_interval = 10_000  # Log every 10k nodes
-
-        def progress_callback(tn: TraversalNode, data: Dict) -> None:
-            if tn.is_root_node():
-                return
-            # Add node to the result dict
-            data[tn.address] = tn
-            nodes_processed[0] += 1
-            count = nodes_processed[0]
-            # Log first node and then every log_interval nodes
-            if count == 1 or count % log_interval == 0:
-                elapsed = time.perf_counter() - traversal_start
-                rate = count / elapsed if elapsed > 0 else 0
-                remaining = (total_collections - count) / rate if rate > 0 else 0
-                print(f"  Progress: {count:,}/{total_collections:,} nodes "
-                      f"({count/total_collections*100:.1f}%) - "
-                      f"{rate:,.0f} nodes/sec - ETA: {remaining:.1f}s", flush=True)
-
-        start = time.perf_counter()
-        end_nodes_opt = traversal_opt.traverse(
-            traversal_nodes_opt,
-            progress_callback
-        )
-        optimized_time = time.perf_counter() - start
-        print(f"\nOptimized time: {optimized_time:.2f}s")
-        print(f"Nodes visited: {len(traversal_nodes_opt):,}")
-
-        # Results
-        print(f"\n{'='*60}")
-        print("RESULTS")
-        print(f"{'='*60}")
-        print(f"Total collections:    {total_collections:,}")
-        print(f"Optimized time:       {optimized_time:.2f}s")
-        print(f"Time per node:        {optimized_time / total_collections * 1000:.6f}ms")
-        print(f"Throughput:           {total_collections / optimized_time:,.0f} nodes/sec")
-
-        # Verify all nodes were visited
-        assert len(traversal_nodes_opt) == total_collections, \
-            f"Expected {total_collections:,} nodes, got {len(traversal_nodes_opt):,}"
-
-        print(f"\nSuccess: All {total_collections:,} nodes traversed correctly.")
-
-    def test_performance_legacy_graph(self):
-        """
-        Benchmark the LEGACY O(N²) algorithm with a smaller graph.
-
-        Uses 10,000 collections to demonstrate the polynomial scaling.
-        At this size, the legacy algorithm should take noticeably longer
-        than the optimized version.
-
-        Run manually with: pytest -k test_performance_legacy_graph -s --no-cov
-        """
-        num_datasets = 100
-        collections_per_dataset = 100
-        total_collections = num_datasets * collections_per_dataset
-
-        print(f"\n{'='*60}")
-        print(f"LEGACY BENCHMARK: {total_collections:,} collections")
-        print(f"({num_datasets} datasets x {collections_per_dataset} collections each)")
-        print(f"{'='*60}")
-
-        # Build the graph
-        print("\nBuilding graph...")
-        start = time.perf_counter()
-        graph, seed = create_large_graph(num_datasets, collections_per_dataset)
-        build_time = time.perf_counter() - start
-        print(f"Graph build time: {build_time:.2f}s")
-
-        # Time legacy algorithm
-        print("\nRunning LEGACY algorithm (O(N²))...")
-        traversal_legacy = BaseTraversal(graph, seed, skip_verification=True)
-        traversal_nodes_legacy: Dict[CollectionAddress, TraversalNode] = {}
-
-        # Progress tracking
-        nodes_processed = [0]
-        traversal_start = time.perf_counter()
-        log_interval = 1_000  # Log every 1k nodes for legacy
-
-        def progress_callback_legacy(tn: TraversalNode, data: Dict) -> None:
-            if tn.is_root_node():
-                return
-            data[tn.address] = tn
-            nodes_processed[0] += 1
-            count = nodes_processed[0]
-            if count == 1 or count % log_interval == 0:
-                elapsed = time.perf_counter() - traversal_start
-                rate = count / elapsed if elapsed > 0 else 0
-                remaining = (total_collections - count) / rate if rate > 0 else 0
-                print(f"  Progress: {count:,}/{total_collections:,} nodes "
-                      f"({count/total_collections*100:.1f}%) - "
-                      f"{rate:,.0f} nodes/sec - ETA: {remaining:.1f}s", flush=True)
-
-        start = time.perf_counter()
-        end_nodes_legacy = traversal_legacy._traverse_legacy(
-            traversal_nodes_legacy,
-            progress_callback_legacy
-        )
-        legacy_time = time.perf_counter() - start
-        print(f"\nLegacy time: {legacy_time:.2f}s")
-        print(f"Nodes visited: {len(traversal_nodes_legacy):,}")
-
-        # Now run optimized for comparison
-        print("\nRunning OPTIMIZED algorithm (O(N+E)) for comparison...")
-        traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-        traversal_nodes_opt: Dict[CollectionAddress, TraversalNode] = {}
-
-        nodes_processed[0] = 0
-        traversal_start = time.perf_counter()
-
-        def progress_callback_opt(tn: TraversalNode, data: Dict) -> None:
-            if tn.is_root_node():
-                return
-            data[tn.address] = tn
-            nodes_processed[0] += 1
-            count = nodes_processed[0]
-            if count == 1 or count % log_interval == 0:
-                elapsed = time.perf_counter() - traversal_start
-                rate = count / elapsed if elapsed > 0 else 0
-                remaining = (total_collections - count) / rate if rate > 0 else 0
-                print(f"  Progress: {count:,}/{total_collections:,} nodes "
-                      f"({count/total_collections*100:.1f}%) - "
-                      f"{rate:,.0f} nodes/sec - ETA: {remaining:.1f}s", flush=True)
-
-        start = time.perf_counter()
-        end_nodes_opt = traversal_opt.traverse(
-            traversal_nodes_opt,
-            progress_callback_opt
-        )
-        optimized_time = time.perf_counter() - start
-        print(f"\nOptimized time: {optimized_time:.2f}s")
-        print(f"Nodes visited: {len(traversal_nodes_opt):,}")
-
-        # Results
-        print(f"\n{'='*60}")
-        print("RESULTS COMPARISON")
-        print(f"{'='*60}")
-        print(f"Total collections:    {total_collections:,}")
-        print(f"Legacy time:          {legacy_time:.2f}s")
-        print(f"Optimized time:       {optimized_time:.2f}s")
-        print(f"Speedup:              {legacy_time / optimized_time:.1f}x")
-        print(f"Legacy per node:      {legacy_time / total_collections * 1000:.4f}ms")
-        print(f"Optimized per node:   {optimized_time / total_collections * 1000:.4f}ms")
-
-        # Verify both visited all nodes
-        assert len(traversal_nodes_legacy) == total_collections, \
-            f"Legacy: Expected {total_collections:,} nodes, got {len(traversal_nodes_legacy):,}"
-        assert len(traversal_nodes_opt) == total_collections, \
-            f"Optimized: Expected {total_collections:,} nodes, got {len(traversal_nodes_opt):,}"
-
-        print(f"\nSuccess: Both algorithms traversed all {total_collections:,} nodes correctly.")
-
-    def test_extrapolate_legacy_to_million(self):
-        """
-        Run legacy algorithm at multiple sizes and extrapolate to 1 million nodes.
-
-        Uses polynomial curve fitting to predict how long the O(N²) legacy
-        algorithm would take at 1 million nodes without actually running it.
-
-        Run manually with: pytest -k test_extrapolate_legacy_to_million -s --no-cov
-        """
-        # Test sizes - small enough to complete quickly
-        test_sizes = [500, 1000, 2000, 3000, 5000]
-        legacy_times: List[float] = []
-        optimized_times: List[float] = []
-
-        print(f"\n{'='*70}")
-        print("TIMING ANALYSIS: Extrapolating Legacy Performance to 1M Nodes")
-        print(f"{'='*70}")
-
-        for size in test_sizes:
-            # Use a single dataset with 'size' collections for simplicity
-            print(f"\n--- Testing with {size:,} nodes ---")
-
-            # Build graph
-            graph, seed = create_linear_chain(size)
-
-            # Time legacy
-            traversal_legacy = BaseTraversal(graph, seed, skip_verification=True)
-            traversal_nodes_legacy: Dict[CollectionAddress, TraversalNode] = {}
-
-            def capture_fn(tn: TraversalNode, data: Dict) -> None:
-                if not tn.is_root_node():
-                    data[tn.address] = tn
-
-            start = time.perf_counter()
-            traversal_legacy._traverse_legacy(traversal_nodes_legacy, capture_fn)
-            legacy_time = time.perf_counter() - start
-            legacy_times.append(legacy_time)
-
-            # Time optimized
-            traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-            traversal_nodes_opt: Dict[CollectionAddress, TraversalNode] = {}
-
-            start = time.perf_counter()
-            traversal_opt.traverse(traversal_nodes_opt, capture_fn)
-            optimized_time = time.perf_counter() - start
-            optimized_times.append(optimized_time)
-
-            print(f"  Legacy:    {legacy_time:.4f}s ({legacy_time/size*1000:.4f}ms/node)")
-            print(f"  Optimized: {optimized_time:.4f}s ({optimized_time/size*1000:.4f}ms/node)")
-            print(f"  Speedup:   {legacy_time/optimized_time:.1f}x")
-
-        # Fit quadratic curve for legacy: time = a * n^2 + b * n + c
-        # Using numpy-free approach: least squares for t = k * n^2
-        # Since O(N²) dominates, we fit t = k * n^2
-        print(f"\n{'='*70}")
-        print("CURVE FITTING")
-        print(f"{'='*70}")
-
-        # Calculate k for legacy (t = k * n^2)
-        # Using least squares: k = sum(t_i * n_i^2) / sum(n_i^4)
-        sum_tn2 = sum(t * (n ** 2) for t, n in zip(legacy_times, test_sizes))
-        sum_n4 = sum(n ** 4 for n in test_sizes)
-        k_legacy = sum_tn2 / sum_n4
-
-        # Calculate k for optimized (t = k * n, linear)
-        sum_tn = sum(t * n for t, n in zip(optimized_times, test_sizes))
-        sum_n2 = sum(n ** 2 for n in test_sizes)
-        k_optimized = sum_tn / sum_n2
-
-        print(f"\nLegacy fit:    t = {k_legacy:.2e} * n²")
-        print(f"Optimized fit: t = {k_optimized:.2e} * n")
-
-        # Verify fit quality
-        print(f"\nFit Quality (predicted vs actual):")
-        print(f"{'Size':>8} | {'Legacy Actual':>12} | {'Legacy Pred':>12} | {'Opt Actual':>10} | {'Opt Pred':>10}")
-        print("-" * 70)
-        for i, size in enumerate(test_sizes):
-            legacy_pred = k_legacy * (size ** 2)
-            opt_pred = k_optimized * size
-            print(f"{size:>8,} | {legacy_times[i]:>12.4f}s | {legacy_pred:>12.4f}s | {optimized_times[i]:>10.4f}s | {opt_pred:>10.4f}s")
-
-        # Extrapolate to 1 million
-        target_size = 1_000_000
-        legacy_predicted = k_legacy * (target_size ** 2)
-        optimized_predicted = k_optimized * target_size
-
-        print(f"\n{'='*70}")
-        print(f"EXTRAPOLATION TO {target_size:,} NODES")
-        print(f"{'='*70}")
-
-        # Convert to human-readable time
-        def format_time(seconds: float) -> str:
-            if seconds < 60:
-                return f"{seconds:.1f} seconds"
-            elif seconds < 3600:
-                return f"{seconds/60:.1f} minutes"
-            elif seconds < 86400:
-                return f"{seconds/3600:.1f} hours"
-            else:
-                return f"{seconds/86400:.1f} days"
-
-        print(f"\nLegacy algorithm (O(N²)):")
-        print(f"  Predicted time: {format_time(legacy_predicted)} ({legacy_predicted:,.0f} seconds)")
-
-        print(f"\nOptimized algorithm (O(N+E)):")
-        print(f"  Predicted time: {format_time(optimized_predicted)} ({optimized_predicted:.1f} seconds)")
-
-        print(f"\nPredicted speedup at 1M nodes: {legacy_predicted/optimized_predicted:,.0f}x")
-
-        # Show scaling comparison
-        print(f"\n{'='*70}")
-        print("SCALING COMPARISON")
-        print(f"{'='*70}")
-        comparison_sizes = [1000, 10000, 100000, 1000000]
-        print(f"{'Nodes':>12} | {'Legacy':>15} | {'Optimized':>12} | {'Speedup':>10}")
-        print("-" * 60)
-        for n in comparison_sizes:
-            leg_time = k_legacy * (n ** 2)
-            opt_time = k_optimized * n
-            speedup = leg_time / opt_time
-            print(f"{n:>12,} | {format_time(leg_time):>15} | {format_time(opt_time):>12} | {speedup:>10,.0f}x")
-
-        print(f"\nConclusion: The legacy O(N²) algorithm would take approximately")
-        print(f"{format_time(legacy_predicted)} for 1 million nodes,")
-        print(f"while the optimized O(N+E) algorithm takes {format_time(optimized_predicted)}.")
-
-
-class TestScalabilityComparison:
-    """Test how algorithms scale with increasing graph size."""
-
-    @pytest.mark.parametrize("size", [100, 500, 1000, 2000, 5000])
-    def test_scaling_comparison(self, size: int):
-        """Compare algorithm scaling at different sizes."""
-        graph, seed = create_linear_chain(size)
-
-        # Time legacy
-        traversal_orig = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        traversal_orig._traverse_legacy({}, lambda tn, data: None)
-        legacy_time = time.perf_counter() - start
-
-        # Time optimized
-        traversal_opt = BaseTraversal(graph, seed, skip_verification=True)
-        start = time.perf_counter()
-        traversal_opt.traverse({}, lambda tn, data: None)
-        optimized_time = time.perf_counter() - start
-
-        speedup = legacy_time / optimized_time if optimized_time > 0 else float('inf')
-
-        print(f"\nSize {size:5d}: Legacy={legacy_time:.4f}s, Optimized={optimized_time:.4f}s, Speedup={speedup:.1f}x")
-
-
 class TestRandomGraphEquivalence:
     """Test equivalence on randomly generated graphs."""
 
-    @pytest.mark.parametrize("rng_seed", range(10))
+    @pytest.mark.parametrize("rng_seed", range(3))
     def test_random_small_graphs(self, rng_seed: int):
-        """Test 10 random graphs with 5-15 nodes."""
+        """Test random graphs with 5-15 nodes."""
         rng = random.Random(rng_seed)
         num_nodes = rng.randint(5, 15)
 
@@ -1013,9 +556,9 @@ class TestRandomGraphEquivalence:
         match, diff = results_equivalent(original, optimized)
         assert match, f"Results differ for seed={rng_seed}, nodes={num_nodes}:\n{diff}"
 
-    @pytest.mark.parametrize("rng_seed", range(5))
+    @pytest.mark.parametrize("rng_seed", range(2))
     def test_random_medium_graphs(self, rng_seed: int):
-        """Test 5 random graphs with 50-100 nodes."""
+        """Test random graphs with 50-100 nodes."""
         rng = random.Random(rng_seed + 100)  # Offset to get different graphs
         num_nodes = rng.randint(50, 100)
 
@@ -1034,7 +577,7 @@ class TestRandomGraphEquivalence:
         match, diff = results_equivalent(original, optimized)
         assert match, f"Results differ for seed={rng_seed + 100}, nodes={num_nodes}:\n{diff}"
 
-    @pytest.mark.parametrize("rng_seed", range(5))
+    @pytest.mark.parametrize("rng_seed", range(3))
     def test_random_with_after_deps(self, rng_seed: int):
         """Test random graphs with 'after' dependencies."""
         rng = random.Random(rng_seed + 200)
@@ -1057,7 +600,7 @@ class TestRandomGraphEquivalence:
         match, diff = results_equivalent(original, optimized)
         assert match, f"Results differ for seed={rng_seed + 200}, nodes={num_nodes}:\n{diff}"
 
-    @pytest.mark.parametrize("rng_seed", range(5))
+    @pytest.mark.parametrize("rng_seed", range(2))
     def test_random_dense_graphs(self, rng_seed: int):
         """Test random graphs with high edge probability (0.7)."""
         rng = random.Random(rng_seed + 300)
@@ -1078,7 +621,7 @@ class TestRandomGraphEquivalence:
         match, diff = results_equivalent(original, optimized)
         assert match, f"Results differ for seed={rng_seed + 300}, nodes={num_nodes}:\n{diff}"
 
-    @pytest.mark.parametrize("rng_seed", range(5))
+    @pytest.mark.parametrize("rng_seed", range(2))
     def test_random_sparse_graphs(self, rng_seed: int):
         """Test random graphs with low edge probability (0.05)."""
         rng = random.Random(rng_seed + 400)

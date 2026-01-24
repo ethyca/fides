@@ -103,7 +103,7 @@ class BaseTraversal:
 
         num_nodes = len(graph.nodes)
         num_edges = len(graph.edges)
-        logger.info(
+        logger.debug(
             "Initializing BaseTraversal with {} nodes and {} edges",
             num_nodes,
             num_edges,
@@ -185,7 +185,7 @@ class BaseTraversal:
                 self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(edge)
                 self.edges_by_node[addr].append(edge)
 
-        logger.info("BaseTraversal initialization complete")
+        logger.debug("BaseTraversal initialization complete")
 
         if not self._skip_verification:
             self._verify_traversal()
@@ -195,7 +195,7 @@ class BaseTraversal:
         and raises an error on any traversal failure conditions."""
         self.traverse(
             {self.root_node.address: [self.seed_data]},
-            lambda n, m: logger.info("Traverse {}", n.address),
+            lambda n, m: logger.debug("Traverse {}", n.address),
         )
 
     def traversal_map(
@@ -249,7 +249,7 @@ class BaseTraversal:
         take action on completed traversal.
         """
         total_nodes = len(self.traversal_node_dict)
-        logger.info("Starting traversal of {} nodes", total_nodes)
+        logger.debug("Starting traversal of {} nodes", total_nodes)
 
         # Track which nodes are finished
         finished_nodes: Dict[CollectionAddress, TraversalNode] = {}
@@ -311,10 +311,6 @@ class BaseTraversal:
         # Pending queue: nodes discovered but blocked by 'after' dependencies
         pending: Dict[str, TraversalNode] = {}
 
-        # Progress logging
-        nodes_processed = 0
-        log_interval = max(1, total_nodes // 10)  # Log ~10 times during traversal
-
         while ready_queue or pending:
             # Try to get a node from the ready queue
             current_node: Optional[TraversalNode] = None
@@ -348,16 +344,6 @@ class BaseTraversal:
             node_run_fn(current_node, environment)
             finished_nodes[current_node.address] = current_node
             finished_str.add(current_node.address.value)
-
-            # Progress logging
-            nodes_processed += 1
-            if nodes_processed == 1 or nodes_processed % log_interval == 0:
-                logger.info(
-                    "Traversal progress: {}/{} nodes ({:.1f}%)",
-                    nodes_processed,
-                    total_nodes,
-                    nodes_processed / total_nodes * 100 if total_nodes > 0 else 0,
-                )
 
             # Update blocked_by counts for nodes waiting on this one
             for waiting_addr in unblocks.get(current_node.address.value, set()):
@@ -475,7 +461,7 @@ class BaseTraversal:
         end_nodes = [
             tn.address for tn in finished_nodes.values() if tn.is_terminal_node
         ]
-        logger.info(
+        logger.debug(
             "Traversal complete: {} nodes processed, {} end nodes",
             len(finished_nodes),
             len(end_nodes),
@@ -496,7 +482,7 @@ class BaseTraversal:
         which is O(N) per node = O(N²) total.
         """
         if environment:
-            logger.info(
+            logger.debug(
                 "Starting traversal (legacy)",
             )
 
