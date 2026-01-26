@@ -85,13 +85,11 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
-      # The workflow will proceed even if this fails because it should be non-blocking
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
-        continue-on-error: true
 
 
-  
+
   # Summary job for branch protection
   Static-Checks-Summary:
     runs-on: ubuntu-latest
