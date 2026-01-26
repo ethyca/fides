@@ -1224,9 +1224,18 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
         db.close()
         return
     if privacy_request.status == PrivacyRequestStatus.paused:
+        error_message = "Privacy request has expired. Please resubmit information."
         logger.error(
             "Privacy request '{}' has expired. Please resubmit information.",
             privacy_request.id,
+        )
+        privacy_request.add_error_execution_log(
+            db,
+            connection_key=None,
+            dataset_name="Privacy request processing",
+            collection_name=None,
+            message=error_message,
+            action_type=privacy_request.policy.get_action_type(),  # type: ignore
         )
         privacy_request.error_processing(db=db)
     db.close()
@@ -1341,6 +1350,7 @@ def run_webhooks_and_report_status(
                 policy_action=privacy_request.policy.get_action_type(),
             )
         except PrivacyRequestPaused:
+            error_message = f"Webhook '{webhook.key}' returned an error: {exc.args[0]}"
             logger.info(
                 "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
                 privacy_request.id,
@@ -1356,14 +1366,31 @@ def run_webhooks_and_report_status(
                 webhook.key,
                 Pii(str(exc.args[0])),
             )
+            privacy_request.add_error_execution_log(
+                db,
+                connection_key=None,
+                dataset_name=f"Webhook: {webhook.key}",
+                collection_name=None,
+                message=error_message,
+                action_type=privacy_request.policy.get_action_type(),
+            )
             privacy_request.error_processing(db)
             privacy_request.cache_failed_checkpoint_details(current_step)
             return False
-        except PydanticValidationError:
+        except PydanticValidationError as exc:
+            error_message = f"Webhook '{webhook.key}' returned an invalid response format: {str(exc)}"
             logger.error(
                 "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
                 privacy_request.id,
                 webhook.key,
+            )
+            privacy_request.add_error_execution_log(
+                db,
+                connection_key=None,
+                dataset_name=f"Webhook: {webhook.key}",
+                collection_name=None,
+                message=error_message,
+                action_type=privacy_request.policy.get_action_type(),
             )
             privacy_request.error_processing(db)
             privacy_request.cache_failed_checkpoint_details(current_step)
