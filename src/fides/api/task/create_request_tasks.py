@@ -266,19 +266,10 @@ def persist_new_access_request_tasks(
     logger.info(
         "Creating access request tasks for privacy request {}.", privacy_request.id
     )
-    logger.info("Building access networkx digraph with {} nodes", len(traversal_nodes))
     graph: networkx.DiGraph = build_access_networkx_digraph(
         traversal_nodes, end_nodes, traversal
     )
-    logger.info("Networkx digraph built, performing topological sort")
-
-    sorted_nodes = list(networkx.topological_sort(graph))
-    logger.info("Topological sort complete. Creating {} RequestTask objects", len(sorted_nodes))
-
-    for idx, node in enumerate(sorted_nodes):
-        if idx > 0 and idx % 1000 == 0:
-            logger.info("Created {} / {} request tasks", idx, len(sorted_nodes))
-
+    for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
         ):
@@ -298,7 +289,6 @@ def persist_new_access_request_tasks(
             },
         )
 
-    logger.info("All request tasks created, fetching root task")
     root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.access)
 
     return [root_task]
@@ -476,22 +466,12 @@ def run_access_request(
         )
     else:
         try:
-            logger.info(
-                "Starting Traversal object creation with {} collections",
-                len(graph.nodes)
-            )
             traversal: Traversal = Traversal(graph, identity, policy=policy)
-            logger.info("Traversal object created, starting graph traversal")
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
             end_nodes: List[CollectionAddress] = traversal.traverse(
                 traversal_nodes, collect_tasks_fn
-            )
-            logger.info(
-                "Graph traversal complete. Found {} traversal nodes and {} end nodes",
-                len(traversal_nodes),
-                len(end_nodes)
             )
 
             # Snapshot manual task field instances for this privacy request
@@ -500,11 +480,9 @@ def run_access_request(
             )
 
             # Save Access Request Tasks to the database
-            logger.info("Starting to persist access request tasks to database")
             ready_tasks = persist_new_access_request_tasks(
                 session, privacy_request, traversal, traversal_nodes, end_nodes, graph
             )
-            logger.info("Access request tasks persisted successfully")
 
             if (
                 policy.get_rules_for_action(action_type=ActionType.erasure)
