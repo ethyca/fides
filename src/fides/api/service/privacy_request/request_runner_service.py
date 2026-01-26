@@ -332,15 +332,6 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     manual_data_access_results: ManualWebhookResults,
     fides_connector_datasets: set[str],
 ) -> list[str]:
-    """
-    Process and upload access results, including package generation.
-
-    This can be memory-intensive with large result sets due to:
-    - Result filtering by data category
-    - HTML report generation
-    - ZIP package creation
-    - File uploads to storage
-    """
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
     # Remove manual webhook attachments and request task attachments from the list of attachments
@@ -602,9 +593,19 @@ def run_privacy_request(
             try:
                 policy.rules[0]  # type: ignore[attr-defined]
             except IndexError:
-                raise common_exceptions.MisconfiguredPolicyException(
+                error_message = (
                     f"Policy with key {policy.key} must contain at least one Rule."
                 )
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Policy validation",
+                    collection_name=None,
+                    message=error_message,
+                    action_type=ActionType.access,  # Default since policy has no rules
+                )
+                privacy_request.error_processing(db=session)
+                raise common_exceptions.MisconfiguredPolicyException(error_message)
 
             try:
                 # CRITICAL OPTIMIZATION: Skip graph loading if resuming from a late checkpoint
