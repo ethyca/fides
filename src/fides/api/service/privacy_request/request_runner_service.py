@@ -487,6 +487,44 @@ def _cleanup_dsr_memory(
         logger.warning(f"Error during cleanup: {exc}")
 
 
+def _get_dataset_graph(session: Session, privacy_request: PrivacyRequest) -> DatasetGraph:
+    """Get the dataset graph for a privacy request"""
+    # Eager load connection_config and ctl_dataset to avoid N+1 queries
+    datasets = (
+        session.query(DatasetConfig)
+        .options(
+            selectinload(DatasetConfig.connection_config),
+            selectinload(DatasetConfig.ctl_dataset),
+        )
+        .all()
+    )
+
+    dataset_graphs = [
+        dataset_config.get_graph()
+        for dataset_config in datasets
+        if not dataset_config.connection_config.disabled
+    ]
+
+    # Add manual task artificial graphs to dataset graphs
+    # Only include manual tasks with access or erasure configs
+    manual_task_graphs = create_manual_task_artificial_graphs(
+        session, config_types=[ActionType.access, ActionType.erasure]
+    )
+    dataset_graphs.extend(manual_task_graphs)
+
+    # Add success log for dataset configuration
+    privacy_request.add_success_execution_log(
+        session,
+        connection_key=None,
+        dataset_name="Dataset reference validation",
+        collection_name=None,
+        message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+    )
+    return DatasetGraph(*dataset_graphs)
+
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -608,13 +646,7 @@ def run_privacy_request(
                 raise common_exceptions.MisconfiguredPolicyException(error_message)
 
             try:
-                # CRITICAL OPTIMIZATION: Skip graph loading if resuming from a late checkpoint
-                # Graph is only needed for:
-                # - Creating access tasks (access checkpoint)
-                # - Creating erasure tasks (erasure checkpoint)
-                # - Filtering access results (upload_access checkpoint)
-                # For later checkpoints, tasks are already created and results already filtered
-                skip_graph_loading = False
+                # Skip graph loading if resuming from a late checkpoint
                 if resume_step and resume_step in [
                     # These checkpoints are AFTER all graph-dependent operations
                     CurrentStep.finalize_erasure,
@@ -628,46 +660,10 @@ def run_privacy_request(
                         "Skipping graph loading - resuming from late checkpoint '{}' which doesn't require graph",
                         resume_step,
                     )
-                    skip_graph_loading = True
-
-                if not skip_graph_loading:
-                    # Eager load connection_config and ctl_dataset to avoid N+1 queries
-                    datasets = (
-                        session.query(DatasetConfig)
-                        .options(
-                            selectinload(DatasetConfig.connection_config),
-                            selectinload(DatasetConfig.ctl_dataset),
-                        )
-                        .all()
-                    )
-
-                    dataset_graphs = [
-                        dataset_config.get_graph()
-                        for dataset_config in datasets
-                        if not dataset_config.connection_config.disabled
-                    ]
-
-                    # Add manual task artificial graphs to dataset graphs
-                    # Only include manual tasks with access or erasure configs
-                    manual_task_graphs = create_manual_task_artificial_graphs(
-                        session, config_types=[ActionType.access, ActionType.erasure]
-                    )
-                    dataset_graphs.extend(manual_task_graphs)
-
-                    dataset_graph = DatasetGraph(*dataset_graphs)
-
-                    # Add success log for dataset configuration
-                    privacy_request.add_success_execution_log(
-                        session,
-                        connection_key=None,
-                        dataset_name="Dataset reference validation",
-                        collection_name=None,
-                        message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
-                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                    )
-                else:
-                    # Skipped graph loading - set to None, will only be needed if we hit access checkpoint
                     dataset_graph = None
+
+                else:
+                    dataset_graph = _get_dataset_graph(session, privacy_request)
 
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value
