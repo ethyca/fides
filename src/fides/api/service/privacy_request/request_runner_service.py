@@ -341,7 +341,6 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     - ZIP package creation
     - File uploads to storage
     """
-    from fides.api.util.dsr_memory_tracker import log_memory_snapshot
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: list[str] = []
     # Remove manual webhook attachments and request task attachments from the list of attachments
@@ -438,17 +437,6 @@ def _cleanup_dsr_memory(
     )
 
     try:
-        # Log memory before cleanup
-        from fides.api.util.dsr_memory_tracker import log_memory_snapshot
-        log_memory_snapshot(
-            f"before_cleanup_{phase}",
-            session=session,
-            extra_data={
-                "privacy_request_id": privacy_request_id,
-                "phase": phase
-            }
-        )
-
         # 1. Clear SQLAlchemy session identity map FIRST
         # This releases ORM objects that may be holding references to data
         # and allows connections to be returned to the pool
@@ -502,23 +490,6 @@ def _cleanup_dsr_memory(
                     )
         except Exception as e:
             logger.debug(f"Could not inspect connection pool: {e}")
-
-        # Log memory after cleanup
-        # Note: Need to get a new session for this query since we closed the old one
-        try:
-            from fides.api.api.deps import get_autoclose_db_session
-            with get_autoclose_db_session() as new_session:
-                log_memory_snapshot(
-                    f"after_cleanup_{phase}",
-                    session=new_session,
-                    extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": phase,
-                        "objects_collected": collected_total
-                    }
-                )
-        except Exception as e:
-            logger.debug(f"Could not log memory snapshot after cleanup: {e}")
 
     except Exception as exc:
         # Never fail the DSR due to cleanup errors
@@ -658,15 +629,7 @@ def run_privacy_request(
                     )
                     skip_graph_loading = True
 
-                # Track memory during graph creation (can be significant with 11,000+ collections)
-                from fides.api.util.dsr_memory_tracker import log_memory_snapshot
-
                 if not skip_graph_loading:
-                    log_memory_snapshot("before_dataset_load", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "graph_creation"
-                    })
-
                     # Eager load connection_config and ctl_dataset to avoid N+1 queries
                     datasets = (
                         session.query(DatasetConfig)
@@ -677,23 +640,11 @@ def run_privacy_request(
                         .all()
                     )
 
-                    log_memory_snapshot("after_dataset_load", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "graph_creation",
-                        "dataset_count": len(datasets)
-                    })
-
                     dataset_graphs = [
                         dataset_config.get_graph()
                         for dataset_config in datasets
                         if not dataset_config.connection_config.disabled
                     ]
-
-                    log_memory_snapshot("after_graph_build", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "graph_creation",
-                        "graph_count": len(dataset_graphs)
-                    })
 
                     # Add manual task artificial graphs to dataset graphs
                     # Only include manual tasks with access or erasure configs
@@ -703,15 +654,6 @@ def run_privacy_request(
                     dataset_graphs.extend(manual_task_graphs)
 
                     dataset_graph = DatasetGraph(*dataset_graphs)
-
-                    # Get collection count for logging
-                    collection_count = sum(len(g.collections) for g in dataset_graphs)
-                    log_memory_snapshot("after_graph_merge", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "graph_creation",
-                        "total_collections": collection_count,
-                        "total_graphs": len(dataset_graphs)
-                    })
 
                     # Add success log for dataset configuration
                     privacy_request.add_success_execution_log(
@@ -788,24 +730,9 @@ def run_privacy_request(
                     # Only load access results if we're actually going to use them
                     raw_access_results: dict = privacy_request.get_raw_access_results()
 
-                    # Track memory before result processing
-                    from fides.api.util.dsr_memory_tracker import log_memory_snapshot
-
-                    log_memory_snapshot("before_result_filtering", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "post_traversal",
-                        "result_collection_count": len(raw_access_results)
-                    })
-
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
-
-                    log_memory_snapshot("after_result_filtering", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "post_traversal",
-                        "filtered_collection_count": len(filtered_access_results)
-                    })
 
                     access_result_urls = upload_and_save_access_results(
                         session,
@@ -816,12 +743,6 @@ def run_privacy_request(
                         manual_webhook_access_results,
                         fides_connector_datasets,
                     )
-
-                    log_memory_snapshot("after_upload_and_package", session=session, extra_data={
-                        "privacy_request_id": privacy_request_id,
-                        "phase": "post_traversal",
-                        "result_urls_count": len(access_result_urls)
-                    })
 
                 # Erasure CHECKPOINT
                 if policy.get_rules_for_action(
