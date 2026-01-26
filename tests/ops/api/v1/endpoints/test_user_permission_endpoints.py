@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 from starlette.status import (
     HTTP_200_OK,
@@ -11,6 +13,7 @@ from starlette.status import (
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.schemas.user import DisabledReason
 from fides.api.oauth.roles import (
     APPROVER,
     CONTRIBUTOR,
@@ -267,6 +270,29 @@ class TestCreateUserPermissions:
         )
         assert response.status_code == expected_response
         updated_user.delete(db)
+
+    def test_create_user_permissions_rejects_soft_deleted_user(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        """Test that creating permissions for a soft-deleted user returns 404."""
+        auth_header = generate_auth_header([USER_PERMISSION_CREATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "soft_deleted_perm_user", "password": "test_password"},
+        )
+
+        # Soft-delete the user
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        body = {"user_id": user.id, "roles": [VIEWER]}
+        response = api_client.post(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        assert HTTP_404_NOT_FOUND == response.status_code
 
 
 class TestEditUserPermissions:
@@ -629,6 +655,32 @@ class TestEditUserPermissions:
             json=body,
         )
         assert response.status_code == expected_response
+
+    def test_edit_user_permissions_rejects_soft_deleted_user(
+        self, db, api_client, generate_auth_header
+    ) -> None:
+        """Test that editing permissions for a soft-deleted user returns 404."""
+        auth_header = generate_auth_header([USER_PERMISSION_UPDATE])
+        user = FidesUser.create(
+            db=db,
+            data={"username": "soft_deleted_edit_user", "password": "test_password"},
+        )
+        FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "roles": [VIEWER]}
+        )
+
+        # Soft-delete the user
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        body = {"roles": [CONTRIBUTOR]}
+        response = api_client.put(
+            f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
+        )
+        assert HTTP_404_NOT_FOUND == response.status_code
 
 
 class TestGetUserPermissions:

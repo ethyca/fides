@@ -1,20 +1,25 @@
 import json
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
-
+from fides.service.user.exceptions import (
+    DeletedEmailError,
+    DeletedUsernameError,
+    EmailAlreadyExistsError,
+    InvalidPasswordError,
+    UserNotFoundError,
+    UsernameAlreadyExistsError,
+)
 import jose.exceptions
 from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from sqlalchemy.orm import Query, Session
-from sqlalchemy_utils import escape_like
+from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -27,16 +32,15 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.deps import get_config_proxy, get_db
-from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
+from fides.api.api.v1.endpoints.user_permission_endpoints import get_user_orm_or_404
 from fides.api.common_exceptions import AuthenticationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
-from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
+from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
     create_temporary_user_for_login_flow,
     extract_payload,
@@ -156,18 +160,20 @@ async def update_user(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserUpdate,
-) -> FidesUser:
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
     """
     Update a user given a `user_id`. If the user is not updating their own data,
     they need the user:update scope
     """
-    user = FidesUser.get(db=db, object_id=user_id)
-    if not user:
+    # First check if user exists (for authorization check)
+    user_entity = user_service.get_user(user_id)
+    if not user_entity:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
         )
 
-    is_this_user = user.id == current_user.id
+    is_this_user = user_entity.id == current_user.id
     if not is_this_user:
         await verify_oauth_client(
             security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
@@ -175,9 +181,14 @@ async def update_user(
             db=db,
         )
 
-    user.update(db=db, data=data.model_dump(mode="json"))
-    logger.info("Updated user with id: '{}'.", user.id)
-    return user
+    updated_user = user_service.update_user(user_id, data.model_dump(mode="json"))
+    if not updated_user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found."
+        )
+
+    logger.info("Updated user with id: '{}'.", updated_user.id)
+    return updated_user
 
 
 @router.post(
@@ -188,39 +199,33 @@ async def update_user(
 )
 def update_user_password(
     *,
-    db: Session = Depends(deps.get_db),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserPasswordReset,
-) -> FidesUser:
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
     """
     Update a user's password given a `user_id`. By default this is limited to users
     updating their own data.
     """
     _validate_current_user(user_id, current_user)
 
-    if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), CONFIG.security.encoding
-    ):
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
+    try:
+        updated_user = user_service.self_update_password(
+            user_id=user_id,
+            old_password=b64_str_to_str(data.old_password),
+            new_password=data.new_password,
         )
-
-    current_user.update_password(db=db, new_password=data.new_password)
-
-    # Delete the user's associated OAuth client to invalidate all existing sessions
-    if current_user.client:
-        try:
-            current_user.client.delete(db)
-        except Exception as exc:
-            logger.exception(
-                "Unable to delete user client during password reset for user {}: {}",
-                current_user.id,
-                exc,
-            )
-
-    logger.info("Updated user with id: '{}'.", current_user.id)
-    return current_user
+        logger.info("Updated user with id: '{}'.", updated_user.id)
+        return updated_user
+    except UserNotFoundError as exc:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except InvalidPasswordError as exc:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail=exc.message
+        )
 
 
 @router.post(
@@ -231,36 +236,25 @@ def update_user_password(
 )
 def force_update_password(
     *,
-    db: Session = Depends(deps.get_db),
     user_id: str,
     data: UserForcePasswordReset,
-) -> FidesUser:
+    user_service: UserService = Depends(get_user_service),
+) -> UserResponse:
     """
     Update any user's password given a `user_id` without needing to know the user's
     previous password.
     """
-    user: Optional[FidesUser] = FidesUser.get(db=db, object_id=user_id)
-    if not user:
+    updated_user = user_service.update_password(
+        user_id=user_id, new_password=data.new_password
+    )
+    if not updated_user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"User with ID {user_id} does not exist.",
         )
 
-    user.update_password(db=db, new_password=data.new_password)
-
-    # Delete the user's associated OAuth client to invalidate all existing sessions
-    if user.client:
-        try:
-            user.client.delete(db)
-        except Exception as exc:
-            logger.exception(
-                "Unable to delete user client during admin-forced password reset for user {}: {}",
-                user.id,
-                exc,
-            )
-
-    logger.info("Updated user with id: '{}'.", user.id)
-    return user
+    logger.info("Updated user with id: '{}'.", updated_user.id)
+    return updated_user
 
 
 def logout_oauth_client(
@@ -326,12 +320,13 @@ def update_managed_systems(
     db: Session = Depends(deps.get_db),
     user_id: str,
     systems: List[FidesKey],
+    user_service: UserService = Depends(get_user_service),
 ) -> List[SystemSchema]:
     """
     Endpoint to override the systems for which a user is "system manager".
     All systems the user manages are replaced with those in the request body.
     """
-    user = validate_user_id(db, user_id)
+    user = get_user_orm_or_404(user_id, user_service)
 
     if not (user.permissions and user.permissions.roles):  # type: ignore
         raise HTTPException(
@@ -351,7 +346,7 @@ def update_managed_systems(
             detail=f"Cannot add user {user_id} as system manager. Duplicate systems in request body.",
         )
 
-    retrieved_systems: Query = db.query(System).filter(System.fides_key.in_(systems))
+    retrieved_systems = db.query(System).filter(System.fides_key.in_(systems))
     if retrieved_systems.count() != len(systems):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -383,6 +378,7 @@ async def get_managed_systems(
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
+    user_service: UserService = Depends(get_user_service),
 ) -> List[SystemSchema]:
     """
     Endpoint to retrieve all the systems for which a user is "system manager".
@@ -396,7 +392,7 @@ async def get_managed_systems(
         return current_user.systems
 
     # User must have a specific scope to be able to read another user's systems
-    user = validate_user_id(db, user_id)
+    user = get_user_orm_or_404(user_id, user_service)
     await verify_oauth_client(
         security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
         authorization=authorization,
@@ -417,6 +413,7 @@ async def get_managed_system_details(
     user_id: str,
     system_key: FidesKey,
     current_user: FidesUser = Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
 ) -> SystemSchema:
     """
     Endpoint to retrieve a single system managed by the given user.
@@ -431,7 +428,7 @@ async def get_managed_system_details(
             authorization=authorization,
             db=db,
         )
-        user = validate_user_id(db, user_id)
+        user = get_user_orm_or_404(user_id, user_service)
 
     if not system in user.systems:
         raise HTTPException(
@@ -454,12 +451,16 @@ async def get_managed_system_details(
     status_code=HTTP_204_NO_CONTENT,
 )
 def remove_user_as_system_manager(
-    *, db: Session = Depends(deps.get_db), user_id: str, system_key: FidesKey
+    *,
+    db: Session = Depends(deps.get_db),
+    user_id: str,
+    system_key: FidesKey,
+    user_service: UserService = Depends(get_user_service),
 ) -> None:
     """
     Endpoint to remove user as system manager from the given system
     """
-    user = validate_user_id(db, user_id)
+    user = get_user_orm_or_404(user_id, user_service)
     system: System = get_system_by_fides_key(db, system_key)
 
     if not system in user.systems:
@@ -480,9 +481,7 @@ def remove_user_as_system_manager(
 )
 def create_user(
     *,
-    db: Session = Depends(get_db),
     user_data: UserCreate,
-    config_proxy: ConfigProxy = Depends(get_config_proxy),
     user_service: UserService = Depends(get_user_service),
 ) -> FidesUser:
     """
@@ -491,45 +490,22 @@ def create_user(
     server-side before being encrypted and persisted.
     If `password` is sent as a plaintext string, it will be encrypted and persisted as is.
 
-    The user is given no roles by default.
+    The user is given the VIEWER role by default.
     """
 
-    # The root user is not stored in the database so make sure here that the user name
-    # is not the same as the root user name.
-    if (
-        config_proxy.security.root_username
-        and config_proxy.security.root_username == user_data.username
-    ):
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
-        )
-
-    user = FidesUser.get_by(db, field="username", value=user_data.username)
-
-    if user:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
-        )
-
-    user = FidesUser.get_by(db, field="email_address", value=user_data.email_address)
-
-    if user:
+    try:
+        user = user_service.create_user(user_data.model_dump(mode="json"))
+        return user
+    except (UsernameAlreadyExistsError, DeletedUsernameError) as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail="User with this email address already exists.",
+            detail=exc.message,
         )
-
-    user = FidesUser.create(db=db, data=user_data.model_dump(mode="json"))
-
-    # invite user via email
-    user_service.invite_user(user)
-
-    logger.info("Created user with id: '{}'.", user.id)
-    FidesUserPermissions.create(
-        db=db,
-        data={"user_id": user.id, "roles": [VIEWER]},
-    )
-    return user
+    except (EmailAlreadyExistsError, DeletedEmailError) as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=exc.message,
+        )
 
 
 @router.delete(
@@ -545,18 +521,20 @@ def delete_user(
     ),
     db: Session = Depends(get_db),
     user_id: str,
+    user_service: UserService = Depends(get_user_service),
 ) -> None:
-    """Deletes the User and associated ClientDetail if applicable."""
-    user = FidesUser.get_by(db, field="id", value=user_id)
+    """Soft-deletes the User, preserving the record for audit history."""
+    deleted_user = user_service.delete_user(
+        user_id=user_id,
+        deleted_by_user_id=client.user_id,
+    )
 
-    if not user:
+    if not deleted_user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
         )
 
     logger.info("User with id {} deleted by user with id {}", user_id, client.user_id)
-
-    user.delete(db)
 
 
 @router.get(
@@ -566,13 +544,14 @@ def delete_user(
 )
 def get_user(
     *,
-    db: Session = Depends(get_db),
     user_id: str,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+    user_service: UserService = Depends(get_user_service),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
-    user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
+    user: Optional[FidesUser] = user_service.get_user_orm(user_id)
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
     token_data, _ = extract_token_and_load_client(authorization, db)
@@ -612,41 +591,29 @@ def get_users(
     exclude_approvers: bool = False,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
+    user_service: UserService = Depends(get_user_service),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
-    query = FidesUser.query(db)
-
-    # Check if user has USER_READ_OWN scope and filter accordingly
-    # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
+    # Check if user has USER_READ_OWN scope (restricted to own data only)
     token_data, _ = extract_token_and_load_client(authorization, db)
-    if has_permissions(
+    has_full_read = has_permissions(
         token_data=token_data,
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
-    ):
-        # User has USER_READ scope, can see all users
-        if username:
-            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+    )
 
-        # Filter out external respondents if include_external is False
-        # Filter out approvers if exclude_approvers is True
-        if not include_external or exclude_approvers:
-            query = query.join(FidesUserPermissions)
-            if not include_external:
-                query = query.filter(
-                    ~FidesUserPermissions.roles.op("@>")([EXTERNAL_RESPONDENT])
-                )
-            if exclude_approvers:
-                query = query.filter(~FidesUserPermissions.roles.op("@>")([APPROVER]))
-    else:
-        # User has USER_READ_OWN scope, only show their own data
-        query = query.filter(FidesUser.id == client.user_id)
-        if username:
-            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+    # If user only has USER_READ_OWN, restrict to their own user
+    restrict_to_user_id = None if has_full_read else client.user_id
 
     logger.debug("Returning a paginated list of users.")
 
-    return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
+    return user_service.get_users_paginated(
+        params=params,
+        username_filter=username,
+        include_external=include_external,
+        exclude_approvers=exclude_approvers,
+        restrict_to_user_id=restrict_to_user_id,
+    )
 
 
 @router.post(
@@ -695,7 +662,7 @@ def user_login(
         user = FidesUser(
             id=config.security.oauth_root_client_id,
             username=config.security.root_username,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         logger.warning(
@@ -703,8 +670,9 @@ def user_login(
         )
 
     else:
-        user_check: Optional[FidesUser] = FidesUser.get_by(
-            db, field="username", value=user_data.username
+        # include_deleted=True for timing attack protection - we check is_deleted separately
+        user_check: Optional[FidesUser] = user_service.get_user_orm_by_username(
+            user_data.username, include_deleted=True
         )
 
         if not user_check:
@@ -713,6 +681,10 @@ def user_login(
             # on which we'll perform parallel operations
             should_raise_exception = True
             user_check = ARTIFICIAL_TEMP_USER
+
+        # Check if user has been soft-deleted
+        if user_check.is_deleted:
+            should_raise_exception = True
 
         if not user_check.credentials_valid(user_data.password):
             should_raise_exception = True
@@ -783,25 +755,21 @@ def verify_invite_code(
 )
 def accept_user_invite(
     *,
-    db: Session = Depends(get_db),
     user_data: UserForcePasswordReset,
     verified_invite: FidesUserInvite = Depends(verify_invite_code),
     user_service: UserService = Depends(get_user_service),
 ) -> UserLoginResponse:
     """Sets the password and enables the user if a valid username and invite code are provided."""
-
-    user: Optional[FidesUser] = FidesUser.get_by(
-        db=db, field="username", value=verified_invite.username
-    )
-    if not user:
+    try:
+        user_entity, access_code = user_service.accept_invite_by_username(
+            username=verified_invite.username, new_password=user_data.new_password
+        )
+        return UserLoginResponse(
+            user_data=user_entity,
+            token_data=AccessToken(access_token=access_code),
+        )
+    except UserNotFoundError as exc:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"User with username {verified_invite.username} does not exist.",
+            detail=exc.message,
         )
-
-    user, access_code = user_service.accept_invite(user, user_data.new_password)
-
-    return UserLoginResponse(
-        user_data=user,
-        token_data=AccessToken(access_token=access_code),
-    )
