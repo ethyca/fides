@@ -37,11 +37,6 @@ const ConfigureAlerts = () => {
   const [saveNotification] = useSaveNotificationMutation();
 
   const handleSubmit = async () => {
-    if (notify && emails.length === 0) {
-      errorAlert("Please enter at least one email address");
-      return;
-    }
-
     setIsSubmitting(true);
     const payload = await saveNotification({
       email_addresses: notify ? emails : [],
@@ -139,9 +134,6 @@ const ConfigureAlerts = () => {
                   <InfoTooltip label="Type or paste email addresses separated by commas and press Enter or Tab to add them" />
                 </Flex>
               }
-              required={notify}
-              validateStatus={notify && emails.length === 0 ? "error" : undefined}
-              help={notify && emails.length === 0 ? "At least one email is required" : undefined}
             >
               <EmailChipList
                 emails={emails}
