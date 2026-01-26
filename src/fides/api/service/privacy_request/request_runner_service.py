@@ -406,40 +406,32 @@ def _cleanup_dsr_memory(
     phase: str = "completion"
 ) -> None:
     """
-    Aggressively clean up memory and database connections after DSR processing.
+    Aggressively clean up memory after DSR processing.
 
-    This prevents baseline memory creep and connection pool exhaustion when
-    processing multiple concurrent DSRs.
+    This prevents baseline memory creep when processing multiple concurrent DSRs.
+    Designed to be safe for both DSR 2.0 and DSR 3.0 workflows.
 
     Cleans up:
     - Python objects via garbage collection
-    - SQLAlchemy session identity map
-    - Database connection pool resources
+    - SQLAlchemy session identity map (only on true completion)
+
+    IMPORTANT: Does NOT close the session - the context manager handles that.
+    Does NOT rollback transactions - this could destroy uncommitted DSR 3.0 tasks.
 
     Args:
-        session: SQLAlchemy session
+        session: SQLAlchemy session (managed by caller's context manager)
         privacy_request_id: ID of the privacy request
         phase: Phase of cleanup (completion, error, exit, etc.)
     """
     logger.info(
-        "Performing aggressive cleanup for privacy request '{}' (phase: {})",
+        "Performing memory cleanup for privacy request '{}' (phase: {})",
         privacy_request_id,
         phase
     )
 
     try:
-        # 1. Clear SQLAlchemy session identity map FIRST
-        # This releases ORM objects that may be holding references to data
-        # and allows connections to be returned to the pool
-        try:
-            identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
-            session.expunge_all()
-            logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
-        except Exception as e:
-            logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
-
-        # 2. Force multiple garbage collection passes
-        # First pass frees objects, second pass frees objects freed by first pass, etc.
+        # 1. Force multiple garbage collection passes
+        # This is safe and doesn't interfere with database operations
         collected_total = 0
         for i in range(3):
             collected = gc.collect()
@@ -450,30 +442,30 @@ def _cleanup_dsr_memory(
         if collected_total > 0:
             logger.info(f"Garbage collection freed {collected_total} total objects")
 
-        # 3. Clean up database connection resources
-        # This helps prevent "too many clients" errors by returning connections to the pool
-        try:
-            # Rollback any pending transactions to ensure clean state
-            if session.is_active:
-                session.rollback()
-                logger.debug("Rolled back any pending database transactions")
+        # 2. Clear SQLAlchemy session identity map ONLY on true completion
+        # For DSR 3.0, we skip this on "exit" phase because the session may still
+        # have uncommitted RequestTask objects that need to be accessed
+        if phase == "completion":
+            try:
+                identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
+                # Only expunge if we don't have pending changes that need to be committed
+                if not session.new and not session.dirty and not session.deleted:
+                    session.expunge_all()
+                    logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
+                else:
+                    logger.debug(
+                        f"Skipped expunge - session has pending changes "
+                        f"(new: {len(session.new)}, dirty: {len(session.dirty)}, deleted: {len(session.deleted)})"
+                    )
+            except Exception as e:
+                logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
 
-            # Remove the session from the engine's connection pool tracking
-            # This allows the connection to be returned to the pool immediately
-            session.close()
-            logger.debug("Closed database session to release connection pool resources")
-        except Exception as e:
-            logger.debug(f"Could not cleanup database connection: {e}")
-
-        # 4. Force connection pool cleanup (if accessible)
+        # 3. Log connection pool diagnostics (non-invasive)
         try:
-            # Get the engine from the session
             engine = session.get_bind()
             if engine and hasattr(engine, 'pool'):
-                # Dispose of stale connections in the pool
                 pool = engine.pool
                 if hasattr(pool, '_overflow') and hasattr(pool, '_pool'):
-                    # Log pool state for diagnostics
                     overflow_count = len(pool._overflow) if pool._overflow else 0
                     pool_count = pool._pool.qsize() if hasattr(pool._pool, 'qsize') else 0
                     logger.debug(
@@ -484,7 +476,7 @@ def _cleanup_dsr_memory(
 
     except Exception as exc:
         # Never fail the DSR due to cleanup errors
-        logger.warning(f"Error during cleanup: {exc}")
+        logger.warning(f"Error during memory cleanup: {exc}")
 
 
 def _get_dataset_graph(session: Session, privacy_request: PrivacyRequest) -> DatasetGraph:
@@ -1067,8 +1059,10 @@ def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-            # Cleanup on ANY exit path (success, error, pause, etc.)
-            # This ensures memory is cleaned up even if the DSR fails or pauses
+            # Cleanup after post-processing completes (success or error in post-processing)
+            # Note: This does NOT run for DSR 3.0 PrivacyRequestExit (which returns earlier)
+            # or other early exit paths. This is intentional - DSR 3.0 needs the session
+            # to remain open for RequestTask access.
             # We use a separate try-except so cleanup errors don't break the DSR
             try:
                 _cleanup_dsr_memory(
