@@ -51,6 +51,8 @@ jobs:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
+      # We want to run all static checks even if some fail, so we set fail-fast to false
+      fail-fast: false
       matrix:
         session_name:
           [
@@ -60,7 +62,6 @@ jobs:
             '"pytest(nox)"',
           ]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
