@@ -28,16 +28,26 @@ def use_dsr_3_0_scheduler(
     # Only reach here for brand new requests (no tasks yet)
     # Check if there are any DSR 2.0 results in cache (old system)
     cache: FidesopsRedis = get_cache()
-    cache_keys = cache.get_keys_by_prefix(f"{privacy_request.id}__access_request")
 
-    if cache_keys:
-        # Found DSR 2.0 cache data - continue with DSR 2.0
-        logger.info(
-            "Overriding scheduler to run privacy request {} using DSR 2.0 as it's "
-            "already partially processed",
-            privacy_request.id,
-        )
-        return False
+    # Map action type to cache key prefix (DSR 2.0 cache keys)
+    # Note: set_encoded_object adds "EN_" prefix, so we must include it when searching
+    action_cache_prefix_map = {
+        ActionType.access: f"EN_{privacy_request.id}__access_request",
+        ActionType.erasure: f"EN_{privacy_request.id}__erasure_request",
+        # Consent requests don't cache intermediate results in DSR 2.0
+    }
+
+    cache_prefix = action_cache_prefix_map.get(action_type)
+    if cache_prefix:
+        cache_keys = cache.get_keys_by_prefix(cache_prefix)
+        if cache_keys:
+            # Found DSR 2.0 cache data - continue with DSR 2.0
+            logger.info(
+                "Overriding scheduler to run privacy request {} using DSR 2.0 as it's "
+                "already partially processed",
+                privacy_request.id,
+            )
+            return False
 
     # Default: new request, use DSR 3.0
     return True
