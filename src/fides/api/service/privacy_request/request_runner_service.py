@@ -821,6 +821,15 @@ def run_privacy_request(
                 return
 
             except BaseException as exc:  # pylint: disable=broad-except
+                # Log the error to the activity timeline before marking as errored
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Privacy request processing",
+                    collection_name=None,
+                    message=str(exc),
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 _log_exception(exc, CONFIG.dev_mode)
