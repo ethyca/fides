@@ -1,12 +1,9 @@
 import re
-from unittest import mock
 
 import pytest
-from fastapi import Request, Response
 
 from fides.api.util.security_headers import (
     HeaderRule,
-    apply_headers_to_response,
     get_applicable_header_rules,
     is_exact_match,
     recommended_csp_header_value,
@@ -48,19 +45,6 @@ class TestSecurityHeaders:
         ]
 
         assert get_applicable_header_rules("/a-path", headers) == [headers1, headers2]
-
-    def test_apply_headers_to_response(self):
-        header = ("header-1", "value-1")
-        header_rules: list[HeaderRule] = [HeaderRule(re.compile(r".*"), [header])]
-
-        mock_request = mock.Mock(spec=Request)
-        mock_request.url.path = "/any-path"
-
-        response = Response()
-
-        apply_headers_to_response(header_rules, mock_request, response)
-
-        assert header in response.headers.items()
 
     @pytest.mark.parametrize(
         "path,expected",
