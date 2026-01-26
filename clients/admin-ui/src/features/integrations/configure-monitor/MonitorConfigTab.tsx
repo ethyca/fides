@@ -12,10 +12,10 @@ import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import { useMonitorConfigTable } from "~/features/integrations/hooks/useMonitorConfigTable";
 import {
-  ConnectionConfigurationResponse,
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
   ConnectionType,
-  MonitorConfig,
+  EditableMonitorConfig,
   SystemType,
 } from "~/types/api";
 
@@ -36,7 +36,7 @@ const MonitorConfigTab = ({
   integration,
   integrationOption,
 }: {
-  integration: ConnectionConfigurationResponse;
+  integration: ConnectionConfigurationResponseWithSystemKey;
   integrationOption?: ConnectionSystemTypeMap;
 }) => {
   const isWebsiteMonitor =
@@ -47,12 +47,12 @@ const MonitorConfigTab = ({
 
   const modal = useDisclosure();
   const [workingMonitor, setWorkingMonitor] = useState<
-    MonitorConfig | undefined
+    EditableMonitorConfig | undefined
   >(undefined);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formStep, setFormStep] = useState(0);
 
-  const handleEditMonitor = (monitor: MonitorConfig) => {
+  const handleEditMonitor = (monitor: EditableMonitorConfig) => {
     setWorkingMonitor(monitor);
     setIsEditing(true);
     modal.onOpen();
@@ -65,7 +65,7 @@ const MonitorConfigTab = ({
     modal.onClose();
   };
 
-  const handleAdvanceForm = (monitor: MonitorConfig) => {
+  const handleAdvanceForm = (monitor: EditableMonitorConfig) => {
     setWorkingMonitor(monitor);
     setFormStep(1);
   };
