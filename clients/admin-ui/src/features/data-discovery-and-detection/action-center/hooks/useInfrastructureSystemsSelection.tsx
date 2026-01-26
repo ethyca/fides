@@ -1,16 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 interface UseInfrastructureSystemsSelectionConfig<
-  T extends SystemStagedResourcesAggregateRecord,
+  T extends StagedResourceAPIResponse,
 > {
   items: T[] | undefined;
   getRecordKey: (item: T) => string;
 }
 
 export const useInfrastructureSystemsSelection = <
-  T extends SystemStagedResourcesAggregateRecord,
+  T extends StagedResourceAPIResponse,
 >({
   items,
   getRecordKey,

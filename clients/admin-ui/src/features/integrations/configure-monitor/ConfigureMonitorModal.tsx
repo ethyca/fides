@@ -18,10 +18,10 @@ import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-mon
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
 import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
-  ConnectionConfigurationResponse,
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
   ConnectionType,
-  MonitorConfig,
+  EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -47,15 +47,14 @@ const ConfigureMonitorModal = ({
   isWebsiteMonitor,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   isEditing?: boolean;
-  onAdvance: (m: MonitorConfig) => void;
-  integration: ConnectionConfigurationResponse;
+  onAdvance: (m: EditableMonitorConfig) => void;
+  integration: ConnectionConfigurationResponseWithSystemKey;
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
-
   const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
 
@@ -88,7 +87,7 @@ const ConfigureMonitorModal = ({
 
   const { successAlert, errorAlert } = useAlert();
 
-  const handleSubmit = async (values: MonitorConfig) => {
+  const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
     const timeout = setTimeout(() => {
       if (!result) {
@@ -188,6 +187,7 @@ const ConfigureMonitorModal = ({
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           databasesAvailable={databasesAvailable}
+          integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
         />
       )}
