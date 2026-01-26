@@ -2,6 +2,6 @@
 # Fill in the required fields and delete this comment block
 
 type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Short description of the change
-pr: 1234 # PR number
+description: Added deferred loading for privacy request task objects.
+pr: 7249 # PR number
 labels: [] # Optional: ["high-risk", "db-migration"]
