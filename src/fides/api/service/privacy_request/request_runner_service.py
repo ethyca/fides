@@ -1360,6 +1360,7 @@ def run_webhooks_and_report_status(
             initiate_paused_privacy_request_followup(privacy_request)
             return False
         except ClientUnsuccessfulException as exc:
+            error_message = f"Webhook '{webhook.key}' returned an error: {exc.args[0]}"
             logger.error(
                 "Privacy Request '{}' exited after response from webhook '{}': {}.",
                 privacy_request.id,
