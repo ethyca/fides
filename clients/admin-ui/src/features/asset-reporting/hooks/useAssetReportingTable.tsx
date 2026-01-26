@@ -7,6 +7,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useTableState, useAntTable } from "~/features/common/table/hooks";
 import { TagExpandableCell } from "~/features/common/table/cells";
@@ -58,6 +59,8 @@ interface UseAssetReportingTableConfig {
 export const useAssetReportingTable = ({
   filters,
 }: UseAssetReportingTableConfig) => {
+  const { flags } = useFeatures();
+  const { assetConsentStatusLabels } = flags;
   const { getDataUseByKey, getDataUseDisplayName } = useTaxonomies();
 
   const [isDataUsesExpanded, setIsDataUsesExpanded] = useState(false);
@@ -101,8 +104,8 @@ export const useAssetReportingTable = ({
     ...columnFilters,
   });
 
-  const columns: ColumnsType<Asset> = useMemo(
-    () => [
+  const columns: ColumnsType<Asset> = useMemo(() => {
+    const baseColumns: ColumnsType<Asset> = [
       {
         title: "Asset name",
         dataIndex: AssetReportingColumnKeys.NAME,
@@ -143,7 +146,11 @@ export const useAssetReportingTable = ({
         sortOrder:
           sortKey === AssetReportingColumnKeys.SYSTEM_NAME ? sortOrder : null,
       },
-      {
+    ];
+
+    // Add consent status column if flag is enabled
+    if (assetConsentStatusLabels) {
+      baseColumns.push({
         title: "Consent status",
         dataIndex: AssetReportingColumnKeys.CONSENT_STATUS,
         key: AssetReportingColumnKeys.CONSENT_STATUS,
@@ -166,7 +173,11 @@ export const useAssetReportingTable = ({
           (status) => CONSENT_STATUS_LABELS[status as ConsentStatus] || status,
         ),
         filteredValue: columnFilters?.consent_status || null,
-      },
+      });
+    }
+
+    // Add remaining columns
+    baseColumns.push(
       {
         title: "Categories of consent",
         key: AssetReportingColumnKeys.DATA_USES,
@@ -257,9 +268,10 @@ export const useAssetReportingTable = ({
           />
         ),
       },
-    ],
-    [sortKey, sortOrder, columnFilters, filterOptions, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion],
-  );
+    );
+
+    return baseColumns;
+  }, [sortKey, sortOrder, columnFilters, filterOptions, assetConsentStatusLabels, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion]);
 
   const antTableConfig = useMemo(
     () => ({
