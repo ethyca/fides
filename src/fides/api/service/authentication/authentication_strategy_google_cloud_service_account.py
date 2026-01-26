@@ -3,6 +3,10 @@ Google Cloud Service Account Authentication Strategy.
 
 Authenticates HTTP requests using Google Cloud Service Account credentials
 by generating OAuth2 access tokens from the service account's private key.
+
+Supports two input formats for credentials:
+1. Full keyfile_creds JSON object (for users who paste the entire JSON)
+2. Individual fields: project_id, client_email, private_key (cleaner UX)
 """
 
 from datetime import datetime, timedelta
@@ -23,7 +27,14 @@ from fides.api.service.authentication.authentication_strategy import (
 )
 from fides.api.util.logger import Pii
 
-# Required fields in a Google Cloud service account JSON key file
+# Required fields when using individual field input (minimal required set)
+REQUIRED_INDIVIDUAL_FIELDS = [
+    "project_id",
+    "client_email",
+    "private_key",
+]
+
+# Required fields when using full keyfile_creds object
 REQUIRED_KEYFILE_FIELDS = [
     "type",
     "project_id",
@@ -34,6 +45,9 @@ REQUIRED_KEYFILE_FIELDS = [
 
 # Default OAuth2 scopes for Google Cloud Platform APIs
 DEFAULT_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
+
+# Default token URI for Google OAuth2
+DEFAULT_TOKEN_URI = "https://oauth2.googleapis.com/token"
 
 # Token refresh buffer in seconds (refresh 10 minutes before expiration)
 TOKEN_REFRESH_BUFFER_SECONDS = 600
@@ -46,12 +60,19 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     """
     Authenticates HTTP requests using a Google Cloud Service Account.
 
-    This strategy uses the service account credentials (keyfile_creds) stored
-    in connection secrets to generate OAuth2 access tokens. The tokens are
-    cached and automatically refreshed when close to expiration.
+    This strategy uses the service account credentials stored in connection
+    secrets to generate OAuth2 access tokens. The tokens are cached and
+    automatically refreshed when close to expiration.
 
-    The service account key JSON must be provided in the connection config
-    secrets under the key 'keyfile_creds'.
+    Supports two input formats for credentials in connection secrets:
+
+    Option 1 - Individual fields (recommended for cleaner UX):
+        - project_id: Your Google Cloud project ID
+        - client_email: Service account email (e.g., my-sa@project.iam.gserviceaccount.com)
+        - private_key: The RSA private key from your service account
+
+    Option 2 - Full keyfile_creds object:
+        - keyfile_creds: The complete service account JSON key file contents
 
     Example SaaS config authentication block:
     ```yaml
@@ -60,6 +81,22 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
       configuration:
         scopes:
           - https://www.googleapis.com/auth/spreadsheets
+    ```
+
+    Example connector_params for individual fields (Option 1):
+    ```yaml
+    connector_params:
+      - name: project_id
+        label: Project ID
+        description: Your Google Cloud project ID
+      - name: client_email
+        label: Service Account Email
+        description: e.g., my-sa@my-project.iam.gserviceaccount.com
+      - name: private_key
+        label: Private Key
+        description: The RSA private key from your service account JSON
+        sensitive: True
+        multiline: True
     ```
     """
 
@@ -94,12 +131,8 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 "Secrets must be configured to use Google Cloud Service Account authentication."
             )
 
-        keyfile_creds = secrets.get("keyfile_creds")
-        if not keyfile_creds:
-            raise FidesopsException(
-                "Missing 'keyfile_creds' in connection secrets. "
-                "Service account key JSON is required for Google Cloud authentication."
-            )
+        # Get keyfile_creds - either from full object or constructed from individual fields
+        keyfile_creds = self._get_keyfile_creds(secrets)
 
         # Validate keyfile structure before attempting to use it
         self._validate_keyfile_creds(keyfile_creds)
@@ -114,6 +147,56 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
         # Generate new token
         return self._refresh_access_token(keyfile_creds, connection_config)
+
+    def _get_keyfile_creds(self, secrets: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get keyfile credentials from secrets.
+
+        Supports two input formats:
+        1. Full keyfile_creds object (if 'keyfile_creds' key exists)
+        2. Individual fields (project_id, client_email, private_key)
+
+        For individual fields, smart defaults are applied for non-essential fields.
+        """
+        # Option 1: Full keyfile_creds object provided
+        if "keyfile_creds" in secrets and secrets["keyfile_creds"]:
+            return secrets["keyfile_creds"]
+
+        # Option 2: Construct from individual fields with smart defaults
+        project_id = secrets.get("project_id")
+        client_email = secrets.get("client_email")
+        private_key = secrets.get("private_key")
+
+        # Check if we have the minimum required fields for individual input
+        if not all([project_id, client_email, private_key]):
+            missing = []
+            if not project_id:
+                missing.append("project_id")
+            if not client_email:
+                missing.append("client_email")
+            if not private_key:
+                missing.append("private_key")
+
+            raise FidesopsException(
+                f"Missing required Google Cloud credentials. "
+                f"Either provide 'keyfile_creds' (full JSON) or the individual fields: "
+                f"{', '.join(missing)}."
+            )
+
+        # Construct keyfile_creds with smart defaults
+        return {
+            "type": "service_account",
+            "project_id": project_id,
+            "client_email": client_email,
+            "private_key": private_key,
+            "token_uri": secrets.get("token_uri", DEFAULT_TOKEN_URI),
+            # Optional fields - include if provided
+            **({"private_key_id": secrets["private_key_id"]} if secrets.get("private_key_id") else {}),
+            **({"client_id": secrets["client_id"]} if secrets.get("client_id") else {}),
+            **({"auth_uri": secrets["auth_uri"]} if secrets.get("auth_uri") else {}),
+            **({"auth_provider_x509_cert_url": secrets["auth_provider_x509_cert_url"]} if secrets.get("auth_provider_x509_cert_url") else {}),
+            **({"client_x509_cert_url": secrets["client_x509_cert_url"]} if secrets.get("client_x509_cert_url") else {}),
+        }
 
     def _validate_keyfile_creds(self, keyfile_creds: Dict[str, Any]) -> None:
         """
