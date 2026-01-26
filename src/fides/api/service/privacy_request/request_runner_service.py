@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+import gc
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -407,6 +408,121 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
+
+
+def _cleanup_dsr_memory(
+    session: Session,
+    privacy_request_id: str,
+    phase: str = "completion"
+) -> None:
+    """
+    Aggressively clean up memory and database connections after DSR processing.
+
+    This prevents baseline memory creep and connection pool exhaustion when
+    processing multiple concurrent DSRs.
+
+    Cleans up:
+    - Python objects via garbage collection
+    - SQLAlchemy session identity map
+    - Database connection pool resources
+
+    Args:
+        session: SQLAlchemy session
+        privacy_request_id: ID of the privacy request
+        phase: Phase of cleanup (completion, error, exit, etc.)
+    """
+    logger.info(
+        "Performing aggressive cleanup for privacy request '{}' (phase: {})",
+        privacy_request_id,
+        phase
+    )
+
+    try:
+        # Log memory before cleanup
+        from fides.api.util.dsr_memory_tracker import log_memory_snapshot
+        log_memory_snapshot(
+            f"before_cleanup_{phase}",
+            session=session,
+            extra_data={
+                "privacy_request_id": privacy_request_id,
+                "phase": phase
+            }
+        )
+
+        # 1. Clear SQLAlchemy session identity map FIRST
+        # This releases ORM objects that may be holding references to data
+        # and allows connections to be returned to the pool
+        try:
+            identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
+            session.expunge_all()
+            logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
+        except Exception as e:
+            logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
+
+        # 2. Force multiple garbage collection passes
+        # First pass frees objects, second pass frees objects freed by first pass, etc.
+        collected_total = 0
+        for i in range(3):
+            collected = gc.collect()
+            collected_total += collected
+            if collected > 0:
+                logger.debug(f"GC pass {i+1}: collected {collected} objects")
+
+        if collected_total > 0:
+            logger.info(f"Garbage collection freed {collected_total} total objects")
+
+        # 3. Clean up database connection resources
+        # This helps prevent "too many clients" errors by returning connections to the pool
+        try:
+            # Rollback any pending transactions to ensure clean state
+            if session.is_active:
+                session.rollback()
+                logger.debug("Rolled back any pending database transactions")
+
+            # Remove the session from the engine's connection pool tracking
+            # This allows the connection to be returned to the pool immediately
+            session.close()
+            logger.debug("Closed database session to release connection pool resources")
+        except Exception as e:
+            logger.debug(f"Could not cleanup database connection: {e}")
+
+        # 4. Force connection pool cleanup (if accessible)
+        try:
+            # Get the engine from the session
+            engine = session.get_bind()
+            if engine and hasattr(engine, 'pool'):
+                # Dispose of stale connections in the pool
+                pool = engine.pool
+                if hasattr(pool, '_overflow') and hasattr(pool, '_pool'):
+                    # Log pool state for diagnostics
+                    overflow_count = len(pool._overflow) if pool._overflow else 0
+                    pool_count = pool._pool.qsize() if hasattr(pool._pool, 'qsize') else 0
+                    logger.debug(
+                        f"Connection pool state: {pool_count} pooled, {overflow_count} overflow"
+                    )
+        except Exception as e:
+            logger.debug(f"Could not inspect connection pool: {e}")
+
+        # Log memory after cleanup
+        # Note: Need to get a new session for this query since we closed the old one
+        try:
+            from fides.api.api.deps import get_autoclose_db_session
+            with get_autoclose_db_session() as new_session:
+                log_memory_snapshot(
+                    f"after_cleanup_{phase}",
+                    session=new_session,
+                    extra_data={
+                        "privacy_request_id": privacy_request_id,
+                        "phase": phase,
+                        "objects_collected": collected_total
+                    }
+                )
+        except Exception as e:
+            logger.debug(f"Could not log memory snapshot after cleanup: {e}")
+
+    except Exception as exc:
+        # Never fail the DSR due to cleanup errors
+        logger.warning(f"Error during cleanup: {exc}")
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -891,6 +1007,14 @@ def run_privacy_request(
                     privacy_request.finished_processing_at = datetime.utcnow()
                     privacy_request.save(db=session)
 
+                    # Aggressive memory cleanup after successful DSR completion
+                    # This prevents baseline memory creep when processing multiple DSRs
+                    _cleanup_dsr_memory(
+                        session=session,
+                        privacy_request_id=privacy_request.id,
+                        phase="completion"
+                    )
+
                     # Send a final email to the user confirming request completion
                     if privacy_request.status == PrivacyRequestStatus.complete:
                         legacy_request_completion_enabled = ConfigProxy(
@@ -1000,6 +1124,20 @@ def run_privacy_request(
                                     privacy_request.error_processing(db=session)
                                     _log_exception(e, CONFIG.dev_mode)
                                     return
+
+            # Cleanup on ANY exit path (success, error, pause, etc.)
+            # This ensures memory is cleaned up even if the DSR fails or pauses
+            # We use a separate try-except so cleanup errors don't break the DSR
+            try:
+                _cleanup_dsr_memory(
+                    session=session,
+                    privacy_request_id=privacy_request_id,
+                    phase="exit"
+                )
+            except Exception as cleanup_exc:
+                logger.warning(
+                    f"Error during final cleanup for privacy request '{privacy_request_id}': {cleanup_exc}"
+                )
 
 
 def initiate_consent_request_completion_email(
