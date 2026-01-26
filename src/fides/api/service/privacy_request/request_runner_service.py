@@ -490,8 +490,14 @@ def _cleanup_dsr_memory(
         logger.warning(f"Error during memory cleanup: {exc}")
 
 
-def _get_dataset_graph(session: Session, privacy_request: PrivacyRequest) -> DatasetGraph:
-    """Get the dataset graph for a privacy request"""
+def _get_datasets_and_graphs(
+    session: Session, privacy_request: PrivacyRequest
+) -> tuple[DatasetGraph, list[DatasetConfig]]:
+    """Get the dataset graph and dataset configs for a privacy request.
+
+    Returns:
+        tuple: (DatasetGraph, list of DatasetConfig objects)
+    """
     # Eager load connection_config and ctl_dataset to avoid N+1 queries
     datasets = (
         session.query(DatasetConfig)
@@ -524,7 +530,7 @@ def _get_dataset_graph(session: Session, privacy_request: PrivacyRequest) -> Dat
         message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
         action_type=privacy_request.policy.get_action_type(),  # type: ignore
     )
-    return DatasetGraph(*dataset_graphs)
+    return DatasetGraph(*dataset_graphs), datasets
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -643,7 +649,6 @@ def run_privacy_request(
                 if resume_step and resume_step in [
                     # These checkpoints are AFTER all graph-dependent operations
                     CurrentStep.finalize_erasure,
-                    CurrentStep.consent,
                     CurrentStep.finalize_consent,
                     CurrentStep.email_post_send,
                     CurrentStep.post_webhooks,
@@ -654,9 +659,10 @@ def run_privacy_request(
                         resume_step,
                     )
                     dataset_graph = None
+                    datasets = None
 
                 else:
-                    dataset_graph = _get_dataset_graph(session, privacy_request)
+                    dataset_graph, datasets = _get_datasets_and_graphs(session, privacy_request)
 
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value
