@@ -1,4 +1,5 @@
 import gc
+import sys
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -22,14 +23,17 @@ def cleanup_dsr_memory(
     - DSR 3.0 PrivacyRequestExit (before re-invocation)
 
     Cleanup steps:
-    1. Checks for dirty session state and rolls back if needed
-    2. Expunges session identity map to release ORM objects
-    3. Runs garbage collection 3x to free memory
-    4. Logs connection pool diagnostics
+    1. Checks if in exception context (skips flush/expunge if so)
+    2. Flushes pending changes if in normal exit path
+    3. Expunges session identity map to release all ORM objects
+    4. Runs garbage collection 3x to free memory
+    5. Logs connection pool diagnostics
 
     IMPORTANT Safety notes:
     - Does NOT close the session - the context manager handles that
-    - DOES rollback if unexpected dirty state detected (logged as ERROR)
+    - Does NOT commit - the context manager commits when it exits
+    - DOES flush pending changes IF in normal exit (not exception path)
+    - Skips flush/expunge if in exception - context manager will rollback anyway
     - Safe for DSR 3.0 - new session created on re-invocation
     - All operations wrapped in try-except to never break DSR
 
@@ -49,18 +53,27 @@ def cleanup_dsr_memory(
             identity_map_size = (
                 len(session.identity_map) if hasattr(session, "identity_map") else 0
             )
-            # Check for unexpected pending changes (shouldn't happen, indicates a bug)
-            if session.new or session.dirty or session.deleted:
-                # This should NOT happen - indicates a bug in DSR logic
-                logger.error(
-                    f"UNEXPECTED: Pending session changes at cleanup "
-                    f"(new: {len(session.new)}, dirty: {len(session.dirty)}, "
-                    f"deleted: {len(session.deleted)}). Rolling back to clean state."
+
+            # Only flush if we're NOT in an exception context
+            # If sys.exc_info() shows an exception, the context manager will rollback anyway
+            # In that case, flushing would write data that will be rolled back (wasteful/incorrect)
+            in_exception = sys.exc_info()[0] is not None
+
+            if not in_exception and (session.new or session.dirty or session.deleted):
+                # Normal exit path with pending changes - flush them before expunging
+                logger.debug(
+                    f"Flushing pending changes before expunge "
+                    f"(new: {len(session.new)}, dirty: {len(session.dirty)}, deleted: {len(session.deleted)})"
                 )
-                # Rollback to ensure session is clean before expunging
-                # This prevents losing any critical state that should have been committed
-                session.rollback()
-            # Expunge all objects from session to release memory
+                session.flush()
+            elif in_exception:
+                # In exception path - context manager will rollback, so skip flush and expunge
+                logger.debug(
+                    f"Skipping flush/expunge - in exception handler (context manager will rollback)"
+                )
+                return  # Skip expunge too - session will be rolled back anyway
+
+            # Now safe to expunge everything - changes are flushed (or none exist), transaction will commit
             session.expunge_all()
             logger.debug(
                 f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)"
