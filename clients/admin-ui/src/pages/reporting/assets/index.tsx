@@ -1,21 +1,16 @@
 import { Button, Icons } from "fidesui";
 import React from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
-import PageHeader from "~/features/common/PageHeader";
 import AssetReportingTable from "~/features/asset-reporting/AssetReportingTable";
 import useAssetReportingDownload from "~/features/asset-reporting/hooks/useAssetReportingDownload";
 import { useAssetReportingTable } from "~/features/asset-reporting/hooks/useAssetReportingTable";
+import FixedLayout from "~/features/common/FixedLayout";
+import PageHeader from "~/features/common/PageHeader";
 
 const AssetReportingPage = () => {
   const { downloadReport, isDownloadingReport } = useAssetReportingDownload();
-  const {
-    columns,
-    searchQuery,
-    updateSearch,
-    tableProps,
-    columnFilters,
-  } = useAssetReportingTable({ filters: {} });
+  const { columns, searchQuery, updateSearch, tableProps, columnFilters } =
+    useAssetReportingTable({ filters: {} });
 
   // Build export filters from current table state
   const handleExport = () => {
