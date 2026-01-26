@@ -9,7 +9,7 @@ import { useGetUserPermissionsQuery } from "~/features/user-management";
 
 import { logout, selectToken, selectUser } from "./auth.slice";
 
-const REDIRECT_IGNORES = ["/login"];
+const REDIRECT_IGNORES = ["/", "/login"];
 
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
