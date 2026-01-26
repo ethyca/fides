@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Asset, ConsentStatus, Page_Asset_ } from "~/types/api";
+import { ConsentStatus, Page_Asset_ } from "~/types/api";
 
 export interface AssetReportingFilters {
   asset_type?: string[];

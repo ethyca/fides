@@ -1,8 +1,9 @@
 import { useChakraToast as useToast } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useLazyDownloadAssetReportQuery } from "../asset-reporting.slice";
+
 import type { AssetReportingFilters } from "../asset-reporting.slice";
+import { useLazyDownloadAssetReportQuery } from "../asset-reporting.slice";
 
 const useAssetReportingDownload = () => {
   const toast = useToast();
@@ -14,7 +15,7 @@ const useAssetReportingDownload = () => {
     if (result.isError) {
       const message = getErrorMessage(
         result.error,
-        "A problem occurred while generating your asset report. Please try again."
+        "A problem occurred while generating your asset report. Please try again.",
       );
       toast({ status: "error", description: message });
     } else {
@@ -26,7 +27,10 @@ const useAssetReportingDownload = () => {
       a.click();
       window.URL.revokeObjectURL(csvUrl);
 
-      toast({ status: "success", description: "Asset report downloaded successfully." });
+      toast({
+        status: "success",
+        description: "Asset report downloaded successfully.",
+      });
     }
   };
 

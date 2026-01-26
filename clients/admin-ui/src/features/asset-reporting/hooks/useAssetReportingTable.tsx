@@ -8,19 +8,19 @@ import {
 import { useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { useTableState, useAntTable } from "~/features/common/table/hooks";
 import { TagExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
-import { Asset, ConsentStatus, PrivacyNoticeRegion } from "~/types/api";
+import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { convertToAntFilters } from "~/features/common/utils";
-import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { Asset, ConsentStatus, PrivacyNoticeRegion } from "~/types/api";
 
+import type { AssetReportingFilters } from "../asset-reporting.slice";
 import {
   useGetAllAssetsQuery,
   useGetAssetReportingFilterOptionsQuery,
 } from "../asset-reporting.slice";
-import type { AssetReportingFilters } from "../asset-reporting.slice";
 
 enum AssetReportingColumnKeys {
   NAME = "name",
@@ -32,7 +32,10 @@ enum AssetReportingColumnKeys {
   LOCATIONS = "locations",
 }
 
-const CONSENT_STATUS_COLORS: Record<ConsentStatus, "success" | "error" | "warning" | "default" | "caution" | undefined> = {
+const CONSENT_STATUS_COLORS: Record<
+  ConsentStatus,
+  "success" | "error" | "warning" | "default" | "caution" | undefined
+> = {
   [ConsentStatus.WITH_CONSENT]: "success",
   [ConsentStatus.WITHOUT_CONSENT]: "error",
   [ConsentStatus.PRE_CONSENT]: "warning",
@@ -118,8 +121,7 @@ export const useAssetReportingTable = ({
         ),
         fixed: "left",
         sorter: true,
-        sortOrder:
-          sortKey === AssetReportingColumnKeys.NAME ? sortOrder : null,
+        sortOrder: sortKey === AssetReportingColumnKeys.NAME ? sortOrder : null,
       },
       {
         title: "Type",
@@ -194,8 +196,9 @@ export const useAssetReportingTable = ({
             }
           },
         },
-        filters: convertToAntFilters(filterOptions?.data_uses, (key) =>
-          getDataUseByKey(key)?.name || key
+        filters: convertToAntFilters(
+          filterOptions?.data_uses,
+          (key) => getDataUseByKey(key)?.name || key,
         ),
         filteredValue: columnFilters?.data_uses || null,
         render: (_, record: Asset) => (
@@ -271,7 +274,19 @@ export const useAssetReportingTable = ({
     );
 
     return baseColumns;
-  }, [sortKey, sortOrder, columnFilters, filterOptions, assetConsentStatusLabels, isDataUsesExpanded, dataUsesVersion, getDataUseByKey, getDataUseDisplayName, isLocationsExpanded, locationsVersion]);
+  }, [
+    sortKey,
+    sortOrder,
+    columnFilters,
+    filterOptions,
+    assetConsentStatusLabels,
+    isDataUsesExpanded,
+    dataUsesVersion,
+    getDataUseByKey,
+    getDataUseDisplayName,
+    isLocationsExpanded,
+    locationsVersion,
+  ]);
 
   const antTableConfig = useMemo(
     () => ({
