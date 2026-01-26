@@ -174,6 +174,7 @@ const Overlay: FunctionComponent<Props> = ({
     ariaHidden: !bannerIsOpen && !options.fidesEmbed,
     onClose: () => {
       setBannerIsOpen(false);
+      onDismiss();
     },
   });
 
