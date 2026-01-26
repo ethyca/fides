@@ -1,0 +1,104 @@
+// Collapsible navigation styles with smooth animations
+
+.navContainer {
+  padding: 16px 8px 0 8px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+
+  &.collapsed {
+    padding: 16px 8px 0 8px;
+  }
+
+  // Override Ant Design Menu transitions for smooth collapse
+  // Nested under navContainer so we have a local class anchor
+  :global(.ant-menu-inline-collapsed) {
+    width: 48px !important;
+    transition: width 0.2s ease !important;
+
+    > :global(.ant-menu-item),
+    > :global(.ant-menu-submenu) > :global(.ant-menu-submenu-title) {
+      padding: 0 calc(50% - 12px) !important;
+      transition: padding 0.2s ease !important;
+    }
+
+    :global(.ant-menu-item-icon),
+    :global(.ant-menu-submenu-title) :global(.ant-menu-item-icon) {
+      font-size: 16px;
+      line-height: 40px;
+    }
+
+    :global(.ant-menu-title-content) {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+  }
+
+  :global(.ant-menu-inline) {
+    transition: width 0.2s ease !important;
+
+    :global(.ant-menu-title-content) {
+      opacity: 1;
+      transition: opacity 0.15s ease 0.1s;
+    }
+  }
+}
+
+.navContent {
+  transition: opacity 0.15s ease;
+}
+
+.logoContainer {
+  padding: 0 8px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  .collapsed & {
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.logoButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.logoFull {
+  transition: opacity 0.15s ease;
+}
+
+.logoIcon {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.bottomSection {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: justify-content 0.2s ease;
+
+  &.collapsed {
+    justify-content: center;
+  }
+}

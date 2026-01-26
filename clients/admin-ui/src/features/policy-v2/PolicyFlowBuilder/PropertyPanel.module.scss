@@ -1,0 +1,49 @@
+@import "fidesui/src/palette/palette.module.scss";
+
+.panel {
+  position: relative;
+  width: 320px;
+  height: 100%;
+  background-color: white;
+  border-left: 1px solid map-get($colors, "neutral-200");
+  display: flex;
+  flex-direction: column;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid map-get($colors, "neutral-200");
+  background-color: map-get($colors, "neutral-50");
+  flex-shrink: 0;
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: map-get($colors, "neutral-800");
+  }
+}
+
+.content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+
+  // Scrollbar styling
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: map-get($colors, "neutral-50");
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: map-get($colors, "neutral-300");
+    border-radius: 3px;
+
+    &:hover {
+      background: map-get($colors, "neutral-400");
+    }
+  }
+}

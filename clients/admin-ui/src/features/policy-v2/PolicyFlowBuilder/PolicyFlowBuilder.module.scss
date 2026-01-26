@@ -1,0 +1,75 @@
+@import "fidesui/src/palette/palette.module.scss";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid map-get($colors, "neutral-200");
+  background-color: white;
+  flex-shrink: 0;
+}
+
+.policyName {
+  font-size: 18px;
+  font-weight: 600;
+  color: map-get($colors, "neutral-900");
+  margin: 0;
+}
+
+.ruleCount {
+  font-size: 14px;
+  color: map-get($colors, "neutral-600");
+  font-weight: 500;
+  margin: 0;
+}
+
+.contentWrapper {
+  flex: 1;
+  min-height: 0; // Important for flex child with overflow
+  overflow: hidden;
+}
+
+.canvasWrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0; // Important for flex child with overflow
+}
+
+.loadingContainer,
+.errorContainer,
+.emptyContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 24px;
+}
+
+.emptyContainer {
+  flex-direction: column;
+}
+
+// AI Preview indicator
+.aiPreviewBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366f1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 4px;
+}

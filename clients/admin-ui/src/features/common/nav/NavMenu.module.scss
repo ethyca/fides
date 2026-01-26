@@ -3,4 +3,32 @@
   --ant-menu-item-margin-inline: 0 !important;
   --ant-menu-item-width: 100% !important;
   --ant-margin: 8px;
+
+  // Smooth transitions for collapse/expand
+  transition: width 0.2s ease !important;
+
+  &:global(.ant-menu-inline-collapsed) {
+    width: 48px !important;
+
+    :global(.ant-menu-submenu-title),
+    :global(.ant-menu-item) {
+      padding-inline: 12px !important;
+      text-align: center;
+    }
+
+    :global(.ant-menu-item-icon),
+    :global(.anticon) {
+      margin: 0 !important;
+      font-size: 18px;
+    }
+  }
+
+  :global(.ant-menu-submenu-title),
+  :global(.ant-menu-item) {
+    transition: padding 0.2s ease, background-color 0.15s ease !important;
+  }
+
+  :global(.ant-menu-title-content) {
+    transition: opacity 0.15s ease, margin 0.2s ease !important;
+  }
 }

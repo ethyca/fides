@@ -28,7 +28,9 @@ const FixedLayout = ({
     data-testid={title}
     direction="column"
     height={fullHeight ? "100vh" : "calc(100vh - 48px)"}
-    width={fullWidth ? "100vw" : "calc(100vw - 240px)"}
+    width="100%"
+    flex={1}
+    minWidth={0}
   >
     <Head>
       <title>Fides Admin UI - {title}</title>

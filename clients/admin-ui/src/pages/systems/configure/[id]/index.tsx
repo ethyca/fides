@@ -89,7 +89,7 @@ const ConfigureSystem: NextPage = () => {
   }
 
   return (
-    <Layout title="System inventory" mainProps={{ w: "calc(100vw - 240px)" }}>
+    <Layout title="System inventory">
       <PageHeader
         heading="System inventory"
         breadcrumbItems={[

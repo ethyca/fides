@@ -7,8 +7,10 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { useCallback, useEffect, useState } from "react";
 
 import logoImage from "~/../public/logo-white.svg";
+import logoIconImage from "~/../public/logo-icon-white.svg";
 import { useAppDispatch } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
 import { logout, useLogoutMutation } from "~/features/auth";
@@ -20,10 +22,13 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import { INDEX_ROUTE } from "./routes";
+import styles from "./MainSideNav.module.scss";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
-const NAV_WIDTH = "240px";
+const NAV_WIDTH_EXPANDED = "240px";
+const NAV_WIDTH_COLLAPSED = "64px";
 const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";
+const NAV_COLLAPSED_LOCAL_STORAGE_KEY = "mainSideNavCollapsed";
 
 /** Inner component which we export for component testing */
 export const UnconnectedMainSideNav = ({
@@ -35,6 +40,28 @@ export const UnconnectedMainSideNav = ({
   active: ActiveNav | undefined;
   handleLogout: any;
 }) => {
+  // Collapsed state with localStorage persistence
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize collapsed state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(NAV_COLLAPSED_LOCAL_STORAGE_KEY);
+    if (stored !== null) {
+      setIsCollapsed(stored === "true");
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Persist collapsed state
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(NAV_COLLAPSED_LOCAL_STORAGE_KEY, String(newValue));
+      return newValue;
+    });
+  }, []);
+
   const navMenuItems = groups
     .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
     .map((group) => ({
@@ -111,16 +138,18 @@ export const UnconnectedMainSideNav = ({
     );
   };
 
+  const currentNavWidth = isCollapsed ? NAV_WIDTH_COLLAPSED : NAV_WIDTH_EXPANDED;
+
   return (
     <Box
-      px={2}
-      pb={0}
-      pt={4}
-      minWidth={NAV_WIDTH}
-      maxWidth={NAV_WIDTH}
-      backgroundColor={NAV_BACKGROUND_COLOR}
-      height="100%"
-      overflow="auto"
+      className={`${styles.navContainer} ${isCollapsed ? styles.collapsed : ""}`}
+      style={{
+        minWidth: currentNavWidth,
+        maxWidth: currentNavWidth,
+        backgroundColor: NAV_BACKGROUND_COLOR,
+        // Don't animate on initial render
+        transition: isInitialized ? "min-width 0.2s ease, max-width 0.2s ease" : "none",
+      }}
     >
       <VStack
         as="nav"
@@ -128,36 +157,63 @@ export const UnconnectedMainSideNav = ({
         color="white"
         height="100%"
         justifyContent="space-between"
+        className={styles.navContent}
       >
         <Box width="100%">
-          <Box pb={6}>
-            <Box px={2}>
-              <NextLink href={INDEX_ROUTE}>
-                {/* this image gets priority because it's the largest contentful paint and above the fold
-                see https://nextjs.org/docs/pages/api-reference/components/image#priority */}
-                <Image src={logoImage} alt="Fides Logo" width={116} priority />
-              </NextLink>
-            </Box>
+          <Box pb={6} className={styles.logoContainer}>
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              className={styles.logoButton}
+              aria-label={isCollapsed ? "Expand navigation" : "Collapse navigation"}
+              title={isCollapsed ? "Expand navigation" : "Collapse navigation"}
+            >
+              {isCollapsed ? (
+                <Image
+                  src={logoIconImage}
+                  alt="Fides Logo"
+                  width={32}
+                  height={32}
+                  priority
+                  className={styles.logoIcon}
+                />
+              ) : (
+                <Image
+                  src={logoImage}
+                  alt="Fides Logo"
+                  width={116}
+                  priority
+                  className={styles.logoFull}
+                />
+              )}
+            </button>
           </Box>
           <NavMenu
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
             onOpenChange={handleOpenChange}
-            defaultOpenKeys={getStartupOpenKeys()}
+            defaultOpenKeys={isCollapsed ? [] : getStartupOpenKeys()}
+            inlineCollapsed={isCollapsed}
           />
         </Box>
-        <Box alignItems="center" pb={4}>
+        <Box
+          alignItems="center"
+          pb={4}
+          className={`${styles.bottomSection} ${isCollapsed ? styles.collapsed : ""}`}
+        >
           <Button
             type="primary"
             href="https://docs.ethyca.com"
             target="_blank"
-            className="border-none bg-transparent  hover:!bg-gray-700"
+            className="border-none bg-transparent hover:!bg-gray-700"
             icon={<Icons.Help />}
             aria-label="Help"
           />
-          <div className="inline-block">
-            <AccountDropdownMenu onLogout={handleLogout} />
-          </div>
+          {!isCollapsed && (
+            <div className="inline-block">
+              <AccountDropdownMenu onLogout={handleLogout} />
+            </div>
+          )}
         </Box>
       </VStack>
     </Box>
@@ -170,6 +226,16 @@ const MainSideNav = () => {
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
   const plusQuery = useGetHealthQuery();
+
+  // Get initial collapsed state for loading skeleton
+  const [initialWidth, setInitialWidth] = useState(NAV_WIDTH_EXPANDED);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(NAV_COLLAPSED_LOCAL_STORAGE_KEY);
+    if (stored === "true") {
+      setInitialWidth(NAV_WIDTH_COLLAPSED);
+    }
+  }, []);
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -186,10 +252,11 @@ const MainSideNav = () => {
   if (plusQuery.isLoading) {
     return (
       <Box
-        minWidth={NAV_WIDTH}
-        maxWidth={NAV_WIDTH}
+        minWidth={initialWidth}
+        maxWidth={initialWidth}
         backgroundColor={NAV_BACKGROUND_COLOR}
         height="100%"
+        style={{ transition: "min-width 0.2s ease, max-width 0.2s ease" }}
       />
     );
   }
