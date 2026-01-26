@@ -441,7 +441,9 @@ def _cleanup_dsr_memory(
         # 1. Clear SQLAlchemy session identity map
         # This releases ORM object references so they can be garbage collected
         try:
-            identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
+            identity_map_size = (
+                len(session.identity_map) if hasattr(session, "identity_map") else 0
+            )
             # Check for unexpected pending changes (shouldn't happen, indicates a bug)
             if session.new or session.dirty or session.deleted:
                 # This should NOT happen - indicates a bug in DSR logic
@@ -455,7 +457,9 @@ def _cleanup_dsr_memory(
                 session.rollback()
             # Expunge all objects from session to release memory
             session.expunge_all()
-            logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
+            logger.debug(
+                f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)"
+            )
         except Exception as e:
             logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
 
@@ -466,7 +470,7 @@ def _cleanup_dsr_memory(
             collected = gc.collect()
             collected_total += collected
             if collected > 0:
-                logger.debug(f"GC pass {i+1}: collected {collected} objects")
+                logger.debug(f"GC pass {i + 1}: collected {collected} objects")
 
         if collected_total > 0:
             logger.info(f"Garbage collection freed {collected_total} total objects")
@@ -474,11 +478,13 @@ def _cleanup_dsr_memory(
         # 3. Log connection pool diagnostics (non-invasive)
         try:
             engine = session.get_bind()
-            if engine and hasattr(engine, 'pool'):
+            if engine and hasattr(engine, "pool"):
                 pool = engine.pool
-                if hasattr(pool, '_overflow') and hasattr(pool, '_pool'):
+                if hasattr(pool, "_overflow") and hasattr(pool, "_pool"):
                     overflow_count = len(pool._overflow) if pool._overflow else 0
-                    pool_count = pool._pool.qsize() if hasattr(pool._pool, 'qsize') else 0
+                    pool_count = (
+                        pool._pool.qsize() if hasattr(pool._pool, "qsize") else 0
+                    )
                     logger.debug(
                         f"Connection pool state: {pool_count} pooled, {overflow_count} overflow"
                     )
@@ -589,498 +595,506 @@ def run_privacy_request(
             if privacy_request.status == PrivacyRequestStatus.duplicate:
                 return
 
-            logger.info("Dispatching privacy request")
-            privacy_request.start_processing(session)
-
-            policy = privacy_request.policy
-
-            # check manual access results and pause if needed
-            manual_webhook_access_results: ManualWebhookResults = (
-                get_manual_webhook_access_inputs(session, privacy_request, policy)
-            )
-            if not manual_webhook_access_results.proceed:
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            # check manual erasure results and pause if needed
-            manual_webhook_erasure_results: ManualWebhookResults = (
-                get_manual_webhook_erasure_inputs(session, privacy_request, policy)
-            )
-            if not manual_webhook_erasure_results.proceed:
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            # Pre-Webhooks CHECKPOINT
-            if can_run_checkpoint(
-                request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
-            ):
-                privacy_request.cache_failed_checkpoint_details(
-                    CurrentStep.pre_webhooks
-                )
-                # Run pre-execution webhooks
-                proceed = run_webhooks_and_report_status(
-                    session,
-                    privacy_request=privacy_request,
-                    webhook_cls=PolicyPreWebhook,  # type: ignore
-                    after_webhook_id=from_webhook_id,
-                )
-                if not proceed:
-                    _cleanup_dsr_memory(session, privacy_request_id)
-                    return
+            # Use try/finally to ensure memory cleanup on ALL exit paths
+            # This replaces multiple explicit _cleanup_dsr_memory calls throughout the function
             try:
-                policy.rules[0]  # type: ignore[attr-defined]
-            except IndexError:
-                error_message = (
-                    f"Policy with key {policy.key} must contain at least one Rule."
-                )
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Policy validation",
-                    collection_name=None,
-                    message=error_message,
-                    action_type=ActionType.access,  # Default since policy has no rules
-                )
-                privacy_request.error_processing(db=session)
-                raise common_exceptions.MisconfiguredPolicyException(error_message)
+                logger.info("Dispatching privacy request")
+                privacy_request.start_processing(session)
 
-            try:
-                # Skip graph loading if resuming from a late checkpoint
-                if resume_step and resume_step in [
-                    # These checkpoints are AFTER all graph-dependent operations
-                    CurrentStep.finalize_erasure,
-                    CurrentStep.finalize_consent,
-                    CurrentStep.email_post_send,
-                    CurrentStep.post_webhooks,
-                    CurrentStep.finalization,
-                ]:
-                    logger.info(
-                        "Skipping graph loading - resuming from late checkpoint '{}' which doesn't require graph",
-                        resume_step,
-                    )
-                    dataset_graph = None
-                    datasets = None
+                policy = privacy_request.policy
 
-                else:
-                    dataset_graph, datasets = _get_datasets_and_graphs(session, privacy_request)
-
-                identity_data = {
-                    key: value["value"] if isinstance(value, dict) else value
-                    for key, value in privacy_request.get_cached_identity_data().items()
-                }
-                # Eager load datasets relationship to avoid N+1 queries in filter_fides_connector_datasets
-                connection_configs = (
-                    session.query(ConnectionConfig)
-                    .options(selectinload(ConnectionConfig.datasets))
-                    .all()
+                # check manual access results and pause if needed
+                manual_webhook_access_results: ManualWebhookResults = (
+                    get_manual_webhook_access_inputs(session, privacy_request, policy)
                 )
-                fides_connector_datasets: set[str] = filter_fides_connector_datasets(
-                    connection_configs
-                )
-
-                # If the privacy request requires manual finalization and has not yet been finalized, we exit here
-                if (
-                    privacy_request.status
-                    == PrivacyRequestStatus.requires_manual_finalization
-                    and privacy_request.finalized_at is None
-                ):
-                    _cleanup_dsr_memory(session, privacy_request_id)
+                if not manual_webhook_access_results.proceed:
                     return
 
-                # Access CHECKPOINT
-                if (
-                    policy.get_rules_for_action(action_type=ActionType.access)
-                    or policy.get_rules_for_action(action_type=ActionType.erasure)
-                ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.access,
-                    from_checkpoint=resume_step,
-                ):
-                    privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
-                    access_runner(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=dataset_graph,
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        session=session,
-                        privacy_request_proceed=True,  # Should always be True unless we're testing
-                    )
+                # check manual erasure results and pause if needed
+                manual_webhook_erasure_results: ManualWebhookResults = (
+                    get_manual_webhook_erasure_inputs(session, privacy_request, policy)
+                )
+                if not manual_webhook_erasure_results.proceed:
+                    return
 
-                # Upload Access Results CHECKPOINT
-                access_result_urls: list[str] = []
-                if (
-                    (
-                        policy.get_rules_for_action(action_type=ActionType.access)
-                        or policy.get_rules_for_action(
-                            action_type=ActionType.erasure
-                        )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
-                    )
-                    and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.upload_access,
-                        from_checkpoint=resume_step,
-                    )
-                ):
-                    privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.upload_access
-                    )
-
-                    # Only load access results if we're actually going to use them
-                    raw_access_results: dict = privacy_request.get_raw_access_results()
-
-                    filtered_access_results = filter_by_enabled_actions(
-                        raw_access_results, connection_configs
-                    )
-                    access_result_urls = upload_and_save_access_results(
-                        session,
-                        policy,
-                        filtered_access_results,
-                        dataset_graph,
-                        privacy_request,
-                        manual_webhook_access_results,
-                        fides_connector_datasets,
-                    )
-
-                # Erasure CHECKPOINT
-                if policy.get_rules_for_action(
-                    action_type=ActionType.erasure
-                ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.erasure,
-                    from_checkpoint=resume_step,
-                ):
-                    privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
-                    _verify_masking_secrets(policy, privacy_request, resume_step)
-
-                    # We only need to run the erasure once until masking strategies are handled
-                    erasure_runner(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=dataset_graph,
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        access_request_data=get_cached_data_for_erasures(
-                            privacy_request.id
-                        ),
-                        session=session,
-                        privacy_request_proceed=True,  # Should always be True unless we're testing
-                    )
-
-                # Finalize Erasure CHECKPOINT
+                # Pre-Webhooks CHECKPOINT
                 if can_run_checkpoint(
-                    request_checkpoint=CurrentStep.finalize_erasure,
-                    from_checkpoint=resume_step,
-                ):
-                    # This checkpoint allows a Privacy Request to be re-queued
-                    # after the Erasure Step is complete for DSR 3.0
-                    privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.finalize_erasure
-                    )
-
-                if policy.get_rules_for_action(
-                    action_type=ActionType.consent
-                ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.consent,
-                    from_checkpoint=resume_step,
-                ):
-                    privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
-                    consent_runner(
-                        privacy_request=privacy_request,
-                        policy=policy,
-                        graph=build_consent_dataset_graph(datasets, session),
-                        connection_configs=connection_configs,
-                        identity=identity_data,
-                        session=session,
-                        privacy_request_proceed=True,  # Should always be True unless we're testing
-                    )
-
-            except PrivacyRequestPaused as exc:
-                privacy_request.pause_processing(session)
-                _log_warning(exc, CONFIG.dev_mode)
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            except PrivacyRequestExit:
-                # Privacy Request Exiting awaiting sub task processing (Request Tasks)
-                # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
-                # Request Tasks have been built.  The Privacy Request will be requeued from
-                # the appropriate checkpoint when all the Request Tasks have run.
-                logger.info(
-                    "Privacy Request exited awaiting sub task processing (Request Tasks)"
-                )
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            except ValidationError as exc:
-                # Handle validation errors from dataset graph creation
-                logger.error(f"Error validating dataset references: {str(exc)}")
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Dataset reference validation",
-                    collection_name=None,
-                    message=str(exc),
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                )
-                privacy_request.error_processing(db=session)
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            except BaseException as exc:  # pylint: disable=broad-except
-                # Log the error to the activity timeline before marking as errored
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Privacy request processing",
-                    collection_name=None,
-                    message=str(exc),
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                )
-                privacy_request.error_processing(db=session)
-                # If dev mode, log traceback
-                _log_exception(exc, CONFIG.dev_mode)
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            # Post-processing steps: email send, webhooks, finalization
-            # Wrap in try/except to catch any unhandled exceptions
-            try:
-                # Check if privacy request needs erasure or consent emails sent
-                # Email post-send CHECKPOINT
-                if (
-                    (
-                        policy.get_rules_for_action(action_type=ActionType.erasure)
-                        or policy.get_rules_for_action(action_type=ActionType.consent)
-                    )
-                    and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.email_post_send,
-                        from_checkpoint=resume_step,
-                    )
-                    and needs_batch_email_send(session, identity_data, privacy_request)
-                ):
-                    privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.email_post_send
-                    )
-                    privacy_request.pause_processing_for_email_send(session)
-                    logger.info("Privacy request exiting: awaiting email send.")
-                    _cleanup_dsr_memory(session, privacy_request_id)
-                    return
-
-                # Post Webhooks CHECKPOINT
-                if can_run_checkpoint(
-                    request_checkpoint=CurrentStep.post_webhooks,
+                    request_checkpoint=CurrentStep.pre_webhooks,
                     from_checkpoint=resume_step,
                 ):
                     privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.post_webhooks
+                        CurrentStep.pre_webhooks
                     )
+                    # Run pre-execution webhooks
                     proceed = run_webhooks_and_report_status(
-                        db=session,
+                        session,
                         privacy_request=privacy_request,
-                        webhook_cls=PolicyPostWebhook,  # type: ignore
+                        webhook_cls=PolicyPreWebhook,  # type: ignore
+                        after_webhook_id=from_webhook_id,
                     )
                     if not proceed:
-                        _cleanup_dsr_memory(session, privacy_request_id)
+                        return
+                try:
+                    policy.rules[0]  # type: ignore[attr-defined]
+                except IndexError:
+                    error_message = (
+                        f"Policy with key {policy.key} must contain at least one Rule."
+                    )
+                    privacy_request.add_error_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Policy validation",
+                        collection_name=None,
+                        message=error_message,
+                        action_type=ActionType.access,  # Default since policy has no rules
+                    )
+                    privacy_request.error_processing(db=session)
+                    raise common_exceptions.MisconfiguredPolicyException(error_message)
+
+                try:
+                    # Skip graph loading if resuming from a late checkpoint
+                    if resume_step and resume_step in [
+                        # These checkpoints are AFTER all graph-dependent operations
+                        CurrentStep.finalize_erasure,
+                        CurrentStep.finalize_consent,
+                        CurrentStep.email_post_send,
+                        CurrentStep.post_webhooks,
+                        CurrentStep.finalization,
+                    ]:
+                        logger.info(
+                            "Skipping graph loading - resuming from late checkpoint '{}' which doesn't require graph",
+                            resume_step,
+                        )
+                        dataset_graph = None
+                        datasets = None
+
+                    else:
+                        dataset_graph, datasets = _get_datasets_and_graphs(
+                            session, privacy_request
+                        )
+
+                    identity_data = {
+                        key: value["value"] if isinstance(value, dict) else value
+                        for key, value in privacy_request.get_cached_identity_data().items()
+                    }
+                    # Eager load datasets relationship to avoid N+1 queries in filter_fides_connector_datasets
+                    connection_configs = (
+                        session.query(ConnectionConfig)
+                        .options(selectinload(ConnectionConfig.datasets))
+                        .all()
+                    )
+                    fides_connector_datasets: set[str] = (
+                        filter_fides_connector_datasets(connection_configs)
+                    )
+
+                    # If the privacy request requires manual finalization and has not yet been finalized, we exit here
+                    if (
+                        privacy_request.status
+                        == PrivacyRequestStatus.requires_manual_finalization
+                        and privacy_request.finalized_at is None
+                    ):
                         return
 
-                # pylint: disable=too-many-nested-blocks
-                # Request finalization CHECKPOINT
-                if can_run_checkpoint(
-                    request_checkpoint=CurrentStep.finalization,
-                    from_checkpoint=resume_step,
-                ):
-                    privacy_request.cache_failed_checkpoint_details(
-                        CurrentStep.finalization,
+                    # Access CHECKPOINT
+                    if (
+                        policy.get_rules_for_action(action_type=ActionType.access)
+                        or policy.get_rules_for_action(action_type=ActionType.erasure)
+                    ) and can_run_checkpoint(
+                        request_checkpoint=CurrentStep.access,
+                        from_checkpoint=resume_step,
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.access
+                        )
+                        access_runner(
+                            privacy_request=privacy_request,
+                            policy=policy,
+                            graph=dataset_graph,
+                            connection_configs=connection_configs,
+                            identity=identity_data,
+                            session=session,
+                            privacy_request_proceed=True,  # Should always be True unless we're testing
+                        )
+
+                    # Upload Access Results CHECKPOINT
+                    access_result_urls: list[str] = []
+                    if (
+                        (
+                            policy.get_rules_for_action(action_type=ActionType.access)
+                            or policy.get_rules_for_action(
+                                action_type=ActionType.erasure
+                            )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+                        )
+                        and can_run_checkpoint(
+                            request_checkpoint=CurrentStep.upload_access,
+                            from_checkpoint=resume_step,
+                        )
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.upload_access
+                        )
+
+                        # Only load access results if we're actually going to use them
+                        raw_access_results: dict = (
+                            privacy_request.get_raw_access_results()
+                        )
+
+                        filtered_access_results = filter_by_enabled_actions(
+                            raw_access_results, connection_configs
+                        )
+                        access_result_urls = upload_and_save_access_results(
+                            session,
+                            policy,
+                            filtered_access_results,
+                            dataset_graph,
+                            privacy_request,
+                            manual_webhook_access_results,
+                            fides_connector_datasets,
+                        )
+
+                    # Erasure CHECKPOINT
+                    if policy.get_rules_for_action(
+                        action_type=ActionType.erasure
+                    ) and can_run_checkpoint(
+                        request_checkpoint=CurrentStep.erasure,
+                        from_checkpoint=resume_step,
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.erasure
+                        )
+                        _verify_masking_secrets(policy, privacy_request, resume_step)
+
+                        # We only need to run the erasure once until masking strategies are handled
+                        erasure_runner(
+                            privacy_request=privacy_request,
+                            policy=policy,
+                            graph=dataset_graph,
+                            connection_configs=connection_configs,
+                            identity=identity_data,
+                            access_request_data=get_cached_data_for_erasures(
+                                privacy_request.id
+                            ),
+                            session=session,
+                            privacy_request_proceed=True,  # Should always be True unless we're testing
+                        )
+
+                    # Finalize Erasure CHECKPOINT
+                    if can_run_checkpoint(
+                        request_checkpoint=CurrentStep.finalize_erasure,
+                        from_checkpoint=resume_step,
+                    ):
+                        # This checkpoint allows a Privacy Request to be re-queued
+                        # after the Erasure Step is complete for DSR 3.0
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.finalize_erasure
+                        )
+
+                    if policy.get_rules_for_action(
+                        action_type=ActionType.consent
+                    ) and can_run_checkpoint(
+                        request_checkpoint=CurrentStep.consent,
+                        from_checkpoint=resume_step,
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.consent
+                        )
+                        consent_runner(
+                            privacy_request=privacy_request,
+                            policy=policy,
+                            graph=build_consent_dataset_graph(datasets, session),
+                            connection_configs=connection_configs,
+                            identity=identity_data,
+                            session=session,
+                            privacy_request_proceed=True,  # Should always be True unless we're testing
+                        )
+
+                except PrivacyRequestPaused as exc:
+                    privacy_request.pause_processing(session)
+                    _log_warning(exc, CONFIG.dev_mode)
+                    return
+
+                except PrivacyRequestExit:
+                    # Privacy Request Exiting awaiting sub task processing (Request Tasks)
+                    # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
+                    # Request Tasks have been built.  The Privacy Request will be requeued from
+                    # the appropriate checkpoint when all the Request Tasks have run.
+                    logger.info(
+                        "Privacy Request exited awaiting sub task processing (Request Tasks)"
                     )
-                    if privacy_request.status != PrivacyRequestStatus.error:
-                        erasure_rules = policy.get_rules_for_action(
-                            action_type=ActionType.erasure
-                        )
-                        config_proxy = ConfigProxy(session)
-                        requires_finalization = privacy_request.finalized_at is None and (
-                            erasure_rules
-                            and config_proxy.execution.erasure_request_finalization_required
-                        )
-                        if requires_finalization:
-                            logger.info(
-                                "Marking privacy request '{}' as requires manual finalization.",
-                                privacy_request.id,
+                    return
+
+                except ValidationError as exc:
+                    # Handle validation errors from dataset graph creation
+                    logger.error(f"Error validating dataset references: {str(exc)}")
+                    privacy_request.add_error_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset reference validation",
+                        collection_name=None,
+                        message=str(exc),
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+                    privacy_request.error_processing(db=session)
+                    return
+
+                except BaseException as exc:  # pylint: disable=broad-except
+                    # Log the error to the activity timeline before marking as errored
+                    privacy_request.add_error_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Privacy request processing",
+                        collection_name=None,
+                        message=str(exc),
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+                    privacy_request.error_processing(db=session)
+                    # If dev mode, log traceback
+                    _log_exception(exc, CONFIG.dev_mode)
+                    return
+
+                # Post-processing steps: email send, webhooks, finalization
+                # Wrap in try/except to catch any unhandled exceptions
+                try:
+                    # Check if privacy request needs erasure or consent emails sent
+                    # Email post-send CHECKPOINT
+                    if (
+                        (
+                            policy.get_rules_for_action(action_type=ActionType.erasure)
+                            or policy.get_rules_for_action(
+                                action_type=ActionType.consent
                             )
-                            privacy_request.status = (
-                                PrivacyRequestStatus.requires_manual_finalization
-                            )
-                            privacy_request.save(db=session)
-                            _cleanup_dsr_memory(session, privacy_request_id)
+                        )
+                        and can_run_checkpoint(
+                            request_checkpoint=CurrentStep.email_post_send,
+                            from_checkpoint=resume_step,
+                        )
+                        and needs_batch_email_send(
+                            session, identity_data, privacy_request
+                        )
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.email_post_send
+                        )
+                        privacy_request.pause_processing_for_email_send(session)
+                        logger.info("Privacy request exiting: awaiting email send.")
+                        return
+
+                    # Post Webhooks CHECKPOINT
+                    if can_run_checkpoint(
+                        request_checkpoint=CurrentStep.post_webhooks,
+                        from_checkpoint=resume_step,
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.post_webhooks
+                        )
+                        proceed = run_webhooks_and_report_status(
+                            db=session,
+                            privacy_request=privacy_request,
+                            webhook_cls=PolicyPostWebhook,  # type: ignore
+                        )
+                        if not proceed:
                             return
 
-                        # Finally, mark the request as complete
-                        if privacy_request.finalized_at:
+                    # pylint: disable=too-many-nested-blocks
+                    # Request finalization CHECKPOINT
+                    if can_run_checkpoint(
+                        request_checkpoint=CurrentStep.finalization,
+                        from_checkpoint=resume_step,
+                    ):
+                        privacy_request.cache_failed_checkpoint_details(
+                            CurrentStep.finalization,
+                        )
+                        if privacy_request.status != PrivacyRequestStatus.error:
+                            erasure_rules = policy.get_rules_for_action(
+                                action_type=ActionType.erasure
+                            )
+                            config_proxy = ConfigProxy(session)
+                            requires_finalization = (
+                                privacy_request.finalized_at is None
+                                and (
+                                    erasure_rules
+                                    and config_proxy.execution.erasure_request_finalization_required
+                                )
+                            )
+                            if requires_finalization:
+                                logger.info(
+                                    "Marking privacy request '{}' as requires manual finalization.",
+                                    privacy_request.id,
+                                )
+                                privacy_request.status = (
+                                    PrivacyRequestStatus.requires_manual_finalization
+                                )
+                                privacy_request.save(db=session)
+                                return
+
+                            # Finally, mark the request as complete
+                            if privacy_request.finalized_at:
+                                logger.info(
+                                    "Marking privacy request '{}' as finalized.",
+                                    privacy_request.id,
+                                )
+                                privacy_request.add_success_execution_log(
+                                    session,
+                                    connection_key=None,
+                                    dataset_name="Request finalized",
+                                    collection_name=None,
+                                    message=f"Request finalized for privacy request: {privacy_request.id}",
+                                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                )
+
                             logger.info(
-                                "Marking privacy request '{}' as finalized.",
+                                "Marking privacy request '{}' as complete.",
                                 privacy_request.id,
                             )
-                            privacy_request.add_success_execution_log(
-                                session,
-                                connection_key=None,
-                                dataset_name="Request finalized",
-                                collection_name=None,
-                                message=f"Request finalized for privacy request: {privacy_request.id}",
-                                action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                            AuditLog.create(
+                                db=session,
+                                data={
+                                    "user_id": "system",
+                                    "privacy_request_id": privacy_request.id,
+                                    "action": AuditLogAction.finished,
+                                    "message": "",
+                                },
                             )
+                            privacy_request.status = PrivacyRequestStatus.complete
+                            privacy_request.finished_processing_at = datetime.utcnow()
+                            privacy_request.save(db=session)
 
-                        logger.info(
-                            "Marking privacy request '{}' as complete.",
-                            privacy_request.id,
-                        )
-                        AuditLog.create(
-                            db=session,
-                            data={
-                                "user_id": "system",
-                                "privacy_request_id": privacy_request.id,
-                                "action": AuditLogAction.finished,
-                                "message": "",
-                            },
-                        )
-                        privacy_request.status = PrivacyRequestStatus.complete
-                        privacy_request.finished_processing_at = datetime.utcnow()
-                        privacy_request.save(db=session)
+                            # Send a final email to the user confirming request completion
+                            if privacy_request.status == PrivacyRequestStatus.complete:
+                                legacy_request_completion_enabled = ConfigProxy(
+                                    session
+                                ).notifications.send_request_completion_notification
 
-                        # Send a final email to the user confirming request completion
-                        if privacy_request.status == PrivacyRequestStatus.complete:
-                            legacy_request_completion_enabled = ConfigProxy(
-                                session
-                            ).notifications.send_request_completion_notification
+                                action_types = policy.get_all_action_types()
 
-                            action_types = policy.get_all_action_types()
+                                # Access/erasure completion emails take priority over consent
+                                if (
+                                    ActionType.access in action_types
+                                    or ActionType.erasure in action_types
+                                ):
+                                    action_type = (
+                                        MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+                                        if ActionType.access in action_types
+                                        else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
+                                    )
 
-                            # Access/erasure completion emails take priority over consent
-                            if (
-                                ActionType.access in action_types
-                                or ActionType.erasure in action_types
-                            ):
-                                action_type = (
-                                    MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
-                                    if ActionType.access in action_types
-                                    else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
-                                )
+                                    message_send_result = message_send_enabled(
+                                        session,
+                                        privacy_request.property_id,
+                                        action_type,
+                                        legacy_request_completion_enabled,
+                                    )
 
-                                message_send_result = message_send_enabled(
-                                    session,
-                                    privacy_request.property_id,
-                                    action_type,
-                                    legacy_request_completion_enabled,
-                                )
+                                    if message_send_result:
+                                        if not access_result_urls:
+                                            # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
+                                            # from the database because the Privacy Request would have exited
+                                            # processing and lost access to the access_result_urls in memory
+                                            access_result_urls = (
+                                                privacy_request.access_result_urls or {}
+                                            ).get("access_result_urls", [])
 
-                                if message_send_result:
-                                    if not access_result_urls:
-                                        # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
-                                        # from the database because the Privacy Request would have exited
-                                        # processing and lost access to the access_result_urls in memory
-                                        access_result_urls = (
-                                            privacy_request.access_result_urls or {}
-                                        ).get("access_result_urls", [])
+                                        try:
+                                            initiate_privacy_request_completion_email(
+                                                session,
+                                                policy,
+                                                access_result_urls,
+                                                identity_data,
+                                                privacy_request.property_id,
+                                                privacy_request.id,
+                                            )
+                                            # Add success log for completion email
+                                            privacy_request.add_success_execution_log(
+                                                session,
+                                                connection_key=None,
+                                                dataset_name="Privacy request completion email",
+                                                collection_name=None,
+                                                message="Privacy request completion email sent successfully.",
+                                                action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                            )
+                                        except (
+                                            IdentityNotFoundException,
+                                            MessageDispatchException,
+                                        ) as e:
+                                            # Add error log for completion email failure
+                                            privacy_request.add_error_execution_log(
+                                                session,
+                                                connection_key=None,
+                                                dataset_name="Privacy request completion email",
+                                                collection_name=None,
+                                                message=f"Privacy request completion email failed: {str(e)}",
+                                                action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                            )
+                                            privacy_request.error_processing(db=session)
+                                            # If dev mode, log traceback
+                                            _log_exception(e, CONFIG.dev_mode)
+                                            return
 
-                                    try:
-                                        initiate_privacy_request_completion_email(
-                                            session,
-                                            policy,
-                                            access_result_urls,
-                                            identity_data,
-                                            privacy_request.property_id,
-                                            privacy_request.id,
-                                        )
-                                        # Add success log for completion email
-                                        privacy_request.add_success_execution_log(
-                                            session,
-                                            connection_key=None,
-                                            dataset_name="Privacy request completion email",
-                                            collection_name=None,
-                                            message="Privacy request completion email sent successfully.",
-                                            action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                                        )
-                                    except (
-                                        IdentityNotFoundException,
-                                        MessageDispatchException,
-                                    ) as e:
-                                        # Add error log for completion email failure
-                                        privacy_request.add_error_execution_log(
-                                            session,
-                                            connection_key=None,
-                                            dataset_name="Privacy request completion email",
-                                            collection_name=None,
-                                            message=f"Privacy request completion email failed: {str(e)}",
-                                            action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                                        )
-                                        privacy_request.error_processing(db=session)
-                                        # If dev mode, log traceback
-                                        _log_exception(e, CONFIG.dev_mode)
-                                        _cleanup_dsr_memory(session, privacy_request_id)
-                                        return
+                                # Send consent completion email only for consent-only requests
+                                elif ActionType.consent in action_types:
+                                    consent_message_enabled = message_send_enabled(
+                                        session,
+                                        privacy_request.property_id,
+                                        MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+                                        legacy_request_completion_enabled,
+                                    )
+                                    if consent_message_enabled:
+                                        try:
+                                            initiate_consent_request_completion_email(
+                                                session,
+                                                identity_data,
+                                                privacy_request.property_id,
+                                            )
+                                            privacy_request.add_success_execution_log(
+                                                session,
+                                                connection_key=None,
+                                                dataset_name="Consent request completion email",
+                                                collection_name=None,
+                                                message="Consent request completion email sent successfully.",
+                                                action_type=ActionType.consent,
+                                            )
+                                        except (
+                                            IdentityNotFoundException,
+                                            MessageDispatchException,
+                                        ) as e:
+                                            privacy_request.add_error_execution_log(
+                                                session,
+                                                connection_key=None,
+                                                dataset_name="Consent request completion email",
+                                                collection_name=None,
+                                                message=f"Consent request completion email failed: {str(e)}",
+                                                action_type=ActionType.consent,
+                                            )
+                                            privacy_request.error_processing(db=session)
+                                            _log_exception(e, CONFIG.dev_mode)
+                                            return
 
-                            # Send consent completion email only for consent-only requests
-                            elif ActionType.consent in action_types:
-                                consent_message_enabled = message_send_enabled(
-                                    session,
-                                    privacy_request.property_id,
-                                    MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
-                                    legacy_request_completion_enabled,
-                                )
-                                if consent_message_enabled:
-                                    try:
-                                        initiate_consent_request_completion_email(
-                                            session,
-                                            identity_data,
-                                            privacy_request.property_id,
-                                        )
-                                        privacy_request.add_success_execution_log(
-                                            session,
-                                            connection_key=None,
-                                            dataset_name="Consent request completion email",
-                                            collection_name=None,
-                                            message="Consent request completion email sent successfully.",
-                                            action_type=ActionType.consent,
-                                        )
-                                    except (
-                                        IdentityNotFoundException,
-                                        MessageDispatchException,
-                                    ) as e:
-                                        privacy_request.add_error_execution_log(
-                                            session,
-                                            connection_key=None,
-                                            dataset_name="Consent request completion email",
-                                            collection_name=None,
-                                            message=f"Consent request completion email failed: {str(e)}",
-                                            action_type=ActionType.consent,
-                                        )
-                                        privacy_request.error_processing(db=session)
-                                        _log_exception(e, CONFIG.dev_mode)
-                                        _cleanup_dsr_memory(session, privacy_request_id)
-                                        return
+                except BaseException as exc:  # pylint: disable=broad-except
+                    # Catch any unhandled exceptions in post-processing steps
+                    privacy_request.add_error_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Privacy request finalization",
+                        collection_name=None,
+                        message=f"Error during post-processing: {str(exc)}",
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+                    privacy_request.error_processing(db=session)
+                    _log_exception(exc, CONFIG.dev_mode)
+                    return
 
-            except BaseException as exc:  # pylint: disable=broad-except
-                # Catch any unhandled exceptions in post-processing steps
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Privacy request finalization",
-                    collection_name=None,
-                    message=f"Error during post-processing: {str(exc)}",
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
-                )
-                privacy_request.error_processing(db=session)
-                _log_exception(exc, CONFIG.dev_mode)
-                _cleanup_dsr_memory(session, privacy_request_id)
-                return
-
-            # Final cleanup: expunge session identity map and run garbage collection
-            # This runs after successful completion of all processing
-            try:
-                _cleanup_dsr_memory(
-                    session=session,
-                    privacy_request_id=privacy_request_id,
-                )
-            except Exception as cleanup_exc:
-                logger.warning(
-                    f"Error during final cleanup for privacy request '{privacy_request_id}': {cleanup_exc}"
-                )
+            finally:
+                # Always clean up memory on ANY exit path (return, exception, etc.)
+                # This single finally block replaces 15+ explicit _cleanup_dsr_memory calls
+                try:
+                    _cleanup_dsr_memory(
+                        session=session,
+                        privacy_request_id=privacy_request_id,
+                    )
+                except Exception as cleanup_exc:
+                    logger.warning(
+                        f"Error during final cleanup for privacy request '{privacy_request_id}': {cleanup_exc}"
+                    )
 
 
 def initiate_consent_request_completion_email(
