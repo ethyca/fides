@@ -403,7 +403,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 def _cleanup_dsr_memory(
     session: Session,
     privacy_request_id: str,
-    phase: str = "completion"
+    phase: str = "exit"
 ) -> None:
     """
     Aggressively clean up memory after DSR processing.
@@ -411,17 +411,22 @@ def _cleanup_dsr_memory(
     This prevents baseline memory creep when processing multiple concurrent DSRs.
     Designed to be safe for both DSR 2.0 and DSR 3.0 workflows.
 
-    Cleans up:
-    - Python objects via garbage collection
-    - SQLAlchemy session identity map (only on true completion)
+    Called at the end of run_privacy_request() right before returning. Expunges the
+    session identity map to release ORM object references, then runs garbage collection
+    to actually free the memory.
 
-    IMPORTANT: Does NOT close the session - the context manager handles that.
-    Does NOT rollback transactions - this could destroy uncommitted DSR 3.0 tasks.
+    IMPORTANT Safety notes:
+    - Does NOT close the session - the context manager handles that
+    - Does NOT rollback transactions - this could destroy uncommitted DSR 3.0 tasks
+    - Does NOT run for DSR 3.0 PrivacyRequestExit - those return early and are
+      re-invoked after RequestTasks complete, so cleanup would be premature
+    - Does NOT run for early returns (webhooks, pauses) - these paths will be
+      re-invoked and cleanup will run on their eventual completion
 
     Args:
         session: SQLAlchemy session (managed by caller's context manager)
         privacy_request_id: ID of the privacy request
-        phase: Phase of cleanup (completion, error, exit, etc.)
+        phase: Phase identifier for logging (typically "exit")
     """
     logger.info(
         "Performing memory cleanup for privacy request '{}' (phase: {})",
@@ -430,8 +435,27 @@ def _cleanup_dsr_memory(
     )
 
     try:
-        # 1. Force multiple garbage collection passes
-        # This is safe and doesn't interfere with database operations
+        # 1. Clear SQLAlchemy session identity map on "exit" phase ONLY
+        # The "exit" phase runs right before the function returns, so it's safe to expunge.
+        # The "completion" phase runs mid-processing with the session still in use afterward.
+        # For DSR 3.0, PrivacyRequestExit causes an early return, so this doesn't run at all.
+        if phase == "exit":
+            try:
+                identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
+                # Verify no pending changes before expunging
+                if not session.new and not session.dirty and not session.deleted:
+                    session.expunge_all()
+                    logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
+                else:
+                    logger.warning(
+                        f"Skipped expunge - unexpected pending changes at exit "
+                        f"(new: {len(session.new)}, dirty: {len(session.dirty)}, deleted: {len(session.deleted)})"
+                    )
+            except Exception as e:
+                logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
+
+        # 2. Force multiple garbage collection passes AFTER expunging
+        # Now that references are released, GC can actually free the objects
         collected_total = 0
         for i in range(3):
             collected = gc.collect()
@@ -441,24 +465,6 @@ def _cleanup_dsr_memory(
 
         if collected_total > 0:
             logger.info(f"Garbage collection freed {collected_total} total objects")
-
-        # 2. Clear SQLAlchemy session identity map ONLY on true completion
-        # For DSR 3.0, we skip this on "exit" phase because the session may still
-        # have uncommitted RequestTask objects that need to be accessed
-        if phase == "completion":
-            try:
-                identity_map_size = len(session.identity_map) if hasattr(session, "identity_map") else 0
-                # Only expunge if we don't have pending changes that need to be committed
-                if not session.new and not session.dirty and not session.deleted:
-                    session.expunge_all()
-                    logger.debug(f"Cleared SQLAlchemy session identity map ({identity_map_size} objects)")
-                else:
-                    logger.debug(
-                        f"Skipped expunge - session has pending changes "
-                        f"(new: {len(session.new)}, dirty: {len(session.dirty)}, deleted: {len(session.deleted)})"
-                    )
-            except Exception as e:
-                logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
 
         # 3. Log connection pool diagnostics (non-invasive)
         try:
@@ -927,14 +933,6 @@ def run_privacy_request(
                         privacy_request.finished_processing_at = datetime.utcnow()
                         privacy_request.save(db=session)
 
-                        # Aggressive memory cleanup after successful DSR completion
-                        # This prevents baseline memory creep when processing multiple DSRs
-                        _cleanup_dsr_memory(
-                            session=session,
-                            privacy_request_id=privacy_request.id,
-                            phase="completion"
-                        )
-
                         # Send a final email to the user confirming request completion
                         if privacy_request.status == PrivacyRequestStatus.complete:
                             legacy_request_completion_enabled = ConfigProxy(
@@ -1059,11 +1057,10 @@ def run_privacy_request(
                 _log_exception(exc, CONFIG.dev_mode)
                 return
 
-            # Cleanup after post-processing completes (success or error in post-processing)
-            # Note: This does NOT run for DSR 3.0 PrivacyRequestExit (which returns earlier)
-            # or other early exit paths. This is intentional - DSR 3.0 needs the session
-            # to remain open for RequestTask access.
-            # We use a separate try-except so cleanup errors don't break the DSR
+            # Final cleanup: expunge session identity map and run garbage collection
+            # This only runs on paths that complete post-processing (success or error).
+            # DSR 3.0 PrivacyRequestExit returns early (intentional - will be re-invoked).
+            # We use a separate try-except so cleanup errors don't break the DSR.
             try:
                 _cleanup_dsr_memory(
                     session=session,
