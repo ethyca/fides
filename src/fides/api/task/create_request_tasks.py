@@ -269,6 +269,7 @@ def persist_new_access_request_tasks(
     graph: networkx.DiGraph = build_access_networkx_digraph(
         traversal_nodes, end_nodes, traversal
     )
+
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
