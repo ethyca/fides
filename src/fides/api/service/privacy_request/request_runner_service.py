@@ -1350,7 +1350,6 @@ def run_webhooks_and_report_status(
                 policy_action=privacy_request.policy.get_action_type(),
             )
         except PrivacyRequestPaused:
-            error_message = f"Webhook '{webhook.key}' returned an error: {exc.args[0]}"
             logger.info(
                 "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
                 privacy_request.id,
