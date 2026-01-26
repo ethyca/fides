@@ -2044,15 +2044,7 @@ def get_test_privacy_request_results(
 
     # Check completion status of all tasks
     # Use deferred loading to avoid loading large JSON columns since we only need status and dataset_name
-    access_tasks = (
-        RequestTask.query_with_deferred_data(db)
-        .filter(
-            RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.action_type == ActionType.access,
-        )
-        .all()
-    )
-    dataset_key, statuses = get_task_info(access_tasks)
+    dataset_key, statuses = get_task_info(privacy_request.access_tasks.all())
     all_completed = all(status in EXITED_EXECUTION_LOG_STATUSES for status in statuses)
 
     # Update request status if all tasks are done
