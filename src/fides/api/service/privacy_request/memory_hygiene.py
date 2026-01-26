@@ -3,6 +3,8 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 
+GC_COUNT = 3
+
 def cleanup_dsr_memory(
     session: Session,
     privacy_request_id: str,
@@ -69,7 +71,7 @@ def cleanup_dsr_memory(
         # 2. Force multiple garbage collection passes AFTER expunging
         # Now that references are released, GC can actually free the objects
         collected_total = 0
-        for i in range(3):
+        for i in range(GC_COUNT):
             collected = gc.collect()
             collected_total += collected
             if collected > 0:
