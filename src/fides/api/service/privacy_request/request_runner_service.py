@@ -524,7 +524,6 @@ def _get_dataset_graph(session: Session, privacy_request: PrivacyRequest) -> Dat
     return DatasetGraph(*dataset_graphs)
 
 
-
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -730,7 +729,6 @@ def run_privacy_request(
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
-
                     access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
