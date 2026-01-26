@@ -297,9 +297,6 @@ def validate_polling_status_override_function(f: Callable) -> None:
     """
     sig: Signature = signature(f)
 
-    # Import here to avoid circular imports at module level
-    from fides.api.schemas.saas.async_polling_configuration import PollingStatusResult
-
     # Check return type - accept both legacy bool and new PollingStatusResult
     return_annotation = sig.return_annotation
     if return_annotation not in (
