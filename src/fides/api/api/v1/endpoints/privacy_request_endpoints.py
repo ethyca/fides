@@ -1776,7 +1776,7 @@ def get_individual_privacy_request_tasks(
     # Use deferred loading to avoid loading large JSON columns (_access_data, _data_for_erasures, etc.)
     # which can cause OOM errors when listing many tasks
     return (
-        RequestTask.query_with_deferred_data(db)
+        RequestTask.query_with_deferred_data(db.query(RequestTask))
         .filter(RequestTask.privacy_request_id == privacy_request_id)
         .order_by(RequestTask.created_at.asc(), RequestTask.collection_address.asc())
         .all()
