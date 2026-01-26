@@ -27,6 +27,11 @@ from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
+from fides.api.asgi_middleware import (
+    AnalyticsLoggingMiddleware,
+    AuditLogMiddleware,
+    LogRequestMiddleware,
+)
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.db import seed
 from fides.api.db.database import configure_db, seed_db
@@ -43,11 +48,6 @@ from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.api_router import APIRouter
-from fides.api.util.asgi_middleware import (
-    AnalyticsLoggingMiddleware,
-    AuditLogMiddleware,
-    LogRequestMiddleware,
-)
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
 from fides.api.util.errors import FidesError

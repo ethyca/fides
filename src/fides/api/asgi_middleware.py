@@ -2,7 +2,7 @@
 Pure ASGI middleware implementations for high-performance request processing.
 
 These replace the BaseHTTPMiddleware-based implementations which have significant
-performance overhead due to reading the entire request body into memory.
+performance overhead (see https://github.com/fastapi/fastapi/discussions/6985).
 """
 
 from __future__ import annotations
@@ -12,8 +12,19 @@ from datetime import datetime, timezone
 from time import perf_counter
 from typing import Any, Awaitable, Callable, MutableMapping, Optional, Set
 
+from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from pyinstrument import Profiler
+from starlette.requests import Request
 
+from fides.api.analytics import (
+    accessed_through_local_host,
+    in_docker_container,
+    send_analytics_event,
+)
+from fides.api.middleware import handle_audit_log_resource, set_body
+from fides.api.schemas.analytics import Event, ExtraData
+from fides.api.util.logger import _log_exception
 from fides.config import CONFIG
 
 # Type aliases for ASGI
@@ -118,11 +129,21 @@ class AnalyticsLoggingMiddleware:
             headers.get(b"x-fides-source", b"").decode("latin-1") or None
         )
 
-        # Get host from headers
-        host = headers.get(b"host", b"").decode("latin-1")
+        # Get hostname from Host header, stripping port if present
+        # Original used request.url.hostname which is just the domain (no port)
+        host_header = headers.get(b"host", b"").decode("latin-1")
+        hostname = host_header.split(":")[0] if host_header else None
+
+        # Build full URL for endpoint to match original behavior
+        # Original: f"{request.method}: {request.url}"
+        scheme = scope.get("scheme", "http")
+        query_string = scope.get("query_string", b"").decode("latin-1")
+        full_url = f"{scheme}://{host_header}{path}"
+        if query_string:
+            full_url = f"{full_url}?{query_string}"
 
         now = datetime.now(tz=timezone.utc)
-        endpoint = f"{method}: {path}"
+        endpoint = f"{method}: {full_url}"
 
         status_code = 500  # Default
         error_class: Optional[str] = None
@@ -140,12 +161,14 @@ class AnalyticsLoggingMiddleware:
         except Exception as e:
             status_code = 500
             error_class = e.__class__.__name__
+            # Log exception
+            _log_exception(e, CONFIG.dev_mode)
             raise
         finally:
             # Schedule analytics logging as a background task
             asyncio.create_task(
                 self._log_analytics(
-                    endpoint, host, status_code, now, fides_source, error_class
+                    endpoint, hostname, status_code, now, fides_source, error_class
                 )
             )
 
@@ -159,16 +182,6 @@ class AnalyticsLoggingMiddleware:
         error_class: Optional[str],
     ) -> None:
         """Log analytics event if not opted out."""
-        # Avoid circular imports
-        from fideslog.sdk.python.event import AnalyticsEvent
-
-        from fides.api.analytics import (
-            accessed_through_local_host,
-            in_docker_container,
-            send_analytics_event,
-        )
-        from fides.api.schemas.analytics import Event, ExtraData
-
         if CONFIG.user.analytics_opt_out:
             return
 
@@ -197,6 +210,9 @@ class AnalyticsLoggingMiddleware:
 class AuditLogMiddleware:
     """
     Pure ASGI middleware that logs audit information for non-GET requests.
+
+    This middleware buffers the request body to allow audit logging while
+    still making the body available to downstream handlers.
     """
 
     def __init__(self, app: ASGIApp, ignored_paths: Optional[Set[str]] = None) -> None:
@@ -219,19 +235,39 @@ class AuditLogMiddleware:
         )
 
         if should_audit:
-            try:
-                # We need to create a Request object for the audit handler
-                # This is a lightweight operation compared to BaseHTTPMiddleware
-                from starlette.requests import Request
+            # Buffer the request body as it's consumed by the downstream app
+            body_parts = []
+            body_complete = False
 
-                request = Request(scope, receive, send)
-                from fides.api.middleware import handle_audit_log_resource
+            async def receiving_wrapper() -> Message:
+                nonlocal body_complete
+                message = await receive()
 
-                await handle_audit_log_resource(request)
-            except Exception as exc:
-                logger.debug(exc)
+                if message["type"] == "http.request":
+                    body = message.get("body", b"")
+                    if body:
+                        body_parts.append(body)
 
-        await self.app(scope, receive, send)
+                    # Check if body is complete
+                    if not message.get("more_body", False):
+                        body_complete = True
+                        # Trigger audit logging now that we have the full body
+                        full_body = b"".join(body_parts)
+                        try:
+                            # Create a Request object for the audit handler
+                            request = Request(scope, receive, send)
+                            # Pre-set the body so handle_audit_log_resource doesn't consume it
+                            await set_body(request, full_body)
+
+                            await handle_audit_log_resource(request)
+                        except Exception as exc:
+                            logger.debug(exc)
+
+                return message
+
+            await self.app(scope, receiving_wrapper, send)
+        else:
+            await self.app(scope, receive, send)
 
 
 class ProfileRequestMiddleware:
@@ -240,6 +276,9 @@ class ProfileRequestMiddleware:
 
     Only active when the 'profile-request' header is present.
     Should only be used in dev mode.
+
+    When profiling is active, the original response is replaced with an HTML
+    page showing the profiling results.
     """
 
     def __init__(self, app: ASGIApp) -> None:
@@ -259,17 +298,36 @@ class ProfileRequestMiddleware:
             return
 
         # Profile the request
-        from pyinstrument import Profiler
-
         profiler = Profiler(interval=0.001, async_mode="enabled")
         profiler.start()
 
+        # Intercept send to discard the original response
+        async def send_wrapper(message: Message) -> None:
+            # Discard the original response - we'll send profiling HTML instead
+            pass
+
         try:
-            await self.app(scope, receive, send)
+            await self.app(scope, receive, send_wrapper)
         finally:
             profiler.stop()
             logger.debug("Request Profiled!")
 
-        # Note: In the original implementation, this returned an HTMLResponse with the profile.
-        # With pure ASGI, we've already started sending the response, so we just log it.
-        # If you need the profile output, consider logging it or writing to a file.
+        # Send the profiling HTML as the response
+        profile_html = profiler.output_html()
+
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [
+                    (b"content-type", b"text/html; charset=utf-8"),
+                    (b"content-length", str(len(profile_html)).encode("latin-1")),
+                ],
+            }
+        )
+        await send(
+            {
+                "type": "http.response.body",
+                "body": profile_html.encode("utf-8"),
+            }
+        )

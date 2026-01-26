@@ -2,10 +2,11 @@
 
 import asyncio
 from typing import Any, Awaitable, Callable, MutableMapping
+from unittest.mock import patch
 
 import pytest
 
-from fides.api.util.asgi_middleware import LogRequestMiddleware
+from fides.api.asgi_middleware import LogRequestMiddleware
 
 # Type aliases for ASGI
 Scope = MutableMapping[str, Any]
