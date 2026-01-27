@@ -70,13 +70,15 @@ if CONFIG.database.async_readonly_database_uri:
         pool_pre_ping=CONFIG.database.async_readonly_database_pre_ping,
         # Don't rollback before returning a connection to the pool - this improves performance dramatically;
         # can be turned off via config but the default is to not reset on return
-        pool_reset_on_return=None
-        if CONFIG.database.async_readonly_database_pool_skip_rollback
-        else "rollback",
+        pool_reset_on_return=(
+            None
+            if CONFIG.database.async_readonly_database_pool_skip_rollback
+            else "rollback"
+        ),
         # Autocommit transactions (this should effectively be a no-op because it's a readonly database)
-        isolation_level="AUTOCOMMIT"
-        if CONFIG.database.async_readonly_database_autocommit
-        else None,
+        isolation_level=(
+            "AUTOCOMMIT" if CONFIG.database.async_readonly_database_autocommit else None
+        ),
     )
     readonly_async_session_factory = sessionmaker(
         readonly_async_engine, class_=AsyncSession, expire_on_commit=False
@@ -147,7 +149,7 @@ async def non_warmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
 
 
 # If the prewarm flag is enabled, use the prewarmed session factory, otherwise use the non-warmed one
-readonly_async_session: Callable[[], _AsyncGeneratorContextManager[Any, None]] = (
+readonly_async_session: Callable[[], _AsyncGeneratorContextManager[Any]] = (
     prewarmed_async_readonly_session
     if CONFIG.database.async_readonly_database_prewarm
     else non_warmed_async_readonly_session
