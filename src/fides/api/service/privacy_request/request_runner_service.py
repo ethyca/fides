@@ -1228,7 +1228,7 @@ def run_webhooks_and_report_status(
                 dataset_name=f"Webhook: {webhook.key}",
                 collection_name=None,
                 message=error_message,
-                action_type=privacy_request.policy.get_action_type(),
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
             )
             privacy_request.error_processing(db)
             privacy_request.cache_failed_checkpoint_details(current_step)
@@ -1246,7 +1246,7 @@ def run_webhooks_and_report_status(
                 dataset_name=f"Webhook: {webhook.key}",
                 collection_name=None,
                 message=error_message,
-                action_type=privacy_request.policy.get_action_type(),
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
             )
             privacy_request.error_processing(db)
             privacy_request.cache_failed_checkpoint_details(current_step)
