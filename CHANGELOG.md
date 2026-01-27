@@ -48,7 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Extending read-only DB configuration [#7139](https://github.com/ethyca/fides/pull/7139)
 - Removed the ManualTaskLog table since it is un-used. This is a lossy migration, it can be `downgraded` but data will not be restored. [#7124](https://github.com/ethyca/fides/pull/7124) https://github.com/ethyca/fides/labels/db-migration
 - Renamed staged resource diff status from 'approved' to 'reviewed' in database migration [#7159](https://github.com/ethyca/fides/pull/7159) https://github.com/ethyca/fides/labels/db-migration
- - Update the privacy request notification email template with new branding, improved copy, and enhanced UX in the notification configuration drawer. [#7192](https://github.com/ethyca/fides/pull/7124)
+ - Update the privacy request notification experience, improved copy, and enhanced UX in the notification configuration drawer. [#7192](https://github.com/ethyca/fides/pull/7124)
 
 ### Developer Experience
 - Deprecated Chakra UI exports with `Chakra` prefix, removed `Ant` prefix from Ant Design exports [#7173](https://github.com/ethyca/fides/pull/7173)
