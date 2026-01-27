@@ -42,9 +42,7 @@ const buildUrlQuery = (
     data_uses: params.data_uses,
     locations: params.locations,
     sort_by: params.sort_by
-      ? Array.isArray(params.sort_by)
-        ? params.sort_by
-        : [params.sort_by]
+      ? [params.sort_by].flat()
       : undefined,
   });
 
