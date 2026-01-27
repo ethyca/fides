@@ -1,5 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
+import { buildArrayQueryParams } from "~/features/common/utils";
 import { ConsentStatus, Page_Asset_ } from "~/types/api";
+import type { SortQueryParams } from "~/types/query-params";
 
 export interface AssetReportingFilters {
   asset_type?: string[];
@@ -18,60 +20,58 @@ export interface AssetReportingFilterOptions {
   locations?: string[] | null;
 }
 
-export interface AssetReportingQueryParams extends AssetReportingFilters {
+export interface AssetReportingQueryParams
+  extends AssetReportingFilters,
+    SortQueryParams {
   page: number;
   size: number;
 }
 
-const buildFilterParams = (params: AssetReportingFilters) => {
-  const queryParams: Record<string, string | string[]> = {};
+/**
+ * Build a URL query string for asset reporting requests.
+ * Uses buildArrayQueryParams to produce repeated params for arrays
+ * (e.g. ?asset_type=Cookie&asset_type=Image) as required by FastAPI.
+ */
+const buildUrlQuery = (
+  params: AssetReportingFilters & Partial<SortQueryParams>,
+): string => {
+  const urlParams = buildArrayQueryParams({
+    asset_type: params.asset_type,
+    consent_status: params.consent_status,
+    system_id: params.system_id,
+    data_uses: params.data_uses,
+    locations: params.locations,
+    sort_by: params.sort_by
+      ? Array.isArray(params.sort_by)
+        ? params.sort_by
+        : [params.sort_by]
+      : undefined,
+  });
 
   if (params.search) {
-    queryParams.search = params.search;
+    urlParams.append("search", params.search);
+  }
+  if (params.sort_asc !== undefined) {
+    urlParams.append("sort_asc", String(params.sort_asc));
   }
 
-  // Handle array parameters (FastAPI expects repeated params: ?asset_type=Cookie&asset_type=Image)
-  if (params.asset_type?.length) {
-    queryParams.asset_type = params.asset_type;
-  }
-  if (params.consent_status?.length) {
-    queryParams.consent_status = params.consent_status;
-  }
-  if (params.system_id?.length) {
-    queryParams.system_id = params.system_id;
-  }
-  if (params.data_uses?.length) {
-    queryParams.data_uses = params.data_uses;
-  }
-  if (params.locations?.length) {
-    queryParams.locations = params.locations;
-  }
-
-  return queryParams;
-};
-
-const buildQueryParams = (params: AssetReportingQueryParams) => {
-  return {
-    page: params.page,
-    size: params.size,
-    ...buildFilterParams(params),
-  };
+  const qs = urlParams.toString();
+  return qs ? `?${qs}` : "";
 };
 
 export const assetReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllAssets: build.query<Page_Asset_, AssetReportingQueryParams>({
       query: (params) => ({
-        url: "plus/asset-reporting",
-        params: buildQueryParams(params),
+        url: `plus/asset-reporting${buildUrlQuery(params)}`,
+        params: { page: params.page, size: params.size },
       }),
       providesTags: ["Asset Reporting"],
     }),
 
     downloadAssetReport: build.query<string, AssetReportingFilters>({
       query: (filters) => ({
-        url: "plus/asset-reporting/export",
-        params: buildFilterParams(filters),
+        url: `plus/asset-reporting/export${buildUrlQuery(filters)}`,
         responseHandler: "text",
       }),
     }),
@@ -81,8 +81,7 @@ export const assetReportingApi = baseApi.injectEndpoints({
       AssetReportingFilters
     >({
       query: (filters) => ({
-        url: "plus/asset-reporting/filters",
-        params: buildFilterParams(filters),
+        url: `plus/asset-reporting/filters${buildUrlQuery(filters)}`,
       }),
       providesTags: ["Asset Reporting"],
     }),

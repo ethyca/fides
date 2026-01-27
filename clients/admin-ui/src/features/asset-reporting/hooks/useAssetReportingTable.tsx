@@ -104,6 +104,8 @@ export const useAssetReportingTable = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    sort_by: sortKey ? [sortKey] : undefined,
+    sort_asc: sortKey ? sortOrder !== "descend" : undefined,
     ...filters,
     ...columnFilters,
   });
