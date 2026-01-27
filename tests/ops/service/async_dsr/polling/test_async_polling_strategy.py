@@ -18,9 +18,9 @@ from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResultRequest,
     PollingStatusRequest,
-    PollingStatusResult,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )

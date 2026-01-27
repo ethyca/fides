@@ -9,14 +9,14 @@ from fides.api.common_exceptions import (
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
-from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
+from fides.api.schemas.saas.shared_schemas import (
+    ConsentPropagationStatus,
+    PollingStatusResult,
+)
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
-    from fides.api.schemas.saas.async_polling_configuration import (
-        PollingResult,
-        PollingStatusResult,
-    )
+    from fides.api.schemas.saas.async_polling_configuration import PollingResult
 
 
 # at some point this should likely be formalized more centrally...
@@ -50,7 +50,7 @@ RequestOverrideFunction = Callable[
         ConsentPropagationStatus,
         int,
         bool,  # For polling status overrides (legacy)
-        "PollingStatusResult",  # For polling status overrides (new)
+        PollingStatusResult,  # For polling status overrides (new)
         "PollingResult",  # For polling result overrides - string literal to avoid circular import
         None,
     ],

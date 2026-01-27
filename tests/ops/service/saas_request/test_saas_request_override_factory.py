@@ -14,9 +14,11 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.consentable_item import ConsentWebhookResult
-from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
+from fides.api.schemas.saas.shared_schemas import (
+    ConsentPropagationStatus,
+    PollingStatusResult,
+)
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.schemas.saas.async_polling_configuration import PollingStatusResult
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
@@ -556,13 +558,10 @@ class TestSaasRequestOverrideFactory:
             SaaSRequestOverrideFactory.get_override(f_id_2, SaaSRequestType.READ)
         assert f"Custom SaaS override '{f_id_2}' does not exist." in str(exc.value)
 
-    # ========== POLLING_STATUS Override Tests ==========
-
     def test_register_polling_status_with_bool_return(self):
         """
         Test registering a valid `polling_status` override function that returns bool (legacy)
         """
-
 
         f_id = uuid()
         register(f_id, SaaSRequestType.POLLING_STATUS)(valid_polling_status_bool_override)

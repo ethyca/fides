@@ -22,10 +22,9 @@ from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResult,
     PollingResultType,
-    PollingStatusResult,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult, SaaSRequestParams
 from fides.api.service.async_dsr.handlers.polling_attachment_handler import (
     PollingAttachmentHandler,
 )

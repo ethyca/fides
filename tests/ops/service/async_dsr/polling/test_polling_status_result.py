@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.schemas.saas.async_polling_configuration import PollingStatusResult
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult
 
 @pytest.mark.async_dsr
 class TestPollingStatusResult:
