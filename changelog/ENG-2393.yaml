@@ -1,4 +1,4 @@
 type: Fixed
 description: Fixed Okta integration page to show only monitors for selected integration
-pr:
+pr: 7256
 labels: []
