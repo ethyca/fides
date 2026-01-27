@@ -62,6 +62,7 @@ describe("configureNavGroups", () => {
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
         { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
+        { title: "Asset reporting", path: routes.REPORTING_ASSETS_ROUTE },
       ],
     });
   });
