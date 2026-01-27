@@ -47,7 +47,10 @@ describe("Privacy Request with custom fields with query params", () => {
             "123",
           );
         });
-        cy.url().should("include", "/privacy-request/default_access_policy/success");
+        cy.url().should(
+          "include",
+          "/privacy-request/default_access_policy/success",
+        );
       },
     );
   });
@@ -76,7 +79,10 @@ describe("Privacy Request with custom fields with query params", () => {
             customPrivacyRequestFields.another_custom_app_id.value,
           ).to.equal("12345");
         });
-        cy.url().should("include", "/privacy-request/default_access_policy/success");
+        cy.url().should(
+          "include",
+          "/privacy-request/default_access_policy/success",
+        );
       },
     );
   });
@@ -199,7 +205,10 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("handles empty multiselect fields correctly", () => {
@@ -231,7 +240,10 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("works correctly with erasure policy form", () => {
@@ -273,7 +285,10 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("displays and works with select fields correctly", () => {
@@ -325,7 +340,10 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/default_access_policy/success");
+    cy.url().should(
+      "include",
+      "/privacy-request/default_access_policy/success",
+    );
   });
 });
 
@@ -398,7 +416,10 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@verifyPrivacyRequest");
 
     // Should navigate to success page
-    cy.url().should("include", "/privacy-request/default_access_policy/success");
+    cy.url().should(
+      "include",
+      "/privacy-request/default_access_policy/success",
+    );
     cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.contains("Request submitted").should("be.visible");
     cy.contains("Thanks for your request").should("be.visible");
