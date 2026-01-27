@@ -24,7 +24,7 @@ export interface AssetReportingQueryParams extends AssetReportingFilters {
 }
 
 const buildFilterParams = (params: AssetReportingFilters) => {
-  const queryParams: Record<string, any> = {};
+  const queryParams: Record<string, string | string[]> = {};
 
   if (params.search) {
     queryParams.search = params.search;
@@ -68,7 +68,7 @@ export const assetReportingApi = baseApi.injectEndpoints({
       providesTags: ["Asset Reporting"],
     }),
 
-    downloadAssetReport: build.query<any, AssetReportingFilters>({
+    downloadAssetReport: build.query<string, AssetReportingFilters>({
       query: (filters) => ({
         url: "plus/asset-reporting/export",
         params: buildFilterParams(filters),

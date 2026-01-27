@@ -2,8 +2,8 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
-import { render } from "../../utils/test-utils";
 import AssetReportingTable from "../../../src/features/asset-reporting/AssetReportingTable";
+import { render } from "../../utils/test-utils";
 
 // Mock the DebouncedSearchInput component
 jest.mock("../../../src/features/common/DebouncedSearchInput", () => ({
