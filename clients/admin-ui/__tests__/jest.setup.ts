@@ -2,8 +2,8 @@ import "@testing-library/jest-dom";
 import "whatwg-fetch";
 
 // Polyfill NodeList.prototype.includes for jsdom compatibility with Ant Design
-if (typeof NodeList !== "undefined" && !NodeList.prototype.includes) {
-  NodeList.prototype.includes = Array.prototype.includes;
+if (typeof NodeList !== "undefined") {
+  (NodeList.prototype as any).includes ??= Array.prototype.includes;
 }
 
 // eslint-disable-next-line global-require
