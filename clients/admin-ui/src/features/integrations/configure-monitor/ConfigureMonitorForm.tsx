@@ -1,3 +1,4 @@
+import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -9,11 +10,16 @@ import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { useGetSystemByFidesKeyQuery } from "~/features/system";
+import { useGetAllUsersQuery } from "~/features/user-management";
+import {
   ClassifyLlmPromptTemplateOptions,
   ConnectionSystemTypeMap,
   ConnectionType,
   EditableMonitorConfig,
-  MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
 
@@ -31,6 +37,7 @@ interface MonitorConfigFormValues {
   llm_model_override?: string;
   prompt_template?: ClassifyLlmPromptTemplateOptions;
   content_classification_enabled?: boolean;
+  stewards?: string[];
 }
 
 const DEFAULT_CLASSIFIER_PARAMS = {
@@ -40,7 +47,7 @@ const DEFAULT_CLASSIFIER_PARAMS = {
 
 const getClassifyParams = (
   isEditing: boolean,
-  monitor: MonitorConfig | undefined,
+  monitor: EditableMonitorConfig | undefined,
   values: MonitorConfigFormValues,
 ) => {
   const baseParams = isEditing
@@ -75,19 +82,21 @@ const getClassifyParams = (
 const ConfigureMonitorForm = ({
   monitor,
   integrationOption,
+  integrationSystem,
   isSubmitting,
   databasesAvailable,
   onClose,
   onAdvance,
   onSubmit,
 }: {
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
+  integrationSystem?: string | null;
   isSubmitting?: boolean;
   databasesAvailable?: boolean;
   onClose: () => void;
-  onAdvance: (monitor: MonitorConfig) => void;
-  onSubmit: (monitor: MonitorConfig) => void;
+  onAdvance: (monitor: EditableMonitorConfig) => void;
+  onSubmit: (monitor: EditableMonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
   const { flags } = useFeatures();
@@ -99,12 +108,26 @@ const ConfigureMonitorForm = ({
    */
   const llmClassifierFeatureEnabled = !!flags.heliosV2;
 
+  const isInfrastructureMonitor =
+    getMonitorType(integrationOption.identifier as ConnectionType) ===
+    MONITOR_TYPES.INFRASTRUCTURE;
+
+  /**
+   * Show the LLM classifier option if the feature is enabled and the monitor is not an infrastructure monitor.
+   * Infrastructure monitors (e.g., Okta) don't use classification.
+   */
+  const showLLMOption = llmClassifierFeatureEnabled && !isInfrastructureMonitor;
+
   const { data: appConfig } = useGetConfigurationSettingsQuery(
     {
       api_set: false,
     },
     { skip: !llmClassifierFeatureEnabled },
   );
+
+  const [form] = Form.useForm<MonitorConfigFormValues>();
+  const { data: systemData, isLoading: isLoadingSystem } =
+    useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
 
   /**
    * Server-side LLM classifier capability.
@@ -133,7 +156,6 @@ const ConfigureMonitorForm = ({
           };
 
     const classifyParams = getClassifyParams(isEditing, monitor, values);
-
     const payload: EditableMonitorConfig = isEditing
       ? {
           ...monitor,
@@ -141,6 +163,7 @@ const ConfigureMonitorForm = ({
           name: values.name,
           shared_config_id: values.shared_config_id,
           classify_params: classifyParams,
+          stewards: values.stewards,
         }
       : {
           ...executionInfo,
@@ -148,6 +171,7 @@ const ConfigureMonitorForm = ({
           shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
           classify_params: classifyParams,
+          stewards: values.stewards,
         };
 
     if (integrationOption.identifier === ConnectionType.DYNAMODB) {
@@ -169,9 +193,26 @@ const ConfigureMonitorForm = ({
   const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
-  const [form] = Form.useForm<MonitorConfigFormValues>();
   const [submittable, setSubmittable] = useState(false);
   const formValues = Form.useWatch([], form);
+
+  const { data: eligibleUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+    exclude_approvers: true,
+  });
+
+  const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
+    label: user.username,
+    value: user.id,
+  }));
+
+  // TODO: build better pattern for async form initialization
+  useEffect(() => {
+    form.resetFields();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingSystem]);
 
   useEffect(() => {
     form
@@ -196,6 +237,8 @@ const ConfigureMonitorForm = ({
     content_classification_enabled: !monitorUsesLlmClassifier
       ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
+    stewards:
+      monitor?.stewards || systemData?.data_stewards?.map(({ id }) => id),
   } as const;
 
   return (
@@ -206,6 +249,7 @@ const ConfigureMonitorForm = ({
       layout="vertical"
       validateTrigger="onChange"
       initialValues={initialValues}
+      disabled={isLoadingSystem} // TODO: establish better pattern and styles for async form initialization
     >
       <Form.Item
         label="Name"
@@ -214,13 +258,21 @@ const ConfigureMonitorForm = ({
       >
         <Input data-testid="input-name" />
       </Form.Item>
+      <Form.Item label="Stewards" name="stewards">
+        <Select
+          mode="multiple"
+          aria-label="Select stewards"
+          data-testid="controlled-select"
+          options={dataStewardOptions}
+        />
+      </Form.Item>
       <Form.Item
         label="Automatic execution frequency"
         name="execution_frequency"
         tooltip="Interval to run the monitor automatically after the start date"
       >
         <Select
-          aria-label="Select Automatic execution frequency"
+          aria-label="Select automatic execution frequency"
           data-testid="controlled-select-execution_frequency"
           options={enumToOptions(MonitorFrequency)}
         />
@@ -244,7 +296,7 @@ const ConfigureMonitorForm = ({
           showTime
         />
       </Form.Item>
-      {llmClassifierFeatureEnabled && (
+      {showLLMOption && (
         <>
           <Form.Item
             name="use_llm_classifier"
@@ -262,7 +314,6 @@ const ConfigureMonitorForm = ({
               checked={form.getFieldValue("use_llm_classifier")}
             />
           </Form.Item>
-
           {form.getFieldValue("use_llm_classifier") && (
             <Form.Item
               name="llm_model_override"

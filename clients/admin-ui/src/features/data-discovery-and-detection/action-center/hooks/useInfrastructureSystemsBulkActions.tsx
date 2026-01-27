@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { SystemStagedResourcesAggregateRecord } from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import {
   useBulkMuteIdentityProviderMonitorResultsMutation,
@@ -12,13 +12,9 @@ import {
 } from "../../discovery-detection.slice";
 import { InfrastructureSystemBulkActionType } from "../constants";
 
-type InfrastructureSystemWithUrn = SystemStagedResourcesAggregateRecord & {
-  urn?: string | null;
-};
-
 interface UseInfrastructureSystemsBulkActionsConfig {
   monitorId: string;
-  getRecordKey: (item: SystemStagedResourcesAggregateRecord) => string;
+  getRecordKey: (item: StagedResourceAPIResponse) => string;
   onSuccess?: () => void;
 }
 
@@ -49,12 +45,10 @@ export const useInfrastructureSystemsBulkActions = ({
   const handleBulkAction = useCallback(
     async (
       action: InfrastructureSystemBulkActionType,
-      selectedItems: InfrastructureSystemWithUrn[],
+      selectedItems: StagedResourceAPIResponse[],
     ) => {
       // Extract URNs from selected items
-      const urns = selectedItems
-        .map((item) => item.urn)
-        .filter((urn): urn is string => !!urn);
+      const urns = selectedItems.map((item) => item.urn);
 
       if (urns.length === 0) {
         toast(

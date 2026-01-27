@@ -15,6 +15,7 @@ import {
   UserConsentPreference,
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
+import { decodeFidesString } from "./fides-string";
 import {
   processExternalConsentValue,
   transformConsentToFidesUserPreference,
@@ -66,6 +67,29 @@ export const consentCookieObjHasSomeConsentSet = (
   return Object.values(consent).some(
     (val: boolean | UserConsentPreference | undefined) => val !== undefined,
   );
+};
+
+/**
+ * Determine whether a TCF cookie has been properly set by checking for
+ * TCF-specific fields. This is different from checking if cookie.consent
+ * has values, because GPC may automatically set cookie.consent for custom
+ * notices without setting TCF-specific fields.
+ *
+ * A "proper" TCF cookie should have both of the following:
+ * - fides_string (TCF TC string or GPP string)
+ * - tcf_version_hash
+ *
+ * Note: We don't check tcf_consent as it's deprecated and may be removed.
+ */
+export const tcfCookieIsProperlySet = (
+  cookie: FidesCookie | undefined,
+): boolean => {
+  if (!cookie || !cookie.fides_string || !cookie.tcf_version_hash) {
+    return false;
+  }
+  const fidesString = decodeFidesString(cookie.fides_string);
+  const hasTCString = !!fidesString.tc || !!fidesString.gpp;
+  return hasTCString;
 };
 
 /**

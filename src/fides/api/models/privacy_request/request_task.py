@@ -10,7 +10,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
+from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship, defer
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -192,6 +192,50 @@ class RequestTask(WorkerTask, Base):
         order_by="RequestTaskSubRequest.created_at",
     )
 
+    @classmethod
+    def query_with_deferred_data(
+        cls, query: Query, defer_access_data: bool = True, defer_erasure_data: bool = True
+    ) -> Query:
+        """
+        Apply defer() to large JSON columns to prevent OOM errors when only metadata is needed.
+
+        This should be used whenever loading RequestTask objects for status checks, queuing,
+        or other operations that don't need the actual data payloads.
+
+        Args:
+            query: The base query to apply deferred loading to
+            defer_access_data: Whether to defer loading _access_data (default True)
+            defer_erasure_data: Whether to defer loading _data_for_erasures (default True)
+
+        Returns:
+            Query with deferred large columns
+
+        Example:
+            # Defer all large columns
+            query = RequestTask.query_with_deferred_data(
+                db.query(RequestTask).filter(RequestTask.status == ExecutionLogStatus.pending)
+            )
+
+            # Don't defer erasure data if you need to update it
+            query = RequestTask.query_with_deferred_data(
+                db.query(RequestTask).filter(...),
+                defer_erasure_data=False
+            )
+        """
+        # Always defer these columns - they're large and rarely needed for task orchestration
+        query = query.options(
+            defer(cls.collection),
+            defer(cls.traversal_details),
+        )
+
+        # Conditionally defer data columns
+        if defer_access_data:
+            query = query.options(defer(cls._access_data))
+        if defer_erasure_data:
+            query = query.options(defer(cls._data_for_erasures))
+
+        return query
+
     @property
     def request_task_address(self) -> CollectionAddress:
         """Convert the collection_address into Collection Address format"""
@@ -253,12 +297,13 @@ class RequestTask(WorkerTask, Base):
 
     def get_pending_downstream_tasks(self, db: Session) -> Query:
         """Returns the immediate downstream task objects that are still pending"""
-        return db.query(RequestTask).filter(
+        base_query = db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
             RequestTask.collection_address.in_(self.downstream_tasks or []),
             RequestTask.status == ExecutionLogStatus.pending,
         )
+        return RequestTask.query_with_deferred_data(base_query)
 
     def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
         """Returns True if upstream tasks are complete and the current Request Task
@@ -289,12 +334,13 @@ class RequestTask(WorkerTask, Base):
 
     def upstream_tasks_objects(self, db: Session) -> Query:
         """Returns Request Task objects that are upstream of the current Request Task"""
-        upstream_tasks: Query = db.query(RequestTask).filter(
+        # Defer loading large JSON columns - we only need status/metadata to check if tasks are complete
+        base_query = db.query(RequestTask).filter(
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.collection_address.in_(self.upstream_tasks or []),
             RequestTask.action_type == self.action_type,
         )
-        return upstream_tasks
+        return RequestTask.query_with_deferred_data(base_query)
 
     def request_task_running(self, should_log: bool = False) -> bool:
         """Returns a rough measure if the Request Task is already running -
