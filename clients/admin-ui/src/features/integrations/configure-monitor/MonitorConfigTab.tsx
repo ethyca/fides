@@ -25,7 +25,7 @@ const DATA_DISCOVERY_MONITOR_COPY = `A data discovery monitor observes configure
 
 const WEBSITE_MONITOR_COPY = `Configure your website monitor to identify active ad tech vendors and tracking technologies across your site. This monitor will analyze selected pages for vendor activity, compliance with privacy requirements, and data collection practices. Set your preferences below to customize the monitor frequency and scan locations.`;
 
-const OKTA_MONITOR_COPY = `Configure your SSO provider monitor to detect and map systems within your infrastructure. This monitor will analyze connected systems to identify their activity and ensure accurate representation in your data map. Set your preferences below to customize the monitor&apos;s scan frequency and scope. To learn more about monitors, view our docs here.`;
+const OKTA_MONITOR_COPY = `Configure your identity provider monitor to detect and map systems within your infrastructure. This monitor will analyze connected systems to identify their activity and ensure accurate representation in your data map. Set your preferences below to customize the monitor's scan frequency and scope. To learn more about monitors, view our docs here.`;
 
 const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
