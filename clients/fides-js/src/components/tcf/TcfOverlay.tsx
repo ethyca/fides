@@ -274,6 +274,8 @@ export const TcfOverlay = () => {
       loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
 
       // Set the locale to the best locale
+      window.Fides.locale = bestLocale;
+      setFidesGlobal(window.Fides as InitializedFidesGlobal);
       setCurrentLocale(bestLocale);
 
       const shouldUseEnglish = bestLocale === DEFAULT_LOCALE;
