@@ -9,6 +9,10 @@ import { useEffect, useState } from "react";
 import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
+import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
@@ -103,6 +107,16 @@ const ConfigureMonitorForm = ({
    * This flag specifically gates the LLM-based classification capabilities.
    */
   const llmClassifierFeatureEnabled = !!flags.heliosV2;
+
+  const isInfrastructureMonitor =
+    getMonitorType(integrationOption.identifier as ConnectionType) ===
+    MONITOR_TYPES.INFRASTRUCTURE;
+
+  /**
+   * Show the LLM classifier option if the feature is enabled and the monitor is not an infrastructure monitor.
+   * Infrastructure monitors (e.g., Okta) don't use classification.
+   */
+  const showLLMOption = llmClassifierFeatureEnabled && !isInfrastructureMonitor;
 
   const { data: appConfig } = useGetConfigurationSettingsQuery(
     {
@@ -282,7 +296,7 @@ const ConfigureMonitorForm = ({
           showTime
         />
       </Form.Item>
-      {llmClassifierFeatureEnabled && (
+      {showLLMOption && (
         <>
           <Form.Item
             name="use_llm_classifier"
