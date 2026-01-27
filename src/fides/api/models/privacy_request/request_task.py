@@ -10,7 +10,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship, defer
+from sqlalchemy.orm import Query, RelationshipProperty, Session, defer, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
