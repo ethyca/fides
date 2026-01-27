@@ -1,5 +1,6 @@
 import {
   ColumnsType,
+  CUSTOM_TAG_COLOR,
   formatIsoLocation,
   isoStringToEntry,
   Tag,
@@ -14,6 +15,7 @@ import { TagExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { convertToAntFilters } from "~/features/common/utils";
+import { DiscoveryStatusDisplayNames } from "~/features/data-discovery-and-detection/action-center/constants";
 import { Asset, ConsentStatus, PrivacyNoticeRegion } from "~/types/api";
 
 import type { AssetReportingFilters } from "../asset-reporting.slice";
@@ -34,25 +36,15 @@ enum AssetReportingColumnKeys {
 
 const CONSENT_STATUS_COLORS: Record<
   ConsentStatus,
-  "success" | "error" | "warning" | "default" | "caution" | undefined
+  CUSTOM_TAG_COLOR | undefined
 > = {
-  [ConsentStatus.WITH_CONSENT]: "success",
-  [ConsentStatus.WITHOUT_CONSENT]: "error",
-  [ConsentStatus.PRE_CONSENT]: "warning",
-  [ConsentStatus.EXEMPT]: "default",
+  [ConsentStatus.WITH_CONSENT]: CUSTOM_TAG_COLOR.SUCCESS,
+  [ConsentStatus.WITHOUT_CONSENT]: CUSTOM_TAG_COLOR.ERROR,
+  [ConsentStatus.PRE_CONSENT]: CUSTOM_TAG_COLOR.WARNING,
+  [ConsentStatus.EXEMPT]: CUSTOM_TAG_COLOR.DEFAULT,
   [ConsentStatus.NOT_APPLICABLE]: undefined,
-  [ConsentStatus.UNKNOWN]: "caution",
-  [ConsentStatus.CMP_ERROR]: "error",
-};
-
-const CONSENT_STATUS_LABELS: Record<ConsentStatus, string> = {
-  [ConsentStatus.WITH_CONSENT]: "With consent",
-  [ConsentStatus.WITHOUT_CONSENT]: "Without consent",
-  [ConsentStatus.PRE_CONSENT]: "Pre-consent",
-  [ConsentStatus.EXEMPT]: "Exempt",
-  [ConsentStatus.NOT_APPLICABLE]: "Not applicable",
-  [ConsentStatus.UNKNOWN]: "Unknown",
-  [ConsentStatus.CMP_ERROR]: "CMP error",
+  [ConsentStatus.UNKNOWN]: CUSTOM_TAG_COLOR.CAUTION,
+  [ConsentStatus.CMP_ERROR]: CUSTOM_TAG_COLOR.ERROR,
 };
 
 const createExpandCollapseHandler =
@@ -176,7 +168,7 @@ export const useAssetReportingTable = ({
         render: (status: ConsentStatus) =>
           status ? (
             <Tag color={CONSENT_STATUS_COLORS[status]}>
-              {CONSENT_STATUS_LABELS[status]}
+              {DiscoveryStatusDisplayNames[status]}
             </Tag>
           ) : (
             "N/A"
@@ -188,7 +180,8 @@ export const useAssetReportingTable = ({
             : null,
         filters: convertToAntFilters(
           filterOptions?.consent_status,
-          (status) => CONSENT_STATUS_LABELS[status as ConsentStatus] || status,
+          (status) =>
+            DiscoveryStatusDisplayNames[status as ConsentStatus] || status,
         ),
         filteredValue: columnFilters?.consent_status || null,
       });
