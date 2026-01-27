@@ -13,7 +13,7 @@ describe("Privacy Request with custom fields with query params", () => {
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
         cy.getByTestId("card").contains("Access your data").click();
-        cy.url().should("include", "/privacy-request/0");
+        cy.url().should("include", "/privacy-request/default_access_policy");
         cy.getByTestId("privacy-request-layout").should("be.visible");
         cy.getByTestId("privacy-request-form")
           .find("#name")
@@ -29,7 +29,7 @@ describe("Privacy Request with custom fields with query params", () => {
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
         cy.getByTestId("card").contains("Access your data").click();
-        cy.url().should("include", "/privacy-request/0");
+        cy.url().should("include", "/privacy-request/default_access_policy");
         cy.getByTestId("privacy-request-layout").should("be.visible");
 
         cy.getByTestId("privacy-request-form")
@@ -47,7 +47,7 @@ describe("Privacy Request with custom fields with query params", () => {
             "123",
           );
         });
-        cy.url().should("include", "/privacy-request/0/success");
+        cy.url().should("include", "/privacy-request/default_access_policy/success");
       },
     );
   });
@@ -58,7 +58,7 @@ describe("Privacy Request with custom fields with query params", () => {
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
         cy.getByTestId("card").contains("Access your data").click();
-        cy.url().should("include", "/privacy-request/0");
+        cy.url().should("include", "/privacy-request/default_access_policy");
         cy.getByTestId("privacy-request-layout").should("be.visible");
 
         cy.getByTestId("privacy-request-form")
@@ -76,7 +76,7 @@ describe("Privacy Request with custom fields with query params", () => {
             customPrivacyRequestFields.another_custom_app_id.value,
           ).to.equal("12345");
         });
-        cy.url().should("include", "/privacy-request/0/success");
+        cy.url().should("include", "/privacy-request/default_access_policy/success");
       },
     );
   });
@@ -93,7 +93,7 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
-    cy.url().should("include", "/privacy-request/");
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     // Check that the data_categories multiselect field is displayed
@@ -110,7 +110,7 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
-    cy.url().should("include", "/privacy-request/");
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
@@ -156,7 +156,7 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
-    cy.url().should("include", "/privacy-request/");
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
@@ -199,15 +199,14 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/");
-    cy.url().should("include", "/success");
+    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
   });
 
   it("handles empty multiselect fields correctly", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
-    cy.url().should("include", "/privacy-request/");
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
@@ -232,15 +231,14 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/");
-    cy.url().should("include", "/success");
+    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
   });
 
   it("works correctly with erasure policy form", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
-    cy.url().should("include", "/privacy-request/");
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
@@ -275,15 +273,14 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/");
-    cy.url().should("include", "/success");
+    cy.url().should("include", "/privacy-request/default_erasure_policy/success");
   });
 
   it("displays and works with select fields correctly", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Access your data").click();
-    cy.url().should("include", "/privacy-request/0");
+    cy.url().should("include", "/privacy-request/default_access_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
@@ -328,7 +325,7 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
-    cy.url().should("include", "/privacy-request/0/success");
+    cy.url().should("include", "/privacy-request/default_access_policy/success");
   });
 });
 
@@ -356,7 +353,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.getByTestId("card").contains("Access your data").click();
 
     // Should be on form page
-    cy.url().should("include", "/privacy-request/0");
+    cy.url().should("include", "/privacy-request/default_access_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.getByTestId("privacy-request-form").should("be.visible");
 
@@ -369,7 +366,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@postPrivacyRequest");
 
     // Should navigate to verification page
-    cy.url().should("include", "/privacy-request/0/verify");
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
     cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.getByTestId("verification-form").should("be.visible");
     cy.contains("Enter verification code").should("be.visible");
@@ -389,7 +386,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
-    cy.url().should("include", "/privacy-request/0/verify");
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
     cy.getByTestId("verification-form").should("be.visible");
 
     // Enter verification code
@@ -401,7 +398,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@verifyPrivacyRequest");
 
     // Should navigate to success page
-    cy.url().should("include", "/privacy-request/0/success");
+    cy.url().should("include", "/privacy-request/default_access_policy/success");
     cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.contains("Request submitted").should("be.visible");
     cy.contains("Thanks for your request").should("be.visible");
@@ -414,10 +411,10 @@ describe("Privacy Request Verification Flow", () => {
     });
 
     // Try to visit verification page directly
-    cy.visit("/privacy-request/0/verify");
+    cy.visit("/privacy-request/default_access_policy/verify");
 
     // Should redirect to form page
-    cy.url().should("include", "/privacy-request/0");
+    cy.url().should("include", "/privacy-request/default_access_policy");
     cy.url().should("not.include", "/verify");
     cy.getByTestId("privacy-request-form").should("be.visible");
   });
@@ -446,7 +443,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
-    cy.url().should("include", "/privacy-request/0/verify");
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
     cy.getByTestId("verification-form").should("be.visible");
 
     // Enter invalid code
@@ -478,14 +475,14 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
-    cy.url().should("include", "/privacy-request/0/verify");
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
     cy.getByTestId("verification-form").should("be.visible");
 
     // Click back button
     cy.get("button").contains("← Back").click();
 
     // Should navigate back to form page
-    cy.url().should("include", "/privacy-request/0");
+    cy.url().should("include", "/privacy-request/default_access_policy");
     cy.url().should("not.include", "/verify");
     cy.getByTestId("privacy-request-form").should("be.visible");
   });
@@ -504,7 +501,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
-    cy.url().should("include", "/privacy-request/0/verify");
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
     cy.getByTestId("verification-form").should("be.visible");
 
     // Try to enter non-numeric code
