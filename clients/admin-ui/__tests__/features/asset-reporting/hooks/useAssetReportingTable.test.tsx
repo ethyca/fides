@@ -61,12 +61,9 @@ jest.mock(
 const mockUseFeatures = jest.fn(() => ({
   flags: { assetConsentStatusLabels: true },
 }));
-jest.mock(
-  "../../../../src/features/common/features/features.slice",
-  () => ({
-    useFeatures: () => mockUseFeatures(),
-  }),
-);
+jest.mock("../../../../src/features/common/features/features.slice", () => ({
+  useFeatures: () => mockUseFeatures(),
+}));
 
 // Mock useTaxonomies hook
 const mockDataUses = [
@@ -78,7 +75,7 @@ jest.mock("../../../../src/features/common/hooks/useTaxonomies", () => ({
   default: jest.fn(() => ({
     getDataUses: jest.fn(() => mockDataUses),
     getDataUseByKey: jest.fn((key: string) =>
-      mockDataUses.find((du) => du.fides_key === key)
+      mockDataUses.find((du) => du.fides_key === key),
     ),
     getDataUseDisplayName: jest.fn((key: string) => {
       const displayNames: Record<string, string> = {

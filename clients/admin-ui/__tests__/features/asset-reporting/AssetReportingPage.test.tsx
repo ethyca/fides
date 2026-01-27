@@ -59,7 +59,13 @@ jest.mock(
 // Mock the child components
 jest.mock("../../../src/features/common/FixedLayout", () => ({
   __esModule: true,
-  default: ({ children, title }: { children: React.ReactNode; title: string }) => (
+  default: ({
+    children,
+    title,
+  }: {
+    children: React.ReactNode;
+    title: string;
+  }) => (
     <div data-testid="fixed-layout" data-title={title}>
       {children}
     </div>
@@ -82,13 +88,10 @@ jest.mock("../../../src/features/common/PageHeader", () => ({
   ),
 }));
 
-jest.mock(
-  "../../../src/features/asset-reporting/AssetReportingTable",
-  () => ({
-    __esModule: true,
-    default: () => <div data-testid="asset-reporting-table-mock" />,
-  }),
-);
+jest.mock("../../../src/features/asset-reporting/AssetReportingTable", () => ({
+  __esModule: true,
+  default: () => <div data-testid="asset-reporting-table-mock" />,
+}));
 
 // Import the page component after mocks
 // eslint-disable-next-line import/first
@@ -123,7 +126,9 @@ describe("AssetReportingPage", () => {
   it("renders the asset reporting table", () => {
     render(<AssetReportingPage />);
 
-    expect(screen.getByTestId("asset-reporting-table-mock")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("asset-reporting-table-mock"),
+    ).toBeInTheDocument();
   });
 
   it("calls downloadReport with current filters when export button is clicked", () => {
@@ -139,8 +144,9 @@ describe("AssetReportingPage", () => {
 
   it("passes filters to downloadReport when they exist", () => {
     // Update the mock to include filters
-    const useAssetReportingTableMock = require("../../../src/features/asset-reporting/hooks/useAssetReportingTable")
-      .useAssetReportingTable as jest.Mock;
+    const useAssetReportingTableMock =
+      require("../../../src/features/asset-reporting/hooks/useAssetReportingTable")
+        .useAssetReportingTable as jest.Mock;
 
     useAssetReportingTableMock.mockReturnValue({
       columns: [],
@@ -168,8 +174,9 @@ describe("AssetReportingPage", () => {
 
 describe("AssetReportingPage - Loading States", () => {
   it("shows loading state on export button when downloading", () => {
-    const useAssetReportingDownloadMock = require("../../../src/features/asset-reporting/hooks/useAssetReportingDownload")
-      .default as jest.Mock;
+    const useAssetReportingDownloadMock =
+      require("../../../src/features/asset-reporting/hooks/useAssetReportingDownload")
+        .default as jest.Mock;
 
     useAssetReportingDownloadMock.mockReturnValue({
       downloadReport: mockDownloadReport,
