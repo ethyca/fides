@@ -1902,9 +1902,9 @@ class TestConsentManualTaskIntegration:
             )
             .first()
         )
-        assert (
-            instance is None
-        ), "ManualTaskInstance should NOT be created when condition is false"
+        assert instance is None, (
+            "ManualTaskInstance should NOT be created when condition is false"
+        )
 
 
 class TestConsentEmailStep:
