@@ -19,7 +19,7 @@ const useAssetReportingDownload = () => {
       );
       toast({ status: "error", description: message });
     } else {
-      const csvBlob = new Blob([result.data], { type: "text/csv" });
+      const csvBlob = new Blob([result.data ?? ""], { type: "text/csv" });
       const csvUrl = window.URL.createObjectURL(csvBlob);
       const a = document.createElement("a");
       a.href = csvUrl;
