@@ -72,38 +72,32 @@ def evaluate_policy_conditions(
             Rule.action_type == action_type
         )
 
-    # TODO: This is where the actual priority sort should be done, looking for
-    # further information on priority.
-    policy_conditions = query.order_by(Policy.created_at).all()
+    # There should only be one policy condition per action type
+    policy_condition = query.one_or_none()
 
-    if not policy_conditions:
+    if not policy_condition or not policy_condition.condition_tree:
         return _get_default_policy_result(db, privacy_request, action_type)
 
-    evaluator = ConditionEvaluator(db)
-    data_transformer = PrivacyRequestDataTransformer(privacy_request)
+    try:
+        root_condition = ConditionTypeAdapter.validate_python(
+            policy_condition.condition_tree
+        )
+        field_addresses = extract_field_addresses(root_condition)
+        data_transformer = PrivacyRequestDataTransformer(privacy_request)
+        evaluation_data = data_transformer.to_evaluation_data(field_addresses)
 
-    for policy_condition in policy_conditions:
-        if not policy_condition.condition_tree:
-            continue
+        evaluator = ConditionEvaluator(db)
+        evaluation_result = evaluator.evaluate_rule(root_condition, evaluation_data)
 
-        try:
-            root_condition = ConditionTypeAdapter.validate_python(
-                policy_condition.condition_tree
+        if evaluation_result.result:
+            logger.info(f"Policy {policy_condition.policy.key} matched")
+            return PolicyEvaluationResult(
+                policy=policy_condition.policy,
+                evaluation_result=evaluation_result,
+                is_default=False,
             )
-            field_addresses = extract_field_addresses(root_condition)
-            evaluation_data = data_transformer.to_evaluation_data(field_addresses)
-            evaluation_result = evaluator.evaluate_rule(root_condition, evaluation_data)
-
-            if evaluation_result.result:
-                logger.info(f"Policy {policy_condition.policy.key} matched")
-                return PolicyEvaluationResult(
-                    policy=policy_condition.policy,
-                    evaluation_result=evaluation_result,
-                    is_default=False,
-                )
-        except Exception as e:
-            logger.error(f"Error evaluating policy {policy_condition.policy.key}: {e}")
-            continue
+    except Exception as e:
+        logger.error(f"Error evaluating policy {policy_condition.policy.key}: {e}")
 
     return _get_default_policy_result(db, privacy_request, action_type)
 
@@ -111,34 +105,22 @@ def evaluate_policy_conditions(
 def _get_default_policy_result(
     db: Session, privacy_request: PrivacyRequest, action_type: Optional[ActionType] = None
 ) -> PolicyEvaluationResult:
-    """Get default policy (first policy without conditions).
+    """Get default policy (from privacy request).
 
     Args:
         db: Database session
         privacy_request: The privacy request
         action_type: Optional action type to filter default policy
     """
-    query = (
-        db.query(Policy)
-        .outerjoin(PolicyCondition, Policy.id == PolicyCondition.policy_id)
-        .filter(PolicyCondition.id.is_(None))
-    )
+    if not privacy_request.policy:
+        raise PolicyEvaluationError("No default policy configured for privacy request")
 
-    # Filter by action type if provided
-    if action_type:
-        query = query.join(Rule, Policy.id == Rule.policy_id).filter(
-            Rule.action_type == action_type
+    # If action_type is specified, verify the privacy request's policy supports it
+    if action_type and action_type not in privacy_request.policy.get_all_action_types():
+        raise PolicyEvaluationError(
+            f"Privacy request policy does not support action type: {action_type}"
         )
 
-    default_policy = query.order_by(Policy.created_at).first()
-
-    if not default_policy:
-        if privacy_request.policy:
-            return PolicyEvaluationResult(
-                policy=privacy_request.policy, evaluation_result=None, is_default=True
-            )
-        raise PolicyEvaluationError("No default policy configured")
-
     return PolicyEvaluationResult(
-        policy=default_policy, evaluation_result=None, is_default=True
+        policy=privacy_request.policy, evaluation_result=None, is_default=True
     )

@@ -54,17 +54,6 @@ def _create_request(db: Session, policy: Policy, location: str) -> PrivacyReques
 class TestPolicySelection:
     """Test policy selection logic"""
 
-    def test_returns_first_matching_policy(self, db: Session, default_policy: Policy):
-        """First matching policy wins"""
-        _create_policy_with_condition(db, "first", "US")
-        _create_policy_with_condition(db, "second", "US")
-
-        pr = _create_request(db, default_policy, "US")
-        result = evaluate_policy_conditions(db, pr)
-
-        assert result.policy.key == "first"
-        assert not result.is_default
-
     @pytest.mark.parametrize(
         "location,expected",
         [("US", "us_policy"), ("FR", "fr_policy"), ("CA", "default_policy")],
@@ -149,23 +138,36 @@ class TestPolicyConvenienceFields:
 class TestEdgeCases:
     """Test edge cases"""
 
-    def test_skips_empty_condition_tree(self, db: Session, default_policy: Policy):
-        """Skips policies with None condition_tree"""
+    def test_empty_condition_tree_uses_default(self, db: Session, default_policy: Policy):
+        """Falls back to default if condition_tree is None"""
         empty = Policy.create(db=db, data={"name": "Empty", "key": "empty"})
         PolicyCondition.create(
             db=db, data={"policy_id": empty.id, "condition_tree": None}
         )
 
-        matching = _create_policy_with_condition(db, "matching", "US")
         pr = _create_request(db, default_policy, "US")
-
         result = evaluate_policy_conditions(db, pr)
-        assert result.policy.key == "matching"
 
-    def test_continues_on_evaluation_error(self, db: Session, default_policy: Policy):
-        """Continues to next policy if evaluation fails"""
-        working = _create_policy_with_condition(db, "working", "US")
+        assert result.policy.key == "default_policy"
+        assert result.is_default
+
+    def test_evaluation_error_uses_default(self, db: Session, default_policy: Policy):
+        """Falls back to default if evaluation fails"""
+        error_policy = Policy.create(db=db, data={"name": "Error", "key": "error"})
+        PolicyCondition.create(
+            db=db,
+            data={
+                "policy_id": error_policy.id,
+                "condition_tree": ConditionLeaf(
+                    field_address="privacy_request.nonexistent_field",
+                    operator=Operator.eq,
+                    value="test",
+                ).model_dump(),
+            },
+        )
+
         pr = _create_request(db, default_policy, "US")
-
         result = evaluate_policy_conditions(db, pr)
-        assert result.policy.key == "working"
+
+        assert result.policy.key == "default_policy"
+        assert result.is_default
