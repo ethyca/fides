@@ -21,7 +21,12 @@ import NextLink from "next/link";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import { formatDate, nFormatter, pluralize } from "~/features/common/utils";
+import {
+  formatDate,
+  formatUser,
+  nFormatter,
+  pluralize,
+} from "~/features/common/utils";
 import ConnectionTypeLogo, {
   ConnectionLogoKind,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -161,7 +166,7 @@ export const MonitorResult = ({
                 }}
               >
                 {stewards.map((steward) => (
-                  <Tooltip title={steward.username} key={steward.id}>
+                  <Tooltip title={formatUser(steward)} key={steward.id}>
                     <Avatar style={{ background: palette.FIDESUI_MINOS }}>
                       {steward.first_name?.charAt(0)}
                       {steward.last_name?.charAt(0)}

@@ -1,6 +1,7 @@
 import { Flex, Form, Select } from "fidesui";
 
 import SearchInput from "~/features/common/SearchInput";
+import { formatUser } from "~/features/common/utils";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetAllUsersQuery } from "~/features/user-management";
@@ -34,7 +35,7 @@ const MonitorListSearchForm = ({
     });
 
   const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: `${user.first_name} ${user.last_name}`,
+    label: formatUser(user),
     value: user.id,
   }));
 

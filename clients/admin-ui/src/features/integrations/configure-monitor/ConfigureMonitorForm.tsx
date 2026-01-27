@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
+import { formatUser } from "~/features/common/utils";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   getMonitorType,
@@ -204,7 +205,7 @@ const ConfigureMonitorForm = ({
   });
 
   const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: `${user.first_name} ${user.last_name}`,
+    label: formatUser(user),
     value: user.id,
   }));
 
