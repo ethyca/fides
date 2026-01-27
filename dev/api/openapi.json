@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.77.2b1.post0.dev6"
+    "version": "2.77.2b1.post0.dev8"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18362,8 +18362,27 @@
           "Health"
         ],
         "summary": "Health",
-        "description": "Confirm that the API is running and healthy.",
+        "description": "Confirm that the API is running and healthy.\n\nIf include_cache is True, the cache health will be included in the response.\nIf include_cache is False, the cache health check will be skipped and set to \"skipped\".",
         "operationId": "health_health_get",
+        "parameters": [
+          {
+            "name": "include_cache",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Include Cache"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -18381,7 +18400,6 @@
             }
           },
           "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "example": {
@@ -18390,6 +18408,17 @@
                     "version": "1.0.0",
                     "cache": "unhealthy"
                   }
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -21512,7 +21541,8 @@
             "enum": [
               "healthy",
               "unhealthy",
-              "no cache configured"
+              "no cache configured",
+              "skipped"
             ],
             "title": "Cache"
           }
