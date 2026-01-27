@@ -1,8 +1,14 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 from uuid import UUID
 
 from pydantic import BaseModel
+
+from fides.api.task.conditional_dependencies.schemas import (
+    Condition,
+    ConditionGroup,
+    ConditionLeaf,
+)
 
 
 # pylint: disable=too-many-return-statements
@@ -109,3 +115,41 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
     # Set the final value
     current[final_key] = value
     return result
+
+
+def extract_field_addresses(condition: Union[ConditionLeaf, ConditionGroup]) -> set[str]:
+    """
+    Recursively extracts all field addresses from a condition tree.
+
+    Args:
+        condition: The condition tree (leaf or group) to extract field addresses from
+
+    Returns:
+        Set of unique field addresses referenced in the condition tree
+
+    Example:
+        >>> leaf = ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18)
+        >>> extract_field_addresses(leaf)
+        {'user.age'}
+
+        >>> group = ConditionGroup(
+        ...     logical_operator=GroupOperator.and_,
+        ...     conditions=[
+        ...         ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18),
+        ...         ConditionLeaf(field_address="user.verified", operator=Operator.eq, value=True)
+        ...     ]
+        ... )
+        >>> extract_field_addresses(group)
+        {'user.age', 'user.verified'}
+    """
+    field_addresses: set[str] = set()
+
+    if isinstance(condition, ConditionLeaf):
+        # Leaf condition - add its field address
+        field_addresses.add(condition.field_address)
+    elif isinstance(condition, ConditionGroup):
+        # Group condition - recursively process all sub-conditions
+        for sub_condition in condition.conditions:
+            field_addresses.update(extract_field_addresses(sub_condition))
+
+    return field_addresses
