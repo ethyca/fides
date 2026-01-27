@@ -54,11 +54,7 @@ export const useMonitorConfigTable = ({
     connection_config_key: integration.key,
   });
 
-  const {
-    isLoading,
-    isFetching,
-    data: response,
-  } = monitorsQuery;
+  const { isLoading, isFetching, data: response } = monitorsQuery;
 
   const antTableConfig = useMemo(
     () => ({
