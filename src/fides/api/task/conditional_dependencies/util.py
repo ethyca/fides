@@ -117,38 +117,38 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
     return result
 
 
-def extract_field_addresses(condition: Union[ConditionLeaf, ConditionGroup]) -> set[str]:
+def extract_field_addresses(
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+) -> set[str]:
     """
     Recursively extracts all field addresses from a condition tree.
 
+    Handles both Pydantic models and dict/JSONB representations.
+
     Args:
-        condition: The condition tree (leaf or group) to extract field addresses from
+        condition: Condition tree (Pydantic model or dict) to extract field addresses from
 
     Returns:
         Set of unique field addresses referenced in the condition tree
-
-    Example:
-        >>> leaf = ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18)
-        >>> extract_field_addresses(leaf)
-        {'user.age'}
-
-        >>> group = ConditionGroup(
-        ...     logical_operator=GroupOperator.and_,
-        ...     conditions=[
-        ...         ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18),
-        ...         ConditionLeaf(field_address="user.verified", operator=Operator.eq, value=True)
-        ...     ]
-        ... )
-        >>> extract_field_addresses(group)
-        {'user.age', 'user.verified'}
     """
+    if not condition:
+        return set()
+
     field_addresses: set[str] = set()
 
+    # Handle dict/JSONB format
+    if isinstance(condition, dict):
+        if "field_address" in condition:
+            field_addresses.add(condition["field_address"])
+        if "conditions" in condition:
+            for sub in condition["conditions"]:
+                field_addresses.update(extract_field_addresses(sub))
+        return field_addresses
+
+    # Handle Pydantic models
     if isinstance(condition, ConditionLeaf):
-        # Leaf condition - add its field address
         field_addresses.add(condition.field_address)
     elif isinstance(condition, ConditionGroup):
-        # Group condition - recursively process all sub-conditions
         for sub_condition in condition.conditions:
             field_addresses.update(extract_field_addresses(sub_condition))
 
