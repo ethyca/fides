@@ -40,7 +40,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   attributes,
   dismissable,
   onOpen,
-  onClose,
   bannerIsOpen,
   children,
   onVendorPageClick,
@@ -115,7 +114,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 label: "Close banner",
               });
               closeButton.onClick();
-              onClose();
             }}
             hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />

@@ -1538,11 +1538,15 @@ class PrivacyRequest(
         """
         if self.erasure_tasks.count():
             # For DSR 3.0
-            return {
-                t.collection_address: t.rows_masked
-                for t in self.erasure_tasks.filter(
+            # Defer large columns since we only need metadata (collection_address, rows_masked, status)
+            tasks_query = RequestTask.query_with_deferred_data(
+                self.erasure_tasks.filter(
                     RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
                 )
+            )
+            return {
+                t.collection_address: t.rows_masked
+                for t in tasks_query
                 if not t.is_root_task and not t.is_terminator_task
             }
 
@@ -1564,11 +1568,15 @@ class PrivacyRequest(
         """
         if self.consent_tasks.count():
             # For DSR 3.0
-            return {
-                t.collection_address: t.consent_sent
-                for t in self.consent_tasks.filter(
+            # Defer large columns since we only need metadata (collection_address, consent_sent, status)
+            tasks_query = RequestTask.query_with_deferred_data(
+                self.consent_tasks.filter(
                     RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
                 )
+            )
+            return {
+                t.collection_address: t.consent_sent
+                for t in tasks_query
                 if not t.is_root_task and not t.is_terminator_task
             }
         # DSR 2.0 does not cache the results so nothing to do here
