@@ -41,12 +41,17 @@ const ErrorPage = ({
   const showActions = (actions && actions.length > 0) || showReload;
 
   return (
-    <Flex vertical align="center" justify="center" className="h-screen">
+    <Flex
+      vertical
+      align="center"
+      justify="center"
+      className="h-screen"
+      data-testid="error-page-result"
+    >
       <Result
         status="error"
         icon={<ErrorImage status={status} />}
         title={`Error ${status}`}
-        data-testid="error-page-result"
         subTitle={
           <>
             <Typography.Paragraph type="secondary">

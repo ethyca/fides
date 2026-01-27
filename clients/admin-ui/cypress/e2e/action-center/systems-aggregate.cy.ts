@@ -286,9 +286,7 @@ describe("Action center system aggregate results", () => {
       cy.getByTestId("error-page-result").should("exist");
       cy.getByTestId("error-page-result").within(() => {
         cy.contains("Error 500").should("exist");
-        cy.contains(
-          "A problem occurred while fetching your monitor results",
-        ).should("exist");
+        cy.contains("Internal server error").should("exist");
         cy.contains("Return to action center").should("exist");
         cy.contains("Reload").should("exist");
       });
