@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   ChakraBox as Box,
   ChakraVStack as VStack,
@@ -7,12 +8,15 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import logoImage from "~/../public/logo-white.svg";
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
 import { logout, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
+import { selectErrorCount } from "~/features/error/error.slice";
+import ErrorHistoryDrawer from "~/features/error/ErrorHistoryDrawer";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import AccountDropdownMenu from "./AccountDropdownMenu";
@@ -30,10 +34,14 @@ export const UnconnectedMainSideNav = ({
   groups,
   active,
   handleLogout,
+  errorCount,
+  onOpenErrorHistory,
 }: {
   groups: NavGroup[];
   active: ActiveNav | undefined;
   handleLogout: any;
+  errorCount?: number;
+  onOpenErrorHistory?: () => void;
 }) => {
   const navMenuItems = groups
     .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
@@ -155,6 +163,24 @@ export const UnconnectedMainSideNav = ({
             icon={<Icons.Help />}
             aria-label="Help"
           />
+          {/* Error history button - shows badge when errors exist */}
+          <Badge
+            count={errorCount}
+            classNames={{
+              indicator: "shadow-none",
+            }}
+            size="small"
+            offset={[-5, 5]}
+          >
+            <Button
+              type="primary"
+              className="border-none bg-transparent hover:!bg-gray-700"
+              icon={<Icons.Debug />}
+              aria-label="Error history"
+              onClick={onOpenErrorHistory}
+              data-testid="error-history-btn"
+            />
+          </Badge>
           <div className="inline-block">
             <AccountDropdownMenu onLogout={handleLogout} />
           </div>
@@ -170,6 +196,10 @@ const MainSideNav = () => {
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
   const plusQuery = useGetHealthQuery();
+
+  // Error history drawer state
+  const [errorDrawerOpen, setErrorDrawerOpen] = useState(false);
+  const errorCount = useAppSelector(selectErrorCount);
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -194,7 +224,20 @@ const MainSideNav = () => {
     );
   }
 
-  return <UnconnectedMainSideNav {...nav} handleLogout={handleLogout} />;
+  return (
+    <>
+      <UnconnectedMainSideNav
+        {...nav}
+        handleLogout={handleLogout}
+        errorCount={errorCount}
+        onOpenErrorHistory={() => setErrorDrawerOpen(true)}
+      />
+      <ErrorHistoryDrawer
+        open={errorDrawerOpen}
+        onClose={() => setErrorDrawerOpen(false)}
+      />
+    </>
+  );
 };
 
 export default MainSideNav;
