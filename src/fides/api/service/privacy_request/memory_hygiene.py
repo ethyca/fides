@@ -4,8 +4,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 
-GC_COUNT = 3
-
 def cleanup_dsr_memory(
     session: Session,
     privacy_request_id: str,
@@ -25,8 +23,8 @@ def cleanup_dsr_memory(
     Cleanup steps:
     1. Checks if in exception context (skips expunge if so)
     2. Expunges session identity map to release all ORM objects
-    3. Runs garbage collection 3x to free memory
-    4. Logs connection pool diagnostics
+    3. Runs garbage collection once to free memory
+    4. Logs connection pool diagnostics (best-effort)
 
     IMPORTANT Safety notes:
     - Does NOT close the session - the context manager handles that
@@ -75,33 +73,27 @@ def cleanup_dsr_memory(
         except Exception as e:
             logger.debug(f"Could not clear SQLAlchemy session identity map: {e}")
 
-        # 2. Force multiple garbage collection passes AFTER expunging
+        # 2. Run garbage collection once AFTER expunging
         # Now that references are released, GC can actually free the objects
-        collected_total = 0
-        for i in range(GC_COUNT):
+        # We only do one pass to avoid excessive overhead in the critical path
+        try:
             collected = gc.collect()
-            collected_total += collected
             if collected > 0:
-                logger.debug(f"GC pass {i + 1}: collected {collected} objects")
+                logger.debug(f"Garbage collection freed {collected} objects")
+        except Exception as e:
+            logger.debug(f"Could not run garbage collection: {e}")
 
-        if collected_total > 0:
-            logger.info(f"Garbage collection freed {collected_total} total objects")
-
-        # 3. Log connection pool diagnostics (non-invasive)
+        # 3. Log connection pool diagnostics (non-invasive, best-effort only)
         try:
             engine = session.get_bind()
             if engine and hasattr(engine, "pool"):
                 pool = engine.pool
-                if hasattr(pool, "_overflow") and hasattr(pool, "_pool"):
-                    overflow_count = len(pool._overflow) if pool._overflow else 0
-                    pool_count = (
-                        pool._pool.qsize() if hasattr(pool._pool, "qsize") else 0
-                    )
-                    logger.debug(
-                        f"Connection pool state: {pool_count} pooled, {overflow_count} overflow"
-                    )
+                # Use simple len() which should be non-blocking
+                if hasattr(pool, "size"):
+                    logger.debug(f"Connection pool size: {pool.size()}")
         except Exception as e:
-            logger.debug(f"Could not inspect connection pool: {e}")
+            # Silently ignore - this is just diagnostic info
+            pass
 
     except Exception as exc:
         # Never fail the DSR due to cleanup errors
