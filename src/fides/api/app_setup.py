@@ -31,6 +31,7 @@ from fides.api.asgi_middleware import (
     AnalyticsLoggingMiddleware,
     AuditLogMiddleware,
     LogRequestMiddleware,
+    ProfileRequestMiddleware,
 )
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.db import seed
@@ -119,10 +120,13 @@ def create_fides_app(
 
     # Pure ASGI middleware for request logging, analytics, and audit logging
     # These are high-performance replacements for BaseHTTPMiddleware-based versions
-    fastapi_app.add_middleware(LogRequestMiddleware)
+    if CONFIG.dev_mode:
+        fastapi_app.add_middleware(ProfileRequestMiddleware)
 
     if not CONFIG.user.analytics_opt_out:
         fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
+
+    fastapi_app.add_middleware(LogRequestMiddleware)
 
     if CONFIG.security.enable_audit_log_resource_middleware:
         fastapi_app.add_middleware(AuditLogMiddleware)

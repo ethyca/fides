@@ -22,8 +22,9 @@ from fides.api.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fides.api.middleware import handle_audit_log_resource, set_body
+from fides.api.middleware import handle_audit_log_resource
 from fides.api.schemas.analytics import Event, ExtraData
+from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.config import CONFIG
 
@@ -103,10 +104,14 @@ class AnalyticsLoggingMiddleware:
     """
     Pure ASGI middleware that logs analytics events for each call to Fides endpoints.
 
-    Only logs for API endpoints (paths starting with /api/v1) and skips /health endpoints.
+    Only logs for API endpoints (paths starting with API_PREFIX) and skips /health endpoints.
     """
 
-    def __init__(self, app: ASGIApp, api_prefix: str = "/api/v1") -> None:
+    # Class-level set to hold references to pending tasks, preventing garbage collection
+    # before completion. Tasks remove themselves from this set when done.
+    _pending_tasks: set[asyncio.Task] = set()
+
+    def __init__(self, app: ASGIApp, api_prefix: str = API_PREFIX) -> None:
         self.app = app
         self.api_prefix = api_prefix
 
@@ -165,12 +170,16 @@ class AnalyticsLoggingMiddleware:
             _log_exception(e, CONFIG.dev_mode)
             raise
         finally:
-            # Schedule analytics logging as a background task
-            asyncio.create_task(
+            # Schedule analytics logging as a background task.
+            # Store task reference to prevent garbage collection before completion.
+            task = asyncio.create_task(
                 self._log_analytics(
                     endpoint, hostname, status_code, now, fides_source, error_class
                 )
             )
+            self._pending_tasks.add(task)
+            # Task will be passed as argument to discard when it completes
+            task.add_done_callback(self._pending_tasks.discard)
 
     async def _log_analytics(
         self,
@@ -217,7 +226,7 @@ class AuditLogMiddleware:
 
     def __init__(self, app: ASGIApp, ignored_paths: Optional[Set[str]] = None) -> None:
         self.app = app
-        self.ignored_paths = ignored_paths or {"/api/v1/login"}
+        self.ignored_paths = ignored_paths or {f"{API_PREFIX}/login"}
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -236,11 +245,9 @@ class AuditLogMiddleware:
 
         if should_audit:
             # Buffer the request body as it's consumed by the downstream app
-            body_parts = []
-            body_complete = False
+            body_parts: list[bytes] = []
 
             async def receiving_wrapper() -> Message:
-                nonlocal body_complete
                 message = await receive()
 
                 if message["type"] == "http.request":
@@ -248,24 +255,26 @@ class AuditLogMiddleware:
                     if body:
                         body_parts.append(body)
 
-                    # Check if body is complete
-                    if not message.get("more_body", False):
-                        body_complete = True
-                        # Trigger audit logging now that we have the full body
-                        full_body = b"".join(body_parts)
-                        try:
-                            # Create a Request object for the audit handler
-                            request = Request(scope, receive, send)
-                            # Pre-set the body so handle_audit_log_resource doesn't consume it
-                            await set_body(request, full_body)
-
-                            await handle_audit_log_resource(request)
-                        except Exception as exc:
-                            logger.debug(exc)
-
                 return message
 
+            # Let the downstream app process the request
             await self.app(scope, receiving_wrapper, send)
+
+            # After the request is complete, do audit logging with the buffered body
+            full_body = b"".join(body_parts)
+            try:
+                # Create a receive that returns the buffered body
+                async def body_receive() -> Message:
+                    return {
+                        "type": "http.request",
+                        "body": full_body,
+                        "more_body": False,
+                    }
+
+                request = Request(scope, body_receive, send)
+                await handle_audit_log_resource(request)
+            except Exception as exc:
+                logger.debug(exc)
         else:
             await self.app(scope, receive, send)
 
