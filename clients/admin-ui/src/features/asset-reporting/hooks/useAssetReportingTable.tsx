@@ -5,7 +5,7 @@ import {
   Tag,
   Text,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -54,6 +54,22 @@ const CONSENT_STATUS_LABELS: Record<ConsentStatus, string> = {
   [ConsentStatus.UNKNOWN]: "Unknown",
   [ConsentStatus.CMP_ERROR]: "CMP error",
 };
+
+const createExpandCollapseHandler =
+  (
+    setExpanded: Dispatch<SetStateAction<boolean>>,
+    setVersion: Dispatch<SetStateAction<number>>,
+  ) =>
+  (e: { domEvent: { stopPropagation: () => void }; key: string }) => {
+    e.domEvent.stopPropagation();
+    if (e.key === "expand-all") {
+      setExpanded(true);
+      setVersion((prev) => prev + 1);
+    } else if (e.key === "collapse-all") {
+      setExpanded(false);
+      setVersion((prev) => prev + 1);
+    }
+  };
 
 interface UseAssetReportingTableConfig {
   filters: AssetReportingFilters;
@@ -185,16 +201,10 @@ export const useAssetReportingTable = ({
         key: AssetReportingColumnKeys.DATA_USES,
         menu: {
           items: expandCollapseAllMenuItems,
-          onClick: (e) => {
-            e.domEvent.stopPropagation();
-            if (e.key === "expand-all") {
-              setIsDataUsesExpanded(true);
-              setDataUsesVersion((prev) => prev + 1);
-            } else if (e.key === "collapse-all") {
-              setIsDataUsesExpanded(false);
-              setDataUsesVersion((prev) => prev + 1);
-            }
-          },
+          onClick: createExpandCollapseHandler(
+            setIsDataUsesExpanded,
+            setDataUsesVersion,
+          ),
         },
         filters: convertToAntFilters(
           filterOptions?.data_uses,
@@ -232,16 +242,10 @@ export const useAssetReportingTable = ({
         key: AssetReportingColumnKeys.LOCATIONS,
         menu: {
           items: expandCollapseAllMenuItems,
-          onClick: (e) => {
-            e.domEvent.stopPropagation();
-            if (e.key === "expand-all") {
-              setIsLocationsExpanded(true);
-              setLocationsVersion((prev) => prev + 1);
-            } else if (e.key === "collapse-all") {
-              setIsLocationsExpanded(false);
-              setLocationsVersion((prev) => prev + 1);
-            }
-          },
+          onClick: createExpandCollapseHandler(
+            setIsLocationsExpanded,
+            setLocationsVersion,
+          ),
         },
         filters: convertToAntFilters(filterOptions?.locations, (location) => {
           const isoEntry = isoStringToEntry(location);

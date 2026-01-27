@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 
 // Mock nuqs using shared mock implementation
 // eslint-disable-next-line global-require
@@ -54,6 +54,17 @@ jest.mock(
       isLoading: false,
       isFetching: false,
     })),
+  }),
+);
+
+// Mock useFeatures hook
+const mockUseFeatures = jest.fn(() => ({
+  flags: { assetConsentStatusLabels: true },
+}));
+jest.mock(
+  "../../../../src/features/common/features/features.slice",
+  () => ({
+    useFeatures: () => mockUseFeatures(),
   }),
 );
 
@@ -134,7 +145,7 @@ describe("useAssetReportingTable", () => {
     expect(result.current.isFetching).toBe(false);
   });
 
-  it("has correct column definitions", () => {
+  it("has correct column definitions when consent status flag is enabled", () => {
     const { result } = renderHook(() =>
       useAssetReportingTable({ filters: {} }),
     );
@@ -149,6 +160,22 @@ describe("useAssetReportingTable", () => {
     expect(columnKeys).toContain("data_uses");
     expect(columnKeys).toContain("domain");
     expect(columnKeys).toContain("locations");
+  });
+
+  it("excludes consent_status column when flag is disabled", () => {
+    mockUseFeatures.mockReturnValue({
+      flags: { assetConsentStatusLabels: false },
+    });
+
+    const { result } = renderHook(() =>
+      useAssetReportingTable({ filters: {} }),
+    );
+
+    const columnKeys = result.current.columns.map((col) => col.key);
+
+    expect(columnKeys).not.toContain("consent_status");
+    expect(columnKeys).toContain("name");
+    expect(columnKeys).toContain("data_uses");
   });
 
   it("exposes columnFilters for export functionality", () => {
