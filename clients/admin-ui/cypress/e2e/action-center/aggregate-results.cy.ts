@@ -98,4 +98,25 @@ describe("Action center", () => {
       // TODO: mock pagination and also test skeleton loading state
     });
   });
+
+  describe("error handling", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
+        statusCode: 500,
+        body: { detail: "Internal server error" },
+      }).as("getMonitorResultsError");
+    });
+
+    it("should display error page when fetching monitor results fails", () => {
+      cy.visit(ACTION_CENTER_ROUTE);
+      cy.wait("@getMonitorResultsError");
+
+      cy.getByTestId("error-page-result").should("exist");
+      cy.getByTestId("error-page-result").within(() => {
+        cy.contains("Error 500").should("exist");
+        cy.contains("Internal server error").should("exist");
+        cy.contains("Reload").should("exist");
+      });
+    });
+  });
 });

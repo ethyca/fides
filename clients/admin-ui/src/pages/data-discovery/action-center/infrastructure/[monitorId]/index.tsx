@@ -2,6 +2,7 @@ import { Result } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import {
   ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
@@ -9,6 +10,7 @@ import {
 } from "~/features/common/nav/routes";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { useDiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredInfrastructureSystemsTable";
 import { DiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredInfrastructureSystemsTable";
 
 export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
@@ -31,10 +33,23 @@ const InfrastructureMonitorResultSystems: NextPage = () => {
     ? decodeURIComponent(params.monitorId)
     : undefined;
   const loading = !monitorId;
-  const error = !heliosV2 && HELIOS_ACCESS_ERROR;
+  const heliosAccessError = !heliosV2 && HELIOS_ACCESS_ERROR;
+  const { error: infrastructureSystemsError } =
+    useDiscoveredInfrastructureSystemsTable({
+      monitorId,
+    });
 
-  if (error) {
-    return <Result status="error" title={error} />;
+  if (heliosAccessError) {
+    return <Result status="error" title={heliosAccessError} />;
+  }
+
+  if (infrastructureSystemsError) {
+    return (
+      <ErrorPage
+        error={infrastructureSystemsError}
+        defaultMessage="A problem occurred while fetching your systems"
+      />
+    );
   }
 
   return (

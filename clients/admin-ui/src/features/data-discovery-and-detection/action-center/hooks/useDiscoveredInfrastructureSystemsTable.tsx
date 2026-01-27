@@ -21,7 +21,7 @@ import useActionCenterTabs, {
 } from "./useActionCenterTabs";
 
 interface UseDiscoveredInfrastructureSystemsTableConfig {
-  monitorId: string;
+  monitorId?: string;
   statusFilters?: InfrastructureSystemFilterLabel[] | null;
   vendorFilters?: string[] | null;
 }
@@ -110,6 +110,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
   const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery(
     {
+      // @ts-expect-error - will skip query if monitorId is not defined
       monitor_config_key: monitorId,
       page: pageIndex,
       size: pageSize,
@@ -120,6 +121,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     },
     {
       refetchOnMountOrArgChange: true,
+      skip: !monitorId,
     },
   );
 
@@ -163,6 +165,9 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
     refetch: refetchOktaData,
+
+    // Errors
+    error: oktaDataQuery.error,
 
     // Search
     searchQuery: search.searchQuery,

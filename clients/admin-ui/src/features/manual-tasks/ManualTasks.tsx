@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -88,7 +89,12 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const { data, isLoading, isFetching } = useGetTasksQuery({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error: dataError,
+  } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
     status: filters.status as ManualFieldStatus,
@@ -246,6 +252,15 @@ export const ManualTasks = () => {
       </div>
     );
   };
+
+  if (dataError) {
+    return (
+      <ErrorPage
+        error={dataError}
+        defaultMessage="A problem occurred while fetching your manual tasks"
+      />
+    );
+  }
 
   return (
     <div className="mt-2 space-y-4">
