@@ -27,6 +27,9 @@ from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.util.logger import Pii
+from google.auth.exceptions import GoogleAuthError, TransportError
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 
 # Required fields for service account authentication
 REQUIRED_FIELDS = [
@@ -276,16 +279,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
         Uses Google's service account JWT flow to obtain a short-lived access token.
         The token and its expiration time are stored in connection secrets for caching.
         """
-        # Import Google auth libraries here to avoid import errors if not installed
-        try:
-            from google.auth.exceptions import GoogleAuthError, TransportError
-            from google.auth.transport.requests import Request
-            from google.oauth2 import service_account
-        except ImportError as exc:
-            raise FidesopsException(
-                "Google Cloud authentication requires the 'google-auth' library. "
-                "Please ensure it is installed."
-            ) from exc
 
         logger.info(
             "Generating new Google Cloud access token for {}",
