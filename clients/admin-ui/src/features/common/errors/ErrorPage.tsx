@@ -31,8 +31,10 @@ const ErrorPage = ({
   const errorMessage = getErrorMessage(error, defaultMessage);
   // handle both FetchBaseQueryError and SerializedError
   const dataString =
-    "data" in error ? JSON.stringify(error.data) : JSON.stringify(error);
-  const status = "status" in error ? error.status : undefined;
+    "data" in error && !!error.data
+      ? JSON.stringify(error.data)
+      : JSON.stringify(error);
+  const status = "status" in error && !!error.status ? error.status : undefined;
 
   const router = useRouter();
 
