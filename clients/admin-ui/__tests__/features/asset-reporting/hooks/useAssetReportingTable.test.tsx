@@ -226,6 +226,10 @@ describe("useAssetReportingTable", () => {
   });
 
   it("columns include filter configurations for filterable columns", () => {
+    mockUseFeatures.mockReturnValue({
+      flags: { assetConsentStatusLabels: true },
+    });
+
     const { result } = renderHook(() =>
       useAssetReportingTable({ filters: {} }),
     );
