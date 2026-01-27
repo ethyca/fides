@@ -4,9 +4,10 @@ Google Cloud Service Account Authentication Strategy.
 Authenticates HTTP requests using Google Cloud Service Account credentials
 by generating OAuth2 access tokens from the service account's private key.
 
-Supports two input formats for credentials:
-1. Full keyfile_creds JSON object (for users who paste the entire JSON)
-2. Individual fields: project_id, client_email, private_key (cleaner UX)
+Requires individual credential fields in connection secrets:
+- project_id: Your Google Cloud project ID
+- client_email: Service account email
+- private_key: RSA private key from service account
 """
 
 from datetime import datetime, timedelta
@@ -27,20 +28,11 @@ from fides.api.service.authentication.authentication_strategy import (
 )
 from fides.api.util.logger import Pii
 
-# Required fields when using individual field input (minimal required set)
-REQUIRED_INDIVIDUAL_FIELDS = [
+# Required fields for service account authentication
+REQUIRED_FIELDS = [
     "project_id",
     "client_email",
     "private_key",
-]
-
-# Required fields when using full keyfile_creds object
-REQUIRED_KEYFILE_FIELDS = [
-    "type",
-    "project_id",
-    "private_key",
-    "client_email",
-    "token_uri",
 ]
 
 # Default OAuth2 scopes for Google Cloud Platform APIs
@@ -64,15 +56,15 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     secrets to generate OAuth2 access tokens. The tokens are cached and
     automatically refreshed when close to expiration.
 
-    Supports two input formats for credentials in connection secrets:
-
-    Option 1 - Individual fields (recommended for cleaner UX):
+    Required connection secrets:
         - project_id: Your Google Cloud project ID
         - client_email: Service account email (e.g., my-sa@project.iam.gserviceaccount.com)
         - private_key: The RSA private key from your service account
 
-    Option 2 - Full keyfile_creds object:
-        - keyfile_creds: The complete service account JSON key file contents
+    Optional connection secrets:
+        - token_uri: OAuth2 token endpoint (defaults to https://oauth2.googleapis.com/token)
+        - private_key_id: Key identifier
+        - client_id: Client identifier
 
     Example SaaS config authentication block:
     ```yaml
@@ -83,7 +75,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
           - https://www.googleapis.com/auth/spreadsheets
     ```
 
-    Example connector_params for individual fields (Option 1):
+    Example connector_params:
     ```yaml
     connector_params:
       - name: project_id
@@ -150,24 +142,18 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
     def _get_keyfile_creds(self, secrets: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Get keyfile credentials from secrets.
+        Build keyfile credentials dict from individual secret fields.
 
-        Supports two input formats:
-        1. Full keyfile_creds object (if 'keyfile_creds' key exists)
-        2. Individual fields (project_id, client_email, private_key)
+        Constructs the credential object that Google's auth library expects
+        from the individual fields provided in connection secrets.
 
-        For individual fields, smart defaults are applied for non-essential fields.
+        Smart defaults are applied for non-essential fields.
         """
-        # Option 1: Full keyfile_creds object provided
-        if "keyfile_creds" in secrets and secrets["keyfile_creds"]:
-            return secrets["keyfile_creds"]
-
-        # Option 2: Construct from individual fields with smart defaults
         project_id = secrets.get("project_id")
         client_email = secrets.get("client_email")
         private_key = secrets.get("private_key")
 
-        # Check if we have the minimum required fields for individual input
+        # Check if we have the minimum required fields
         if not all([project_id, client_email, private_key]):
             missing = []
             if not project_id:
@@ -178,17 +164,20 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 missing.append("private_key")
 
             raise FidesopsException(
-                f"Missing required Google Cloud credentials. "
-                f"Either provide 'keyfile_creds' (full JSON) or the individual fields: "
-                f"{', '.join(missing)}."
+                f"Missing required Google Cloud credentials: {', '.join(missing)}. "
+                "Please provide project_id, client_email, and private_key."
             )
+
+        # Normalize the private key format
+        # Handle common issues from copy/paste: escaped newlines, missing newlines
+        normalized_private_key = self._normalize_private_key(private_key)
 
         # Construct keyfile_creds with smart defaults
         return {
             "type": "service_account",
             "project_id": project_id,
             "client_email": client_email,
-            "private_key": private_key,
+            "private_key": normalized_private_key,
             "token_uri": secrets.get("token_uri", DEFAULT_TOKEN_URI),
             # Optional fields - include if provided
             **({"private_key_id": secrets["private_key_id"]} if secrets.get("private_key_id") else {}),
@@ -198,29 +187,64 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             **({"client_x509_cert_url": secrets["client_x509_cert_url"]} if secrets.get("client_x509_cert_url") else {}),
         }
 
+    def _normalize_private_key(self, private_key: str) -> str:
+        """
+        Normalize the private key format to handle common copy/paste issues.
+
+        Handles:
+        - Escaped newlines (\\n -> actual newlines)
+        - Missing trailing newline
+        - Validates basic structure
+
+        Args:
+            private_key: The raw private key string from user input
+
+        Returns:
+            Normalized private key string with proper formatting
+        """
+        if not private_key:
+            return private_key
+
+        # Replace escaped newlines with actual newlines
+        # This handles when users paste JSON-escaped keys
+        normalized = private_key.replace("\\n", "\n")
+
+        # Ensure the key ends with a newline (required by some parsers)
+        if not normalized.endswith("\n"):
+            normalized += "\n"
+
+        # Validate basic structure
+        if "-----BEGIN" not in normalized or "-----END" not in normalized:
+            logger.warning(
+                "Private key appears to be missing PEM headers. "
+                "Expected '-----BEGIN PRIVATE KEY-----' and '-----END PRIVATE KEY-----'"
+            )
+
+        return normalized
+
     def _validate_keyfile_creds(self, keyfile_creds: Dict[str, Any]) -> None:
         """
         Validate that the keyfile credentials contain all required fields.
 
-        Raises FidesopsException with a clear message if validation fails.
+        This is a secondary validation after _get_keyfile_creds has constructed
+        the credentials dict. It ensures the constructed object is valid.
         """
-        # Check credential type
+        # Check credential type (should always be service_account since we set it)
         cred_type = keyfile_creds.get("type")
         if cred_type != "service_account":
             raise FidesopsException(
                 f"Invalid Google Cloud credential type: expected 'service_account', "
-                f"got '{cred_type}'. Ensure you are using a service account key, "
-                "not another credential type."
+                f"got '{cred_type}'."
             )
 
-        # Check for required fields
+        # Validate required fields are present and non-empty
+        required = ["project_id", "client_email", "private_key", "token_uri"]
         missing_fields = [
-            field for field in REQUIRED_KEYFILE_FIELDS if not keyfile_creds.get(field)
+            field for field in required if not keyfile_creds.get(field)
         ]
         if missing_fields:
             raise FidesopsException(
-                f"Service account key is missing required fields: {', '.join(missing_fields)}. "
-                "Please provide a complete service account key JSON file."
+                f"Service account credentials missing required fields: {', '.join(missing_fields)}."
             )
 
     def _is_close_to_expiration(
@@ -328,6 +352,28 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 "Check that the service account key is valid and has the required permissions."
             ) from exc
 
+        except ValueError as exc:
+            # ValueError typically indicates malformed credentials
+            error_msg = str(exc)
+            logger.error(
+                "Invalid credential format for {}: {}",
+                connection_config.key,
+                Pii(error_msg),
+            )
+
+            # Provide helpful error message based on common issues
+            if "private_key" in error_msg.lower() or "Could not deserialize" in error_msg:
+                raise FidesopsException(
+                    "Invalid private_key format. The private key must be a valid PEM-encoded "
+                    "RSA private key. Ensure the key includes '-----BEGIN PRIVATE KEY-----' "
+                    "and '-----END PRIVATE KEY-----' headers, and that newlines are preserved. "
+                    f"Details: {error_msg}"
+                ) from exc
+            else:
+                raise FidesopsException(
+                    f"Invalid credential format: {error_msg}"
+                ) from exc
+
         except Exception as exc:
             logger.error(
                 "Unexpected error generating Google Cloud access token for {}: {}",
@@ -335,7 +381,8 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 Pii(str(exc)),
             )
             raise FidesopsException(
-                f"Failed to generate Google Cloud access token: {type(exc).__name__}"
+                f"Failed to generate Google Cloud access token: {type(exc).__name__}. "
+                f"Details: {str(exc)}"
             ) from exc
 
     def _store_token(
