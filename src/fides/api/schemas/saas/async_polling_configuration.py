@@ -17,14 +17,6 @@ class SupportedDataType(Enum):
     # Binary/non-parseable data stored as raw bytes
     attachment = "attachment"  # Binary files (.zip, .pdf, .xml, etc.) stored as bytes
 
-class PollingStatusResult(BaseModel):
-    """
-    Result from polling status check.
-    Allows status overrides to signal completion AND whether to skip result fetching.
-    """
-    is_complete: bool
-    skip_result_request: bool = False  # True when status indicates no data to fetch
-
 class PollingResultType(Enum):
     """Types of results from async polling operations."""
 
