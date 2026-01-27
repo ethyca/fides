@@ -1,16 +1,4 @@
-"""
-Google Cloud Service Account Authentication Strategy.
-
-Authenticates HTTP requests using Google Cloud Service Account credentials
-by generating OAuth2 access tokens from the service account's private key.
-
-Requires individual credential fields in connection secrets:
-- project_id: Your Google Cloud project ID
-- client_email: Service account email
-- private_key: RSA private key from service account
-"""
-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
@@ -114,10 +102,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     def _get_access_token(self, connection_config: ConnectionConfig) -> str:
         """
         Get a valid access token, refreshing if necessary.
-
-        Checks for a cached token in connection secrets. If the token exists
-        and is not close to expiration, returns it. Otherwise, generates a
-        new token using the service account credentials.
         """
         secrets = connection_config.secrets
         if not secrets:
@@ -129,10 +113,8 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
         # Get keyfile_creds - either from full object or constructed from individual fields
         keyfile_creds = self._get_keyfile_creds(secrets)
 
-        # Validate keyfile structure before attempting to use it
         self._validate_keyfile_creds(keyfile_creds)
 
-        # Check for cached token
         cached_token = secrets.get("google_cloud_access_token")
         expires_at = secrets.get("google_cloud_token_expires_at")
 
@@ -146,11 +128,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     def _get_keyfile_creds(self, secrets: Dict[str, Any]) -> Dict[str, Any]:
         """
         Build keyfile credentials dict from individual secret fields.
-
-        Constructs the credential object that Google's auth library expects
-        from the individual fields provided in connection secrets.
-
-        Smart defaults are applied for non-essential fields.
         """
         project_id = secrets.get("project_id")
         client_email = secrets.get("client_email")
@@ -181,7 +158,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             "project_id": project_id,
             "client_email": client_email,
             "private_key": normalized_private_key,
-            "token_uri": secrets.get("token_uri", DEFAULT_TOKEN_URI),
+            "token_uri": secrets.get("token_uri", DEFAULT_TOKEN_URI), # default Token URI is used if not provided
             # Optional fields - include if provided
             **({"private_key_id": secrets["private_key_id"]} if secrets.get("private_key_id") else {}),
             **({"client_id": secrets["client_id"]} if secrets.get("client_id") else {}),
@@ -198,12 +175,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
         - Escaped newlines (\\n -> actual newlines)
         - Missing trailing newline
         - Validates basic structure
-
-        Args:
-            private_key: The raw private key string from user input
-
-        Returns:
-            Normalized private key string with proper formatting
         """
         if not private_key:
             return private_key
@@ -228,11 +199,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     def _validate_keyfile_creds(self, keyfile_creds: Dict[str, Any]) -> None:
         """
         Validate that the keyfile credentials contain all required fields.
-
-        This is a secondary validation after _get_keyfile_creds has constructed
-        the credentials dict. It ensures the constructed object is valid.
         """
-        # Check credential type (should always be service_account since we set it)
         cred_type = keyfile_creds.get("type")
         if cred_type != "service_account":
             raise FidesopsException(
@@ -258,14 +225,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
         Returns True if the token will expire within TOKEN_REFRESH_BUFFER_SECONDS.
         """
-        if expires_at is None:
-            logger.info(
-                "No expiration time found for Google Cloud token for {}, will refresh",
-                connection_config.key,
-            )
-            return True
-
-        buffer_time = datetime.utcnow() + timedelta(seconds=TOKEN_REFRESH_BUFFER_SECONDS)
+        buffer_time = datetime.now(timezone.utc) + timedelta(seconds=TOKEN_REFRESH_BUFFER_SECONDS)
         return expires_at < buffer_time.timestamp()
 
     def _refresh_access_token(
@@ -292,7 +252,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             )
 
             # Refresh credentials to obtain access token
-            # Using a timeout to prevent hanging on network issues
             request = Request()
             credentials.refresh(request)
 
@@ -304,13 +263,11 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 )
 
             # Calculate expiration time
-            # Google access tokens typically expire in 3600 seconds (1 hour)
-            # Use the expiry from credentials if available, otherwise default to 1 hour
             if credentials.expiry:
                 expires_at = int(credentials.expiry.timestamp())
             else:
                 expires_at = int(
-                    (datetime.utcnow() + timedelta(hours=1)).timestamp()
+                    (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
                 )
 
             # Store token and expiration in connection secrets
@@ -386,8 +343,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     ) -> None:
         """
         Store the access token and expiration time in connection secrets.
-
-        Uses the database session from the connection config to persist changes.
         """
         db: Optional[Session] = Session.object_session(connection_config)
         if db is None:
