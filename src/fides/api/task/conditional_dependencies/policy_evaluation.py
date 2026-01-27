@@ -72,31 +72,40 @@ def evaluate_policy_conditions(
             Rule.action_type == action_type
         )
 
-    policy_condition = query.all()
+    policy_conditions = query.all()
 
-    if not policy_condition or not policy_condition.condition_tree:
+    if not policy_conditions:
         return _get_default_policy_result(db, privacy_request, action_type)
 
-    try:
-        root_condition = ConditionTypeAdapter.validate_python(
-            policy_condition.condition_tree
-        )
-        field_addresses = extract_field_addresses(root_condition)
-        data_transformer = PrivacyRequestDataTransformer(privacy_request)
-        evaluation_data = data_transformer.to_evaluation_data(field_addresses)
+    evaluator = ConditionEvaluator(db)
+    data_transformer = PrivacyRequestDataTransformer(privacy_request)
 
-        evaluator = ConditionEvaluator(db)
-        evaluation_result = evaluator.evaluate_rule(root_condition, evaluation_data)
+    for policy_condition in policy_conditions:
+        if not policy_condition.condition_tree:
+            continue
 
-        if evaluation_result.result:
-            logger.info(f"Policy {policy_condition.policy.key} matched")
-            return PolicyEvaluationResult(
-                policy=policy_condition.policy,
-                evaluation_result=evaluation_result,
-                is_default=False,
+        try:
+            root_condition = ConditionTypeAdapter.validate_python(
+                policy_condition.condition_tree
             )
-    except Exception as e:
-        logger.error(f"Error evaluating policy {policy_condition.policy.key}: {e}")
+            field_addresses = extract_field_addresses(root_condition)
+            evaluation_data = data_transformer.to_evaluation_data(field_addresses)
+            evaluation_result = evaluator.evaluate_rule(root_condition, evaluation_data)
+
+            if evaluation_result.result:
+                logger.info(f"Policy {policy_condition.policy.key} matched")
+                return PolicyEvaluationResult(
+                    policy=policy_condition.policy,
+                    evaluation_result=evaluation_result,
+                    is_default=False,
+                )
+        except Exception as exc:
+            logger.error(
+                f"Error evaluating policy {policy_condition.policy.key}: "
+                f"{type(exc).__name__}: {exc}",
+                exc_info=True,
+            )
+            continue
 
     return _get_default_policy_result(db, privacy_request, action_type)
 
