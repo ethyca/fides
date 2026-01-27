@@ -56,7 +56,7 @@ export interface ConsentContext {
  * Returns the GPC context from the browser/document.
  * This function specifically returns GPC status only.
  */
-export const getConsentContext = (): { globalPrivacyControl?: boolean } => {
+export const getGpcContext = (): { globalPrivacyControl?: boolean } => {
   if (typeof window === "undefined") {
     return {};
   }
@@ -67,7 +67,7 @@ export const getConsentContext = (): { globalPrivacyControl?: boolean } => {
 };
 
 /**
- * Returns the complete automated consent context by reading all automated consent sources.
+ * Returns the complete consent context by reading all automated consent sources.
  * This includes GPC, migrated consent from third-party providers (like OneTrust),
  * and notice consent string overrides from options.
  *
@@ -77,7 +77,7 @@ export const getConsentContext = (): { globalPrivacyControl?: boolean } => {
  * @param optionsOverrides - Overrides containing provider mappings and other configuration
  * @returns Complete ConsentContext with all automated consent sources
  */
-export const getAutomatedConsentContext = (
+export const getConsentContext = (
   options: FidesInitOptions,
   optionsOverrides: Partial<FidesInitOptionsOverrides>,
 ): ConsentContext => {

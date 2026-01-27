@@ -2,7 +2,7 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { getConsentContext } from "../../lib/consent-context";
+import { getGpcContext } from "../../lib/consent-context";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { getGpcStatusFromNotice } from "../../lib/consent-utils";
 import { FidesEventDetailsPreference } from "../../lib/events";
@@ -105,7 +105,7 @@ const TcfPurposes = ({
     [allPurposesConsent, allPurposesLegint, allSpecialPurposes],
   );
 
-  const consentContext = getConsentContext();
+  const consentContext = getGpcContext();
 
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],

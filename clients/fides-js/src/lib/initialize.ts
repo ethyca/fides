@@ -5,7 +5,7 @@ import {
   calculateAutomatedConsent,
   saveAutomatedPreferencesToApi,
 } from "./automated-consent";
-import { ConsentContext, getConsentContext } from "./consent-context";
+import { ConsentContext, getGpcContext } from "./consent-context";
 import {
   ComponentType,
   FidesConfig,
@@ -138,7 +138,7 @@ export const getInitialCookie = async ({
   options,
 }: FidesConfig): Promise<FidesCookie> => {
   // Configure the default legacy consent values
-  const context = getConsentContext();
+  const context = getGpcContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
