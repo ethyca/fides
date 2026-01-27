@@ -61,7 +61,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
 
                 nonce: bytes | None = self._generate_nonce(
                     str(value),
-                    key_hmac,
+                    key_hmac,  # type: ignore[arg-type]
                     request_id,
                     masking_meta,  # type: ignore
                 )
@@ -123,7 +123,7 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         return hmac_encrypt_return_bytes(
             value,
             key,
-            salt,
+            salt,  # type: ignore[arg-type]
             HmacMaskingConfiguration.Algorithm.sha_256,  # type: ignore
         )[:12]
 

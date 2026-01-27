@@ -21,6 +21,6 @@ class DecryptedIdentityAutomatonMixin:
         automaton = get_decrypted_identities_automaton(db, True)
         add_identity_to_automaton(
             automaton,
-            self.id,
+            self.id,  # type: ignore[attr-defined]
             self.get_persisted_identity().__dict__,  # type: ignore
         )

@@ -290,7 +290,7 @@ def authorize_connection(
     try:
         auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
             AuthenticationStrategy.get_strategy(
-                authentication.strategy,
+                authentication.strategy,  # type: ignore[union-attr]
                 authentication.configuration,  # type: ignore
             )
         )
