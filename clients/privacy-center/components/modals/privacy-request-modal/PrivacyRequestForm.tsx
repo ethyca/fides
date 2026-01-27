@@ -6,14 +6,13 @@ import CustomFieldRenderer, {
 } from "~/components/common/CustomFieldRenderer";
 import { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
-import { useConfig } from "~/features/common/config.slice";
 import { CustomConfigField, PrivacyRequestOption } from "~/types/config";
 
 import usePrivacyRequestForm from "./usePrivacyRequestForm";
 
 type PrivacyRequestFormProps = {
   onExit: () => void;
-  openAction: number | null;
+  openAction: PrivacyRequestOption | undefined;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -28,12 +27,7 @@ const PrivacyRequestForm = ({
   isVerificationRequired,
   onSuccessWithoutVerification,
 }: PrivacyRequestFormProps) => {
-  const config = useConfig();
-
-  const action =
-    typeof openAction === "number"
-      ? (config.actions[openAction] as PrivacyRequestOption)
-      : undefined;
+  const action = openAction;
 
   const {
     errors,

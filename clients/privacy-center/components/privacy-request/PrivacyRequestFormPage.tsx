@@ -6,24 +6,28 @@ import React, { useEffect, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { PrivacyRequestOption } from "~/types/config";
 
 import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
 
 type PrivacyRequestFormPageProps = {
-  actionIndex: string;
+  actionKey: string;
 };
 
-const PrivacyRequestFormPage = ({
-  actionIndex,
-}: PrivacyRequestFormPageProps) => {
+const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const config = useConfig();
   const router = useRouter();
-  const parsedActionIndex = parseInt(actionIndex, 10);
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
   const messageApi = useMessage();
+
+  const policyKey = decodeURIComponent(actionKey);
+
+  const action = config.actions.find((a) => a.policy_key === policyKey) as
+    | PrivacyRequestOption
+    | undefined;
 
   // Update verification requirement from API
   useEffect(() => {
@@ -34,21 +38,12 @@ const PrivacyRequestFormPage = ({
     }
   }, [getIdVerificationConfigQuery]);
 
-  if (Number.isNaN(parsedActionIndex)) {
-    messageApi.error(
-      `Invalid action index "${actionIndex}" for privacy request`,
-    );
-    router.push("/");
-  }
-
-  const action = config.actions[parsedActionIndex];
-
-  if (!action) {
-    messageApi.error(
-      `Invalid action index "${actionIndex}" for privacy request`,
-    );
-    router.push("/");
-  }
+  useEffect(() => {
+    if (!action) {
+      messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
+      router.push("/");
+    }
+  }, [action, policyKey, messageApi, router]);
 
   const handleExit = () => {
     router.push("/");
@@ -57,7 +52,7 @@ const PrivacyRequestFormPage = ({
   const handleSetCurrentView = (view: string) => {
     // Navigate to verification page
     if (view === "identityVerification") {
-      router.push(`/privacy-request/${parsedActionIndex}/verify`);
+      router.push(`/privacy-request/${encodeURIComponent(policyKey)}/verify`);
     }
   };
 
@@ -70,13 +65,13 @@ const PrivacyRequestFormPage = ({
 
   const handleSuccessWithoutVerification = () => {
     // Navigate to success page when verification is not required
-    router.push(`/privacy-request/${parsedActionIndex}/success`);
+    router.push(`/privacy-request/${encodeURIComponent(policyKey)}/success`);
   };
 
   return (
     <PrivacyRequestForm
       onExit={handleExit}
-      openAction={parsedActionIndex}
+      openAction={action}
       setCurrentView={handleSetCurrentView}
       setPrivacyRequestId={handleSetPrivacyRequestId}
       isVerificationRequired={isVerificationRequired}

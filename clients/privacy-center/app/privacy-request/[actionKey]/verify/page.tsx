@@ -19,10 +19,10 @@ const PrivacyRequestVerifyPage = async ({
   params,
   searchParams,
 }: {
-  params: Promise<{ actionIndex: string }>;
+  params: Promise<{ actionKey: string }>;
   searchParams: NextSearchParams;
 }) => {
-  const { actionIndex } = await params;
+  const { actionKey } = await params;
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });
@@ -33,7 +33,7 @@ const PrivacyRequestVerifyPage = async ({
         showTitleOnDesktop
         dataTestId="privacy-request-verify-layout"
       >
-        <VerificationPage actionIndex={actionIndex} />
+        <VerificationPage actionKey={actionKey} />
       </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>
   );

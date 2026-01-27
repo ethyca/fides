@@ -128,20 +128,20 @@ const HomePage: NextPage = () => {
     toast,
   ]);
 
-  const handlePrivacyRequestOpen = (index: number) => {
-    router.push(`/privacy-request/${index}`);
+  const handlePrivacyRequestOpen = (policyKey: string) => {
+    router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
   };
 
   const content: ReactNode[] = [];
 
-  config.actions.forEach((action, index) => {
+  config.actions.forEach((action) => {
     content.push(
       <PrivacyCard
-        key={action.title}
+        key={action.policy_key}
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onClick={() => handlePrivacyRequestOpen(index)}
+        onClick={() => handlePrivacyRequestOpen(action.policy_key)}
       />,
     );
   });

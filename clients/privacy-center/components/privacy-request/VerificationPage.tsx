@@ -9,15 +9,15 @@ import { ModalViews, VerificationType } from "~/components/modals/types";
 import VerificationForm from "../modals/verification-request/VerificationForm";
 
 type VerificationPageProps = {
-  actionIndex: string;
+  actionKey: string;
 };
 
-const VerificationPage = ({ actionIndex }: VerificationPageProps) => {
+const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const router = useRouter();
-  const parsedActionIndex = parseInt(actionIndex, 10);
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
-  // Get request ID from sessionStorage
+  const policyKey = decodeURIComponent(actionKey);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedId = sessionStorage.getItem("privacyRequestId");
@@ -25,12 +25,12 @@ const VerificationPage = ({ actionIndex }: VerificationPageProps) => {
         setPrivacyRequestId(storedId);
       } else {
         // If no request ID, redirect back to form
-        router.push(`/privacy-request/${parsedActionIndex}`);
+        router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
       }
     }
-  }, [parsedActionIndex, router]);
+  }, [policyKey, router]);
 
-  if (Number.isNaN(parsedActionIndex) || !privacyRequestId) {
+  if (!privacyRequestId) {
     return null;
   }
 
@@ -41,13 +41,13 @@ const VerificationPage = ({ actionIndex }: VerificationPageProps) => {
   const handleSetCurrentView = (view: string) => {
     // If going back to form, navigate to form page
     if (view === "privacyRequest") {
-      router.push(`/privacy-request/${parsedActionIndex}`);
+      router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
     }
   };
 
   const handleSuccess = () => {
     // Navigate to success page
-    router.push(`/privacy-request/${parsedActionIndex}/success`);
+    router.push(`/privacy-request/${encodeURIComponent(policyKey)}/success`);
   };
 
   return (

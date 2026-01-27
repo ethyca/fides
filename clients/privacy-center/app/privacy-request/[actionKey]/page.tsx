@@ -19,10 +19,10 @@ const PrivacyRequestPage = async ({
   params,
   searchParams,
 }: {
-  params: Promise<{ actionIndex: string }>;
+  params: Promise<{ actionKey: string }>;
   searchParams: NextSearchParams;
 }) => {
-  const { actionIndex } = await params;
+  const { actionKey } = await params;
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });
@@ -30,7 +30,7 @@ const PrivacyRequestPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <AuthFormLayout showTitleOnDesktop dataTestId="privacy-request-layout">
-        <PrivacyRequestFormPage actionIndex={actionIndex} />
+        <PrivacyRequestFormPage actionKey={actionKey} />
       </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>
   );
