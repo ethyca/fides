@@ -21,7 +21,8 @@ export interface AssetReportingFilterOptions {
 }
 
 export interface AssetReportingQueryParams
-  extends AssetReportingFilters, SortQueryParams {
+  extends AssetReportingFilters,
+    SortQueryParams {
   page: number;
   size: number;
 }
