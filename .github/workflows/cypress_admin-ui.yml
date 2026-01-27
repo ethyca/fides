@@ -19,7 +19,7 @@ jobs:
       has_admin_ui_changes: ${{ steps.filter.outputs.admin_ui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for Admin UI file changes
         uses: dorny/paths-filter@v3
@@ -43,7 +43,7 @@ jobs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set matrix
         id: set-matrix
@@ -106,7 +106,7 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v5
