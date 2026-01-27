@@ -74,18 +74,18 @@ class TestPolicySelection:
 class TestDefaultFallback:
     """Test default policy fallback"""
 
-    def test_uses_first_policy_without_conditions(self, db: Session):
-        """First policy without conditions is default"""
-        first_default = Policy.create(
-            db=db, data={"name": "First Default", "key": "first_default"}
+    def test_uses_assigned_policy_as_default(self, db: Session):
+        """Uses privacy request's assigned policy as default when no conditions match"""
+        assigned_policy = Policy.create(
+            db=db, data={"name": "Assigned Policy", "key": "assigned_policy"}
         )
-        Policy.create(db=db, data={"name": "Second Default", "key": "second_default"})
+        Policy.create(db=db, data={"name": "Other Policy", "key": "other_policy"})
         _create_policy_with_condition(db, "conditional", "US")
 
-        pr = _create_request(db, first_default, "FR")  # Won't match US
+        pr = _create_request(db, assigned_policy, "FR")  # Won't match US
         result = evaluate_policy_conditions(db, pr)
 
-        assert result.policy.key == "first_default"
+        assert result.policy.key == "assigned_policy"
         assert result.is_default
 
     def test_uses_assigned_policy_when_no_default(self, db: Session):
