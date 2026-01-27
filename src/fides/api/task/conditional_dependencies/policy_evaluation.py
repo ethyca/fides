@@ -72,8 +72,7 @@ def evaluate_policy_conditions(
             Rule.action_type == action_type
         )
 
-    # There should only be one policy condition per action type
-    policy_condition = query.one_or_none()
+    policy_condition = query.all()
 
     if not policy_condition or not policy_condition.condition_tree:
         return _get_default_policy_result(db, privacy_request, action_type)
