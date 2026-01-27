@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
+from google.auth.exceptions import GoogleAuthError, TransportError
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 from loguru import logger
 from requests import PreparedRequest
 from sqlalchemy.orm import Session
@@ -15,9 +18,6 @@ from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.util.logger import Pii
-from google.auth.exceptions import GoogleAuthError, TransportError
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
 
 # Required fields for service account authentication
 REQUIRED_FIELDS = [
@@ -158,13 +158,27 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             "project_id": project_id,
             "client_email": client_email,
             "private_key": normalized_private_key,
-            "token_uri": secrets.get("token_uri", DEFAULT_TOKEN_URI), # default Token URI is used if not provided
+            "token_uri": secrets.get(
+                "token_uri", DEFAULT_TOKEN_URI
+            ),  # default Token URI is used if not provided
             # Optional fields - include if provided
-            **({"private_key_id": secrets["private_key_id"]} if secrets.get("private_key_id") else {}),
+            **(
+                {"private_key_id": secrets["private_key_id"]}
+                if secrets.get("private_key_id")
+                else {}
+            ),
             **({"client_id": secrets["client_id"]} if secrets.get("client_id") else {}),
             **({"auth_uri": secrets["auth_uri"]} if secrets.get("auth_uri") else {}),
-            **({"auth_provider_x509_cert_url": secrets["auth_provider_x509_cert_url"]} if secrets.get("auth_provider_x509_cert_url") else {}),
-            **({"client_x509_cert_url": secrets["client_x509_cert_url"]} if secrets.get("client_x509_cert_url") else {}),
+            **(
+                {"auth_provider_x509_cert_url": secrets["auth_provider_x509_cert_url"]}
+                if secrets.get("auth_provider_x509_cert_url")
+                else {}
+            ),
+            **(
+                {"client_x509_cert_url": secrets["client_x509_cert_url"]}
+                if secrets.get("client_x509_cert_url")
+                else {}
+            ),
         }
 
     def _normalize_private_key(self, private_key: str) -> str:
@@ -209,9 +223,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
         # Validate required fields are present and non-empty
         required = ["project_id", "client_email", "private_key", "token_uri"]
-        missing_fields = [
-            field for field in required if not keyfile_creds.get(field)
-        ]
+        missing_fields = [field for field in required if not keyfile_creds.get(field)]
         if missing_fields:
             raise FidesopsException(
                 f"Service account credentials missing required fields: {', '.join(missing_fields)}."
@@ -225,7 +237,9 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
         Returns True if the token will expire within TOKEN_REFRESH_BUFFER_SECONDS.
         """
-        buffer_time = datetime.now(timezone.utc) + timedelta(seconds=TOKEN_REFRESH_BUFFER_SECONDS)
+        buffer_time = datetime.now(timezone.utc) + timedelta(
+            seconds=TOKEN_REFRESH_BUFFER_SECONDS
+        )
         return expires_at < buffer_time.timestamp()
 
     def _refresh_access_token(
@@ -312,7 +326,10 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             )
 
             # Provide helpful error message based on common issues
-            if "private_key" in error_msg.lower() or "Could not deserialize" in error_msg:
+            if (
+                "private_key" in error_msg.lower()
+                or "Could not deserialize" in error_msg
+            ):
                 raise FidesopsException(
                     "Invalid private_key format. The private key must be a valid PEM-encoded "
                     "RSA private key. Ensure the key includes '-----BEGIN PRIVATE KEY-----' "

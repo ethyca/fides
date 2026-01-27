@@ -15,14 +15,14 @@ from fides.api.service.authentication.authentication_strategy_basic import (
 from fides.api.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
+from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
+    GoogleCloudServiceAccountAuthenticationStrategy,
+)
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.service.authentication.authentication_strategy_oauth2_client_credentials import (
     OAuth2ClientCredentialsAuthenticationStrategy,
-)
-from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
-    GoogleCloudServiceAccountAuthenticationStrategy,
 )
 from fides.api.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,

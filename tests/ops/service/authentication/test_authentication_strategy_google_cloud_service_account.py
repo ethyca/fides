@@ -12,8 +12,8 @@ from fides.api.service.authentication.authentication_strategy import (
 from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
     DEFAULT_SCOPES,
     DEFAULT_TOKEN_URI,
-    GoogleCloudServiceAccountAuthenticationStrategy,
     TOKEN_REFRESH_BUFFER_SECONDS,
+    GoogleCloudServiceAccountAuthenticationStrategy,
 )
 
 
@@ -191,8 +191,14 @@ class TestCredentialsConstruction:
 
         assert keyfile_creds["type"] == "service_account"
         assert keyfile_creds["project_id"] == "test-project-123"
-        assert keyfile_creds["client_email"] == "test-sa@test-project-123.iam.gserviceaccount.com"
-        assert keyfile_creds["private_key"] == "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----\n"
+        assert (
+            keyfile_creds["client_email"]
+            == "test-sa@test-project-123.iam.gserviceaccount.com"
+        )
+        assert (
+            keyfile_creds["private_key"]
+            == "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----\n"
+        )
         assert keyfile_creds["token_uri"] == DEFAULT_TOKEN_URI
 
     def test_custom_token_uri(
@@ -247,7 +253,9 @@ class TestPrivateKeyNormalization:
         )
 
         # Key with escaped newlines (as often pasted from JSON)
-        escaped_key = "-----BEGIN PRIVATE KEY-----\\nMIItest\\n-----END PRIVATE KEY-----\\n"
+        escaped_key = (
+            "-----BEGIN PRIVATE KEY-----\\nMIItest\\n-----END PRIVATE KEY-----\\n"
+        )
         normalized = strategy._normalize_private_key(escaped_key)
 
         assert "\\n" not in normalized
@@ -260,7 +268,9 @@ class TestPrivateKeyNormalization:
             "google_cloud_service_account", google_cloud_configuration
         )
 
-        key_without_newline = "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----"
+        key_without_newline = (
+            "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----"
+        )
         normalized = strategy._normalize_private_key(key_without_newline)
 
         assert normalized.endswith("\n")
@@ -275,6 +285,7 @@ class TestPrivateKeyNormalization:
         normalized = strategy._normalize_private_key(valid_key)
 
         assert normalized == valid_key
+
 
 class TestTokenCaching:
     """Tests for access token caching behavior."""
@@ -305,7 +316,9 @@ class TestTokenCaching:
 
         # Should use cached token without calling Google
         authenticated_request = strategy.add_authentication(req, connection_config)
-        assert authenticated_request.headers["Authorization"] == "Bearer cached_token_123"
+        assert (
+            authenticated_request.headers["Authorization"] == "Bearer cached_token_123"
+        )
 
     @patch(
         "fides.api.service.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
@@ -321,7 +334,10 @@ class TestTokenCaching:
 
         # Set expiration within the refresh buffer
         close_expiry = int(
-            (datetime.now(timezone.utc) + timedelta(seconds=TOKEN_REFRESH_BUFFER_SECONDS - 60)).timestamp()
+            (
+                datetime.now(timezone.utc)
+                + timedelta(seconds=TOKEN_REFRESH_BUFFER_SECONDS - 60)
+            ).timestamp()
         )
         connection_config = ConnectionConfig(
             key="test_connector",
@@ -458,7 +474,9 @@ class TestTokenGeneration:
         with pytest.raises(FidesopsException) as exc:
             strategy.add_authentication(req, google_cloud_connection_config)
 
-        assert "Network error" in str(exc.value) or "oauth2.googleapis.com" in str(exc.value)
+        assert "Network error" in str(exc.value) or "oauth2.googleapis.com" in str(
+            exc.value
+        )
 
     @patch("google.oauth2.service_account.Credentials")
     def test_auth_error_handling(
@@ -484,7 +502,9 @@ class TestTokenGeneration:
         with pytest.raises(FidesopsException) as exc:
             strategy.add_authentication(req, google_cloud_connection_config)
 
-        assert "Failed to authenticate" in str(exc.value) or "Google Cloud" in str(exc.value)
+        assert "Failed to authenticate" in str(exc.value) or "Google Cloud" in str(
+            exc.value
+        )
 
 
 class TestAddAuthentication:
@@ -496,7 +516,9 @@ class TestAddAuthentication:
         valid_secrets,
     ):
         """Test that existing request headers are preserved."""
-        future_expiry = int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
+        future_expiry = int(
+            (datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()
+        )
         connection_config = ConnectionConfig(
             key="test_connector",
             secrets={
