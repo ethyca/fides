@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
+
+import { ConsentStatus } from "~/types/api";
 
 // Mock the toast hook
 const mockToast = jest.fn();
@@ -74,7 +75,7 @@ describe("useAssetReportingDownload", () => {
 
     const filters = {
       asset_type: ["Cookie", "Image"],
-      consent_status: ["WITH_CONSENT" as const],
+      consent_status: ["WITH_CONSENT" as ConsentStatus],
       data_uses: ["analytics"],
       search: "test",
     };
