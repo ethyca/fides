@@ -21,8 +21,7 @@ export interface AssetReportingFilterOptions {
 }
 
 export interface AssetReportingQueryParams
-  extends AssetReportingFilters,
-    SortQueryParams {
+  extends AssetReportingFilters, SortQueryParams {
   page: number;
   size: number;
 }
@@ -41,9 +40,7 @@ const buildUrlQuery = (
     system_id: params.system_id,
     data_uses: params.data_uses,
     locations: params.locations,
-    sort_by: params.sort_by
-      ? [params.sort_by].flat()
-      : undefined,
+    sort_by: params.sort_by ? [params.sort_by].flat() : undefined,
   });
 
   if (params.search) {
