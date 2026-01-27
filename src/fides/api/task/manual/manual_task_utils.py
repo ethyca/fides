@@ -69,17 +69,16 @@ def get_manual_task_addresses(
 
     # If config_types specified, filter to only include tasks with matching current configs
     if config_types is not None:
-        query = query.join(ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id).filter(
+        query = query.join(
+            ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id
+        ).filter(
             ManualTaskConfig.is_current.is_(True),
             ManualTaskConfig.config_type.in_(config_types),
         )
 
     connection_configs = query.distinct().all()
 
-    return [
-        ManualTaskAddress.create(config.key)
-        for config in connection_configs
-    ]
+    return [ManualTaskAddress.create(config.key) for config in connection_configs]
 
 
 def get_manual_task_for_connection_config(

@@ -818,4 +818,64 @@ describe("Action center Asset Results", () => {
       );
     });
   });
+
+  describe("error handling", () => {
+    describe("uncategorized assets error", () => {
+      const webMonitorKey = "my_web_monitor_1";
+      const systemId = "[undefined]";
+      beforeEach(() => {
+        cy.login();
+        stubPlus(true);
+        stubWebsiteMonitor();
+        stubTaxonomyEntities();
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/discovery-monitor/*/results?*resolved_system_id=%5Bundefined%5D*",
+          {
+            statusCode: 500,
+            body: { detail: "Internal server error" },
+          },
+        ).as("getSystemAssetsUncategorizedError");
+      });
+
+      it("should display error page when fetching uncategorized assets fails", () => {
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetsUncategorizedError");
+
+        cy.getByTestId("error-page-result").should("exist");
+        cy.getByTestId("error-page-result").within(() => {
+          cy.contains("Error 500").should("exist");
+          cy.contains("Internal server error").should("exist");
+          cy.contains("Reload").should("exist");
+        });
+      });
+    });
+
+    describe("categorized assets error", () => {
+      const webMonitorKey = "my_web_monitor_1";
+      const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
+      beforeEach(() => {
+        cy.login();
+        stubPlus(true);
+        stubWebsiteMonitor();
+        stubTaxonomyEntities();
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+          statusCode: 500,
+          body: { detail: "Internal server error" },
+        }).as("getSystemAssetResultsError");
+      });
+
+      it("should display error page when fetching categorized assets fails", () => {
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetResultsError");
+
+        cy.getByTestId("error-page-result").should("exist");
+        cy.getByTestId("error-page-result").within(() => {
+          cy.contains("Error 500").should("exist");
+          cy.contains("Internal server error").should("exist");
+          cy.contains("Reload").should("exist");
+        });
+      });
+    });
+  });
 });

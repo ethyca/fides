@@ -917,7 +917,7 @@ def _handle_scheduling_failure(
                 dataset_name=SCHEDULING_DATASET_NAME,
                 collection_name=None,
                 message=error_message,
-                action_type=privacy_request.policy.get_action_type(),
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
             )
             # Mark the privacy request as errored with the error message
             privacy_request.error_processing(db)
@@ -961,7 +961,7 @@ def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
                     dataset_name=SCHEDULING_DATASET_NAME,
                     collection_name=None,
                     message="Privacy request successfully queued for processing",
-                    action_type=privacy_request.policy.get_action_type(),
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
                 )
 
 
