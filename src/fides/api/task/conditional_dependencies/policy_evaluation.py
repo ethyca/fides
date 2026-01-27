@@ -91,6 +91,7 @@ def _get_default_policy_result(
         db.query(Policy)
         .outerjoin(PolicyCondition, Policy.id == PolicyCondition.policy_id)
         .filter(PolicyCondition.id.is_(None))
+        .order_by(Policy.created_at)
         .first()
     )
 
