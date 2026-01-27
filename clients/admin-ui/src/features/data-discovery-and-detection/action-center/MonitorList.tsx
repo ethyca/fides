@@ -44,7 +44,12 @@ const MonitorList = () => {
       ? [{ value: MONITOR_TYPES.WEBSITE, label: "Website monitors" }]
       : []),
     ...(oktaMonitorEnabled
-      ? [{ value: MONITOR_TYPES.INFRASTRUCTURE, label: "Infrastructure monitors" }]
+      ? [
+          {
+            value: MONITOR_TYPES.INFRASTRUCTURE,
+            label: "Infrastructure monitors",
+          },
+        ]
       : []),
   ];
 
