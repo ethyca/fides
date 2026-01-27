@@ -1,10 +1,15 @@
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
-// Mock query-string to avoid ESM import issue in Jest
+// Mock ESM-only packages to avoid Jest import issues
 jest.mock("query-string", () => ({
   __esModule: true,
   default: { stringify: jest.fn(), parse: jest.fn() },
+}));
+jest.mock("react-dnd", () => ({
+  useDrag: jest.fn(() => [{}, jest.fn()]),
+  useDrop: jest.fn(() => [{}, jest.fn()]),
+  DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 import { render } from "../../utils/test-utils";
