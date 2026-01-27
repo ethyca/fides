@@ -8,10 +8,9 @@ import usePropertiesTable from "~/features/properties/usePropertiesTable";
 import { ScopeRegistryEnum } from "~/types/api";
 
 const PropertiesTable = () => {
+  const router = useRouter();
   const { tableProps, columns, searchQuery, updateSearch } =
     usePropertiesTable();
-
-  const router = useRouter();
 
   return (
     <Flex vertical gap="small">

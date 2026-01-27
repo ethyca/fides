@@ -117,19 +117,13 @@ class TestDigestConditionCRUD:
         with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
-                data={
-                    **data,
-                    "digest_condition_type": DigestConditionType.RECEIVER
-                },
+                data={**data, "digest_condition_type": DigestConditionType.RECEIVER},
             )
         # Missing digest_condition_type
         with pytest.raises(ConditionalDependencyError):
             DigestCondition.create(
                 db=db,
-                data={
-                    **data, 
-                    "digest_config_id": digest_config.id
-                },
+                data={**data, "digest_config_id": digest_config.id},
             )
 
     def test_cascade_delete_with_digest_config(

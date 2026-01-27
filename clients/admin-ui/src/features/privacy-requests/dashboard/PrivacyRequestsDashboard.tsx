@@ -11,6 +11,7 @@ import {
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
 import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
@@ -31,12 +32,17 @@ export const PrivacyRequestsDashboard = () => {
       pagination,
     });
 
-  const { data, isLoading, isFetching, refetch } =
-    useSearchPrivacyRequestsQuery({
-      ...filterQueryParams,
-      page: pagination.pageIndex,
-      size: pagination.pageSize,
-    });
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch,
+    error: dataError,
+  } = useSearchPrivacyRequestsQuery({
+    ...filterQueryParams,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+  });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -72,6 +78,15 @@ export const PrivacyRequestsDashboard = () => {
     requests,
     selectedIds,
   });
+
+  if (dataError) {
+    return (
+      <ErrorPage
+        error={dataError}
+        defaultMessage="A problem occurred while fetching your privacy requests"
+      />
+    );
+  }
 
   return (
     <div>

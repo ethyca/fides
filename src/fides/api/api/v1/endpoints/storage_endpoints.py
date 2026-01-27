@@ -216,8 +216,8 @@ def put_config_secrets(
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
         storage_config.set_secrets(
-            db=db, storage_secrets=secrets_schema.model_dump(mode="json")
-        )  # type: ignore
+            db=db, storage_secrets=secrets_schema.model_dump(mode="json")  # type: ignore[arg-type]
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -393,8 +393,8 @@ def get_storage_status(
         StorageDestinationBase.validate_details(details, storage_config.type.value)  # type: ignore
     except Exception as e:
         logger.error(
-            f"Invalid or unpopulated details on {storage_config.type.value} storage configuration: {Pii(str(e))}"
-        )  # type: ignore
+            f"Invalid or unpopulated details on {storage_config.type.value} storage configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+        )
         return StorageConfigStatusMessage(
             config_status=StorageConfigStatus.not_configured,
             detail=f"Invalid or unpopulated details on {storage_config.type.value} storage configuration",  # type: ignore
@@ -415,8 +415,8 @@ def get_storage_status(
             )
         except (ValueError, KeyError) as e:
             logger.error(
-                f"Invalid secrets found on {storage_config.type.value} storage configuration: {Pii(str(e))}"
-            )  # type: ignore
+                f"Invalid secrets found on {storage_config.type.value} storage configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+            )
             return StorageConfigStatusMessage(
                 config_status=StorageConfigStatus.not_configured,
                 detail=f"Invalid secrets found on {storage_config.type.value} storage configuration",  # type: ignore
@@ -536,8 +536,8 @@ def put_default_config_secrets(
     )
     try:
         storage_config.set_secrets(
-            db=db, storage_secrets=secrets_schema.model_dump(mode="json")
-        )  # type: ignore
+            db=db, storage_secrets=secrets_schema.model_dump(mode="json")  # type: ignore[arg-type]
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

@@ -91,9 +91,7 @@ class PolicyCondition(ConditionalDependencyBase):
         if not policy_id:
             raise ValueError("policy_id is required as a keyword argument")
 
-        condition_row = (
-            db.query(cls).filter(cls.policy_id == policy_id).one_or_none()
-        )
+        condition_row = db.query(cls).filter(cls.policy_id == policy_id).one_or_none()
 
         if not condition_row or condition_row.condition_tree is None:
             return None

@@ -279,9 +279,9 @@ class ConsentConditionFilterResult:
     def __init__(self) -> None:
         self.filtered_condition: Optional[Condition] = None
         self.skipped_dataset_fields: list[str] = []
-        self.unavailable_privacy_request_fields: list[tuple[str, str]] = (
-            []
-        )  # (field, message) pairs
+        self.unavailable_privacy_request_fields: list[
+            tuple[str, str]
+        ] = []  # (field, message) pairs
 
     @property
     def has_skipped_conditions(self) -> bool:

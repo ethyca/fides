@@ -20,6 +20,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
@@ -62,7 +63,11 @@ const FieldsDetailPage: NextPage = () => {
     decodeURIComponent,
   );
 
-  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
+  const {
+    isLoading,
+    data: dataset,
+    error,
+  } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
   const collection = collections.find((c) => c.name === collectionName);
 
@@ -314,6 +319,15 @@ const FieldsDetailPage: NextPage = () => {
     });
     return baseBreadcrumbs;
   }, [datasetId, collectionName, subfieldNames]);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching subfields for the collection ${collectionName}`}
+      />
+    );
+  }
 
   return (
     <Layout title={`Dataset - ${datasetId}`}>
