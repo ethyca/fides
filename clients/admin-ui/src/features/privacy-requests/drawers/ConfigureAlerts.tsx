@@ -11,9 +11,9 @@ import {
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
-import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import EmailChipList from "../EmailChipList";
 import {
@@ -72,9 +72,11 @@ const ConfigureAlerts = () => {
     if (data) {
       // Only populate from API data, never use dummy/pre-seeded emails
       // Ensure we always use an array, even if API returns undefined/null
-      setEmails(Array.isArray(data.email_addresses) ? data.email_addresses : []);
+      setEmails(
+        Array.isArray(data.email_addresses) ? data.email_addresses : [],
+      );
       setNotify(data.notify_after_failures !== 0);
-      setMinErrorCount(data.notify_after_failures || DEFAULT_MIN_ERROR_COUNT);
+      setMinErrorCount(data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT);
     }
     // If no data exists, state remains at initial defaults (empty emails array)
   }, [data]);
@@ -107,10 +109,17 @@ const ConfigureAlerts = () => {
         }
       >
         <Form layout="vertical" onFinish={handleSubmit}>
-          <Form.Item help="Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors." style={{ marginBottom: 16, marginTop: -24, paddingTop: 0 }} />
+          <Form.Item
+            help="Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors."
+            style={{ marginBottom: 16, marginTop: -24, paddingTop: 0 }}
+          />
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             <Form.Item style={{ marginBottom: 0 }}>
-              <Flex justify="space-between" align="center" style={{ width: "100%" }}>
+              <Flex
+                justify="space-between"
+                align="center"
+                style={{ width: "100%" }}
+              >
                 <span>Enable email notifications</span>
                 <Switch
                   size="small"
@@ -155,7 +164,9 @@ const ConfigureAlerts = () => {
                     <InputNumber
                       min={DEFAULT_MIN_ERROR_COUNT}
                       value={minErrorCount}
-                      onChange={(value) => setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)}
+                      onChange={(value) =>
+                        setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)
+                      }
                       style={{ width: 80 }}
                     />
                     <span>error(s)</span>
