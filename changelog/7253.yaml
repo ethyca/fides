@@ -1,6 +1,3 @@
-# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
-# Fill in the required fields and delete this comment block
-
 type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
 description: Added a Policy Condition Evaluator.
 pr: 7253 # PR number
