@@ -17,7 +17,7 @@ import { useConfig } from "~/features/common/config.slice";
 interface AuthFormLayoutProps {
   children: React.ReactNode;
   title?: string;
-  maxWidth?: string;
+  className?: string;
   showTitleOnDesktop?: boolean;
   dataTestId?: string;
 }
@@ -25,7 +25,7 @@ interface AuthFormLayoutProps {
 export const AuthFormLayout = ({
   children,
   title,
-  maxWidth = "640px",
+  className = "max-w-[640px]",
   showTitleOnDesktop = true,
   dataTestId = "auth-form-layout",
 }: AuthFormLayoutProps) => {
@@ -35,16 +35,11 @@ export const AuthFormLayout = ({
     <Flex
       justify="center"
       align="center"
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        backgroundColor: "#f5f5f5", // neutral-75 from palette
-        padding: "32px 16px",
-      }}
+      className="w-full min-h-screen bg-neutral-75 p-4"
       data-testid={dataTestId}
     >
-      <div style={{ width: "100%", maxWidth, padding: "48px 24px" }}>
-        <Space direction="vertical" size={48} style={{ width: "100%" }}>
+      <div className={`w-full p-6 ${className}`}>
+        <Space direction="vertical" size={48} className="w-full">
           {/* Logo */}
           <Flex justify="center">
             <img
@@ -56,33 +51,15 @@ export const AuthFormLayout = ({
           </Flex>
 
           {/* Form Container */}
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "48px",
-              width: "100%",
-              borderRadius: "4px",
-              boxShadow:
-                "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-            }}
-          >
+          <div className="bg-white rounded-md shadow-sm p-6 w-full">
             {title && (
-              <Space
-                direction="vertical"
-                size={16}
-                style={{ width: "100%", marginBottom: "32px" }}
-              >
+              <Space direction="vertical" size={16} className="w-full mb-8">
                 {/* Desktop Title - conditionally shown */}
                 {showTitleOnDesktop && (
                   <Flex justify="center">
                     <Typography.Title
                       level={2}
-                      style={{
-                        fontSize: "1.875rem", // 3xl
-                        color: "#2b2e35", // minos
-                        marginBottom: 0,
-                        textAlign: "center",
-                      }}
+                      className="text-2xl text-minos mb-0 text-center"
                     >
                       {title}
                     </Typography.Title>
@@ -92,7 +69,7 @@ export const AuthFormLayout = ({
             )}
 
             {/* Content */}
-            <div style={{ width: "100%" }}>{children}</div>
+            <div className="w-full">{children}</div>
           </div>
         </Space>
       </div>

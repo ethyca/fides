@@ -31,14 +31,14 @@ const fallbackNull = (
 ) => (value === undefined || value === "" ? null : value);
 
 const usePrivacyRequestForm = ({
-  onClose,
+  onExit,
   action,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
   onSuccessWithoutVerification,
 }: {
-  onClose: () => void;
+  onExit: () => void;
   action?: ConfigPrivacyRequestOption;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
@@ -191,7 +191,7 @@ const usePrivacyRequestForm = ({
           description: error,
           ...ErrorToastOptions,
         });
-        onClose();
+        onExit();
       };
 
       try {
@@ -225,7 +225,7 @@ const usePrivacyRequestForm = ({
           if (onSuccessWithoutVerification) {
             onSuccessWithoutVerification();
           } else {
-            onClose();
+            onExit();
           }
         } else if (
           (isVerificationRequired &&

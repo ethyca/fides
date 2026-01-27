@@ -128,7 +128,6 @@ const HomePage: NextPage = () => {
     toast,
   ]);
 
-  // Navigate to privacy request page instead of opening modal
   const handlePrivacyRequestOpen = (index: number) => {
     router.push(`/privacy-request/${index}`);
   };
@@ -139,11 +138,10 @@ const HomePage: NextPage = () => {
     content.push(
       <PrivacyCard
         key={action.title}
-        index={index}
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onOpen={handlePrivacyRequestOpen}
+        onClick={() => handlePrivacyRequestOpen(index)}
       />,
     );
   });

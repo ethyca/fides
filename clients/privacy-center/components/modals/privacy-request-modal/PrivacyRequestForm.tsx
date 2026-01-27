@@ -12,7 +12,7 @@ import { CustomConfigField, PrivacyRequestOption } from "~/types/config";
 import usePrivacyRequestForm from "./usePrivacyRequestForm";
 
 type PrivacyRequestFormProps = {
-  onClose: () => void;
+  onExit: () => void;
   openAction: number | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
@@ -21,7 +21,7 @@ type PrivacyRequestFormProps = {
 };
 
 const PrivacyRequestForm = ({
-  onClose,
+  onExit,
   openAction,
   setCurrentView,
   setPrivacyRequestId,
@@ -52,7 +52,7 @@ const PrivacyRequestForm = ({
     customIdentityFields,
     customPrivacyRequestFields,
   } = usePrivacyRequestForm({
-    onClose,
+    onExit,
     action,
     setCurrentView,
     setPrivacyRequestId,
@@ -200,7 +200,7 @@ const PrivacyRequestForm = ({
             ) : null;
           })}
         <Flex justify="stretch" gap="middle">
-          <Button type="default" variant="outlined" onClick={onClose} block>
+          <Button type="default" variant="outlined" onClick={onExit} block>
             {action.cancelButtonText || "Cancel"}
           </Button>
           <Button

@@ -1,11 +1,11 @@
 "use client";
 
+import { useMessage } from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import { PrivacyRequestOption } from "~/types/config";
 
 import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
 
@@ -23,6 +23,8 @@ const PrivacyRequestFormPage = ({
     useState<boolean>(false);
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
+  const messageApi = useMessage();
+
   // Update verification requirement from API
   useEffect(() => {
     if (getIdVerificationConfigQuery.isSuccess) {
@@ -33,19 +35,22 @@ const PrivacyRequestFormPage = ({
   }, [getIdVerificationConfigQuery]);
 
   if (Number.isNaN(parsedActionIndex)) {
-    return null;
+    messageApi.error(
+      `Invalid action index "${actionIndex}" for privacy request`,
+    );
+    router.push("/");
   }
 
-  const action = config.actions[parsedActionIndex] as
-    | PrivacyRequestOption
-    | undefined;
+  const action = config.actions[parsedActionIndex];
 
   if (!action) {
+    messageApi.error(
+      `Invalid action index "${actionIndex}" for privacy request`,
+    );
     router.push("/");
-    return null;
   }
 
-  const handleClose = () => {
+  const handleExit = () => {
     router.push("/");
   };
 
@@ -70,7 +75,7 @@ const PrivacyRequestFormPage = ({
 
   return (
     <PrivacyRequestForm
-      onClose={handleClose}
+      onExit={handleExit}
       openAction={parsedActionIndex}
       setCurrentView={handleSetCurrentView}
       setPrivacyRequestId={handleSetPrivacyRequestId}

@@ -4,8 +4,8 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
-import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import VerificationPage from "~/components/privacy-request/VerificationPage";
 import { NextSearchParams } from "~/types/next";
 
@@ -29,9 +29,12 @@ const PrivacyRequestVerifyPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PrivacyRequestLayout title="Enter verification code">
+      <AuthFormLayout
+        showTitleOnDesktop
+        dataTestId="privacy-request-verify-layout"
+      >
         <VerificationPage actionIndex={actionIndex} />
-      </PrivacyRequestLayout>
+      </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>
   );
 };

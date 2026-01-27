@@ -4,8 +4,8 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
-import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import RequestSubmittedPage from "~/components/privacy-request/RequestSubmittedPage";
 import { NextSearchParams } from "~/types/next";
 
@@ -26,9 +26,13 @@ const PrivacyRequestSuccessPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PrivacyRequestLayout title="Request submitted">
+      <AuthFormLayout
+        showTitleOnDesktop
+        title="Request submitted"
+        dataTestId="privacy-request-success-layout"
+      >
         <RequestSubmittedPage />
-      </PrivacyRequestLayout>
+      </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>
   );
 };

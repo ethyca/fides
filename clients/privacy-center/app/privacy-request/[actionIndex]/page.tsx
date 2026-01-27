@@ -4,16 +4,16 @@ import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import { AuthFormLayout } from "~/components/common/AuthFormLayout";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PrivacyRequestFormPage from "~/components/privacy-request/PrivacyRequestFormPage";
-import { PrivacyRequestLayout } from "~/components/privacy-request/PrivacyRequestLayout";
 import { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
 
 /**
  * Privacy Request Form Page
- * Full-page view for submitting privacy requests (replaces modal)
+ * Full-page view for submitting privacy requests
  */
 const PrivacyRequestPage = async ({
   params,
@@ -29,9 +29,9 @@ const PrivacyRequestPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PrivacyRequestLayout>
+      <AuthFormLayout showTitleOnDesktop dataTestId="privacy-request-layout">
         <PrivacyRequestFormPage actionIndex={actionIndex} />
-      </PrivacyRequestLayout>
+      </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>
   );
 };

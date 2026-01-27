@@ -21,7 +21,7 @@ export const ExternalAuthLayout = ({
   return (
     <AuthFormLayout
       title={title}
-      maxWidth="512px"
+      className="max-w-[512px]"
       showTitleOnDesktop
       dataTestId="external-auth-container"
     >
