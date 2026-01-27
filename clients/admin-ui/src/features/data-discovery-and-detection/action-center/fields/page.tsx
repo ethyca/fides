@@ -19,6 +19,7 @@ import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSearch } from "~/features/common/hooks";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
@@ -227,6 +228,15 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
     !!detailsUrn,
     () => listQueryMeta.refetch(),
   );
+
+  if (listQueryMeta.error) {
+    return (
+      <ErrorPage
+        error={listQueryMeta.error}
+        defaultMessage="A problem occurred while fetching your monitor results"
+      />
+    );
+  }
 
   return (
     <>

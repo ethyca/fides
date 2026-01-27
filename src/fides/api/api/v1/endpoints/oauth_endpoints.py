@@ -267,7 +267,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
         )
         auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
             AuthenticationStrategy.get_strategy(  # type: ignore
-                authentication.strategy,
+                authentication.strategy,  # type: ignore[union-attr]
                 authentication.configuration,  # type: ignore
             )
         )
