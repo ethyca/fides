@@ -1,6 +1,12 @@
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
+// Mock query-string to avoid ESM import issue in Jest
+jest.mock("query-string", () => ({
+  __esModule: true,
+  default: { stringify: jest.fn(), parse: jest.fn() },
+}));
+
 import AssetReportingTable from "../../../src/features/asset-reporting/AssetReportingTable";
 import { render } from "../../utils/test-utils";
 
