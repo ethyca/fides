@@ -680,7 +680,7 @@ def run_privacy_request(
                     dataset_name="Dataset reference validation",
                     collection_name=None,
                     message=str(exc),
-                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
                 )
                 privacy_request.error_processing(db=session)
                 return
@@ -839,7 +839,7 @@ def run_privacy_request(
                                         dataset_name="Privacy request completion email",
                                         collection_name=None,
                                         message="Privacy request completion email sent successfully.",
-                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
                                     )
                                 except (
                                     IdentityNotFoundException,
@@ -852,7 +852,7 @@ def run_privacy_request(
                                         dataset_name="Privacy request completion email",
                                         collection_name=None,
                                         message=f"Privacy request completion email failed: {str(e)}",
-                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                                        action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
                                     )
                                     privacy_request.error_processing(db=session)
                                     # If dev mode, log traceback
