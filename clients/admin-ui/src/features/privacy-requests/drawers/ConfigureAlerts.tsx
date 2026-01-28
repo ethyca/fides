@@ -7,8 +7,8 @@ import {
   Icons,
   InputNumber,
   Space,
-  Typography,
   Switch,
+  Typography,
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
@@ -116,10 +116,7 @@ const ConfigureAlerts = () => {
           </Typography.Text>
           <Space direction="vertical" size="middle" className="w-full">
             <Form.Item className="mb-0">
-              <Flex
-                justify="space-between"
-                align="center"
-              >
+              <Flex justify="space-between" align="center">
                 <label htmlFor="enable-email-notifications">
                   Enable email notifications
                 </label>
@@ -137,7 +134,7 @@ const ConfigureAlerts = () => {
               </Flex>
             </Form.Item>
 
-            <Divider className="mt-2 mb-3" />
+            <Divider className="mb-3 mt-2" />
 
             <Form.Item
               label={
@@ -157,7 +154,7 @@ const ConfigureAlerts = () => {
 
             {notify && (
               <>
-                <Divider className="mt-2 mb-3" />
+                <Divider className="mb-3 mt-2" />
                 <Form.Item
                   label="Notification frequency"
                   help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
