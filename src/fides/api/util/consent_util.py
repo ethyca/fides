@@ -221,7 +221,9 @@ def add_errored_system_status_for_consent_reporting(
     Deeming them relevant if they already had a "pending" log added to them.
     """
     add_errored_system_status_for_consent_reporting_on_preferences(
-        db, privacy_request.privacy_preferences, connection_config  # type: ignore[attr-defined]
+        db,
+        privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+        connection_config,
     )
 
 
