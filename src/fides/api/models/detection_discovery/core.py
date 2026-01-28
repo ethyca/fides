@@ -583,7 +583,7 @@ class StagedResource(Base):
     )
     parent = Column(String, nullable=True)
 
-    is_leaf = Column(Boolean, nullable=True, default=False)
+    is_leaf = Column(Boolean, nullable=True, default=None)
 
     # diff-related fields
     diff_status = Column(String, nullable=True, index=True)
@@ -690,6 +690,7 @@ class StagedResource(Base):
             "ix_stagedresource_monitor_config_is_leaf",
             "monitor_config_id",
             "is_leaf",
+            postgresql_where=text("is_leaf IS NOT NULL"),
         ),
     )
 

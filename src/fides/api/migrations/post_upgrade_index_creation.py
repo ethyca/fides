@@ -187,7 +187,7 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         },
         {
             "name": "ix_stagedresource_monitor_config_is_leaf",
-            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_config_is_leaf ON stagedresource (monitor_config_id, is_leaf)",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_config_is_leaf ON stagedresource (monitor_config_id, is_leaf) WHERE is_leaf IS NOT NULL",
             "type": "index",
         },
     ],
