@@ -123,18 +123,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Privacy Assessments",
-    icon: <Icons.Document />,
-    routes: [
-      {
-        title: "Privacy Assessments",
-        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
-        scopes: [],
-        requiresFlag: "alphaDataProtectionAssessments",
-      },
-    ],
-  },
-  {
     title: "Privacy requests",
     icon: <Icons.MessageQueue />,
     routes: [
@@ -152,6 +140,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Connection manager",
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+      },
+    ],
+  },
+  {
+    title: "Privacy assessments",
+    icon: <Icons.Document />,
+    routes: [
+      {
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
       },
     ],
   },

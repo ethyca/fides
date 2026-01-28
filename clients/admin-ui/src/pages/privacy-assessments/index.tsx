@@ -454,15 +454,15 @@ const PrivacyAssessmentsPage: NextPage = () => {
               <Select
                 placeholder="Status: All"
                 style={{ width: 240 }}
-                value={statusFilter}
-                onChange={(value) => setStatusFilter(value)}
+                value={statusFilter === "all" ? undefined : statusFilter}
+                onChange={(value) => setStatusFilter(value || "all")}
+                allowClear
                 aria-label="Filter by status"
                 options={[
-                  { label: "All", value: "all" },
-                  { label: "New", value: "new" },
-                  { label: "Completed", value: "completed" },
-                  { label: "Updated", value: "updated" },
-                  { label: "Out of date", value: "outdated" },
+                  { label: "Status: New", value: "new" },
+                  { label: "Status: Completed", value: "completed" },
+                  { label: "Status: Updated", value: "updated" },
+                  { label: "Status: Out of date", value: "outdated" },
                 ]}
               />
               <Select

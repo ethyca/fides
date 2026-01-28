@@ -1,72 +1,63 @@
 import {
+  CheckCircleOutlined,
+  CloseOutlined,
+  DownloadOutlined,
+  DownOutlined,
+  EditOutlined,
+  FilePdfOutlined,
+  GlobalOutlined,
+  RightOutlined,
+  SafetyOutlined,
+  SearchOutlined,
+  SlackOutlined,
+  ThunderboltOutlined,
+} from "@ant-design/icons";
+import {
   Avatar,
+  Badge,
   Button,
   Card,
+  CheckOutlined,
   Collapse,
   CUSTOM_TAG_COLOR,
+  Descriptions,
+  Divider,
   Drawer,
   Flex,
   Form,
+  Icons,
   Input,
+  List,
   LocationSelect,
   Modal,
-  Select,
+  Result,
   Space,
   Steps,
   Tag,
-  Typography,
-  CheckOutlined,
-  Icons,
-  Descriptions,
-  List,
-  Divider,
-  Badge,
   Tooltip,
+  Typography,
 } from "fidesui";
-import React from "react";
-// TODO: fix this export to be better encapsulated in fidesui
-import palette from "fidesui/src/palette/palette.module.scss";
-import {
-  InfoCircleOutlined,
-  SafetyOutlined,
-  CheckCircleOutlined,
-  GlobalOutlined,
-  ThunderboltOutlined,
-  CloseOutlined,
-  FilePdfOutlined,
-  EditOutlined,
-  DownloadOutlined,
-  ExportOutlined,
-  SearchOutlined,
-  DownOutlined,
-  RightOutlined,
-} from "@ant-design/icons";
-import { SlackOutlined } from "@ant-design/icons";
-import type { NextPage } from "next";
-import Head from "next/head";
-import { useRouter } from "next/router";
-import { useState, useEffect, useMemo } from "react";
-
-import { Result } from "fidesui";
-import Layout from "~/features/common/Layout";
-import { useFeatures } from "~/features/common/features";
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
-import SearchInput from "~/features/common/SearchInput";
 import {
   formatIsoLocation,
   isoStringToEntry,
 } from "fidesui/src/components/data-display/location.utils";
+// TODO: fix this export to be better encapsulated in fidesui
+import palette from "fidesui/src/palette/palette.module.scss";
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useState } from "react";
+
+import { useFeatures } from "~/features/common/features";
+import Layout from "~/features/common/Layout";
+import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
+import SearchInput from "~/features/common/SearchInput";
+
 import { EditableTextBlock } from "./components/EditableTextBlock";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
-
-interface SectionSummary {
-  sectionKey: string;
-  summary: string;
-  isLoading: boolean;
-}
 
 interface EvidenceItem {
   id: string;
@@ -135,15 +126,17 @@ const generateSectionSummary = async (
   formValues: Record<string, unknown>,
 ): Promise<string> => {
   // Mock delay to simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 500);
+  });
 
   // Extract answers from form values
   const answers = Object.entries(formValues)
     .filter(
-      ([_, value]) =>
+      ([, value]) =>
         value && typeof value === "string" && value.trim().length > 0,
     )
-    .map(([_, value]) => value as string)
+    .map(([, value]) => value as string)
     .join(" ");
 
   // Mock summaries based on section - in production, this would call an LLM API
@@ -167,21 +160,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
 
-  if (!flags.alphaDataProtectionAssessments) {
-    return (
-      <Layout title="Privacy Assessment">
-        <Result
-          status="error"
-          title="Feature not available"
-          subTitle="This feature is currently behind a feature flag and is not enabled."
-        />
-      </Layout>
-    );
-  }
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [form] = Form.useForm();
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
@@ -416,17 +399,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     const sourcePattern = /\[(\d+)\]/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
-    let match;
+    let match = sourcePattern.exec(text);
     let sourceIndex = 0;
 
-    while ((match = sourcePattern.exec(text)) !== null) {
+    while (match !== null) {
       if (match.index > lastIndex) {
         parts.push(text.substring(lastIndex, match.index));
       }
       const sourceNum = match[1];
+      const currentSourceIndex = sourceIndex;
+      sourceIndex += 1;
       parts.push(
         <Button
-          key={`source-${sourceIndex++}`}
+          key={`source-${currentSourceIndex}`}
           type="text"
           style={{
             padding: "2px 8px",
@@ -444,14 +429,16 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             margin: "0 2px",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#E0E9FF";
-            e.currentTarget.style.transform = "scale(1.05)";
-            e.currentTarget.style.borderColor = "#B8D0FF";
+            const target = e.currentTarget;
+            target.style.backgroundColor = "#E0E9FF";
+            target.style.transform = "scale(1.05)";
+            target.style.borderColor = "#B8D0FF";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#F0F4FF";
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.borderColor = "#D6E4FF";
+            const target = e.currentTarget;
+            target.style.backgroundColor = "#F0F4FF";
+            target.style.transform = "scale(1)";
+            target.style.borderColor = "#D6E4FF";
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -469,10 +456,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         </Button>,
       );
       lastIndex = match.index + match[0].length;
+      match = sourcePattern.exec(text);
     }
     if (lastIndex < text.length) {
       parts.push(text.substring(lastIndex));
     }
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{parts}</>;
   };
 
@@ -482,6 +471,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   const handleCollapseAll = () => {
     setExpandedKeys([]);
+  };
+
+  const handleConfirmDelete = () => {
+    // In a real implementation, this would call an API to delete the assessment
+    // For now, we just navigate back to the assessments list
+    setIsDeleteModalOpen(false);
+    router.push(PRIVACY_ASSESSMENTS_ROUTE);
   };
 
   // Questions for each section based on GDPR DPIA template
@@ -522,16 +518,28 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     setQuestionsModalOpen(true);
   };
 
+  const handleOpenEvidence = (sectionKey: string) => {
+    setFocusedQuestionId(sectionKey);
+    if (!evidenceExpandedSections.includes(sectionKey)) {
+      setEvidenceExpandedSections([
+        ...evidenceExpandedSections,
+        sectionKey,
+      ]);
+    }
+    setIsDrawerOpen(true);
+  };
+
   // Helper to render section title with info icon
   const renderSectionTitle = (
     sectionKey: string,
     title: string,
-    isExpanded: boolean,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _isExpanded: boolean,
   ) => {
     const sectionNumber = sectionKey;
     return (
-      <Flex align="center" gap="small">
-        <Text strong style={{ fontSize: 16 }}>
+      <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
+        <Text strong style={{ fontSize: 16, whiteSpace: "nowrap" }}>
           {sectionNumber}. {title}
         </Text>
         <Tooltip title="View questions for this section">
@@ -539,6 +547,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             type="text"
             size="small"
             icon={<Icons.Information size={16} />}
+            aria-label="View questions for this section"
             onClick={(e) => {
               e.stopPropagation();
               handleOpenQuestions(sectionKey);
@@ -549,12 +558,15 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               minHeight: "auto",
               color: palette.FIDESUI_NEUTRAL_500,
               transition: "color 0.2s ease",
+              flexShrink: 0,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = palette.FIDESUI_MINOS;
+              const target = e.currentTarget;
+              target.style.color = palette.FIDESUI_MINOS;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = palette.FIDESUI_NEUTRAL_500;
+              const target = e.currentTarget;
+              target.style.color = palette.FIDESUI_NEUTRAL_500;
             }}
           />
         </Tooltip>
@@ -750,36 +762,43 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const steps = [
-    {
-      title: "Need",
-      status: "finish",
-    },
-    {
-      title: "Processing",
-      status: "finish",
-    },
-    {
-      title: "Consultation",
-      status: "wait",
-    },
-    {
-      title: "Necessity",
-      status: "finish",
-    },
-    {
-      title: "Risks",
-      status: "process",
-    },
-    {
-      title: "Measures",
-      status: "wait",
-    },
-    {
-      title: "Sign off",
-      status: "wait",
-    },
-  ];
+  // Check feature flag after all hooks
+  if (!flags?.alphaDataProtectionAssessments) {
+    return (
+      <Layout title="Privacy Assessment">
+        <Result
+          status="error"
+          title="Feature not available"
+          subTitle="This feature is currently behind a feature flag and is not enabled."
+        />
+      </Layout>
+    );
+  }
+
+  // IDs of completed assessments (from mock data)
+  const completedAssessmentIds = ["3", "6", "9"];
+  const assessmentId = router.query.id as string;
+  const isCompletedAssessment = completedAssessmentIds.includes(assessmentId);
+
+  const steps = isCompletedAssessment
+    ? [
+        { title: "Need", status: "finish" },
+        { title: "Processing", status: "finish" },
+        { title: "Consultation", status: "finish" },
+        { title: "Necessity", status: "finish" },
+        { title: "Risks", status: "finish" },
+        { title: "Measures", status: "finish" },
+        { title: "Sign off", status: "finish" },
+      ]
+    : [
+        { title: "Need", status: "finish" },
+        { title: "Processing", status: "finish" },
+        { title: "Consultation", status: "wait" },
+        { title: "Necessity", status: "finish" },
+        { title: "Risks", status: "process" },
+        { title: "Measures", status: "wait" },
+        { title: "Sign off", status: "wait" },
+      ];
 
   return (
     <Layout title="Privacy assessments">
@@ -1147,6 +1166,28 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         ]}
         rightContent={
           <Space wrap>
+            <Tooltip title="Delete assessment">
+              <Button
+                type="text"
+                danger
+                onClick={() => setIsDeleteModalOpen(true)}
+                aria-label="Delete assessment"
+                style={{ padding: "4px 8px" }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 32 32"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 12H14V24H12V12Z" />
+                  <path d="M18 12H20V24H18V12Z" />
+                  <path d="M4 6V8H6V28C6 28.5304 6.21071 29.0391 6.58579 29.4142C6.96086 29.7893 7.46957 30 8 30H24C24.5304 30 25.0391 29.7893 25.4142 29.4142C25.7893 29.0391 26 28.5304 26 28V8H28V6H4ZM8 28V8H24V28H8Z" />
+                  <path d="M12 2H20V4H12V2Z" />
+                </svg>
+              </Button>
+            </Tooltip>
             <Button style={{ whiteSpace: "nowrap" }}>Save as draft</Button>
             <Button
               type="primary"
@@ -1169,9 +1210,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         >
           <div style={{ overflowX: "auto", marginBottom: 32 }}>
             <Steps
-              current={2}
+              current={isCompletedAssessment ? 6 : 2}
               size="small"
-              items={steps.map((step, index) => ({
+              items={steps.map((step) => ({
                 title: step.title,
                 status: step.status as any,
               }))}
@@ -1427,6 +1468,218 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             </Flex>
           </div>
 
+          {/* Processing Overview - Single instance at assessment level */}
+          {/* Show filled state for all existing assessments, empty state only for brand new assessments with id "new" */}
+          <Card title="PROCESSING OVERVIEW" style={{ marginBottom: 24 }}>
+            <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
+              {/* Scope Card */}
+              <Card
+                style={{
+                  flex: "1 1 200px",
+                  minWidth: 200,
+                  border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                  borderRadius: 8,
+                  padding: 16,
+                  backgroundColor: palette.FIDESUI_BG_CORINTH,
+                }}
+                bodyStyle={{ padding: 0 }}
+              >
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  SCOPE
+                </Text>
+                {assessmentId === "new" ? (
+                  <>
+                    <Text
+                      type="secondary"
+                      style={{
+                        fontSize: 14,
+                        display: "block",
+                        marginBottom: 8,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      No data categories identified yet
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Complete your data mapping to populate
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text
+                      strong
+                      style={{
+                        fontSize: 16,
+                        display: "block",
+                        marginBottom: 8,
+                      }}
+                    >
+                      2 Categories Identified
+                    </Text>
+                    <Space size="small" wrap>
+                      <Tag color={CUSTOM_TAG_COLOR.CORINTH}>PII</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.CORINTH}>
+                        Behavioral Data
+                      </Tag>
+                    </Space>
+                  </>
+                )}
+              </Card>
+
+              {/* Nature Card */}
+              <Card
+                style={{
+                  flex: "1 1 200px",
+                  minWidth: 200,
+                  border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                  borderRadius: 8,
+                  padding: 16,
+                  backgroundColor: palette.FIDESUI_BG_CORINTH,
+                }}
+                bodyStyle={{ padding: 0 }}
+              >
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  NATURE
+                </Text>
+                {assessmentId === "new" ? (
+                  <>
+                    <Text
+                      type="secondary"
+                      style={{
+                        fontSize: 14,
+                        display: "block",
+                        marginBottom: 8,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Processing details not yet defined
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Define how data will be processed
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Flex
+                      align="center"
+                      gap="small"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <ThunderboltOutlined
+                        style={{
+                          fontSize: 16,
+                          color: palette.FIDESUI_MINOS,
+                        }}
+                      />
+                      <Text strong style={{ fontSize: 16 }}>
+                        AI Analysis
+                      </Text>
+                    </Flex>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Automated Processing
+                    </Text>
+                  </>
+                )}
+              </Card>
+
+              {/* Context Card */}
+              <Card
+                style={{
+                  flex: "1 1 200px",
+                  minWidth: 200,
+                  border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+                  borderRadius: 8,
+                  padding: 16,
+                  backgroundColor: palette.FIDESUI_BG_CORINTH,
+                }}
+                bodyStyle={{ padding: 0 }}
+              >
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    display: "block",
+                    marginBottom: 8,
+                  }}
+                >
+                  CONTEXT
+                </Text>
+                {assessmentId === "new" ? (
+                  <>
+                    <Text
+                      type="secondary"
+                      style={{
+                        fontSize: 14,
+                        display: "block",
+                        marginBottom: 8,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Stakeholder information pending
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Identify who is affected by processing
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Flex
+                      align="center"
+                      gap="small"
+                      style={{ marginBottom: 8 }}
+                    >
+                      <GlobalOutlined
+                        style={{
+                          fontSize: 16,
+                          color: palette.FIDESUI_MINOS,
+                        }}
+                      />
+                      <Text strong style={{ fontSize: 16 }}>
+                        External
+                      </Text>
+                    </Flex>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Customer Facing
+                    </Text>
+                  </>
+                )}
+              </Card>
+            </Flex>
+
+            {assessmentId !== "new" && (
+              <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
+                <Flex align="center" gap="small">
+                  <CheckCircleOutlined
+                    style={{
+                      color: palette.FIDESUI_SUCCESS,
+                      fontSize: 14,
+                    }}
+                  />
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Overview populated from system data
+                  </Text>
+                </Flex>
+              </Flex>
+            )}
+          </Card>
+
           <Form
             form={form}
             layout="vertical"
@@ -1447,15 +1700,108 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("1") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "1",
-                          "Identify the need for a DPIA",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "1",
+                              "Identify the need for a DPIA",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              Updated 2m ago by{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{ marginLeft: 4 }}
+                              >
+                                JG
+                              </Tag>
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>1/1</span>
+                            </Text>
+                            <Flex
+                              gap="small"
+                              align="center"
+                              style={{
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                            </Flex>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("1");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                            <Flex align="center" gap="small">
+                              <CheckCircleOutlined
+                                style={{
+                                  color: palette.FIDESUI_SUCCESS,
+                                  fontSize: 14,
+                                }}
+                              />
+                              <Text type="secondary" style={{ fontSize: 11 }}>
+                                Request sent 2h ago to @DataSteward
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -1463,7 +1809,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -1492,7 +1838,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Updated 2m ago by{" "}
                               <Tag
-                                color={CUSTOM_TAG_COLOR.MARBLE}
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
                                 JG
@@ -1544,215 +1890,41 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   size="large"
                   style={{ width: "100%" }}
                 >
-                  <Card
-                    title="PROCESSING OVERVIEW"
-                    style={{ marginBottom: 24 }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
                   >
-                    <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          SCOPE
-                        </Text>
-                        <Text
-                          strong
-                          style={{
-                            fontSize: 16,
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          2 Categories Identified
-                        </Text>
-                        <Space size="small" wrap>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>
-                            Behavioral Data
-                          </Tag>
-                        </Space>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          NATURE
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <ThunderboltOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            AI Analysis
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Automated Processing
-                        </Text>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          CONTEXT
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <GlobalOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            External
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Customer Facing
-                        </Text>
-                      </Card>
-                    </Flex>
                     <Flex
-                      justify="flex-end"
+                      justify="space-between"
                       align="center"
-                      wrap="wrap"
-                      gap="small"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex align="center" gap="small">
-                        <CheckCircleOutlined
-                          style={{
-                            color: palette.FIDESUI_SUCCESS,
-                            fontSize: 14,
-                          }}
-                        />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Request sent 2h ago to @DataSteward
-                        </Text>
-                      </Flex>
-                      <Button icon={<SlackOutlined />} size="small">
-                        Request input from team
-                      </Button>
-                      <Button
-                        type="default"
-                        icon={<Icons.Document />}
-                        onClick={() => setIsDrawerOpen(true)}
-                        size="small"
-                      >
-                        View evidence
-                      </Button>
+                      <Text strong>Identify the need for a DPIA</Text>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
-                  </Card>
-
-                  <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
+                    <EditableTextBlock
+                      value={documentContent.dpiaNeed}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          dpiaNeed: value,
+                        })
+                      }
+                      placeholder="Summarise why you identified the need for a DPIA."
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "1")
+                      }
+                      onComment={() => {
+                        // TODO: Open comment modal/thread
                       }}
-                    >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Identify the need for a DPIA</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
-                      </Flex>
-                      <EditableTextBlock
-                        value={documentContent.dpiaNeed}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            dpiaNeed: value,
-                          })
-                        }
-                        placeholder="Summarise why you identified the need for a DPIA."
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "1")
-                        }
-                        onComment={(selection) => {
-                          // TODO: Open comment modal/thread
-                          console.log("Comment on selection:", selection);
-                        }}
-                        onRequestInput={(selection) => {
-                          // TODO: Open team input request
-                          console.log(
-                            "Request input for selection:",
-                            selection,
-                          );
-                        }}
-                      />
-                    </div>
-                  </Space>
+                      onRequestInput={() => {
+                        // TODO: Open team input request
+                      }}
+                    />
+                  </div>
                 </Space>
               </Panel>
 
@@ -1761,15 +1933,110 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("2") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "2",
-                          "Describe the processing",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "2",
+                              "Describe the processing",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              Updated 5m ago by{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{ marginLeft: 4 }}
+                              >
+                                AI
+                              </Tag>
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "5/5" : "4/5"}
+                              </span>
+                            </Text>
+                            <Flex
+                              gap="small"
+                              align="center"
+                              style={{
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                            </Flex>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("2");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                            <Flex align="center" gap="small">
+                              <CheckCircleOutlined
+                                style={{
+                                  color: palette.FIDESUI_SUCCESS,
+                                  fontSize: 14,
+                                }}
+                              />
+                              <Text type="secondary" style={{ fontSize: 11 }}>
+                                Request sent 1h ago to @PrivacyTeam
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -1777,7 +2044,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -1806,7 +2073,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Updated 2m ago by{" "}
                               <Tag
-                                color={CUSTOM_TAG_COLOR.MARBLE}
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
                                 JG
@@ -1858,376 +2125,192 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   size="large"
                   style={{ width: "100%" }}
                 >
-                  <Card
-                    title="PROCESSING OVERVIEW"
-                    style={{ marginBottom: 24 }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
                   >
-                    <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          SCOPE
-                        </Text>
-                        <Text
-                          strong
-                          style={{
-                            fontSize: 16,
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          2 Categories Identified
-                        </Text>
-                        <Space size="small" wrap>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>
-                            Behavioral Data
-                          </Tag>
-                        </Space>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          NATURE
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <ThunderboltOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            AI Analysis
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Automated Processing
-                        </Text>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          CONTEXT
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <GlobalOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            External
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Customer Facing
-                        </Text>
-                      </Card>
-                    </Flex>
                     <Flex
-                      justify="flex-end"
+                      justify="space-between"
                       align="center"
-                      wrap="wrap"
-                      gap="small"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex align="center" gap="small">
-                        <CheckCircleOutlined
-                          style={{
-                            color: palette.FIDESUI_SUCCESS,
-                            fontSize: 14,
-                          }}
-                        />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Request sent 2h ago to @DataSteward
-                        </Text>
-                      </Flex>
-                      <Button icon={<SlackOutlined />} size="small">
-                        Request input from team
-                      </Button>
-                      <Button
-                        type="default"
-                        icon={<Icons.Document />}
-                        onClick={() => setIsDrawerOpen(true)}
-                        size="small"
-                      >
-                        View evidence
-                      </Button>
+                      <Text strong>Assessment framework</Text>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
-                  </Card>
+                    <EditableTextBlock
+                      value={documentContent.framework}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          framework: value,
+                        })
+                      }
+                      placeholder="Enter assessment framework"
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
 
-                  <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
                   >
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
-                      }}
+                    <Flex
+                      justify="space-between"
+                      align="center"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Assessment framework</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
+                      <Text strong>Nature of processing</Text>
+                      <Flex gap="small" align="center">
+                        <Text type="success" style={{ fontSize: 12 }}>
+                          HIGH CONFIDENCE
+                        </Text>
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                       </Flex>
-                      <EditableTextBlock
-                        value={documentContent.framework}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            framework: value,
-                          })
-                        }
-                        placeholder="Enter assessment framework"
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
+                    </Flex>
+                    <EditableTextBlock
+                      value={documentContent.nature}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          nature: value,
+                        })
+                      }
+                      placeholder="How will you collect, use, store and delete data? What is the source of the data? Will you be sharing data with anyone? What types of processing identified as likely high risk are involved?"
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "2")
+                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
 
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
-                      }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Flex
+                      justify="space-between"
+                      align="center"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Nature of processing</Text>
-                        <Flex gap="small" align="center">
-                          <Tag
-                            color={CUSTOM_TAG_COLOR.MINOS}
-                            style={{ marginLeft: 8 }}
-                          >
-                            AI
-                          </Tag>
-                          <Text type="success" style={{ fontSize: 12 }}>
-                            HIGH CONFIDENCE
-                          </Text>
-                        </Flex>
+                      <Text strong>Scope of the processing</Text>
+                      <Flex gap="small" align="center">
+                        <Text type="success" style={{ fontSize: 12 }}>
+                          MEDIUM CONFIDENCE
+                        </Text>
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG + AI</Tag>
                       </Flex>
-                      <EditableTextBlock
-                        value={documentContent.nature}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            nature: value,
-                          })
-                        }
-                        placeholder="How will you collect, use, store and delete data? What is the source of the data? Will you be sharing data with anyone? What types of processing identified as likely high risk are involved?"
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "2")
-                        }
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
+                    </Flex>
+                    <EditableTextBlock
+                      value={documentContent.scope}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          scope: value,
+                        })
+                      }
+                      placeholder="What is the nature of the data, and does it include special category or criminal offence data? How much data will you be collecting and using? How often? How long will you keep it? How many individuals are affected? What geographical area does it cover?"
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "2")
+                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
 
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
-                      }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Flex
+                      justify="space-between"
+                      align="center"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Scope of the processing</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.CORINTH}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG + AI
-                        </Tag>
-                      </Flex>
-                      <EditableTextBlock
-                        value={documentContent.scope}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            scope: value,
-                          })
-                        }
-                        placeholder="What is the nature of the data, and does it include special category or criminal offence data? How much data will you be collecting and using? How often? How long will you keep it? How many individuals are affected? What geographical area does it cover?"
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "2")
-                        }
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
+                      <Text strong>Context of the processing</Text>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                    </Flex>
+                    <EditableTextBlock
+                      value={documentContent.context}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          context: value,
+                        })
+                      }
+                      placeholder="What is the nature of your relationship with the individuals? How much control will they have? Would they expect you to use their data in this way? Do they include children or other vulnerable groups? Are there prior concerns over this type of processing or security flaws?"
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "2")
+                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
 
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
-                      }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Flex
+                      justify="space-between"
+                      align="center"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Context of the processing</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
-                      </Flex>
-                      <EditableTextBlock
-                        value={documentContent.context}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            context: value,
-                          })
-                        }
-                        placeholder="What is the nature of your relationship with the individuals? How much control will they have? Would they expect you to use their data in this way? Do they include children or other vulnerable groups? Are there prior concerns over this type of processing or security flaws?"
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "2")
-                        }
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
-
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
+                      <Text strong>Purposes of the processing</Text>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                    </Flex>
+                    <EditableTextBlock
+                      value={documentContent.purposes}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          purposes: value,
+                        })
+                      }
+                      placeholder="What do you want to achieve? What is the intended effect on individuals? What are the benefits of the processing – for you, and more broadly?"
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "2")
+                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
                       }}
-                    >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Purposes of the processing</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
-                      </Flex>
-                      <EditableTextBlock
-                        value={documentContent.purposes}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            purposes: value,
-                          })
-                        }
-                        placeholder="What do you want to achieve? What is the intended effect on individuals? What are the benefits of the processing – for you, and more broadly?"
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "2")
-                        }
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
-                  </Space>
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
                 </Space>
               </Panel>
 
@@ -2236,11 +2319,110 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("3") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle("3", "Consultation process", true)}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "3",
+                              "Consultation process",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              Updated 1h ago by{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{ marginLeft: 4 }}
+                              >
+                                JG
+                              </Tag>
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "3/3" : "2/3"}
+                              </span>
+                            </Text>
+                            <Flex
+                              gap="small"
+                              align="center"
+                              style={{
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                            </Flex>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("3");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                            <Flex align="center" gap="small">
+                              <CheckCircleOutlined
+                                style={{
+                                  color: palette.FIDESUI_SUCCESS,
+                                  fontSize: 14,
+                                }}
+                              />
+                              <Text type="secondary" style={{ fontSize: 11 }}>
+                                Request sent 30m ago to @LegalTeam
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -2248,7 +2430,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -2277,7 +2459,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Updated 1h ago by{" "}
                               <Tag
-                                color={CUSTOM_TAG_COLOR.MARBLE}
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
                                 JG
@@ -2293,14 +2475,20 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               }}
                             >
                               <Text strong>Fields:</Text>{" "}
-                              <span style={{ marginLeft: 4 }}>2/3</span>
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "3/3" : "2/3"}
+                              </span>
                             </Text>
                           </Flex>
                         </div>
                       </Flex>
                     )}
                     <div className="status-tag-container">
-                      <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
+                      {isCompletedAssessment ? (
+                        <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
+                      ) : (
+                        <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
+                      )}
                     </div>
                   </>
                 }
@@ -2311,210 +2499,41 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   size="large"
                   style={{ width: "100%" }}
                 >
-                  <Card
-                    title="PROCESSING OVERVIEW"
-                    style={{ marginBottom: 24 }}
+                  <div
+                    style={{
+                      backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      padding: "16px 16px 8px 16px",
+                      borderRadius: 8,
+                    }}
                   >
-                    <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          SCOPE
-                        </Text>
-                        <Text
-                          strong
-                          style={{
-                            fontSize: 16,
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          2 Categories Identified
-                        </Text>
-                        <Space size="small" wrap>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>
-                            Behavioral Data
-                          </Tag>
-                        </Space>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          NATURE
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <ThunderboltOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            AI Analysis
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Automated Processing
-                        </Text>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          CONTEXT
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <GlobalOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            External
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Customer Facing
-                        </Text>
-                      </Card>
-                    </Flex>
                     <Flex
-                      justify="flex-end"
+                      justify="space-between"
                       align="center"
-                      wrap="wrap"
-                      gap="small"
+                      style={{ marginBottom: 12 }}
                     >
-                      <Flex align="center" gap="small">
-                        <CheckCircleOutlined
-                          style={{
-                            color: palette.FIDESUI_SUCCESS,
-                            fontSize: 14,
-                          }}
-                        />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Request sent 2h ago to @DataSteward
-                        </Text>
-                      </Flex>
-                      <Button icon={<SlackOutlined />} size="small">
-                        Request input from team
-                      </Button>
-                      <Button
-                        type="default"
-                        icon={<Icons.Document />}
-                        onClick={() => setIsDrawerOpen(true)}
-                        size="small"
-                      >
-                        View evidence
-                      </Button>
+                      <Text strong>Stakeholder consultation</Text>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
-                  </Card>
-
-                  <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        padding: 16,
-                        borderRadius: 8,
+                    <EditableTextBlock
+                      value={documentContent.stakeholderConsultation}
+                      onChange={(value) =>
+                        setDocumentContent({
+                          ...documentContent,
+                          stakeholderConsultation: value,
+                        })
+                      }
+                      placeholder="Consider how to consult with relevant stakeholders: describe when and how you will seek individuals' views – or justify why it's not appropriate to do so. Who else do you need to involve within your organisation? Do you need to ask your processors to assist? Do you plan to consult information security experts, or any other experts?"
+                      renderContent={(text) =>
+                        renderTextWithSourceLinks(text, "3")
+                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
                       }}
-                    >
-                      <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ marginBottom: 12 }}
-                      >
-                        <Text strong>Stakeholder consultation</Text>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
-                      </Flex>
-                      <EditableTextBlock
-                        value={documentContent.stakeholderConsultation}
-                        onChange={(value) =>
-                          setDocumentContent({
-                            ...documentContent,
-                            stakeholderConsultation: value,
-                          })
-                        }
-                        placeholder="Consider how to consult with relevant stakeholders: describe when and how you will seek individuals' views – or justify why it's not appropriate to do so. Who else do you need to involve within your organisation? Do you need to ask your processors to assist? Do you plan to consult information security experts, or any other experts?"
-                        renderContent={(text) =>
-                          renderTextWithSourceLinks(text, "3")
-                        }
-                        onComment={(selection) =>
-                          console.log("Comment on selection:", selection)
-                        }
-                        onRequestInput={(selection) =>
-                          console.log("Request input for selection:", selection)
-                        }
-                      />
-                    </div>
-                  </Space>
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
+                    />
+                  </div>
                 </Space>
               </Panel>
 
@@ -2523,15 +2542,110 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("4") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "4",
-                          "Assess necessity and proportionality",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "4",
+                              "Assess necessity and proportionality",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              Updated 5m ago by{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{ marginLeft: 4 }}
+                              >
+                                AI
+                              </Tag>
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "1/1" : "0/1"}
+                              </span>
+                            </Text>
+                            <Flex
+                              gap="small"
+                              align="center"
+                              style={{
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                            </Flex>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("4");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                            <Flex align="center" gap="small">
+                              <CheckCircleOutlined
+                                style={{
+                                  color: palette.FIDESUI_SUCCESS,
+                                  fontSize: 14,
+                                }}
+                              />
+                              <Text type="secondary" style={{ fontSize: 11 }}>
+                                Request sent 15m ago to @ComplianceTeam
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -2539,7 +2653,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -2568,7 +2682,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Updated 5m ago by{" "}
                               <Tag
-                                color={CUSTOM_TAG_COLOR.MINOS}
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
                                 AI
@@ -2615,225 +2729,56 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 }
                 key="4"
               >
-                <Space
-                  direction="vertical"
-                  size="large"
-                  style={{ width: "100%" }}
-                >
-                  <Card
-                    title="PROCESSING OVERVIEW"
-                    style={{ marginBottom: 24 }}
+                <Form layout="vertical">
+                  <Space
+                    direction="vertical"
+                    size="large"
+                    style={{ width: "100%" }}
                   >
-                    <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          SCOPE
-                        </Text>
-                        <Text
-                          strong
-                          style={{
-                            fontSize: 16,
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          2 Categories Identified
-                        </Text>
-                        <Space size="small" wrap>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
-                          <Tag color={CUSTOM_TAG_COLOR.MARBLE}>
-                            Behavioral Data
-                          </Tag>
-                        </Space>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          NATURE
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <ThunderboltOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            AI Analysis
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Automated Processing
-                        </Text>
-                      </Card>
-                      <Card
-                        style={{
-                          flex: "1 1 200px",
-                          minWidth: 200,
-                          border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
-                          borderRadius: 8,
-                          padding: 16,
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                        }}
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: 12,
-                            textTransform: "uppercase",
-                            display: "block",
-                            marginBottom: 8,
-                          }}
-                        >
-                          CONTEXT
-                        </Text>
-                        <Flex
-                          align="center"
-                          gap="small"
-                          style={{ marginBottom: 8 }}
-                        >
-                          <GlobalOutlined
-                            style={{
-                              fontSize: 16,
-                              color: palette.FIDESUI_MINOS,
-                            }}
-                          />
-                          <Text strong style={{ fontSize: 16 }}>
-                            External
-                          </Text>
-                        </Flex>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Customer Facing
-                        </Text>
-                      </Card>
-                    </Flex>
-                    <Flex
-                      justify="flex-end"
-                      align="center"
-                      wrap="wrap"
-                      gap="small"
+                    <div
+                      style={{
+                        backgroundColor: palette.FIDESUI_BG_CORINTH,
+                        padding: "16px 16px 8px 16px",
+                        borderRadius: 8,
+                      }}
                     >
-                      <Flex align="center" gap="small">
-                        <CheckCircleOutlined
-                          style={{
-                            color: palette.FIDESUI_SUCCESS,
-                            fontSize: 14,
-                          }}
-                        />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Request sent 2h ago to @DataSteward
+                      <Flex
+                        justify="space-between"
+                        align="center"
+                        style={{ marginBottom: 12 }}
+                      >
+                        <Text strong>
+                          Compliance and proportionality measures
                         </Text>
+                        <Flex gap="small" align="center">
+                          <Text type="success" style={{ fontSize: 12 }}>
+                            HIGH CONFIDENCE
+                          </Text>
+                          <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
+                        </Flex>
                       </Flex>
-                      <Button icon={<SlackOutlined />} size="small">
-                        Request input from team
-                      </Button>
-                      <Button
-                        type="default"
-                        icon={<Icons.Document />}
-                        onClick={() => setIsDrawerOpen(true)}
-                        size="small"
-                      >
-                        View evidence
-                      </Button>
-                    </Flex>
-                  </Card>
-
-                  <Form layout="vertical">
-                    <Space
-                      direction="vertical"
-                      size="large"
-                      style={{ width: "100%" }}
-                    >
-                      <div
-                        style={{
-                          backgroundColor: palette.FIDESUI_BG_CORINTH,
-                          padding: 16,
-                          borderRadius: 8,
+                      <EditableTextBlock
+                        value={documentContent.complianceMeasures}
+                        onChange={(value) =>
+                          setDocumentContent({
+                            ...documentContent,
+                            complianceMeasures: value,
+                          })
+                        }
+                        placeholder="What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?"
+                        renderContent={(text) =>
+                          renderTextWithSourceLinks(text, "4")
+                        }
+                        onComment={() => {
+                          // TODO: Open comment modal/thread
                         }}
-                      >
-                        <Flex
-                          justify="space-between"
-                          align="center"
-                          style={{ marginBottom: 12 }}
-                        >
-                          <Text strong>
-                            Compliance and proportionality measures
-                          </Text>
-                          <Tag
-                            color={CUSTOM_TAG_COLOR.MINOS}
-                            style={{ marginLeft: 8 }}
-                          >
-                            AI
-                          </Tag>
-                        </Flex>
-                        <EditableTextBlock
-                          value={documentContent.complianceMeasures}
-                          onChange={(value) =>
-                            setDocumentContent({
-                              ...documentContent,
-                              complianceMeasures: value,
-                            })
-                          }
-                          placeholder="What is your lawful basis for processing? Does the processing actually achieve your purpose? Is there another way to achieve the same outcome? How will you prevent function creep? How will you ensure data quality and data minimisation? What information will you give individuals? How will you help to support their rights? What measures do you take to ensure processors comply? How do you safeguard any international transfers?"
-                          renderContent={(text) =>
-                            renderTextWithSourceLinks(text, "4")
-                          }
-                          onComment={(selection) => {
-                            // TODO: Open comment modal/thread
-                            console.log("Comment on selection:", selection);
-                          }}
-                          onRequestInput={(selection) => {
-                            // TODO: Open team input request
-                            console.log(
-                              "Request input for selection:",
-                              selection,
-                            );
-                          }}
-                        />
-                      </div>
-                    </Space>
-                  </Form>
-                </Space>
+                        onRequestInput={() => {
+                          // TODO: Open team input request
+                        }}
+                      />
+                    </div>
+                  </Space>
+                </Form>
               </Panel>
 
               <Panel
@@ -2841,15 +2786,114 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("5") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "5",
-                          "Identify and assess risks",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "5",
+                              "Identify and assess risks",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              Updated 3h ago by{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{ marginLeft: 4 }}
+                              >
+                                JG
+                              </Tag>
+                              <span style={{ marginLeft: 4, marginRight: 4 }}>
+                                +
+                              </span>
+                              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
+                            </Text>
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "1/1" : "0/1"}
+                              </span>
+                            </Text>
+                            <Flex
+                              gap="small"
+                              align="center"
+                              style={{
+                                fontSize: 11,
+                                color: palette.FIDESUI_NEUTRAL_600,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: palette.FIDESUI_WARNING,
+                                }}
+                              />
+                              <Text style={{ fontSize: 11 }}>Risk: Medium</Text>
+                            </Flex>
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("5");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                            <Flex align="center" gap="small">
+                              <CheckCircleOutlined
+                                style={{
+                                  color: palette.FIDESUI_SUCCESS,
+                                  fontSize: 14,
+                                }}
+                              />
+                              <Text type="secondary" style={{ fontSize: 11 }}>
+                                Request sent 4h ago to @RiskTeam
+                              </Text>
+                            </Flex>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -2857,7 +2901,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -2886,7 +2930,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             >
                               Updated 15m ago by{" "}
                               <Tag
-                                color={CUSTOM_TAG_COLOR.MARBLE}
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
                                 JG
@@ -2894,7 +2938,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <span style={{ marginLeft: 8, marginRight: 8 }}>
                                 +
                               </span>
-                              <Tag color={CUSTOM_TAG_COLOR.MINOS}>AI</Tag>
+                              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                             </Text>
                             <Text
                               type="secondary"
@@ -2906,14 +2950,20 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               }}
                             >
                               <Text strong>Fields:</Text>{" "}
-                              <span style={{ marginLeft: 4 }}>2/4</span>
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "4/4" : "2/4"}
+                              </span>
                             </Text>
                           </Flex>
                         </div>
                       </Flex>
                     )}
                     <div className="status-tag-container">
-                      <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
+                      {isCompletedAssessment ? (
+                        <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
+                      ) : (
+                        <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
+                      )}
                     </div>
                   </>
                 }
@@ -2927,7 +2977,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -2937,19 +2987,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Risk assessment</Text>
-                      <Flex gap="small">
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MARBLE}
-                          style={{ marginLeft: 8 }}
-                        >
-                          JG
-                        </Tag>
-                        <Tag
-                          color={CUSTOM_TAG_COLOR.MINOS}
-                          style={{ marginLeft: 4 }}
-                        >
-                          AI
-                        </Tag>
+                      <Flex gap="small" align="center">
+                        <Text type="success" style={{ fontSize: 12 }}>
+                          MEDIUM CONFIDENCE
+                        </Text>
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG + AI</Tag>
                       </Flex>
                     </Flex>
                     <EditableTextBlock
@@ -2961,12 +3003,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       renderContent={(text) =>
                         renderTextWithSourceLinks(text, "5")
                       }
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
                 </Space>
@@ -2977,15 +3019,103 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("6") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "6",
-                          "Identify measures to reduce risk",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "6",
+                              "Identify measures to reduce risk",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            {isCompletedAssessment && (
+                              <Text
+                                type="secondary"
+                                style={{
+                                  fontSize: 11,
+                                  lineHeight: "16px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                Updated 1d ago by{" "}
+                                <Tag
+                                  color={CUSTOM_TAG_COLOR.DEFAULT}
+                                  style={{ marginLeft: 4 }}
+                                >
+                                  JG
+                                </Tag>
+                              </Text>
+                            )}
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "1/1" : "0/1"}
+                              </span>
+                            </Text>
+                            {isCompletedAssessment && (
+                              <Flex
+                                gap="small"
+                                align="center"
+                                style={{
+                                  fontSize: 11,
+                                  color: palette.FIDESUI_NEUTRAL_600,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                  }}
+                                />
+                                <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                              </Flex>
+                            )}
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("6");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -2993,7 +3123,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -3011,6 +3141,25 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             wrap="wrap"
                             style={{ marginBottom: 8 }}
                           >
+                            {isCompletedAssessment && (
+                              <Text
+                                type="secondary"
+                                style={{
+                                  fontSize: 11,
+                                  lineHeight: "16px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                Updated 3d ago by{" "}
+                                <Tag
+                                  color={CUSTOM_TAG_COLOR.DEFAULT}
+                                  style={{ marginLeft: 4 }}
+                                >
+                                  JG
+                                </Tag>
+                              </Text>
+                            )}
                             <Text
                               type="secondary"
                               style={{
@@ -3021,14 +3170,40 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               }}
                             >
                               <Text strong>Fields:</Text>{" "}
-                              <span style={{ marginLeft: 4 }}>0/3</span>
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "3/3" : "0/3"}
+                              </span>
                             </Text>
+                            {isCompletedAssessment && (
+                              <Flex
+                                gap="small"
+                                align="center"
+                                style={{
+                                  fontSize: 11,
+                                  color: palette.FIDESUI_NEUTRAL_600,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                  }}
+                                />
+                                <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                              </Flex>
+                            )}
                           </Flex>
                         </div>
                       </Flex>
                     )}
                     <div className="status-tag-container">
-                      <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Incomplete</Tag>
+                      {isCompletedAssessment ? (
+                        <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
+                      ) : (
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Incomplete</Tag>
+                      )}
                     </div>
                   </>
                 }
@@ -3042,7 +3217,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3052,12 +3227,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Measures to reduce or eliminate risk</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.measures}
@@ -3071,12 +3241,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       renderContent={(text) =>
                         renderTextWithSourceLinks(text, "6")
                       }
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
                 </Space>
@@ -3087,15 +3257,103 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <>
                     {expandedKeys.includes("7") ? (
                       <Flex
-                        justify="space-between"
-                        align="center"
-                        style={{ width: "100%", paddingRight: 140 }}
+                        gap="large"
+                        align="flex-start"
+                        style={{ flex: 1, minWidth: 0 }}
                       >
-                        {renderSectionTitle(
-                          "7",
-                          "Sign off and record outcomes",
-                          true,
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <Flex
+                            justify="space-between"
+                            align="center"
+                            style={{ marginBottom: 12, alignItems: "center" }}
+                          >
+                            {renderSectionTitle(
+                              "7",
+                              "Sign off and record outcomes",
+                              true,
+                            )}
+                          </Flex>
+                          <Flex
+                            gap="middle"
+                            align="center"
+                            wrap="wrap"
+                            style={{ marginBottom: 8 }}
+                          >
+                            {isCompletedAssessment && (
+                              <Text
+                                type="secondary"
+                                style={{
+                                  fontSize: 11,
+                                  lineHeight: "16px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                Updated 2d ago by{" "}
+                                <Tag
+                                  color={CUSTOM_TAG_COLOR.DEFAULT}
+                                  style={{ marginLeft: 4 }}
+                                >
+                                  JG
+                                </Tag>
+                              </Text>
+                            )}
+                            <Text
+                              type="secondary"
+                              style={{
+                                fontSize: 11,
+                                lineHeight: "16px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Text strong>Fields:</Text>{" "}
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "7/7" : "0/7"}
+                              </span>
+                            </Text>
+                            {isCompletedAssessment && (
+                              <Flex
+                                gap="small"
+                                align="center"
+                                style={{
+                                  fontSize: 11,
+                                  color: palette.FIDESUI_NEUTRAL_600,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                  }}
+                                />
+                                <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                              </Flex>
+                            )}
+                          </Flex>
+                          <Flex
+                            align="center"
+                            gap="small"
+                            style={{ marginTop: 12 }}
+                          >
+                            <Button
+                              type="default"
+                              icon={<Icons.Document />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEvidence("7");
+                              }}
+                              size="small"
+                            >
+                              View evidence
+                            </Button>
+                            <Button icon={<SlackOutlined />} size="small">
+                              Request input from team
+                            </Button>
+                          </Flex>
+                        </div>
                       </Flex>
                     ) : (
                       <Flex
@@ -3103,7 +3361,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         align="flex-start"
                         style={{ flex: 1, minWidth: 0 }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1 }}>
                           <Flex
                             justify="space-between"
                             align="center"
@@ -3121,6 +3379,25 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             wrap="wrap"
                             style={{ marginBottom: 8 }}
                           >
+                            {isCompletedAssessment && (
+                              <Text
+                                type="secondary"
+                                style={{
+                                  fontSize: 11,
+                                  lineHeight: "16px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                Updated 2d ago by{" "}
+                                <Tag
+                                  color={CUSTOM_TAG_COLOR.DEFAULT}
+                                  style={{ marginLeft: 4 }}
+                                >
+                                  JG
+                                </Tag>
+                              </Text>
+                            )}
                             <Text
                               type="secondary"
                               style={{
@@ -3131,14 +3408,40 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               }}
                             >
                               <Text strong>Fields:</Text>{" "}
-                              <span style={{ marginLeft: 4 }}>0/6</span>
+                              <span style={{ marginLeft: 4 }}>
+                                {isCompletedAssessment ? "6/6" : "0/6"}
+                              </span>
                             </Text>
+                            {isCompletedAssessment && (
+                              <Flex
+                                gap="small"
+                                align="center"
+                                style={{
+                                  fontSize: 11,
+                                  color: palette.FIDESUI_NEUTRAL_600,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                  }}
+                                />
+                                <Text style={{ fontSize: 11 }}>Risk: Low</Text>
+                              </Flex>
+                            )}
                           </Flex>
                         </div>
                       </Flex>
                     )}
                     <div className="status-tag-container">
-                      <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Incomplete</Tag>
+                      {isCompletedAssessment ? (
+                        <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
+                      ) : (
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Incomplete</Tag>
+                      )}
                     </div>
                   </>
                 }
@@ -3152,7 +3455,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3162,12 +3465,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Measures approved by</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.measuresApprovedBy}
@@ -3178,19 +3476,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - Integrate actions back into project plan, with date and responsibility for completion"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3200,12 +3498,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Residual risks approved by</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.residualRisksApprovedBy}
@@ -3216,19 +3509,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - If accepting any residual high risk, consult the ICO before going ahead"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3238,12 +3531,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>DPO advice provided</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceProvided}
@@ -3254,19 +3542,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - DPO should advise on compliance, step 6 measures and whether processing can proceed"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3276,12 +3564,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Summary of DPO advice</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceSummary}
@@ -3292,19 +3575,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Enter summary of DPO advice"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3314,12 +3597,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>DPO advice accepted or overruled by</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceAccepted}
@@ -3330,19 +3608,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - If overruled, you must explain your reasons"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3352,12 +3630,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Consultation responses reviewed by</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.consultationReviewedBy}
@@ -3368,19 +3641,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - If your decision departs from individuals' views, you must explain your reasons"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
 
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      padding: 16,
+                      padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
                   >
@@ -3390,12 +3663,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>This DPIA will be kept under review by</Text>
-                      <Tag
-                        color={CUSTOM_TAG_COLOR.MARBLE}
-                        style={{ marginLeft: 8 }}
-                      >
-                        JG
-                      </Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpiaReviewBy}
@@ -3406,12 +3674,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         })
                       }
                       placeholder="Name/date - The DPO should also review ongoing compliance with DPIA"
-                      onComment={(selection) =>
-                        console.log("Comment on selection:", selection)
-                      }
-                      onRequestInput={(selection) =>
-                        console.log("Request input for selection:", selection)
-                      }
+                      onComment={() => {
+                        /* TODO: Open comment modal/thread */
+                      }}
+                      onRequestInput={() => {
+                        /* TODO: Request team input */
+                      }}
                     />
                   </div>
                 </Space>
@@ -3526,11 +3794,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               ([questionId, evidence]) => {
                 const systemKey = `${questionId}-system`;
                 const humanKey = `${questionId}-human`;
-                const isSystemExpanded = expandedSystemItems[systemKey] ?? false;
+                const isSystemExpanded =
+                  expandedSystemItems[systemKey] ?? false;
                 const isHumanExpanded = expandedHumanItems[humanKey] ?? false;
                 // Default to collapsed (true = collapsed, false = expanded)
-                const isSystemCollapsed = collapsedSystemSections[systemKey] ?? true;
-                const isHumanCollapsed = collapsedHumanSections[humanKey] ?? true;
+                const isSystemCollapsed =
+                  collapsedSystemSections[systemKey] ?? true;
+                const isHumanCollapsed =
+                  collapsedHumanSections[humanKey] ?? true;
                 const DEFAULT_ITEMS_TO_SHOW = 2;
 
                 // Combine system and analysis items, sort by timestamp (newest first)
@@ -3583,13 +3854,15 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         }}
                         hoverable
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = "#D1D9E6";
-                          e.currentTarget.style.boxShadow =
+                          const target = e.currentTarget;
+                          target.style.borderColor = "#D1D9E6";
+                          target.style.boxShadow =
                             "0 1px 3px rgba(0, 0, 0, 0.04)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = "#E8EBED";
-                          e.currentTarget.style.boxShadow = "none";
+                          const target = e.currentTarget;
+                          target.style.borderColor = "#E8EBED";
+                          target.style.boxShadow = "none";
                         }}
                       >
                         <Flex
@@ -3636,7 +3909,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             borderColor: "#E8EBED",
                           }}
                         />
-                        <Text style={{ fontSize: 14, color: "#1A1F36", lineHeight: "1.6" }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#1A1F36",
+                            lineHeight: "1.6",
+                          }}
+                        >
                           {item.content}
                         </Text>
                         {allRefs.length > 0 && (
@@ -3675,11 +3954,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                           : "Unknown"
                                       } • ${formatTimestamp(ref.timestamp)}`,
                               }))}
-                              renderItem={(item) => (
+                              renderItem={(listItem) => (
                                 <List.Item>
                                   <List.Item.Meta
-                                    title={item.title}
-                                    description={item.description}
+                                    title={listItem.title}
+                                    description={listItem.description}
                                   />
                                 </List.Item>
                               )}
@@ -3702,13 +3981,15 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         transition: "all 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "#D1D9E6";
-                        e.currentTarget.style.boxShadow =
+                        const target = e.currentTarget;
+                        target.style.borderColor = "#D1D9E6";
+                        target.style.boxShadow =
                           "0 1px 3px rgba(0, 0, 0, 0.04)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "#E8EBED";
-                        e.currentTarget.style.boxShadow = "none";
+                        const target = e.currentTarget;
+                        target.style.borderColor = "#E8EBED";
+                        target.style.boxShadow = "none";
                       }}
                     >
                       <List.Item.Meta
@@ -3865,10 +4146,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             lineHeight: 1.6,
                           }}
                         >
-                          Automated data points extracted from system
-                          inventory, classifications, policies, and monitoring
-                          systems, including inferences and summaries generated
-                          from system data and human input.
+                          Automated data points extracted from system inventory,
+                          classifications, policies, and monitoring systems,
+                          including inferences and summaries generated from
+                          system data and human input.
                         </Text>
                         <Collapse
                           activeKey={isSystemCollapsed ? [] : [systemKey]}
@@ -3929,26 +4210,25 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                       : " items"}
                                   </Button>
                                 )}
-                              {isSystemExpanded &&
-                                remainingSystemCount > 0 && (
-                                  <Button
-                                    type="link"
-                                    onClick={() => {
-                                      setExpandedSystemItems({
-                                        ...expandedSystemItems,
-                                        [systemKey]: false,
-                                      });
-                                    }}
-                                    style={{
-                                      padding: 0,
-                                      height: "auto",
-                                      fontSize: 13,
-                                      color: CUSTOM_TAG_COLOR.MINOS,
-                                    }}
-                                  >
-                                    Show less
-                                  </Button>
-                                )}
+                              {isSystemExpanded && remainingSystemCount > 0 && (
+                                <Button
+                                  type="link"
+                                  onClick={() => {
+                                    setExpandedSystemItems({
+                                      ...expandedSystemItems,
+                                      [systemKey]: false,
+                                    });
+                                  }}
+                                  style={{
+                                    padding: 0,
+                                    height: "auto",
+                                    fontSize: 13,
+                                    color: CUSTOM_TAG_COLOR.MINOS,
+                                  }}
+                                >
+                                  Show less
+                                </Button>
+                              )}
                             </Space>
                           </Panel>
                         </Collapse>
@@ -4058,229 +4338,228 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               style={{ width: "100%" }}
                             >
                               {visibleHumanItems.map((item) => (
-                                  <Card
-                                    key={item.id}
-                                    size="small"
-                                    style={{
-                                      backgroundColor: "#FFFFFF",
-                                      border: "1px solid #E8EBED",
-                                      borderRadius: 8,
-                                      transition: "all 0.15s ease",
-                                      marginBottom: 8,
-                                    }}
-                                    hoverable
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.borderColor =
-                                        "#D1D9E6";
-                                      e.currentTarget.style.boxShadow =
-                                        "0 1px 3px rgba(0, 0, 0, 0.04)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.borderColor =
-                                        "#E8EBED";
-                                      e.currentTarget.style.boxShadow = "none";
-                                    }}
-                                  >
-                                    {item.subtype === "manual-entry" ? (
-                                      <>
-                                        <Flex
-                                          justify="space-between"
-                                          align="flex-start"
-                                          style={{ marginBottom: 12 }}
+                                <Card
+                                  key={item.id}
+                                  size="small"
+                                  style={{
+                                    backgroundColor: "#FFFFFF",
+                                    border: "1px solid #E8EBED",
+                                    borderRadius: 8,
+                                    transition: "all 0.15s ease",
+                                    marginBottom: 8,
+                                  }}
+                                  hoverable
+                                  onMouseEnter={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.borderColor = "#D1D9E6";
+                                    target.style.boxShadow =
+                                      "0 1px 3px rgba(0, 0, 0, 0.04)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    const target = e.currentTarget;
+                                    target.style.borderColor = "#E8EBED";
+                                    target.style.boxShadow = "none";
+                                  }}
+                                >
+                                  {item.subtype === "manual-entry" ? (
+                                    <>
+                                      <Flex
+                                        justify="space-between"
+                                        align="flex-start"
+                                        style={{ marginBottom: 12 }}
+                                      >
+                                        <Tag
+                                          color={CUSTOM_TAG_COLOR.MINOS}
+                                          style={{ margin: 0, fontSize: 11 }}
                                         >
+                                          Manual entry
+                                        </Tag>
+                                        {item.status && (
                                           <Tag
-                                            color={CUSTOM_TAG_COLOR.MINOS}
-                                            style={{ margin: 0, fontSize: 11 }}
+                                            color={
+                                              // eslint-disable-next-line no-nested-ternary
+                                              item.status === "verified"
+                                                ? CUSTOM_TAG_COLOR.SUCCESS
+                                                : item.status ===
+                                                    "pending-review"
+                                                  ? CUSTOM_TAG_COLOR.WARNING
+                                                  : CUSTOM_TAG_COLOR.DEFAULT
+                                            }
+                                            style={{
+                                              margin: 0,
+                                              fontSize: 11,
+                                            }}
                                           >
-                                            Manual entry
+                                            {item.status === "verified" &&
+                                              "Verified"}
+                                            {item.status === "pending-review" &&
+                                              "Pending review"}
+                                            {item.status === "draft" && "Draft"}
                                           </Tag>
-                                          {item.status && (
-                                            <Tag
-                                              color={
-                                                item.status === "verified"
-                                                  ? CUSTOM_TAG_COLOR.SUCCESS
-                                                  : item.status ===
-                                                      "pending-review"
-                                                    ? CUSTOM_TAG_COLOR.WARNING
-                                                    : CUSTOM_TAG_COLOR.MARBLE
-                                              }
-                                              style={{
-                                                margin: 0,
-                                                fontSize: 11,
-                                              }}
-                                            >
-                                              {item.status === "verified" &&
-                                                "Verified"}
-                                              {item.status ===
-                                                "pending-review" &&
-                                                "Pending review"}
-                                              {item.status === "draft" &&
-                                                "Draft"}
-                                            </Tag>
-                                          )}
-                                        </Flex>
-                                        <Text
-                                          style={{
-                                            fontSize: 13,
-                                            display: "block",
-                                            marginBottom: 12,
-                                            color: "#1A1F36",
-                                            lineHeight: 1.6,
-                                          }}
+                                        )}
+                                      </Flex>
+                                      <Text
+                                        style={{
+                                          fontSize: 13,
+                                          display: "block",
+                                          marginBottom: 12,
+                                          color: "#1A1F36",
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        {item.content}
+                                      </Text>
+                                      <Descriptions
+                                        column={1}
+                                        size="small"
+                                        items={[
+                                          {
+                                            key: "entered",
+                                            label: "Entered by",
+                                            children: `${item.source.person.name}, ${item.source.person.role}`,
+                                          },
+                                          {
+                                            key: "date",
+                                            label: "Date",
+                                            children: formatTimestamp(
+                                              item.timestamp,
+                                            ),
+                                          },
+                                        ]}
+                                      />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Flex
+                                        justify="space-between"
+                                        align="flex-start"
+                                        style={{ marginBottom: 12 }}
+                                      >
+                                        <Tag
+                                          color={CUSTOM_TAG_COLOR.MINOS}
+                                          style={{ margin: 0, fontSize: 11 }}
                                         >
-                                          {item.content}
-                                        </Text>
-                                        <Descriptions
-                                          column={1}
-                                          size="small"
-                                          items={[
-                                            {
-                                              key: "entered",
-                                              label: "Entered by",
-                                              children: `${item.source.person.name}, ${item.source.person.role}`,
-                                            },
-                                            {
-                                              key: "date",
-                                              label: "Date",
-                                              children: formatTimestamp(
-                                                item.timestamp,
-                                              ),
-                                            },
-                                          ]}
-                                        />
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Flex
-                                          justify="space-between"
-                                          align="flex-start"
-                                          style={{ marginBottom: 12 }}
-                                        >
-                                          <Tag
-                                            color={CUSTOM_TAG_COLOR.MINOS}
-                                            style={{ margin: 0, fontSize: 11 }}
-                                          >
-                                            Stakeholder communication
-                                          </Tag>
-                                        </Flex>
-                                        <Descriptions
-                                          column={1}
-                                          size="small"
-                                          items={[
-                                            {
-                                              key: "channel",
-                                              label: "Channel",
-                                              children: item.channel ?? "N/A",
-                                            },
-                                            {
-                                              key: "participants",
-                                              label: "Participants",
-                                              children:
-                                                item.participants?.join(", ") ??
-                                                "N/A",
-                                            },
-                                            {
-                                              key: "thread",
-                                              label: "Thread",
-                                              children: item.content,
-                                            },
-                                            {
-                                              key: "date",
-                                              label: "Date range",
-                                              children: formatTimestamp(
-                                                item.timestamp,
-                                              ),
-                                            },
-                                            {
-                                              key: "messages",
-                                              label: "Message count",
-                                              children:
-                                                item.threadMessages?.length.toString() ??
-                                                "0",
-                                            },
-                                          ]}
-                                        />
-                                        {item.threadMessages &&
-                                          item.threadMessages.length > 0 && (
-                                            <Collapse
-                                              ghost
-                                              style={{ marginTop: 12 }}
-                                              items={[
-                                                {
-                                                  key: "thread",
-                                                  label: `View ${item.threadMessages.length} message${item.threadMessages.length === 1 ? "" : "s"}`,
-                                                  children: (
-                                                    <List
-                                                      size="small"
-                                                      dataSource={
-                                                        item.threadMessages
-                                                      }
-                                                      renderItem={(msg) => (
-                                                        <List.Item
-                                                          style={{
-                                                            padding: "8px 0",
-                                                            borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
-                                                          }}
-                                                        >
-                                                          <List.Item.Meta
-                                                            title={
-                                                              <Flex
-                                                                align="center"
-                                                                gap="small"
-                                                              >
-                                                                <Text
-                                                                  strong
-                                                                  style={{
-                                                                    fontSize: 12,
-                                                                  }}
-                                                                >
-                                                                  {msg.sender}
-                                                                </Text>
-                                                                <Text
-                                                                  type="secondary"
-                                                                  style={{
-                                                                    fontSize: 11,
-                                                                  }}
-                                                                >
-                                                                  {new Date(
-                                                                    msg.timestamp,
-                                                                  ).toLocaleString(
-                                                                    "en-US",
-                                                                    {
-                                                                      month:
-                                                                        "short",
-                                                                      day: "numeric",
-                                                                      hour: "2-digit",
-                                                                      minute:
-                                                                        "2-digit",
-                                                                    },
-                                                                  )}
-                                                                </Text>
-                                                              </Flex>
-                                                            }
-                                                            description={
+                                          Stakeholder communication
+                                        </Tag>
+                                      </Flex>
+                                      <Descriptions
+                                        column={1}
+                                        size="small"
+                                        items={[
+                                          {
+                                            key: "channel",
+                                            label: "Channel",
+                                            children: item.channel ?? "N/A",
+                                          },
+                                          {
+                                            key: "participants",
+                                            label: "Participants",
+                                            children:
+                                              item.participants?.join(", ") ??
+                                              "N/A",
+                                          },
+                                          {
+                                            key: "thread",
+                                            label: "Thread",
+                                            children: item.content,
+                                          },
+                                          {
+                                            key: "date",
+                                            label: "Date range",
+                                            children: formatTimestamp(
+                                              item.timestamp,
+                                            ),
+                                          },
+                                          {
+                                            key: "messages",
+                                            label: "Message count",
+                                            children:
+                                              item.threadMessages?.length.toString() ??
+                                              "0",
+                                          },
+                                        ]}
+                                      />
+                                      {item.threadMessages &&
+                                        item.threadMessages.length > 0 && (
+                                          <Collapse
+                                            ghost
+                                            style={{ marginTop: 12 }}
+                                            items={[
+                                              {
+                                                key: "thread",
+                                                label: `View ${item.threadMessages.length} message${item.threadMessages.length === 1 ? "" : "s"}`,
+                                                children: (
+                                                  <List
+                                                    size="small"
+                                                    dataSource={
+                                                      item.threadMessages
+                                                    }
+                                                    renderItem={(msg) => (
+                                                      <List.Item
+                                                        style={{
+                                                          padding: "8px 0",
+                                                          borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
+                                                        }}
+                                                      >
+                                                        <List.Item.Meta
+                                                          title={
+                                                            <Flex
+                                                              align="center"
+                                                              gap="small"
+                                                            >
                                                               <Text
+                                                                strong
                                                                 style={{
-                                                                  fontSize: 13,
-                                                                  marginTop: 4,
+                                                                  fontSize: 12,
                                                                 }}
                                                               >
-                                                                {msg.message}
+                                                                {msg.sender}
                                                               </Text>
-                                                            }
-                                                          />
-                                                        </List.Item>
-                                                      )}
-                                                    />
-                                                  ),
-                                                },
-                                              ]}
-                                            />
-                                          )}
-                                      </>
-                                    )}
-                                  </Card>
-                                ))}
+                                                              <Text
+                                                                type="secondary"
+                                                                style={{
+                                                                  fontSize: 11,
+                                                                }}
+                                                              >
+                                                                {new Date(
+                                                                  msg.timestamp,
+                                                                ).toLocaleString(
+                                                                  "en-US",
+                                                                  {
+                                                                    month:
+                                                                      "short",
+                                                                    day: "numeric",
+                                                                    hour: "2-digit",
+                                                                    minute:
+                                                                      "2-digit",
+                                                                  },
+                                                                )}
+                                                              </Text>
+                                                            </Flex>
+                                                          }
+                                                          description={
+                                                            <Text
+                                                              style={{
+                                                                fontSize: 13,
+                                                                marginTop: 4,
+                                                              }}
+                                                            >
+                                                              {msg.message}
+                                                            </Text>
+                                                          }
+                                                        />
+                                                      </List.Item>
+                                                    )}
+                                                  />
+                                                ),
+                                              },
+                                            ]}
+                                          />
+                                        )}
+                                    </>
+                                  )}
+                                </Card>
+                              ))}
                               {!isHumanExpanded && remainingHumanCount > 0 && (
                                 <Button
                                   type="link"
@@ -4362,12 +4641,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     hoverable
                     onMouseEnter={(e) => {
                       if (focusedQuestionId !== questionId) {
-                        e.currentTarget.style.borderColor = "#D1D9E6";
+                        const target = e.currentTarget;
+                        target.style.borderColor = "#D1D9E6";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (focusedQuestionId !== questionId) {
-                        e.currentTarget.style.borderColor = "#E8EBED";
+                        const target = e.currentTarget;
+                        target.style.borderColor = "#E8EBED";
                       }
                     }}
                   >
@@ -4493,8 +4774,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   Data Types:
                 </Text>
                 <Space size="small">
-                  <Tag color={CUSTOM_TAG_COLOR.MARBLE}>PII</Tag>
-                  <Tag color={CUSTOM_TAG_COLOR.MARBLE}>Behavioral</Tag>
+                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>PII</Tag>
+                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Behavioral</Tag>
                 </Space>
               </Flex>
               <Flex justify="space-between" align="center">
@@ -4654,9 +4935,28 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               style={{ width: "100%" }}
               allowClear
               showSearch
-              includeCountryOnlyOptions={true}
+              includeCountryOnlyOptions
             />
           </div>
+        </Space>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        title="Delete assessment"
+        open={isDeleteModalOpen}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        onOk={handleConfirmDelete}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        width={480}
+      >
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          <Text>Are you sure you want to delete this assessment?</Text>
+          <Text type="secondary">
+            This action cannot be undone. All assessment data, including any
+            responses and documentation, will be permanently removed.
+          </Text>
         </Space>
       </Modal>
 
@@ -4702,6 +5002,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           <div style={{ lineHeight: 1.8 }}>
             {sectionQuestions[selectedSectionKey].map((question, index) => (
               <Text
+                // eslint-disable-next-line react/no-array-index-key
                 key={index}
                 style={{
                   fontSize: 14,
