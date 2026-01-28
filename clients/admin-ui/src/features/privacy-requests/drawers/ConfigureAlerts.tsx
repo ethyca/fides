@@ -115,7 +115,7 @@ const ConfigureAlerts = () => {
             receive alerts after a specific number of errors.
           </Typography.Text>
           <Space direction="vertical" size="middle" className="w-full">
-            <Form.Item style={{ marginBottom: 0 }}>
+            <Form.Item className="mb-0">
               <Flex
                 justify="space-between"
                 align="center"
