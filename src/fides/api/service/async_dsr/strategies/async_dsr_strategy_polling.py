@@ -468,7 +468,15 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 return PollingStatusResult(
                     is_complete=result, skip_result_request=False
                 )
-            return result  # Already PollingStatusResult
+
+            if isinstance(result, PollingStatusResult):
+                # Use cast to help mypy understand the narrowed type
+                return cast(PollingStatusResult, result)
+
+            raise PrivacyRequestError(
+                f"Status override function must return bool or PollingStatusResult. "
+                f"Received type: {type(result).__name__}"
+            )
 
         # Standard HTTP status request - create handler only when needed
         polling_handler = PollingRequestHandler(
