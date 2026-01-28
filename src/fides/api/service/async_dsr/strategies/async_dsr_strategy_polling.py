@@ -598,16 +598,16 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
         if status_result.is_complete:
             if status_result.skip_result_request:
-                # Complete but no data to fetch - mark complete with empty data
+                # Complete but no data to fetch - mark as skipped
                 logger.info(
-                    f"Sub-request {sub_request.id} complete with no data to fetch"
+                    f"Sub-request {sub_request.id} skipped - no data to fetch"
                 )
                 if polling_task.action_type == ActionType.access:
                     sub_request.access_data = []
                 if polling_task.action_type == ActionType.erasure:
                     sub_request.rows_masked = 0
                 sub_request.update_status(
-                    self.session, ExecutionLogStatus.complete.value
+                    self.session, ExecutionLogStatus.skipped.value
                 )
             else:
                 # Complete with data - fetch results
@@ -636,8 +636,11 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
-            # Skip already completed sub-requests
-            if sub_request.status == ExecutionLogStatus.complete.value:
+            # Skip already completed or skipped sub-requests
+            if sub_request.status in [
+                ExecutionLogStatus.complete.value,
+                ExecutionLogStatus.skipped.value,
+            ]:
                 continue
 
             try:

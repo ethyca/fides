@@ -575,11 +575,11 @@ class TestAsyncPollingStrategy:
                     assert result.is_complete is True
                     assert result.skip_result_request is True
 
-    def test_skip_result_request_marks_complete_without_fetching(
+    def test_skip_result_request_marks_skipped_without_fetching(
         self, access_request_task, async_polling_strategy, db
     ):
         """
-        Test that when skip_result_request=True, the sub-request is marked complete
+        Test that when skip_result_request=True, the sub-request is marked skipped
         without calling _process_completed_sub_request (no result fetching)
         """
         request_task = access_request_task
@@ -617,5 +617,5 @@ class TestAsyncPollingStrategy:
 
                     # Refresh from DB and check status
                     db.refresh(sub_request)
-                    assert sub_request.status == ExecutionLogStatus.complete.value
+                    assert sub_request.status == ExecutionLogStatus.skipped.value
                     assert sub_request.access_data == []
