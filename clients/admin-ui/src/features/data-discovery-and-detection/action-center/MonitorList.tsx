@@ -76,11 +76,6 @@ const MonitorList = () => {
   });
 
   useEffect(() => {
-    resetPagination();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestData]);
-
-  useEffect(() => {
     if (isError) {
       toast({
         title: "Error fetching data",
@@ -103,6 +98,10 @@ const MonitorList = () => {
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
       <MonitorListSearchForm
         {...formProps}
+        onFieldsChange={(...args) => {
+          resetPagination();
+          formProps.onFieldsChange(...args);
+        }}
         availableMonitorTypes={availableMonitorTypes}
       />
       <List
