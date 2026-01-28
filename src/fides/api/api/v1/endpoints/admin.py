@@ -178,7 +178,7 @@ def trigger_backfill(
 
     return {
         "data": {
-            "message": "Backfill started. Check server logs for progress.",
+            "message": "Backfill started in background. Monitor progress via server logs.",
             "config": {
                 "batch_size": request.batch_size,
                 "batch_delay_seconds": request.batch_delay_seconds,
