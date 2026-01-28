@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from freezegun import freeze_time
@@ -20,6 +20,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingStatusRequest,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
@@ -475,3 +476,146 @@ class TestAsyncPollingStrategy:
         assert "Initial async request failed" in str(exc_info.value)
         assert "404" in str(exc_info.value)
         assert "Not Found" in str(exc_info.value)
+
+    def test_check_sub_request_status_wraps_bool_true_to_polling_status_result(
+        self, db, async_polling_strategy
+    ):
+        """
+        Test that _check_sub_request_status wraps a legacy bool True return
+        into PollingStatusResult(is_complete=True, skip_result_request=False)
+        """
+        mock_client = MagicMock()
+
+        # Mock the override function to return True (legacy bool)
+        with MagicMock() as mock_override:
+            mock_override.return_value = True
+
+            with patch.object(
+                async_polling_strategy,
+                "status_request",
+                MagicMock(request_override="test_override"),
+            ):
+                with patch(
+                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    return_value=mock_override,
+                ):
+                    result = async_polling_strategy._check_sub_request_status(
+                        mock_client, {"correlation_id": "123"}
+                    )
+
+                    assert isinstance(result, PollingStatusResult)
+                    assert result.is_complete is True
+                    assert result.skip_result_request is False
+
+    def test_check_sub_request_status_wraps_bool_false_to_polling_status_result(
+        self, db, async_polling_strategy
+    ):
+        """
+        Test that _check_sub_request_status wraps a legacy bool False return
+        into PollingStatusResult(is_complete=False, skip_result_request=False)
+        """
+        mock_client = MagicMock()
+
+        # Mock the override function to return False (legacy bool)
+        with MagicMock() as mock_override:
+            mock_override.return_value = False
+
+            from unittest.mock import patch
+
+            with patch.object(
+                async_polling_strategy,
+                "status_request",
+                MagicMock(request_override="test_override"),
+            ):
+                with patch(
+                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    return_value=mock_override,
+                ):
+                    result = async_polling_strategy._check_sub_request_status(
+                        mock_client, {"correlation_id": "123"}
+                    )
+
+                    assert isinstance(result, PollingStatusResult)
+                    assert result.is_complete is False
+                    assert result.skip_result_request is False
+
+    def test_check_sub_request_status_passes_through_polling_status_result(
+        self, db, async_polling_strategy
+    ):
+        """
+        Test that _check_sub_request_status passes through a PollingStatusResult as-is
+        """
+        mock_client = MagicMock()
+
+        # Mock the override function to return PollingStatusResult with skip=True
+        expected_result = PollingStatusResult(
+            is_complete=True, skip_result_request=True
+        )
+        with MagicMock() as mock_override:
+            mock_override.return_value = expected_result
+
+            from unittest.mock import patch
+
+            with patch.object(
+                async_polling_strategy,
+                "status_request",
+                MagicMock(request_override="test_override"),
+            ):
+                with patch(
+                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    return_value=mock_override,
+                ):
+                    result = async_polling_strategy._check_sub_request_status(
+                        mock_client, {"correlation_id": "123"}
+                    )
+
+                    assert result is expected_result
+                    assert result.is_complete is True
+                    assert result.skip_result_request is True
+
+    def test_skip_result_request_marks_skipped_without_fetching(
+        self, access_request_task, async_polling_strategy, db
+    ):
+        """
+        Test that when skip_result_request=True, the sub-request is marked skipped
+        without calling _process_completed_sub_request (no result fetching)
+        """
+        request_task = access_request_task
+        sub_request = request_task.sub_requests[0]
+
+        mock_client = MagicMock()
+
+        # Mock _check_sub_request_status to return skip_result_request=True
+        from unittest.mock import patch
+
+        with patch.object(
+            async_polling_strategy,
+            "_check_sub_request_status",
+            return_value=PollingStatusResult(
+                is_complete=True, skip_result_request=True
+            ),
+        ):
+            with patch.object(
+                async_polling_strategy,
+                "_process_completed_sub_request",
+            ) as mock_process_completed:
+                # Mock _get_requests_for_action to return a request with async_config
+                mock_request = MagicMock()
+                mock_request.async_config = True
+
+                with patch.object(
+                    async_polling_strategy,
+                    "_get_requests_for_action",
+                    return_value=[mock_request],
+                ):
+                    async_polling_strategy._process_sub_requests_for_request(
+                        mock_client, mock_request, request_task
+                    )
+
+                    # Should NOT have called _process_completed_sub_request
+                    mock_process_completed.assert_not_called()
+
+                    # Refresh from DB and check status
+                    db.refresh(sub_request)
+                    assert sub_request.status == ExecutionLogStatus.skipped.value
+                    assert sub_request.access_data == []
