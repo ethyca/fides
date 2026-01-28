@@ -720,7 +720,9 @@ class ConnectionService:
                 upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
                     monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
                 )
-                upcoming_dataset = normalize_dataset(upcoming_dataset, "upcoming")
+                normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+                if normalized_upcoming is not None:
+                    upcoming_dataset = normalized_upcoming
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict

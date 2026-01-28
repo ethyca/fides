@@ -1,5 +1,5 @@
 import copy
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 import yaml
 from deepdiff import DeepDiff
@@ -259,17 +259,19 @@ def _get_endpoint_urns_with_monitored_fields(
     # Find all field resources that are monitored for these monitor configs
     # Then get their ancestor URNs (which will be endpoint URNs) using StagedResourceAncestor
     # This gives us endpoints that contain at least one monitored field
+    subquery = (
+        select(StagedResource.urn)
+        .where(
+            (StagedResource.monitor_config_id.in_(monitor_config_ids))
+            & (StagedResource.resource_type == "Field")
+            & (StagedResource.diff_status == "monitored")
+        )
+        .scalar_subquery()
+    )
+
     monitored_fields_query = (
         select(StagedResourceAncestor.ancestor_urn)
-        .where(
-            StagedResourceAncestor.descendant_urn.in_(
-                select(StagedResource.urn).where(
-                    (StagedResource.monitor_config_id.in_(monitor_config_ids))
-                    & (StagedResource.resource_type == "Field")
-                    & (StagedResource.diff_status == "monitored")
-                )
-            )
-        )
+        .where(StagedResourceAncestor.descendant_urn.in_(subquery))
         .distinct()
     )
 
@@ -392,9 +394,11 @@ def _get_monitored_fields_by_endpoint(
     # Get all monitored field resources that belong to the specified endpoints
     monitored_fields_query = (
         select(StagedResource, StagedResourceAncestor.ancestor_urn)
-        .join(
-            StagedResourceAncestor,
-            StagedResourceAncestor.descendant_urn == StagedResource.urn,
+        .select_from(
+            StagedResource.__table__.join(
+                StagedResourceAncestor.__table__,
+                StagedResourceAncestor.descendant_urn == StagedResource.urn,
+            )
         )
         .where(
             (StagedResource.monitor_config_id.in_(monitor_config_ids))
@@ -407,7 +411,7 @@ def _get_monitored_fields_by_endpoint(
     result = db.execute(monitored_fields_query)
 
     # Group fields by endpoint URN
-    fields_by_endpoint = {}
+    fields_by_endpoint: dict[str, list[StagedResource]] = {}
     for staged_resource, ancestor_urn in result.fetchall():
         if ancestor_urn not in fields_by_endpoint:
             fields_by_endpoint[ancestor_urn] = []
@@ -451,7 +455,7 @@ def _build_field_from_staged_resource(field_resource: StagedResource) -> dict[st
     Returns:
         Dictionary representing a dataset field
     """
-    field = {
+    field: dict[str, Any] = {
         "name": field_resource.name,
     }
 
@@ -467,8 +471,11 @@ def _build_field_from_staged_resource(field_resource: StagedResource) -> dict[st
         data_categories.extend(field_resource.user_assigned_data_categories)
 
     # Add auto-classified categories that aren't already present
+    classifications_list = cast(
+        Optional[list[dict[str, Any]]], field_resource.classifications
+    )
     auto_classified_categories = _extract_auto_classified_data_categories(
-        field_resource.classifications or []
+        classifications_list
     )
     for category in auto_classified_categories:
         if category not in data_categories:
@@ -503,7 +510,7 @@ def _build_collection_from_staged_resources(
     Returns:
         Dictionary representing a dataset collection
     """
-    collection = {
+    collection: dict[str, Any] = {
         "name": endpoint.name,
         "description": None,
         "data_categories": None,

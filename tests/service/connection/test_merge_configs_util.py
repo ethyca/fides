@@ -312,6 +312,7 @@ class TestExtractAutoClassifiedDataCategories:
 
         assert result == ["user.contact.email"]
 
+
 class TestBuildFieldFromStagedResource:
     """Test _build_field_from_staged_resource function."""
 
