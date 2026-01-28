@@ -9,6 +9,7 @@ Create Date: 2026-01-26 14:51:03.086087
 import sqlalchemy as sa
 from alembic import op
 from loguru import logger
+from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = "d05acec55c64"
@@ -38,7 +39,7 @@ def upgrade():
             "ix_stagedresource_monitor_config_is_leaf",
             "stagedresource",
             ["monitor_config_id", "is_leaf"],
-            unique=False,
+            postgresql_where=text("is_leaf IS NOT NULL"),
         )
         logger.info("Index created successfully")
     else:

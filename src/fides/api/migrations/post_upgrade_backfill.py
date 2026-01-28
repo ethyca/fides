@@ -150,6 +150,7 @@ def execute_batch_with_retry(
                     WHERE id IN (
                         SELECT id FROM stagedresource
                         WHERE is_leaf IS NULL
+                        AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')
                         LIMIT :batch_size
                         FOR UPDATE SKIP LOCKED
                     )
@@ -185,7 +186,7 @@ def get_pending_is_leaf_count(db: Session) -> int:
     """Returns the count of rows that still need is_leaf backfill."""
     try:
         result = db.execute(
-            text("SELECT COUNT(*) FROM stagedresource WHERE is_leaf IS NULL")
+            text("SELECT COUNT(*) FROM stagedresource WHERE is_leaf IS NULL AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')")
         )
         return result.scalar() or 0
     except SQLAlchemyError as e:
