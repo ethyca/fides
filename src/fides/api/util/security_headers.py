@@ -1,7 +1,8 @@
 import re
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, List, MutableMapping, Set, Tuple
+from typing import List, Set, Tuple
 
+from fides.api.asgi_middleware import BaseASGIMiddleware, Message, Receive, Scope, Send
 from fides.config import CONFIG
 
 apply_recommended_headers = CONFIG.security.headers_mode == "recommended"
@@ -77,34 +78,19 @@ def get_applicable_header_rules(
     return header_definitions
 
 
-# Type aliases for ASGI
-Scope = MutableMapping[str, Any]
-Message = MutableMapping[str, Any]
-Receive = Callable[[], Awaitable[Message]]
-Send = Callable[[Message], Awaitable[None]]
-ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
-
-
-class SecurityHeadersMiddleware:
+class SecurityHeadersMiddleware(BaseASGIMiddleware):
     """
     Pure ASGI middleware that controls what security headers are included in Fides API responses.
 
     This is a high-performance replacement for the BaseHTTPMiddleware-based version.
     """
 
-    def __init__(self, app: ASGIApp) -> None:
-        self.app = app
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
         if not apply_recommended_headers:
             await self.app(scope, receive, send)
             return
 
-        path = scope.get("path", "/")
+        path = self.get_path(scope)
         applicable_headers = get_applicable_header_rules(path, recommended_headers)
 
         # If no headers to add, just pass through

@@ -36,11 +36,16 @@ Send = Callable[[Message], Awaitable[None]]
 ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
 
 
-class LogRequestMiddleware:
+class BaseASGIMiddleware:
     """
-    Pure ASGI middleware that logs basic information about every request handled by the server.
+    Lightweight base class for pure ASGI HTTP middleware.
 
-    Logs: method, status_code, handler_time, path, fides_client header
+    Subclasses implement `handle_http()` instead of `__call__()` to avoid
+    boilerplate. Only HTTP requests reach `handle_http()`; other scope types
+    pass through automatically.
+
+    Provides helper methods for common operations like header extraction,
+    status code capture, and response sending.
     """
 
     def __init__(self, app: ASGIApp) -> None:
@@ -50,45 +55,129 @@ class LogRequestMiddleware:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        await self.handle_http(scope, receive, send)
 
-        start_time = perf_counter()
-        status_code = 500  # Default in case of exception
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Override this to implement HTTP middleware logic."""
+        await self.app(scope, receive, send)
 
-        # Extract request info from scope
-        method = scope.get("method", "UNKNOWN")
-        path = scope.get("path", "/")
+    # --- Helper Methods ---
 
-        # Get Fides-Client header
+    @staticmethod
+    def get_headers(scope: Scope) -> dict[bytes, bytes]:
+        """Return headers as a dict for easy lookup."""
+        return dict(scope.get("headers", []))
+
+    @staticmethod
+    def get_header(scope: Scope, name: bytes, default: str = "") -> str:
+        """Get a single header value, decoded as latin-1."""
         headers = dict(scope.get("headers", []))
-        fides_client = headers.get(b"fides-client", b"unknown").decode("latin-1")
+        return headers.get(name, b"").decode("latin-1") or default
 
-        async def send_wrapper(message: Message) -> None:
-            nonlocal status_code
+    @staticmethod
+    def get_method(scope: Scope) -> str:
+        """Get the HTTP method from scope."""
+        return scope.get("method", "UNKNOWN")
+
+    @staticmethod
+    def get_path(scope: Scope) -> str:
+        """Get the request path from scope."""
+        return scope.get("path", "/")
+
+    @staticmethod
+    def get_host(scope: Scope) -> Optional[str]:
+        """Get hostname without port from the Host header."""
+        headers = dict(scope.get("headers", []))
+        host = headers.get(b"host", b"").decode("latin-1")
+        return host.split(":")[0] if host else None
+
+    @staticmethod
+    def get_host_with_port(scope: Scope) -> str:
+        """Get full host header value including port."""
+        headers = dict(scope.get("headers", []))
+        return headers.get(b"host", b"").decode("latin-1")
+
+    @staticmethod
+    def build_url(scope: Scope) -> str:
+        """Build the full request URL from scope."""
+        scheme = scope.get("scheme", "http")
+        headers = dict(scope.get("headers", []))
+        host = headers.get(b"host", b"").decode("latin-1")
+        path = scope.get("path", "/")
+        query = scope.get("query_string", b"").decode("latin-1")
+        url = f"{scheme}://{host}{path}"
+        return f"{url}?{query}" if query else url
+
+    @staticmethod
+    def status_capturing_send(send: Send) -> tuple[Callable[[], int], Send]:
+        """
+        Return a (get_status, wrapped_send) tuple.
+
+        Call get_status() after the request completes to retrieve the captured
+        status code. Defaults to 500 if no response was sent.
+        """
+        captured = {"status": 500}
+
+        async def wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
-                status_code = message.get("status", 500)
+                captured["status"] = message.get("status", 500)
             await send(message)
 
+        return lambda: captured["status"], wrapper
+
+    @staticmethod
+    async def send_response(
+        send: Send,
+        status: int,
+        body: bytes,
+        content_type: bytes = b"text/plain",
+    ) -> None:
+        """Send a complete HTTP response."""
+        await send(
+            {
+                "type": "http.response.start",
+                "status": status,
+                "headers": [
+                    (b"content-type", content_type),
+                    (b"content-length", str(len(body)).encode("latin-1")),
+                ],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+    @staticmethod
+    async def send_html(send: Send, status: int, html: str) -> None:
+        """Send an HTML response."""
+        body = html.encode("utf-8")
+        await BaseASGIMiddleware.send_response(
+            send, status, body, b"text/html; charset=utf-8"
+        )
+
+
+class LogRequestMiddleware(BaseASGIMiddleware):
+    """
+    Pure ASGI middleware that logs basic information about every request.
+
+    Logs: method, status_code, handler_time, path, fides_client header
+    """
+
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        start_time = perf_counter()
+        method = self.get_method(scope)
+        path = self.get_path(scope)
+        fides_client = self.get_header(scope, b"fides-client", "unknown")
+
+        get_status, wrapped_send = self.status_capturing_send(send)
+        status_code = 500
+
         try:
-            await self.app(scope, receive, send_wrapper)
+            await self.app(scope, receive, wrapped_send)
+            status_code = get_status()
         except Exception as e:
             logger.exception(f"Unhandled exception processing request: '{e}'")
-            # Send a 500 response
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 500,
-                    "headers": [(b"content-type", b"text/plain")],
-                }
-            )
-            await send(
-                {
-                    "type": "http.response.body",
-                    "body": b"Internal Server Error",
-                }
-            )
+            await self.send_response(send, 500, b"Internal Server Error")
             status_code = 500
 
-        # Calculate handler time in milliseconds
         handler_time = round((perf_counter() - start_time) * 1000, 3)
 
         logger.bind(
@@ -100,7 +189,7 @@ class LogRequestMiddleware:
         ).info("Request received")
 
 
-class AnalyticsLoggingMiddleware:
+class AnalyticsLoggingMiddleware(BaseASGIMiddleware):
     """
     Pure ASGI middleware that logs analytics events for each call to Fides endpoints.
 
@@ -112,61 +201,40 @@ class AnalyticsLoggingMiddleware:
     _pending_tasks: set[asyncio.Task] = set()
 
     def __init__(self, app: ASGIApp, api_prefix: str = API_PREFIX) -> None:
-        self.app = app
+        super().__init__(app)
         self.api_prefix = api_prefix
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        path = scope.get("path", "/")
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        path = self.get_path(scope)
 
         # Skip non-API endpoints and health endpoints
         if not path.startswith(self.api_prefix) or path.endswith("/health"):
             await self.app(scope, receive, send)
             return
 
-        # Extract request info
-        method = scope.get("method", "UNKNOWN")
-        headers = dict(scope.get("headers", []))
-        fides_source: Optional[str] = (
-            headers.get(b"x-fides-source", b"").decode("latin-1") or None
-        )
-
-        # Get hostname from Host header, stripping port if present
-        # Original used request.url.hostname which is just the domain (no port)
-        host_header = headers.get(b"host", b"").decode("latin-1")
-        hostname = host_header.split(":")[0] if host_header else None
-
-        # Build full URL for endpoint to match original behavior
-        # Original: f"{request.method}: {request.url}"
-        scheme = scope.get("scheme", "http")
-        query_string = scope.get("query_string", b"").decode("latin-1")
-        full_url = f"{scheme}://{host_header}{path}"
-        if query_string:
-            full_url = f"{full_url}?{query_string}"
+        method = self.get_method(scope)
+        fides_source: Optional[str] = self.get_header(scope, b"x-fides-source") or None
+        hostname = self.get_host(scope)
+        full_url = self.build_url(scope)
 
         now = datetime.now(tz=timezone.utc)
         endpoint = f"{method}: {full_url}"
 
-        status_code = 500  # Default
-        error_class: Optional[str] = None
+        # Capture status and detect HTTP errors
+        captured = {"status": 500, "error_class": None}
 
         async def send_wrapper(message: Message) -> None:
-            nonlocal status_code, error_class
             if message["type"] == "http.response.start":
-                status_code = message.get("status", 500)
-                if status_code >= 400:
-                    error_class = "HTTPException"
+                captured["status"] = message.get("status", 500)
+                if captured["status"] >= 400:
+                    captured["error_class"] = "HTTPException"
             await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
         except Exception as e:
-            status_code = 500
-            error_class = e.__class__.__name__
-            # Log exception
+            captured["status"] = 500
+            captured["error_class"] = e.__class__.__name__
             _log_exception(e, CONFIG.dev_mode)
             raise
         finally:
@@ -174,7 +242,12 @@ class AnalyticsLoggingMiddleware:
             # Store task reference to prevent garbage collection before completion.
             task = asyncio.create_task(
                 self._log_analytics(
-                    endpoint, hostname, status_code, now, fides_source, error_class
+                    endpoint,
+                    hostname,
+                    captured["status"],
+                    now,
+                    fides_source,
+                    captured["error_class"],
                 )
             )
             self._pending_tasks.add(task)
@@ -216,7 +289,7 @@ class AnalyticsLoggingMiddleware:
             pass
 
 
-class AuditLogMiddleware:
+class AuditLogMiddleware(BaseASGIMiddleware):
     """
     Pure ASGI middleware that logs audit information for non-GET requests.
 
@@ -225,16 +298,12 @@ class AuditLogMiddleware:
     """
 
     def __init__(self, app: ASGIApp, ignored_paths: Optional[Set[str]] = None) -> None:
-        self.app = app
+        super().__init__(app)
         self.ignored_paths = ignored_paths or {f"{API_PREFIX}/login"}
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        method = scope.get("method", "GET")
-        path = scope.get("path", "/")
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        method = self.get_method(scope)
+        path = self.get_path(scope)
 
         # Only audit non-GET requests that aren't in the ignored list
         should_audit = (
@@ -243,43 +312,42 @@ class AuditLogMiddleware:
             and CONFIG.security.enable_audit_log_resource_middleware
         )
 
-        if should_audit:
-            # Buffer the request body as it's consumed by the downstream app
-            body_parts: list[bytes] = []
-
-            async def receiving_wrapper() -> Message:
-                message = await receive()
-
-                if message["type"] == "http.request":
-                    body = message.get("body", b"")
-                    if body:
-                        body_parts.append(body)
-
-                return message
-
-            # Let the downstream app process the request
-            await self.app(scope, receiving_wrapper, send)
-
-            # After the request is complete, do audit logging with the buffered body
-            full_body = b"".join(body_parts)
-            try:
-                # Create a receive that returns the buffered body
-                async def body_receive() -> Message:
-                    return {
-                        "type": "http.request",
-                        "body": full_body,
-                        "more_body": False,
-                    }
-
-                request = Request(scope, body_receive, send)
-                await handle_audit_log_resource(request)
-            except Exception as exc:
-                logger.debug(exc)
-        else:
+        if not should_audit:
             await self.app(scope, receive, send)
+            return
+
+        # Buffer the request body as it's consumed by the downstream app
+        body_parts: list[bytes] = []
+
+        async def receiving_wrapper() -> Message:
+            message = await receive()
+            if message["type"] == "http.request":
+                body = message.get("body", b"")
+                if body:
+                    body_parts.append(body)
+            return message
+
+        # Let the downstream app process the request
+        await self.app(scope, receiving_wrapper, send)
+
+        # After the request is complete, do audit logging with the buffered body
+        full_body = b"".join(body_parts)
+        try:
+
+            async def body_receive() -> Message:
+                return {
+                    "type": "http.request",
+                    "body": full_body,
+                    "more_body": False,
+                }
+
+            request = Request(scope, body_receive, send)
+            await handle_audit_log_resource(request)
+        except Exception as exc:
+            logger.debug(exc)
 
 
-class ProfileRequestMiddleware:
+class ProfileRequestMiddleware(BaseASGIMiddleware):
     """
     Pure ASGI middleware for profiling requests using pyinstrument.
 
@@ -290,17 +358,8 @@ class ProfileRequestMiddleware:
     page showing the profiling results.
     """
 
-    def __init__(self, app: ASGIApp) -> None:
-        self.app = app
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        # Check for profile-request header
-        headers = dict(scope.get("headers", []))
-        profiling = headers.get(b"profile-request", b"").decode("latin-1")
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        profiling = self.get_header(scope, b"profile-request")
 
         if not profiling:
             await self.app(scope, receive, send)
@@ -311,32 +370,14 @@ class ProfileRequestMiddleware:
         profiler.start()
 
         # Intercept send to discard the original response
-        async def send_wrapper(message: Message) -> None:
-            # Discard the original response - we'll send profiling HTML instead
+        async def discard_send(message: Message) -> None:
             pass
 
         try:
-            await self.app(scope, receive, send_wrapper)
+            await self.app(scope, receive, discard_send)
         finally:
             profiler.stop()
             logger.debug("Request Profiled!")
 
         # Send the profiling HTML as the response
-        profile_html = profiler.output_html()
-
-        await send(
-            {
-                "type": "http.response.start",
-                "status": 200,
-                "headers": [
-                    (b"content-type", b"text/html; charset=utf-8"),
-                    (b"content-length", str(len(profile_html)).encode("latin-1")),
-                ],
-            }
-        )
-        await send(
-            {
-                "type": "http.response.body",
-                "body": profile_html.encode("utf-8"),
-            }
-        )
+        await self.send_html(send, 200, profiler.output_html())
