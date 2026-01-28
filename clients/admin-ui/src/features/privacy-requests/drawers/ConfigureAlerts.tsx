@@ -154,7 +154,7 @@ const ConfigureAlerts = () => {
 
             {notify && (
               <>
-                <Divider style={{ margin: "16px 0 0 0" }} />
+                <Divider className="mt-2 mb-3" />
                 <Form.Item
                   label="Notification frequency"
                   help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
