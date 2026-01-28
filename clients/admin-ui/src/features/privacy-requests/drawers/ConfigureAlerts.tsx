@@ -109,10 +109,10 @@ const ConfigureAlerts = () => {
         }
       >
         <Form layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            help="Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors."
-            style={{ marginBottom: 16, marginTop: -24, paddingTop: 0 }}
-          />
+          <Typography.Text type="secondary">
+            Get notified when processing failures occur. Set a threshold to
+            receive alerts after a specific number of errors.
+          </Typography.Text>
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             <Form.Item style={{ marginBottom: 0 }}>
               <Flex
