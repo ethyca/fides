@@ -32,6 +32,9 @@ from fides.api.app_setup import (
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
+from fides.api.migrations.post_upgrade_backfill import (
+    initiate_post_upgrade_backfill,
+)
 from fides.api.migrations.post_upgrade_index_creation import (
     initiate_post_upgrade_index_creation,
 )
@@ -101,6 +104,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_polling_task_requeue()
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
+    initiate_post_upgrade_backfill()
 
     logger.debug("Sending startup analytics events...")
     # Avoid circular imports
