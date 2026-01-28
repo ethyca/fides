@@ -1,0 +1,3 @@
+type: Developer Experience
+description: Renamed consent context functions for clarity
+pr: 7259

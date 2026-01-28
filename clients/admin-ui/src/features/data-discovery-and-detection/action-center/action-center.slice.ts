@@ -58,9 +58,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       SearchQueryParams &
         PaginationQueryParams & {
           monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+          steward_user_id?: string[];
         }
     >({
-      query: ({ page = 1, size = 20, search, monitor_type }) => {
+      query: ({
+        page = 1,
+        size = 20,
+        search,
+        monitor_type,
+        steward_user_id,
+      }) => {
         const params: SearchQueryParams &
           PaginationQueryParams & { diff_status: string } = {
           page,
@@ -68,9 +75,9 @@ const actionCenterApi = baseApi.injectEndpoints({
           search,
           diff_status: "addition",
         };
-
         const urlParams = buildArrayQueryParams({
           monitor_type,
+          steward_user_id,
         });
 
         return {

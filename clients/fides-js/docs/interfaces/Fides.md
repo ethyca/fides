@@ -162,15 +162,14 @@ Get the link text in the default locale to match other links on the page:
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Apply the link text to a custom modal link element on Fides initialization:
+Apply the link text to a custom element using the `FidesLocaleUpdated` event (also see [FidesLocaleEvent](FidesLocaleEvent.md) and [Fides.showModal](Fides.md#showmodal)):
 ```html
-<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script id="fides-js">
-  function() {
-    addEventListener("FidesReady", ( function() {
-      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
-    }));
-  }
+<button id="fides-modal-link" class="footer__link"></button>
+<script>
+  window.addEventListener("FidesLocaleUpdated", () => {
+    document.getElementById("fides-modal-link").textContent =
+      Fides.getModalLinkLabel();
+  });
 </script>
 ```
 

@@ -1,0 +1,3 @@
+pr: 7222
+type: Fixed
+description: Fixed GPC and automated consent being evaluated after FidesInitialized fires
