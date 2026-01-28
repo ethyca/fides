@@ -162,7 +162,7 @@ const ConfigureAlerts = () => {
                   label="Notification frequency"
                   help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
                 >
-                  <Flex align="center" gap={8}>
+                  <Flex align="center" gap="small">
                     <span>Send notification after</span>
                     <InputNumber
                       min={DEFAULT_MIN_ERROR_COUNT}
