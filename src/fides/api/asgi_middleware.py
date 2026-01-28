@@ -221,12 +221,13 @@ class AnalyticsLoggingMiddleware(BaseASGIMiddleware):
         endpoint = f"{method}: {full_url}"
 
         # Capture status and detect HTTP errors
-        captured = {"status": 500, "error_class": None}
+        captured: dict[str, Any] = {"status": 500, "error_class": None}
 
         async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
-                captured["status"] = message.get("status", 500)
-                if captured["status"] >= 400:
+                status_code: int = message.get("status", 500)
+                captured["status"] = status_code
+                if status_code >= 400:
                     captured["error_class"] = "HTTPException"
             await send(message)
 
