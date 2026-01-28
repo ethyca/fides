@@ -1,3 +1,5 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import {
   ConsentStatus,
   DatastoreMonitorUpdates,
@@ -198,4 +200,28 @@ export const mapStatusFilterToMetadataStatus = (
     default:
       return null;
   }
+};
+
+/**
+ * Maps DiffStatus to display labels for infrastructure systems
+ */
+export const INFRASTRUCTURE_DIFF_STATUS_LABEL: Partial<
+  Record<DiffStatus, string>
+> = {
+  [DiffStatus.ADDITION]: "New",
+  [DiffStatus.REMOVAL]: "Removed",
+  [DiffStatus.MONITORED]: "Approved",
+  [DiffStatus.MUTED]: "Ignored",
+};
+
+/**
+ * Maps DiffStatus to tag colors for infrastructure systems
+ */
+export const INFRASTRUCTURE_DIFF_STATUS_COLOR: Partial<
+  Record<DiffStatus, CUSTOM_TAG_COLOR>
+> = {
+  [DiffStatus.ADDITION]: CUSTOM_TAG_COLOR.SUCCESS,
+  [DiffStatus.REMOVAL]: CUSTOM_TAG_COLOR.ERROR,
+  [DiffStatus.MONITORED]: CUSTOM_TAG_COLOR.DEFAULT,
+  [DiffStatus.MUTED]: CUSTOM_TAG_COLOR.DEFAULT,
 };
