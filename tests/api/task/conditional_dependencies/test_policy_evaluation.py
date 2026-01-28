@@ -14,14 +14,37 @@ from fides.api.task.conditional_dependencies.schemas import (
 )
 
 
+def _create_policy_with_rule(
+    db: Session, key: str, action_type: ActionType = ActionType.access
+) -> Policy:
+    """Helper to create a policy with an action type rule"""
+    policy = Policy.create(db=db, data={"name": key, "key": key})
+    rule_data = {
+        "action_type": action_type.value,
+        "name": f"{action_type.value.capitalize()} Rule",
+        "policy_id": policy.id,
+    }
+    # Erasure rules require masking strategies
+    if action_type == ActionType.erasure:
+        rule_data["masking_strategy"] = {
+            "strategy": "null_rewrite",
+            "configuration": {},
+        }
+    Rule.create(db=db, data=rule_data)
+    return policy
+
+
 @pytest.fixture
 def default_policy(db: Session) -> Policy:
-    return Policy.create(db=db, data={"name": "Default", "key": "default_policy"})
+    """Create a default policy with an access rule"""
+    return _create_policy_with_rule(db, "default_policy", ActionType.access)
 
 
-def _create_policy_with_condition(db: Session, key: str, location: str) -> Policy:
-    """Helper to create policy with location condition"""
-    policy = Policy.create(db=db, data={"name": key, "key": key})
+def _create_policy_with_condition(
+    db: Session, key: str, location: str, action_type: ActionType = ActionType.access
+) -> Policy:
+    """Helper to create policy with location condition and action type rule"""
+    policy = _create_policy_with_rule(db, key, action_type)
     PolicyCondition.create(
         db=db,
         data={
@@ -74,27 +97,36 @@ class TestPolicySelection:
 class TestDefaultFallback:
     """Test default policy fallback"""
 
-    def test_uses_assigned_policy_as_default(self, db: Session):
-        """Uses privacy request's assigned policy as default when no conditions match"""
-        assigned_policy = Policy.create(
-            db=db, data={"name": "Assigned Policy", "key": "assigned_policy"}
-        )
-        Policy.create(db=db, data={"name": "Other Policy", "key": "other_policy"})
+    def test_uses_default_for_action_type(self, db: Session):
+        """Queries for default policy with action type when no conditions match"""
+        # Create policies with different action types
+        access_policy = _create_policy_with_rule(db, "access_policy", ActionType.access)
+        erasure_policy = _create_policy_with_rule(db, "erasure_policy", ActionType.erasure)
+
+        # Create a conditional policy that won't match
         _create_policy_with_condition(db, "conditional", "US")
 
-        pr = _create_request(db, assigned_policy, "FR")  # Won't match US
-        result = evaluate_policy_conditions(db, pr)
+        # Create request with location that doesn't match
+        pr = _create_request(db, access_policy, "FR")
 
-        assert result.policy.key == "assigned_policy"
+        # Without action_type, defaults to access
+        result = evaluate_policy_conditions(db, pr)
+        assert result.policy.key == "access_policy"
         assert result.is_default
 
-    def test_uses_assigned_policy_when_no_default(self, db: Session):
-        """Falls back to assigned policy if no default"""
-        assigned = _create_policy_with_condition(db, "assigned", "US")
-        pr = _create_request(db, assigned, "FR")  # Won't match
+        # With erasure action_type, should find erasure policy
+        result = evaluate_policy_conditions(db, pr, action_type=ActionType.erasure)
+        assert result.policy.key == "erasure_policy"
+        assert result.is_default
 
+    def test_defaults_to_access_when_no_action_type(self, db: Session):
+        """Defaults to access action type when none specified"""
+        access_policy = _create_policy_with_rule(db, "access_policy", ActionType.access)
+
+        pr = _create_request(db, access_policy, "US")
         result = evaluate_policy_conditions(db, pr)
-        assert result.policy.key == "assigned"
+
+        assert result.policy.key == "access_policy"
         assert result.is_default
 
 
@@ -104,19 +136,11 @@ class TestPolicyConvenienceFields:
     def test_matches_on_policy_has_access_rule(self, db: Session, default_policy: Policy):
         """Matches using policy.has_access_rule convenience field"""
         # Policy with access rule
-        with_rule = Policy.create(db=db, data={"name": "With Rule", "key": "with_rule"})
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.access.value,
-                "name": "Access",
-                "policy_id": with_rule.id,
-            },
-        )
+        with_rule = _create_policy_with_rule(db, "with_rule", ActionType.access)
         db.refresh(with_rule)
 
         # Conditional policy checking for access rule
-        conditional = Policy.create(db=db, data={"name": "Cond", "key": "conditional"})
+        conditional = _create_policy_with_rule(db, "conditional", ActionType.access)
         PolicyCondition.create(
             db=db,
             data={
@@ -133,6 +157,41 @@ class TestPolicyConvenienceFields:
         result = evaluate_policy_conditions(db, pr)
 
         assert result.policy.key == "conditional"
+
+
+class TestDictSupport:
+    """Test dict-based privacy request support"""
+
+    def test_evaluates_with_dict_input(self, db: Session, default_policy: Policy):
+        """Evaluates conditions using dict instead of PrivacyRequest object"""
+        _create_policy_with_condition(db, "us_policy", "US")
+
+        # Use dict instead of PrivacyRequest
+        pr_dict = {
+            "id": None,
+            "external_id": "test",
+            "identity": {"email": "test@example.com"},
+            "location": "US",
+            "custom_privacy_request_fields": {},
+        }
+
+        result = evaluate_policy_conditions(db, pr_dict)
+        assert result.policy.key == "us_policy"
+
+    def test_dict_falls_back_to_default(self, db: Session, default_policy: Policy):
+        """Dict-based request falls back to default when no match"""
+        _create_policy_with_condition(db, "us_policy", "US")
+
+        pr_dict = {
+            "id": None,
+            "location": "FR",  # Won't match US
+            "identity": {},
+            "custom_privacy_request_fields": {},
+        }
+
+        result = evaluate_policy_conditions(db, pr_dict)
+        assert result.policy.key == "default_policy"
+        assert result.is_default
 
 
 class TestEdgeCases:

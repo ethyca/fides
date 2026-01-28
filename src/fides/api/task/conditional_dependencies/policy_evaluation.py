@@ -43,7 +43,9 @@ class PolicyEvaluationResult:
 
 
 def evaluate_policy_conditions(
-    db: Session, privacy_request: PrivacyRequest, action_type: Optional[ActionType] = None
+    db: Session,
+    privacy_request: PrivacyRequest,
+    action_type: Optional[ActionType] = None,
 ) -> PolicyEvaluationResult:
     """Evaluate privacy request against policies with conditions, return first match.
 
@@ -55,9 +57,7 @@ def evaluate_policy_conditions(
         action_type: Optional action type to filter policies (e.g., access, erasure)
     """
     logger.info(
-        f"Evaluating policies for request {privacy_request.id}"
-        + (f" with action_type={action_type}" if action_type else "")
-    )
+        f"Evaluating policies for request with action_type={action_type}" if action_type else "")
 
     # Query PolicyConditions with eager-loaded policies (single query instead of N+1)
     query = (
@@ -75,7 +75,10 @@ def evaluate_policy_conditions(
     policy_conditions = query.all()
 
     if not policy_conditions:
-        return _get_default_policy_result(db, privacy_request, action_type)
+        # Default to access if no action_type provided
+        return _get_default_policy_result(
+            db, action_type or ActionType.access
+        )
 
     evaluator = ConditionEvaluator(db)
     data_transformer = PrivacyRequestDataTransformer(privacy_request)
@@ -107,28 +110,39 @@ def evaluate_policy_conditions(
             )
             continue
 
-    return _get_default_policy_result(db, privacy_request, action_type)
+    # Default to access if no action_type provided
+    return _get_default_policy_result(
+        db, action_type or ActionType.access
+    )
 
 
 def _get_default_policy_result(
-    db: Session, privacy_request: PrivacyRequest, action_type: Optional[ActionType] = None
+    db: Session,
+    action_type: ActionType,
 ) -> PolicyEvaluationResult:
-    """Get default policy (from privacy request).
+    """Get default policy for the given action type.
+
+    Finds any policy that has at least one rule with the specified action type.
+    Policies can have multiple rules with different action types.
 
     Args:
         db: Database session
-        privacy_request: The privacy request
-        action_type: Optional action type to filter default policy
+        action_type: Action type to filter policies
     """
-    if not privacy_request.policy:
-        raise PolicyEvaluationError("No default policy configured for privacy request")
+    # Query for a policy that has at least one rule with the given action type
+    # Note: A policy can have multiple rules with different action types
+    policy = (
+        db.query(Policy)
+        .join(Rule, Policy.id == Rule.policy_id)
+        .filter(Rule.action_type == action_type)
+        .first()
+    )
 
-    # If action_type is specified, verify the privacy request's policy supports it
-    if action_type and action_type not in privacy_request.policy.get_all_action_types():
+    if not policy:
         raise PolicyEvaluationError(
-            f"Privacy request policy does not support action type: {action_type}"
+            f"No policy found with action type: {action_type}"
         )
 
     return PolicyEvaluationResult(
-        policy=privacy_request.policy, evaluation_result=None, is_default=True
+        policy=policy, evaluation_result=None, is_default=True
     )
