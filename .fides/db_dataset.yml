@@ -2955,6 +2955,8 @@ dataset:
       data_categories: [system]
     - name: id
       data_categories: [system]
+    - name: is_leaf
+      data_categories: [system]
     - name: meta
       data_categories: [system]
     - name: monitor_config_id
