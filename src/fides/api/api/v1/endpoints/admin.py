@@ -1,19 +1,24 @@
 from enum import Enum
 from typing import Dict, Optional
 
-from fastapi import HTTPException, Security, status
+from fastapi import BackgroundTasks, HTTPException, Security, status
 from loguru import logger
 
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, migrate_db, reset_db
+from fides.api.migrations.post_upgrade_backfill import (
+    acquire_backfill_lock,
+    run_backfill_manually,
+)
 from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.schemas.admin import BackfillRequest
 from fides.api.util.api_router import APIRouter
 from fides.api.util.memory_watchdog import (
     _capture_heap_dump,
     get_memory_watchdog_enabled,
 )
 from fides.common.api import scope_registry
-from fides.common.api.scope_registry import HEAP_DUMP_EXEC
+from fides.common.api.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
@@ -126,5 +131,57 @@ def trigger_heap_dump() -> Dict:
     return {
         "data": {
             "message": "Heap dump captured successfully. Check server logs for detailed report."
+        }
+    }
+
+
+@ADMIN_ROUTER.post(
+    "/admin/backfill",
+    tags=["Admin"],
+    dependencies=[Security(verify_oauth_client_prod, scopes=[BACKFILL_EXEC])],
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def trigger_backfill(
+    background_tasks: BackgroundTasks,
+    request: BackfillRequest = BackfillRequest(),
+) -> Dict:
+    """
+    Trigger a database backfill operation.
+
+    This endpoint runs deferred data migrations (backfills) that were skipped during
+    normal database migrations due to table size. The backfill runs in the background
+    and progress can be monitored via server logs.
+
+    The operation is:
+    - **Idempotent**: Safe to run multiple times
+    - **Resumable**: If interrupted, re-run and it will continue where it left off
+    - **Non-blocking**: Uses small batches with delays to minimize database impact
+
+    Only one backfill can run at a time. Returns 409 Conflict if a backfill is already running.
+    """
+    if not acquire_backfill_lock():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A backfill is already running. Check server logs for progress.",
+        )
+
+    logger.info(
+        f"Manual backfill triggered via API "
+        f"(batch_size={request.batch_size}, delay={request.batch_delay_seconds}s)"
+    )
+
+    background_tasks.add_task(
+        run_backfill_manually,
+        request.batch_size,
+        request.batch_delay_seconds,
+    )
+
+    return {
+        "data": {
+            "message": "Backfill started. Check server logs for progress.",
+            "config": {
+                "batch_size": request.batch_size,
+                "batch_delay_seconds": request.batch_delay_seconds,
+            },
         }
     }

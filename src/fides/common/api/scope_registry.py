@@ -77,6 +77,7 @@ VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
 WORKER_STATS = "worker-stats"
 HEAP_DUMP = "heap_dump"
+BACKFILL = "backfill"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -148,6 +149,8 @@ DATASET_TEST = f"{DATASET}:{TEST}"
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
 HEAP_DUMP_EXEC = f"{HEAP_DUMP}:{EXEC}"
+
+BACKFILL_EXEC = f"{BACKFILL}:{EXEC}"
 
 EVALUATION_CREATE = f"{EVALUATION}:{CREATE}"
 EVALUATION_READ = f"{EVALUATION}:{READ}"
@@ -301,6 +304,7 @@ SCOPE_DOCS = {
     DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
     HEAP_DUMP_EXEC: "Execute a heap dump for memory diagnostics",
+    BACKFILL_EXEC: "Execute database backfill operations",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",
