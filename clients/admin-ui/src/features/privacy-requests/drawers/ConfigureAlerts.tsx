@@ -137,7 +137,7 @@ const ConfigureAlerts = () => {
               </Flex>
             </Form.Item>
 
-            <Divider style={{ margin: "8px 0 12px 0" }} />
+            <Divider className="mt-2 mb-3" />
 
             <Form.Item
               label={
