@@ -9,9 +9,9 @@ from fides.api.util.security_headers import (
     apply_headers_to_response,
     get_applicable_header_rules,
     is_exact_match,
-    recommended_csp_header_value_for_swagger,
-    recommended_csp_header_value_for_redoc,
     recommended_csp_header_value,
+    recommended_csp_header_value_for_redoc,
+    recommended_csp_header_value_for_swagger,
     recommended_headers,
 )
 
