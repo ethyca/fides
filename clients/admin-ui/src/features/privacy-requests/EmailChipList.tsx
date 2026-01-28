@@ -10,7 +10,7 @@ interface EmailChipListProps {
   disabled?: boolean;
 }
 
-const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
+const EmailChipList = forwardRef<InputRef, EmailChipListProps>(
   ({ emails, onEmailsChange, disabled = false }, ref) => {
     const [inputValue, setInputValue] = useState("");
 
