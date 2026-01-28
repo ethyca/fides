@@ -1,40 +1,34 @@
 """Tests for the request logging middleware."""
 
-import asyncio
-
 import pytest
-from fastapi import Request, Response
-from starlette.datastructures import Headers
 
-from fides.api.main import log_request
+from fides.api.asgi_middleware import LogRequestMiddleware
+
+from .conftest import (
+    ResponseCapture,
+    create_body_receive,
+    create_http_scope,
+)
 
 
 class TestLogRequest:
     """Tests for the request logging middleware timing functionality."""
 
     @pytest.mark.asyncio
-    async def test_log_request_timing(self, loguru_caplog):
+    async def test_log_request_timing(self, mock_asgi_app, loguru_caplog):
         """Test that the log_request middleware correctly calculates request handling time."""
-        # Create a mock request
-        mock_request = Request(
-            scope={
-                "type": "http",
-                "method": "GET",
-                "path": "/test",
-                "headers": Headers({}),
-            },
-            receive=None,
-        )
+        app, _ = mock_asgi_app(delay=0.1)  # 100ms delay
+        middleware = LogRequestMiddleware(app)
 
-        # Create a mock response with artificial delay
-        async def mock_call_next(_):
-            await asyncio.sleep(0.1)  # 100ms delay
-            return Response(status_code=200)
+        scope = create_http_scope(method="GET", path="/test")
+        receive = create_body_receive(b"")
+        capture = ResponseCapture()
 
-        response = await log_request(mock_request, mock_call_next)
+        await middleware(scope, receive, capture)
 
-        # Verify the response
-        assert response.status_code == 200
+        # Verify the response was sent
+        assert len(capture.messages) >= 1
+        assert capture.status == 200
 
         # Verify the log message and its contents
         assert "Request received" in loguru_caplog.text
@@ -55,31 +49,23 @@ class TestLogRequest:
         assert actual_ms >= 100
 
     @pytest.mark.asyncio
-    async def test_log_request_timing_slow_request(self, loguru_caplog):
+    async def test_log_request_timing_slow_request(self, mock_asgi_app, loguru_caplog):
         """
         Test that the log_request middleware correctly calculates request handling time
         for "slow" requests, i.e requests that take longer than 1 second to process.
         """
-        # Create a mock request
-        mock_request = Request(
-            scope={
-                "type": "http",
-                "method": "GET",
-                "path": "/test",
-                "headers": Headers({}),
-            },
-            receive=None,
-        )
+        app, _ = mock_asgi_app(delay=1.5)  # 1500ms delay
+        middleware = LogRequestMiddleware(app)
 
-        # Create a mock response with artificial delay
-        async def mock_call_next(_):
-            await asyncio.sleep(1.5)  # 1500ms delay
-            return Response(status_code=200)
+        scope = create_http_scope(method="GET", path="/test")
+        receive = create_body_receive(b"")
+        capture = ResponseCapture()
 
-        response = await log_request(mock_request, mock_call_next)
+        await middleware(scope, receive, capture)
 
-        # Verify the response
-        assert response.status_code == 200
+        # Verify the response was sent
+        assert len(capture.messages) >= 1
+        assert capture.status == 200
 
         # Verify the log message and its contents
         assert "Request received" in loguru_caplog.text
@@ -100,27 +86,21 @@ class TestLogRequest:
         assert actual_ms >= 1000
 
     @pytest.mark.asyncio
-    async def test_log_request_error(self, loguru_caplog):
+    async def test_log_request_error(self, mock_asgi_app, loguru_caplog):
         """Test that the log_request middleware correctly handles errors."""
-        # Create a mock request
-        mock_request = Request(
-            scope={
-                "type": "http",
-                "method": "GET",
-                "path": "/test",
-                "headers": Headers({}),
-            },
-            receive=None,
-        )
+        app, _ = mock_asgi_app(exception=ValueError("Test error"))
+        middleware = LogRequestMiddleware(app)
 
-        # Create a mock response that raises an exception
-        async def mock_call_next(_):
-            raise ValueError("Test error")
+        scope = create_http_scope(method="GET", path="/test")
+        receive = create_body_receive(b"")
+        capture = ResponseCapture()
 
-        response = await log_request(mock_request, mock_call_next)
+        # Call the middleware - it should catch the exception and send a 500 response
+        await middleware(scope, receive, capture)
 
         # Verify we get a 500 response for the error
-        assert response.status_code == 500
+        assert len(capture.messages) >= 2
+        assert capture.status == 500
 
         # Verify the log message and its contents
         unhandled_exception_log_record = loguru_caplog.records[0]

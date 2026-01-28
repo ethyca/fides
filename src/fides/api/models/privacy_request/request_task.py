@@ -194,7 +194,10 @@ class RequestTask(WorkerTask, Base):
 
     @classmethod
     def query_with_deferred_data(
-        cls, query: Query, defer_access_data: bool = True, defer_erasure_data: bool = True
+        cls,
+        query: Query,
+        defer_access_data: bool = True,
+        defer_erasure_data: bool = True,
     ) -> Query:
         """
         Apply defer() to large JSON columns to prevent OOM errors when only metadata is needed.

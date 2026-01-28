@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import json
 from ipaddress import ip_address
 from typing import Optional
 
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from loguru import logger
 from slowapi import Limiter
 from slowapi.util import get_remote_address  # type: ignore
-from starlette.middleware.base import BaseHTTPMiddleware
 
+from fides.api.asgi_middleware import BaseASGIMiddleware, Receive, Scope, Send
 from fides.config import CONFIG
 
 
@@ -87,6 +87,22 @@ def _extract_hostname_from_ip(ip: str) -> Optional[str]:
     return clean_ip
 
 
+def extract_and_validate_ip(ip_value: str) -> tuple[bool, Optional[str]]:
+    """
+    Extract and validate an IP from a header value.
+
+    Returns (is_valid, extracted_ip). If invalid, extracted_ip is None.
+    This is shared logic used by both the ASGI middleware and SlowAPI key function.
+    """
+    try:
+        extracted_ip = _extract_hostname_from_ip(ip_value)
+        if extracted_ip and validate_client_ip(extracted_ip):
+            return True, extracted_ip
+        return False, None
+    except ValueError:
+        return False, None
+
+
 def _resolve_client_ip_from_header(request: Request, strict: bool) -> str:
     """Shared resolver for client IP from the configured header.
 
@@ -110,38 +126,24 @@ def _resolve_client_ip_from_header(request: Request, strict: bool) -> str:
         )
         return get_remote_address(request)
 
-    # Extract and validate IP
-    try:
-        extracted_ip = _extract_hostname_from_ip(ip_address_from_header)
-        if extracted_ip and validate_client_ip(extracted_ip):
-            return extracted_ip
-        raise ValueError("IP failed validation")
-    except ValueError:
-        if strict:
-            logger.error(
-                "Invalid IP '{}' in header '{}'. Rejecting request.",
-                ip_address_from_header,
-                header_name,
-            )
-            raise InvalidClientIPError(
-                detail="Invalid IP address format",
-                header_value=ip_address_from_header,
-                header_name=header_name,
-            )
-        # Non-strict path: fall back silently to source IP
-        return get_remote_address(request)
+    # Extract and validate IP using shared helper
+    is_valid, extracted_ip = extract_and_validate_ip(ip_address_from_header)
+    if is_valid and extracted_ip:
+        return extracted_ip
 
-
-def get_client_ip_from_header(request: Request) -> str:
-    """
-    Extracts the client IP from the configured CDN header.
-
-    If the header is not configured or is missing, it falls back to the
-    source IP on the request.
-
-    Raises InvalidClientIPError if header contains invalid IP format.
-    """
-    return _resolve_client_ip_from_header(request, strict=True)
+    if strict:
+        logger.error(
+            "Invalid IP '{}' in header '{}'. Rejecting request.",
+            ip_address_from_header,
+            header_name,
+        )
+        raise InvalidClientIPError(
+            detail="Invalid IP address format",
+            header_value=ip_address_from_header,
+            header_name=header_name,
+        )
+    # Non-strict path: fall back silently to source IP
+    return get_remote_address(request)
 
 
 def safe_rate_limit_key(request: Request) -> str:
@@ -154,24 +156,42 @@ def safe_rate_limit_key(request: Request) -> str:
     return _resolve_client_ip_from_header(request, strict=False)
 
 
-class RateLimitIPValidationMiddleware(BaseHTTPMiddleware):
+class RateLimitIPValidationMiddleware(BaseASGIMiddleware):
     """
-    Pre-validate the configured client IP header when rate limiting is enabled.
+    Pure ASGI middleware to pre-validate the configured client IP header when rate limiting is enabled.
 
     If the header is present but invalid, short-circuit the request with 422.
     This keeps SlowAPI's middleware path free of exceptions from the key function.
+
+    This is a high-performance replacement for the BaseHTTPMiddleware-based version.
     """
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore
-        if is_rate_limit_enabled:
-            try:
-                # Triggers parsing/validation; raises on invalid header
-                get_client_ip_from_header(request)
-            except InvalidClientIPError:
-                return JSONResponse(
-                    status_code=422, content={"detail": "Invalid client IP header"}
-                )
-        return await call_next(request)
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if not is_rate_limit_enabled:
+            await self.app(scope, receive, send)
+            return
+
+        # Check if the IP header is present and valid
+        header_name = CONFIG.security.rate_limit_client_ip_header
+        if header_name:
+            header_name_bytes = header_name.lower().encode("latin-1")
+            ip_address_str = self.get_header(scope, header_name_bytes)
+
+            if ip_address_str:
+                is_valid, _ = extract_and_validate_ip(ip_address_str)
+                if not is_valid:
+                    logger.error(
+                        "Invalid IP '{}' in header '{}'. Rejecting request.",
+                        ip_address_str,
+                        header_name,
+                    )
+                    body = json.dumps({"detail": "Invalid client IP header"}).encode(
+                        "utf-8"
+                    )
+                    await self.send_response(send, 422, body, b"application/json")
+                    return
+
+        await self.app(scope, receive, send)
 
 
 # Used for rate limiting with Slow API

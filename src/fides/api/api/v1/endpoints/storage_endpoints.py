@@ -216,7 +216,8 @@ def put_config_secrets(
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
         storage_config.set_secrets(
-            db=db, storage_secrets=secrets_schema.model_dump(mode="json")  # type: ignore[arg-type]
+            db=db,
+            storage_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
         )
     except ValueError as exc:
         raise HTTPException(
@@ -536,7 +537,8 @@ def put_default_config_secrets(
     )
     try:
         storage_config.set_secrets(
-            db=db, storage_secrets=secrets_schema.model_dump(mode="json")  # type: ignore[arg-type]
+            db=db,
+            storage_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
         )
     except ValueError as exc:
         raise HTTPException(

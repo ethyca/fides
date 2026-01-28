@@ -465,7 +465,8 @@ def update_config_secrets(
     )
     try:
         messaging_config.set_secrets(
-            db=db, messaging_secrets=secrets_schema.model_dump(mode="json")  # type: ignore[arg-type]
+            db=db,
+            messaging_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
         )
     except ValueError as exc:
         raise HTTPException(

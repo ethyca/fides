@@ -1,213 +1,162 @@
-import { Filter, TreeDataNode as DataNode } from "fidesui";
-import { uniq } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
+import { useMemo } from "react";
 
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DiffStatus } from "~/types/api";
+
+import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
 import {
-  INFRASTRUCTURE_SYSTEM_FILTER_LABELS,
-  INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS,
-  INFRASTRUCTURE_SYSTEM_FILTERS,
-  InfrastructureSystemFilterLabel,
+  INFRASTRUCTURE_DIFF_STATUS_LABEL,
+  VENDOR_FILTER_OPTIONS,
 } from "../constants";
 import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
 
+interface InfrastructureSystemsFiltersProps
+  extends ReturnType<typeof useInfrastructureSystemsFilters> {
+  monitorId: string;
+}
+
 export const InfrastructureSystemsFilters = ({
+  monitorId,
   statusFilters,
   setStatusFilters,
   vendorFilters,
   setVendorFilters,
+  dataUsesFilters,
+  setDataUsesFilters,
   reset,
-}: ReturnType<typeof useInfrastructureSystemsFilters>) => {
-  // Local state for filter changes (not applied until "Apply" is clicked)
-  const [localStatusFilters, setLocalStatusFilters] = useState<
-    InfrastructureSystemFilterLabel[] | null
-  >(statusFilters);
-  const [localVendorFilters, setLocalVendorFilters] = useState<string[] | null>(
-    vendorFilters,
+}: InfrastructureSystemsFiltersProps) => {
+  const { getDataUseDisplayName } = useTaxonomies();
+
+  // Fetch available filters from API
+  const { data: availableFilters } = useGetIdentityProviderMonitorFiltersQuery(
+    { monitor_config_key: monitorId },
+    { skip: !monitorId },
   );
 
-  // Initialize with status section expanded by default
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([
-    INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS.STATUS,
-  ]);
-
-  // Sync local state when external state changes
-  useEffect(() => {
-    setLocalStatusFilters(statusFilters);
+  const statusFilterValue = useMemo(() => {
+    if (!statusFilters || statusFilters.length === 0) {
+      return undefined;
+    }
+    return statusFilters[0];
   }, [statusFilters]);
 
-  useEffect(() => {
-    setLocalVendorFilters(vendorFilters);
+  const statusOptions = useMemo(() => {
+    if (!availableFilters?.diff_status) {
+      return [];
+    }
+    return availableFilters.diff_status.map((status) => ({
+      label: INFRASTRUCTURE_DIFF_STATUS_LABEL[status as DiffStatus] ?? status,
+      value: status,
+    }));
+  }, [availableFilters?.diff_status]);
+
+  const typeFilterValue = useMemo(() => {
+    if (!vendorFilters || vendorFilters.length === 0) {
+      return undefined;
+    }
+    return vendorFilters[0];
   }, [vendorFilters]);
 
-  // Build tree data for filters
-  const statusTreeData: DataNode[] = useMemo(
-    () =>
-      INFRASTRUCTURE_SYSTEM_FILTERS.filter(
-        (filter) =>
-          filter !== "all" && filter !== "known" && filter !== "unknown",
-      ).map((filter) => ({
-        title: INFRASTRUCTURE_SYSTEM_FILTER_LABELS[filter],
-        key: filter,
-        checkable: true,
-        selectable: false,
-        isLeaf: true,
-      })),
-    [],
-  );
-
-  const vendorTreeData: DataNode[] = useMemo(
-    () =>
-      INFRASTRUCTURE_SYSTEM_FILTERS.filter(
-        (filter) => filter === "known" || filter === "unknown",
-      ).map((filter) => ({
-        title: INFRASTRUCTURE_SYSTEM_FILTER_LABELS[filter],
-        key: filter,
-        checkable: true,
-        selectable: false,
-        isLeaf: true,
-      })),
-    [],
-  );
-
-  // Combine status and vendor trees
-  const treeData: DataNode[] = useMemo(() => {
-    const sections: DataNode[] = [];
-
-    if (statusTreeData.length > 0) {
-      sections.push({
-        title: "Status",
-        key: INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS.STATUS,
-        checkable: true,
-        selectable: false,
-        isLeaf: false,
-        children: statusTreeData,
-      });
+  const dataUseOptions = useMemo(() => {
+    if (!availableFilters?.data_uses) {
+      return [];
     }
+    return availableFilters.data_uses.map((dataUse) => ({
+      label: getDataUseDisplayName(dataUse),
+      value: dataUse,
+    }));
+  }, [availableFilters?.data_uses, getDataUseDisplayName]);
 
-    if (vendorTreeData.length > 0) {
-      sections.push({
-        title: "Vendor",
-        key: INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS.VENDOR,
-        checkable: true,
-        selectable: false,
-        isLeaf: false,
-        children: vendorTreeData,
-      });
+  const handleStatusChange = (value: string | undefined) => {
+    if (value) {
+      setStatusFilters([value]);
+    } else {
+      setStatusFilters([]);
     }
+  };
 
-    return sections;
-  }, [statusTreeData, vendorTreeData]);
-
-  // Get current checked keys from LOCAL state
-  const checkedKeys = useMemo(
-    () => uniq([...(localStatusFilters ?? []), ...(localVendorFilters ?? [])]),
-    [localStatusFilters, localVendorFilters],
-  );
-
-  // Calculate active filters count from APPLIED state (not local)
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (statusFilters) {
-      count += new Set(statusFilters).size;
+  const handleTypeChange = (value: string | undefined) => {
+    if (value) {
+      setVendorFilters([value]);
+    } else {
+      setVendorFilters([]);
     }
-    if (vendorFilters) {
-      count += new Set(vendorFilters).size;
-    }
-    return count;
-  }, [statusFilters, vendorFilters]);
+  };
 
-  const handleCheck = (
-    checked: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] },
-  ) => {
-    const checkedKeysArray = Array.isArray(checked) ? checked : checked.checked;
-    // Separate status and vendor selections based on their keys
-    const statusKeys: InfrastructureSystemFilterLabel[] = [];
-    const vendorKeys: string[] = [];
+  const handleDataUseChange = (value: string[]) => {
+    setDataUsesFilters(value.length > 0 ? value : []);
+  };
 
-    // Section keys that should be excluded from filter values
-    const sectionKeys = Object.values(
-      INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS,
-    );
+  const hasActiveFilters =
+    (statusFilters && statusFilters.length > 0) ||
+    (vendorFilters && vendorFilters.length > 0) ||
+    (dataUsesFilters && dataUsesFilters.length > 0);
 
-    checkedKeysArray.forEach((key) => {
-      const keyStr = key.toString();
-
-      // Skip section keys
-      if (sectionKeys.some((sk) => sk === keyStr)) {
-        return;
+  const renderTagPlaceholder = (omittedValues: DisplayValueType[]) => (
+    <Tooltip
+      title={
+        <Flex vertical>
+          {omittedValues.map(({ label, value }) => (
+            <span key={value}>{label}</span>
+          ))}
+        </Flex>
       }
-
-      const statusKey = INFRASTRUCTURE_SYSTEM_FILTERS.find(
-        (fs) => fs === keyStr && fs !== "known" && fs !== "unknown",
-      );
-      if (statusKey) {
-        statusKeys.push(statusKey);
-      } else {
-        const vendorKey = INFRASTRUCTURE_SYSTEM_FILTERS.find(
-          (fs) => fs === keyStr && (fs === "known" || fs === "unknown"),
-        );
-        if (vendorKey) {
-          vendorKeys.push(vendorKey);
-        }
-      }
-    });
-
-    // Update LOCAL state only (not applied until "Apply" is clicked)
-    setLocalStatusFilters(statusKeys.length > 0 ? statusKeys : []);
-    setLocalVendorFilters(vendorKeys.length > 0 ? vendorKeys : []);
-  };
-
-  const handleReset = () => {
-    reset();
-    setLocalStatusFilters([]);
-    setLocalVendorFilters([]);
-  };
-
-  const handleClear = () => {
-    setLocalStatusFilters([]);
-    setLocalVendorFilters([]);
-  };
-
-  const handleApply = () => {
-    setStatusFilters(
-      localStatusFilters && localStatusFilters.length > 0
-        ? Array.from(new Set(localStatusFilters))
-        : localStatusFilters,
-    );
-    setVendorFilters(
-      localVendorFilters && localVendorFilters.length > 0
-        ? Array.from(new Set(localVendorFilters))
-        : localVendorFilters,
-    );
-  };
-
-  const handleExpand = (keys: React.Key[]) => {
-    setExpandedKeys(keys);
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      // When popover closes without applying, reset local state to match applied state
-      setLocalStatusFilters(statusFilters);
-      setLocalVendorFilters(vendorFilters);
-    }
-  };
+    >
+      <span>+ {omittedValues.length}</span>
+    </Tooltip>
+  );
 
   return (
-    <Filter
-      treeProps={{
-        checkable: true,
-        checkedKeys,
-        onCheck: handleCheck,
-        treeData,
-        expandedKeys,
-        onExpand: handleExpand,
-      }}
-      onApply={handleApply}
-      onReset={handleReset}
-      onClear={handleClear}
-      onOpenChange={handleOpenChange}
-      activeFiltersCount={activeFiltersCount}
-    />
+    <Flex gap="small" align="center">
+      {hasActiveFilters && (
+        <Button
+          type="text"
+          onClick={reset}
+          data-testid="clear-filters-button"
+          aria-label="Clear all filters"
+        >
+          Clear filters
+        </Button>
+      )}
+      <Select
+        placeholder="Status"
+        options={statusOptions}
+        value={statusFilterValue}
+        onChange={handleStatusChange}
+        allowClear
+        className="w-40"
+        data-testid="status-filter-select"
+        aria-label="Filter by status"
+      />
+
+      <Select
+        placeholder="Type"
+        options={VENDOR_FILTER_OPTIONS.map((option) => ({
+          label: option.label,
+          value: option.key,
+        }))}
+        value={typeFilterValue}
+        onChange={handleTypeChange}
+        allowClear
+        className="w-40"
+        data-testid="type-filter-select"
+        aria-label="Filter by type"
+      />
+
+      <Select
+        placeholder="Data use"
+        options={dataUseOptions}
+        value={dataUsesFilters ?? []}
+        onChange={handleDataUseChange}
+        mode="multiple"
+        allowClear
+        maxTagCount="responsive"
+        maxTagPlaceholder={renderTagPlaceholder}
+        className="w-72"
+        data-testid="data-use-filter-select"
+        aria-label="Filter by data use"
+      />
+    </Flex>
   );
 };
