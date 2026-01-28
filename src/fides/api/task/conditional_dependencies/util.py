@@ -1,8 +1,14 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 from uuid import UUID
 
 from pydantic import BaseModel
+
+from fides.api.task.conditional_dependencies.schemas import (
+    Condition,
+    ConditionGroup,
+    ConditionLeaf,
+)
 
 
 # pylint: disable=too-many-return-statements
@@ -109,3 +115,41 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
     # Set the final value
     current[final_key] = value
     return result
+
+
+def extract_field_addresses(
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+) -> set[str]:
+    """
+    Recursively extracts all field addresses from a condition tree.
+
+    Handles both Pydantic models and dict/JSONB representations.
+
+    Args:
+        condition: Condition tree (Pydantic model or dict) to extract field addresses from
+
+    Returns:
+        Set of unique field addresses referenced in the condition tree
+    """
+    if not condition:
+        return set()
+
+    field_addresses: set[str] = set()
+
+    # Handle dict/JSONB format
+    if isinstance(condition, dict):
+        if "field_address" in condition:
+            field_addresses.add(condition["field_address"])
+        if "conditions" in condition:
+            for sub in condition["conditions"]:
+                field_addresses.update(extract_field_addresses(sub))
+        return field_addresses
+
+    # Handle Pydantic models
+    if isinstance(condition, ConditionLeaf):
+        field_addresses.add(condition.field_address)
+    elif isinstance(condition, ConditionGroup):
+        for sub_condition in condition.conditions:
+            field_addresses.update(extract_field_addresses(sub_condition))
+
+    return field_addresses
