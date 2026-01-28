@@ -379,8 +379,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     >({
       query: ({ monitor_config_key, ...params }) => ({
         method: "GET",
-        url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
-        params,
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results?${queryString.stringify(
+          params,
+          { arrayFormat: "none" },
+        )}`,
       }),
       providesTags: () => ["Identity Provider Monitor Results"],
     }),
@@ -390,8 +392,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     >({
       query: ({ monitor_config_key, ...params }) => ({
         method: "GET",
-        url: `/plus/filters/idp_monitor_resources`,
-        params: { monitor_config_id: monitor_config_key, ...params },
+        url: `/plus/filters/idp_monitor_resources?${queryString.stringify(
+          { monitor_config_id: monitor_config_key, ...params },
+          { arrayFormat: "none" },
+        )}`,
       }),
     }),
     executeIdentityProviderMonitor: build.mutation<

@@ -55,27 +55,12 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   }, [statusFilters, activeParams.diff_status]);
 
   // Map vendor filters to vendor_id parameter
-  // "known" = has vendor_id, "unknown" = no vendor_id
-  // The backend API uses "null" to filter for items without vendor_id
+  // Pass "known" and "unknown" directly to the API
   const vendorIdFilters = useMemo(() => {
     if (!vendorFilters || vendorFilters.length === 0) {
       return undefined;
     }
-
-    const vendorIds: string[] = [];
-    if (vendorFilters.includes("unknown")) {
-      vendorIds.push("null");
-    }
-    // Note: "known" filter would require getting all possible vendor IDs,
-    // which isn't practical. If both filters are selected or only "known" is selected,
-    // we don't apply any vendor filter (show all).
-    if (vendorFilters.includes("known") && !vendorFilters.includes("unknown")) {
-      // Backend should support filtering for items WITH vendor_id
-      // Using "not_null" as a special indicator (backend implementation required)
-      return "not_null";
-    }
-
-    return vendorIds.length > 0 ? vendorIds : undefined;
+    return vendorFilters;
   }, [vendorFilters]);
 
   // Map data uses filters
