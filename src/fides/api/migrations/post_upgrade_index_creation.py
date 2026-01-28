@@ -185,6 +185,11 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
             "type": "index",
         },
+        {
+            "name": "ix_stagedresource_monitor_config_is_leaf",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_config_is_leaf ON stagedresource (monitor_config_id, is_leaf)",
+            "type": "index",
+        },
     ],
 }
 
