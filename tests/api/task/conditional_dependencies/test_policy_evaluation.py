@@ -21,7 +21,8 @@ def _create_policy_with_rule(
     policy = Policy.create(db=db, data={"name": key, "key": key})
     rule_data = {
         "action_type": action_type.value,
-        "name": f"{action_type.value.capitalize()} Rule",
+        "name": f"{key} {action_type.value.capitalize()} Rule",
+        "key": f"{key}_{action_type.value}_rule",
         "policy_id": policy.id,
     }
     # Erasure rules require masking strategies
