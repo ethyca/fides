@@ -1,6 +1,7 @@
 # Evidence Tray & Source Links - Visual Styling Proposal
 
 ## Design Philosophy
+
 Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and other modern productivity tools. Maintain professionalism while feeling more approachable and human.
 
 ---
@@ -8,6 +9,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ## 1. Source Links [1] Styling
 
 ### Current Issues
+
 - Plain link buttons feel too technical/clinical
 - Dotted underline is too subtle
 - No visual weight or presence
@@ -16,6 +18,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ### Proposed Changes
 
 #### Option A: Pill Badge Style (Recommended)
+
 ```
 [1] → Small pill-shaped badge with:
 - Soft background: #F0F4FF (light blue tint)
@@ -31,6 +34,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ```
 
 #### Option B: Icon + Number
+
 ```
 [1] → Small circular badge with:
 - Background: #F5F7FA (warm gray)
@@ -41,6 +45,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ```
 
 #### Option C: Underline with Background
+
 ```
 [1] → Inline with:
 - Background: rgba(74, 108, 247, 0.08) (very light minos)
@@ -57,6 +62,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ## 2. Evidence Tray Styling
 
 ### Current Issues
+
 - Too much white space feels sterile
 - Hard borders feel harsh
 - Cards feel disconnected
@@ -66,6 +72,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ### Proposed Changes
 
 #### A. Background & Container
+
 ```css
 - Drawer background: #FAFBFC (warm off-white, not pure white)
 - Card backgrounds: #FFFFFF (pure white for contrast)
@@ -73,6 +80,7 @@ Move from "cold enterprise" to "warm modern" - inspired by Notion, Linear, and o
 ```
 
 #### B. Card Styling
+
 ```css
 Question Cards:
 - Background: #FFFFFF
@@ -92,6 +100,7 @@ Evidence Type Cards (System/Human/Analysis):
 ```
 
 #### C. Typography
+
 ```css
 Question Headers:
 - Font size: 15px (slightly larger)
@@ -112,6 +121,7 @@ Body Text:
 ```
 
 #### D. Colors & Accents
+
 ```css
 Primary Accent (minos):
 - Use softer variant: #5B7FFF (slightly lighter, more vibrant)
@@ -133,6 +143,7 @@ Tags/Badges:
 ```
 
 #### E. Interactive Elements
+
 ```css
 Collapse Headers:
 - Hover background: #F8F9FA (subtle)
@@ -149,6 +160,7 @@ Buttons (View evidence, Export):
 ```
 
 #### F. Evidence Items
+
 ```css
 System/Human/Analysis Items:
 - Background: #FFFFFF (white cards on gray background)
@@ -166,6 +178,7 @@ Source Links in Items:
 ```
 
 #### G. Spacing & Layout
+
 ```css
 - Increase padding throughout: 20px → 24px
 - More generous gaps: 16px → 20px between sections
@@ -175,6 +188,7 @@ Source Links in Items:
 ```
 
 #### H. Icons & Visual Elements
+
 ```css
 - Use softer icon colors: #6B7280 (not pure gray)
 - Icon size: 14px (slightly larger for better visibility)
@@ -187,6 +201,7 @@ Source Links in Items:
 ## 3. Specific Component Updates
 
 ### Source Links [1] Component
+
 ```tsx
 // Pill badge style
 <Button
@@ -218,6 +233,7 @@ Source Links in Items:
 ```
 
 ### Evidence Tray Cards
+
 ```tsx
 // Warmer, softer card styling
 <Card
@@ -244,6 +260,7 @@ Source Links in Items:
 ```
 
 ### Drawer Background
+
 ```tsx
 // Warmer background
 <Drawer
@@ -259,6 +276,7 @@ Source Links in Items:
 ---
 
 ## 4. Typography Scale
+
 ```
 - H1 (Question): 15px, 600 weight, #1A1F36
 - H2 (Section): 13px, 500 weight, #4A5568
@@ -270,6 +288,7 @@ Source Links in Items:
 ---
 
 ## 5. Color Palette Updates
+
 ```
 Primary (minos): #5B7FFF → #4A6CF7 (hover)
 Background: #FAFBFC (warm off-white)
@@ -286,6 +305,7 @@ Error: #EF4444
 ---
 
 ## 6. Animation & Transitions
+
 ```
 - All transitions: 0.2s ease (smooth, not jarring)
 - Hover scale: 1.05 (subtle, not dramatic)
@@ -299,12 +319,14 @@ Error: #EF4444
 ## 7. Specific Improvements
 
 ### Source Links
+
 - ✅ Pill badge style (Option A)
 - ✅ Hover scale effect
 - ✅ Softer colors
 - ✅ Better visual weight
 
 ### Evidence Tray
+
 - ✅ Warmer background (#FAFBFC)
 - ✅ Softer borders (#E8EBED)
 - ✅ More rounded corners (12px)
@@ -315,6 +337,7 @@ Error: #EF4444
 - ✅ Smoother transitions
 
 ### Cards
+
 - ✅ White cards on warm background
 - ✅ Softer borders
 - ✅ Hover effects
@@ -325,12 +348,14 @@ Error: #EF4444
 ## Implementation Priority
 
 1. **High Priority:**
+
    - Source link pill badges
    - Warmer background colors
    - Softer borders
    - Better spacing
 
 2. **Medium Priority:**
+
    - Typography updates
    - Hover states
    - Shadow improvements
@@ -345,20 +370,24 @@ Error: #EF4444
 ## Visual Examples
 
 ### Source Link Before/After
+
 **Before:** Plain link with dotted underline `[1]`
 **After:** Pill badge `[1]` with soft blue background, rounded, hover effect
 
 ### Evidence Tray Before/After
+
 **Before:** White background, hard borders, clinical feel
 **After:** Warm off-white background, soft borders, rounded corners, modern feel
 
 ### Cards Before/After
+
 **Before:** Sharp corners, minimal shadow, disconnected
 **After:** Rounded corners, soft shadow, cohesive, hover effects
 
 ---
 
 ## Notes
+
 - Maintain accessibility (contrast ratios)
 - Keep Ant Design X components
 - Ensure responsive design still works

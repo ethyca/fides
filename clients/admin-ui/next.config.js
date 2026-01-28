@@ -8,7 +8,12 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 // DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
 // rc-util is required for Ant Design components (Collapse, Drawer, etc.) to work properly
 // @ant-design/x and antd need to be transpiled to resolve ES module import issues
-const withTM = require("next-transpile-modules")(["fidesui", "rc-util", "@ant-design/x", "antd"]);
+const withTM = require("next-transpile-modules")([
+  "fidesui",
+  "rc-util",
+  "@ant-design/x",
+  "antd",
+]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
@@ -34,7 +39,10 @@ const nextConfig = {
     if (!config.resolve.alias) {
       config.resolve.alias = {};
     }
-    config.resolve.alias["antd/es/version"] = path.resolve(__dirname, "node_modules/antd/es/version/index.js");
+    config.resolve.alias["antd/es/version"] = path.resolve(
+      __dirname,
+      "node_modules/antd/es/version/index.js",
+    );
 
     // Handle ESM externals for react-syntax-highlighter used by @ant-design/x
     // Ignore the problematic async language loader that tries to import ESM packages
@@ -42,7 +50,7 @@ const nextConfig = {
       new webpack.IgnorePlugin({
         resourceRegExp: /^refractor\/.*$/,
         contextRegExp: /react-syntax-highlighter/,
-      })
+      }),
     );
 
     return config;

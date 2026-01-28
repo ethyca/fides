@@ -1,11 +1,13 @@
 # Privacy Assessment Document Editing Proposal
 
 ## Vision
+
 Transform privacy assessments from traditional forms to collaborative, document-like interfaces similar to Confluence or Notion, where content is editable text with commenting, highlighting, and team collaboration features.
 
 ## Core Concepts
 
 ### 1. Editable Text Blocks (Not Form Fields)
+
 - Replace `Input.TextArea` with editable text blocks
 - Text appears as normal content until user clicks to edit
 - Clicking text activates edit mode (text becomes input)
@@ -13,6 +15,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 - Visual indicator (pencil icon, border) shows editable sections
 
 ### 2. Text Highlighting & Comments
+
 - Users can select/highlight any text in the document
 - Selection triggers a floating toolbar with actions:
   - **Comment** - Add a comment thread on the selection
@@ -23,6 +26,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 - Comment threads show: author, timestamp, replies, resolve status
 
 ### 3. Edit Mode
+
 - Click on any section text to enter edit mode
 - Text transforms into a textarea/input
 - Edit mode shows:
@@ -34,6 +38,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 - Auto-save draft option (optional)
 
 ### 4. Document Structure
+
 - Maintain current collapse/expand structure
 - Each section is a document block
 - Sections can be:
@@ -42,6 +47,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
   - **Comment mode**: Showing comment threads
 
 ### 5. Collaboration Features
+
 - **Inline comments**: Click comment icon to view/add comments
 - **Team requests**: Highlight text → "Request input" → Opens Slack integration
 - **Version history**: Track who edited what and when (future)
@@ -50,6 +56,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ## Component Architecture
 
 ### EditableTextBlock Component
+
 ```tsx
 <EditableTextBlock
   value={text}
@@ -63,6 +70,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ```
 
 ### CommentThread Component
+
 ```tsx
 <CommentThread
   selection={selectedText}
@@ -73,6 +81,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ```
 
 ### SelectionToolbar Component
+
 ```tsx
 <SelectionToolbar
   selection={selectedText}
@@ -86,23 +95,27 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ## Implementation Plan
 
 ### Phase 1: Basic Editable Text
+
 1. Replace `Input.TextArea` with editable text blocks
 2. Add click-to-edit functionality
 3. Add save/cancel buttons
 4. Maintain current form state management
 
 ### Phase 2: Text Selection & Toolbar
+
 1. Implement text selection detection
 2. Create floating toolbar on selection
 3. Add basic actions (comment, request input, view evidence)
 
 ### Phase 3: Comment System
+
 1. Add comment data model
 2. Implement comment threads
 3. Add comment UI (inline annotations)
 4. Connect to backend (when available)
 
 ### Phase 4: Enhanced Collaboration
+
 1. Team input requests with context
 2. Comment notifications
 3. Edit history/versioning
@@ -110,18 +123,21 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ## UI/UX Considerations
 
 ### Visual Design
+
 - **Edit mode**: Subtle border, light background tint, edit icon
 - **Comments**: Small icon/indicator, expand to show thread
 - **Selection**: Highlight with semi-transparent overlay
 - **Toolbar**: Floating, positioned near selection, modern design
 
 ### Interactions
+
 - **Click text**: Enter edit mode
 - **Select text**: Show toolbar
 - **Hover**: Show subtle edit indicator
 - **Keyboard**: ESC to cancel, Cmd/Ctrl+S to save
 
 ### Responsive
+
 - Toolbar adapts to screen edges
 - Comments stack on mobile
 - Edit mode full-width on mobile
@@ -129,6 +145,7 @@ Transform privacy assessments from traditional forms to collaborative, document-
 ## Data Model Changes
 
 ### Current
+
 ```typescript
 formValues: {
   projectOverview: string;
@@ -138,6 +155,7 @@ formValues: {
 ```
 
 ### Proposed
+
 ```typescript
 sections: {
   [sectionKey]: {
@@ -164,6 +182,7 @@ comments: {
 ```
 
 ## Migration Strategy
+
 1. Keep existing form structure initially
 2. Add editable text components alongside
 3. Gradually replace form fields

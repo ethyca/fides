@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button, Input, Flex, Icons } from "fidesui";
-import type { TextAreaRef } from "antd/es/input/TextArea";
 import {
   CheckOutlined,
   CloseOutlined,
   CommentOutlined,
   SlackOutlined,
 } from "@ant-design/icons";
+import type { TextAreaRef } from "antd/es/input/TextArea";
+import { Button, Flex, Icons, Input } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import React, { useEffect, useRef, useState } from "react";
 
 interface EditableTextBlockProps {
   value: string;

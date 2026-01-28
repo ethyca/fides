@@ -1,40 +1,36 @@
 import {
+  CloudUploadOutlined,
+  FileTextOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  SlackOutlined,
+} from "@ant-design/icons";
+import {
   Button,
   Card,
+  Checkbox,
   CUSTOM_TAG_COLOR,
   Flex,
   Input,
   Modal,
+  PlusOutlined,
+  Result,
   Select,
   Space,
   Tag,
-  Typography,
-  PlusOutlined,
-  Checkbox,
-  Upload,
   Tooltip,
+  Typography,
+  Upload,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
-import {
-  SearchOutlined,
-  ArrowRightOutlined,
-  FileTextOutlined,
-  SettingOutlined,
-  CloudUploadOutlined,
-} from "@ant-design/icons";
-import { SlackOutlined } from "@ant-design/icons";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { Result } from "fidesui";
-import Layout from "~/features/common/Layout";
 import { useFeatures } from "~/features/common/features";
-import {
-  PRIVACY_ASSESSMENTS_ROUTE,
-  PRIVACY_ASSESSMENTS_ONBOARDING_ROUTE,
-} from "~/features/common/nav/routes";
+import Layout from "~/features/common/Layout";
+import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Title, Text } = Typography;
@@ -65,10 +61,10 @@ const mockAssessments = {
       {
         id: "3",
         name: "Marketing Analytics Platform",
-        status: "updated",
-        statusTime: "1d ago",
+        status: "completed",
+        statusTime: "Jan 15, 2024",
         riskLevel: "Low",
-        completeness: 90,
+        completeness: 100,
         owner: "AL",
       },
       {
@@ -91,10 +87,10 @@ const mockAssessments = {
       {
         id: "6",
         name: "E-commerce Recommendation Engine",
-        status: "updated",
-        statusTime: "5h ago",
+        status: "completed",
+        statusTime: "Jan 12, 2024",
         riskLevel: "Med",
-        completeness: 80,
+        completeness: 100,
         owner: "AL",
       },
     ],
@@ -123,10 +119,10 @@ const mockAssessments = {
       {
         id: "9",
         name: "Opt-Out Request Handler",
-        status: "updated",
-        statusTime: "4h ago",
+        status: "completed",
+        statusTime: "Jan 10, 2024",
         riskLevel: "Low",
-        completeness: 85,
+        completeness: 100,
         owner: "AL",
       },
       {
@@ -182,22 +178,17 @@ const regions = [
   "Brazil",
 ];
 
+const dpoOptions = [
+  { id: "jd", name: "Jane Doe", role: "Data Protection Officer" },
+  { id: "sj", name: "Sarah Johnson", role: "Privacy Lead" },
+  { id: "mp", name: "Michael Park", role: "Compliance Manager" },
+  { id: "al", name: "Anna Lee", role: "Legal Counsel" },
+];
+
 const VIEWED_ASSESSMENTS_KEY = "privacy-assessments-viewed";
 
 const PrivacyAssessmentsPage: NextPage = () => {
   const { flags } = useFeatures();
-
-  if (!flags.alphaDataProtectionAssessments) {
-    return (
-      <Layout title="Privacy Assessments">
-        <Result
-          status="error"
-          title="Feature not available"
-          subTitle="This feature is currently behind a feature flag and is not enabled."
-        />
-      </Layout>
-    );
-  }
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -215,6 +206,17 @@ const PrivacyAssessmentsPage: NextPage = () => {
     new Set(),
   );
 
+  // Create assessment modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newAssessment, setNewAssessment] = useState({
+    name: "",
+    framework: "gdpr",
+    dpo: "",
+    description: "",
+    systemName: "",
+  });
+  const [assessments, setAssessments] = useState(mockAssessments);
+
   // Load viewed assessments from localStorage on mount
   // Initialize with half of assessments already viewed (so half are "new")
   useEffect(() => {
@@ -230,7 +232,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       try {
         const viewedIds = JSON.parse(stored) as string[];
         setViewedAssessments(new Set(viewedIds));
-      } catch (e) {
+      } catch {
         // If parsing fails, initialize with half viewed
         const allAssessmentIds = getAllAssessmentIds();
         const halfViewed = allAssessmentIds.slice(
@@ -254,6 +256,19 @@ const PrivacyAssessmentsPage: NextPage = () => {
       localStorage.setItem(VIEWED_ASSESSMENTS_KEY, JSON.stringify(halfViewed));
     }
   }, []);
+
+  // Check feature flag after all hooks
+  if (!flags?.alphaDataProtectionAssessments) {
+    return (
+      <Layout title="Privacy Assessments">
+        <Result
+          status="error"
+          title="Feature not available"
+          subTitle="This feature is currently behind a feature flag and is not enabled."
+        />
+      </Layout>
+    );
+  }
 
   const handleAddRegion = (region: string) => {
     if (!selectedRegions.includes(region)) {
@@ -291,7 +306,51 @@ const PrivacyAssessmentsPage: NextPage = () => {
   );
 
   const handleCreateNew = () => {
-    router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/onboarding`);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateAssessment = () => {
+    if (!newAssessment.name || !newAssessment.dpo) {
+      return;
+    }
+
+    const newId = String(Date.now());
+    const dpoInfo = dpoOptions.find((d) => d.id === newAssessment.dpo);
+    const newAssessmentData = {
+      id: newId,
+      name: newAssessment.name,
+      status: "updated" as const,
+      statusTime: "Just now",
+      riskLevel: "TBD",
+      completeness: 0,
+      owner:
+        dpoInfo?.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("") ?? "??",
+    };
+
+    // Add to the selected framework's assessments
+    setAssessments((prev) => ({
+      ...prev,
+      [newAssessment.framework]: {
+        ...prev[newAssessment.framework as keyof typeof prev],
+        assessments: [
+          newAssessmentData,
+          ...prev[newAssessment.framework as keyof typeof prev].assessments,
+        ],
+      },
+    }));
+
+    setIsCreateModalOpen(false);
+    // Reset form
+    setNewAssessment({
+      name: "",
+      framework: "gdpr",
+      dpo: "",
+      description: "",
+      systemName: "",
+    });
   };
 
   const handleAssessmentClick = (id: string) => {
@@ -361,10 +420,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
             <Button
               icon={<SettingOutlined />}
               onClick={() => setIsSettingsModalOpen(true)}
+              aria-label="Settings"
             />
           </Space>
         }
-        isSticky={true}
+        isSticky
       >
         <Text type="secondary" style={{ fontSize: 14 }}>
           Manage compliance documentation grouped by template type.
@@ -396,9 +456,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 style={{ width: 240 }}
                 value={statusFilter}
                 onChange={(value) => setStatusFilter(value)}
+                aria-label="Filter by status"
                 options={[
                   { label: "All", value: "all" },
                   { label: "New", value: "new" },
+                  { label: "Completed", value: "completed" },
                   { label: "Updated", value: "updated" },
                   { label: "Out of date", value: "outdated" },
                 ]}
@@ -406,6 +468,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
               <Select
                 placeholder="Framework: All"
                 style={{ width: 280 }}
+                aria-label="Filter by framework"
                 options={[
                   { label: "All", value: "all" },
                   { label: "GDPR", value: "gdpr" },
@@ -415,6 +478,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
               <Select
                 placeholder="Owner: Me"
                 style={{ width: 240 }}
+                aria-label="Filter by owner"
                 options={[
                   { label: "Me", value: "me" },
                   { label: "All", value: "all" },
@@ -426,7 +490,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       </PageHeader>
       <div style={{ padding: "24px 40px" }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          {Object.entries(mockAssessments).map(([key, template]) => (
+          {Object.entries(assessments).map(([key, template]) => (
             <div key={key}>
               <Flex
                 justify="space-between"
@@ -461,21 +525,26 @@ const PrivacyAssessmentsPage: NextPage = () => {
                     </Text>
                   </div>
                 </Flex>
-                <Button type="link" style={{ padding: 0 }}>
-                  View all <ArrowRightOutlined style={{ fontSize: 12 }} />
-                </Button>
               </Flex>
 
               <Flex gap="middle" wrap="wrap">
                 {template.assessments
                   .filter((assessment) => {
-                    if (statusFilter === "all") return true;
-                    if (statusFilter === "new")
+                    if (statusFilter === "all") {
+                      return true;
+                    }
+                    if (statusFilter === "new") {
                       return isNewAssessment(assessment.id);
-                    if (statusFilter === "updated")
+                    }
+                    if (statusFilter === "completed") {
+                      return assessment.status === "completed";
+                    }
+                    if (statusFilter === "updated") {
                       return assessment.status === "updated";
-                    if (statusFilter === "outdated")
+                    }
+                    if (statusFilter === "outdated") {
                       return assessment.status === "outdated";
+                    }
                     return true;
                   })
                   .map((assessment) => (
@@ -486,6 +555,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
                         width: "calc((100% - 48px) / 4)",
                         minWidth: 280,
                         cursor: "pointer",
+                        ...(assessment.completeness === 100 && {
+                          borderLeft: `4px solid ${palette.FIDESUI_SUCCESS}`,
+                        }),
                       }}
                       onClick={() => handleAssessmentClick(assessment.id)}
                     >
@@ -507,27 +579,28 @@ const PrivacyAssessmentsPage: NextPage = () => {
                           >
                             {assessment.name}
                           </Title>
-                          {isNewAssessment(assessment.id) && (
-                            <Flex
-                              align="center"
-                              gap="small"
-                              style={{
-                                flexShrink: 0,
-                                fontSize: 11,
-                                color: palette.FIDESUI_NEUTRAL_600,
-                              }}
-                            >
-                              <div
+                          {isNewAssessment(assessment.id) &&
+                            assessment.completeness < 100 && (
+                              <Flex
+                                align="center"
+                                gap="small"
                                 style={{
-                                  width: 6,
-                                  height: 6,
-                                  borderRadius: "50%",
-                                  backgroundColor: palette.FIDESUI_SUCCESS,
+                                  flexShrink: 0,
+                                  fontSize: 11,
+                                  color: palette.FIDESUI_NEUTRAL_600,
                                 }}
-                              />
-                              <Text style={{ fontSize: 11 }}>New</Text>
-                            </Flex>
-                          )}
+                              >
+                                <div
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                  }}
+                                />
+                                <Text style={{ fontSize: 11 }}>New</Text>
+                              </Flex>
+                            )}
                         </Flex>
                         <Text
                           type="secondary"
@@ -543,104 +616,168 @@ const PrivacyAssessmentsPage: NextPage = () => {
                           Evaluation of data processing activities.
                         </Text>
                         {getRiskTag(assessment.riskLevel)}
-                        <div
-                          style={{
-                            marginTop: 16,
-                            paddingTop: 16,
-                            borderTop: "1px solid #f0f0f0",
-                          }}
-                        >
-                          <Flex
-                            justify="space-between"
-                            style={{ marginBottom: 8 }}
-                          >
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              Completeness
-                            </Text>
-                            <Text strong style={{ fontSize: 12 }}>
-                              {assessment.completeness}%
-                            </Text>
-                          </Flex>
+                        {/* Completed assessment style */}
+                        {assessment.completeness === 100 && (
                           <div
                             style={{
-                              height: 6,
-                              backgroundColor: "#f0f0f0",
-                              borderRadius: 3,
-                              overflow: "hidden",
+                              marginTop: 16,
+                              paddingTop: 16,
+                              borderTop: "1px solid #f0f0f0",
                             }}
                           >
-                            <div
+                            <Flex
+                              align="center"
+                              gap="middle"
                               style={{
-                                height: "100%",
-                                width: `${assessment.completeness}%`,
-                                backgroundColor: palette.FIDESUI_MINOS,
+                                padding: "12px",
+                                backgroundColor: `${palette.FIDESUI_SUCCESS}10`,
+                                borderRadius: 8,
                               }}
-                            />
-                          </div>
-                          <Flex
-                            justify="space-between"
-                            align="center"
-                            style={{ marginTop: 8 }}
-                          >
-                            <Flex align="center" gap="small">
+                            >
                               <div
                                 style={{
-                                  width: 20,
-                                  height: 20,
+                                  width: 28,
+                                  height: 28,
                                   borderRadius: "50%",
-                                  backgroundColor: palette.FIDESUI_MINOS,
-                                  color: "white",
+                                  backgroundColor: palette.FIDESUI_SUCCESS,
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  fontSize: 10,
-                                  fontWeight: 700,
                                 }}
                               >
-                                {assessment.owner}
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 32 32"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M13 24L4 15L6.5 12.5L13 19L25.5 6.5L28 9L13 24Z"
+                                    fill="white"
+                                  />
+                                </svg>
                               </div>
-                              {getStatusText(
-                                assessment.status,
-                                assessment.statusTime,
-                              ) && (
+                              <div>
                                 <Text
+                                  strong
                                   style={{
-                                    fontSize: 11,
-                                    color: getStatusColor(assessment.status),
+                                    fontSize: 14,
+                                    display: "block",
+                                    color: palette.FIDESUI_SUCCESS,
                                   }}
                                 >
-                                  {getStatusText(
-                                    assessment.status,
-                                    assessment.statusTime,
-                                  )}
+                                  Assessment complete
                                 </Text>
-                              )}
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  Updated {assessment.statusTime}
+                                </Text>
+                              </div>
                             </Flex>
-                            <Flex align="center" gap="small">
-                              <Tooltip title="Request input from your team via Slack">
-                                <Button
-                                  type="text"
-                                  icon={<SlackOutlined />}
-                                  size="small"
+                          </div>
+                        )}
+                        {/* In-progress assessment (default) */}
+                        {assessment.completeness < 100 && (
+                          <div
+                            style={{
+                              marginTop: 16,
+                              paddingTop: 16,
+                              borderTop: "1px solid #f0f0f0",
+                            }}
+                          >
+                            <Flex
+                              justify="space-between"
+                              style={{ marginBottom: 8 }}
+                            >
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                Completeness
+                              </Text>
+                              <Text strong style={{ fontSize: 12 }}>
+                                {assessment.completeness}%
+                              </Text>
+                            </Flex>
+                            <div
+                              style={{
+                                height: 6,
+                                backgroundColor: "#f0f0f0",
+                                borderRadius: 3,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${assessment.completeness}%`,
+                                  backgroundColor: palette.FIDESUI_MINOS,
+                                }}
+                              />
+                            </div>
+                            <Flex
+                              justify="space-between"
+                              align="center"
+                              style={{ marginTop: 8 }}
+                            >
+                              <Flex align="center" gap="small">
+                                <div
                                   style={{
-                                    padding: "4px 8px",
-                                    color: palette.FIDESUI_NEUTRAL_600,
+                                    width: 20,
+                                    height: 20,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_MINOS,
+                                    color: "white",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 10,
+                                    fontWeight: 700,
                                   }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Handle Slack conversation initiation
-                                  }}
-                                />
-                              </Tooltip>
-                              <Button
-                                type="link"
-                                style={{ padding: 0, fontSize: 12 }}
-                              >
-                                Resume
-                              </Button>
+                                >
+                                  {assessment.owner}
+                                </div>
+                                {getStatusText(
+                                  assessment.status,
+                                  assessment.statusTime,
+                                ) && (
+                                  <Text
+                                    style={{
+                                      fontSize: 11,
+                                      color: getStatusColor(assessment.status),
+                                    }}
+                                  >
+                                    {getStatusText(
+                                      assessment.status,
+                                      assessment.statusTime,
+                                    )}
+                                  </Text>
+                                )}
+                              </Flex>
+                              <Flex align="center" gap="small">
+                                <Tooltip title="Request input from your team via Slack">
+                                  <Button
+                                    type="text"
+                                    icon={<SlackOutlined />}
+                                    size="small"
+                                    aria-label="Request input via Slack"
+                                    style={{
+                                      padding: "4px 8px",
+                                      color: palette.FIDESUI_NEUTRAL_600,
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Handle Slack conversation initiation
+                                    }}
+                                  />
+                                </Tooltip>
+                                <Button
+                                  type="link"
+                                  style={{ padding: 0, fontSize: 12 }}
+                                >
+                                  Resume
+                                </Button>
+                              </Flex>
                             </Flex>
-                          </Flex>
-                        </div>
+                          </div>
+                        )}
                       </Flex>
                     </Card>
                   ))}
@@ -671,6 +808,125 @@ const PrivacyAssessmentsPage: NextPage = () => {
         </Space>
       </div>
 
+      {/* Create Assessment Modal */}
+      <Modal
+        title="Create new assessment"
+        open={isCreateModalOpen}
+        onCancel={() => {
+          setIsCreateModalOpen(false);
+          setNewAssessment({
+            name: "",
+            framework: "gdpr",
+            dpo: "",
+            description: "",
+            systemName: "",
+          });
+        }}
+        onOk={handleCreateAssessment}
+        okText="Create assessment"
+        okButtonProps={{ disabled: !newAssessment.name || !newAssessment.dpo }}
+        width={600}
+      >
+        <div
+          style={{
+            padding: "12px 16px",
+            backgroundColor: palette.FIDESUI_BG_CORINTH,
+            borderRadius: 8,
+            marginBottom: 16,
+          }}
+        >
+          <Text style={{ fontSize: 13, color: palette.FIDESUI_MINOS }}>
+            Your assessment will be pre-populated with data from your Fides data
+            map, including system details, data categories, and processing
+            purposes to give you a head start.
+          </Text>
+        </div>
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          <div>
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+              Assessment name <span style={{ color: "red" }}>*</span>
+            </Text>
+            <Input
+              placeholder="e.g., Customer Data Processing Assessment"
+              value={newAssessment.name}
+              onChange={(e) =>
+                setNewAssessment((prev) => ({ ...prev, name: e.target.value }))
+              }
+            />
+          </div>
+
+          <div>
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+              Framework / Template <span style={{ color: "red" }}>*</span>
+            </Text>
+            <Select
+              style={{ width: "100%" }}
+              aria-label="Select framework"
+              value={newAssessment.framework}
+              onChange={(value) =>
+                setNewAssessment((prev) => ({ ...prev, framework: value }))
+              }
+              options={frameworks.map((f) => ({
+                value: f.id,
+                label: `${f.label} - ${f.description}`,
+              }))}
+            />
+          </div>
+
+          <div>
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+              Assigned DPO / Owner <span style={{ color: "red" }}>*</span>
+            </Text>
+            <Select
+              style={{ width: "100%" }}
+              aria-label="Select DPO or owner"
+              placeholder="Select a DPO or owner"
+              value={newAssessment.dpo || undefined}
+              onChange={(value) =>
+                setNewAssessment((prev) => ({ ...prev, dpo: value }))
+              }
+              options={dpoOptions.map((d) => ({
+                value: d.id,
+                label: `${d.name} - ${d.role}`,
+              }))}
+            />
+          </div>
+
+          <div>
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+              System or processing activity
+            </Text>
+            <Input
+              placeholder="e.g., Marketing Analytics Platform"
+              value={newAssessment.systemName}
+              onChange={(e) =>
+                setNewAssessment((prev) => ({
+                  ...prev,
+                  systemName: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div>
+            <Text strong style={{ display: "block", marginBottom: 8 }}>
+              Description
+            </Text>
+            <Input.TextArea
+              placeholder="Brief description of the assessment purpose..."
+              rows={3}
+              value={newAssessment.description}
+              onChange={(e) =>
+                setNewAssessment((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+            />
+          </div>
+        </Space>
+      </Modal>
+
       <Modal
         title="Assessment settings"
         open={isSettingsModalOpen}
@@ -695,7 +951,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
             <Text style={{ fontSize: 14, lineHeight: 1.6 }}>
               The selections you make here and any historical assessments you
               upload will be used to train our LLM to understand your
-              organization's specific compliance needs, risk profile, and
+              organization&apos;s specific compliance needs, risk profile, and
               processing patterns. This enables the AI to generate more accurate
               and tailored privacy assessments.
             </Text>
@@ -746,7 +1002,14 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 {filteredRegions.slice(0, 5).map((region) => (
                   <div
                     key={region}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleAddRegion(region)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleAddRegion(region);
+                      }
+                    }}
                     style={{
                       padding: "8px 12px",
                       cursor: "pointer",
