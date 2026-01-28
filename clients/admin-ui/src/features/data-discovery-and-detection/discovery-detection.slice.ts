@@ -397,6 +397,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { arrayFormat: "none" },
         )}`,
       }),
+      providesTags: () => ["Identity Provider Monitor Filters"],
     }),
     executeIdentityProviderMonitor: build.mutation<
       { monitor_execution_id: string; task_id: string | null },
