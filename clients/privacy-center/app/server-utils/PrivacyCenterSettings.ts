@@ -66,7 +66,7 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
-  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
+  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link; defaults to true
   FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
   FIDES_DISABLED_NOTICES: string | null; // (optional) comma-separated list of notice_keys to disable in the CMP Overlay
   FIDES_DISABLED_SYSTEMS: string | null; // (optional) comma-separated list of systems to exclude notice assets by
