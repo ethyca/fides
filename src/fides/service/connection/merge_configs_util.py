@@ -388,7 +388,7 @@ def _get_monitored_fields_by_endpoint(
         return {}
 
     # Get all monitored field resources that belong to the specified endpoints
-    # type: ignore comments needed due to outdated sqlalchemy-stubs
+    # Note: ignore comments needed below due to outdated sqlalchemy-stubs
     monitored_fields_query = (
         select(StagedResource, StagedResourceAncestor.ancestor_urn)  # type: ignore[arg-type]
         .select_from(
