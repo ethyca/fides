@@ -2,7 +2,7 @@
 
 import {
   FidesCookie,
-  getConsentContext,
+  getGpcContext,
   getOrMakeFidesCookie,
   initializeI18n,
   loadMessagesFromFiles,
@@ -74,7 +74,7 @@ const ConsentPage: NextPage = () => {
   ] = useLazyGetConsentRequestPreferencesQuery();
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
 
-  const consentContext = useMemo(() => getConsentContext(), []);
+  const consentContext = useMemo(() => getGpcContext(), []);
 
   // TODO(#2299): Use error utils from shared package.
   const toastError = useCallback(

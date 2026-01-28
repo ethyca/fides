@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
-import { getConsentContext } from "../lib/consent-context";
+import { getGpcContext } from "../lib/consent-context";
 import {
   FidesCookie,
   FidesInitOptions,
@@ -89,7 +89,7 @@ const Overlay: FunctionComponent<Props> = ({
   const rawDefaultDescription = i18n.t("exp.description");
 
   // Process GPC conditionals in modal title and description
-  const { globalPrivacyControl } = getConsentContext();
+  const { globalPrivacyControl } = getGpcContext();
   const defaultTitle = processGpcConditionals(
     rawDefaultTitle,
     !!globalPrivacyControl,
