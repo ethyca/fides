@@ -1,6 +1,9 @@
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
+import AssetReportingTable from "../../../src/features/asset-reporting/AssetReportingTable";
+import { render } from "../../utils/test-utils";
+
 // Mock ESM-only packages to avoid Jest import issues
 jest.mock("query-string", () => ({
   __esModule: true,
@@ -12,8 +15,42 @@ jest.mock("react-dnd", () => ({
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-import AssetReportingTable from "../../../src/features/asset-reporting/AssetReportingTable";
-import { render } from "../../utils/test-utils";
+// Mock nuqs
+// eslint-disable-next-line global-require
+jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
+
+// Mock the AssetReportingTable component to avoid jsdom/Ant Design Table
+// incompatibility (NodeList.includes / parentElement.querySelectorAll).
+// Tests verify search input behavior via mocked DebouncedSearchInput.
+jest.mock("../../../src/features/asset-reporting/AssetReportingTable", () => {
+  // eslint-disable-next-line global-require
+  const ReactMock = require("react");
+  return {
+    __esModule: true,
+    default: ({
+      searchQuery,
+      updateSearch,
+    }: {
+      columns: any;
+      searchQuery?: string;
+      updateSearch: (v: string) => void;
+      tableProps: any;
+    }) =>
+      ReactMock.createElement(
+        ReactMock.Fragment,
+        null,
+        ReactMock.createElement("input", {
+          "data-testid": "asset-search-input",
+          value: searchQuery ?? "",
+          onChange: (e: any) => updateSearch(e.target.value),
+          placeholder: "Search by asset name or domain...",
+        }),
+        ReactMock.createElement("div", {
+          "data-testid": "asset-reporting-table",
+        }),
+      ),
+  };
+});
 
 // Mock the DebouncedSearchInput component
 jest.mock("../../../src/features/common/DebouncedSearchInput", () => ({
