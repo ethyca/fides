@@ -7,6 +7,7 @@ import {
   Icons,
   InputNumber,
   Space,
+  Typography,
   Switch,
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
