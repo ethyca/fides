@@ -1,17 +1,3 @@
-import time
-from dataclasses import dataclass, field
-from typing import List
-
-from loguru import logger
-from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
-from sqlalchemy.orm import Session
-
-from fides.api.db.session import get_db_session
-from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import get_cache
-from fides.config import CONFIG
-
 """
 This utility is used to backfill data that was deferred as part of a standard
 Fides/Alembic migration due to table size.
@@ -26,6 +12,20 @@ The backfill tasks are:
 - Non-blocking: Uses small batches with delays and SKIP LOCKED to minimize impact
 - Error-resilient: Retries transient errors, tracks failures, fails gracefully
 """
+
+import time
+from dataclasses import dataclass, field
+from typing import List
+
+from loguru import logger
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from fides.api.db.session import get_db_session
+from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.util.cache import get_cache
+from fides.config import CONFIG
 
 POST_UPGRADE_BACKFILL = "post_upgrade_backfill"
 
@@ -76,6 +76,7 @@ def release_backfill_lock() -> None:
 class BackfillResult:
     """Tracks the result of a backfill operation."""
 
+    name: str = ""
     total_updated: int = 0
     total_batches: int = 0
     failed_batches: int = 0
@@ -87,7 +88,8 @@ class BackfillResult:
 
     def __str__(self) -> str:
         status = "SUCCESS" if self.success else "COMPLETED WITH ERRORS"
-        result = f"{status}: {self.total_updated} rows in {self.total_batches} batches"
+        prefix = f"[{self.name}] " if self.name else ""
+        result = f"{prefix}{status}: {self.total_updated} rows in {self.total_batches} batches"
         if self.failed_batches > 0:
             result += f" ({self.failed_batches} failed batches)"
         return result
@@ -99,11 +101,14 @@ def is_transient_error(error: Exception) -> bool:
 
     Transient errors include connection issues, timeouts, and lock conflicts.
     """
+    # OperationalError is a subclass of DBAPIError, so check it first
+    # to immediately return True for connection errors, timeouts, deadlocks
     if isinstance(error, OperationalError):
-        # Connection errors, timeouts, deadlocks
         return True
+    # For other DBAPIError subclasses, check the error message for transient indicators.
+    # Some indicators overlap with OperationalError as a safety net for drivers that
+    # might categorize certain transient errors differently.
     if isinstance(error, DBAPIError):
-        # Check for specific error codes that are transient
         error_str = str(error).lower()
         transient_indicators = [
             "connection",
@@ -206,7 +211,7 @@ def backfill_is_leaf(
 
     Returns a BackfillResult with statistics and any errors encountered.
     """
-    result = BackfillResult()
+    result = BackfillResult(name="is_leaf")
     consecutive_failures = 0
     start_time = time.time()
 
@@ -248,9 +253,14 @@ def backfill_is_leaf(
                     remaining = pending_count - result.total_updated
                     eta = remaining / rate if rate > 0 else 0
 
+                    progress_pct = (
+                        f"{100 * result.total_updated / pending_count:.1f}%"
+                        if pending_count > 0
+                        else "100%"
+                    )
                     logger.info(
                         f"is_leaf backfill: Progress {result.total_updated}/{pending_count} rows "
-                        f"({100 * result.total_updated / pending_count:.1f}%) | "
+                        f"({progress_pct}) | "
                         f"Batch {result.total_batches} took {batch_duration:.2f}s | "
                         f"Rate: {rate:.0f} rows/s | "
                         f"ETA: {eta:.0f}s"
