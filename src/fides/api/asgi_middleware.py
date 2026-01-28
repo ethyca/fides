@@ -8,6 +8,7 @@ performance overhead (see https://github.com/fastapi/fastapi/discussions/6985).
 from __future__ import annotations
 
 import asyncio
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from time import perf_counter
 from typing import Any, Awaitable, Callable, MutableMapping, Optional, Set
@@ -36,7 +37,7 @@ Send = Callable[[Message], Awaitable[None]]
 ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
 
 
-class BaseASGIMiddleware:
+class BaseASGIMiddleware(ABC):
     """
     Lightweight base class for pure ASGI HTTP middleware.
 
@@ -57,9 +58,9 @@ class BaseASGIMiddleware:
             return
         await self.handle_http(scope, receive, send)
 
+    @abstractmethod
     async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Override this to implement HTTP middleware logic."""
-        await self.app(scope, receive, send)
 
     # --- Helper Methods ---
 
