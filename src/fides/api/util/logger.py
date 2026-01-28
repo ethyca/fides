@@ -240,7 +240,7 @@ def setup(config: FidesConfig) -> None:
             )
         )
 
-    logger.configure(handlers=handlers)
+    logger.configure(handlers=handlers)  # type: ignore[arg-type]
 
     # Add InterceptHandler to root logger to capture standard library logs
     # This intercepts logs from SQLAlchemy, Alembic, Celery, etc.

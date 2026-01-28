@@ -1,7 +1,7 @@
 import { ComponentChildren, Fragment, VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
-import { getConsentContext } from "../lib/consent-context";
+import { getGpcContext } from "../lib/consent-context";
 import { useI18n } from "../lib/i18n/i18n-context";
 import ExperienceDescription from "./ExperienceDescription";
 import GpcInfo from "./GpcInfo";
@@ -30,7 +30,7 @@ const ConsentContent = ({
 }: ConsentContentProps) => {
   const { title, description } = headerContent;
   const { i18n } = useI18n();
-  const gpcEnabled = getConsentContext().globalPrivacyControl;
+  const gpcEnabled = getGpcContext().globalPrivacyControl;
   const gpcTitle = i18n.t("exp.gpc_title");
   const gpcDescription = i18n.t("exp.gpc_description");
 

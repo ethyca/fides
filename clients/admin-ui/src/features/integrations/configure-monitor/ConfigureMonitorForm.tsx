@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
+import { formatUser } from "~/features/common/utils";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   getMonitorType,
@@ -204,7 +205,7 @@ const ConfigureMonitorForm = ({
   });
 
   const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: user.username,
+    label: formatUser(user),
     value: user.id,
   }));
 
@@ -238,7 +239,7 @@ const ConfigureMonitorForm = ({
       ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
     stewards:
-      monitor?.stewards || systemData?.data_stewards?.map(({ id }) => id),
+      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
   } as const;
 
   return (

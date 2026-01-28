@@ -93,9 +93,9 @@ def create_fides_app(
     fastapi_app = FastAPI(
         title="fides",
         version=app_version,
-        lifespan=lifespan,
+        lifespan=lifespan,  # type: ignore[arg-type]
         separate_input_output_schemas=False,
-    )  # type: ignore
+    )
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
