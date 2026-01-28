@@ -119,7 +119,6 @@ const ConfigureAlerts = () => {
               <Flex
                 justify="space-between"
                 align="center"
-                style={{ width: "100%" }}
               >
                 <span>Enable email notifications</span>
                 <Switch
