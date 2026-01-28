@@ -114,7 +114,7 @@ const ConfigureAlerts = () => {
             Get notified when processing failures occur. Set a threshold to
             receive alerts after a specific number of errors.
           </Typography.Text>
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+          <Space direction="vertical" size="middle" className="w-full">
             <Form.Item style={{ marginBottom: 0 }}>
               <Flex
                 justify="space-between"
