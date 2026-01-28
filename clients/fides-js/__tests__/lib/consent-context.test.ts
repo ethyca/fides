@@ -1,6 +1,6 @@
 import {
-  getAutomatedConsentContext,
   getConsentContext,
+  getGpcContext,
 } from "../../src/lib/consent-context";
 import { readConsentFromAnyProvider } from "../../src/lib/consent-migration";
 import { ConsentMethod, FidesInitOptions } from "../../src/lib/consent-types";
@@ -22,7 +22,7 @@ jest.mock("../../src/lib/fides-string", () => ({
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
 
-describe("getConsentContext", () => {
+describe("getGpcContext", () => {
   beforeEach(() => {
     // Reset window.Fides before each test
     (window as any).Fides = {
@@ -53,7 +53,7 @@ describe("getConsentContext", () => {
         writable: true,
         configurable: true,
       });
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -64,7 +64,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -75,7 +75,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
@@ -88,7 +88,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -101,12 +101,12 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(false);
     });
 
     it("returns undefined when GPC is not set", () => {
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBeUndefined();
     });
 
@@ -128,7 +128,7 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
 
@@ -152,13 +152,13 @@ describe("getConsentContext", () => {
         configurable: true,
       });
 
-      const context = getConsentContext();
+      const context = getGpcContext();
       expect(context.globalPrivacyControl).toBe(true);
     });
   });
 });
 
-describe("getAutomatedConsentContext", () => {
+describe("getConsentContext", () => {
   const mockOptions: FidesInitOptions =
     mockFidesInitOptions as FidesInitOptions;
 
@@ -202,7 +202,7 @@ describe("getAutomatedConsentContext", () => {
       configurable: true,
     });
 
-    const context = getAutomatedConsentContext(mockOptions, {});
+    const context = getConsentContext(mockOptions, {});
 
     expect(context.globalPrivacyControl).toBe(true);
     expect(context.migratedConsent).toBeUndefined();
@@ -221,7 +221,7 @@ describe("getAutomatedConsentContext", () => {
       method: ConsentMethod.EXTERNAL_PROVIDER,
     });
 
-    const context = getAutomatedConsentContext(mockOptions, {});
+    const context = getConsentContext(mockOptions, {});
 
     expect(context.migratedConsent).toEqual(mockMigratedConsent);
     expect(context.migrationMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
@@ -238,7 +238,7 @@ describe("getAutomatedConsentContext", () => {
       fidesString: "mock-fides-string",
     };
 
-    const context = getAutomatedConsentContext(optionsWithFidesString, {});
+    const context = getConsentContext(optionsWithFidesString, {});
 
     expect(context.noticeConsentString).toBe(mockNoticeConsentString);
   });
@@ -269,7 +269,7 @@ describe("getAutomatedConsentContext", () => {
       fidesString: "mock-fides-string",
     };
 
-    const context = getAutomatedConsentContext(optionsWithFidesString, {});
+    const context = getConsentContext(optionsWithFidesString, {});
 
     expect(context.globalPrivacyControl).toBe(true);
     expect(context.migratedConsent).toEqual(mockMigratedConsent);
@@ -278,7 +278,7 @@ describe("getAutomatedConsentContext", () => {
   });
 
   it("returns empty context when no automated consent sources exist", () => {
-    const context = getAutomatedConsentContext(mockOptions, {});
+    const context = getConsentContext(mockOptions, {});
 
     expect(context.globalPrivacyControl).toBeUndefined();
     expect(context.migratedConsent).toBeUndefined();

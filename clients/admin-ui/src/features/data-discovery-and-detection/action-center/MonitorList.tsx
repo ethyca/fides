@@ -3,20 +3,24 @@ import {
   Icons,
   List,
   Pagination,
-  Select,
   useChakraToast as useToast,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
+import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+
+import MonitorListSearchForm from "./forms/MonitorListSearchForm";
+import { SearchFormQueryState } from "./MonitorList.const";
 
 const MonitorList = () => {
   const toast = useToast();
@@ -29,79 +33,52 @@ const MonitorList = () => {
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
-  // Build filter options based on enabled monitor types
-  const filterOptions = [
-    ...(webMonitorEnabled || heliosV2Enabled || oktaMonitorEnabled
-      ? [{ value: "all", label: "All monitors" }]
-      : []),
-    ...(heliosV2Enabled
-      ? [{ value: MONITOR_TYPES.DATASTORE, label: "Data store monitors" }]
-      : []),
-    ...(webMonitorEnabled
-      ? [{ value: MONITOR_TYPES.WEBSITE, label: "Website monitors" }]
-      : []),
-    ...(oktaMonitorEnabled
-      ? [
-          {
-            value: MONITOR_TYPES.INFRASTRUCTURE,
-            label: "Infrastructure monitors",
-          },
-        ]
-      : []),
-  ];
+  const availableMonitorTypes = [
+    ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
+    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
+  ] as const;
 
-  // Only show filter when 2+ monitor types are enabled (meaning 3+ options including "all")
-  const shouldShowFilter = filterOptions.length > 2;
+  const currentUser = useAppSelector(selectUser);
 
-  // Build monitor_type filter based on selected filter
-  const getMonitorTypesFromFilter = (
-    filter: string,
-  ): MONITOR_TYPES[] | undefined => {
-    if (filter === MONITOR_TYPES.DATASTORE) {
-      return [MONITOR_TYPES.DATASTORE];
-    }
-    if (filter === MONITOR_TYPES.WEBSITE) {
-      return [MONITOR_TYPES.WEBSITE];
-    }
-    if (filter === MONITOR_TYPES.INFRASTRUCTURE) {
-      return [MONITOR_TYPES.INFRASTRUCTURE];
-    }
-    // "all" - return all enabled monitor types
-    const allTypes = [
-      ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-      ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
-      ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
-    ];
-    return allTypes.length > 0 ? allTypes : undefined;
-  };
-
-  const monitorTypes = getMonitorTypesFromFilter(selectedFilter);
-
-  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    monitor_type: monitorTypes,
+  const { requestData, ...formProps } = useSearchForm({
+    queryState: SearchFormQueryState(
+      [...availableMonitorTypes],
+      currentUser?.isRootUser ? undefined : currentUser?.id,
+    ),
+    initialValues: {
+      steward_key: currentUser?.isRootUser ? null : (currentUser?.id ?? null),
+    },
+    translate: ({
+      steward_key,
+      search,
+      monitor_type,
+    }): Omit<
+      Parameters<typeof useGetAggregateMonitorResultsQuery>[0],
+      "page" | "size"
+    > => {
+      return {
+        search: search || undefined,
+        monitor_type: monitor_type ? [monitor_type] : undefined,
+        steward_user_id:
+          typeof steward_key === "undefined" || !steward_key
+            ? []
+            : [steward_key],
+      };
+    },
   });
 
-  // Reset filter if selected option is no longer available
-  useEffect(() => {
-    const isValidFilter = filterOptions.some(
-      (option) => option.value === selectedFilter,
-    );
-    if (!isValidFilter && filterOptions.length > 0) {
-      setSelectedFilter(filterOptions[0].value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [webMonitorEnabled, heliosV2Enabled, oktaMonitorEnabled]);
+  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
+    ...(typeof requestData === "object" ? requestData : {}),
+    page: pageIndex,
+    size: pageSize,
+  });
 
   useEffect(() => {
     resetPagination();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedFilter]);
+  }, [requestData]);
 
   useEffect(() => {
     if (isError) {
@@ -124,23 +101,10 @@ const MonitorList = () => {
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
-      <Flex className="items-center justify-between">
-        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
-        {shouldShowFilter && (
-          <Select
-            value={selectedFilter}
-            onChange={(value) => {
-              if (typeof value === "string") {
-                setSelectedFilter(value);
-              }
-            }}
-            options={filterOptions}
-            className="w-auto min-w-[200px]"
-            data-testid="monitor-type-filter"
-            aria-label="Filter by monitor type"
-          />
-        )}
-      </Flex>
+      <MonitorListSearchForm
+        {...formProps}
+        availableMonitorTypes={availableMonitorTypes}
+      />
       <List
         loading={isLoading}
         dataSource={results}

@@ -1,0 +1,7 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Fixed monitor filter state syncing
+pr: 7239 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
