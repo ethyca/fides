@@ -11,13 +11,11 @@ class TestPollingStatusResult:
 
     def test_init_default(self):
         status_result = PollingStatusResult(is_complete=True)
-        assert status_result.skip_result_request == False
-        pass
+        assert status_result.skip_result_request is False
 
     def test_init_skip_result(self):
         status_result = PollingStatusResult(is_complete=True, skip_result_request=True)
-        assert status_result.skip_result_request == True
-        pass
+        assert status_result.skip_result_request is True
 
     def test_dict_output(self):
         status_result = PollingStatusResult(is_complete=True, skip_result_request=True)
@@ -25,4 +23,3 @@ class TestPollingStatusResult:
             "is_complete": True,
             "skip_result_request": True,
         }
-        pass

@@ -32,7 +32,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import erasure_policy
-
+from unittest.mock import patch, MagicMock
 
 @pytest.mark.async_dsr
 class TestAsyncPollingStrategy:
@@ -477,8 +477,6 @@ class TestAsyncPollingStrategy:
         assert "404" in str(exc_info.value)
         assert "Not Found" in str(exc_info.value)
 
-    # ========== _check_sub_request_status and skip_result_request Tests ==========
-
     def test_check_sub_request_status_wraps_bool_true_to_polling_status_result(
         self, db, async_polling_strategy
     ):
@@ -491,8 +489,6 @@ class TestAsyncPollingStrategy:
         # Mock the override function to return True (legacy bool)
         with MagicMock() as mock_override:
             mock_override.return_value = True
-
-            from unittest.mock import patch
 
             with patch.object(
                 async_polling_strategy,
