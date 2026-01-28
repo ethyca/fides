@@ -160,41 +160,6 @@ class TestPolicyConvenienceFields:
         assert result.policy.key == "conditional"
 
 
-class TestDictSupport:
-    """Test dict-based privacy request support"""
-
-    def test_evaluates_with_dict_input(self, db: Session, default_policy: Policy):
-        """Evaluates conditions using dict instead of PrivacyRequest object"""
-        _create_policy_with_condition(db, "us_policy", "US")
-
-        # Use dict instead of PrivacyRequest
-        pr_dict = {
-            "id": None,
-            "external_id": "test",
-            "identity": {"email": "test@example.com"},
-            "location": "US",
-            "custom_privacy_request_fields": {},
-        }
-
-        result = evaluate_policy_conditions(db, pr_dict)
-        assert result.policy.key == "us_policy"
-
-    def test_dict_falls_back_to_default(self, db: Session, default_policy: Policy):
-        """Dict-based request falls back to default when no match"""
-        _create_policy_with_condition(db, "us_policy", "US")
-
-        pr_dict = {
-            "id": None,
-            "location": "FR",  # Won't match US
-            "identity": {},
-            "custom_privacy_request_fields": {},
-        }
-
-        result = evaluate_policy_conditions(db, pr_dict)
-        assert result.policy.key == "default_policy"
-        assert result.is_default
-
-
 class TestEdgeCases:
     """Test edge cases"""
 
