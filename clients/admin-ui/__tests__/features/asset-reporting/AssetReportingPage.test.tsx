@@ -1,6 +1,11 @@
 import { fireEvent, screen } from "@testing-library/react";
 import React from "react";
 
+import useAssetReportingDownload from "../../../src/features/asset-reporting/hooks/useAssetReportingDownload";
+import { useAssetReportingTable } from "../../../src/features/asset-reporting/hooks/useAssetReportingTable";
+import AssetReportingPage from "../../../src/pages/reporting/assets/index";
+import { render } from "../../utils/test-utils";
+
 // Mock ESM-only packages to avoid Jest import issues
 jest.mock("query-string", () => ({
   __esModule: true,
@@ -12,9 +17,8 @@ jest.mock("react-dnd", () => ({
   DndProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-import { render } from "../../utils/test-utils";
-
 // Mock nuqs
+// eslint-disable-next-line global-require
 jest.mock("nuqs", () => require("../../utils/nuqs-mock").nuqsMock);
 
 // Mock the hooks
@@ -25,33 +29,7 @@ const mockUpdateFilters = jest.fn();
 jest.mock(
   "../../../src/features/asset-reporting/hooks/useAssetReportingTable",
   () => ({
-    useAssetReportingTable: jest.fn(() => ({
-      columns: [
-        { title: "Asset name", dataIndex: "name", key: "name" },
-        { title: "Type", dataIndex: "asset_type", key: "asset_type" },
-      ],
-      data: {
-        items: [
-          { id: "1", name: "Test Cookie", asset_type: "Cookie" },
-          { id: "2", name: "Test Script", asset_type: "Javascript tag" },
-        ],
-        total: 2,
-      },
-      isLoading: false,
-      isFetching: false,
-      searchQuery: "",
-      updateSearch: mockUpdateSearch,
-      updateFilters: mockUpdateFilters,
-      columnFilters: {},
-      tableProps: {
-        dataSource: [
-          { id: "1", name: "Test Cookie", asset_type: "Cookie" },
-          { id: "2", name: "Test Script", asset_type: "Javascript tag" },
-        ],
-        loading: false,
-        rowKey: "id",
-      },
-    })),
+    useAssetReportingTable: jest.fn(),
   }),
 );
 
@@ -59,10 +37,7 @@ jest.mock(
   "../../../src/features/asset-reporting/hooks/useAssetReportingDownload",
   () => ({
     __esModule: true,
-    default: jest.fn(() => ({
-      downloadReport: mockDownloadReport,
-      isDownloadingReport: false,
-    })),
+    default: jest.fn(),
   }),
 );
 
@@ -103,13 +78,46 @@ jest.mock("../../../src/features/asset-reporting/AssetReportingTable", () => ({
   default: () => <div data-testid="asset-reporting-table-mock" />,
 }));
 
-// Import the page component after mocks
-// eslint-disable-next-line import/first
-import AssetReportingPage from "../../../src/pages/reporting/assets/index";
+const mockUseAssetReportingTable = useAssetReportingTable as jest.Mock;
+const mockUseAssetReportingDownload = useAssetReportingDownload as jest.Mock;
 
 describe("AssetReportingPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Set up default mock implementations
+    mockUseAssetReportingTable.mockReturnValue({
+      columns: [
+        { title: "Asset name", dataIndex: "name", key: "name" },
+        { title: "Type", dataIndex: "asset_type", key: "asset_type" },
+      ],
+      data: {
+        items: [
+          { id: "1", name: "Test Cookie", asset_type: "Cookie" },
+          { id: "2", name: "Test Script", asset_type: "Javascript tag" },
+        ],
+        total: 2,
+      },
+      isLoading: false,
+      isFetching: false,
+      searchQuery: "",
+      updateSearch: mockUpdateSearch,
+      updateFilters: mockUpdateFilters,
+      columnFilters: {},
+      tableProps: {
+        dataSource: [
+          { id: "1", name: "Test Cookie", asset_type: "Cookie" },
+          { id: "2", name: "Test Script", asset_type: "Javascript tag" },
+        ],
+        loading: false,
+        rowKey: "id",
+      },
+    });
+
+    mockUseAssetReportingDownload.mockReturnValue({
+      downloadReport: mockDownloadReport,
+      isDownloadingReport: false,
+    });
   });
 
   it("renders the page with correct title", () => {
@@ -154,11 +162,7 @@ describe("AssetReportingPage", () => {
 
   it("passes filters to downloadReport when they exist", () => {
     // Update the mock to include filters
-    const useAssetReportingTableMock =
-      require("../../../src/features/asset-reporting/hooks/useAssetReportingTable")
-        .useAssetReportingTable as jest.Mock;
-
-    useAssetReportingTableMock.mockReturnValue({
+    mockUseAssetReportingTable.mockReturnValue({
       columns: [],
       data: { items: [], total: 0 },
       isLoading: false,
@@ -183,12 +187,25 @@ describe("AssetReportingPage", () => {
 });
 
 describe("AssetReportingPage - Loading States", () => {
-  it("shows loading state on export button when downloading", () => {
-    const useAssetReportingDownloadMock =
-      require("../../../src/features/asset-reporting/hooks/useAssetReportingDownload")
-        .default as jest.Mock;
+  beforeEach(() => {
+    jest.clearAllMocks();
 
-    useAssetReportingDownloadMock.mockReturnValue({
+    // Set up default mock for useAssetReportingTable
+    mockUseAssetReportingTable.mockReturnValue({
+      columns: [],
+      data: { items: [], total: 0 },
+      isLoading: false,
+      isFetching: false,
+      searchQuery: "",
+      updateSearch: mockUpdateSearch,
+      updateFilters: mockUpdateFilters,
+      columnFilters: {},
+      tableProps: { dataSource: [], loading: false, rowKey: "id" },
+    });
+  });
+
+  it("shows loading state on export button when downloading", () => {
+    mockUseAssetReportingDownload.mockReturnValue({
       downloadReport: mockDownloadReport,
       isDownloadingReport: true,
     });

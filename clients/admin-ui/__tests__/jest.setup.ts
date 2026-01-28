@@ -1,11 +1,6 @@
 import "@testing-library/jest-dom";
 import "whatwg-fetch";
 
-// Polyfill NodeList.prototype.includes for jsdom compatibility with Ant Design
-if (typeof NodeList !== "undefined") {
-  (NodeList.prototype as any).includes ??= Array.prototype.includes;
-}
-
 // eslint-disable-next-line global-require
 jest.mock("iso-3166", () => require("./utils/iso-3166-mock").iso3166Mock);
 
