@@ -24,6 +24,31 @@ import {
 
 const DEFAULT_MIN_ERROR_COUNT = 1;
 
+type NotificationFormState = {
+  setEmails: (emails: string[]) => void;
+  setNotify: (value: boolean) => void;
+  setMinErrorCount: (value: number) => void;
+};
+
+function applyDataToState(
+  data: { email_addresses?: string[]; notify_after_failures?: number } | null | undefined,
+  setters: NotificationFormState,
+) {
+  if (data) {
+    setters.setEmails(
+      Array.isArray(data.email_addresses) ? data.email_addresses : [],
+    );
+    setters.setNotify(data.notify_after_failures !== 0);
+    setters.setMinErrorCount(
+      data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT,
+    );
+  } else {
+    setters.setEmails([]);
+    setters.setNotify(true);
+    setters.setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
+  }
+}
+
 const ConfigureAlerts = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
@@ -36,6 +61,12 @@ const ConfigureAlerts = () => {
 
   const { data } = useGetNotificationQuery(undefined, { skip });
   const [saveNotification] = useSaveNotificationMutation();
+
+  const setters: NotificationFormState = {
+    setEmails,
+    setNotify,
+    setMinErrorCount,
+  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -57,10 +88,8 @@ const ConfigureAlerts = () => {
 
   const handleClose = () => {
     setIsOpen(false);
-    // Reset form to defaults when drawer closes
-    setEmails([]);
-    setNotify(true);
-    setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
+    // Restore form to last saved/API values so Cancel doesn't leave form cleared on reopen
+    applyDataToState(data, setters);
   };
 
   useEffect(() => {
@@ -71,13 +100,7 @@ const ConfigureAlerts = () => {
 
   useEffect(() => {
     if (data) {
-      // Only populate from API data, never use dummy/pre-seeded emails
-      // Ensure we always use an array, even if API returns undefined/null
-      setEmails(
-        Array.isArray(data.email_addresses) ? data.email_addresses : [],
-      );
-      setNotify(data.notify_after_failures !== 0);
-      setMinErrorCount(data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT);
+      applyDataToState(data, setters);
     }
     // If no data exists, state remains at initial defaults (empty emails array)
   }, [data]);
