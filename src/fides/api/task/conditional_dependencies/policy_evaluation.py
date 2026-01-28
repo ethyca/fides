@@ -56,10 +56,7 @@ def evaluate_policy_conditions(
         privacy_request: The privacy request to evaluate
         action_type: Optional action type to filter policies (e.g., access, erasure)
     """
-    logger.info(
-        f"Evaluating policies for request with action_type={action_type}" if action_type else "")
-
-    # Query PolicyConditions with eager-loaded policies (single query instead of N+1)
+   # Query PolicyConditions with eager-loaded policies (single query instead of N+1)
     query = (
         db.query(PolicyCondition)
         .join(Policy, PolicyCondition.policy_id == Policy.id)
