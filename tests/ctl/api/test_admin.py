@@ -1,4 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+from unittest.mock import patch
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -124,3 +126,92 @@ def test_heap_dump_logs_heap_stats(
     assert "PROCESS MEMORY STATS" in log_output
     assert "OBJECT TYPE COUNTS (Top 10)" in log_output
     assert "GARBAGE COLLECTOR STATS" in log_output
+
+
+class TestBackfillEndpoint:
+    """Tests for the /admin/backfill endpoint."""
+
+    def test_starts_background_task(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test that backfill endpoint returns 202 and correct message."""
+        with patch(
+            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+            return_value=True,
+        ), patch(
+            "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 202
+        data = response.json()["data"]
+        assert "Backfill started in background" in data["message"]
+        assert "Monitor progress via server logs" in data["message"]
+        assert data["config"]["batch_size"] == 5000
+        assert data["config"]["batch_delay_seconds"] == 1.0
+
+    def test_conflict_when_running(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test that backfill endpoint returns 409 when backfill already running."""
+        with patch(
+            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+            return_value=False,
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 409
+        assert "already running" in response.json()["detail"]
+
+    @pytest.mark.parametrize(
+        "payload,expected_status",
+        [
+            # Valid custom parameters
+            ({"batch_size": 1000, "batch_delay_seconds": 2.0}, 202),
+            # batch_size too small
+            ({"batch_size": 50}, 422),
+            # batch_size too large
+            ({"batch_size": 100000}, 422),
+            # batch_delay_seconds too small
+            ({"batch_delay_seconds": 0.05}, 422),
+            # batch_delay_seconds too large
+            ({"batch_delay_seconds": 15.0}, 422),
+        ],
+    )
+    def test_request_parameters(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+        payload: dict,
+        expected_status: int,
+    ) -> None:
+        """Test that backfill endpoint validates request parameters."""
+        with patch(
+            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+            return_value=True,
+        ), patch(
+            "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+                json=payload,
+            )
+
+        assert response.status_code == expected_status
+        if expected_status == 202:
+            data = response.json()["data"]
+            assert data["config"]["batch_size"] == payload.get("batch_size", 5000)
+            assert data["config"]["batch_delay_seconds"] == payload.get(
+                "batch_delay_seconds", 1.0
+            )
