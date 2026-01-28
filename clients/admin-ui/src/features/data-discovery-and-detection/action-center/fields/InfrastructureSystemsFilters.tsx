@@ -88,6 +88,11 @@ export const InfrastructureSystemsFilters = ({
     setDataUsesFilters(value.length > 0 ? value : []);
   };
 
+  const hasActiveFilters =
+    (statusFilters && statusFilters.length > 0) ||
+    (vendorFilters && vendorFilters.length > 0) ||
+    (dataUsesFilters && dataUsesFilters.length > 0);
+
   const renderTagPlaceholder = (omittedValues: DisplayValueType[]) => (
     <Tooltip
       title={
@@ -101,15 +106,6 @@ export const InfrastructureSystemsFilters = ({
       <span>+ {omittedValues.length}</span>
     </Tooltip>
   );
-
-  // Check if any filters are active
-  const hasActiveFilters = useMemo(() => {
-    return (
-      (statusFilters && statusFilters.length > 0) ||
-      (vendorFilters && vendorFilters.length > 0) ||
-      (dataUsesFilters && dataUsesFilters.length > 0)
-    );
-  }, [statusFilters, vendorFilters, dataUsesFilters]);
 
   return (
     <Flex gap="small" align="center">
