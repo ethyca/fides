@@ -1,17 +1,21 @@
 from enum import Enum
 from typing import Dict, Optional
 
-from fastapi import BackgroundTasks, HTTPException, Security, status
+from fastapi import BackgroundTasks, Depends, HTTPException, Security, status
 from loguru import logger
+from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, migrate_db, reset_db
 from fides.api.migrations.post_upgrade_backfill import (
     acquire_backfill_lock,
+    get_pending_is_leaf_count,
+    is_backfill_running,
     run_backfill_manually,
 )
 from fides.api.oauth.utils import verify_oauth_client_prod
-from fides.api.schemas.admin import BackfillRequest
+from fides.api.schemas.admin import BackfillRequest, BackfillStatusResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.memory_watchdog import (
     _capture_heap_dump,
@@ -178,10 +182,37 @@ def trigger_backfill(
 
     return {
         "data": {
-            "message": "Backfill started in background. Monitor progress via server logs.",
+            "message": "Backfill started in background. Monitor progress via GET /api/v1/admin/backfill or server logs.",
             "config": {
                 "batch_size": request.batch_size,
                 "batch_delay_seconds": request.batch_delay_seconds,
             },
         }
     }
+
+
+@ADMIN_ROUTER.get(
+    "/admin/backfill",
+    tags=["Admin"],
+    dependencies=[Security(verify_oauth_client_prod, scopes=[BACKFILL_EXEC])],
+    response_model=BackfillStatusResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_backfill_status(
+    db: Session = Depends(get_db),
+) -> BackfillStatusResponse:
+    """
+    Get the current status of the backfill operation.
+
+    Returns:
+    - **is_running**: Whether a backfill is currently in progress
+    - **pending_count**: Count of rows still pending backfill for each task
+
+    When `pending_count` values are 0 and `is_running` is False, all backfills are complete.
+    """
+    return BackfillStatusResponse(
+        is_running=is_backfill_running(),
+        pending_count={
+            "is_leaf": get_pending_is_leaf_count(db),
+        },
+    )
