@@ -91,6 +91,7 @@ interface IdentityProviderMonitorResultsQueryParams {
   diff_status?: DiffStatus | DiffStatus[];
   status?: string | string[];
   vendor_id?: string | string[];
+  data_uses?: string[];
 }
 
 interface IdentityProviderMonitorExecuteParams {
@@ -105,6 +106,19 @@ interface IdentityProviderResourceActionParam {
 interface IdentityProviderResourceBulkActionParam {
   monitor_config_key: string;
   urns: string[];
+}
+
+interface IdentityProviderMonitorFiltersQueryParams {
+  monitor_config_key: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  vendor_id?: string | string[];
+  data_uses?: string[];
+}
+
+export interface IDPMonitorFiltersResponse {
+  diff_status: string[];
+  vendor_id: string[];
+  data_uses: string[];
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -370,6 +384,16 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Identity Provider Monitor Results"],
     }),
+    getIdentityProviderMonitorFilters: build.query<
+      IDPMonitorFiltersResponse,
+      IdentityProviderMonitorFiltersQueryParams
+    >({
+      query: ({ monitor_config_key, ...params }) => ({
+        method: "GET",
+        url: `/plus/filters/idp_monitor_resources`,
+        params: { monitor_config_id: monitor_config_key, ...params },
+      }),
+    }),
     executeIdentityProviderMonitor: build.mutation<
       { monitor_execution_id: string; task_id: string | null },
       IdentityProviderMonitorExecuteParams
@@ -486,6 +510,7 @@ export const {
   usePutIdentityProviderMonitorMutation,
   useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,
+  useGetIdentityProviderMonitorFiltersQuery,
   useExecuteIdentityProviderMonitorMutation,
   usePromoteIdentityProviderMonitorResultMutation,
   useMuteIdentityProviderMonitorResultMutation,

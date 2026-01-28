@@ -51,6 +51,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     monitorId,
     statusFilters: infrastructureSystemsFilters.statusFilters,
     vendorFilters: infrastructureSystemsFilters.vendorFilters,
+    dataUsesFilters: infrastructureSystemsFilters.dataUsesFilters,
   });
 
   const {
@@ -115,7 +116,10 @@ export const DiscoveredInfrastructureSystemsTable = ({
           />
         </Flex>
         <Flex gap="small">
-          <InfrastructureSystemsFilters {...infrastructureSystemsFilters} />
+          <InfrastructureSystemsFilters
+            monitorId={monitorId}
+            {...infrastructureSystemsFilters}
+          />
           <Dropdown
             menu={{ items: bulkActionsMenuItems }}
             disabled={!hasSelectedRows || isBulkActionInProgress}

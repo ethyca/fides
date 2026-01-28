@@ -2,27 +2,49 @@ import { Filter, TreeDataNode as DataNode } from "fidesui";
 import { uniq } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { DiffStatus } from "~/types/api";
+
+import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
 import {
-  INFRASTRUCTURE_SYSTEM_FILTER_LABELS,
+  INFRASTRUCTURE_DIFF_STATUS_LABEL,
   INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS,
-  INFRASTRUCTURE_SYSTEM_FILTERS,
-  InfrastructureSystemFilterLabel,
+  VENDOR_FILTER_OPTIONS,
 } from "../constants";
 import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
 
+interface InfrastructureSystemsFiltersProps
+  extends ReturnType<typeof useInfrastructureSystemsFilters> {
+  monitorId: string;
+}
+
 export const InfrastructureSystemsFilters = ({
+  monitorId,
   statusFilters,
   setStatusFilters,
   vendorFilters,
   setVendorFilters,
+  dataUsesFilters,
+  setDataUsesFilters,
   reset,
-}: ReturnType<typeof useInfrastructureSystemsFilters>) => {
+}: InfrastructureSystemsFiltersProps) => {
+  const { getDataUseDisplayName } = useTaxonomies();
+
+  // Fetch available filters from API
+  const { data: availableFilters } = useGetIdentityProviderMonitorFiltersQuery(
+    { monitor_config_key: monitorId },
+    { skip: !monitorId },
+  );
+
   // Local state for filter changes (not applied until "Apply" is clicked)
-  const [localStatusFilters, setLocalStatusFilters] = useState<
-    InfrastructureSystemFilterLabel[] | null
-  >(statusFilters);
-  const [localVendorFilters, setLocalVendorFilters] = useState<string[] | null>(
-    vendorFilters,
+  const [localStatusFilters, setLocalStatusFilters] = useState<string[]>(
+    statusFilters ?? [],
+  );
+  const [localVendorFilters, setLocalVendorFilters] = useState<string[]>(
+    vendorFilters ?? [],
+  );
+  const [localDataUsesFilters, setLocalDataUsesFilters] = useState<string[]>(
+    dataUsesFilters ?? [],
   );
 
   // Initialize with status section expanded by default
@@ -32,36 +54,37 @@ export const InfrastructureSystemsFilters = ({
 
   // Sync local state when external state changes
   useEffect(() => {
-    setLocalStatusFilters(statusFilters);
+    setLocalStatusFilters(statusFilters ?? []);
   }, [statusFilters]);
 
   useEffect(() => {
-    setLocalVendorFilters(vendorFilters);
+    setLocalVendorFilters(vendorFilters ?? []);
   }, [vendorFilters]);
 
-  // Build tree data for filters
-  const statusTreeData: DataNode[] = useMemo(
-    () =>
-      INFRASTRUCTURE_SYSTEM_FILTERS.filter(
-        (filter) =>
-          filter !== "all" && filter !== "known" && filter !== "unknown",
-      ).map((filter) => ({
-        title: INFRASTRUCTURE_SYSTEM_FILTER_LABELS[filter],
-        key: filter,
-        checkable: true,
-        selectable: false,
-        isLeaf: true,
-      })),
-    [],
-  );
+  useEffect(() => {
+    setLocalDataUsesFilters(dataUsesFilters ?? []);
+  }, [dataUsesFilters]);
 
+  // Build tree data for status filters from API response
+  const statusTreeData: DataNode[] = useMemo(() => {
+    if (!availableFilters?.diff_status) {
+      return [];
+    }
+    return availableFilters.diff_status.map((status) => ({
+      title: INFRASTRUCTURE_DIFF_STATUS_LABEL[status as DiffStatus] ?? status,
+      key: status,
+      checkable: true,
+      selectable: false,
+      isLeaf: true,
+    }));
+  }, [availableFilters?.diff_status]);
+
+  // Build tree data for vendor filters (hardcoded known/unknown)
   const vendorTreeData: DataNode[] = useMemo(
     () =>
-      INFRASTRUCTURE_SYSTEM_FILTERS.filter(
-        (filter) => filter === "known" || filter === "unknown",
-      ).map((filter) => ({
-        title: INFRASTRUCTURE_SYSTEM_FILTER_LABELS[filter],
-        key: filter,
+      VENDOR_FILTER_OPTIONS.map((option) => ({
+        title: option.label,
+        key: option.key,
         checkable: true,
         selectable: false,
         isLeaf: true,
@@ -69,7 +92,21 @@ export const InfrastructureSystemsFilters = ({
     [],
   );
 
-  // Combine status and vendor trees
+  // Build tree data for data uses from API response
+  const dataUsesTreeData: DataNode[] = useMemo(() => {
+    if (!availableFilters?.data_uses) {
+      return [];
+    }
+    return availableFilters.data_uses.map((dataUse) => ({
+      title: getDataUseDisplayName(dataUse),
+      key: dataUse,
+      checkable: true,
+      selectable: false,
+      isLeaf: true,
+    }));
+  }, [availableFilters?.data_uses, getDataUseDisplayName]);
+
+  // Combine all filter trees
   const treeData: DataNode[] = useMemo(() => {
     const sections: DataNode[] = [];
 
@@ -95,13 +132,45 @@ export const InfrastructureSystemsFilters = ({
       });
     }
 
+    if (dataUsesTreeData.length > 0) {
+      sections.push({
+        title: "Data use",
+        key: INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS.DATA_USES,
+        checkable: true,
+        selectable: false,
+        isLeaf: false,
+        children: dataUsesTreeData,
+      });
+    }
+
     return sections;
-  }, [statusTreeData, vendorTreeData]);
+  }, [statusTreeData, vendorTreeData, dataUsesTreeData]);
+
+  // Get all valid keys for each filter type
+  const validStatusKeys = useMemo(
+    () => new Set<string>(availableFilters?.diff_status ?? []),
+    [availableFilters?.diff_status],
+  );
+
+  const validVendorKeys = useMemo(
+    () => new Set<string>(VENDOR_FILTER_OPTIONS.map((o) => o.key)),
+    [],
+  );
+
+  const validDataUsesKeys = useMemo(
+    () => new Set<string>(availableFilters?.data_uses ?? []),
+    [availableFilters?.data_uses],
+  );
 
   // Get current checked keys from LOCAL state
   const checkedKeys = useMemo(
-    () => uniq([...(localStatusFilters ?? []), ...(localVendorFilters ?? [])]),
-    [localStatusFilters, localVendorFilters],
+    () =>
+      uniq([
+        ...localStatusFilters,
+        ...localVendorFilters,
+        ...localDataUsesFilters,
+      ]),
+    [localStatusFilters, localVendorFilters, localDataUsesFilters],
   );
 
   // Calculate active filters count from APPLIED state (not local)
@@ -113,71 +182,79 @@ export const InfrastructureSystemsFilters = ({
     if (vendorFilters) {
       count += new Set(vendorFilters).size;
     }
+    if (dataUsesFilters) {
+      count += new Set(dataUsesFilters).size;
+    }
     return count;
-  }, [statusFilters, vendorFilters]);
+  }, [statusFilters, vendorFilters, dataUsesFilters]);
+
+  // Section keys that should be excluded from filter values
+  const sectionKeys = useMemo(
+    () =>
+      new Set<string>(Object.values(INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS)),
+    [],
+  );
 
   const handleCheck = (
     checked: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] },
   ) => {
     const checkedKeysArray = Array.isArray(checked) ? checked : checked.checked;
-    // Separate status and vendor selections based on their keys
-    const statusKeys: InfrastructureSystemFilterLabel[] = [];
-    const vendorKeys: string[] = [];
 
-    // Section keys that should be excluded from filter values
-    const sectionKeys = Object.values(
-      INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS,
-    );
+    const statusKeys: string[] = [];
+    const vendorKeys: string[] = [];
+    const dataUsesKeys: string[] = [];
 
     checkedKeysArray.forEach((key) => {
       const keyStr = key.toString();
 
       // Skip section keys
-      if (sectionKeys.some((sk) => sk === keyStr)) {
+      if (sectionKeys.has(keyStr)) {
         return;
       }
 
-      const statusKey = INFRASTRUCTURE_SYSTEM_FILTERS.find(
-        (fs) => fs === keyStr && fs !== "known" && fs !== "unknown",
-      );
-      if (statusKey) {
-        statusKeys.push(statusKey);
-      } else {
-        const vendorKey = INFRASTRUCTURE_SYSTEM_FILTERS.find(
-          (fs) => fs === keyStr && (fs === "known" || fs === "unknown"),
-        );
-        if (vendorKey) {
-          vendorKeys.push(vendorKey);
-        }
+      if (validStatusKeys.has(keyStr)) {
+        statusKeys.push(keyStr);
+      } else if (validVendorKeys.has(keyStr)) {
+        vendorKeys.push(keyStr);
+      } else if (validDataUsesKeys.has(keyStr)) {
+        dataUsesKeys.push(keyStr);
       }
     });
 
     // Update LOCAL state only (not applied until "Apply" is clicked)
-    setLocalStatusFilters(statusKeys.length > 0 ? statusKeys : []);
-    setLocalVendorFilters(vendorKeys.length > 0 ? vendorKeys : []);
+    setLocalStatusFilters(statusKeys);
+    setLocalVendorFilters(vendorKeys);
+    setLocalDataUsesFilters(dataUsesKeys);
   };
 
   const handleReset = () => {
     reset();
     setLocalStatusFilters([]);
     setLocalVendorFilters([]);
+    setLocalDataUsesFilters([]);
   };
 
   const handleClear = () => {
     setLocalStatusFilters([]);
     setLocalVendorFilters([]);
+    setLocalDataUsesFilters([]);
   };
 
   const handleApply = () => {
     setStatusFilters(
-      localStatusFilters && localStatusFilters.length > 0
+      localStatusFilters.length > 0
         ? Array.from(new Set(localStatusFilters))
-        : localStatusFilters,
+        : [],
     );
     setVendorFilters(
-      localVendorFilters && localVendorFilters.length > 0
+      localVendorFilters.length > 0
         ? Array.from(new Set(localVendorFilters))
-        : localVendorFilters,
+        : [],
+    );
+    setDataUsesFilters(
+      localDataUsesFilters.length > 0
+        ? Array.from(new Set(localDataUsesFilters))
+        : [],
     );
   };
 
@@ -188,8 +265,9 @@ export const InfrastructureSystemsFilters = ({
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       // When popover closes without applying, reset local state to match applied state
-      setLocalStatusFilters(statusFilters);
-      setLocalVendorFilters(vendorFilters);
+      setLocalStatusFilters(statusFilters ?? []);
+      setLocalVendorFilters(vendorFilters ?? []);
+      setLocalDataUsesFilters(dataUsesFilters ?? []);
     }
   };
 
