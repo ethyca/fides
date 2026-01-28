@@ -1,11 +1,18 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import json
 from datetime import datetime
-from typing import List
+from typing import Any, Awaitable, Callable, Dict, Generator, List, MutableMapping
 
 import pytest
 from fastapi_pagination import Params
 
+from fides.api import middleware as _middleware
+
+# Type aliases for ASGI
+Scope = MutableMapping[str, Any]
+Message = MutableMapping[str, Any]
+Receive = Callable[[], Awaitable[Message]]
+Send = Callable[[Message], Awaitable[None]]
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -19,12 +26,6 @@ from fides.common.api.scope_registry import USER_CREATE
 from fides.config import CONFIG
 
 page_size = Params().size
-
-from typing import Any, Dict, Generator
-
-from fides.api import middleware as _middleware
-
-# from sqlalchemy.exc import SQLAlchemyError
 
 
 @pytest.fixture

@@ -1,9 +1,8 @@
 import re
 from dataclasses import dataclass
+from typing import List, Set, Tuple
 
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-
+from fides.api.asgi_middleware import BaseASGIMiddleware, Message, Receive, Scope, Send
 from fides.config import CONFIG
 
 apply_recommended_headers = CONFIG.security.headers_mode == "recommended"
@@ -138,23 +137,47 @@ def get_applicable_header_rules(
     return header_definitions
 
 
-def apply_headers_to_response(
-    headers: list[HeaderRule], request: Request, response: Response
-) -> None:
-    applicable_headers = get_applicable_header_rules(request.url.path, headers)
-    for [header_name, header_value] in applicable_headers:
-        response.headers.append(header_name, header_value)
-
-
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+class SecurityHeadersMiddleware(BaseASGIMiddleware):
     """
-    Controls what security headers are included in Fides API responses
+    Pure ASGI middleware that controls what security headers are included in Fides API responses.
+
+    This is a high-performance replacement for the BaseHTTPMiddleware-based version.
     """
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore
-        response = await call_next(request)
+    async def handle_http(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if not apply_recommended_headers:
+            await self.app(scope, receive, send)
+            return
 
-        if apply_recommended_headers:
-            apply_headers_to_response(recommended_headers, request, response)
+        path = self.get_path(scope)
+        applicable_headers = get_applicable_header_rules(path, recommended_headers)
 
-        return response
+        # If no headers to add, just pass through
+        if not applicable_headers:
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                # Get existing headers
+                headers: List[Tuple[bytes, bytes]] = list(message.get("headers", []))
+
+                # Track existing header names (lowercase for case-insensitive comparison)
+                existing_names: Set[bytes] = {h[0].lower() for h in headers}
+
+                # Add our security headers if not already present
+                for header_name, header_value in applicable_headers:
+                    header_name_bytes = header_name.lower().encode("latin-1")
+                    if header_name_bytes not in existing_names:
+                        headers.append(
+                            (
+                                header_name.encode("latin-1"),
+                                header_value.encode("latin-1"),
+                            )
+                        )
+
+                message["headers"] = headers
+
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
