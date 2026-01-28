@@ -120,8 +120,11 @@ const ConfigureAlerts = () => {
                 justify="space-between"
                 align="center"
               >
-                <span>Enable email notifications</span>
+                <label htmlFor="enable-email-notifications">
+                  Enable email notifications
+                </label>
                 <Switch
+                  id="enable-email-notifications"
                   size="small"
                   checked={notify}
                   onChange={(checked) => {
