@@ -170,7 +170,7 @@ const ConfigureAlerts = () => {
                       onChange={(value) =>
                         setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)
                       }
-                      style={{ width: 80 }}
+                      className="w-20"
                     />
                     <span>error(s)</span>
                   </Flex>
