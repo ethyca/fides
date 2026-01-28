@@ -1,4 +1,4 @@
-import { Flex, Input, Tag } from "fidesui";
+import { Flex, Input, InputRef, Tag } from "fidesui";
 import React, { forwardRef, useState } from "react";
 
 const EMAIL_REGEXP = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
