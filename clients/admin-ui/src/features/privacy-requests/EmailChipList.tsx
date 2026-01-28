@@ -1,4 +1,4 @@
-import { Flex, Input, Tag } from "fidesui";
+import { Flex, Input, InputRef, Tag } from "fidesui";
 import React, { forwardRef, useState } from "react";
 
 const EMAIL_REGEXP = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
@@ -10,7 +10,7 @@ interface EmailChipListProps {
   disabled?: boolean;
 }
 
-const EmailChipList = forwardRef<HTMLInputElement, EmailChipListProps>(
+const EmailChipList = forwardRef<InputRef, EmailChipListProps>(
   ({ emails, onEmailsChange, disabled = false }, ref) => {
     const [inputValue, setInputValue] = useState("");
 

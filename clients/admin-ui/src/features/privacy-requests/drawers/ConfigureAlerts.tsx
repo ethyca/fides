@@ -7,6 +7,7 @@ import {
   Icons,
   InputNumber,
   Space,
+  Typography,
   Switch,
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
@@ -109,19 +110,21 @@ const ConfigureAlerts = () => {
         }
       >
         <Form layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            help="Get notified when processing failures occur. Set a threshold to receive alerts after a specific number of errors."
-            style={{ marginBottom: 16, marginTop: -24, paddingTop: 0 }}
-          />
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <Form.Item style={{ marginBottom: 0 }}>
+          <Typography.Text type="secondary">
+            Get notified when processing failures occur. Set a threshold to
+            receive alerts after a specific number of errors.
+          </Typography.Text>
+          <Space direction="vertical" size="middle" className="w-full">
+            <Form.Item className="mb-0">
               <Flex
                 justify="space-between"
                 align="center"
-                style={{ width: "100%" }}
               >
-                <span>Enable email notifications</span>
+                <label htmlFor="enable-email-notifications">
+                  Enable email notifications
+                </label>
                 <Switch
+                  id="enable-email-notifications"
                   size="small"
                   checked={notify}
                   onChange={(checked) => {
@@ -134,7 +137,7 @@ const ConfigureAlerts = () => {
               </Flex>
             </Form.Item>
 
-            <Divider style={{ margin: "8px 0 12px 0" }} />
+            <Divider className="mt-2 mb-3" />
 
             <Form.Item
               label={
@@ -154,12 +157,12 @@ const ConfigureAlerts = () => {
 
             {notify && (
               <>
-                <Divider style={{ margin: "16px 0 0 0" }} />
+                <Divider className="mt-2 mb-3" />
                 <Form.Item
                   label="Notification frequency"
                   help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
                 >
-                  <Flex align="center" gap={8}>
+                  <Flex align="center" gap="small">
                     <span>Send notification after</span>
                     <InputNumber
                       min={DEFAULT_MIN_ERROR_COUNT}
@@ -167,7 +170,7 @@ const ConfigureAlerts = () => {
                       onChange={(value) =>
                         setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)
                       }
-                      style={{ width: 80 }}
+                      className="w-20"
                     />
                     <span>error(s)</span>
                   </Flex>
