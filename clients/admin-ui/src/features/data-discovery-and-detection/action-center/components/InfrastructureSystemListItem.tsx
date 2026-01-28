@@ -169,7 +169,7 @@ export const InfrastructureSystemListItem = ({
           </Flex>
         }
         title={
-          <Flex gap="" align="center" wrap="wrap">
+          <Flex gap="small" align="center" wrap="wrap">
             <Button type="text" size="small" onClick={handleClick}>
               <Text strong>{systemName}</Text>
             </Button>
