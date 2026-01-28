@@ -10,6 +10,8 @@ from fides.api.util.security_headers import (
     get_applicable_header_rules,
     is_exact_match,
     recommended_csp_header_value,
+    recommended_csp_header_value_for_redoc,
+    recommended_csp_header_value_for_swagger,
     recommended_headers,
 )
 
@@ -99,6 +101,42 @@ class TestSecurityHeaders:
                     (
                         "Content-Security-Policy",
                         recommended_csp_header_value,
+                    ),
+                    ("X-Frame-Options", "SAMEORIGIN"),
+                ],
+            ),
+            (
+                "/docs",
+                [
+                    (
+                        "X-Content-Type-Options",
+                        "nosniff",
+                    ),
+                    (
+                        "Strict-Transport-Security",
+                        "max-age=31536000",
+                    ),
+                    (
+                        "Content-Security-Policy",
+                        recommended_csp_header_value_for_swagger,
+                    ),
+                    ("X-Frame-Options", "SAMEORIGIN"),
+                ],
+            ),
+            (
+                "/redoc",
+                [
+                    (
+                        "X-Content-Type-Options",
+                        "nosniff",
+                    ),
+                    (
+                        "Strict-Transport-Security",
+                        "max-age=31536000",
+                    ),
+                    (
+                        "Content-Security-Policy",
+                        recommended_csp_header_value_for_redoc,
                     ),
                     ("X-Frame-Options", "SAMEORIGIN"),
                 ],
