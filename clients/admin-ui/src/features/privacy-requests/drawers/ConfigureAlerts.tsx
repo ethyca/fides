@@ -31,7 +31,10 @@ type NotificationFormState = {
 };
 
 function applyDataToState(
-  data: { email_addresses?: string[]; notify_after_failures?: number } | null | undefined,
+  data:
+    | { email_addresses?: string[]; notify_after_failures?: number }
+    | null
+    | undefined,
   setters: NotificationFormState,
 ) {
   if (data) {
@@ -100,10 +103,14 @@ const ConfigureAlerts = () => {
 
   useEffect(() => {
     if (data) {
-      applyDataToState(data, setters);
+      setEmails(
+        Array.isArray(data.email_addresses) ? data.email_addresses : [],
+      );
+      setNotify(data.notify_after_failures !== 0);
+      setMinErrorCount(data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT);
     }
     // If no data exists, state remains at initial defaults (empty emails array)
-  }, [data]);
+  }, [data, setEmails, setNotify, setMinErrorCount]);
 
   return (
     <>
