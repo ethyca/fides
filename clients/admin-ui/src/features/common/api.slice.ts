@@ -90,6 +90,7 @@ export const baseApi = createApi({
     "Allowed Monitor Field Actions",
     "Allowed Conditions Fields",
     "Identity Provider Monitor Results",
+    "Identity Provider Monitor Filters",
   ],
   endpoints: () => ({}),
 });

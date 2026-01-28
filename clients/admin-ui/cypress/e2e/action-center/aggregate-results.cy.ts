@@ -6,7 +6,7 @@ import {
 
 import {
   ACTION_CENTER_ROUTE,
-  INTEGRATION_MANAGEMENT_ROUTE,
+  SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
@@ -29,9 +29,7 @@ describe("Action center", () => {
       cy.wait("@getMonitorResults");
       cy.get("[data-testid='search-bar']").should("exist");
       cy.get(`[class*='ant-empty'] [class*='ant-empty-image']`).should("exist");
-      cy.get(
-        `[class*='ant-empty'] a[href="${INTEGRATION_MANAGEMENT_ROUTE}"]`,
-      ).should("exist");
+      cy.get(`[class*='ant-empty'] a[href="${SYSTEM_ROUTE}"]`).should("exist");
     });
   });
 

@@ -14,16 +14,22 @@ const PropagationPolicyDropdown = ({
 }: PropagationPolicyDropdownProps) => {
   const options = [
     {
-      value: PropagationPolicyKeyEnum.SYSTEM_ENFORCED,
-      label: "System enforced",
+      value: PropagationPolicyKeyEnum.CASCADE_DOWN_OPT_OUT,
+      label: "Cascade down opt out",
     },
-    { value: PropagationPolicyKeyEnum.CASCADE_DOWN, label: "Cascade down" },
-    { value: PropagationPolicyKeyEnum.CASCADE_UP, label: "Cascade up" },
     {
-      value: PropagationPolicyKeyEnum.CASCADE_UP_AND_DOWN,
-      label: "Cascade up and down",
+      value: PropagationPolicyKeyEnum.CASCADE_DOWN_ALL,
+      label: "Cascade down all",
     },
-    { value: PropagationPolicyKeyEnum.PREFER_OPT_IN, label: "Prefer opt in" },
+    { value: PropagationPolicyKeyEnum.CASCADE_UP_ALL, label: "Cascade up all" },
+    {
+      value: PropagationPolicyKeyEnum.CASCADE_UP_ALL_CASCADE_DOWN_ALL,
+      label: "Cascade up and down all",
+    },
+    {
+      value: PropagationPolicyKeyEnum.CASCADE_DOWN_ALL_CASCADE_UP_OPT_IN,
+      label: "Cascade down all, cascade up opt in",
+    },
   ];
 
   return (
@@ -40,8 +46,8 @@ const PropagationPolicyDropdown = ({
           // Handle undefined (from clear action) or null
           onChange(newValue === undefined ? null : newValue);
         }}
-        style={{ width: 200 }}
-        placeholder="System enforced"
+        style={{ width: 320 }}
+        placeholder="Cascade down opt out"
         allowClear
         options={options}
         aria-labelledby="policy-select-label"
