@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed Okta integration page to show only monitors for selected integration
+pr: 7256
+labels: []

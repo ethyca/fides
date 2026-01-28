@@ -262,4 +262,34 @@ describe("Action center system aggregate results", () => {
       cy.location("hash").should("eq", "#attention-required");
     });
   });
+
+  describe("error handling", () => {
+    beforeEach(() => {
+      cy.login();
+      stubPlus(true);
+      stubWebsiteMonitor();
+      stubTaxonomyEntities();
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/system-aggregate-results*",
+        {
+          statusCode: 500,
+          body: { detail: "Internal server error" },
+        },
+      ).as("getSystemAggregateResultsError");
+    });
+
+    it("should display error page when fetching system aggregate results fails", () => {
+      cy.visit(`${ACTION_CENTER_ROUTE}/website/${webMonitorKey}`);
+      cy.wait("@getSystemAggregateResultsError");
+
+      cy.getByTestId("error-page-result").should("exist");
+      cy.getByTestId("error-page-result").within(() => {
+        cy.contains("Error 500").should("exist");
+        cy.contains("Internal server error").should("exist");
+        cy.contains("Return to action center").should("exist");
+        cy.contains("Reload").should("exist");
+      });
+    });
+  });
 });

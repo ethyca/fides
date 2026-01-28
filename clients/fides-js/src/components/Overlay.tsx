@@ -77,7 +77,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
-  const modalLinkId = options.modalLinkId || "fides-modal-link";
+  const { modalLinkId } = options;
   const modalLinkIsDisabled =
     !experience || !!options.fidesEmbed || options.modalLinkId === "";
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);

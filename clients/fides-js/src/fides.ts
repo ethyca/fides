@@ -5,10 +5,7 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import {
-  readConsentFromAnyProvider,
-  registerDefaultProviders,
-} from "./lib/consent-migration";
+import { getAutomatedConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesCookie,
@@ -94,27 +91,29 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  /* THIRD PARTY CONSENT MIGRATION */
-
-  // Register any configured consent migration providers
-  registerDefaultProviders(optionsOverrides);
-
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
   this.config = config;
 
-  // Check for migrated consent from any registered providers
-  let migratedConsent: NoticeConsent | undefined;
+  /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  // This includes GPC, migrated consent from third-party providers (e.g., OneTrust),
+  // and notice consent string overrides from options
+  const automatedConsentContext = getAutomatedConsentContext(
+    config.options,
+    optionsOverrides,
+  );
 
-  if (!hasFidesConsentCookie(config.options.fidesCookieSuffix)) {
-    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
-    if (consent && method) {
-      migratedConsent = consent;
-    }
+  // Apply migrated consent to cookie if we have it and no existing Fides cookie
+  let migratedConsent: NoticeConsent | undefined;
+  if (
+    automatedConsentContext.migratedConsent &&
+    !hasFidesConsentCookie(config.options.fidesCookieSuffix)
+  ) {
+    migratedConsent = automatedConsentContext.migratedConsent;
   }
-  /* END THIRD PARTY CONSENT MIGRATION */
+  /* END AUTOMATED CONSENT */
 
   this.cookie = await getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
@@ -181,6 +180,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience,
     overrides,
+    automatedConsentContext,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);

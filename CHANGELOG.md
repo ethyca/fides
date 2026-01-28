@@ -42,6 +42,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Removed
 - Removed deprecated columns from conditional dependency models. [#7172](https://github.com/ethyca/fides/pull/7172) https://github.com/ethyca/fides/labels/db-migration
 
+### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed classification message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+ - Added a monitor filter to the root action center [#7186](https://github.com/ethyca/fides/pull/7186)
+
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 
 ### Added

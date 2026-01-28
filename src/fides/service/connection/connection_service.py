@@ -282,8 +282,8 @@ class ConnectionService:
             merged_secrets = unvalidated_secrets  # type: ignore[assignment]
 
         connection_config.secrets = self.validate_secrets(
-            merged_secrets,
-            connection_config,  # type: ignore[arg-type]
+            merged_secrets,  # type: ignore[arg-type]
+            connection_config,
         ).model_dump(mode="json")
 
         # Save validated secrets, regardless of whether they've been verified.

@@ -135,15 +135,14 @@ export interface Fides {
    * ```
    *
    * @example
-   * Apply the link text to a custom modal link element on Fides initialization:
+   * Apply the link text to a custom element using the `FidesLocaleUpdated` event (also see {@link FidesLocaleEvent} and {@link Fides.showModal}):
    * ```html
-   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-   * <script id="fides-js">
-   *   function() {
-   *     addEventListener("FidesReady", ( function() {
-   *       document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
-   *     }));
-   *   }
+   * <button id="fides-modal-link" class="footer__link"></button>
+   * <script>
+   *   window.addEventListener("FidesLocaleUpdated", () => {
+   *     document.getElementById("fides-modal-link").textContent =
+   *       Fides.getModalLinkLabel();
+   *   });
    * </script>
    * ```
    */

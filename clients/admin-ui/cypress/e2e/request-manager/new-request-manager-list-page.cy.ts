@@ -1,4 +1,5 @@
 import {
+  stubManualTasks,
   stubPlus,
   stubPrivacyRequests,
   stubPrivacyRequestsConfigurationCrud,
@@ -225,6 +226,7 @@ describe("New Privacy Requests", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
       stubPlus(true);
       stubTCFConfig();
+      stubManualTasks();
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
     });

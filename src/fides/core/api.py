@@ -149,6 +149,6 @@ def db_action(
     return requests.post(
         f"{server_url}{API_PREFIX}/admin/db/{action}",
         headers=headers,
-        follow_redirects=False,
+        allow_redirects=False,
         timeout=30,
     )
