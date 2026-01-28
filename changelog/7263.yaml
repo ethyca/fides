@@ -1,0 +1,4 @@
+type: Added
+description: Added is_leaf column to StagedResource with post-upgrade backfill infrastructure
+pr: 7263
+labels: ["db-migration"]
