@@ -583,7 +583,7 @@ class StagedResource(Base):
     )
     parent = Column(String, nullable=True)
 
-    is_leaf = Column(Boolean, nullable=True, default=None)
+    is_leaf = Column(Boolean, nullable=True, default=None)  # None = not applicable (non-datastore monitors), True = leaf resource, False = non-leaf resource
 
     # diff-related fields
     diff_status = Column(String, nullable=True, index=True)
