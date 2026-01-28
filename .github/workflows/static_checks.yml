@@ -51,19 +51,17 @@ jobs:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
+      # We want to run all static checks even if some fail, so we set fail-fast to false
+      fail-fast: false
       matrix:
         session_name:
           [
-#            '"isort(check)"',
-#            '"black(check)"',
-#            "mypy",
-#            "pylint",
-#            "xenon",
+            '"ruff(check)"',
+            "mypy",
             "check_install",
             '"pytest(nox)"',
           ]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,13 +86,11 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
-      # The workflow will proceed even if this fails because it should be non-blocking
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
-        continue-on-error: true
 
 
-  
+
   # Summary job for branch protection
   Static-Checks-Summary:
     runs-on: ubuntu-latest
@@ -106,15 +102,14 @@ jobs:
         run: |
           echo "Static-Checks: ${{ needs.Static-Checks.result }}"
 
-          # Static checks can fail without blocking (continue-on-error: true)
           if [ "${{ needs.Static-Checks.result }}" == "cancelled" ]; then
             echo "❌ Static checks were cancelled"
             exit 1
           fi
 
-          # Static checks can fail without blocking (continue-on-error: true)
           if [ "${{ needs.Static-Checks.result }}" == "failure" ]; then
-            echo "⚠️ Some static checks failed but not blocking (continue-on-error: true)"
+            echo "❌ Some static checks failed"
+            exit 1
           fi
 
           echo "✅ Static checks completed"

@@ -1,6 +1,9 @@
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import ahocorasick  # type: ignore
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Query
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -68,13 +71,13 @@ def build_automaton(
     automaton = ahocorasick.Automaton()  # pylint: disable=c-extension-no-member
     # Use query_without_large_columns to prevent OOM errors when building automaton
     # We only need identity data, not filtered results or access result URLs
-    all_privacy_requests: List[
-        PrivacyRequest
-    ] = PrivacyRequest.query_without_large_columns(db).yield_per(
-        1000
+    all_privacy_requests_query: "Query[PrivacyRequest]" = (
+        PrivacyRequest.query_without_large_columns(db).yield_per(1000)
     )  # type: ignore
-    for request in all_privacy_requests:
-        _add_decrypted_identities_to_automaton(request.get_persisted_identity().__dict__, request.id, automaton)  # type: ignore
+    for request in all_privacy_requests_query:
+        _add_decrypted_identities_to_automaton(
+            request.get_persisted_identity().__dict__, request.id, automaton
+        )  # type: ignore
     set_automaton_cache_signal()
     return automaton
 

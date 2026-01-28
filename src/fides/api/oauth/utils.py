@@ -521,7 +521,7 @@ async def extract_token_and_load_client_async(
         # Eager-load the user relationship to avoid lazy-loading issues in async context
         # This is required for is_token_invalidated() to access client.user.password_reset_at
         result = await db.execute(
-            select(ClientDetail)
+            select(ClientDetail)  # type: ignore[arg-type, attr-defined]
             .options(selectinload(ClientDetail.user))
             .where(ClientDetail.id == client_id)
         )

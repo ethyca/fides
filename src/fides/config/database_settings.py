@@ -187,6 +187,31 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created asynchronous connection string for the read-only application database.",
         exclude=True,
     )
+    async_readonly_database_pool_size: int = Field(
+        default=5,
+        description="Number of concurrent database connections Fides will use for read-only API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
+    )
+    async_readonly_database_max_overflow: int = Field(
+        default=10,
+        description="Number of additional 'overflow' concurrent database connections Fides will use for read-only API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
+    async_readonly_database_pre_ping: bool = Field(
+        default=True,
+        description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+    async_readonly_database_pool_skip_rollback: bool = Field(
+        default=False,
+        description="If true, the async engine will skip rolling back connections when they are returned to the pool.",
+    )
+    async_readonly_database_autocommit: bool = Field(
+        default=False,
+        description="If true, the async engine will autocommit transactions. This should effectively be a no-op because it's a readonly database.",
+    )
+    async_readonly_database_prewarm: bool = Field(
+        default=False,
+        description="Whether to warm the asynchronous read-only database pool on startup - this will cause the pool to open all possible connections on startup so make sure your database can handle the load.",
+        exclude=True,
+    )
 
     @field_validator("password", mode="before")
     @classmethod

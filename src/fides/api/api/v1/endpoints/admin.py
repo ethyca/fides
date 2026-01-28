@@ -49,7 +49,11 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
 
     if action == DBActions.downgrade:
         try:
-            migrate_db(database_url=CONFIG.database.sync_database_uri, revision=revision, downgrade=True)  # type: ignore[arg-type]
+            migrate_db(
+                database_url=CONFIG.database.sync_database_uri,
+                revision=revision,  # type: ignore[arg-type]
+                downgrade=True,
+            )
             action_text = "downgrade"
         except Exception as e:
             logger.exception("Database downgrade failed")

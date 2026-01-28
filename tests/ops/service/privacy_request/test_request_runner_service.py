@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import time
+from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Set
 from unittest import mock
@@ -28,6 +29,16 @@ from fides.api.models.attachment import (
     AttachmentType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigField,
+    ManualTaskInstance,
+    ManualTaskSubmission,
+)
+from fides.api.models.manual_task.conditional_dependency import (
+    ManualTaskConditionalDependency,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
@@ -65,21 +76,33 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 class TestManualFinalization:
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,enable_fixture,pending_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+            (
+                "use_dsr_2_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+        ],
     )
     def test_mark_as_requires_manual_finalization_if_config_true(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        enable_fixture,
+        pending_fixture,
         request,
-        enable_erasure_request_finalization_required,
-        privacy_request_erasure_pending,
     ) -> None:
-        """Assert marking privacy request as requires_manual_finalization"""
+        """Assert marking privacy request as requires_manual_finalization for erasure"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_erasure_pending
+        request.getfixturevalue(enable_fixture)
+        privacy_request = request.getfixturevalue(pending_fixture)
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -89,21 +112,33 @@ class TestManualFinalization:
         )
 
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,disable_fixture,pending_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "disable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+            (
+                "use_dsr_2_0",
+                "disable_erasure_request_finalization_required",
+                "privacy_request_erasure_pending",
+            ),
+        ],
     )
     def test_no_manual_finalization_if_config_false(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        disable_fixture,
+        pending_fixture,
         request,
-        disable_erasure_request_finalization_required,
-        privacy_request_erasure_pending,
     ) -> None:
-        """Assert marking pending privacy request as complete"""
+        """Assert marking pending privacy request as complete when finalization disabled"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_erasure_pending
+        request.getfixturevalue(disable_fixture)
+        privacy_request = request.getfixturevalue(pending_fixture)
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -111,21 +146,33 @@ class TestManualFinalization:
         assert privacy_request.status == PrivacyRequestStatus.complete
 
     @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        "dsr_version,enable_fixture,finalization_fixture",
+        [
+            (
+                "use_dsr_3_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_requires_manual_finalization",
+            ),
+            (
+                "use_dsr_2_0",
+                "enable_erasure_request_finalization_required",
+                "privacy_request_requires_manual_finalization",
+            ),
+        ],
     )
     def test_mark_as_complete_when_finalized_at_exists(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
+        enable_fixture,
+        finalization_fixture,
         request,
-        enable_erasure_request_finalization_required,
-        privacy_request_requires_manual_finalization,
     ) -> None:
         """Ensures that if finalized_at exists, we mark it as complete"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_requires_manual_finalization
+        request.getfixturevalue(enable_fixture)
+        privacy_request = request.getfixturevalue(finalization_fixture)
         privacy_request.finalized_at = "2021-08-30T16:09:37.359Z"
         privacy_request.save(db)
 
@@ -150,50 +197,51 @@ def privacy_request_complete_email_notification_enabled(db):
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    "dsr_version,privacy_request_fixture,expected_action_type",
+    [
+        (
+            "use_dsr_3_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_status_pending",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+        ),
+        (
+            "use_dsr_3_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+        (
+            "use_dsr_2_0",
+            "privacy_request_with_consent_policy",
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
+        ),
+    ],
 )
-def test_policy_upload_dispatch_message_called(
+def test_completion_email_sent_for_request(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
-    privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
     dsr_version,
+    privacy_request_fixture,
+    expected_action_type,
     request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
+    """Test that completion email is sent for access and consent requests."""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    privacy_request = request.getfixturevalue(privacy_request_fixture)
 
     upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_status_pending.id).get(
+    run_privacy_request_task.delay(privacy_request.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
     )
-    assert upload_mock.called
     assert mock_email_dispatch.call_count == 1
-
-
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_complete_email_not_sent_if_consent_request(
-    upload_mock: Mock,
-    mock_email_dispatch: Mock,
-    privacy_request_with_consent_policy: PrivacyRequest,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-    privacy_request_complete_email_notification_enabled,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    upload_mock.return_value = "http://www.data-download-url"
-    run_privacy_request_task.delay(privacy_request_with_consent_policy.id).get(
-        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-    )
-    assert not mock_email_dispatch.called
+    call_kwargs = mock_email_dispatch.call_args.kwargs
+    assert call_kwargs["action_type"] == expected_action_type
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
@@ -1665,6 +1713,198 @@ def test_build_consent_dataset_graph(
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
         "saas_connector_example:saas_connector_example"
     ]
+
+
+class TestConsentManualTaskIntegration:
+    """Integration tests for consent manual tasks in the privacy request runner"""
+
+    @pytest.mark.usefixtures("use_dsr_3_0")
+    def test_consent_request_with_manual_task_full_flow(
+        self,
+        db,
+        consent_policy,
+        connection_config,
+        run_privacy_request_task,
+    ):
+        """Test full consent flow: pause for input → submit → complete"""
+
+        # Create manual task with consent config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+        # Must have at least one field for the manual task to be included in the graph
+        consent_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_key": "consent_confirmation",
+                "field_type": "text",
+                "field_metadata": {
+                    "label": "Consent Confirmation",
+                    "required": True,
+                    "data_categories": ["user.consent"],
+                },
+            },
+        )
+
+        # Create privacy request with consent policy
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.utcnow(),
+                "policy_id": consent_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        privacy_request.cache_identity(Identity(email="test@example.com"))
+
+        instance = None
+        submission = None
+
+        # Step 1: Run privacy request - should pause for manual input
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+
+        # Should require input because manual task needs submission
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+        # Verify manual task instance was created
+        instance = (
+            db.query(ManualTaskInstance)
+            .filter(
+                ManualTaskInstance.task_id == manual_task.id,
+                ManualTaskInstance.entity_id == privacy_request.id,
+            )
+            .first()
+        )
+        assert instance is not None, "ManualTaskInstance should be created"
+        assert instance.config.config_type == ActionType.consent
+
+        # Step 2: Submit data for the manual task field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_id": consent_field.id,
+                "instance_id": instance.id,
+                "data": {"field_type": "text", "value": "consent_confirmed"},
+            },
+        )
+
+        # Step 3: Re-run privacy request - should complete
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+    @pytest.mark.usefixtures("use_dsr_3_0")
+    def test_consent_request_with_privacy_request_condition(
+        self,
+        db,
+        consent_policy,
+        connection_config,
+        run_privacy_request_task,
+    ):
+        """Test consent manual task with privacy_request.* condition skips when condition is false"""
+
+        # Create manual task with consent config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+        consent_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_key": "consent_confirmation",
+                "field_type": "text",
+                "field_metadata": {
+                    "label": "Consent Confirmation",
+                    "required": True,
+                    "data_categories": ["user.consent"],
+                },
+            },
+        )
+
+        # Add a condition that will NOT be met (email != nonexistent@test.com)
+        # This should cause the manual task to be skipped
+        conditional_dep = ManualTaskConditionalDependency.create(
+            db=db,
+            data={
+                "manual_task_id": manual_task.id,
+                "condition_tree": {
+                    "field_address": "privacy_request.identity.email",
+                    "operator": "eq",
+                    "value": "nonexistent@test.com",
+                },
+            },
+        )
+
+        # Create privacy request with different email (condition won't match)
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.utcnow(),
+                "policy_id": consent_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        privacy_request.cache_identity(Identity(email="actual@example.com"))
+
+        instance = None
+        # Run privacy request - condition is false, so manual task should be skipped
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+
+        # Should complete without requiring input (condition not met = task skipped)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+        # Verify no manual task instance was created (task was skipped)
+        instance = (
+            db.query(ManualTaskInstance)
+            .filter(
+                ManualTaskInstance.task_id == manual_task.id,
+                ManualTaskInstance.entity_id == privacy_request.id,
+            )
+            .first()
+        )
+        assert instance is None, (
+            "ManualTaskInstance should NOT be created when condition is false"
+        )
 
 
 class TestConsentEmailStep:

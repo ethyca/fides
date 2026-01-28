@@ -1,0 +1,3 @@
+type: Fixed
+description: Added FidesLocaleUpdated event to FidesJS to notify when a user changes the language
+pr: 7234

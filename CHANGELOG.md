@@ -19,10 +19,32 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.77.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.77.1..main)
 
 ### Changed
  - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+
+### Added
+- Monitor scoped activity tab for datastore monitors in the action center [#7162](https://github.com/ethyca/fides/pull/7162)
+
+## [2.77.1](https://github.com/ethyca/fides/compare/2.77.0..2.77.1)
+
+### Added
+- Added a new jsonb column to the conditional dependency models. [#7133](https://github.com/ethyca/fides/pull/7133) https://github.com/ethyca/fides/labels/db-migration
+- Added consent manual tasks to task graph DAG builder. [#7175](https://github.com/ethyca/fides/pull/7175)
+- Consent DSR completion email template. [#7102](https://github.com/ethyca/fides/pull/7102)
+- Added consent manual tasks to manual task graph and added ability to assign users and conditional dependencies to config fields. [#7174](https://github.com/ethyca/fides/pull/7174) https://github.com/ethyca/fides/labels/db-migration
+
+### Fixed
+- Fixed a bug where the state parameter from the OIDC login request wasn't passed to Fides. [#7213](https://github.com/ethyca/fides/pull/7213)
+- Fixed checkbox input not updating visually [#7205](https://github.com/ethyca/fides/pull/7205)
+
+### Removed
+- Removed deprecated columns from conditional dependency models. [#7172](https://github.com/ethyca/fides/pull/7172) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed classification message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
+ - Added a monitor filter to the root action center [#7186](https://github.com/ethyca/fides/pull/7186)
 
 ## [2.77.0](https://github.com/ethyca/fides/compare/2.76.1..2.77.0)
 

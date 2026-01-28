@@ -1,27 +1,67 @@
+import { Result } from "fidesui";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 
-import FixedLayout from "~/features/common/FixedLayout";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import ErrorPage from "~/features/common/errors/ErrorPage";
+import { useFeatures } from "~/features/common/features";
+import {
+  ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
+  ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
+} from "~/features/common/nav/routes";
+import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
+import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
+import { useDiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredInfrastructureSystemsTable";
 import { DiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredInfrastructureSystemsTable";
 
-const MonitorResultSystems: NextPage = () => {
-  const router = useRouter();
-  const monitorId = decodeURIComponent(router.query.monitorId as string);
+export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
+  [ActionCenterRoute.ACTIVITY]:
+    ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE,
+  [ActionCenterRoute.ATTENTION_REQUIRED]:
+    ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
+} as const;
+
+export const HELIOS_ACCESS_ERROR =
+  "Attempting to access monitor results without the required feature flag enabled";
+
+const InfrastructureMonitorResultSystems: NextPage = () => {
+  const {
+    flags: { heliosV2 },
+  } = useFeatures();
+  const params = useParams<{ monitorId: string }>();
+
+  const monitorId = params?.monitorId
+    ? decodeURIComponent(params.monitorId)
+    : undefined;
+  const loading = !monitorId;
+  const heliosAccessError = !heliosV2 && HELIOS_ACCESS_ERROR;
+  const { error: infrastructureSystemsError } =
+    useDiscoveredInfrastructureSystemsTable({
+      monitorId,
+    });
+
+  if (heliosAccessError) {
+    return <Result status="error" title={heliosAccessError} />;
+  }
+
+  if (infrastructureSystemsError) {
+    return (
+      <ErrorPage
+        error={infrastructureSystemsError}
+        defaultMessage="A problem occurred while fetching your systems"
+      />
+    );
+  }
 
   return (
-    <FixedLayout title="Action center - Discovered infrastructure systems">
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-      />
-      <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
-    </FixedLayout>
+    <ActionCenterLayout
+      monitorId={monitorId}
+      routeConfig={MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG}
+    >
+      {loading ? null : (
+        <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
+      )}
+    </ActionCenterLayout>
   );
 };
 
-export default MonitorResultSystems;
+export default InfrastructureMonitorResultSystems;

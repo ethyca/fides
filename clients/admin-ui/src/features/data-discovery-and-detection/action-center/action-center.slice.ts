@@ -8,7 +8,6 @@ import {
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
-  MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -23,6 +22,7 @@ import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/Data
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
+import { MonitorTaskInProgressResponse } from "~/types/api/models/MonitorTaskInProgressResponse";
 import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginatedResponse,
@@ -58,9 +58,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       SearchQueryParams &
         PaginationQueryParams & {
           monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+          steward_user_id?: string[];
         }
     >({
-      query: ({ page = 1, size = 20, search, monitor_type }) => {
+      query: ({
+        page = 1,
+        size = 20,
+        search,
+        monitor_type,
+        steward_user_id,
+      }) => {
         const params: SearchQueryParams &
           PaginationQueryParams & { diff_status: string } = {
           page,
@@ -68,9 +75,9 @@ const actionCenterApi = baseApi.injectEndpoints({
           search,
           diff_status: "addition",
         };
-
         const urlParams = buildArrayQueryParams({
           monitor_type,
+          steward_user_id,
         });
 
         return {

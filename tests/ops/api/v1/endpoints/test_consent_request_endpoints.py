@@ -922,9 +922,9 @@ class TestSaveConsent:
         assert not run_privacy_request_mock.called, "date_use: email is not executable"
 
         db.refresh(consent_request)
-        assert (
-            not consent_request.privacy_request_id
-        ), "No PrivacyRequest queued because none of the consent options are executable"
+        assert not consent_request.privacy_request_id, (
+            "No PrivacyRequest queued because none of the consent options are executable"
+        )
 
         response = api_client.post(
             f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
@@ -1113,9 +1113,9 @@ class TestSaveConsent:
         assert verification_code in mock_verify_identity.call_args_list[0].args
 
         db.refresh(consent_request)
-        assert (
-            consent_request.privacy_request_id is not None
-        ), "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
+        assert consent_request.privacy_request_id is not None, (
+            "PrivacyRequest queued to propagate consent preferences cached on ConsentRequest"
+        )
 
         identity = consent_request.privacy_request.get_persisted_identity()
         assert identity.email == "test@email.com", (

@@ -232,7 +232,7 @@ class TestGetRawAccessResults:
     def test_dsr_2_0(self, privacy_request):
         """DSR 2.0 uses the cache to store results"""
         cache: FidesopsRedis = get_cache()
-        key = f"access_request__test_dataset:test_collection"
+        key = "access_request__test_dataset:test_collection"
         cache.set_encoded_object(
             f"{privacy_request.id}__{key}",
             [{"name": "Jane", "street": "102 Test Town"}],
@@ -266,7 +266,7 @@ class TestGetRawMaskingCounts:
     def test_dsr_2_0(self, privacy_request):
         """DSR 2.0 uses the cache to store rows_masked"""
         cache: FidesopsRedis = get_cache()
-        key = f"erasure_request__test_dataset:test_collection"
+        key = "erasure_request__test_dataset:test_collection"
         cache.set_encoded_object(f"{privacy_request.id}__{key}", 2)
 
         assert privacy_request.get_raw_masking_counts() == {

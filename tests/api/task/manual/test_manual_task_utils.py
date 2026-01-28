@@ -6,18 +6,16 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import CollectionAddress, FieldAddress, ScalarField
-from fides.api.models.conditional_dependency.conditional_dependency_base import (
-    ConditionalDependencyType,
-)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.manual_task import ManualTask
+from fides.api.models.manual_task import ManualTask, ManualTaskConfig
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
+from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     create_collection_for_connection_key,
@@ -257,9 +255,9 @@ class TestManualTaskUtilsConditionalDependencies:
                 field_with_reference = field
                 break
 
-        assert (
-            field_with_reference is not None
-        ), f"Expected field '{expected_field_name}' not found"
+        assert field_with_reference is not None, (
+            f"Expected field '{expected_field_name}' not found"
+        )
         assert len(field_with_reference.references) == 1
         assert field_with_reference.references[0][0] == expected_reference
         assert field_with_reference.references[0][1] == "from"
@@ -341,7 +339,7 @@ class TestManualTaskUtilsConditionalDependencies:
         )  # from "payment_card.subscription.status"
 
     @pytest.mark.usefixtures(
-        "connection_with_manual_access_task", "condition_gt_18", "condition_age_lt_65"
+        "connection_with_manual_access_task", "condition_age_range"
     )
     def test_no_duplicate_fields_from_conditional_dependencies(
         self, db: Session, manual_task: ManualTask
@@ -408,11 +406,6 @@ class TestManualTaskUtilsConditionalDependencies:
             db=db,
             data={
                 "manual_task_id": second_manual_task.id,
-                "condition_type": ConditionalDependencyType.leaf,
-                "field_address": "postgres_example:payment_card:billing.subscription.status",
-                "operator": "eq",
-                "value": "active",
-                "sort_order": 1,
                 "condition_tree": condition_tree,
             },
         )
@@ -465,3 +458,113 @@ class TestManualTaskUtilsConditionalDependencies:
             # Clean up
             second_manual_task.delete(db)
             second_connection_config.delete(db)
+
+
+class TestConsentManualTaskUtils:
+    """Tests for consent-specific manual task utility functions"""
+
+    def test_get_manual_task_addresses_with_consent_returns_empty_when_no_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter returns empty when no consent configs exist"""
+        # connection_with_manual_access_task has only access configs
+        addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+        # Should not include the access-only manual task
+        assert len(addresses) == 0
+
+    def test_get_manual_task_addresses_with_consent_returns_addresses_for_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter returns addresses for manual tasks with consent configs"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a consent config for the manual task
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+            # Should include the manual task with consent config
+            assert len(addresses) == 1
+            assert addresses[0].dataset == connection_config.key
+            assert addresses[0].collection == "manual_data"
+        finally:
+            consent_config.delete(db)
+
+    def test_get_manual_task_addresses_with_consent_excludes_non_current_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that get_manual_task_addresses with consent filter excludes manual tasks with only non-current consent configs"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a non-current consent config
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": False,  # Not current
+            },
+        )
+
+        try:
+            addresses = get_manual_task_addresses(db, config_types=[ActionType.consent])
+
+            # Should not include the manual task with non-current consent config
+            assert len(addresses) == 0
+        finally:
+            consent_config.delete(db)
+
+    def test_create_manual_task_artificial_graphs_with_consent_returns_empty_when_no_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that create_manual_task_artificial_graphs with consent filter returns empty when no consent configs exist"""
+        # connection_with_manual_access_task has only access configs
+        graphs = create_manual_task_artificial_graphs(
+            db, config_types=[ActionType.consent]
+        )
+
+        # Should not include any graphs
+        assert len(graphs) == 0
+
+    def test_create_manual_task_artificial_graphs_with_consent_creates_graphs_for_consent_configs(
+        self, db: Session, connection_with_manual_access_task
+    ):
+        """Test that create_manual_task_artificial_graphs with consent filter creates GraphDatasets for consent manual tasks"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create a consent config for the manual task
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            graphs = create_manual_task_artificial_graphs(
+                db, config_types=[ActionType.consent]
+            )
+
+            # Should have one graph for the consent manual task
+            assert len(graphs) == 1
+
+            graph = graphs[0]
+            assert graph.name == connection_config.key
+            assert graph.connection_key == connection_config.key
+            assert len(graph.collections) == 1
+
+            collection = graph.collections[0]
+            assert collection.name == "manual_data"
+        finally:
+            consent_config.delete(db)

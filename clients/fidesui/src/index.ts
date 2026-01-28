@@ -216,6 +216,7 @@ export type {
   FlexProps,
   FormInstance,
   FormItemProps,
+  FormProps,
   GetProps,
   InputProps as InputPropsOriginal,
   InputRef,
@@ -329,11 +330,13 @@ export { Filter } from "./components/data-display/Filter";
 
 // Export animation components
 export type {
+  EnterExitListProps,
   ExitGridProps,
   ExpandCollapseProps,
   OpenCloseArrowProps,
 } from "./components/animation";
 export {
+  EnterExitList,
   ExitGrid,
   ExpandCollapse,
   OpenCloseArrow,

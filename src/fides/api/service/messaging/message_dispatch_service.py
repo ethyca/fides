@@ -348,6 +348,8 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT:
+        return "Your consent request has been completed."
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         return "Your privacy request has been approved and is currently processing."
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
@@ -442,6 +444,11 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             template_variables=variables,
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+        return EmailForActionType(
+            subject=_render(messaging_template.content["subject"]),  # type: ignore
+            body=_render(messaging_template.content["body"]),  # type: ignore
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT:
         return EmailForActionType(
             subject=_render(messaging_template.content["subject"]),  # type: ignore
             body=_render(messaging_template.content["body"]),  # type: ignore

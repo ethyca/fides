@@ -1,3 +1,5 @@
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   getCoreRowModel,
   getExpandedRowModel,
@@ -85,7 +87,11 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
-export const DatamapReportTable = () => {
+export const DatamapReportTable = ({
+  onError,
+}: {
+  onError: (error: FetchBaseQueryError | SerializedError) => void;
+}) => {
   const userCanSeeReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_READ,
   ]);
@@ -178,7 +184,14 @@ export const DatamapReportTable = () => {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
+    error: reportError,
   } = useGetMinimalDatamapReportQuery(reportQuery);
+
+  useEffect(() => {
+    if (reportError) {
+      onError(reportError);
+    }
+  }, [reportError, onError]);
 
   const [
     exportMinimalDatamapReport,
