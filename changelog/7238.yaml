@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Updated privacy request and ID verification flow to use separate pages instead of a modal
+pr: 7238 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
