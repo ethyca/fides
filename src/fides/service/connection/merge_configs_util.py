@@ -259,18 +259,14 @@ def _get_endpoint_urns_with_monitored_fields(
     # Find all field resources that are monitored for these monitor configs
     # Then get their ancestor URNs (which will be endpoint URNs) using StagedResourceAncestor
     # This gives us endpoints that contain at least one monitored field
-    subquery = (
-        select(StagedResource.urn)
-        .where(
-            (StagedResource.monitor_config_id.in_(monitor_config_ids))
-            & (StagedResource.resource_type == "Field")
-            & (StagedResource.diff_status == "monitored")
-        )
-        .scalar_subquery()
+    subquery = select(StagedResource.urn).where(  # type: ignore[arg-type]
+        (StagedResource.monitor_config_id.in_(monitor_config_ids))
+        & (StagedResource.resource_type == "Field")
+        & (StagedResource.diff_status == "monitored")
     )
 
     monitored_fields_query = (
-        select(StagedResourceAncestor.ancestor_urn)
+        select(StagedResourceAncestor.ancestor_urn)  # type: ignore[arg-type]
         .where(StagedResourceAncestor.descendant_urn.in_(subquery))
         .distinct()
     )
@@ -392,8 +388,9 @@ def _get_monitored_fields_by_endpoint(
         return {}
 
     # Get all monitored field resources that belong to the specified endpoints
+    # type: ignore comments needed due to outdated sqlalchemy-stubs
     monitored_fields_query = (
-        select(StagedResource, StagedResourceAncestor.ancestor_urn)
+        select(StagedResource, StagedResourceAncestor.ancestor_urn)  # type: ignore[arg-type]
         .select_from(
             StagedResource.__table__.join(
                 StagedResourceAncestor.__table__,
