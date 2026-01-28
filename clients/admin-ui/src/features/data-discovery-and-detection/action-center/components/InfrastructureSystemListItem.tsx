@@ -15,6 +15,10 @@ import { useMemo } from "react";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { StagedResourceAPIResponse } from "~/types/api";
 
+import {
+  INFRASTRUCTURE_DIFF_STATUS_COLOR,
+  INFRASTRUCTURE_DIFF_STATUS_LABEL,
+} from "../constants";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
@@ -83,9 +87,8 @@ export const InfrastructureSystemListItem = ({
 }: InfrastructureSystemListItemProps) => {
   const itemKey = item.urn;
   const url = rowClickUrl?.(item);
-  const { metadata } = item;
+  const { metadata, diff_status: diffStatus } = item;
   const systemName = item.name ?? "Uncategorized";
-  const systemType = metadata?.app_type ?? "System type";
 
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
   const logoUrl = useMemo(() => {
@@ -166,13 +169,15 @@ export const InfrastructureSystemListItem = ({
           </Flex>
         }
         title={
-          <Flex gap="small" align="center" wrap="wrap">
+          <Flex gap="" align="center" wrap="wrap">
             <Button type="text" size="small" onClick={handleClick}>
               <Text strong>{systemName}</Text>
             </Button>
-            <Text type="secondary" style={{ fontWeight: 400 }}>
-              {systemType}
-            </Text>
+            {diffStatus && INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus] && (
+              <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[diffStatus]}>
+                {INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus]}
+              </Tag>
+            )}
           </Flex>
         }
         description={
