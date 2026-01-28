@@ -128,7 +128,7 @@ def test_heap_dump_logs_heap_stats(
     assert "GARBAGE COLLECTOR STATS" in log_output
 
 
-class TestBackfillEndpoint:
+class TestBackfillEndpoints:
     """Tests for the /admin/backfill endpoint."""
 
     def test_starts_background_task(
@@ -151,7 +151,8 @@ class TestBackfillEndpoint:
         assert response.status_code == 202
         data = response.json()["data"]
         assert "Backfill started in background" in data["message"]
-        assert "Monitor progress via server logs" in data["message"]
+        assert "GET /api/v1/admin/backfill" in data["message"]
+        assert "server logs" in data["message"]
         assert data["config"]["batch_size"] == 5000
         assert data["config"]["batch_delay_seconds"] == 1.0
 
@@ -215,3 +216,41 @@ class TestBackfillEndpoint:
             assert data["config"]["batch_delay_seconds"] == payload.get(
                 "batch_delay_seconds", 1.0
             )
+
+    @pytest.mark.parametrize(
+        "is_running,pending_count",
+        [
+            (True, 50000),  # Backfill running with pending items
+            (False, 0),  # Backfill complete
+            (False, 100000),  # Pending items but not running
+        ],
+        ids=[
+            "running_with_pending",
+            "complete",
+            "pending_but_not_running",
+        ],
+    )
+    def test_get_status(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+        is_running: bool,
+        pending_count: int,
+    ) -> None:
+        """Test that GET backfill returns correct status."""
+        with patch(
+            "fides.api.api.v1.endpoints.admin.is_backfill_running",
+            return_value=is_running,
+        ), patch(
+            "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
+            return_value=pending_count,
+        ):
+            response = test_client.get(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_running"] is is_running
+        assert data["pending_count"]["is_leaf"] == pending_count

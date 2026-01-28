@@ -72,6 +72,20 @@ def release_backfill_lock() -> None:
     cache.delete(BACKFILL_LOCK_KEY)
 
 
+def is_backfill_running() -> bool:
+    """
+    Check if a backfill is currently running.
+
+    Returns True if the backfill lock exists in Redis, False otherwise.
+
+    Note: This checks for the presence of the Redis lock. If a backfill process
+    crashes without releasing the lock, this may return True for up to 5 minutes
+    (the lock TTL) even though no backfill is actually running.
+    """
+    cache = get_cache()
+    return bool(cache.exists(BACKFILL_LOCK_KEY))
+
+
 @dataclass
 class BackfillResult:
     """Tracks the result of a backfill operation."""
