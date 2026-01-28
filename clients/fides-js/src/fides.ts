@@ -5,7 +5,7 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import { getAutomatedConsentContext } from "./lib/consent-context";
+import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesCookie,
@@ -100,7 +100,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
   // This includes GPC, migrated consent from third-party providers (e.g., OneTrust),
   // and notice consent string overrides from options
-  const automatedConsentContext = getAutomatedConsentContext(
+  const automatedConsentContext = getConsentContext(
     config.options,
     optionsOverrides,
   );
