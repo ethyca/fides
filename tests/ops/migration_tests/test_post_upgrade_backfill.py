@@ -146,6 +146,7 @@ class TestBackfillIsLeaf:
             db=db,
             data={
                 "urn": "test_backfill_monitor.db.schema.table.leaf_field",
+                "name": "leaf_field",
                 "resource_type": "Field",
                 "children": [],
                 "meta": {"data_type": "string"},
@@ -165,6 +166,7 @@ class TestBackfillIsLeaf:
             db=db,
             data={
                 "urn": "test_backfill_monitor.db.schema.table.object_field",
+                "name": "object_field",
                 "resource_type": "Field",
                 "children": [],
                 "meta": {"data_type": "object"},
@@ -183,6 +185,7 @@ class TestBackfillIsLeaf:
             db=db,
             data={
                 "urn": "test_backfill_monitor.db.schema.table.parent_field",
+                "name": "parent_field",
                 "resource_type": "Field",
                 "children": ["child1", "child2"],
                 "meta": {},
@@ -201,6 +204,7 @@ class TestBackfillIsLeaf:
             db=db,
             data={
                 "urn": "test_backfill_monitor.db.schema.table",
+                "name": "table",
                 "resource_type": "Table",
                 "children": [],
             },
