@@ -1,7 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Any, Awaitable, Callable, MutableMapping
 from unittest.mock import AsyncMock, patch
 
 from starlette.testclient import TestClient
@@ -10,11 +9,11 @@ from fides.api.app_setup import create_fides_app
 from fides.api.asgi_middleware import AnalyticsLoggingMiddleware
 from fides.config import CONFIG
 
-# Type aliases for ASGI
-Scope = MutableMapping[str, Any]
-Message = MutableMapping[str, Any]
-Receive = Callable[[], Awaitable[Message]]
-Send = Callable[[Message], Awaitable[None]]
+from .conftest import (
+    Message,
+    create_http_scope,
+    noop_send,
+)
 
 
 class TestAnalyticsLoggingMiddleware:
@@ -74,7 +73,7 @@ class TestAnalyticsLoggingMiddleware:
 
         assert fides_source is None
 
-    async def test_middleware_extracts_header_directly(self):
+    async def test_middleware_extracts_header_directly(self, mock_asgi_app):
         """
         Integration test: Call the middleware directly with a mock ASGI app
         to verify X-Fides-Source header is extracted correctly.
@@ -83,21 +82,7 @@ class TestAnalyticsLoggingMiddleware:
         """
         captured_fides_source = None
 
-        # Create a mock inner ASGI app that just returns 200
-        async def mock_app(scope, receive, send):
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [(b"content-type", b"application/json")],
-                }
-            )
-            await send(
-                {
-                    "type": "http.response.body",
-                    "body": b"{}",
-                }
-            )
+        app, _ = mock_asgi_app()
 
         # Patch _log_analytics to capture the fides_source
         async def capturing_log_analytics(
@@ -118,26 +103,21 @@ class TestAnalyticsLoggingMiddleware:
         def collect_coroutine(coro, *args, **kwargs):
             pending_coroutines.append(coro)
             # Return a dummy task-like object
-            import asyncio
-
             future = asyncio.get_event_loop().create_future()
             future.set_result(None)
             return future
 
-        middleware = AnalyticsLoggingMiddleware(mock_app)
+        middleware = AnalyticsLoggingMiddleware(app)
 
         # Create an ASGI scope with X-Fides-Source header (lowercase, as ASGI normalizes)
-        scope = {
-            "type": "http",
-            "method": "GET",
-            "path": "/api/v1/config",
-            "scheme": "http",
-            "query_string": b"",
-            "headers": [
+        scope = create_http_scope(
+            method="GET",
+            path="/api/v1/config",
+            headers=[
                 (b"host", b"localhost:8080"),
                 (b"x-fides-source", b"privacy-center"),  # ASGI normalizes to lowercase
             ],
-        }
+        )
 
         messages_sent = []
 
@@ -165,43 +145,29 @@ class TestAnalyticsLoggingMiddleware:
             "The middleware is not correctly extracting the X-Fides-Source header."
         )
 
-    async def test_extracts_x_fides_source_header(self):
+    async def test_extracts_x_fides_source_header(self, mock_asgi_app):
         """
         Test that the middleware correctly extracts the X-Fides-Source header
         and includes it in the analytics event.
         """
         captured_analytics_event = None
 
-        async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [(b"content-type", b"application/json")],
-                }
-            )
-            await send({"type": "http.response.body", "body": b"{}"})
-
-        middleware = AnalyticsLoggingMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AnalyticsLoggingMiddleware(app)
 
         # Create scope with X-Fides-Source header (ASGI requires lowercase header names)
-        scope: Scope = {
-            "type": "http",
-            "method": "POST",
-            "path": "/api/v1/privacy-request",
-            "scheme": "https",
-            "query_string": b"",
-            "headers": [
+        scope = create_http_scope(
+            method="POST",
+            path="/api/v1/privacy-request",
+            scheme="https",
+            headers=[
                 (b"host", b"example.com"),
                 (b"x-fides-source", b"privacy-center"),
             ],
-        }
+        )
 
         async def receive() -> Message:
             return {"type": "http.request", "body": b""}
-
-        async def send(message: Message) -> None:
-            pass
 
         # Mock send_analytics_event to capture the AnalyticsEvent
         async def capture_analytics_event(event):
@@ -228,7 +194,7 @@ class TestAnalyticsLoggingMiddleware:
                 side_effect=track_create_task,
             ),
         ):
-            await middleware(scope, receive, send)
+            await middleware(scope, receive, noop_send)
             # Wait for all background tasks to complete
             if created_tasks:
                 await asyncio.gather(*created_tasks, return_exceptions=True)
@@ -245,43 +211,28 @@ class TestAnalyticsLoggingMiddleware:
         )
         assert captured_analytics_event.status_code == 200
 
-    async def test_builds_full_url_for_endpoint(self):
+    async def test_builds_full_url_for_endpoint(self, mock_asgi_app):
         """Test that the middleware builds the full URL including scheme, host, path, and query string."""
         captured_endpoint = None
 
-        async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [],
-                }
-            )
-            await send({"type": "http.response.body", "body": b"{}"})
+        app, _ = mock_asgi_app()
+        middleware = AnalyticsLoggingMiddleware(app)
 
-        middleware = AnalyticsLoggingMiddleware(mock_app)
-
-        scope: Scope = {
-            "type": "http",
-            "method": "GET",
-            "path": "/api/v1/privacy-request",
-            "scheme": "https",
-            "query_string": b"page=1&size=50",
-            "headers": [
-                (b"host", b"api.example.com:8080"),
-            ],
-        }
+        scope = create_http_scope(
+            method="GET",
+            path="/api/v1/privacy-request",
+            scheme="https",
+            query_string=b"page=1&size=50",
+            headers=[(b"host", b"api.example.com:8080")],
+        )
 
         async def receive() -> Message:
             return {"type": "http.request", "body": b""}
 
-        async def send(message: Message) -> None:
-            pass
-
         with patch.object(
             middleware, "_log_analytics", new_callable=AsyncMock
         ) as mock_log:
-            await middleware(scope, receive, send)
+            await middleware(scope, receive, noop_send)
             await asyncio.sleep(0.01)
 
             mock_log.assert_called_once()
@@ -293,46 +244,27 @@ class TestAnalyticsLoggingMiddleware:
             == "GET: https://api.example.com:8080/api/v1/privacy-request?page=1&size=50"
         )
 
-    async def test_extracts_hostname_without_port(self):
+    async def test_extracts_hostname_without_port(self, mock_asgi_app):
         """Test that the middleware extracts hostname without port for accessed_through_local_host check."""
         captured_hostname = None
 
-        async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [],
-                }
-            )
-            await send({"type": "http.response.body", "body": b"{}"})
+        app, _ = mock_asgi_app()
+        middleware = AnalyticsLoggingMiddleware(app)
 
-        middleware = AnalyticsLoggingMiddleware(mock_app)
-
-        # Host header includes port
-        scope: Scope = {
-            "type": "http",
-            "method": "GET",
-            "path": "/api/v1/health",  # Will be skipped, so use different path
-            "scheme": "http",
-            "query_string": b"",
-            "headers": [
-                (b"host", b"localhost:8080"),
-            ],
-        }
-        # Use a path that won't be skipped
-        scope["path"] = "/api/v1/privacy-request"
+        # Host header includes port, path that won't be skipped
+        scope = create_http_scope(
+            method="GET",
+            path="/api/v1/privacy-request",
+            headers=[(b"host", b"localhost:8080")],
+        )
 
         async def receive() -> Message:
             return {"type": "http.request", "body": b""}
 
-        async def send(message: Message) -> None:
-            pass
-
         with patch.object(
             middleware, "_log_analytics", new_callable=AsyncMock
         ) as mock_log:
-            await middleware(scope, receive, send)
+            await middleware(scope, receive, noop_send)
             await asyncio.sleep(0.01)
 
             mock_log.assert_called_once()
@@ -342,80 +274,48 @@ class TestAnalyticsLoggingMiddleware:
         # Verify hostname is extracted without port
         assert captured_hostname == "localhost"
 
-    async def test_skips_non_api_endpoints(self):
+    async def test_skips_non_api_endpoints(self, mock_asgi_app):
         """Test that the middleware skips non-API endpoints."""
-
-        async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [],
-                }
-            )
-            await send({"type": "http.response.body", "body": b"{}"})
-
-        middleware = AnalyticsLoggingMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AnalyticsLoggingMiddleware(app)
 
         # Non-API path
-        scope: Scope = {
-            "type": "http",
-            "method": "GET",
-            "path": "/static/js/app.js",
-            "scheme": "http",
-            "query_string": b"",
-            "headers": [(b"host", b"example.com")],
-        }
+        scope = create_http_scope(
+            method="GET",
+            path="/static/js/app.js",
+            headers=[(b"host", b"example.com")],
+        )
 
         async def receive() -> Message:
             return {"type": "http.request", "body": b""}
 
-        async def send(message: Message) -> None:
-            pass
-
         with patch.object(
             middleware, "_log_analytics", new_callable=AsyncMock
         ) as mock_log:
-            await middleware(scope, receive, send)
+            await middleware(scope, receive, noop_send)
             await asyncio.sleep(0.01)
 
             # Should not be called for non-API paths
             mock_log.assert_not_called()
 
-    async def test_skips_health_endpoints(self):
+    async def test_skips_health_endpoints(self, mock_asgi_app):
         """Test that the middleware skips health check endpoints."""
+        app, _ = mock_asgi_app()
+        middleware = AnalyticsLoggingMiddleware(app)
 
-        async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-            await send(
-                {
-                    "type": "http.response.start",
-                    "status": 200,
-                    "headers": [],
-                }
-            )
-            await send({"type": "http.response.body", "body": b"{}"})
-
-        middleware = AnalyticsLoggingMiddleware(mock_app)
-
-        scope: Scope = {
-            "type": "http",
-            "method": "GET",
-            "path": "/api/v1/health",
-            "scheme": "http",
-            "query_string": b"",
-            "headers": [(b"host", b"example.com")],
-        }
+        scope = create_http_scope(
+            method="GET",
+            path="/api/v1/health",
+            headers=[(b"host", b"example.com")],
+        )
 
         async def receive() -> Message:
             return {"type": "http.request", "body": b""}
 
-        async def send(message: Message) -> None:
-            pass
-
         with patch.object(
             middleware, "_log_analytics", new_callable=AsyncMock
         ) as mock_log:
-            await middleware(scope, receive, send)
+            await middleware(scope, receive, noop_send)
             await asyncio.sleep(0.01)
 
             # Should not be called for health endpoints
@@ -446,8 +346,6 @@ class TestAnalyticsLoggingMiddleware:
         captured_fides_source = None
 
         # Capture the fides_source argument when _log_analytics is called
-        original_log_analytics = AnalyticsLoggingMiddleware._log_analytics
-
         async def capturing_log_analytics(
             self,
             endpoint,

@@ -1,23 +1,20 @@
-from typing import Any, Awaitable, Callable, MutableMapping, Optional
+from typing import Optional
 from unittest.mock import patch
 
 import pytest
 
 from fides.api.asgi_middleware import AuditLogMiddleware
 
-# Type aliases for ASGI
-Scope = MutableMapping[str, Any]
-Message = MutableMapping[str, Any]
-Receive = Callable[[], Awaitable[Message]]
-Send = Callable[[Message], Awaitable[None]]
-
-
-class MockAppResult:
-    """Container for mock app execution results."""
-
-    def __init__(self):
-        self.received_body: Optional[bytes] = None
-        self.completed: bool = False
+from .conftest import (
+    Message,
+    Receive,
+    Scope,
+    Send,
+    create_body_receive,
+    create_chunked_receive,
+    create_http_scope,
+    noop_send,
+)
 
 
 class AuditTracker:
@@ -35,91 +32,6 @@ class AuditTracker:
         """Mock audit handler that captures the request body."""
         self.called = True
         self.captured_body = await request.body()
-
-
-def create_mock_app(
-    status_code: int = 200, capture_body: bool = False
-) -> tuple[Callable, MockAppResult]:
-    """
-    Factory function to create a mock ASGI app.
-
-    Args:
-        status_code: HTTP status code to return
-        capture_body: Whether to consume and capture the request body
-
-    Returns:
-        Tuple of (mock_app callable, MockAppResult for inspection)
-    """
-    result = MockAppResult()
-
-    async def mock_app(scope: Scope, receive: Receive, send: Send) -> None:
-        if capture_body:
-            body_parts = []
-            while True:
-                message = await receive()
-                body = message.get("body", b"")
-                if body:
-                    body_parts.append(body)
-                if not message.get("more_body", False):
-                    break
-            result.received_body = b"".join(body_parts)
-
-        result.completed = True
-        await send(
-            {
-                "type": "http.response.start",
-                "status": status_code,
-                "headers": [(b"content-type", b"application/json")],
-            }
-        )
-        await send({"type": "http.response.body", "body": b"{}"})
-
-    return mock_app, result
-
-
-def create_scope(method: str = "POST", path: str = "/api/v1/test") -> Scope:
-    """Create a basic HTTP scope."""
-    return {
-        "type": "http",
-        "method": method,
-        "path": path,
-        "headers": [(b"host", b"localhost")],
-    }
-
-
-def create_body_receive(body: bytes = b"") -> Receive:
-    """Create a receive callable that returns a single body message."""
-    sent = False
-
-    async def receive() -> Message:
-        nonlocal sent
-        if not sent:
-            sent = True
-            return {"type": "http.request", "body": body, "more_body": False}
-        return {"type": "http.request", "body": b"", "more_body": False}
-
-    return receive
-
-
-def create_chunked_receive(chunks: list[bytes]) -> Receive:
-    """Create a receive callable that returns body in chunks."""
-    chunk_index = 0
-
-    async def receive() -> Message:
-        nonlocal chunk_index
-        if chunk_index < len(chunks):
-            body = chunks[chunk_index]
-            more_body = chunk_index < len(chunks) - 1
-            chunk_index += 1
-            return {"type": "http.request", "body": body, "more_body": more_body}
-        return {"type": "http.request", "body": b"", "more_body": False}
-
-    return receive
-
-
-async def noop_send(message: Message) -> None:
-    """A no-op send callable."""
-    pass
 
 
 @pytest.fixture
@@ -141,13 +53,15 @@ class TestAuditLogMiddleware:
     - Audit logging is disabled when config flag is off
     """
 
-    async def test_audits_post_request(self, audit_tracker: AuditTracker):
+    async def test_audits_post_request(
+        self, mock_asgi_app, audit_tracker: AuditTracker
+    ):
         """Test that POST requests trigger audit logging."""
-        mock_app, app_result = create_mock_app(capture_body=True)
-        middleware = AuditLogMiddleware(mock_app)
+        app, app_result = mock_asgi_app(capture_body=True)
+        middleware = AuditLogMiddleware(app)
 
         request_body = b'{"test": "data"}'
-        scope = create_scope(method="POST", path="/api/v1/privacy-request")
+        scope = create_http_scope(method="POST", path="/api/v1/privacy-request")
         receive = create_body_receive(request_body)
 
         with (
@@ -169,13 +83,13 @@ class TestAuditLogMiddleware:
             "Downstream app should have received the full request body"
         )
 
-    async def test_skips_get_requests(self, audit_tracker: AuditTracker):
+    async def test_skips_get_requests(self, mock_asgi_app, audit_tracker: AuditTracker):
         """Test that GET requests do not trigger audit logging."""
-        mock_app, _ = create_mock_app()
-        middleware = AuditLogMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AuditLogMiddleware(app)
 
-        scope = create_scope(method="GET", path="/api/v1/privacy-request")
-        receive = create_body_receive()
+        scope = create_http_scope(method="GET", path="/api/v1/privacy-request")
+        receive = create_body_receive(b"")
 
         with (
             patch(
@@ -193,13 +107,15 @@ class TestAuditLogMiddleware:
             "Audit logging should NOT be called for GET requests"
         )
 
-    async def test_skips_ignored_paths(self, audit_tracker: AuditTracker):
+    async def test_skips_ignored_paths(
+        self, mock_asgi_app, audit_tracker: AuditTracker
+    ):
         """Test that requests to ignored paths do not trigger audit logging."""
-        mock_app, _ = create_mock_app()
-        middleware = AuditLogMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AuditLogMiddleware(app)
 
         # /api/v1/login is in the default ignored paths
-        scope = create_scope(method="POST", path="/api/v1/login")
+        scope = create_http_scope(method="POST", path="/api/v1/login")
         receive = create_body_receive(b'{"username": "test"}')
 
         with (
@@ -218,12 +134,14 @@ class TestAuditLogMiddleware:
             "Audit logging should NOT be called for ignored paths"
         )
 
-    async def test_skips_when_config_disabled(self, audit_tracker: AuditTracker):
+    async def test_skips_when_config_disabled(
+        self, mock_asgi_app, audit_tracker: AuditTracker
+    ):
         """Test that audit logging is skipped when config flag is disabled."""
-        mock_app, _ = create_mock_app()
-        middleware = AuditLogMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AuditLogMiddleware(app)
 
-        scope = create_scope(method="POST", path="/api/v1/privacy-request")
+        scope = create_http_scope(method="POST", path="/api/v1/privacy-request")
         receive = create_body_receive(b'{"test": "data"}')
 
         with (
@@ -251,13 +169,13 @@ class TestAuditLogMiddleware:
         ],
     )
     async def test_audits_mutating_requests(
-        self, audit_tracker: AuditTracker, method: str, path: str
+        self, mock_asgi_app, audit_tracker: AuditTracker, method: str, path: str
     ):
         """Test that PUT, DELETE, and PATCH requests trigger audit logging."""
-        mock_app, _ = create_mock_app()
-        middleware = AuditLogMiddleware(mock_app)
+        app, _ = mock_asgi_app()
+        middleware = AuditLogMiddleware(app)
 
-        scope = create_scope(method=method, path=path)
+        scope = create_http_scope(method=method, path=path)
         receive = create_body_receive(b'{"test": "data"}')
 
         with (
@@ -276,16 +194,18 @@ class TestAuditLogMiddleware:
             f"Audit logging should have been called for {method} request"
         )
 
-    async def test_body_buffering_with_chunked_data(self, audit_tracker: AuditTracker):
+    async def test_body_buffering_with_chunked_data(
+        self, mock_asgi_app, audit_tracker: AuditTracker
+    ):
         """Test that request body is correctly buffered even when received in chunks."""
-        mock_app, app_result = create_mock_app(capture_body=True)
-        middleware = AuditLogMiddleware(mock_app)
+        app, app_result = mock_asgi_app(capture_body=True)
+        middleware = AuditLogMiddleware(app)
 
         # Simulate chunked body delivery
         chunks = [b'{"chunk1": "', b'data", "chunk2": ', b'"more_data"}']
         expected_body = b"".join(chunks)
 
-        scope = create_scope(method="POST", path="/api/v1/data")
+        scope = create_http_scope(method="POST", path="/api/v1/data")
         receive = create_chunked_receive(chunks)
 
         with (
@@ -307,15 +227,17 @@ class TestAuditLogMiddleware:
             f"Audit handler should have received full body. Got: {audit_tracker.captured_body}"
         )
 
-    async def test_custom_ignored_paths(self, audit_tracker: AuditTracker):
+    async def test_custom_ignored_paths(
+        self, mock_asgi_app, audit_tracker: AuditTracker
+    ):
         """Test that custom ignored paths are respected."""
-        mock_app, _ = create_mock_app()
+        app, _ = mock_asgi_app()
 
         # Create middleware with custom ignored paths
         custom_ignored = {"/api/v1/login", "/api/v1/custom-skip"}
-        middleware = AuditLogMiddleware(mock_app, ignored_paths=custom_ignored)
+        middleware = AuditLogMiddleware(app, ignored_paths=custom_ignored)
 
-        scope = create_scope(method="POST", path="/api/v1/custom-skip")
+        scope = create_http_scope(method="POST", path="/api/v1/custom-skip")
         receive = create_body_receive(b'{"test": "data"}')
 
         with (
@@ -364,15 +286,15 @@ class TestAuditLogMiddleware:
             "Audit logging should NOT be triggered for non-HTTP scopes"
         )
 
-    async def test_handles_audit_exception_gracefully(self):
+    async def test_handles_audit_exception_gracefully(self, mock_asgi_app):
         """Test that exceptions in audit logging don't break the request flow."""
-        mock_app, app_result = create_mock_app(capture_body=True)
-        middleware = AuditLogMiddleware(mock_app)
+        app, app_result = mock_asgi_app(capture_body=True)
+        middleware = AuditLogMiddleware(app)
 
         async def failing_handle_audit(request):
             raise ValueError("Simulated audit failure")
 
-        scope = create_scope(method="POST", path="/api/v1/test")
+        scope = create_http_scope(method="POST", path="/api/v1/test")
         receive = create_body_receive(b'{"test": "data"}')
 
         messages_sent = []
@@ -397,5 +319,5 @@ class TestAuditLogMiddleware:
             # Should not raise an exception
             await middleware(scope, receive, tracking_send)
 
-        assert app_result.completed, "App should have completed processing"
+        assert app_result.called, "App should have completed processing"
         assert response_sent, "Response should have been sent despite audit failure"
