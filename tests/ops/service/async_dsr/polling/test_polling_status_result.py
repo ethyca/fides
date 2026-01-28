@@ -2,6 +2,7 @@ import pytest
 
 from fides.api.schemas.saas.shared_schemas import PollingStatusResult
 
+
 @pytest.mark.async_dsr
 class TestPollingStatusResult:
     """

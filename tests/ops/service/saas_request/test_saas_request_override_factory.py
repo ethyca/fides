@@ -119,6 +119,7 @@ def valid_process_consent_webhook_override(
     """
     return ConsentWebhookResult()
 
+
 def valid_polling_status_bool_override(
     client: AuthenticatedClient,
     param_values: Dict[str, Any],
@@ -564,9 +565,14 @@ class TestSaasRequestOverrideFactory:
         """
 
         f_id = uuid()
-        register(f_id, SaaSRequestType.POLLING_STATUS)(valid_polling_status_bool_override)
-        assert valid_polling_status_bool_override == SaaSRequestOverrideFactory.get_override(
-            f_id, SaaSRequestType.POLLING_STATUS
+        register(f_id, SaaSRequestType.POLLING_STATUS)(
+            valid_polling_status_bool_override
+        )
+        assert (
+            valid_polling_status_bool_override
+            == SaaSRequestOverrideFactory.get_override(
+                f_id, SaaSRequestType.POLLING_STATUS
+            )
         )
 
     def test_register_polling_status_with_polling_status_result_return(self):
@@ -574,9 +580,14 @@ class TestSaasRequestOverrideFactory:
         Test registering a valid `polling_status` override function that returns PollingStatusResult (new)
         """
         f_id = uuid()
-        register(f_id, SaaSRequestType.POLLING_STATUS)(valid_polling_status_result_override)
-        assert valid_polling_status_result_override == SaaSRequestOverrideFactory.get_override(
-            f_id, SaaSRequestType.POLLING_STATUS
+        register(f_id, SaaSRequestType.POLLING_STATUS)(
+            valid_polling_status_result_override
+        )
+        assert (
+            valid_polling_status_result_override
+            == SaaSRequestOverrideFactory.get_override(
+                f_id, SaaSRequestType.POLLING_STATUS
+            )
         )
 
     def test_register_invalid_polling_status_return_type(self):
@@ -586,7 +597,9 @@ class TestSaasRequestOverrideFactory:
         f_id = uuid()
 
         with pytest.raises(InvalidSaaSRequestOverrideException) as exc:
-            register(f_id, SaaSRequestType.POLLING_STATUS)(invalid_polling_status_return_type)
+            register(f_id, SaaSRequestType.POLLING_STATUS)(
+                invalid_polling_status_return_type
+            )
         assert "must return bool or PollingStatusResult" in str(exc.value)
 
     def test_register_invalid_polling_status_too_few_params(self):
@@ -596,5 +609,7 @@ class TestSaasRequestOverrideFactory:
         f_id = uuid()
 
         with pytest.raises(InvalidSaaSRequestOverrideException) as exc:
-            register(f_id, SaaSRequestType.POLLING_STATUS)(invalid_polling_status_too_few_params)
+            register(f_id, SaaSRequestType.POLLING_STATUS)(
+                invalid_polling_status_too_few_params
+            )
         assert "must declare at least 4 parameters" in str(exc.value)

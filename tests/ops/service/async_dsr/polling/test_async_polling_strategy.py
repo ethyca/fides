@@ -1,5 +1,5 @@
 from datetime import timedelta
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from freezegun import freeze_time
@@ -32,7 +32,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import erasure_policy
-from unittest.mock import patch, MagicMock
+
 
 @pytest.mark.async_dsr
 class TestAsyncPollingStrategy:
@@ -548,7 +548,9 @@ class TestAsyncPollingStrategy:
         mock_client = MagicMock()
 
         # Mock the override function to return PollingStatusResult with skip=True
-        expected_result = PollingStatusResult(is_complete=True, skip_result_request=True)
+        expected_result = PollingStatusResult(
+            is_complete=True, skip_result_request=True
+        )
         with MagicMock() as mock_override:
             mock_override.return_value = expected_result
 
@@ -589,7 +591,9 @@ class TestAsyncPollingStrategy:
         with patch.object(
             async_polling_strategy,
             "_check_sub_request_status",
-            return_value=PollingStatusResult(is_complete=True, skip_result_request=True),
+            return_value=PollingStatusResult(
+                is_complete=True, skip_result_request=True
+            ),
         ):
             with patch.object(
                 async_polling_strategy,

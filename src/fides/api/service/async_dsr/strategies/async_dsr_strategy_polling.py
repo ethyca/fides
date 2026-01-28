@@ -465,7 +465,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
             # Handle both legacy bool and new PollingStatusResult returns
             if isinstance(result, bool):
-                return PollingStatusResult(is_complete=result, skip_result_request=False)
+                return PollingStatusResult(
+                    is_complete=result, skip_result_request=False
+                )
             return result  # Already PollingStatusResult
 
         # Standard HTTP status request - create handler only when needed
@@ -599,9 +601,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         if status_result.is_complete:
             if status_result.skip_result_request:
                 # Complete but no data to fetch - mark as skipped
-                logger.info(
-                    f"Sub-request {sub_request.id} skipped - no data to fetch"
-                )
+                logger.info(f"Sub-request {sub_request.id} skipped - no data to fetch")
                 if polling_task.action_type == ActionType.access:
                     sub_request.access_data = []
                 if polling_task.action_type == ActionType.erasure:

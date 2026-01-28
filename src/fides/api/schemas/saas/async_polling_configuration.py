@@ -17,6 +17,7 @@ class SupportedDataType(Enum):
     # Binary/non-parseable data stored as raw bytes
     attachment = "attachment"  # Binary files (.zip, .pdf, .xml, etc.) stored as bytes
 
+
 class PollingResultType(Enum):
     """Types of results from async polling operations."""
 
