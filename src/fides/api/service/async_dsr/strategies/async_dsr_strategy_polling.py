@@ -470,8 +470,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
 
             if isinstance(result, PollingStatusResult):
-                # Use cast to help mypy understand the narrowed type
-                return cast(PollingStatusResult, result)
+                return result
 
             raise PrivacyRequestError(
                 f"Status override function must return bool or PollingStatusResult. "
