@@ -15,6 +15,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     String,
+    Integer,
     UniqueConstraint,
     func,
     text,
@@ -686,9 +687,11 @@ class StagedResource(Base):
             postgresql_using="gin",
         ),
         Index(
-            "ix_stagedresource_monitor_config_is_leaf",
+            "ix_stagedresource_monitor_leaf_status_urn",
             "monitor_config_id",
             "is_leaf",
+            "diff_status",
+            "urn",
             postgresql_where=text("is_leaf IS NOT NULL"),
         ),
     )
