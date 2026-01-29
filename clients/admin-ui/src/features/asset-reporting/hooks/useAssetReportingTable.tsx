@@ -31,6 +31,7 @@ enum AssetReportingColumnKeys {
   CONSENT_STATUS = "consent_status",
   DATA_USES = "data_uses",
   DOMAIN = "domain",
+  DURATION = "duration",
   LOCATIONS = "locations",
 }
 
@@ -227,6 +228,17 @@ export const useAssetReportingTable = ({
         width: 180,
         render: (value: string) => (
           <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 250 }}>
+            {value || "N/A"}
+          </Text>
+        ),
+      },
+      {
+        title: "Duration",
+        dataIndex: AssetReportingColumnKeys.DURATION,
+        key: AssetReportingColumnKeys.DURATION,
+        width: 120,
+        render: (value: string) => (
+          <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 150 }}>
             {value || "N/A"}
           </Text>
         ),
