@@ -1123,6 +1123,9 @@ def needs_batch_email_send(
     generic email consent connector. Returns true if at least one
     connector needs to send an email.
 
+    Only checks connectors relevant to the policy's action types.
+    For example, consent-only policies will only check consent email connectors.
+
     If we don't need to send any emails, add skipped logs for any
     relevant erasure and consent email connectors.
     """
@@ -1131,21 +1134,30 @@ def needs_batch_email_send(
 
     needs_email_send: bool = False
 
-    for connection_config in get_erasure_email_connection_configs(db):
-        if get_connector(connection_config).needs_email(  # type: ignore
-            user_identities, privacy_request
-        ):
-            needs_email_send = True
-        else:
-            can_skip_erasure_email.append(connection_config)
+    # Get the action types for this policy
+    policy_action_types = privacy_request.policy.get_all_action_types()
+    has_erasure_rules = ActionType.erasure in policy_action_types
+    has_consent_rules = ActionType.consent in policy_action_types
 
-    for connection_config in get_consent_email_connection_configs(db):
-        if get_connector(connection_config).needs_email(  # type: ignore
-            user_identities, privacy_request
-        ):
-            needs_email_send = True
-        else:
-            can_skip_consent_email.append(connection_config)
+    # Only check erasure email connectors if the policy has erasure rules
+    if has_erasure_rules:
+        for connection_config in get_erasure_email_connection_configs(db):
+            if get_connector(connection_config).needs_email(  # type: ignore
+                user_identities, privacy_request
+            ):
+                needs_email_send = True
+            else:
+                can_skip_erasure_email.append(connection_config)
+
+    # Only check consent email connectors if the policy has consent rules
+    if has_consent_rules:
+        for connection_config in get_consent_email_connection_configs(db):
+            if get_connector(connection_config).needs_email(  # type: ignore
+                user_identities, privacy_request
+            ):
+                needs_email_send = True
+            else:
+                can_skip_consent_email.append(connection_config)
 
     if not needs_email_send:
         _create_execution_logs_for_skipped_email_send(
