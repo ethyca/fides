@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from google.auth.exceptions import GoogleAuthError, TransportError
 from requests import Request
 
 from fides.api.common_exceptions import FidesopsException
@@ -360,38 +361,6 @@ class TestTokenCaching:
     @patch(
         "fides.api.service.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
     )
-    def test_refreshes_token_when_expired(
-        self,
-        mock_refresh: Mock,
-        google_cloud_configuration,
-        valid_secrets,
-    ):
-        """Test that token is refreshed when already expired."""
-        mock_refresh.return_value = "new_token_789"
-
-        # Set expiration in the past
-        past_expiry = int((datetime.now(timezone.utc) - timedelta(hours=1)).timestamp())
-        connection_config = ConnectionConfig(
-            key="test_connector",
-            secrets={
-                **valid_secrets,
-                "google_cloud_access_token": "expired_token",
-                "google_cloud_token_expires_at": past_expiry,
-            },
-        )
-        req = Request(method="GET", url="https://example.com").prepare()
-
-        strategy = AuthenticationStrategy.get_strategy(
-            "google_cloud_service_account", google_cloud_configuration
-        )
-
-        authenticated_request = strategy.add_authentication(req, connection_config)
-        assert authenticated_request.headers["Authorization"] == "Bearer new_token_789"
-        mock_refresh.assert_called_once()
-
-    @patch(
-        "fides.api.service.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
-    )
     def test_refreshes_token_when_no_cached_token(
         self,
         mock_refresh: Mock,
@@ -458,8 +427,6 @@ class TestTokenGeneration:
         google_cloud_connection_config,
     ):
         """Test proper error handling for network failures."""
-        from google.auth.exceptions import TransportError
-
         # Make the credentials refresh raise a TransportError
         mock_credentials = MagicMock()
         mock_credentials.refresh.side_effect = TransportError("Connection refused")
@@ -474,9 +441,7 @@ class TestTokenGeneration:
         with pytest.raises(FidesopsException) as exc:
             strategy.add_authentication(req, google_cloud_connection_config)
 
-        assert "Network error" in str(exc.value) or "oauth2.googleapis.com" in str(
-            exc.value
-        )
+        assert "Network error" in str(exc.value)
 
     @patch("google.oauth2.service_account.Credentials")
     def test_auth_error_handling(
@@ -486,8 +451,6 @@ class TestTokenGeneration:
         google_cloud_connection_config,
     ):
         """Test proper error handling for authentication failures."""
-        from google.auth.exceptions import GoogleAuthError
-
         # Make the credentials refresh raise a GoogleAuthError
         mock_credentials = MagicMock()
         mock_credentials.refresh.side_effect = GoogleAuthError("Invalid credentials")

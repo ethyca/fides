@@ -35,9 +35,6 @@ DEFAULT_TOKEN_URI = "https://oauth2.googleapis.com/token"
 # Token refresh buffer in seconds (refresh 10 minutes before expiration)
 TOKEN_REFRESH_BUFFER_SECONDS = 600
 
-# Timeout for token refresh requests in seconds
-TOKEN_REFRESH_TIMEOUT_SECONDS = 30
-
 
 class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     """
@@ -177,14 +174,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             raise FidesopsException(
                 f"Invalid Google Cloud credential type: expected 'service_account', "
                 f"got '{cred_type}'."
-            )
-
-        # Validate required fields are present and non-empty
-        required = ["project_id", "client_email", "private_key", "token_uri"]
-        missing_fields = [field for field in required if not keyfile_creds.get(field)]
-        if missing_fields:
-            raise FidesopsException(
-                f"Service account credentials missing required fields: {', '.join(missing_fields)}."
             )
 
     def _is_close_to_expiration(
