@@ -28,6 +28,7 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
@@ -2181,6 +2182,39 @@ class TestConsentEmailStep:
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,
         )
+
+    def test_needs_batch_email_send_consent_only_ignores_erasure_connectors(
+        self, db, privacy_request_with_consent_policy
+    ):
+        """
+        Regression test: Consent-only policies should not check erasure email connectors.
+        This prevents errors when erasure connectors are misconfigured but not relevant
+        to the current policy.
+        """
+        # Create a misconfigured dynamic_erasure_email connector with empty secrets
+        # This would previously cause a validation error when checking consent requests
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "misconfigured_dynamic_erasure_email",
+                "name": "Misconfigured Dynamic Erasure Email",
+                "connection_type": ConnectionType.dynamic_erasure_email,
+                "access": AccessLevel.write,
+                "secrets": {},  # Empty secrets - missing required fields
+                "disabled": False,
+            },
+        )
+
+        # This should not raise a validation error, as consent-only policies
+        # should not check erasure email connectors
+        result = needs_batch_email_send(
+            db,
+            {"email": "customer-1@example.com"},
+            privacy_request_with_consent_policy,
+        )
+
+        # Should return False since there are no consent email connectors configured
+        assert not result
 
 
 @pytest.mark.async_dsr
