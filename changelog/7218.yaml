@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Changed "Powered by" branding link to be shown in modal and privacy center by default
-pr: 7218 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
