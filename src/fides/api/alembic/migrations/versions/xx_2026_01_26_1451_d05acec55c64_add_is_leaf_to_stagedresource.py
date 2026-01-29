@@ -36,9 +36,9 @@ def upgrade():
             f"stagedresource table has {table_size} rows, creating index directly"
         )
         op.create_index(
-            "ix_stagedresource_monitor_config_is_leaf",
+            "ix_stagedresource_monitor_leaf_status_urn",
             "stagedresource",
-            ["monitor_config_id", "is_leaf"],
+            ["monitor_config_id", "is_leaf", "diff_status", "urn"],
             postgresql_where=text("is_leaf IS NOT NULL"),
         )
         logger.info("Index created successfully")
@@ -53,12 +53,12 @@ def upgrade():
 def downgrade():
     try:
         op.drop_index(
-            "ix_stagedresource_monitor_config_is_leaf", table_name="stagedresource"
+            "ix_stagedresource_monitor_leaf_status_urn", table_name="stagedresource"
         )
-        logger.info("Dropped ix_stagedresource_monitor_config_is_leaf index")
+        logger.info("Dropped ix_stagedresource_monitor_leaf_status_urn index")
     except Exception as e:
         logger.warning(
-            f"Could not drop ix_stagedresource_monitor_config_is_leaf index: {e}"
+            f"Could not drop ix_stagedresource_monitor_leaf_status_urn index: {e}"
         )
 
     op.drop_column("stagedresource", "is_leaf")
