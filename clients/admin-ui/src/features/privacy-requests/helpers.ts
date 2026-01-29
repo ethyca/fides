@@ -7,6 +7,7 @@ export enum BulkActionType {
   APPROVE = "approve",
   DENY = "deny",
   DELETE = "delete",
+  FINALIZE = "finalize",
 }
 
 /**
@@ -35,7 +36,10 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   [PrivacyRequestStatus.COMPLETE]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.PAUSED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.AWAITING_EMAIL_SEND]: [BulkActionType.DELETE],
-  [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [
+    BulkActionType.FINALIZE,
+    BulkActionType.DELETE,
+  ],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
 } as const;

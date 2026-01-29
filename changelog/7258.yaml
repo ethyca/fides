@@ -1,4 +1,0 @@
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Added Request Task deferred loading to privacy request endpoints and task creation.
-pr: 7258 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

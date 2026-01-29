@@ -1,4 +1,0 @@
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Applied error pages across UI
-pr: 7188 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
