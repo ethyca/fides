@@ -62,14 +62,14 @@ const MonitorListSearchForm = ({
       form={form}
       {...formProps}
       layout="inline"
-      className="flex grow gap-4"
+      className="flex grow gap-2"
     >
       <Flex className="grow justify-between self-stretch">
         <Form.Item name="search" className="self-end">
           <SearchInput />
         </Form.Item>
       </Flex>
-      <Form.Item name="monitor_type" className="self-end">
+      <Form.Item name="monitor_type" className="!me-0 self-end">
         <Select
           options={availableMonitorTypes.map((monitorType) => ({
             value: monitorType,
@@ -82,7 +82,7 @@ const MonitorListSearchForm = ({
           aria-label="Filter by monitor type"
         />
       </Form.Item>
-      <Form.Item name="steward_key" className="self-end">
+      <Form.Item name="steward_key" className="!me-0 self-end">
         <Select
           options={dataStewardOptions}
           loading={isLoadingUserOptions}
