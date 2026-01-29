@@ -80,13 +80,19 @@ interface EvidenceItem {
 interface SystemEvidenceItem extends EvidenceItem {
   type: "system";
   subtype:
-    | "data-classification"
-    | "system-inventory"
-    | "policy-document"
-    | "compliance-monitor";
+    | "data-classification" // Field/system data categories from Fides Data Map
+    | "system-inventory" // System metadata, privacy flags, legal basis
+    | "policy-document" // Policy rules, retention, masking strategies
+    | "compliance-monitor" // Privacy request logs, evaluations
+    | "data-flow" // System egress/ingress transfers
+    | "consent-record" // Consent preferences and history
+    | "dsr-execution" // Privacy request execution logs
+    | "system-change"; // System history audit trail
   source: {
     system: string;
   };
+  summary: string; // Human-readable summary (e.g., "3 data categories found")
+  label?: string; // Human-readable label for the value (e.g., "Data categories", "Privacy flags")
   confidence?: number;
 }
 
@@ -114,6 +120,7 @@ interface AnalysisEvidenceItem extends EvidenceItem {
   };
   confidence: number;
   references: string[];
+  section?: "system" | "human"; // Which section this analysis belongs to
 }
 
 /**
@@ -257,108 +264,181 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   // Mock evidence data grouped by question
   // In a real implementation, this would come from an API and be organized by question
-  const allEvidence: EvidenceItem[] = [
-    // Question 2: Describe the processing
-    {
-      id: "sys-1",
-      questionId: "2",
-      type: "system",
-      subtype: "data-classification",
-      content: "PII, Behavioral Data",
-      source: { system: "Fides Data Map" },
-      timestamp: "2024-01-15T14:23:00Z",
-      confidence: 98,
-      links: [{ label: "View in Data Map", url: "#" }],
-    },
-    {
-      id: "sys-2",
-      questionId: "2",
-      type: "system",
-      subtype: "system-inventory",
-      content: "Customer Insight AI Module",
-      source: { system: "System Inventory" },
-      timestamp: "2024-01-15T14:20:00Z",
-      links: [{ label: "View system details", url: "#" }],
-    },
-    {
-      id: "sys-3",
-      questionId: "2",
-      type: "system",
-      subtype: "policy-document",
-      content: "Retention: 24 months (Section 4.2)",
-      source: { system: "Data Retention Policy v3.1" },
-      timestamp: "2024-01-15T13:45:00Z",
-      links: [{ label: "View policy document", url: "#" }],
-    },
-    {
-      id: "human-1",
-      questionId: "2",
-      type: "human",
-      subtype: "manual-entry",
-      content:
-        "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations.",
-      source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
-      timestamp: "2024-01-15T14:20:00Z",
-      status: "verified",
-    },
-    {
-      id: "human-2",
-      questionId: "2",
-      type: "human",
-      subtype: "stakeholder-communication",
-      content: "Data flow discussion with team",
-      source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
-      timestamp: "2024-01-15T14:15:00Z",
-      channel: "Slack #privacy-assessments",
-      participants: ["Jack Gale", "Sarah Johnson", "Data Steward Team"],
-      threadMessages: [
-        {
-          sender: "Jack Gale",
-          timestamp: "2024-01-15T14:15:00Z",
-          message:
-            "Thanks! Can you help me understand the data flow? How is the data ingested?",
-        },
-        {
-          sender: "Sarah Johnson",
-          timestamp: "2024-01-15T14:18:00Z",
-          message:
-            "Based on the system architecture, data is ingested via API from the core commerce engine. It's processed in a secure isolated environment.",
-        },
-        {
-          sender: "Jack Gale",
-          timestamp: "2024-01-15T14:22:00Z",
-          message:
-            "What about the retention period? Do we have that information?",
-        },
-        {
-          sender: "Sarah Johnson",
-          timestamp: "2024-01-15T14:23:00Z",
-          message:
-            "The retention period is 24 months based on the legitimate interest lawful basis.",
-        },
-      ],
-    },
-    {
-      id: "analysis-1",
-      questionId: "2",
-      type: "analysis",
-      subtype: "summary",
-      content:
-        "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations. Data from commerce engine, processed in isolated environment. Scope: PII and behavioral data for opted-in customers.",
-      source: { model: "GPT-4-turbo (v2024.01)" },
-      timestamp: "2024-01-15T15:30:00Z",
-      confidence: 87,
-      references: ["sys-1", "sys-2", "human-1", "human-2"],
-    },
-  ];
+  const allEvidence: EvidenceItem[] = useMemo(
+    () => [
+      // Question 2: Describe the processing
+      // Data Classification - from Fides Data Map field-level categories
+      {
+        id: "sys-1",
+        questionId: "2",
+        type: "system",
+        subtype: "data-classification",
+        summary: "3 data categories found",
+        label: "Data categories",
+        content:
+          "user.contact.email, user.behavior.browsing_history, user.financial.purchase_history",
+        source: { system: "Data map" },
+        timestamp: "2024-01-15T14:23:00Z",
+        links: [{ label: "View in data map", url: "#" }],
+      },
+      // System Inventory - system metadata and privacy flags
+      {
+        id: "sys-2",
+        questionId: "2",
+        type: "system",
+        subtype: "system-inventory",
+        summary: "Profiling enabled with legitimate interest basis",
+        label: "System configuration",
+        content:
+          "processes_personal_data: true, uses_profiling: true, legal_basis_for_profiling: Legitimate Interest",
+        source: { system: "System inventory" },
+        timestamp: "2024-01-15T14:20:00Z",
+        links: [{ label: "View system details", url: "#" }],
+      },
+      // Data Flow - from system egress/ingress
+      {
+        id: "sys-3",
+        questionId: "2",
+        type: "system",
+        subtype: "data-flow",
+        summary: "2 data flows configured",
+        label: "Data flows",
+        content:
+          "Ingress: Commerce Engine API → Insight Module | Egress: Insight Module → Recommendation Service",
+        source: { system: "System inventory" },
+        timestamp: "2024-01-15T14:18:00Z",
+        links: [{ label: "View data flows", url: "#" }],
+      },
+      // Policy Document - from Fides Policy Engine
+      {
+        id: "sys-4",
+        questionId: "2",
+        type: "system",
+        subtype: "policy-document",
+        summary: "24 month retention with erasure policy",
+        label: "Retention policy",
+        content:
+          "24 months, erasure on request (target: user.contact, user.behavior)",
+        source: { system: "Policy" },
+        timestamp: "2024-01-15T13:45:00Z",
+        links: [{ label: "View policy", url: "#" }],
+      },
+      // DSR Execution - from privacy request logs
+      {
+        id: "sys-5",
+        questionId: "2",
+        type: "system",
+        subtype: "dsr-execution",
+        summary: "15 requests completed in last 30 days",
+        label: "Request activity (30 days)",
+        content:
+          "12 access requests completed, 3 erasure requests completed, avg 4.2 days",
+        source: { system: "Privacy requests" },
+        timestamp: "2024-01-15T12:00:00Z",
+        links: [{ label: "View request logs", url: "#" }],
+      },
+      // Consent Record - from consent preferences
+      {
+        id: "sys-6",
+        questionId: "2",
+        type: "system",
+        subtype: "consent-record",
+        summary: "78% opt-in rate for profiling",
+        label: "Consent rates",
+        content:
+          "marketing.profiling: 78% opt-in, functional.service: 95% opt-in",
+        source: { system: "Consent" },
+        timestamp: "2024-01-15T11:30:00Z",
+        links: [{ label: "View consent dashboard", url: "#" }],
+      },
+      // Human input - manual entry
+      {
+        id: "human-1",
+        questionId: "2",
+        type: "human",
+        subtype: "manual-entry",
+        content:
+          "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations.",
+        source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
+        timestamp: "2024-01-15T14:20:00Z",
+        status: "verified",
+      },
+      // Human input - stakeholder communication
+      {
+        id: "human-2",
+        questionId: "2",
+        type: "human",
+        subtype: "stakeholder-communication",
+        content: "Data flow discussion with team",
+        source: { person: { name: "Jack Gale", role: "Privacy Officer" } },
+        timestamp: "2024-01-15T14:15:00Z",
+        channel: "Slack #privacy-assessments",
+        participants: ["Jack Gale", "Sarah Johnson", "Data Steward Team"],
+        threadMessages: [
+          {
+            sender: "Jack Gale",
+            timestamp: "2024-01-15T14:15:00Z",
+            message:
+              "Can you help me understand the data flow? How is the data ingested?",
+          },
+          {
+            sender: "Sarah Johnson",
+            timestamp: "2024-01-15T14:18:00Z",
+            message:
+              "Data is ingested via API from the core commerce engine. Processed in a secure isolated environment.",
+          },
+          {
+            sender: "Jack Gale",
+            timestamp: "2024-01-15T14:22:00Z",
+            message: "What about the retention period?",
+          },
+          {
+            sender: "Sarah Johnson",
+            timestamp: "2024-01-15T14:23:00Z",
+            message:
+              "24 months based on legitimate interest lawful basis, per the data retention policy.",
+          },
+        ],
+      },
+      // Analysis - AI-generated summary for system-derived data
+      {
+        id: "analysis-1",
+        questionId: "2",
+        type: "analysis",
+        subtype: "summary",
+        section: "system",
+        content:
+          "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations. Data from commerce engine, processed in isolated environment. Scope: PII and behavioral data for opted-in customers. 78% consent rate for profiling purposes.",
+        source: { model: "GPT-4-turbo (v2024.01)" },
+        timestamp: "2024-01-15T15:30:00Z",
+        confidence: 87,
+        references: ["sys-1", "sys-2", "sys-6"],
+      },
+      // Analysis - AI-generated summary for human input
+      {
+        id: "analysis-2",
+        questionId: "2",
+        type: "analysis",
+        subtype: "summary",
+        section: "human",
+        content:
+          "Stakeholder input confirms ML-based processing of purchase history and browsing behavior for personalization. Data is ingested via API from commerce engine and processed in an isolated environment. Retention period is 24 months based on legitimate interest.",
+        source: { model: "GPT-4-turbo (v2024.01)" },
+        timestamp: "2024-01-15T15:35:00Z",
+        confidence: 82,
+        references: ["human-1", "human-2"],
+      },
+    ],
+    [],
+  );
 
-  // Group evidence by question - merge analysis into system
+  // Group evidence by question - merge analysis into appropriate section
   const evidenceByQuestion = useMemo(() => {
     const grouped: Record<
       string,
       {
         system: (SystemEvidenceItem | AnalysisEvidenceItem)[];
-        human: HumanEvidenceItem[];
+        human: (HumanEvidenceItem | AnalysisEvidenceItem)[];
       }
     > = {};
 
@@ -372,8 +452,14 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       } else if (item.type === "human") {
         grouped[item.questionId].human.push(item as HumanEvidenceItem);
       } else if (item.type === "analysis") {
-        // Merge analysis items into system-derived data
-        grouped[item.questionId].system.push(item as AnalysisEvidenceItem);
+        const analysisItem = item as AnalysisEvidenceItem;
+        // Route analysis to appropriate section based on section property
+        if (analysisItem.section === "human") {
+          grouped[item.questionId].human.push(analysisItem);
+        } else {
+          // Default to system section
+          grouped[item.questionId].system.push(analysisItem);
+        }
       }
     });
 
@@ -521,10 +607,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const handleOpenEvidence = (sectionKey: string) => {
     setFocusedQuestionId(sectionKey);
     if (!evidenceExpandedSections.includes(sectionKey)) {
-      setEvidenceExpandedSections([
-        ...evidenceExpandedSections,
-        sectionKey,
-      ]);
+      setEvidenceExpandedSections([...evidenceExpandedSections, sectionKey]);
     }
     setIsDrawerOpen(true);
   };
@@ -3802,7 +3885,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   collapsedSystemSections[systemKey] ?? true;
                 const isHumanCollapsed =
                   collapsedHumanSections[humanKey] ?? true;
-                const DEFAULT_ITEMS_TO_SHOW = 2;
+                const DEFAULT_ITEMS_TO_SHOW = 3;
 
                 // Combine system and analysis items, sort by timestamp (newest first)
                 const allSystemItems = [...evidence.system].sort(
@@ -3816,29 +3899,37 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 const remainingSystemCount =
                   allSystemItems.length - DEFAULT_ITEMS_TO_SHOW;
 
+                // Combine human and analysis items, sort by timestamp (newest first)
+                const allHumanItems = [...evidence.human].sort(
+                  (a, b) =>
+                    new Date(b.timestamp).getTime() -
+                    new Date(a.timestamp).getTime(),
+                );
                 const visibleHumanItems = isHumanExpanded
-                  ? evidence.human
-                  : evidence.human.slice(0, DEFAULT_ITEMS_TO_SHOW);
+                  ? allHumanItems
+                  : allHumanItems.slice(0, DEFAULT_ITEMS_TO_SHOW);
                 const remainingHumanCount =
-                  evidence.human.length - DEFAULT_ITEMS_TO_SHOW;
+                  allHumanItems.length - DEFAULT_ITEMS_TO_SHOW;
+                // Count only actual human items (not analysis) for the badge
+                const humanSourceCount = allHumanItems.filter(
+                  (item) => item.type === "human",
+                ).length;
+
+                // Convert confidence percentage to High/Medium/Low
+                const getConfidenceLevel = (confidence: number): string => {
+                  if (confidence >= 80) {
+                    return "High";
+                  }
+                  if (confidence >= 50) {
+                    return "Medium";
+                  }
+                  return "Low";
+                };
 
                 const renderSystemItem = (
                   item: SystemEvidenceItem | AnalysisEvidenceItem,
                 ) => {
                   const isAnalysis = item.type === "analysis";
-                  const systemRefs =
-                    isAnalysis && item.references
-                      ? evidence.system.filter((e) =>
-                          item.references?.includes(e.id),
-                        )
-                      : [];
-                  const humanRefs =
-                    isAnalysis && item.references
-                      ? evidence.human.filter((e) =>
-                          item.references?.includes(e.id),
-                        )
-                      : [];
-                  const allRefs = [...systemRefs, ...humanRefs];
 
                   if (isAnalysis) {
                     return (
@@ -3899,7 +3990,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             {
                               key: "confidence",
                               label: "Confidence",
-                              children: `${item.confidence}%`,
+                              children: getConfidenceLevel(item.confidence),
                             },
                           ]}
                         />
@@ -3918,62 +4009,16 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         >
                           {item.content}
                         </Text>
-                        {allRefs.length > 0 && (
-                          <>
-                            <Divider
-                              style={{
-                                margin: "12px 0",
-                                borderColor: "#E8EBED",
-                              }}
-                            />
-                            <Text
-                              strong
-                              style={{
-                                fontSize: 13,
-                                display: "block",
-                                marginBottom: 8,
-                                color: "#1A1F36",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Sources:
-                            </Text>
-                            <List
-                              size="small"
-                              dataSource={allRefs.map((ref, idx) => ({
-                                key: ref.id ?? idx,
-                                title:
-                                  ref.content.substring(0, 60) +
-                                  (ref.content.length > 60 ? "..." : ""),
-                                description:
-                                  ref.type === "system"
-                                    ? `${ref.source.system} • ${formatTimestamp(ref.timestamp)}`
-                                    : `${
-                                        "person" in ref.source
-                                          ? ref.source.person.name
-                                          : "Unknown"
-                                      } • ${formatTimestamp(ref.timestamp)}`,
-                              }))}
-                              renderItem={(listItem) => (
-                                <List.Item>
-                                  <List.Item.Meta
-                                    title={listItem.title}
-                                    description={listItem.description}
-                                  />
-                                </List.Item>
-                              )}
-                            />
-                          </>
-                        )}
                       </Card>
                     );
                   }
 
+                  // Expanded view: Source header, full data content, Last Updated
                   return (
-                    <List.Item
+                    <div
                       key={item.id}
                       style={{
-                        padding: "16px",
+                        padding: "12px 16px",
                         marginBottom: 8,
                         backgroundColor: "#FFFFFF",
                         borderRadius: 8,
@@ -3992,66 +4037,46 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         target.style.boxShadow = "none";
                       }}
                     >
-                      <List.Item.Meta
-                        title={
-                          <Flex vertical gap="small" style={{ flex: 1 }}>
-                            <Flex align="center" gap="small">
-                              <Tag
-                                color={CUSTOM_TAG_COLOR.MINOS}
-                                style={{
-                                  margin: 0,
-                                  fontSize: 11,
-                                }}
-                              >
-                                {item.subtype === "data-classification" &&
-                                  "Data classification"}
-                                {item.subtype === "system-inventory" &&
-                                  "System inventory"}
-                                {item.subtype === "policy-document" &&
-                                  "Policy document"}
-                                {item.subtype === "compliance-monitor" &&
-                                  "Compliance monitor"}
-                              </Tag>
-                            </Flex>
-                            <Text
-                              strong
-                              style={{
-                                fontSize: 13,
-                                color: "#1A1F36",
-                                lineHeight: 1.6,
-                              }}
-                            >
-                              {item.content}
-                            </Text>
-                            <Descriptions
-                              column={1}
-                              size="small"
-                              items={[
-                                {
-                                  key: "source",
-                                  label: "Source",
-                                  children: item.source.system,
-                                },
-                                {
-                                  key: "extracted",
-                                  label: "Extracted",
-                                  children: formatTimestamp(item.timestamp),
-                                },
-                                ...(item.confidence
-                                  ? [
-                                      {
-                                        key: "confidence",
-                                        label: "Confidence",
-                                        children: `${item.confidence}%`,
-                                      },
-                                    ]
-                                  : []),
-                              ]}
-                            />
-                          </Flex>
-                        }
-                      />
-                    </List.Item>
+                      {/* Source name as header */}
+                      <Text
+                        strong
+                        style={{
+                          fontSize: 13,
+                          color: "#1A1F36",
+                          display: "block",
+                          marginBottom: 8,
+                        }}
+                      >
+                        {item.source.system}
+                      </Text>
+
+                      {/* Full data content with label */}
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: "#4B5563",
+                          display: "block",
+                          lineHeight: 1.5,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Text style={{ color: "#6B7280", marginRight: 4 }}>
+                          {item.label || item.subtype}:
+                        </Text>
+                        {item.content}
+                      </Text>
+
+                      {/* Last updated timestamp */}
+                      <Text
+                        type="secondary"
+                        style={{
+                          fontSize: 12,
+                          display: "block",
+                        }}
+                      >
+                        Last updated: {formatTimestamp(item.timestamp)}
+                      </Text>
+                    </div>
                   );
                 };
 
@@ -4130,9 +4155,13 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             </Button>
                           </Flex>
                           <Badge
-                            count={allSystemItems.length}
+                            count={
+                              allSystemItems.filter(
+                                (item) => item.type === "system",
+                              ).length
+                            }
                             style={{
-                              backgroundColor: CUSTOM_TAG_COLOR.MINOS,
+                              backgroundColor: palette.FIDESUI_MINOS,
                             }}
                           />
                         </Flex>
@@ -4147,10 +4176,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           }}
                         >
                           Automated data points extracted from system inventory,
-                          classifications, policies, and monitoring systems,
-                          including inferences and summaries generated from
-                          system data and human input.
+                          classifications, policies, and monitoring systems.
                         </Text>
+
                         <Collapse
                           activeKey={isSystemCollapsed ? [] : [systemKey]}
                           onChange={(keys) => {
@@ -4236,7 +4264,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     )}
 
                     {/* Human Input Section */}
-                    {evidence.human.length > 0 && (
+                    {allHumanItems.length > 0 && (
                       <div style={{ marginBottom: 8 }}>
                         <Flex
                           align="center"
@@ -4294,9 +4322,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             </Button>
                           </Flex>
                           <Badge
-                            count={evidence.human.length}
+                            count={humanSourceCount}
                             style={{
-                              backgroundColor: CUSTOM_TAG_COLOR.MINOS,
+                              backgroundColor: palette.FIDESUI_MINOS,
                             }}
                           />
                         </Flex>
@@ -4337,32 +4365,35 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               size="middle"
                               style={{ width: "100%" }}
                             >
-                              {visibleHumanItems.map((item) => (
-                                <Card
-                                  key={item.id}
-                                  size="small"
-                                  style={{
-                                    backgroundColor: "#FFFFFF",
-                                    border: "1px solid #E8EBED",
-                                    borderRadius: 8,
-                                    transition: "all 0.15s ease",
-                                    marginBottom: 8,
-                                  }}
-                                  hoverable
-                                  onMouseEnter={(e) => {
-                                    const target = e.currentTarget;
-                                    target.style.borderColor = "#D1D9E6";
-                                    target.style.boxShadow =
-                                      "0 1px 3px rgba(0, 0, 0, 0.04)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    const target = e.currentTarget;
-                                    target.style.borderColor = "#E8EBED";
-                                    target.style.boxShadow = "none";
-                                  }}
-                                >
-                                  {item.subtype === "manual-entry" ? (
-                                    <>
+                              {visibleHumanItems.map((item) => {
+                                // Render analysis summary card
+                                if (item.type === "analysis") {
+                                  const analysisItem =
+                                    item as AnalysisEvidenceItem;
+                                  return (
+                                    <Card
+                                      key={item.id}
+                                      size="small"
+                                      style={{
+                                        backgroundColor: "#FFFFFF",
+                                        border: "1px solid #E8EBED",
+                                        borderRadius: 8,
+                                        transition: "all 0.15s ease",
+                                        marginBottom: 8,
+                                      }}
+                                      hoverable
+                                      onMouseEnter={(e) => {
+                                        const target = e.currentTarget;
+                                        target.style.borderColor = "#D1D9E6";
+                                        target.style.boxShadow =
+                                          "0 1px 3px rgba(0, 0, 0, 0.04)";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const target = e.currentTarget;
+                                        target.style.borderColor = "#E8EBED";
+                                        target.style.boxShadow = "none";
+                                      }}
+                                    >
                                       <Flex
                                         justify="space-between"
                                         align="flex-start"
@@ -4372,194 +4403,245 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                           color={CUSTOM_TAG_COLOR.MINOS}
                                           style={{ margin: 0, fontSize: 11 }}
                                         >
-                                          Manual entry
+                                          Summary
                                         </Tag>
-                                        {item.status && (
-                                          <Tag
-                                            color={
-                                              // eslint-disable-next-line no-nested-ternary
-                                              item.status === "verified"
-                                                ? CUSTOM_TAG_COLOR.SUCCESS
-                                                : item.status ===
-                                                    "pending-review"
-                                                  ? CUSTOM_TAG_COLOR.WARNING
-                                                  : CUSTOM_TAG_COLOR.DEFAULT
-                                            }
-                                            style={{
-                                              margin: 0,
-                                              fontSize: 11,
-                                            }}
-                                          >
-                                            {item.status === "verified" &&
-                                              "Verified"}
-                                            {item.status === "pending-review" &&
-                                              "Pending review"}
-                                            {item.status === "draft" && "Draft"}
-                                          </Tag>
-                                        )}
                                       </Flex>
+                                      <Descriptions
+                                        column={1}
+                                        size="small"
+                                        items={[
+                                          {
+                                            key: "generated",
+                                            label: "Generated",
+                                            children: formatTimestamp(
+                                              analysisItem.timestamp,
+                                            ),
+                                          },
+                                          {
+                                            key: "model",
+                                            label: "Model",
+                                            children: analysisItem.source.model,
+                                          },
+                                          {
+                                            key: "confidence",
+                                            label: "Confidence",
+                                            children: getConfidenceLevel(
+                                              analysisItem.confidence,
+                                            ),
+                                          },
+                                        ]}
+                                      />
+                                      <Divider
+                                        style={{
+                                          margin: "12px 0",
+                                          borderColor: "#E8EBED",
+                                        }}
+                                      />
                                       <Text
                                         style={{
-                                          fontSize: 13,
-                                          display: "block",
-                                          marginBottom: 12,
+                                          fontSize: 14,
                                           color: "#1A1F36",
-                                          lineHeight: 1.6,
+                                          lineHeight: "1.6",
                                         }}
                                       >
-                                        {item.content}
+                                        {analysisItem.content}
                                       </Text>
-                                      <Descriptions
-                                        column={1}
-                                        size="small"
-                                        items={[
-                                          {
-                                            key: "entered",
-                                            label: "Entered by",
-                                            children: `${item.source.person.name}, ${item.source.person.role}`,
-                                          },
-                                          {
-                                            key: "date",
-                                            label: "Date",
-                                            children: formatTimestamp(
-                                              item.timestamp,
-                                            ),
-                                          },
-                                        ]}
-                                      />
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Flex
-                                        justify="space-between"
-                                        align="flex-start"
-                                        style={{ marginBottom: 12 }}
-                                      >
-                                        <Tag
-                                          color={CUSTOM_TAG_COLOR.MINOS}
-                                          style={{ margin: 0, fontSize: 11 }}
+                                    </Card>
+                                  );
+                                }
+
+                                // Render human evidence items
+                                const humanItem = item as HumanEvidenceItem;
+                                return (
+                                  <div
+                                    key={item.id}
+                                    style={{
+                                      padding: "12px 16px",
+                                      marginBottom: 8,
+                                      backgroundColor: "#FFFFFF",
+                                      borderRadius: 8,
+                                      border: "1px solid #E8EBED",
+                                      transition: "all 0.15s ease",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      const target = e.currentTarget;
+                                      target.style.borderColor = "#D1D9E6";
+                                      target.style.boxShadow =
+                                        "0 1px 3px rgba(0, 0, 0, 0.04)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      const target = e.currentTarget;
+                                      target.style.borderColor = "#E8EBED";
+                                      target.style.boxShadow = "none";
+                                    }}
+                                  >
+                                    {humanItem.subtype === "manual-entry" ? (
+                                      <>
+                                        {/* Header: Manual entry */}
+                                        <Text
+                                          strong
+                                          style={{
+                                            fontSize: 13,
+                                            color: "#1A1F36",
+                                            display: "block",
+                                            marginBottom: 8,
+                                          }}
+                                        >
+                                          Manual entry
+                                        </Text>
+
+                                        {/* Content */}
+                                        <Text
+                                          style={{
+                                            fontSize: 13,
+                                            color: "#4B5563",
+                                            display: "block",
+                                            lineHeight: 1.5,
+                                            marginBottom: 8,
+                                          }}
+                                        >
+                                          {item.content}
+                                        </Text>
+
+                                        {/* Source info */}
+                                        <Text
+                                          type="secondary"
+                                          style={{
+                                            fontSize: 12,
+                                            display: "block",
+                                          }}
+                                        >
+                                          {item.source.person.name},{" "}
+                                          {item.source.person.role} •{" "}
+                                          {formatTimestamp(item.timestamp)}
+                                        </Text>
+                                      </>
+                                    ) : (
+                                      <>
+                                        {/* Header: Stakeholder communication */}
+                                        <Text
+                                          strong
+                                          style={{
+                                            fontSize: 13,
+                                            color: "#1A1F36",
+                                            display: "block",
+                                            marginBottom: 8,
+                                          }}
                                         >
                                           Stakeholder communication
-                                        </Tag>
-                                      </Flex>
-                                      <Descriptions
-                                        column={1}
-                                        size="small"
-                                        items={[
-                                          {
-                                            key: "channel",
-                                            label: "Channel",
-                                            children: item.channel ?? "N/A",
-                                          },
-                                          {
-                                            key: "participants",
-                                            label: "Participants",
-                                            children:
-                                              item.participants?.join(", ") ??
-                                              "N/A",
-                                          },
-                                          {
-                                            key: "thread",
-                                            label: "Thread",
-                                            children: item.content,
-                                          },
-                                          {
-                                            key: "date",
-                                            label: "Date range",
-                                            children: formatTimestamp(
-                                              item.timestamp,
-                                            ),
-                                          },
-                                          {
-                                            key: "messages",
-                                            label: "Message count",
-                                            children:
-                                              item.threadMessages?.length.toString() ??
-                                              "0",
-                                          },
-                                        ]}
-                                      />
-                                      {item.threadMessages &&
-                                        item.threadMessages.length > 0 && (
-                                          <Collapse
-                                            ghost
-                                            style={{ marginTop: 12 }}
-                                            items={[
-                                              {
-                                                key: "thread",
-                                                label: `View ${item.threadMessages.length} message${item.threadMessages.length === 1 ? "" : "s"}`,
-                                                children: (
-                                                  <List
-                                                    size="small"
-                                                    dataSource={
-                                                      item.threadMessages
-                                                    }
-                                                    renderItem={(msg) => (
-                                                      <List.Item
-                                                        style={{
-                                                          padding: "8px 0",
-                                                          borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
-                                                        }}
-                                                      >
-                                                        <List.Item.Meta
-                                                          title={
-                                                            <Flex
-                                                              align="center"
-                                                              gap="small"
-                                                            >
+                                        </Text>
+
+                                        {/* Thread title */}
+                                        <Text
+                                          style={{
+                                            fontSize: 13,
+                                            color: "#4B5563",
+                                            display: "block",
+                                            lineHeight: 1.5,
+                                            marginBottom: 8,
+                                          }}
+                                        >
+                                          {item.content}
+                                        </Text>
+
+                                        {/* Channel and participants */}
+                                        <Text
+                                          type="secondary"
+                                          style={{
+                                            fontSize: 12,
+                                            display: "block",
+                                            marginBottom: 4,
+                                          }}
+                                        >
+                                          {item.channel ?? "N/A"} •{" "}
+                                          {item.threadMessages?.length ?? 0}{" "}
+                                          messages •{" "}
+                                          {formatTimestamp(item.timestamp)}
+                                        </Text>
+
+                                        {/* Thread messages expandable */}
+                                        {item.threadMessages &&
+                                          item.threadMessages.length > 0 && (
+                                            <Collapse
+                                              ghost
+                                              style={{ marginTop: 8 }}
+                                              items={[
+                                                {
+                                                  key: "thread",
+                                                  label: `View ${item.threadMessages.length} message${item.threadMessages.length === 1 ? "" : "s"}`,
+                                                  children: (
+                                                    <List
+                                                      size="small"
+                                                      dataSource={
+                                                        item.threadMessages
+                                                      }
+                                                      renderItem={(msg) => (
+                                                        <List.Item
+                                                          style={{
+                                                            padding: "8px 0",
+                                                            borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
+                                                          }}
+                                                        >
+                                                          <List.Item.Meta
+                                                            title={
+                                                              <Flex
+                                                                align="center"
+                                                                gap="small"
+                                                              >
+                                                                <Text
+                                                                  strong
+                                                                  style={{
+                                                                    fontSize: 12,
+                                                                  }}
+                                                                >
+                                                                  {msg.sender}
+                                                                </Text>
+                                                                <Text
+                                                                  type="secondary"
+                                                                  style={{
+                                                                    fontSize: 11,
+                                                                  }}
+                                                                >
+                                                                  {new Date(
+                                                                    msg.timestamp,
+                                                                  ).toLocaleString(
+                                                                    "en-US",
+                                                                    {
+                                                                      month:
+                                                                        "short",
+                                                                      day: "numeric",
+                                                                      hour: "2-digit",
+                                                                      minute:
+                                                                        "2-digit",
+                                                                    },
+                                                                  )}
+                                                                </Text>
+                                                              </Flex>
+                                                            }
+                                                            description={
                                                               <Text
-                                                                strong
                                                                 style={{
-                                                                  fontSize: 12,
+                                                                  fontSize: 13,
+                                                                  marginTop: 4,
                                                                 }}
                                                               >
-                                                                {msg.sender}
+                                                                {msg.message}
                                                               </Text>
-                                                              <Text
-                                                                type="secondary"
-                                                                style={{
-                                                                  fontSize: 11,
-                                                                }}
-                                                              >
-                                                                {new Date(
-                                                                  msg.timestamp,
-                                                                ).toLocaleString(
-                                                                  "en-US",
-                                                                  {
-                                                                    month:
-                                                                      "short",
-                                                                    day: "numeric",
-                                                                    hour: "2-digit",
-                                                                    minute:
-                                                                      "2-digit",
-                                                                  },
-                                                                )}
-                                                              </Text>
-                                                            </Flex>
-                                                          }
-                                                          description={
-                                                            <Text
-                                                              style={{
-                                                                fontSize: 13,
-                                                                marginTop: 4,
-                                                              }}
-                                                            >
-                                                              {msg.message}
-                                                            </Text>
-                                                          }
-                                                        />
-                                                      </List.Item>
-                                                    )}
-                                                  />
-                                                ),
-                                              },
-                                            ]}
-                                          />
-                                        )}
-                                    </>
-                                  )}
-                                </Card>
-                              ))}
+                                                            }
+                                                          />
+                                                        </List.Item>
+                                                      )}
+                                                    />
+                                                  ),
+                                                },
+                                              ]}
+                                            />
+                                          )}
+                                      </>
+                                    )}
+                                  </div>
+                                );
+                              })}
                               {!isHumanExpanded && remainingHumanCount > 0 && (
                                 <Button
                                   type="link"

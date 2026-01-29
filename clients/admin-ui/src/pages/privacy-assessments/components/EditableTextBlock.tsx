@@ -7,7 +7,7 @@ import {
 import type { TextAreaRef } from "antd/es/input/TextArea";
 import { Button, Flex, Icons, Input } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface EditableTextBlockProps {
   value: string;
@@ -25,7 +25,7 @@ interface EditableTextBlockProps {
   style?: React.CSSProperties;
 }
 
-export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
+export const EditableTextBlock = ({
   value,
   onChange,
   placeholder = "Click to edit...",
@@ -35,7 +35,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
   onRequestInput,
   renderContent,
   style,
-}) => {
+}: EditableTextBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [selectedText, setSelectedText] = useState<{
@@ -72,7 +72,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
     setIsEditing(false);
   };
 
-  const handleTextSelection = () => {
+  const handleTextSelection = useCallback(() => {
     if (isEditing) {
       setSelectedText(null);
       setToolbarPosition(null);
@@ -86,8 +86,8 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
       return;
     }
 
-    const selectedText = selection.toString().trim();
-    if (selectedText.length === 0) {
+    const selectionText = selection.toString().trim();
+    if (selectionText.length === 0) {
       setSelectedText(null);
       setToolbarPosition(null);
       return;
@@ -112,11 +112,11 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
 
     // Calculate start/end positions in the text
     const textContent = textRef.current.textContent || "";
-    const start = textContent.indexOf(selectedText);
-    const end = start + selectedText.length;
+    const start = textContent.indexOf(selectionText);
+    const end = start + selectionText.length;
 
-    setSelectedText({ text: selectedText, start, end });
-  };
+    setSelectedText({ text: selectionText, start, end });
+  }, [isEditing]);
 
   useEffect(() => {
     document.addEventListener("selectionchange", handleTextSelection);
@@ -135,7 +135,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
       document.removeEventListener("selectionchange", handleTextSelection);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isEditing]);
+  }, [handleTextSelection]);
 
   const handleComment = () => {
     if (selectedText && onComment) {
@@ -201,6 +201,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
           type="text"
           icon={<Icons.Edit size={16} />}
           size="small"
+          aria-label="Edit"
           onClick={() => setIsEditing(true)}
           style={{
             position: "absolute",
@@ -213,10 +214,12 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = palette.FIDESUI_BG_CORINTH;
+            const target = e.currentTarget;
+            target.style.backgroundColor = palette.FIDESUI_BG_CORINTH;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
+            const target = e.currentTarget;
+            target.style.backgroundColor = "transparent";
           }}
         />
       )}
@@ -239,24 +242,31 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
           ...style,
         }}
       >
-        {value ? (
-          renderContent ? (
-            renderContent(value)
-          ) : (
-            value
-          )
-        ) : (
-          <span
-            style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}
-          >
-            {placeholder}
-          </span>
-        )}
+        {(() => {
+          if (!value) {
+            return (
+              <span
+                style={{
+                  fontStyle: "italic",
+                  color: palette.FIDESUI_NEUTRAL_400,
+                }}
+              >
+                {placeholder}
+              </span>
+            );
+          }
+          if (renderContent) {
+            return renderContent(value);
+          }
+          return value;
+        })()}
       </div>
 
       {/* Floating toolbar - Confluence style */}
       {selectedText && toolbarPosition && (
         <div
+          role="toolbar"
+          aria-label="Text selection actions"
           style={{
             position: "fixed",
             left: `${toolbarPosition.x}px`,
@@ -275,6 +285,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
           }}
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
           {onComment && (
             <Button

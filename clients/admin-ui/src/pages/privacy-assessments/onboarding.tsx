@@ -208,17 +208,27 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                       {filteredRegions.map((region) => (
                         <div
                           key={region}
+                          role="option"
+                          tabIndex={0}
+                          aria-selected={false}
                           onClick={() => handleAddRegion(region)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              handleAddRegion(region);
+                            }
+                          }}
                           style={{
                             padding: "8px 12px",
                             cursor: "pointer",
                             borderBottom: "1px solid #f0f0f0",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "#f5f5f5";
+                            const target = e.currentTarget;
+                            target.style.backgroundColor = "#f5f5f5";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "white";
+                            const target = e.currentTarget;
+                            target.style.backgroundColor = "white";
                           }}
                         >
                           {region}
@@ -324,8 +334,8 @@ const PrivacyAssessmentsOnboardingPage: NextPage = () => {
                     style={{ marginBottom: 20, display: "block", fontSize: 12 }}
                   >
                     Upload previous assessments to help the AI learn your
-                    organization's specific writing style, tone, and formatting
-                    preferences.
+                    organization&apos;s specific writing style, tone, and
+                    formatting preferences.
                   </Text>
                   <Upload.Dragger>
                     <p>
