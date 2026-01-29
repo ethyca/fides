@@ -1,72 +1,82 @@
-import { getConsentContext } from "./consent-context";
-import { readConsentFromAnyProvider } from "./consent-migration";
+import { ConsentContext } from "./consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
   FidesGlobal,
   NoticeConsent,
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
 } from "./consent-types";
-import { decodeNoticeConsentString } from "./consent-utils";
-import { hasFidesConsentCookie } from "./cookie";
-import { decodeFidesString } from "./fides-string";
-import { updateConsent } from "./preferences";
 import {
+  constructFidesRegionString,
+  decodeNoticeConsentString,
+} from "./consent-utils";
+import { fidesLifecycleManager } from "./fides-lifecycle-manager";
+import { DEFAULT_LOCALE, selectBestExperienceConfigTranslation } from "./i18n";
+import { savePreferencesApi } from "./preferences";
+import {
+  buildConsentPreferencesArray,
   noticeHasConsentInCookie,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
 
 /**
- * Opt out of notices that can be opted out of automatically.
- * This does not currently do anything with TCF unless the experience has custom notices applied.
- * Returns true if GPC or Notice Consent string has been applied
+ * Calculates automated consent preferences from GPC, migrated consent, and notice consent strings.
+ * This is a pure function with no side effects - it only calculates what consent should be applied.
+ *
+ * @param experience - The privacy experience configuration
+ * @param savedConsent - The user's saved consent preferences
+ * @param context - The automated consent context containing GPC, migrated consent, and notice consent strings
+ * @returns Object containing the calculated notice consent, consent method, and whether any automated consent was applied
  */
-export const automaticallyApplyPreferences = async (
-  fidesGlobal: Pick<
-    FidesGlobal,
-    | "experience"
-    | "saved_consent"
-    | "cookie"
-    | "geolocation"
-    | "options"
-    | "locale"
-  >,
-): Promise<boolean> => {
-  const { experience, saved_consent: savedConsent, options } = fidesGlobal;
-  // Early-exit if there is no experience or notices, since we've nothing to do
+export const calculateAutomatedConsent = (
+  experience: PrivacyExperience,
+  savedConsent: NoticeConsent,
+  context: ConsentContext,
+): {
+  noticeConsent: NoticeConsent;
+  consentMethod: ConsentMethod | null;
+  applied: boolean;
+} => {
+  // Early-exit if there is no experience or notices
   if (
     !experience ||
     !experience.experience_config ||
     !experience.privacy_notices?.length
   ) {
-    return false;
+    return {
+      noticeConsent: {},
+      consentMethod: null,
+      applied: false,
+    };
   }
 
-  const context = getConsentContext();
-  // let fidesString: string | undefined;
-  const { nc: noticeConsentString } = decodeFidesString(
-    options.fidesString || "",
-  );
-  if (context.globalPrivacyControl) {
+  const {
+    globalPrivacyControl,
+    migratedConsent,
+    migrationMethod,
+    noticeConsentString,
+    hasFidesCookie,
+  } = context;
+
+  // Check if we have migrated consent (only applies if no Fides cookie exists yet)
+  const hasMigratedConsent =
+    !!migratedConsent && !!migrationMethod && !hasFidesCookie;
+
+  // Early-exit if no automated consent sources are available
+  if (!globalPrivacyControl && !noticeConsentString && !hasMigratedConsent) {
+    return {
+      noticeConsent: {},
+      consentMethod: null,
+      applied: false,
+    };
+  }
+
+  if (globalPrivacyControl) {
     fidesDebugger("GPC is enabled");
   }
   if (noticeConsentString) {
     fidesDebugger("Notice consent string found", noticeConsentString);
-  }
-
-  // Check for migrated consent from OneTrust
-  const { consent: migratedConsent, method: migrationMethod } =
-    readConsentFromAnyProvider(options);
-  const hasMigratedConsent =
-    !!migratedConsent &&
-    !!migrationMethod &&
-    !hasFidesConsentCookie(options.fidesCookieSuffix);
-
-  if (
-    !context.globalPrivacyControl &&
-    !noticeConsentString &&
-    !hasMigratedConsent
-  ) {
-    return false;
   }
 
   let gpcApplied = false;
@@ -87,8 +97,15 @@ export const automaticallyApplyPreferences = async (
       const isNoticeOnly =
         notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY;
 
-      // First check for migrated consent
-      if (hasMigratedConsent && migratedConsent) {
+      // NOTICE_ONLY mechanisms (like essential notices) must always be true
+      // and cannot be opted out of, even via any automated consent source
+      if (isNoticeOnly) {
+        appliedConsent[notice.notice_key] = true;
+        return appliedConsent;
+      }
+
+      // Priority 1: Migrated consent (OneTrust, etc.) - highest priority
+      if (hasMigratedConsent) {
         const preference = migratedConsent[notice.notice_key];
         if (preference !== undefined) {
           migratedConsentApplied = true;
@@ -97,14 +114,7 @@ export const automaticallyApplyPreferences = async (
         }
       }
 
-      if (isNoticeOnly) {
-        // We always match consent vals one-to-one from OT, even if it's
-        // "false" on a notice_only notice. If there's no OT preference, we
-        // keep the default preference for notice_only notices.
-        return appliedConsent;
-      }
-
-      // Then check for notice consent string
+      // Priority 2: Notice consent string (fidesString override)
       if (noticeConsentString) {
         const noticeConsent = decodeNoticeConsentString(noticeConsentString);
         const preference = noticeConsent[notice.notice_key];
@@ -115,8 +125,8 @@ export const automaticallyApplyPreferences = async (
         }
       }
 
-      // Then check for GPC
-      if (context.globalPrivacyControl && !hasPriorConsent) {
+      // Priority 3: GPC (Global Privacy Control) - lowest priority
+      if (globalPrivacyControl && !hasPriorConsent) {
         if (notice.has_gpc_flag) {
           gpcApplied = true;
           appliedConsent[notice.notice_key] = false;
@@ -131,22 +141,108 @@ export const automaticallyApplyPreferences = async (
 
   if (gpcApplied || noticeConsentApplied || migratedConsentApplied) {
     let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
+    // Determine consent method based on priority (highest to lowest)
     if (migratedConsentApplied && migrationMethod) {
-      fidesDebugger("Updating consent preferences with migrated consent");
+      fidesDebugger("Calculated automated consent from migrated provider");
       consentMethod = migrationMethod;
     } else if (noticeConsentApplied) {
-      fidesDebugger("Updating consent preferences with Notice Consent string");
+      fidesDebugger("Calculated automated consent from Notice Consent string");
       consentMethod = ConsentMethod.SCRIPT;
     } else if (gpcApplied) {
-      fidesDebugger("Updating consent preferences with GPC");
+      fidesDebugger("Calculated automated consent from GPC");
       consentMethod = ConsentMethod.GPC;
     }
 
-    await updateConsent(fidesGlobal, {
+    return {
       noticeConsent: noticeConsentToSave,
       consentMethod,
-    });
-    return true;
+      applied: true,
+    };
   }
-  return false;
+
+  return {
+    noticeConsent: {},
+    consentMethod: null,
+    applied: false,
+  };
+};
+
+/**
+ * Saves automated consent preferences to the Fides API.
+ * This function ONLY persists consent to the backend - it does NOT update the cookie,
+ * window.Fides object, or dispatch events (those are already done during initialization).
+ *
+ * @param fidesGlobal - The Fides global state
+ * @param noticeConsent - The notice consent preferences to save
+ * @param consentMethod - The consent method (e.g., GPC, SCRIPT)
+ */
+export const saveAutomatedPreferencesToApi = async (
+  fidesGlobal: Pick<FidesGlobal, "experience" | "cookie" | "config" | "locale">,
+  noticeConsent: NoticeConsent,
+  consentMethod: ConsentMethod,
+): Promise<void> => {
+  const { experience, cookie, config, locale } = fidesGlobal;
+
+  if (
+    !experience ||
+    !cookie ||
+    !config ||
+    config.options.fidesDisableSaveApi ||
+    !experience.privacy_notices
+  ) {
+    return;
+  }
+
+  const { options } = config;
+
+  try {
+    // Build SaveConsentPreference array using shared utility
+    const consentPreferencesToSave = buildConsentPreferencesArray(
+      noticeConsent,
+      experience.privacy_notices,
+      locale || DEFAULT_LOCALE,
+      DEFAULT_LOCALE,
+      false, // Return minimal objects with just noticeHistoryId and consentPreference
+    );
+
+    if (consentPreferencesToSave.length === 0) {
+      return;
+    }
+
+    // Get privacy_experience_config_history_id from experience config translations
+    let configHistoryId: string | undefined;
+    if (experience.experience_config?.translations?.length) {
+      const bestExperienceConfigTranslation =
+        selectBestExperienceConfigTranslation(
+          locale || DEFAULT_LOCALE,
+          DEFAULT_LOCALE,
+          experience.experience_config,
+        );
+      configHistoryId =
+        bestExperienceConfigTranslation?.privacy_experience_config_history_id;
+    }
+
+    // Get user geography string from config.geolocation
+    const userLocationString = constructFidesRegionString(config.geolocation);
+
+    // Get served notice history ID
+    const servedNoticeHistoryId =
+      fidesLifecycleManager.getServedNoticeHistoryId();
+
+    // Call savePreferencesApi to handle the API request
+    await savePreferencesApi(
+      options,
+      cookie,
+      experience as PrivacyExperience | PrivacyExperienceMinimal,
+      consentMethod,
+      configHistoryId,
+      consentPreferencesToSave,
+      undefined, // tcf
+      userLocationString,
+      servedNoticeHistoryId,
+    );
+  } catch (error) {
+    fidesDebugger("Error saving automated preferences to API:", error);
+    // Don't throw - we don't want to block if the API call fails
+  }
 };

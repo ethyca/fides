@@ -1,5 +1,4 @@
 /* eslint-disable*/
-
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import {
   ComponentType,
@@ -63,7 +62,6 @@ export const buildBaseConfig = (
       isGeolocationEnabled: false,
       isOverlayEnabled: true,
       isPrefetchEnabled: false,
-      modalLinkId: null,
       overlayParentId: PREVIEW_CONTAINER_ID,
       preventDismissal: experienceConfig.dismissable ?? false,
       privacyCenterUrl: "http://localhost:3000",

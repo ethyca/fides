@@ -3918,6 +3918,38 @@ describe("Fides-js TCF", () => {
         });
     });
 
+    it("TC string from __tcfapi matches the TC portion of Fides.fides_string", () => {
+      cy.get("#fides-tab-vendors").click();
+      cy.getByTestId("consent-modal").within(() => {
+        cy.get("button").contains("Opt in to all").click();
+      });
+      cy.wait("@patchPrivacyPreference");
+
+      cy.window().then((win) => {
+        win.__tcfapi("getTCData", 2, cy.stub().as("getTCData"));
+        cy.get("@getTCData")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+
+            // Get TC string from __tcfapi
+            const tcStringFromApi = tcData.tcString;
+
+            // Get TC string from fides_string (before the FIDES_SEPARATOR)
+            const fidesStringFull = win.Fides.fides_string;
+            const [tcStringFromFides] = fidesStringFull.split(FIDES_SEPARATOR);
+
+            // They should match exactly, including disclosed vendors segment
+            expect(tcStringFromApi).to.eql(tcStringFromFides);
+
+            // Both should include the disclosed vendors segment (indicated by a '.')
+            expect(tcStringFromApi).to.contain(".");
+            expect(tcStringFromFides).to.contain(".");
+          });
+      });
+    });
+
     it("can get `addtlConsents` from getTCData custom function", () => {
       cy.get("#fides-tab-vendors").click();
       cy.getByTestId("consent-modal").within(() => {

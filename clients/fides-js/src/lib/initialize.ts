@@ -1,8 +1,11 @@
 import { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
-import { automaticallyApplyPreferences } from "./automated-consent";
-import { getConsentContext } from "./consent-context";
+import {
+  calculateAutomatedConsent,
+  saveAutomatedPreferencesToApi,
+} from "./automated-consent";
+import { ConsentContext, getGpcContext } from "./consent-context";
 import {
   ComponentType,
   FidesConfig,
@@ -14,6 +17,7 @@ import {
   NoticeValues,
   OverrideType,
   PrivacyExperience,
+  UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
 import {
@@ -30,8 +34,10 @@ import {
   getCookieByName,
   getOrMakeFidesCookie,
   makeConsentDefaultsLegacy,
+  saveFidesCookie,
   updateCookieFromExperience,
 } from "./cookie";
+import { dispatchLocaleEvent } from "./events";
 import {
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
@@ -133,7 +139,7 @@ export const getInitialCookie = async ({
   options,
 }: FidesConfig): Promise<FidesCookie> => {
   // Configure the default legacy consent values
-  const context = getConsentContext();
+  const context = getGpcContext();
   const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
@@ -192,6 +198,7 @@ export interface InitializeProps {
     props: UpdateExperienceProps,
   ) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
+  automatedConsentContext: ConsentContext;
 }
 
 /**
@@ -209,6 +216,7 @@ export const initialize = async ({
   renderOverlay,
   updateExperience,
   overrides,
+  automatedConsentContext,
 }: InitializeProps): Promise<Partial<FidesGlobal>> => {
   const { config } = fides;
   if (!config) {
@@ -275,6 +283,45 @@ export const initialize = async ({
       experienceIsValid(fides.experience)
     ) {
       /**
+       * Calculate automated consent from GPC, migrated consent, and notice consent strings.
+       * This must happen BEFORE updating the experience or cookie to ensure automated
+       * consent is reflected in FidesInitialized event.
+       */
+      const {
+        noticeConsent: automatedNoticeConsent,
+        consentMethod: automatedMethod,
+        applied: automatedApplied,
+      } = calculateAutomatedConsent(
+        fides.experience,
+        fides.saved_consent,
+        automatedConsentContext,
+      );
+
+      /**
+       * Apply calculated automated consent to experience defaults BEFORE updating cookie
+       */
+      if (automatedApplied && fides.experience.privacy_notices) {
+        // Update experience privacy_notices with calculated automated consent
+        // eslint-disable-next-line no-param-reassign
+        fides.experience.privacy_notices = fides.experience.privacy_notices.map(
+          (notice) => {
+            const automatedValue = automatedNoticeConsent[notice.notice_key];
+            let currentPreference = notice.current_preference;
+            if (automatedValue !== undefined) {
+              currentPreference = automatedValue
+                ? UserConsentPreference.OPT_IN
+                : UserConsentPreference.OPT_OUT;
+            }
+            return {
+              ...notice,
+              current_preference: currentPreference,
+            };
+          },
+        );
+        fidesDebugger("Applied automated consent to experience defaults");
+      }
+
+      /**
        * Now that we've determined the effective PrivacyExperience, update it
        * with some additional client-side state so that it is initialized with
        * the user's current consent preferences, etc. and ready to display!
@@ -329,6 +376,20 @@ export const initialize = async ({
       // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
 
+      // If automated consent was applied, save the cookie to the browser
+      if (automatedApplied) {
+        // Set the consentMethod on fides_meta before saving
+        Object.assign(fides.cookie.fides_meta, {
+          consentMethod: automatedMethod,
+        });
+
+        await saveFidesCookie(fides.cookie, options);
+        fidesDebugger(
+          "Saved automated consent to browser cookie",
+          fides.cookie,
+        );
+      }
+
       // Initialize the i18n singleton before we render the overlay
       const i18n = setupI18n();
       initializeI18n(
@@ -358,7 +419,7 @@ export const initialize = async ({
       if (
         fides.experience.experience_config?.component === ComponentType.HEADLESS
       ) {
-        const modalLinkId = options.modalLinkId || "fides-modal-link";
+        const { modalLinkId } = options;
         const modalLinkIsDisabled =
           !fides.experience ||
           !!options.fidesEmbed ||
@@ -369,6 +430,11 @@ export const initialize = async ({
         }
         fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
         searchForElement(modalLinkId).then((foundElement) => {
+          // The overlay normally dispatches the FidesLocaleUpdated event when the locale is first set.
+          // Since we're not rendering the overlay here, we need to dispatch the event manually once the modal link is found.
+          // If we dispatch it earlier, any listeners on the page may not be ready to receive the event yet.
+          dispatchLocaleEvent(i18n.locale);
+
           fidesDebugger("Modal link element found, updating it to show");
           document.body.classList.add("fides-overlay-modal-link-shown");
           foundElement.classList.add("fides-modal-link-shown");
@@ -396,14 +462,20 @@ export const initialize = async ({
       }
 
       /**
-       * Last up: apply automated preferences.
-       *
-       * NOTE: We want to finish initialization immediately while automated preferences
-       * continue to run in the background. To ensure that any preference API calls
-       * don't block the rest of the code from executing, we use setTimeout with
-       * no delay which simply moves it to the end of the JavaScript event queue.
+       * Save automated preferences to API asynchronously without blocking initialization.
+       * The consent has already been calculated and applied to the cookie/experience above,
+       * so this is only persisting to the backend. We don't await it so that FidesInitialized
+       * fires immediately with the correct consent values.
        */
-      setTimeout(automaticallyApplyPreferences.bind(null, fides));
+      if (automatedApplied && automatedMethod) {
+        saveAutomatedPreferencesToApi(
+          fides,
+          automatedNoticeConsent,
+          automatedMethod,
+        ).catch((e) =>
+          fidesDebugger("Error saving automated preferences to API:", e),
+        );
+      }
     } else {
       fidesDebugger("Skipping overlay initialization.", fides.experience);
     }

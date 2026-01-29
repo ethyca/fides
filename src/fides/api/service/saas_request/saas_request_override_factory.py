@@ -9,7 +9,10 @@ from fides.api.common_exceptions import (
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
-from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
+from fides.api.schemas.saas.shared_schemas import (
+    ConsentPropagationStatus,
+    PollingStatusResult,
+)
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -46,7 +49,8 @@ RequestOverrideFunction = Callable[
         List[Row],
         ConsentPropagationStatus,
         int,
-        bool,  # For polling status overrides
+        bool,  # For polling status overrides (legacy)
+        PollingStatusResult,  # For polling status overrides (new)
         "PollingResult",  # For polling result overrides - string literal to avoid circular import
         None,
     ],
@@ -289,13 +293,21 @@ def validate_polling_status_override_function(f: Callable) -> None:
     the function meets the framework's basic expectations.
 
     Specifically, the validation checks that function's return type is `bool`
-    and that it declares at least 4 parameters.
+    or `PollingStatusResult` and that it declares at least 4 parameters.
     """
     sig: Signature = signature(f)
-    if sig.return_annotation is not bool:
+
+    # Check return type - accept both legacy bool and new PollingStatusResult
+    return_annotation = sig.return_annotation
+    if return_annotation not in (
+        bool,
+        PollingStatusResult,
+        "PollingStatusResult",
+    ):
         raise InvalidSaaSRequestOverrideException(
-            "Polling status override function must return a bool"
+            "Polling status override function must return bool or PollingStatusResult"
         )
+
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
             "Polling status override function must declare at least 4 parameters"

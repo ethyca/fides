@@ -55,6 +55,7 @@ const ConfigureMonitorModal = ({
   isWebsiteMonitor?: boolean;
 }) => {
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
+
   const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
     usePutDiscoveryMonitorMutation();
 

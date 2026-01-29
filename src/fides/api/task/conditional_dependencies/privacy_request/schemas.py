@@ -52,9 +52,7 @@ class PrivacyRequestConvenienceFields(Enum):
 
 
 class ConsentPrivacyRequestConvenienceFields(Enum):
-    """Convenience fields available for consent privacy request conditions.
-
-    """
+    """Convenience fields available for consent privacy request conditions."""
 
     # Policy convenience fields (all available for consent)
     rule_action_types = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_action_types.value}"
@@ -83,9 +81,7 @@ class PrivacyRequestFields(Enum):
 
 
 class ConsentPrivacyRequestFields(Enum):
-    """Fields available for consent privacy request conditions.
-
-    """
+    """Fields available for consent privacy request conditions."""
 
     created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
     identity_verified_at = (
@@ -111,9 +107,7 @@ class PolicyFields(Enum):
 
 
 class ConsentPolicyFields(Enum):
-    """Policy fields available for consent privacy request conditions.
-
-    """
+    """Policy fields available for consent privacy request conditions."""
 
     id = "privacy_request.policy.id"
     name = f"{PrivacyRequestTopLevelFields.policy.value}.name"

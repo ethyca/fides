@@ -1162,9 +1162,18 @@ describe("Consent overlay", () => {
         });
 
         it("sends GPC consent override downstream to Fides API", () => {
+          // Verify consent is immediately available in window.Fides.consent
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", {
+              [PRIVACY_NOTICE_KEY_1]: false,
+            });
+
           // check that consent was sent to Fides API
           let generatedUserDeviceId: string;
-          cy.wait("@patchPrivacyPreference").then((interception) => {
+          cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+          cy.get("@patchPrivacyPreference").then((interception: any) => {
             const { body } = interception.request;
             const expected = {
               // browser_identity.fides_user_device_id is intentionally left out here
@@ -1403,17 +1412,22 @@ describe("Consent overlay", () => {
         });
 
         it("does not get overridden by banner acknowledge button", () => {
-          cy.get("@FidesUpdated")
-            .should("have.been.calledOnce")
-            .its("lastCall.args.0.detail.extraDetails.consentMethod")
-            .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.GPC);
-            });
+          // Check that automated GPC consent was saved to the API
+          cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+          cy.get("@patchPrivacyPreference").then((gpcInterception: any) => {
+            expect(gpcInterception.request.body.method).to.eql(
+              ConsentMethod.GPC,
+            );
+          });
+
+          // Click the acknowledge button
           cy.get("div#fides-banner").within(() => {
             cy.get("button").contains("OK").click();
           });
+
+          // The acknowledge click should trigger FidesUpdated with ACKNOWLEDGE method
           cy.get("@FidesUpdated")
-            .should("have.been.calledTwice")
+            .should("have.been.calledOnce")
             .its("lastCall.args.0.detail.extraDetails.consentMethod")
             .then((consentMethod) => {
               expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
@@ -3072,8 +3086,14 @@ describe("Consent overlay", () => {
       let automatedServedNoticeHistoryId: string;
       let manualServedNoticeHistoryId: string;
 
-      // First, automated consent should be applied via GPC
-      cy.wait("@patchPrivacyPreference").then((gpcInterception) => {
+      // First, verify automated consent is immediately available via GPC
+      cy.window().its("Fides").its("consent").should("include", {
+        advertising_gpc: false,
+      });
+
+      // Then verify automated consent was sent to API
+      cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+      cy.get("@patchPrivacyPreference").then((gpcInterception: any) => {
         const { served_notice_history_id } = gpcInterception.request.body;
         expect(served_notice_history_id).to.be.a("string");
         automatedServedNoticeHistoryId = served_notice_history_id;
@@ -3101,7 +3121,10 @@ describe("Consent overlay", () => {
         cy.get("button").contains("Save").click();
       });
 
-      cy.wait("@patchPrivacyPreference").then((manualInterception) => {
+      // Wait for the second patchPrivacyPreference call (the manual save)
+      // Note: The first call was for automated GPC consent, checked above
+      cy.get("@patchPrivacyPreference.all").should("have.length", 2);
+      cy.get("@patchPrivacyPreference.2").then((manualInterception: any) => {
         const { served_notice_history_id } = manualInterception.request.body;
         expect(served_notice_history_id).to.be.a("string");
         expect(manualInterception.request.body.method).to.eql(

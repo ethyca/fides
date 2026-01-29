@@ -6,7 +6,7 @@ import {
 
 import {
   ACTION_CENTER_ROUTE,
-  INTEGRATION_MANAGEMENT_ROUTE,
+  SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
@@ -29,9 +29,7 @@ describe("Action center", () => {
       cy.wait("@getMonitorResults");
       cy.get("[data-testid='search-bar']").should("exist");
       cy.get(`[class*='ant-empty'] [class*='ant-empty-image']`).should("exist");
-      cy.get(
-        `[class*='ant-empty'] a[href="${INTEGRATION_MANAGEMENT_ROUTE}"]`,
-      ).should("exist");
+      cy.get(`[class*='ant-empty'] a[href="${SYSTEM_ROUTE}"]`).should("exist");
     });
   });
 
@@ -96,6 +94,27 @@ describe("Action center", () => {
     });
     it.skip("Should paginate results", () => {
       // TODO: mock pagination and also test skeleton loading state
+    });
+  });
+
+  describe("error handling", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
+        statusCode: 500,
+        body: { detail: "Internal server error" },
+      }).as("getMonitorResultsError");
+    });
+
+    it("should display error page when fetching monitor results fails", () => {
+      cy.visit(ACTION_CENTER_ROUTE);
+      cy.wait("@getMonitorResultsError");
+
+      cy.getByTestId("error-page-result").should("exist");
+      cy.getByTestId("error-page-result").within(() => {
+        cy.contains("Error 500").should("exist");
+        cy.contains("Internal server error").should("exist");
+        cy.contains("Reload").should("exist");
+      });
     });
   });
 });

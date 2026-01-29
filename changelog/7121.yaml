@@ -1,0 +1,4 @@
+type: Added
+description: Preserve monitored collections in dataset merge.
+pr: 7121
+labels: []

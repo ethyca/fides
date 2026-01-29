@@ -20,6 +20,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -65,7 +66,13 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
-from fides.service.connection.merge_configs_util import merge_datasets
+from fides.service.connection.merge_configs_util import (
+    get_endpoint_resources,
+    merge_datasets,
+    merge_saas_config_with_monitored_resources,
+    normalize_dataset,
+    preserve_monitored_collections_in_dataset_merge,
+)
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -275,8 +282,8 @@ class ConnectionService:
             merged_secrets = unvalidated_secrets  # type: ignore[assignment]
 
         connection_config.secrets = self.validate_secrets(
-            merged_secrets,
-            connection_config,  # type: ignore[arg-type]
+            merged_secrets,  # type: ignore[arg-type]
+            connection_config,
         ).model_dump(mode="json")
 
         # Save validated secrets, regardless of whether they've been verified.
@@ -576,7 +583,8 @@ class ConnectionService:
         """
         Replace in the DB the existing SaaS instance configuration data
         (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
-        with new instance configuration data based on the given ConnectorTemplate
+        with new instance configuration data based on the given ConnectorTemplate.
+        Preserves monitored staged resources by merging them into the new configuration.
         """
 
         template_vals = SaasConnectionTemplateValues(
@@ -587,13 +595,21 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
+        # Get endpoint resources before updating
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
         )
 
-        connection_config.update_saas_config(
-            self.db, SaaSConfig(**config_from_template)
+        # Create new SaaS config and merge with monitored resources
+        new_saas_config = SaaSConfig(**config_from_template)
+        existing_saas_config = connection_config.get_saas_config()
+        merged_saas_config = merge_saas_config_with_monitored_resources(
+            new_saas_config, monitored_endpoints, existing_saas_config
         )
+
+        connection_config.update_saas_config(self.db, merged_saas_config)
 
         # Create audit event for SaaS instance update
         self.create_connection_audit_event(
@@ -602,6 +618,7 @@ class ConnectionService:
             changed_fields={"saas_config"},
         )
 
+        # Update dataset config with merge logic for monitored resources
         self.upsert_dataset_config_from_template(
             connection_config, template, template_vals
         )
@@ -642,6 +659,8 @@ class ConnectionService:
         and associates it with a ConnectionConfig.
         If the `DatasetConfig` already exists in the db,
         then the existing record is updated.
+
+        Automatically preserves any monitored staged resources during the update.
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
@@ -685,6 +704,25 @@ class ConnectionService:
                 "collections": ctl_dataset.collections,
                 "fides_meta": ctl_dataset.fides_meta,
             }
+
+            # Get endpoint resources and preserve collections from customer dataset
+            monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+            if monitored_endpoints:
+                # Get monitor config IDs for this connection
+                monitor_configs = MonitorConfig.filter(
+                    db=self.db,
+                    conditions=(
+                        MonitorConfig.connection_config_id == connection_config.id
+                    ),
+                ).all()
+                monitor_config_ids = [mc.key for mc in monitor_configs]
+
+                upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
+                    monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
+                )
+                normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+                if normalized_upcoming is not None:
+                    upcoming_dataset = normalized_upcoming
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict
