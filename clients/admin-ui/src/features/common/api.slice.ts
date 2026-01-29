@@ -81,6 +81,8 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "OpenID Provider",
+    "Chat Provider",
+    "Chat Questions",
     "Taxonomy",
     "Taxonomy History",
     "Digest Configs",

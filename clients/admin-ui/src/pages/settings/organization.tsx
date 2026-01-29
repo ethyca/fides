@@ -22,7 +22,7 @@ const OrganizationPage: NextPage = () => {
   return (
     <Layout title="Organization">
       <Box data-testid="organization-management">
-        <PageHeader heading="Organization Management" />
+        <PageHeader heading="Organization management" />
         <Box maxWidth="600px">
           <Text pb={6} fontSize="sm">
             Please use this section to manage your organization&lsquo;s details,

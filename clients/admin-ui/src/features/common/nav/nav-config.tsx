@@ -227,6 +227,15 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Notification integrations",
+        path: routes.NOTIFICATION_INTEGRATIONS_ROUTE,
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
+      },
+      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         scopes: [
