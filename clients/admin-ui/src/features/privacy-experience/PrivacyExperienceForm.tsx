@@ -46,6 +46,7 @@ import {
   ExperienceTranslation,
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeFramework,
   Property,
   RejectAllMechanism,
   StagedResourceTypeValue,
@@ -190,9 +191,22 @@ export const PrivacyExperienceForm = ({
     api_set: true,
   });
 
+  const filterGppNotices = (
+    allNotices: LimitedPrivacyNoticeResponseSchema[],
+  ): LimitedPrivacyNoticeResponseSchema[] => {
+    return allNotices.filter(
+      (notice) =>
+        !notice.framework ||
+        (notice.framework !== PrivacyNoticeFramework.GPP_US_NATIONAL &&
+          notice.framework !== PrivacyNoticeFramework.GPP_US_STATE),
+    );
+  };
+
   const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
     useMemo(() => {
-      const noticesWithTcfPlaceholder = [...allPrivacyNotices];
+      // Filter out GPP notices for TCF experiences
+      const nonGppNotices = filterGppNotices(allPrivacyNotices);
+      const noticesWithTcfPlaceholder = [...nonGppNotices];
       if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
         noticesWithTcfPlaceholder.push({
           name: "TCF Purposes",
