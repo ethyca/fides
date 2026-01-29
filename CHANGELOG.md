@@ -23,13 +23,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.78.0](https://github.com/ethyca/fides/compare/2.77.1..2.78.0)
 
-### Changed
- - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
-
 ### Added
 - Monitor scoped activity tab for datastore monitors in the action center [#7162](https://github.com/ethyca/fides/pull/7162)
-
-### Added
 - Added a monitor type fitler to the root action center. [#7186](https://github.com/ethyca/fides/pull/7186)
 - Added infrastructure monitor type to action center gated behind oktaMonitor feature flag [#7191](https://github.com/ethyca/fides/pull/7191)
 - Added support for cookie deletion using wildcards [#7047](https://github.com/ethyca/fides/pull/7047)
@@ -45,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Applied error pages across UI [#7188](https://github.com/ethyca/fides/pull/7188)
 
 ### Changed
+ - Updated FE copy for our bulk ignore modal, the schema explorer empty state, and the failed action message/toast. [#7185](https://github.com/ethyca/fides/pull/7185)
 - Updated infrastructure action center list to show status tags instead of system type [#7260](https://github.com/ethyca/fides/pull/7260)
 - Updated infrastructure action center filters to use dynamic API-driven options [#7261](https://github.com/ethyca/fides/pull/7261)
 - Updated infrastructure monitor form to not show classification options, use a password input for the key, and use consistent wording. [#7240](https://github.com/ethyca/fides/pull/7240)
