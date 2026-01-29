@@ -185,18 +185,7 @@ class GoogleCloudServiceAccountConfiguration(StrategyConfiguration):
     Configuration for Google Cloud Service Account authentication.
 
     Uses service account credentials (keyfile_creds from connection secrets)
-    to generate OAuth2 access tokens for authenticating HTTP requests to
-    Google Cloud APIs.
-
-    The keyfile_creds JSON must contain the following required fields:
-    - type: Must be "service_account"
-    - project_id: The GCP project ID
-    - private_key: The RSA private key
-    - client_email: The service account email
-    - token_uri: The token endpoint URL
-
-    Scopes can be configured to limit the access token's permissions.
-    If not specified, defaults to ["https://www.googleapis.com/auth/cloud-platform"].
+    to automatically generate OAuth2 access tokens to authenticate against Google Cloud APIs.
     """
 
     scopes: Optional[List[str]] = Field(
@@ -207,6 +196,5 @@ class GoogleCloudServiceAccountConfiguration(StrategyConfiguration):
             "Common scopes include: "
             "'https://www.googleapis.com/auth/bigquery' for BigQuery, "
             "'https://www.googleapis.com/auth/devstorage.read_write' for Cloud Storage, "
-            "'https://www.googleapis.com/auth/spreadsheets' for Google Sheets."
         ),
     )
