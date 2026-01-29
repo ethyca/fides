@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, NoReturn, Optional
 
 from google.auth.exceptions import GoogleAuthError, TransportError
 from google.auth.transport.requests import Request
@@ -105,7 +105,8 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
         # Normalize the private key format
         # Handle common issues from copy/paste: escaped newlines, missing newlines
-        normalized_private_key = self._normalize_private_key(private_key)
+        # Type assertion: validation above ensures private_key is not None/empty
+        normalized_private_key = self._normalize_private_key(str(private_key))
 
         # Construct keyfile_creds with smart defaults
         return {
@@ -242,9 +243,11 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
     def _handle_token_refresh_error(
         self, exc: Exception, connection_config: ConnectionConfig
-    ) -> None:
+    ) -> NoReturn:
         """
         Handle errors during token refresh with appropriate logging and user messages.
+
+        This method always raises an exception and never returns.
         """
         error_msg = str(exc)
 
