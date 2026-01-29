@@ -10,7 +10,7 @@ import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 export const useInProgressMonitorTasksList = ({
   filters,
 }: {
-  filters?: { monitorId?: string };
+  filters?: { monitorKey?: string };
 }) => {
   const { resetPagination, pageIndex, pageSize, paginationProps } =
     useAntPagination();
@@ -89,10 +89,11 @@ export const useInProgressMonitorTasksList = ({
     {
       page: pageIndex,
       size: pageSize,
-      search: filters?.monitorId ?? searchQuery,
+      search: searchQuery,
       statuses:
         appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
       return_dismissed: appliedShowDismissed,
+      monitor_config_key: filters?.monitorKey,
     },
     {
       pollingInterval: 3000,
