@@ -122,15 +122,15 @@ export const InProgressMonitorTasksList = ({
     <>
       {/* Search Row */}
       <Flex justify="space-between" align="center">
-        {!filters?.monitorKey && (
-          <div className="min-w-[300px]">
+        <div className="min-w-[300px]">
+          {!filters?.monitorKey && (
             <DebouncedSearchInput
               value={searchQuery}
               onChange={updateSearch}
               placeholder="Search by monitor name..."
             />
-          </div>
-        )}
+          )}
+        </div>
         {/* Filter Popover */}
         <Popover
           content={filterContent}
