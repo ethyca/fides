@@ -28,7 +28,11 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
-from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
