@@ -60,12 +60,18 @@ class BaseErasureEmailConnector(BaseEmailConnector):
     ) -> bool:
         """Schedules an erasure email for erasure privacy requests containing the required identities"""
 
+        # Do not send erasure emails if there is more than 1 action type for the request.
+        # We use multiple action types (e.g., consent + erasure, access + erasure) to
+        # facilitate Do Not Sell features and other combined workflows.
+        multiple_action_types = len(privacy_request.policy.get_all_action_types()) > 1
+
         erasure_rules: List[Rule] = privacy_request.policy.get_rules_for_action(
             action_type=ActionType.erasure
         )
 
         return bool(
             erasure_rules
+            and not multiple_action_types
             and filter_user_identities_for_connector(self.config, user_identities)
         )
 
