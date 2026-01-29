@@ -46,41 +46,6 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     This strategy uses the service account credentials stored in connection
     secrets to generate OAuth2 access tokens. The tokens are cached and
     automatically refreshed when close to expiration.
-
-    Required connection secrets:
-        - project_id: Your Google Cloud project ID
-        - client_email: Service account email (e.g., my-sa@project.iam.gserviceaccount.com)
-        - private_key: The RSA private key from your service account
-
-    Optional connection secrets:
-        - token_uri: OAuth2 token endpoint (defaults to https://oauth2.googleapis.com/token)
-        - private_key_id: Key identifier
-        - client_id: Client identifier
-
-    Example SaaS config authentication block:
-    ```yaml
-    authentication:
-      strategy: google_cloud_service_account
-      configuration:
-        scopes:
-          - https://www.googleapis.com/auth/spreadsheets
-    ```
-
-    Example connector_params:
-    ```yaml
-    connector_params:
-      - name: project_id
-        label: Project ID
-        description: Your Google Cloud project ID
-      - name: client_email
-        label: Service Account Email
-        description: e.g., my-sa@my-project.iam.gserviceaccount.com
-      - name: private_key
-        label: Private Key
-        description: The RSA private key from your service account JSON
-        sensitive: True
-        multiline: True
-    ```
     """
 
     name = "google_cloud_service_account"
@@ -119,7 +84,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
         expires_at = secrets.get("google_cloud_token_expires_at")
 
         if cached_token and expires_at:
-            if not self._is_close_to_expiration(expires_at, connection_config):
+            if not self._is_close_to_expiration(expires_at):
                 return cached_token
 
         # Generate new token
@@ -129,24 +94,17 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
         """
         Build keyfile credentials dict from individual secret fields.
         """
-        project_id = secrets.get("project_id")
-        client_email = secrets.get("client_email")
-        private_key = secrets.get("private_key")
-
-        # Check if we have the minimum required fields
-        if not all([project_id, client_email, private_key]):
-            missing = []
-            if not project_id:
-                missing.append("project_id")
-            if not client_email:
-                missing.append("client_email")
-            if not private_key:
-                missing.append("private_key")
-
+        # Check for missing required fields
+        missing = [field for field in REQUIRED_FIELDS if not secrets.get(field)]
+        if missing:
             raise FidesopsException(
                 f"Missing required Google Cloud credentials: {', '.join(missing)}. "
                 "Please provide project_id, client_email, and private_key."
             )
+
+        project_id = secrets.get("project_id")
+        client_email = secrets.get("client_email")
+        private_key = secrets.get("private_key")
 
         # Normalize the private key format
         # Handle common issues from copy/paste: escaped newlines, missing newlines
@@ -230,7 +188,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             )
 
     def _is_close_to_expiration(
-        self, expires_at: int, connection_config: ConnectionConfig
+        self, expires_at: int
     ) -> bool:
         """
         Check if the access token is close to expiration.
@@ -249,11 +207,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
     ) -> str:
         """
         Generate a new OAuth2 access token from service account credentials.
-
-        Uses Google's service account JWT flow to obtain a short-lived access token.
-        The token and its expiration time are stored in connection secrets for caching.
         """
-
         logger.info(
             "Generating new Google Cloud access token for {}",
             connection_config.key,
@@ -294,63 +248,54 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
             return access_token
 
-        except TransportError as exc:
-            logger.error(
-                "Network error connecting to Google OAuth2 endpoint for {}: {}",
-                connection_config.key,
-                Pii(str(exc)),
-            )
-            raise FidesopsException(
+        except (TransportError, GoogleAuthError, ValueError, Exception) as exc:
+            self._handle_token_refresh_error(exc, connection_config)
+
+    def _handle_token_refresh_error(
+        self, exc: Exception, connection_config: ConnectionConfig
+    ) -> None:
+        """
+        Handle errors during token refresh with appropriate logging and user messages.
+        """
+        error_msg = str(exc)
+
+        # Log the error with sensitive details protected
+        logger.error(
+            "Error generating Google Cloud access token for {}: {}",
+            connection_config.key,
+            Pii(error_msg),
+        )
+
+        # Determine user-friendly error message based on exception type
+        if isinstance(exc, TransportError):
+            user_message = (
                 "Network error connecting to Google OAuth2 endpoint. "
                 "Ensure outbound access to oauth2.googleapis.com is allowed."
-            ) from exc
-
-        except GoogleAuthError as exc:
-            logger.error(
-                "Google authentication error for {}: {}",
-                connection_config.key,
-                Pii(str(exc)),
             )
-            raise FidesopsException(
+        elif isinstance(exc, GoogleAuthError):
+            user_message = (
                 "Failed to authenticate with Google Cloud. "
                 "Check that the service account key is valid and has the required permissions."
-            ) from exc
-
-        except ValueError as exc:
-            # ValueError typically indicates malformed credentials
-            error_msg = str(exc)
-            logger.error(
-                "Invalid credential format for {}: {}",
-                connection_config.key,
-                Pii(error_msg),
             )
-
-            # Provide helpful error message based on common issues
-            if (
-                "private_key" in error_msg.lower()
-                or "Could not deserialize" in error_msg
-            ):
-                raise FidesopsException(
+        elif isinstance(exc, ValueError):
+            # ValueError typically indicates malformed credentials
+            if "private_key" in error_msg.lower() or "Could not deserialize" in error_msg:
+                user_message = (
                     "Invalid private_key format. The private key must be a valid PEM-encoded "
                     "RSA private key. Ensure the key includes '-----BEGIN PRIVATE KEY-----' "
                     "and '-----END PRIVATE KEY-----' headers, and that newlines are preserved. "
                     f"Details: {error_msg}"
-                ) from exc
+                )
             else:
-                raise FidesopsException(
-                    f"Invalid credential format: {error_msg}"
-                ) from exc
-
-        except Exception as exc:
-            logger.error(
-                "Unexpected error generating Google Cloud access token for {}: {}",
-                connection_config.key,
-                Pii(str(exc)),
-            )
-            raise FidesopsException(
+                user_message = f"Invalid credential format: {error_msg}"
+        else:
+            # Generic exception
+            user_message = (
                 f"Failed to generate Google Cloud access token: {type(exc).__name__}. "
-                f"Details: {str(exc)}"
-            ) from exc
+                f"Details: {error_msg}"
+            )
+
+        raise FidesopsException(user_message) from exc
 
     def _store_token(
         self,
