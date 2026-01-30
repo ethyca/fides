@@ -1755,6 +1755,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
 - Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
 - Fixed FidesKey constructor bugs in CLI [#5113](https://github.com/ethyca/fides/pull/5113)
+- Fixed consent and erasure email check to only check relevant connectors [#7271](https://github.com/ethyca/fides/pull/7271)
 
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
