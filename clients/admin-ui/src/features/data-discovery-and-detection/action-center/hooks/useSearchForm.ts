@@ -1,5 +1,6 @@
 import { Form, FormProps } from "fidesui";
 import { useQueryStates, UseQueryStatesKeysMap, Values } from "nuqs";
+import { useEffect } from "react";
 
 /**
  * @description links ant form handler with nuqs query state
@@ -19,24 +20,38 @@ const useSearchForm = <RequestData, QueryState extends UseQueryStatesKeysMap>({
   const [form] = Form.useForm<Values<QueryState>>();
 
   // Without a submit button, we want to re-submit on every change
-  const onFieldsChange: FormProps<Values<QueryState>>["onFieldsChange"] = () =>
-    form.submit();
-
-  // We are binding the ant form values to nuqs state using the form finished method
-  const onFinish: FormProps<Values<QueryState>>["onFinish"] = (values) => {
-    const filteredValues = Object.fromEntries(
+  const onFieldsChange: FormProps<
+    Values<QueryState>
+  >["onFieldsChange"] = () => {
+    const values = form.getFieldsValue(true);
+    // Translation of undefined/empty string usage as default values in ant vs nuqs
+    const translatedValues = Object.fromEntries(
       Object.entries(values).map(([key, value]) => [
         key,
         value === undefined ? "" : value,
       ]),
     );
-    setSearchForm(filteredValues as typeof values);
+    setSearchForm(translatedValues as typeof values);
   };
+
+  // Unfortunate need for effect due to current routing strategy
+  useEffect(() => {
+    // Translation of undefined/empty string usage as default values in ant vs nuqs
+    const translatedValues = Object.fromEntries(
+      Object.entries(searchForm).map(([key, value]) => [
+        key,
+        value === "" ? undefined : value,
+      ]),
+    );
+
+    form.setFieldsValue(
+      translatedValues as Parameters<typeof form.setFieldsValue>[0],
+    ); // Casting again due to weird ant types
+  }, [searchForm]);
 
   return {
     form,
     onFieldsChange,
-    onFinish,
     initialValues: {
       ...initialValues,
       ...searchForm,
