@@ -127,3 +127,21 @@ EvaluationResult = Union[ConditionEvaluationResult, GroupEvaluationResult]
 Condition = Union[ConditionLeaf, ConditionGroup]
 ConditionGroup.model_rebuild()
 GroupEvaluationResult.model_rebuild()
+
+
+class PolicyEvaluationResult(BaseModel):
+    """Result of policy evaluation.
+
+    Returned when evaluating a privacy request against policies with conditions.
+    Contains the matched policy (or default) and optional evaluation details.
+    """
+
+    policy: Any = Field(description="The matched Policy database model")
+    evaluation_result: Optional[EvaluationResult] = Field(
+        None, description="Detailed evaluation report (None for default policy)"
+    )
+    is_default: bool = Field(
+        False, description="Whether the default policy was used"
+    )
+
+    model_config = {"from_attributes": True, "frozen": True, "arbitrary_types_allowed": True}
