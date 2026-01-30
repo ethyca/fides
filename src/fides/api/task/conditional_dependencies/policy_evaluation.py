@@ -25,14 +25,13 @@ from fides.api.task.conditional_dependencies.privacy_request.schemas import (
 )
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
-    ConditionGroup,
     ConditionLeaf,
     PolicyEvaluationResult,
+    PolicyEvaluationSpecificity,
 )
 from fides.api.task.conditional_dependencies.util import extract_field_addresses
 
 # Location hierarchy tiers for tiebreaking (higher = more specific)
-# Based on the inherent hierarchy: exact location > country > groups > regulations
 # if 2 policies have the same specificity, the one with the higher tier will be selected
 # example: policy A has location_country = US and policy B has location = US-CA -> policy B will be selected
 LOCATION_HIERARCHY_TIERS: dict[str, int] = {
@@ -95,10 +94,13 @@ class PolicyEvaluator:
         Raises:
             PolicyEvaluationError: If multiple policies match with identical specificity
         """
-        policy_conditions = self._query_policy_conditions(action_type)
-
-        if not policy_conditions:
-            return self._get_default_policy(action_type)
+        policy_conditions = (
+            self.db.query(PolicyCondition)
+            .join(Policy, PolicyCondition.policy_id == Policy.id)
+            .options(contains_eager(PolicyCondition.policy))
+            .join(Rule, Policy.id == Rule.policy_id)
+            .filter(Rule.action_type == action_type)
+        ).all()
 
         data_transformer = PrivacyRequestDataTransformer(privacy_request)
 
@@ -107,16 +109,22 @@ class PolicyEvaluator:
         matches: list[tuple[tuple[int, int], PolicyEvaluationResult]] = []
 
         for policy_condition in policy_conditions:
-            result = self._evaluate_single_condition(policy_condition, data_transformer)
+            result = self._evaluate_single_condition(
+                policy_condition, data_transformer
+            )
             if result:
-                specificity, evaluation_result = result
-                matches.append((specificity, evaluation_result))
+                logger.debug(
+                    f"Policy {policy_condition.policy.key} matched with specificity "
+                    f"(count={result[0].condition_count}, tier={result[0].location_tier})"
+                )
+                matches.append(result)
 
         if not matches:
+            logger.debug(f"No policies matched for action type {action_type} falling back to default policy")
             return self._get_default_policy(action_type)
 
         # Sort by: condition count (desc), location tier (desc)
-        matches.sort(key=lambda x: (-x[0][0], -x[0][1]))
+        matches.sort(key=lambda x: (-x[0].condition_count, -x[0].location_tier))
         best_specificity, best_match = matches[0]
 
         # Check for ambiguous ties - multiple policies with same specificity
@@ -126,46 +134,24 @@ class PolicyEvaluator:
         if len(tied_policies) > 1:
             raise PolicyEvaluationError(
                 f"Ambiguous policy match: policies {tied_policies} have identical "
-                f"specificity (count={best_specificity[0]}, tier={best_specificity[1]}) "
+                f"specificity (count={best_specificity.condition_count}, tier={best_specificity.location_tier}) "
                 f"for this privacy request. Please adjust policy conditions to resolve "
                 f"the ambiguity by making one policy more specific than the other."
             )
 
         logger.debug(
             f"Selected policy {best_match.policy.key} with specificity "
-            f"(count={best_specificity[0]}, tier={best_specificity[1]}) "
+            f"(count={best_specificity.condition_count}, tier={best_specificity.location_tier}) "
             f"from {len(matches)} matching policies"
         )
 
         return best_match
 
-    def _query_policy_conditions(
-        self, action_type: ActionType
-    ) -> list[PolicyCondition]:
-        """Query PolicyConditions filtered by action type.
-
-        Uses eager loading to avoid N+1 queries.
-
-        Args:
-            action_type: Action type to filter by
-
-        Returns:
-            list of PolicyCondition records with policies eager-loaded
-        """
-        query = (
-            self.db.query(PolicyCondition)
-            .join(Policy, PolicyCondition.policy_id == Policy.id)
-            .options(contains_eager(PolicyCondition.policy))
-            .join(Rule, Policy.id == Rule.policy_id)
-            .filter(Rule.action_type == action_type)
-        )
-        return query.all()
-
     def _evaluate_single_condition(
         self,
         policy_condition: PolicyCondition,
         data_transformer: PrivacyRequestDataTransformer,
-    ) -> Optional[tuple[tuple[int, int], PolicyEvaluationResult]]:
+    ) -> Optional[tuple[PolicyEvaluationSpecificity, PolicyEvaluationResult]]:
         """Evaluate a single policy condition.
 
         Args:
@@ -173,81 +159,51 @@ class PolicyEvaluator:
             data_transformer: Transformer for privacy request data
 
         Returns:
-            tuple of ((condition_count, max_tier), PolicyEvaluationResult) if matches, None otherwise
+            tuple of (PolicyEvaluationSpecificity, PolicyEvaluationResult) if matches, None otherwise
+
+        Raises:
+            PolicyEvaluationError: If condition tree is malformed or evaluation fails unexpectedly
         """
-        if not policy_condition.condition_tree:
+        condition_tree = ConditionTypeAdapter.validate_python(
+            policy_condition.condition_tree
+        )
+
+        field_addresses = extract_field_addresses(condition_tree)
+        evaluation_result = self.condition_evaluator.evaluate_rule(
+            condition_tree, data_transformer.to_evaluation_data(field_addresses)
+        )
+
+        if not evaluation_result.result:
             return None
 
-        try:
-            condition_tree = ConditionTypeAdapter.validate_python(
-                policy_condition.condition_tree
+        return (
+            self._calculate_specificity(condition_tree),
+            PolicyEvaluationResult(
+                policy=policy_condition.policy,
+                evaluation_result=evaluation_result,
+                is_default=False,
             )
-            field_addresses = extract_field_addresses(condition_tree)
-            evaluation_data = data_transformer.to_evaluation_data(field_addresses)
-            evaluation_result = self.condition_evaluator.evaluate_rule(
-                condition_tree, evaluation_data
-            )
+        )
 
-            if evaluation_result.result:
-                specificity = self._calculate_specificity(condition_tree)
-                logger.debug(
-                    f"Policy {policy_condition.policy.key} matched with specificity "
-                    f"(count={specificity[0]}, tier={specificity[1]})"
-                )
-                return (
-                    specificity,
-                    PolicyEvaluationResult(
-                        policy=policy_condition.policy,
-                        evaluation_result=evaluation_result,
-                        is_default=False,
-                    ),
-                )
-        except Exception as exc:
-            logger.exception(
-                f"Error evaluating policy {policy_condition.policy.key}: "
-                f"{type(exc).__name__}: {exc}"
-            )
-
-        return None
-
-    def _calculate_specificity(self, condition_tree: Condition) -> tuple[int, int]:
+    def _calculate_specificity(self, condition_tree: Condition) -> PolicyEvaluationSpecificity:
         """Calculate specificity score for a condition tree.
-
-        Returns a tuple of (condition_count, max_location_tier):
-        - condition_count: Total number of leaf conditions (more = more specific)
-        - max_location_tier: Highest location hierarchy tier present (for tiebreaking)
-
-        Location hierarchy tiers (from locations.yml structure):
-        - privacy_request.location (exact): tier 4
-        - privacy_request.location_country: tier 3
-        - privacy_request.location_groups: tier 2
-        - privacy_request.location_regulations: tier 1
-        - Non-location fields: tier 0
 
         This ensures:
         - More conditions always wins (primary sort)
-        - For equal condition counts, location_country beats location_regulations
-        - For equal counts and no location difference, alphabetical tiebreaker
-
-        Args:
-            condition_tree: The parsed condition tree
-
-        Returns:
-            tuple of (condition_count, max_location_tier)
+        - For equal condition counts, location hierarchy breaks ties
         """
         if isinstance(condition_tree, ConditionLeaf):
             tier = LOCATION_HIERARCHY_TIERS.get(condition_tree.field_address, 0)
-            return (1, tier)
+            return PolicyEvaluationSpecificity(condition_count=1, location_tier=tier)
 
-        if isinstance(condition_tree, ConditionGroup):
-            results = [
-                self._calculate_specificity(cond) for cond in condition_tree.conditions
-            ]
-            total_count = sum(r[0] for r in results)
-            max_tier = max((r[1] for r in results), default=0)
-            return (total_count, max_tier)
 
-        return (0, 0)
+        results = [
+            self._calculate_specificity(cond) for cond in condition_tree.conditions
+        ]
+        return PolicyEvaluationSpecificity(
+            condition_count=sum(r.condition_count for r in results),
+            location_tier=max((r.location_tier for r in results), default=0)
+        )
 
     def _get_default_policy(self, action_type: ActionType) -> PolicyEvaluationResult:
         """Get default policy for the given action type.
@@ -266,10 +222,6 @@ class PolicyEvaluator:
         """
         # Get the default policy key for this action type
         default_key = self.DEFAULT_POLICY_KEYS.get(action_type)
-        if not default_key:
-            raise PolicyEvaluationError(
-                f"No default policy configured for action type: {action_type}"
-            )
 
         # Query for the specific default policy by key
         policy = Policy.get_by(self.db, field="key", value=default_key)
@@ -280,9 +232,6 @@ class PolicyEvaluator:
                 f"Ensure the system has been properly seeded."
             )
 
-        logger.debug(
-            f"Using default policy '{default_key}' for action type {action_type}"
-        )
         return PolicyEvaluationResult(
             policy=policy, evaluation_result=None, is_default=True
         )

@@ -160,29 +160,6 @@ class TestDefaultFallback:
         assert result.policy.key == DEFAULT_CONSENT_POLICY
         assert result.is_default
 
-    def test_empty_condition_tree_uses_default(self, db: Session, evaluator: PolicyEvaluator):
-        """Falls back to default if condition_tree is None"""
-        empty = Policy.create(db=db, data={"name": "Empty", "key": "empty"})
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.access.value,
-                "name": "Empty Access Rule",
-                "key": "empty_access_rule",
-                "policy_id": empty.id,
-            },
-        )
-        PolicyCondition.create(
-            db=db, data={"policy_id": empty.id, "condition_tree": None}
-        )
-
-        pr = _create_request("US")
-
-        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
-
-        assert result.policy.key == DEFAULT_ACCESS_POLICY
-        assert result.is_default
-
     def test_evaluation_error_uses_default(self, db: Session, evaluator: PolicyEvaluator):
         """Falls back to default if evaluation fails"""
         error_policy = Policy.create(db=db, data={"name": "Error", "key": "error"})

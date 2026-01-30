@@ -145,3 +145,12 @@ class PolicyEvaluationResult(BaseModel):
     )
 
     model_config = {"from_attributes": True, "frozen": True, "arbitrary_types_allowed": True}
+
+class PolicyEvaluationSpecificity(BaseModel):
+    """Specificity of a policy evaluation.
+
+    Contains the total number of leaf conditions and the highest location hierarchy tier present.
+    """
+
+    condition_count: int = Field(description="Total number of leaf conditions")
+    location_tier: int = Field(description="Highest location hierarchy tier present")
