@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Bump cryptography from 45.0.7 to 46.0.4
+pr: 7278 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
