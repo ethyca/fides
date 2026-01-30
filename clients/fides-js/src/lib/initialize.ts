@@ -298,7 +298,8 @@ export const initialize = async ({
       );
 
       /**
-       * Apply calculated automated consent to experience defaults
+      /**
+       * Apply calculated automated consent to experience defaults and save to browser cookie
        */
       if (automatedApplied && fides.experience.privacy_notices) {
         // Update experience privacy_notices with calculated automated consent
