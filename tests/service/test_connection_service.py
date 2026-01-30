@@ -1007,13 +1007,14 @@ class TestConnectionService:
                 {"delete_fields": [2]},  # delete email field
                 {"clear_fields": True},
                 {
+                    # Since no protected_fields are passed, all customer deletions are allowed
                     "email": {"exists": False},
                     "custom_attribute": {"exists": False},
-                    "product_id": {"exists": True},
-                    "customer_id": {"exists": True},
-                    "address": {"exists": True},
+                    "product_id": {"exists": False},
+                    "customer_id": {"exists": False},
+                    "address": {"exists": False},
                 },
-                3,
+                0,
             ),
             (
                 "integration_deletes_all_fields",
