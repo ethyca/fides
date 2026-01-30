@@ -11,13 +11,59 @@ from fides.api.models.policy.conditional_dependency import PolicyCondition
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.policy_evaluation import (
+    LOCATION_HIERARCHY_TIERS,
     PolicyEvaluationError,
     PolicyEvaluator,
 )
+from fides.api.task.conditional_dependencies.privacy_request.schemas import (
+    PrivacyRequestConvenienceFields,
+    PrivacyRequestFields,
+)
 from fides.api.task.conditional_dependencies.schemas import (
+    ConditionGroup,
     ConditionLeaf,
+    GroupOperator,
     Operator,
 )
+
+# Field address constants - using the same source of truth as the evaluator
+LOCATION_FIELD = PrivacyRequestFields.location.value
+LOCATION_COUNTRY_FIELD = PrivacyRequestConvenienceFields.location_country.value
+LOCATION_GROUPS_FIELD = PrivacyRequestConvenienceFields.location_groups.value
+LOCATION_REGULATIONS_FIELD = PrivacyRequestConvenienceFields.location_regulations.value
+SOURCE_FIELD = PrivacyRequestFields.source.value
+
+# Verify test constants match evaluator's hierarchy (fails fast if they drift)
+assert LOCATION_FIELD in LOCATION_HIERARCHY_TIERS
+assert LOCATION_COUNTRY_FIELD in LOCATION_HIERARCHY_TIERS
+assert LOCATION_GROUPS_FIELD in LOCATION_HIERARCHY_TIERS
+assert LOCATION_REGULATIONS_FIELD in LOCATION_HIERARCHY_TIERS
+
+
+@pytest.fixture
+def evaluator(db: Session) -> PolicyEvaluator:
+    return PolicyEvaluator(db)
+
+
+# Default test values for each field type
+FIELD_TEST_VALUES = {
+    LOCATION_FIELD: ("fr", Operator.eq),
+    LOCATION_COUNTRY_FIELD: ("FR", Operator.eq),
+    LOCATION_GROUPS_FIELD: ("eea", Operator.list_contains),
+    LOCATION_REGULATIONS_FIELD: ("gdpr", Operator.list_contains),
+    SOURCE_FIELD: ("Privacy Center", Operator.eq),
+    PrivacyRequestFields.origin.value: ("https://example.com", Operator.eq),
+}
+
+
+def _leaf(field: str, value: str = None, operator: Operator = None) -> ConditionLeaf:
+    """Create a ConditionLeaf with smart defaults for operator and value"""
+    default_value, default_op = FIELD_TEST_VALUES.get(field, (value, Operator.eq))
+    return ConditionLeaf(
+        field_address=field,
+        operator=operator or default_op,
+        value=value if value is not None else default_value,
+    )
 
 
 def _create_policy_with_rule(
@@ -31,41 +77,34 @@ def _create_policy_with_rule(
         "key": f"{key}_{action_type.value}_rule",
         "policy_id": policy.id,
     }
-    # Erasure rules require masking strategies
     if action_type == ActionType.erasure:
-        rule_data["masking_strategy"] = {
-            "strategy": "null_rewrite",
-            "configuration": {},
-        }
+        rule_data["masking_strategy"] = {"strategy": "null_rewrite", "configuration": {}}
     Rule.create(db=db, data=rule_data)
     return policy
 
 
+def _add_condition(db: Session, policy: Policy, condition_tree) -> None:
+    """Add a condition tree to a policy"""
+    tree = condition_tree.model_dump() if hasattr(condition_tree, "model_dump") else condition_tree
+    PolicyCondition.create(db=db, data={"policy_id": policy.id, "condition_tree": tree})
+
+
 def _create_policy_with_condition(
-    db: Session, key: str, location: str, action_type: ActionType = ActionType.access
+    db: Session, key: str, condition_tree, action_type: ActionType = ActionType.access
 ) -> Policy:
-    """Helper to create policy with location condition and action type rule"""
+    """Helper to create policy with condition and action type rule"""
     policy = _create_policy_with_rule(db, key, action_type)
-    PolicyCondition.create(
-        db=db,
-        data={
-            "policy_id": policy.id,
-            "condition_tree": ConditionLeaf(
-                field_address="privacy_request.location",
-                operator=Operator.eq,
-                value=location,
-            ).model_dump(),
-        },
-    )
+    _add_condition(db, policy, condition_tree)
     return policy
 
 
-def _create_request(location: str) -> PrivacyRequest:
-    """Helper to create privacy request (not persisted to DB)"""
+def _create_request(location: str = "fr", **kwargs) -> PrivacyRequest:
+    """Helper to create privacy request with defaults"""
     return PrivacyRequest(
         external_id="test",
         status="pending",
         location=location,
+        **kwargs,
     )
 
 
@@ -75,20 +114,20 @@ class TestPolicySelection:
     @pytest.mark.usefixtures("seed_data")
     @pytest.mark.parametrize(
         "location,expected",
-        [("US", "us_policy"), ("FR", "fr_policy"), ("CA", DEFAULT_ACCESS_POLICY)],
+        [("US", "us_policy"), ("FR", "fr_policy")],
     )
     def test_routes_by_location(
         self,
         db: Session,
         location: str,
         expected: str,
+        evaluator: PolicyEvaluator,
     ):
         """Routes to correct policy based on location match"""
-        _create_policy_with_condition(db, "us_policy", "US")
-        _create_policy_with_condition(db, "fr_policy", "FR")
+        _create_policy_with_condition(db, "us_policy", _leaf(LOCATION_FIELD, "US"))
+        _create_policy_with_condition(db, "fr_policy", _leaf(LOCATION_FIELD, "FR"))
 
         pr = _create_request(location)
-        evaluator = PolicyEvaluator(db)
         result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
 
         assert result.policy.key == expected
@@ -98,15 +137,13 @@ class TestPolicySelection:
 class TestDefaultFallback:
     """Test default policy fallback"""
 
-    def test_uses_default_for_action_type(self, db: Session):
+    def test_uses_default_for_action_type(self, db: Session, evaluator: PolicyEvaluator):
         """Queries for specific default policy based on action type when no conditions match"""
         # Create a conditional policy that won't match
-        _create_policy_with_condition(db, "conditional", "US", ActionType.access)
+        _create_policy_with_condition(db, "conditional", _leaf(LOCATION_FIELD, "US"))
 
         # Create request with location that doesn't match
         pr = _create_request("FR")
-
-        evaluator = PolicyEvaluator(db)
 
         # With access action_type, should find default access policy
         result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
@@ -118,18 +155,12 @@ class TestDefaultFallback:
         assert result.policy.key == DEFAULT_ERASURE_POLICY
         assert result.is_default
 
-
-    def test_uses_default_consent_policy(self, db: Session):
-        """Queries for default consent policy when action type is consent"""
-        pr = _create_request("US")
-
-        evaluator = PolicyEvaluator(db)
         result = evaluator.evaluate_policy_conditions(pr, ActionType.consent)
 
         assert result.policy.key == DEFAULT_CONSENT_POLICY
         assert result.is_default
 
-    def test_empty_condition_tree_uses_default(self, db: Session):
+    def test_empty_condition_tree_uses_default(self, db: Session, evaluator: PolicyEvaluator):
         """Falls back to default if condition_tree is None"""
         empty = Policy.create(db=db, data={"name": "Empty", "key": "empty"})
         Rule.create(
@@ -147,13 +178,12 @@ class TestDefaultFallback:
 
         pr = _create_request("US")
 
-        evaluator = PolicyEvaluator(db)
         result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
 
         assert result.policy.key == DEFAULT_ACCESS_POLICY
         assert result.is_default
 
-    def test_evaluation_error_uses_default(self, db: Session):
+    def test_evaluation_error_uses_default(self, db: Session, evaluator: PolicyEvaluator):
         """Falls back to default if evaluation fails"""
         error_policy = Policy.create(db=db, data={"name": "Error", "key": "error"})
         Rule.create(
@@ -179,7 +209,6 @@ class TestDefaultFallback:
 
         pr = _create_request("US")
 
-        evaluator = PolicyEvaluator(db)
         result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
 
         assert result.policy.key == DEFAULT_ACCESS_POLICY
@@ -188,11 +217,9 @@ class TestDefaultFallback:
 
 class TestPolicyEvaluationError:
 
-    def test_raises_when_default_policy_missing(self, db: Session):
+    def test_raises_when_default_policy_missing(self, db: Session, evaluator: PolicyEvaluator):
         """Raises error when default policy for action type doesn't exist (no seed_data)"""
         pr = _create_request("US")
-
-        evaluator = PolicyEvaluator(db)
 
         with pytest.raises(PolicyEvaluationError, match="Default policy.*not found"):
             evaluator.evaluate_policy_conditions(pr, ActionType.access)
@@ -201,25 +228,132 @@ class TestPolicyEvaluationError:
 class TestPolicyConvenienceFields:
     """Test policy convenience field integration"""
 
-    def test_matches_on_location(self, db: Session, seed_data):
-        """Matches using privacy_request.location field"""
-        # Conditional policy checking for location
-        conditional = _create_policy_with_rule(db, "conditional", ActionType.access)
-        PolicyCondition.create(
-            db=db,
-            data={
-                "policy_id": conditional.id,
-                "condition_tree": ConditionLeaf(
-                    field_address="privacy_request.location_country",
-                    operator=Operator.eq,
-                    value="US",
-                ).model_dump(),
-            },
-        )
+    @pytest.mark.usefixtures("seed_data")
+    def test_matches_on_location_country(self, db: Session, evaluator: PolicyEvaluator):
+        """Matches using privacy_request.location_country convenience field"""
+        _create_policy_with_condition(db, "conditional", _leaf(LOCATION_COUNTRY_FIELD, "US"))
 
-        pr = _create_request("US-CA")
-        evaluator = PolicyEvaluator(db)
-        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+        result = evaluator.evaluate_policy_conditions(_create_request("us_ca"), ActionType.access)
 
         assert result.policy.key == "conditional"
         assert not result.is_default
+
+
+@pytest.mark.usefixtures("seed_data")
+class TestPolicySpecificity:
+    """Test that the most specific matching policy is selected.
+
+    Specificity is determined by (in order):
+    1. Condition count (more conditions = more specific)
+    2. Location hierarchy tier (country beats regulation, etc.)
+
+    If policies have identical specificity (same count AND same tier),
+    an error is raised since this is an ambiguous configuration.
+    """
+
+    def test_more_conditions_beats_fewer_conditions(self, db: Session, evaluator: PolicyEvaluator):
+        """Policy with more conditions wins, regardless of tier"""
+        # Policy with 2 conditions (tier 3 from country)
+        _create_policy_with_condition(
+            db, "two_conditions",
+            ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
+            ),
+        )
+        # Policy with 1 condition but higher tier (tier 4 from exact location)
+        _create_policy_with_condition(db, "one_condition", _leaf(LOCATION_FIELD))
+
+        result = evaluator.evaluate_policy_conditions(
+            _create_request(source="Privacy Center"), ActionType.access
+        )
+
+        assert result.policy.key == "two_conditions"
+        assert not result.is_default
+
+    @pytest.mark.parametrize(
+        "winner_field,loser_field",
+        [
+            (LOCATION_FIELD, LOCATION_COUNTRY_FIELD),  # exact beats country
+            (LOCATION_COUNTRY_FIELD, LOCATION_GROUPS_FIELD),  # country beats groups
+            (LOCATION_GROUPS_FIELD, LOCATION_REGULATIONS_FIELD),  # groups beats regulations
+            (LOCATION_REGULATIONS_FIELD, SOURCE_FIELD),  # regulations beats non-location
+            (LOCATION_COUNTRY_FIELD, SOURCE_FIELD),  # country beats non-location
+        ],
+        ids=[
+            "exact_beats_country",
+            "country_beats_groups",
+            "groups_beats_regulations",
+            "regulations_beats_non_location",
+            "country_beats_non_location",
+        ],
+    )
+    def test_higher_tier_wins_for_equal_condition_count(
+        self, db: Session, evaluator: PolicyEvaluator, winner_field, loser_field
+    ):
+        """For equal condition counts, higher location tier wins"""
+        _create_policy_with_condition(db, "winner_policy", _leaf(winner_field))
+        _create_policy_with_condition(db, "loser_policy", _leaf(loser_field))
+
+        result = evaluator.evaluate_policy_conditions(
+            _create_request(source="Privacy Center"), ActionType.access
+        )
+
+        assert result.policy.key == "winner_policy"
+        assert not result.is_default
+
+    def test_nested_conditions_counted_correctly(self, db: Session, evaluator: PolicyEvaluator):
+        """Nested condition groups count all leaf conditions"""
+        _create_policy_with_condition(db, "simple", _leaf(LOCATION_REGULATIONS_FIELD))
+        _create_policy_with_condition(
+            db, "nested",
+            ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[
+                    ConditionGroup(
+                        logical_operator=GroupOperator.and_,
+                        conditions=[_leaf(LOCATION_FIELD), _leaf(SOURCE_FIELD)],
+                    ),
+                    _leaf(PrivacyRequestFields.origin.value),
+                ],
+            ),
+        )
+
+        result = evaluator.evaluate_policy_conditions(
+            _create_request(source="Privacy Center", origin="https://example.com"),
+            ActionType.access,
+        )
+
+        assert result.policy.key == "nested"
+        assert not result.is_default
+
+    def test_falls_back_when_specific_policy_doesnt_match(self, db: Session, evaluator: PolicyEvaluator):
+        """Falls back to less specific policy when more specific doesn't match"""
+        _create_policy_with_condition(db, "general", _leaf(LOCATION_REGULATIONS_FIELD))
+        _create_policy_with_condition(
+            db, "specific",
+            ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
+            ),
+        )
+
+        # Request from Germany - only matches general policy (GDPR)
+        result = evaluator.evaluate_policy_conditions(
+            _create_request("de", source="Privacy Center"), ActionType.access
+        )
+
+        assert result.policy.key == "general"
+        assert not result.is_default
+
+    def test_ambiguous_tie_raises_error(self, db: Session, evaluator: PolicyEvaluator):
+        """Raises error when multiple policies match with identical specificity"""
+        _create_policy_with_condition(db, "policy_a", _leaf(LOCATION_COUNTRY_FIELD))
+        _create_policy_with_condition(db, "policy_b", _leaf(LOCATION_COUNTRY_FIELD))
+
+        with pytest.raises(PolicyEvaluationError) as exc_info:
+            evaluator.evaluate_policy_conditions(_create_request(), ActionType.access)
+
+        assert "Ambiguous policy match" in str(exc_info.value)
+        assert "policy_a" in str(exc_info.value)
+        assert "policy_b" in str(exc_info.value)
