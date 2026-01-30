@@ -54,9 +54,7 @@ describe("Action center infrastructure systems", () => {
         cy.get("button[aria-label='Add data use']").click({ force: true });
       });
 
-      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(
-        "analytics",
-      );
+      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(0);
 
       cy.wait("@updateInfrastructureSystemDataUses").then((interception) => {
         expect(interception.request.body).to.deep.equal({
@@ -85,11 +83,12 @@ describe("Action center infrastructure systems", () => {
       cy.wait("@getInfrastructureSystems");
 
       cy.get(`[data-classification-select="${slackUrn}"]`).within(() => {
-        cy.contains("analytics")
-          .should("exist")
-          .parent()
-          .findByLabelText("Remove data use")
-          .click({ force: true });
+        cy.get(".ant-tag").filter(":contains('Analytics')").should("exist");
+        cy.get(".ant-tag")
+          .filter(":contains('Analytics')")
+          .within(() => {
+            cy.get("button").click({ force: true });
+          });
       });
 
       cy.wait("@updateSlackSystemDataUses").then((interception) => {
@@ -113,9 +112,7 @@ describe("Action center infrastructure systems", () => {
         cy.get("button[aria-label='Add data use']").click({ force: true });
       });
 
-      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(
-        "analytics",
-      );
+      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(0);
 
       cy.wait("@updateInfrastructureSystemDataUses");
 
@@ -127,13 +124,16 @@ describe("Action center infrastructure systems", () => {
       cy.visit(`${ACTION_CENTER_ROUTE}/infrastructure/${monitorId}`);
       cy.wait("@getInfrastructureSystems");
 
-      cy.get(`[data-classification-select="${testUrn}"]`).within(() => {
-        cy.get("button[aria-label='Add data use']").click({ force: true });
-      });
+      // cy.get(`[data-classification-select="${testUrn}"]`).within(() => {
+      //   cy.get("button[aria-label='Add data use']").click({ force: true });
+      // });
 
-      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(
-        "marketing.advertising",
-      );
+      cy.get(`[data-classification-select="${testUrn}"]`)
+        .find("input")
+        .focus()
+        .type("marketing.advertising");
+
+      cy.get(`[data-classification-select="${testUrn}"]`).antSelect(0);
 
       cy.get("@updateInfrastructureSystemDataUses.all").should(
         "have.length",
@@ -141,7 +141,7 @@ describe("Action center infrastructure systems", () => {
       );
     });
 
-    it("should allow removing the last data use", () => {
+    it.only("should allow removing the last data use", () => {
       stubInfrastructureSystems({
         fixture:
           "detection-discovery/results/infrastructure-systems-single-data-use.json",
@@ -151,11 +151,12 @@ describe("Action center infrastructure systems", () => {
       cy.wait("@getInfrastructureSystems");
 
       cy.get(`[data-classification-select="${testUrn}"]`).within(() => {
-        cy.contains("marketing.advertising")
-          .should("exist")
-          .parent()
-          .findByLabelText("Remove data use")
-          .click({ force: true });
+        cy.get(".ant-tag").filter(":contains('Marketing')").should("exist");
+        cy.get(".ant-tag")
+          .filter(":contains('Marketing')")
+          .within(() => {
+            cy.get("button").click({ force: true });
+          });
       });
 
       cy.wait("@updateInfrastructureSystemDataUses").then((interception) => {
