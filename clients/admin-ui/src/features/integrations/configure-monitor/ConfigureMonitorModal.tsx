@@ -163,6 +163,7 @@ const ConfigureMonitorModal = ({
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
           url={(integration.secrets as unknown as { url: string })?.url ?? ""}
+          integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
         />
