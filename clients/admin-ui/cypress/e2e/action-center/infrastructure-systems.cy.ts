@@ -141,7 +141,7 @@ describe("Action center infrastructure systems", () => {
       );
     });
 
-    it.only("should allow removing the last data use", () => {
+    it("should allow removing the last data use", () => {
       stubInfrastructureSystems({
         fixture:
           "detection-discovery/results/infrastructure-systems-single-data-use.json",
