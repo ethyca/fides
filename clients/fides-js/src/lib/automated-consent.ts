@@ -143,13 +143,22 @@ export const calculateAutomatedConsent = (
     let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
     // Determine consent method based on priority (highest to lowest)
     if (migratedConsentApplied && migrationMethod) {
-      fidesDebugger("Calculated automated consent from migrated provider");
+      fidesDebugger(
+        "Calculated automated consent from migrated provider",
+        noticeConsentToSave,
+      );
       consentMethod = migrationMethod;
     } else if (noticeConsentApplied) {
-      fidesDebugger("Calculated automated consent from Notice Consent string");
+      fidesDebugger(
+        "Calculated automated consent from Notice Consent string",
+        noticeConsentToSave,
+      );
       consentMethod = ConsentMethod.SCRIPT;
     } else if (gpcApplied) {
-      fidesDebugger("Calculated automated consent from GPC");
+      fidesDebugger(
+        "Calculated automated consent from GPC",
+        noticeConsentToSave,
+      );
       consentMethod = ConsentMethod.GPC;
     }
 
