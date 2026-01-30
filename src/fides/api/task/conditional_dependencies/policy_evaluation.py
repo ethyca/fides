@@ -176,33 +176,21 @@ class PolicyEvaluator:
         if not evaluation_result.result:
             return None
 
+        specificity = PolicyEvaluationSpecificity(
+            condition_count=len(field_addresses),
+            location_tier=max(
+                (LOCATION_HIERARCHY_TIERS.get(addr, 0) for addr in field_addresses),
+                default=0,
+            ),
+        )
+
         return (
-            self._calculate_specificity(condition_tree),
+            specificity,
             PolicyEvaluationResult(
                 policy=policy_condition.policy,
                 evaluation_result=evaluation_result,
                 is_default=False,
             )
-        )
-
-    def _calculate_specificity(self, condition_tree: Condition) -> PolicyEvaluationSpecificity:
-        """Calculate specificity score for a condition tree.
-
-        This ensures:
-        - More conditions always wins (primary sort)
-        - For equal condition counts, location hierarchy breaks ties
-        """
-        if isinstance(condition_tree, ConditionLeaf):
-            tier = LOCATION_HIERARCHY_TIERS.get(condition_tree.field_address, 0)
-            return PolicyEvaluationSpecificity(condition_count=1, location_tier=tier)
-
-
-        results = [
-            self._calculate_specificity(cond) for cond in condition_tree.conditions
-        ]
-        return PolicyEvaluationSpecificity(
-            condition_count=sum(r.condition_count for r in results),
-            location_tier=max((r.location_tier for r in results), default=0)
         )
 
     def _get_default_policy(self, action_type: ActionType) -> PolicyEvaluationResult:

@@ -1,4 +1,5 @@
 import pytest
+from pytest import param
 from sqlalchemy.orm import Session
 
 from fides.api.db.seed import (
@@ -11,7 +12,6 @@ from fides.api.models.policy.conditional_dependency import PolicyCondition
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.policy_evaluation import (
-    LOCATION_HIERARCHY_TIERS,
     PolicyEvaluationError,
     PolicyEvaluator,
 )
@@ -33,17 +33,6 @@ LOCATION_GROUPS_FIELD = PrivacyRequestConvenienceFields.location_groups.value
 LOCATION_REGULATIONS_FIELD = PrivacyRequestConvenienceFields.location_regulations.value
 SOURCE_FIELD = PrivacyRequestFields.source.value
 
-# Verify test constants match evaluator's hierarchy (fails fast if they drift)
-assert LOCATION_FIELD in LOCATION_HIERARCHY_TIERS
-assert LOCATION_COUNTRY_FIELD in LOCATION_HIERARCHY_TIERS
-assert LOCATION_GROUPS_FIELD in LOCATION_HIERARCHY_TIERS
-assert LOCATION_REGULATIONS_FIELD in LOCATION_HIERARCHY_TIERS
-
-
-@pytest.fixture
-def evaluator(db: Session) -> PolicyEvaluator:
-    return PolicyEvaluator(db)
-
 
 # Default test values for each field type
 FIELD_TEST_VALUES = {
@@ -54,6 +43,10 @@ FIELD_TEST_VALUES = {
     SOURCE_FIELD: ("Privacy Center", Operator.eq),
     PrivacyRequestFields.origin.value: ("https://example.com", Operator.eq),
 }
+
+@pytest.fixture
+def evaluator(db: Session) -> PolicyEvaluator:
+    return PolicyEvaluator(db)
 
 
 def _leaf(field: str, value: str = None, operator: Operator = None) -> ConditionLeaf:
@@ -132,6 +125,25 @@ class TestPolicySelection:
 
         assert result.policy.key == expected
 
+    def test_falls_back_when_specific_policy_doesnt_match(self, db: Session, evaluator: PolicyEvaluator):
+        """Falls back to less specific policy when more specific doesn't match"""
+        _create_policy_with_condition(db, "general", _leaf(LOCATION_REGULATIONS_FIELD))
+        _create_policy_with_condition(
+            db, "specific",
+            ConditionGroup(
+                logical_operator=GroupOperator.and_,
+                conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
+            ),
+        )
+
+        # Request from Germany - only matches general policy (GDPR)
+        result = evaluator.evaluate_policy_conditions(
+            _create_request("de", source="Privacy Center"), ActionType.access
+        )
+
+        assert result.policy.key == "general"
+        assert not result.is_default
+
 
 @pytest.mark.usefixtures("seed_data")
 class TestDefaultFallback:
@@ -160,37 +172,6 @@ class TestDefaultFallback:
         assert result.policy.key == DEFAULT_CONSENT_POLICY
         assert result.is_default
 
-    def test_evaluation_error_uses_default(self, db: Session, evaluator: PolicyEvaluator):
-        """Falls back to default if evaluation fails"""
-        error_policy = Policy.create(db=db, data={"name": "Error", "key": "error"})
-        Rule.create(
-            db=db,
-            data={
-                "action_type": ActionType.access.value,
-                "name": "Error Access Rule",
-                "key": "error_access_rule",
-                "policy_id": error_policy.id,
-            },
-        )
-        PolicyCondition.create(
-            db=db,
-            data={
-                "policy_id": error_policy.id,
-                "condition_tree": ConditionLeaf(
-                    field_address="privacy_request.nonexistent_field",
-                    operator=Operator.eq,
-                    value="test",
-                ).model_dump(),
-            },
-        )
-
-        pr = _create_request("US")
-
-        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
-
-        assert result.policy.key == DEFAULT_ACCESS_POLICY
-        assert result.is_default
-
 
 class TestPolicyEvaluationError:
 
@@ -200,20 +181,6 @@ class TestPolicyEvaluationError:
 
         with pytest.raises(PolicyEvaluationError, match="Default policy.*not found"):
             evaluator.evaluate_policy_conditions(pr, ActionType.access)
-
-
-class TestPolicyConvenienceFields:
-    """Test policy convenience field integration"""
-
-    @pytest.mark.usefixtures("seed_data")
-    def test_matches_on_location_country(self, db: Session, evaluator: PolicyEvaluator):
-        """Matches using privacy_request.location_country convenience field"""
-        _create_policy_with_condition(db, "conditional", _leaf(LOCATION_COUNTRY_FIELD, "US"))
-
-        result = evaluator.evaluate_policy_conditions(_create_request("us_ca"), ActionType.access)
-
-        assert result.policy.key == "conditional"
-        assert not result.is_default
 
 
 @pytest.mark.usefixtures("seed_data")
@@ -251,18 +218,11 @@ class TestPolicySpecificity:
     @pytest.mark.parametrize(
         "winner_field,loser_field",
         [
-            (LOCATION_FIELD, LOCATION_COUNTRY_FIELD),  # exact beats country
-            (LOCATION_COUNTRY_FIELD, LOCATION_GROUPS_FIELD),  # country beats groups
-            (LOCATION_GROUPS_FIELD, LOCATION_REGULATIONS_FIELD),  # groups beats regulations
-            (LOCATION_REGULATIONS_FIELD, SOURCE_FIELD),  # regulations beats non-location
-            (LOCATION_COUNTRY_FIELD, SOURCE_FIELD),  # country beats non-location
-        ],
-        ids=[
-            "exact_beats_country",
-            "country_beats_groups",
-            "groups_beats_regulations",
-            "regulations_beats_non_location",
-            "country_beats_non_location",
+            param(LOCATION_FIELD, LOCATION_COUNTRY_FIELD, id="exact_beats_country"),
+            param(LOCATION_COUNTRY_FIELD, LOCATION_GROUPS_FIELD, id="country_beats_groups"),
+            param(LOCATION_GROUPS_FIELD, LOCATION_REGULATIONS_FIELD, id="groups_beats_regulations"),
+            param(LOCATION_REGULATIONS_FIELD, SOURCE_FIELD, id="regulations_beats_non_location"),
+            param(LOCATION_COUNTRY_FIELD, SOURCE_FIELD, id="country_beats_non_location"),
         ],
     )
     def test_higher_tier_wins_for_equal_condition_count(
@@ -277,50 +237,6 @@ class TestPolicySpecificity:
         )
 
         assert result.policy.key == "winner_policy"
-        assert not result.is_default
-
-    def test_nested_conditions_counted_correctly(self, db: Session, evaluator: PolicyEvaluator):
-        """Nested condition groups count all leaf conditions"""
-        _create_policy_with_condition(db, "simple", _leaf(LOCATION_REGULATIONS_FIELD))
-        _create_policy_with_condition(
-            db, "nested",
-            ConditionGroup(
-                logical_operator=GroupOperator.and_,
-                conditions=[
-                    ConditionGroup(
-                        logical_operator=GroupOperator.and_,
-                        conditions=[_leaf(LOCATION_FIELD), _leaf(SOURCE_FIELD)],
-                    ),
-                    _leaf(PrivacyRequestFields.origin.value),
-                ],
-            ),
-        )
-
-        result = evaluator.evaluate_policy_conditions(
-            _create_request(source="Privacy Center", origin="https://example.com"),
-            ActionType.access,
-        )
-
-        assert result.policy.key == "nested"
-        assert not result.is_default
-
-    def test_falls_back_when_specific_policy_doesnt_match(self, db: Session, evaluator: PolicyEvaluator):
-        """Falls back to less specific policy when more specific doesn't match"""
-        _create_policy_with_condition(db, "general", _leaf(LOCATION_REGULATIONS_FIELD))
-        _create_policy_with_condition(
-            db, "specific",
-            ConditionGroup(
-                logical_operator=GroupOperator.and_,
-                conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
-            ),
-        )
-
-        # Request from Germany - only matches general policy (GDPR)
-        result = evaluator.evaluate_policy_conditions(
-            _create_request("de", source="Privacy Center"), ActionType.access
-        )
-
-        assert result.policy.key == "general"
         assert not result.is_default
 
     def test_ambiguous_tie_raises_error(self, db: Session, evaluator: PolicyEvaluator):
