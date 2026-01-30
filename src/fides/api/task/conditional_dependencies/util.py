@@ -10,6 +10,9 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionLeaf,
 )
 
+# Type alias for policy keys used in validation
+PolicyKey = str
+
 
 # pylint: disable=too-many-return-statements
 def transform_value_for_evaluation(value: Any) -> Any:
@@ -117,6 +120,47 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
     return result
 
 
+def extract_leaves(
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+) -> list[ConditionLeaf]:
+    """
+    Recursively extracts all leaf conditions from a condition tree.
+
+    Handles both Pydantic models and dict/JSONB representations.
+
+    Args:
+        condition: Condition tree (Pydantic model or dict) to extract leaves from
+
+    Returns:
+        List of all ConditionLeaf nodes in the tree
+    """
+    if not condition:
+        return []
+
+    # Handle dict/JSONB format
+    if isinstance(condition, dict):
+        if "field_address" in condition:
+            # This is a leaf node in dict form - convert to ConditionLeaf
+            return [ConditionLeaf.model_validate(condition)]
+        if "conditions" in condition:
+            leaves: list[ConditionLeaf] = []
+            for sub in condition["conditions"]:
+                leaves.extend(extract_leaves(sub))
+            return leaves
+        return []
+
+    # Handle Pydantic models
+    if isinstance(condition, ConditionLeaf):
+        return [condition]
+    if isinstance(condition, ConditionGroup):
+        leaves = []
+        for sub_condition in condition.conditions:
+            leaves.extend(extract_leaves(sub_condition))
+        return leaves
+
+    return []
+
+
 def extract_field_addresses(
     condition: Union[ConditionLeaf, ConditionGroup, dict, None]
 ) -> set[str]:
@@ -131,25 +175,5 @@ def extract_field_addresses(
     Returns:
         Set of unique field addresses referenced in the condition tree
     """
-    if not condition:
-        return set()
-
-    field_addresses: set[str] = set()
-
-    # Handle dict/JSONB format
-    if isinstance(condition, dict):
-        if "field_address" in condition:
-            field_addresses.add(condition["field_address"])
-        if "conditions" in condition:
-            for sub in condition["conditions"]:
-                field_addresses.update(extract_field_addresses(sub))
-        return field_addresses
-
-    # Handle Pydantic models
-    if isinstance(condition, ConditionLeaf):
-        field_addresses.add(condition.field_address)
-    elif isinstance(condition, ConditionGroup):
-        for sub_condition in condition.conditions:
-            field_addresses.update(extract_field_addresses(sub_condition))
-
-    return field_addresses
+    # Use extract_leaves to get all leaves, then extract their field addresses
+    return {leaf.field_address for leaf in extract_leaves(condition)}

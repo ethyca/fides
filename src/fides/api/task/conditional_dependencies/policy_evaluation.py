@@ -39,6 +39,47 @@ LOCATION_HIERARCHY_TIERS: dict[str, int] = {
     PrivacyRequestConvenienceFields.location_regulations.value: 1,  # Regulation (e.g., "gdpr")
 }
 
+# Derived constants from LOCATION_HIERARCHY_TIERS (single source of truth)
+# All location-related fields
+LOCATION_FIELDS: set[str] = set(LOCATION_HIERARCHY_TIERS.keys())
+
+# Location fields that are list-valued (groups, regulations)
+# These are validated differently than scalar location fields (location, location_country)
+LOCATION_LIST_FIELDS: set[str] = {
+    PrivacyRequestConvenienceFields.location_groups.value,
+    PrivacyRequestConvenienceFields.location_regulations.value,
+}
+
+# Fields where different equality values make conditions mutually exclusive
+MUTUALLY_EXCLUSIVE_FIELDS: set[str] = {
+    PrivacyRequestFields.location.value,
+    PrivacyRequestConvenienceFields.location_country.value,
+}
+
+
+def calculate_specificity(
+    field_addresses: set[str],
+) -> PolicyEvaluationSpecificity:
+    """Calculate specificity for a set of field addresses.
+
+    Specificity is determined by:
+    1. Condition count (more conditions = more specific)
+    2. Location hierarchy tier (for tiebreaking - country beats regulation, etc.)
+
+    Args:
+        field_addresses: Set of field addresses from a condition tree
+
+    Returns:
+        PolicyEvaluationSpecificity with condition_count and location_tier
+    """
+    return PolicyEvaluationSpecificity(
+        condition_count=len(field_addresses),
+        location_tier=max(
+            (LOCATION_HIERARCHY_TIERS.get(addr, 0) for addr in field_addresses),
+            default=0,
+        ),
+    )
+
 
 class PolicyEvaluationError(Exception):
     """Error raised when policy evaluation fails"""
@@ -174,13 +215,7 @@ class PolicyEvaluator:
         if not evaluation_result.result:
             return None
 
-        specificity = PolicyEvaluationSpecificity(
-            condition_count=len(field_addresses),
-            location_tier=max(
-                (LOCATION_HIERARCHY_TIERS.get(addr, 0) for addr in field_addresses),
-                default=0,
-            ),
-        )
+        specificity = calculate_specificity(field_addresses)
 
         return (
             specificity,
