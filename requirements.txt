@@ -76,7 +76,7 @@ scylla-driver==3.26.8
 sendgrid==6.9.7
 slowapi==0.1.9
 smart-open[s3,gcs]==7.3.0.post1
-snowflake-sqlalchemy~=1.7.7
+snowflake-sqlalchemy~=1.8.2
 sqlakeyset~=2.0.1762907931
 sqlalchemy-bigquery==1.16.0
 sqlalchemy-citext==1.8.0
