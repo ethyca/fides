@@ -159,7 +159,7 @@ class PolicyEvaluator:
                 matches.append(result)
 
         if not matches:
-            logger.debug(f"No policies matched for action type {action_type} falling back to default policy")
+            logger.debug(f"No policies matched for action type {action_type}, falling back to default policy")
             return self._get_default_policy(action_type)
 
         # Sort by: condition count (desc), location tier (desc)
