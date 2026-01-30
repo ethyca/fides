@@ -82,22 +82,28 @@ const mapApiResultToUI = (
   const assessments: UIAssessment[] = Object.values(
     apiResult.declaration_results
   ).map((declResult) => {
-    // Extract data use from metadata or use a placeholder
-    const dataUse =
-      (apiResult.metadata?.data_use as string) || "processing.general";
+    // Use the new friendly name fields from the API, with fallbacks
+    const dataUse = declResult.data_use || "processing.general";
+    const dataUseName = declResult.data_use_name || dataUse;
+    const systemName = declResult.system_name || declResult.system_fides_key || "Unknown System";
+
+    // Use declaration_name if set, otherwise fall back to data_use_name (which is what users typically recognize)
+    const declarationName = declResult.declaration_name || dataUseName || `Declaration ${declResult.declaration_id}`;
+
+    // Extract data categories from metadata (still needed for display)
     const dataCategories =
       (apiResult.metadata?.data_categories as string[]) || [];
 
     return {
       id: declResult.declaration_id,
-      name: declResult.declaration_name || `Declaration ${declResult.declaration_id}`,
+      name: declarationName,
       status: "updated",
       statusTime: "Just now",
       riskLevel: determineRiskLevel(dataUse),
       completeness: calculateCompleteness(declResult),
-      system: declResult.system_fides_key || "Unknown System",
+      system: systemName,
       dataCategories,
-      dataUse,
+      dataUse: dataUseName,
     };
   });
 

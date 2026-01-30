@@ -91,6 +91,9 @@ export interface CPRADeclarationResult {
   declaration_id: string;
   declaration_name: string | null;
   system_fides_key?: string;
+  system_name?: string | null;
+  data_use?: string | null;
+  data_use_name?: string | null;
   answers: CPRAAssessmentAnswer[];
 }
 

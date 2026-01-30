@@ -131,7 +131,8 @@ interface Question {
   id: string;
   question: string;
   answer: string;
-  source: "system" | "slack";
+  source: "system" | "derivable" | "slack";
+  missingData?: string[]; // Fides field paths that could provide the answer if populated
 }
 
 interface QuestionGroup {
@@ -551,6 +552,44 @@ const assessmentData: Record<
   },
 };
 
+// Helper to extract group and question numbers from API question ID
+// e.g., "cpra_1_1" -> { group: "1", question: "1.1" }
+const parseQuestionId = (
+  id: string
+): { group: string; questionNum: string } => {
+  // Match pattern like "cpra_1_1" or "cpra_2_3"
+  const match = id.match(/cpra_(\d+)_(\d+)/);
+  if (match) {
+    return {
+      group: match[1],
+      questionNum: `${match[1]}.${match[2]}`,
+    };
+  }
+  // Fallback: try to extract any numbers
+  const nums = id.match(/\d+/g);
+  if (nums && nums.length >= 2) {
+    return {
+      group: nums[0],
+      questionNum: `${nums[0]}.${nums[1]}`,
+    };
+  }
+  return { group: "1", questionNum: "1.1" };
+};
+
+// Map requirement_key to human-readable group titles
+const requirementKeyToTitle: Record<string, string> = {
+  processing_scope: "Processing Scope and Purpose(s)",
+  significant_risk_determination: "Significant Risk Determination",
+  data_categories: "Categories of Personal Information",
+  sensitive_pi: "Sensitive Personal Information",
+  consumer_notification: "Consumer Notification",
+  consumer_rights: "Consumer Rights",
+  retention: "Data Retention",
+  third_party_sharing: "Third Party Sharing",
+  security: "Data Security",
+  safeguards: "Safeguards and Mitigation",
+};
+
 // Helper to map API questions to UI question groups
 const mapApiQuestionsToGroups = (
   questions: CPRAAssessmentQuestion[],
@@ -560,37 +599,48 @@ const mapApiQuestionsToGroups = (
   const answerMap = new Map<string, CPRAAssessmentAnswer>();
   answers.forEach((a) => answerMap.set(a.question_id, a));
 
-  // Group questions by their requirement_key prefix (e.g., "1.1" -> "1")
-  const groupMap = new Map<string, { title: string; questions: Question[] }>();
-
-  // Define group titles based on requirement keys
-  const groupTitles: Record<string, string> = {
-    "1": "Processing Scope and Purpose(s)",
-    "2": "Significant Risk Determination",
-    "3": "Categories of Personal/Sensitive Personal Information",
-    "4": "Consumer Rights and Impact",
-    "5": "Data Security and Retention",
-    "6": "Third Party Sharing",
-    "7": "Safeguards and Mitigation",
-  };
+  // Group questions by their group number extracted from ID
+  const groupMap = new Map<
+    string,
+    { title: string; requirementKey: string; questions: Question[] }
+  >();
 
   questions.forEach((q) => {
-    const groupId = q.requirement_key.split(".")[0];
+    const { group: groupId, questionNum } = parseQuestionId(q.id);
     const answer = answerMap.get(q.id);
 
     if (!groupMap.has(groupId)) {
+      // Get title from requirement_key mapping or format it nicely
+      const title =
+        requirementKeyToTitle[q.requirement_key] ||
+        q.requirement_key
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
       groupMap.set(groupId, {
-        title: groupTitles[groupId] || `Section ${groupId}`,
+        title,
+        requirementKey: q.requirement_key,
         questions: [],
       });
     }
 
     const group = groupMap.get(groupId)!;
+
+    // Determine source based on answer status
+    let source: "system" | "derivable" | "slack" = "slack";
+    if (answer?.status === "complete") {
+      source = "system";
+    } else if (answer?.status === "partial") {
+      source = "derivable";
+    }
+
     group.questions.push({
-      id: q.requirement_key,
+      id: questionNum,
       question: q.question_text,
       answer: answer?.answer_text || "",
-      source: answer?.status === "needs_input" ? "slack" : "system",
+      source,
+      missingData: answer?.missing_data,
     });
   });
 
@@ -606,6 +656,42 @@ const mapApiQuestionsToGroups = (
         return aNum - bNum;
       }),
     }));
+};
+
+// Human-readable labels for field names
+const fieldNameLabels: Record<string, string> = {
+  name: "Name",
+  description: "Description",
+  data_use: "Data Use",
+  data_categories: "Data Categories",
+  data_subjects: "Data Subjects",
+  fides_key: "Fides Key",
+  legal_basis_for_processing: "Legal Basis",
+  retention_period: "Retention Period",
+  processes_special_category_data: "Processes Special Category Data",
+  data_shared_with_third_parties: "Shared with Third Parties",
+  third_parties: "Third Parties",
+  system_type: "System Type",
+};
+
+// Human-readable labels for source types
+const sourceTypeLabels: Record<string, string> = {
+  system: "System",
+  privacy_declaration: "Privacy Declaration",
+  data_category: "Data Category",
+  data_use: "Data Use",
+  data_subject: "Data Subject",
+};
+
+// Format a value for display (remove quotes from strings, format arrays nicely)
+const formatValue = (value: unknown): string => {
+  if (value === null || value === undefined) return "N/A";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value.join(", ") : "None";
+  }
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return JSON.stringify(value);
 };
 
 // Helper to map FidesDataSource to evidence items
@@ -624,33 +710,38 @@ const mapFidesDataToEvidence = (
     const question = questionMap.get(answer.question_id);
     if (!question) return;
 
-    const groupId = question.requirement_key.split(".")[0];
+    // Extract group ID from question ID (e.g., "cpra_1_1" -> "1")
+    const { group: groupId } = parseQuestionId(question.id);
 
     // Map fides_data_used to system evidence
     if (answer.fides_data_used && answer.fides_data_used.length > 0) {
       answer.fides_data_used.forEach((source) => {
-        const systemName =
-          source.source_type === "system"
-            ? source.source_key || "Fides System"
-            : source.source_type === "data_category"
-              ? "Fides Data Map"
-              : source.source_type === "data_use"
-                ? "Privacy Declaration"
-                : source.source_key || "Fides";
+        // Get human-readable source name
+        const sourceTypeLabel =
+          sourceTypeLabels[source.source_type] || source.source_type;
+        const systemName = source.source_key
+          ? `${sourceTypeLabel}: ${source.source_key}`
+          : sourceTypeLabel;
 
-        const content =
-          source.field_name && source.value
-            ? `${source.field_name}: ${JSON.stringify(source.value)}`
-            : source.value
-              ? JSON.stringify(source.value)
-              : `Source: ${source.source_type}`;
+        // Get human-readable field label
+        const fieldLabel = source.field_name
+          ? fieldNameLabels[source.field_name] ||
+            source.field_name
+              .split("_")
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ")
+          : sourceTypeLabel;
+
+        // Format content without duplicate prefixes
+        const formattedValue = formatValue(source.value);
+        const content = formattedValue;
 
         evidence.push({
           id: `ev-${citationNum}`,
           groupId,
           type: "system",
           source: { system: systemName },
-          label: source.field_name || source.source_type,
+          label: fieldLabel,
           content,
           timestamp: new Date().toISOString(),
           citationNumber: citationNum,
@@ -1042,18 +1133,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   // Use declaration result from API if available, otherwise fallback to hardcoded data
   const assessment = useMemo(() => {
     if (declarationResult) {
-      // Get metadata from API result
-      const dataUse =
-        (apiResult?.metadata?.data_use as string) || "processing.general";
+      // Use new friendly name fields from API, with fallbacks
+      const dataUse = declarationResult.data_use || "processing.general";
+      const dataUseName = declarationResult.data_use_name || dataUse;
+      const systemName =
+        declarationResult.system_name ||
+        declarationResult.system_fides_key ||
+        "Unknown System";
+
+      // Use declaration_name if set, otherwise fall back to data_use_name
+      const declarationName =
+        declarationResult.declaration_name ||
+        dataUseName ||
+        `Assessment ${id}`;
+
+      // Get data categories from metadata (still needed for display)
       const dataCategories =
         (apiResult?.metadata?.data_categories as string[]) || [];
 
       return {
-        name: declarationResult.declaration_name || `Assessment ${id}`,
-        system: declarationResult.system_fides_key || "Unknown System",
+        name: declarationName,
+        system: systemName,
         riskLevel: "Med" as const, // Could be computed from answers
         dataCategories,
-        dataUse,
+        dataUse: dataUseName,
       };
     }
     // Fallback to hardcoded data
@@ -1400,15 +1503,31 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                           <Text strong>
                             {q.id}. {q.question}
                           </Text>
-                          <Tag
-                            color={
-                              q.source === "system"
-                                ? CUSTOM_TAG_COLOR.SUCCESS
-                                : CUSTOM_TAG_COLOR.DEFAULT
-                            }
-                          >
-                            {q.source === "system" ? "System derived" : "Team input"}
-                          </Tag>
+                          {q.source === "derivable" ? (
+                            <Tooltip
+                              title={
+                                q.missingData && q.missingData.length > 0
+                                  ? `This answer can be automatically derived if you populate: ${q.missingData.join(", ")}`
+                                  : "This answer can be derived from Fides data if the relevant field is populated"
+                              }
+                            >
+                              <Tag color={CUSTOM_TAG_COLOR.WARNING}>
+                                System derivable
+                              </Tag>
+                            </Tooltip>
+                          ) : (
+                            <Tag
+                              color={
+                                q.source === "system"
+                                  ? CUSTOM_TAG_COLOR.SUCCESS
+                                  : CUSTOM_TAG_COLOR.DEFAULT
+                              }
+                            >
+                              {q.source === "system"
+                                ? "System derived"
+                                : "Team input"}
+                            </Tag>
+                          )}
                         </Flex>
                         <EditableTextBlock
                           value={q.answer}
