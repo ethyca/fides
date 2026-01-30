@@ -41,12 +41,19 @@ const MonitorListSearchForm = ({
 
   const dataStewardOptions = _.uniqBy(
     [
-      ...(currentUser ? [currentUser] : []),
-      ...(eligibleUsersData?.items || []),
-    ].map((user) => ({
-      label: formatUser(user),
-      value: user.id,
-    })),
+      ...(currentUser
+        ? [
+            {
+              label: "Assigned to me",
+              value: currentUser.id,
+            },
+          ]
+        : []),
+      ...(eligibleUsersData?.items || []).map((user) => ({
+        label: formatUser(user),
+        value: user.id,
+      })),
+    ],
     "value",
   );
 
