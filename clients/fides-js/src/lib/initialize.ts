@@ -298,7 +298,7 @@ export const initialize = async ({
       );
 
       /**
-       * Apply calculated automated consent to experience defaults BEFORE updating cookie
+       * Apply calculated automated consent to experience defaults
        */
       if (automatedApplied && fides.experience.privacy_notices) {
         // Update experience privacy_notices with calculated automated consent
@@ -324,7 +324,11 @@ export const initialize = async ({
         Object.assign(fides.cookie.fides_meta, {
           consentMethod: automatedMethod,
         });
-        Object.assign(fides.cookie.consent, automatedNoticeConsent);
+        // eslint-disable-next-line no-param-reassign
+        fides.cookie = {
+          ...fides.cookie,
+          consent: automatedNoticeConsent,
+        };
         await saveFidesCookie(fides.cookie, options);
 
         fidesDebugger(
