@@ -76,5 +76,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDataProtectionAssessments": {
+    "label": "Alpha data protection assessments",
+    "description": "Enable Data Protection Assessments feature for managing DPAs and PIAs",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
