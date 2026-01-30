@@ -24,8 +24,6 @@ from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     PrivacyRequestFields,
 )
 from fides.api.task.conditional_dependencies.schemas import (
-    Condition,
-    ConditionLeaf,
     PolicyEvaluationResult,
     PolicyEvaluationSpecificity,
 )
@@ -106,7 +104,7 @@ class PolicyEvaluator:
 
         # Collect all matching policies with their specificity scores
         # Each score is (condition_count, max_location_tier)
-        matches: list[tuple[tuple[int, int], PolicyEvaluationResult]] = []
+        matches: list[tuple[PolicyEvaluationSpecificity, PolicyEvaluationResult]] = []
 
         for policy_condition in policy_conditions:
             result = self._evaluate_single_condition(
