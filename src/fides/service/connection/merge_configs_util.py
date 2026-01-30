@@ -1,5 +1,5 @@
 import copy
-from typing import Any, List, Optional, cast
+from typing import Any, Optional, Union, cast
 
 import yaml
 from deepdiff import DeepDiff
@@ -19,6 +19,80 @@ from fides.api.service.connectors import ConnectionConfig
 from fides.api.util.saas_util import replace_dataset_placeholders
 
 
+def get_saas_config_referenced_fields(
+    saas_config: SaaSConfig,
+    instance_key: str,
+) -> set[tuple[str, str]]:
+    """
+    Extract all dataset field references from the SaaS config using recursive traversal.
+
+    This function automatically finds dataset references anywhere in the config by
+    looking for characteristic patterns:
+    - FidesDatasetReference: dicts with 'dataset' and 'field' keys
+    - DatasetRef: dicts with 'dataset_reference' key
+
+    This approach is more maintainable than hardcoding specific paths, as it
+    automatically picks up references in any new locations added to the schema.
+
+    Args:
+        saas_config: The SaaS configuration to extract references from
+        instance_key: The instance key to match against (in addition to <instance_fides_key>)
+
+    Returns:
+        Set of (collection_name, field_name) tuples representing referenced fields
+    """
+    referenced_fields: set[tuple[str, str]] = set()
+    valid_dataset_keys = {"<instance_fides_key>", instance_key}
+
+    def _extract_fides_dataset_reference(data: dict[str, Any]) -> None:
+        """
+        Extract from FidesDatasetReference pattern: {dataset: ..., field: ...}
+        Field format: "collection.field" or "collection.field.nested"
+        """
+        dataset = data.get("dataset", "")
+        field = data.get("field", "")
+        if dataset in valid_dataset_keys and field:
+            parts = field.split(".")
+            if len(parts) >= 2:
+                collection_name, field_name = parts[0], parts[1]
+                referenced_fields.add((collection_name, field_name))
+
+    def _extract_dataset_ref(data: dict[str, Any]) -> None:
+        """
+        Extract from DatasetRef pattern: {dataset_reference: ...}
+        Format: "dataset.collection.field"
+        """
+        ref = data.get("dataset_reference", "")
+        if not ref:
+            return
+        parts = ref.split(".")
+        if len(parts) >= 3 and parts[0] in valid_dataset_keys:
+            collection_name, field_name = parts[1], parts[2]
+            referenced_fields.add((collection_name, field_name))
+
+    def _traverse(obj: Any) -> None:
+        """Recursively traverse and extract dataset references."""
+        if isinstance(obj, dict):
+            # Check for FidesDatasetReference pattern (has both 'dataset' and 'field' keys)
+            if "dataset" in obj and "field" in obj:
+                _extract_fides_dataset_reference(obj)
+            # Check for DatasetRef pattern (has 'dataset_reference' key)
+            elif "dataset_reference" in obj:
+                _extract_dataset_ref(obj)
+            # Recurse into all values regardless of whether we found a pattern
+            for value in obj.values():
+                _traverse(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                _traverse(item)
+
+    # Convert to dict and traverse the entire structure
+    config_dict = saas_config.model_dump()
+    _traverse(config_dict)
+
+    return referenced_fields
+
+
 def _get_fields(field: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Returns the fields of a dataset.
@@ -31,12 +105,20 @@ def _merge_field(
     upcoming_field: Optional[dict[str, Any]],
     customer_field: Optional[dict[str, Any]],
     original_field: Optional[dict[str, Any]],
+    protected_field_names: Optional[set[str]] = None,
 ) -> Optional[dict[str, Any]]:
     """
     Recursively merges a single field.
     If the customer made changes to the field (compared to stored dataset), preserve customer's version.
     If no changes were made by the customer, use the most recent integration version (upcoming).
     Handles nested fields recursively.
+
+    Args:
+        upcoming_field: Field from the new template
+        customer_field: Field from the customer's current dataset
+        original_field: Field from the stored original template
+        protected_field_names: Set of field names that are referenced in the SaaS config
+            (passed through for nested field merging)
     """
     # Check if customer made changes to the field
     customer_made_changes = False
@@ -83,6 +165,7 @@ def _merge_field(
             nested_upcoming_fields_by_name,
             nested_customer_fields_by_name,
             nested_original_fields_by_name,
+            protected_field_names,
         )
         # empty field list means the field should be None
         merged_field["fields"] = merged_nested_fields if merged_nested_fields else None
@@ -94,6 +177,7 @@ def _merge_fields(
     upcoming_fields_by_name: dict[str, dict[str, Any]],
     customer_fields_by_name: dict[str, dict[str, Any]],
     original_fields_by_name: dict[str, dict[str, Any]],
+    protected_field_names: Optional[set[str]] = None,
 ) -> list[dict[str, Any]]:
     """
     Merges a list of fields by comparing upcoming, customer, and original versions.
@@ -105,9 +189,18 @@ def _merge_fields(
 
     Handles deleted fields:
     - If a field exists in original but not in upcoming, it was deleted by integration update
-        and should NOT be preserved from customer dataset
+        and should be deleted (integration updates are controlled)
     - If a field exists in customer but not in original, it was added by customer
         and should be preserved
+    - If a customer deleted a field that exists in the template, only allow the deletion
+        if the field is NOT protected (not referenced in SaaS config)
+
+    Args:
+        upcoming_fields_by_name: Fields from the new template
+        customer_fields_by_name: Fields from the customer's current dataset
+        original_fields_by_name: Fields from the stored original template
+        protected_field_names: Set of field names that are referenced in the SaaS config
+            and should not be deleted by customers
     """
     # Get all unique field names from customer, base, and original
     all_field_names = (
@@ -122,14 +215,34 @@ def _merge_fields(
         customer_field = customer_fields_by_name.get(field_name)
         original_field = original_fields_by_name.get(field_name)
 
-        # Check if field was deleted in integration update
-        # If it exists in original but not in base, it was deleted - skip it
+        # Case 1: Integration deleted the field (exists in original, not in upcoming)
+        # Allow the deletion - integration updates are controlled
         if original_field and not upcoming_field:
-            # Field was deleted by integration update, don't preserve from customer
+            # Field was deleted by integration update, skip it
+            continue
+
+        # Case 2: Customer deleted a field that exists in the template
+        # Only allow if the field is NOT protected (not referenced in SaaS config)
+        if upcoming_field and original_field and not customer_field:
+            if protected_field_names and field_name in protected_field_names:
+                # Field is protected (referenced in SaaS config)
+                # Don't allow customer deletion - use the upcoming version
+                logger.info(
+                    f"Preventing deletion of protected field '{field_name}' that is referenced in SaaS config"
+                )
+                merged_field = _merge_field(
+                    upcoming_field, None, original_field, protected_field_names
+                )
+                if merged_field:
+                    merged_fields.append(merged_field)
+                continue
+            # Field is not protected - allow customer deletion (skip this field)
             continue
 
         # Otherwise, merge the field (handles all other cases including customer-added fields)
-        merged_field = _merge_field(upcoming_field, customer_field, original_field)
+        merged_field = _merge_field(
+            upcoming_field, customer_field, original_field, protected_field_names
+        )
         if merged_field:
             merged_fields.append(merged_field)
 
@@ -140,10 +253,18 @@ def _merge_collection(
     upcoming_collection: dict[str, Any],
     customer_collection: dict[str, Any],
     original_collection: dict[str, Any],
+    protected_field_names: Optional[set[str]] = None,
 ) -> dict[str, Any]:
     """
     Merges a collection by merging its fields.
     Returns the merged collection.
+
+    Args:
+        upcoming_collection: Collection from the new template
+        customer_collection: Collection from the customer's current dataset
+        original_collection: Collection from the stored original template
+        protected_field_names: Set of field names within this collection that are
+            referenced in the SaaS config and should not be deleted
     """
     merged_collection = copy.deepcopy(upcoming_collection)
 
@@ -160,7 +281,10 @@ def _merge_collection(
 
     # Merge fields recursively
     merged_fields = _merge_fields(
-        upcoming_fields_by_name, customer_fields_by_name, original_fields_by_name
+        upcoming_fields_by_name,
+        customer_fields_by_name,
+        original_fields_by_name,
+        protected_field_names,
     )
     merged_collection["fields"] = merged_fields
 
@@ -187,8 +311,21 @@ def merge_datasets(
     stored_dataset: dict[str, Any],
     upcoming_dataset: dict[str, Any],
     instance_key: str,
+    protected_fields: Optional[set[tuple[str, str]]] = None,
 ) -> dict[str, Any]:
-    """Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge."""
+    """
+    Merges the datasets into a single dataset. Use the upcoming dataset as the base of the merge.
+
+    Args:
+        customer_dataset: The customer's current dataset with their modifications
+        stored_dataset: The previously stored template dataset
+        upcoming_dataset: The new template dataset being applied
+        instance_key: The instance key for this connection
+        protected_fields: Set of (collection_name, field_name) tuples representing fields
+            that are referenced in the SaaS config and should not be deleted by customers.
+            Customers can delete non-protected fields, but protected fields will be preserved
+            from the template to prevent breaking the connection.
+    """
     stored_dataset_copy = copy.deepcopy(stored_dataset)
     upcoming_dataset_copy = copy.deepcopy(upcoming_dataset)
 
@@ -220,6 +357,14 @@ def merge_datasets(
         for collection in customer_dataset.get("collections", [])
     }
 
+    # Build a map of protected field names by collection for efficient lookup
+    protected_fields_by_collection: dict[str, set[str]] = {}
+    if protected_fields:
+        for collection_name, field_name in protected_fields:
+            if collection_name not in protected_fields_by_collection:
+                protected_fields_by_collection[collection_name] = set()
+            protected_fields_by_collection[collection_name].add(field_name)
+
     # Collections can't be edited by customers, so we only process collections
     # that exist in the base dataset. Any new collections from customer are ignored.
     for collection_name, upcoming_collection in upcoming_collections.items():
@@ -229,9 +374,16 @@ def merge_datasets(
             customer_collection = customer_collections_by_name.get(collection_name)
 
             if customer_collection:
+                # Get protected field names for this specific collection
+                collection_protected_fields = protected_fields_by_collection.get(
+                    collection_name
+                )
                 # Merge the collection (recursively merges fields)
                 merged_collection = _merge_collection(
-                    upcoming_collection, customer_collection, original_collection
+                    upcoming_collection,
+                    customer_collection,
+                    original_collection,
+                    collection_protected_fields,
                 )
                 upcoming_collections[collection_name] = merged_collection
 

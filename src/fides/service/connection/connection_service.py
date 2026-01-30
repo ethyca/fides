@@ -68,6 +68,7 @@ from fides.api.util.saas_util import (
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
 from fides.service.connection.merge_configs_util import (
     get_endpoint_resources,
+    get_saas_config_referenced_fields,
     merge_datasets,
     merge_saas_config_with_monitored_resources,
     normalize_dataset,
@@ -728,11 +729,24 @@ class ConnectionService:
                 stored_dataset_template.dataset_json, dict
             ):
                 stored_dataset = stored_dataset_template.dataset_json
+
+                # Extract protected fields from SaaS config to prevent deletion
+                # of fields that are referenced in param_values or postprocessors
+                saas_config = connection_config.get_saas_config()
+                protected_fields = (
+                    get_saas_config_referenced_fields(
+                        saas_config, template_values.instance_key
+                    )
+                    if saas_config
+                    else None
+                )
+
                 final_dataset = merge_datasets(
                     customer_dataset,
                     stored_dataset,
                     upcoming_dataset,
                     template_values.instance_key,
+                    protected_fields=protected_fields,
                 )
 
         # we save the upcoming dataset as the new stored dataset
