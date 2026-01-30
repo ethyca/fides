@@ -213,29 +213,25 @@ const PrivacyNoticeForm = ({
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
                 <Divider />
-                {!isChildNotice && (
-                  <ScrollableList<MinimalPrivacyNotice>
-                    label="Child notices"
-                    addButtonLabel="Add notice children"
-                    allItems={allPrivacyNotices.map((n) => ({
+                <ScrollableList<MinimalPrivacyNotice>
+                  label="Child notices"
+                  addButtonLabel="Add notice children"
+                  allItems={allPrivacyNotices.map((n) => ({
+                    id: n.id,
+                    name: n.name,
+                  }))}
+                  values={
+                    values.children?.map((n) => ({
                       id: n.id,
                       name: n.name,
-                    }))}
-                    values={
-                      values.children?.map((n) => ({
-                        id: n.id,
-                        name: n.name,
-                      })) ?? []
-                    }
-                    setValues={(newValue) =>
-                      setFieldValue("children", newValue)
-                    }
-                    idField="id"
-                    getItemLabel={getPrivacyNoticeName}
-                    draggable
-                    baseTestId="children"
-                  />
-                )}
+                    })) ?? []
+                  }
+                  setValues={(newValue) => setFieldValue("children", newValue)}
+                  idField="id"
+                  getItemLabel={getPrivacyNoticeName}
+                  draggable
+                  baseTestId="children"
+                />
                 <ControlledSelect
                   name="data_uses"
                   label="Data use"

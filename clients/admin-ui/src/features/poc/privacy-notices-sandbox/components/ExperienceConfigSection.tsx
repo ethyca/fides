@@ -17,7 +17,35 @@ interface ExperienceConfigSectionProps {
 }
 
 /**
- * Renders a list of privacy notices with their children
+ * Renders a single privacy notice item with recursive children
+ */
+const PrivacyNoticeItem = ({
+  notice,
+  depth = 0,
+}: {
+  notice: PrivacyNoticeResponse;
+  depth?: number;
+}) => {
+  const paddingLeft = depth * 20; // 20px per level of nesting
+
+  return (
+    <>
+      <li
+        key={notice.id}
+        className="py-1"
+        style={{ paddingLeft: `${paddingLeft}px` }}
+      >
+        {notice.name}
+      </li>
+      {notice.children?.map((child) => (
+        <PrivacyNoticeItem key={child.id} notice={child} depth={depth + 1} />
+      ))}
+    </>
+  );
+};
+
+/**
+ * Renders a list of privacy notices with all levels of children
  */
 const PrivacyNoticesList = ({
   privacyNotices,
@@ -32,18 +60,7 @@ const PrivacyNoticesList = ({
     <div className="max-h-60 overflow-y-auto">
       <ul className="m-0 list-inside list-disc pl-2">
         {privacyNotices.map((notice) => (
-          <li key={notice.id} className="list-none">
-            <ul className="m-0 list-inside list-disc">
-              <li className="py-1">{notice.name}</li>
-              {notice.children &&
-                notice.children.length > 0 &&
-                notice.children.map((child) => (
-                  <li key={child.id} className="py-1 pl-5">
-                    {child.name}
-                  </li>
-                ))}
-            </ul>
-          </li>
+          <PrivacyNoticeItem key={notice.id} notice={notice} />
         ))}
       </ul>
     </div>
