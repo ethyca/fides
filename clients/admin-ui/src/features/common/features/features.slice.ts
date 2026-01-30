@@ -12,6 +12,14 @@ import flagDefaults from "~/flags.json";
 import { configureFlags, flagsForEnv } from "./config";
 import { Env, FlagsFor, NamesFor, ValueFor } from "./types";
 
+/**
+ * Cleans a version string by removing "dirty" suffixes that indicate
+ * uncommitted changes in the git working tree.
+ * Handles both ".dirty" (PEP440 format) and "-dirty" (git describe format).
+ */
+const cleanVersionString = (version: string | undefined): string | undefined =>
+  version?.replace(/[.-]dirty$/, "");
+
 export const FLAG_CONFIG = configureFlags(flagDefaults);
 export type FlagConfig = typeof FLAG_CONFIG;
 export type FlagNames = NamesFor<FlagConfig>;
@@ -149,10 +157,10 @@ export const useFeatures = (): Features => {
   const systemsCount = useAppSelector(selectSystemsCount);
   const initialConnections = useAppSelector(selectInitialConnections);
 
-  const version = health?.version;
+  const version = cleanVersionString(health?.version);
 
   const plus = plusHealth !== undefined;
-  const plusVersion = plusHealth?.fidesplus_version;
+  const plusVersion = cleanVersionString(plusHealth?.fidesplus_version);
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
     : false;
