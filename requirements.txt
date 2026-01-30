@@ -99,7 +99,7 @@ versioneer==0.19
 yarl~=1.22.0
 filelock~=3.20.0
 pyOpenSSL~=25.3.0
-cryptography~=45.0.7
+cryptography~=46.0.4
 snowflake-connector-python~=3.18.0
 cffi~=1.17.1
 smmap~=5.0.2
