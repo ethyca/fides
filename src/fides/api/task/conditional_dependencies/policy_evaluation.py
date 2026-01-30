@@ -210,7 +210,7 @@ class PolicyEvaluator:
         default_key = self.DEFAULT_POLICY_KEYS.get(action_type)
 
         # Query for the specific default policy by key
-        policy = Policy.get_by(self.db, field="key", value=default_key)
+        policy = Policy.get_by(self.db, field="key", value=default_key) if default_key else None
 
         if not policy:
             raise PolicyEvaluationError(
