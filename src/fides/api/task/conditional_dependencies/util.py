@@ -1,8 +1,17 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 from uuid import UUID
 
 from pydantic import BaseModel
+
+from fides.api.task.conditional_dependencies.schemas import (
+    Condition,
+    ConditionGroup,
+    ConditionLeaf,
+)
+
+# Type alias for policy keys used in validation
+PolicyKey = str
 
 
 # pylint: disable=too-many-return-statements
@@ -109,3 +118,62 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
     # Set the final value
     current[final_key] = value
     return result
+
+
+def extract_leaves(
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+) -> list[ConditionLeaf]:
+    """
+    Recursively extracts all leaf conditions from a condition tree.
+
+    Handles both Pydantic models and dict/JSONB representations.
+
+    Args:
+        condition: Condition tree (Pydantic model or dict) to extract leaves from
+
+    Returns:
+        List of all ConditionLeaf nodes in the tree
+    """
+    if not condition:
+        return []
+
+    # Handle dict/JSONB format
+    if isinstance(condition, dict):
+        if "field_address" in condition:
+            # This is a leaf node in dict form - convert to ConditionLeaf
+            return [ConditionLeaf.model_validate(condition)]
+        if "conditions" in condition:
+            leaves: list[ConditionLeaf] = []
+            for sub in condition["conditions"]:
+                leaves.extend(extract_leaves(sub))
+            return leaves
+        return []
+
+    # Handle Pydantic models
+    if isinstance(condition, ConditionLeaf):
+        return [condition]
+    if isinstance(condition, ConditionGroup):
+        leaves = []
+        for sub_condition in condition.conditions:
+            leaves.extend(extract_leaves(sub_condition))
+        return leaves
+
+    return []
+
+
+def extract_field_addresses(
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+) -> set[str]:
+    """
+    Recursively extracts all field addresses from a condition tree.
+
+    Handles both Pydantic models and dict/JSONB representations.
+
+    Args:
+        condition: Condition tree (Pydantic model or dict) to extract field addresses from
+
+    Returns:
+        Set of unique field addresses referenced in the condition tree
+    """
+    # Use extract_leaves to get all leaves, then extract their field addresses
+    return {leaf.field_address for leaf in extract_leaves(condition)}

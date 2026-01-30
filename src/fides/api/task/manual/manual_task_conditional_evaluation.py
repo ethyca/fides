@@ -25,8 +25,10 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionLeaf,
     EvaluationResult,
 )
-from fides.api.task.conditional_dependencies.util import extract_nested_field_value
-from fides.api.task.manual.manual_task_utils import extract_field_addresses
+from fides.api.task.conditional_dependencies.util import (
+    extract_field_addresses,
+    extract_nested_field_value,
+)
 from fides.api.util.collection_util import Row
 
 
