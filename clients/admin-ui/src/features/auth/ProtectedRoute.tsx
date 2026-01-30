@@ -31,22 +31,20 @@ const useProtectedRoute = (redirectUrl: string) => {
       dispatch(logout());
     }
     if (typeof window !== "undefined") {
-      const query = REDIRECT_IGNORES.includes(window.location.pathname)
-        ? undefined
-        : { redirect: window.location.pathname };
+      const redirectParam = REDIRECT_IGNORES.includes(window.location.pathname)
+        ? ""
+        : `?redirect=${encodeURIComponent(window.location.pathname)}`;
       if (
         redirectFrom !== window.location.pathname &&
         window.location.pathname !== redirectUrl
       ) {
         setRedirectFrom(window.location.pathname);
-        router
-          .push({
-            pathname: redirectUrl,
-            query,
-          })
-          .then(() => {
-            setRedirectFrom(undefined);
-          });
+        // Use hard navigation instead of client-side navigation to ensure
+        // the page fully reloads. This fixes an issue where the OIDC/SSO
+        // login buttons wouldn't appear after session timeout because
+        // RTK Query cache was cleared but queries didn't properly refetch
+        // during client-side navigation (ENG-1466).
+        window.location.href = `${redirectUrl}${redirectParam}`;
       }
     }
     return { authenticated: false, hasAccess: false };
