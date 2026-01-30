@@ -9,7 +9,7 @@ import {
   Space,
   Tag,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
@@ -20,45 +20,95 @@ import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { DEFAULT_TOAST_PARAMS, successToastParams } from "~/features/common/toast";
+import {
+  CPRAAssessmentResult,
+  CPRADeclarationResult,
+  useRunCpraAssessmentMutation,
+} from "~/features/plus/plus.slice";
 
 const { Title, Text } = Typography;
 
-// Assessments to add when generating (based on Fides demo privacy declarations)
-const generatedAssessments = {
-  cpra: {
-    templateId: "CPRA-RA-2024",
-    title: "California CPRA Risk Assessment",
-    assessments: [
-      {
-        id: "analyze_customer_behaviour",
-        name: "Analyze customer behaviour for improvements",
-        status: "updated",
-        statusTime: "Just now",
-        riskLevel: "Med",
-        completeness: 53,
-        system: "Demo Analytics System",
-        dataCategories: ["user.contact", "user.device.cookie_id"],
-        dataUse: "functional.service.improve",
-      },
-      {
-        id: "collect_data_for_marketing",
-        name: "Collect data for marketing",
-        status: "updated",
-        statusTime: "Just now",
-        riskLevel: "High",
-        completeness: 53,
-        system: "Demo Marketing System",
-        dataCategories: ["user.device.cookie_id"],
-        dataUse: "marketing.advertising",
-      },
-    ],
-  },
+// Storage keys
+const ASSESSMENTS_STORAGE_KEY = "privacy-assessments-data";
+const ASSESSMENT_RESULTS_KEY = "privacy-assessments-api-results";
+
+// UI Assessment types
+interface UIAssessment {
+  id: string;
+  name: string;
+  status: "updated" | "outdated";
+  statusTime: string;
+  riskLevel: "High" | "Med" | "Low";
+  completeness: number;
+  system: string;
+  dataCategories: string[];
+  dataUse: string;
+}
+
+interface UIAssessmentTemplate {
+  templateId: string;
+  title: string;
+  assessments: UIAssessment[];
+}
+
+interface AssessmentData {
+  cpra: UIAssessmentTemplate;
+}
+
+// Calculate completeness percentage from answers
+const calculateCompleteness = (result: CPRADeclarationResult): number => {
+  if (!result.answers || result.answers.length === 0) return 0;
+  const completeCount = result.answers.filter(
+    (a) => a.status === "complete"
+  ).length;
+  return Math.round((completeCount / result.answers.length) * 100);
 };
 
-type AssessmentData = typeof generatedAssessments;
+// Determine risk level based on data use (simplified heuristic)
+const determineRiskLevel = (dataUse: string): "High" | "Med" | "Low" => {
+  if (dataUse.includes("marketing") || dataUse.includes("advertising")) {
+    return "High";
+  }
+  if (dataUse.includes("analytics") || dataUse.includes("third_party")) {
+    return "Med";
+  }
+  return "Low";
+};
 
-const ASSESSMENTS_STORAGE_KEY = "privacy-assessments-data";
+// Map API result to UI format
+const mapApiResultToUI = (
+  apiResult: CPRAAssessmentResult
+): AssessmentData => {
+  const assessments: UIAssessment[] = Object.values(
+    apiResult.declaration_results
+  ).map((declResult) => {
+    // Extract data use from metadata or use a placeholder
+    const dataUse =
+      (apiResult.metadata?.data_use as string) || "processing.general";
+    const dataCategories =
+      (apiResult.metadata?.data_categories as string[]) || [];
+
+    return {
+      id: declResult.declaration_id,
+      name: declResult.declaration_name || `Declaration ${declResult.declaration_id}`,
+      status: "updated",
+      statusTime: "Just now",
+      riskLevel: determineRiskLevel(dataUse),
+      completeness: calculateCompleteness(declResult),
+      system: declResult.system_fides_key || "Unknown System",
+      dataCategories,
+      dataUse,
+    };
+  });
+
+  return {
+    cpra: {
+      templateId: "CPRA-RA-2024",
+      title: apiResult.assessment_name,
+      assessments,
+    },
+  };
+};
 
 const EmptyState = ({
   onGenerate,
@@ -118,11 +168,12 @@ const EmptyState = ({
 );
 
 const PrivacyAssessmentsPage: NextPage = () => {
-  const { flags } = useFeatures();
+  const { flags, plus } = useFeatures();
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const [assessments, setAssessments] = useState<AssessmentData | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [runCpraAssessment, { isLoading: isGenerating }] =
+    useRunCpraAssessmentMutation();
 
   // Load assessments from localStorage on mount
   useEffect(() => {
@@ -158,63 +209,39 @@ const PrivacyAssessmentsPage: NextPage = () => {
     );
   }
 
-  const handleGenerateAssessments = () => {
-    setIsGenerating(true);
+  const handleGenerateAssessments = async () => {
+    // Check if Plus is available
+    if (!plus) {
+      message.error("Fides Plus is required for privacy assessments");
+      return;
+    }
 
-    if (assessments === null || assessments.cpra.assessments.length === 0) {
-      // First time generating or all assessments deleted
-      toast(
-        successToastParams(
-          "2 privacy declarations eligible for assessments in the configured regions.",
-          "Generating assessments",
-        ),
+    try {
+      message.info("Analyzing privacy declarations...");
+
+      // Call the CPRA assessment API
+      const result = await runCpraAssessment({
+        use_llm: true, // Use LLM for AI-assisted answers
+      }).unwrap();
+
+      // Store the raw API result for the detail page
+      localStorage.setItem(ASSESSMENT_RESULTS_KEY, JSON.stringify(result));
+
+      // Map to UI format
+      const uiData = mapApiResultToUI(result);
+      setAssessments(uiData);
+
+      const declarationCount = Object.keys(result.declaration_results).length;
+      message.success(
+        `Generated assessments for ${declarationCount} privacy declaration(s)`
       );
-
-      // Simulate a delay for generating assessments
-      setTimeout(() => {
-        setAssessments(generatedAssessments);
-        setIsGenerating(false);
-      }, 2000);
-    } else {
-      // Check for missing assessments
-      const existingIds = assessments.cpra.assessments.map((a) => a.id);
-      const missingAssessments = generatedAssessments.cpra.assessments.filter(
-        (a) => !existingIds.includes(a.id),
+    } catch (error) {
+      console.error("Assessment generation failed:", error);
+      message.error(
+        `Assessment generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
-
-      setTimeout(() => {
-        if (missingAssessments.length > 0) {
-          // Add missing assessments
-          toast(
-            successToastParams(
-              `${missingAssessments.length} privacy declaration${missingAssessments.length > 1 ? "s" : ""} eligible for assessments.`,
-              "Generating assessments",
-            ),
-          );
-          setAssessments((prev) => {
-            if (!prev) return generatedAssessments;
-            return {
-              ...prev,
-              cpra: {
-                ...prev.cpra,
-                assessments: [...prev.cpra.assessments, ...missingAssessments],
-              },
-            };
-          });
-        } else {
-          // No changes found
-          toast({
-            ...DEFAULT_TOAST_PARAMS,
-            description:
-              "No changes detected that require new or updated assessments.",
-            status: "info",
-          });
-        }
-        setIsGenerating(false);
-      }, 1500);
     }
   };
-
 
   const getStatusText = (status: string, time?: string) => {
     if (status === "updated") {
@@ -315,7 +342,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 </Flex>
 
                 <Flex gap="middle" wrap="wrap">
-                  {template.assessments.map((assessment) => (
+                  {template.assessments.map((assessment: UIAssessment) => (
                     <Card
                       key={assessment.id}
                       hoverable
@@ -338,7 +365,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
                       }}
                       onClick={() =>
                         router.push(
-                          `${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`,
+                          `${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`
                         )
                       }
                     >
@@ -368,46 +395,47 @@ const PrivacyAssessmentsPage: NextPage = () => {
                           >
                             System: {assessment.system}
                           </Text>
-                          <Text
-                            type="secondary"
-                            style={{
-                              fontSize: 12,
-                              lineHeight: "24px",
-                              display: "block",
-                              marginBottom: 8,
-                            }}
-                          >
-                            Processing{" "}
-                            {assessment.dataCategories.map((category, idx) => (
-                              <span key={category}>
-                                <Tag
-                                  color={CUSTOM_TAG_COLOR.DEFAULT}
-                                  style={{
-                                    margin: 0,
-                                    fontSize: 11,
-                                    verticalAlign: "middle",
-                                  }}
-                                >
-                                  {category}
-                                </Tag>
-                                {idx < assessment.dataCategories.length - 1 && " "}
-                              </span>
-                            ))}{" "}
-                            for{" "}
-                            <Tag
-                              color={CUSTOM_TAG_COLOR.DEFAULT}
+                          {assessment.dataCategories.length > 0 && (
+                            <Text
+                              type="secondary"
                               style={{
-                                margin: 0,
-                                fontSize: 11,
-                                verticalAlign: "middle",
+                                fontSize: 12,
+                                lineHeight: "24px",
+                                display: "block",
+                                marginBottom: 8,
                               }}
                             >
-                              {assessment.dataUse}
-                            </Tag>
-                          </Text>
-                          <div>
-                            {getRiskTag(assessment.riskLevel)}
-                          </div>
+                              Processing{" "}
+                              {assessment.dataCategories.map((category: string, idx: number) => (
+                                <span key={category}>
+                                  <Tag
+                                    color={CUSTOM_TAG_COLOR.DEFAULT}
+                                    style={{
+                                      margin: 0,
+                                      fontSize: 11,
+                                      verticalAlign: "middle",
+                                    }}
+                                  >
+                                    {category}
+                                  </Tag>
+                                  {idx < assessment.dataCategories.length - 1 &&
+                                    " "}
+                                </span>
+                              ))}{" "}
+                              for{" "}
+                              <Tag
+                                color={CUSTOM_TAG_COLOR.DEFAULT}
+                                style={{
+                                  margin: 0,
+                                  fontSize: 11,
+                                  verticalAlign: "middle",
+                                }}
+                              >
+                                {assessment.dataUse}
+                              </Tag>
+                            </Text>
+                          )}
+                          <div>{getRiskTag(assessment.riskLevel)}</div>
                         </div>
                         <div>
                           {/* Completed assessment style */}
@@ -419,56 +447,56 @@ const PrivacyAssessmentsPage: NextPage = () => {
                                 borderTop: "1px solid #f0f0f0",
                               }}
                             >
-                            <Flex
-                              align="center"
-                              gap="middle"
-                              style={{
-                                padding: "12px",
-                                backgroundColor: `${palette.FIDESUI_SUCCESS}10`,
-                                borderRadius: 8,
-                              }}
-                            >
-                              <div
+                              <Flex
+                                align="center"
+                                gap="middle"
                                 style={{
-                                  width: 28,
-                                  height: 28,
-                                  borderRadius: "50%",
-                                  backgroundColor: palette.FIDESUI_SUCCESS,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
+                                  padding: "12px",
+                                  backgroundColor: `${palette.FIDESUI_SUCCESS}10`,
+                                  borderRadius: 8,
                                 }}
                               >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 32 32"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M13 24L4 15L6.5 12.5L13 19L25.5 6.5L28 9L13 24Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </div>
-                              <div>
-                                <Text
-                                  strong
+                                <div
                                   style={{
-                                    fontSize: 14,
-                                    display: "block",
-                                    color: palette.FIDESUI_SUCCESS,
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: "50%",
+                                    backgroundColor: palette.FIDESUI_SUCCESS,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
                                   }}
                                 >
-                                  Assessment complete
-                                </Text>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                  Updated {assessment.statusTime}
-                                </Text>
-                              </div>
-                            </Flex>
-                          </div>
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M13 24L4 15L6.5 12.5L13 19L25.5 6.5L28 9L13 24Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <Text
+                                    strong
+                                    style={{
+                                      fontSize: 14,
+                                      display: "block",
+                                      color: palette.FIDESUI_SUCCESS,
+                                    }}
+                                  >
+                                    Assessment complete
+                                  </Text>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                    Updated {assessment.statusTime}
+                                  </Text>
+                                </div>
+                              </Flex>
+                            </div>
                           )}
                           {/* In-progress assessment (default) */}
                           {assessment.completeness < 100 && (
@@ -514,7 +542,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
                                 <Flex align="center" gap="small">
                                   {getStatusText(
                                     assessment.status,
-                                    assessment.statusTime,
+                                    assessment.statusTime
                                   ) && (
                                     <Text
                                       style={{
@@ -524,7 +552,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
                                     >
                                       {getStatusText(
                                         assessment.status,
-                                        assessment.statusTime,
+                                        assessment.statusTime
                                       )}
                                     </Text>
                                   )}

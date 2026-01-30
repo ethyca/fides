@@ -22,21 +22,30 @@ import {
   Tag,
   Tooltip,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import {
+  CPRAAssessmentAnswer,
+  CPRAAssessmentQuestion,
+  CPRAAssessmentResult,
+  CPRADeclarationResult,
+  FidesDataSource,
+} from "~/features/plus/plus.slice";
 
 import { EditableTextBlock } from "./components/EditableTextBlock";
 import { SlackIcon } from "./components/SlackIcon";
+
+// Storage key for API results
+const ASSESSMENT_RESULTS_KEY = "privacy-assessments-api-results";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -542,15 +551,130 @@ const assessmentData: Record<
   },
 };
 
+// Helper to map API questions to UI question groups
+const mapApiQuestionsToGroups = (
+  questions: CPRAAssessmentQuestion[],
+  answers: CPRAAssessmentAnswer[],
+): QuestionGroup[] => {
+  // Create a map of answers by question_id for quick lookup
+  const answerMap = new Map<string, CPRAAssessmentAnswer>();
+  answers.forEach((a) => answerMap.set(a.question_id, a));
+
+  // Group questions by their requirement_key prefix (e.g., "1.1" -> "1")
+  const groupMap = new Map<string, { title: string; questions: Question[] }>();
+
+  // Define group titles based on requirement keys
+  const groupTitles: Record<string, string> = {
+    "1": "Processing Scope and Purpose(s)",
+    "2": "Significant Risk Determination",
+    "3": "Categories of Personal/Sensitive Personal Information",
+    "4": "Consumer Rights and Impact",
+    "5": "Data Security and Retention",
+    "6": "Third Party Sharing",
+    "7": "Safeguards and Mitigation",
+  };
+
+  questions.forEach((q) => {
+    const groupId = q.requirement_key.split(".")[0];
+    const answer = answerMap.get(q.id);
+
+    if (!groupMap.has(groupId)) {
+      groupMap.set(groupId, {
+        title: groupTitles[groupId] || `Section ${groupId}`,
+        questions: [],
+      });
+    }
+
+    const group = groupMap.get(groupId)!;
+    group.questions.push({
+      id: q.requirement_key,
+      question: q.question_text,
+      answer: answer?.answer_text || "",
+      source: answer?.status === "needs_input" ? "slack" : "system",
+    });
+  });
+
+  // Convert map to array and sort by group ID
+  return Array.from(groupMap.entries())
+    .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
+    .map(([groupId, group]) => ({
+      id: groupId,
+      title: group.title,
+      questions: group.questions.sort((a, b) => {
+        const aNum = parseFloat(a.id);
+        const bNum = parseFloat(b.id);
+        return aNum - bNum;
+      }),
+    }));
+};
+
+// Helper to map FidesDataSource to evidence items
+const mapFidesDataToEvidence = (
+  answers: CPRAAssessmentAnswer[],
+  questions: CPRAAssessmentQuestion[],
+): EvidenceItem[] => {
+  const evidence: EvidenceItem[] = [];
+  let citationNum = 1;
+
+  // Create a map of questions by ID for lookup
+  const questionMap = new Map<string, CPRAAssessmentQuestion>();
+  questions.forEach((q) => questionMap.set(q.id, q));
+
+  answers.forEach((answer) => {
+    const question = questionMap.get(answer.question_id);
+    if (!question) return;
+
+    const groupId = question.requirement_key.split(".")[0];
+
+    // Map fides_data_used to system evidence
+    if (answer.fides_data_used && answer.fides_data_used.length > 0) {
+      answer.fides_data_used.forEach((source) => {
+        const systemName =
+          source.source_type === "system"
+            ? source.source_key || "Fides System"
+            : source.source_type === "data_category"
+              ? "Fides Data Map"
+              : source.source_type === "data_use"
+                ? "Privacy Declaration"
+                : source.source_key || "Fides";
+
+        const content =
+          source.field_name && source.value
+            ? `${source.field_name}: ${JSON.stringify(source.value)}`
+            : source.value
+              ? JSON.stringify(source.value)
+              : `Source: ${source.source_type}`;
+
+        evidence.push({
+          id: `ev-${citationNum}`,
+          groupId,
+          type: "system",
+          source: { system: systemName },
+          label: source.field_name || source.source_type,
+          content,
+          timestamp: new Date().toISOString(),
+          citationNumber: citationNum,
+        });
+        citationNum += 1;
+      });
+    }
+  });
+
+  return evidence;
+};
+
 const PrivacyAssessmentDetailPage: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
-  const toast = useToast();
+  const message = useMessage();
   const { id } = router.query;
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [questionGroups, setQuestionGroups] =
-    useState<QuestionGroup[]>(initialQuestionGroups);
+  const [questionGroups, setQuestionGroups] = useState<QuestionGroup[]>([]);
+  const [evidenceItems, setEvidenceItems] = useState<EvidenceItem[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [apiResult, setApiResult] = useState<CPRAAssessmentResult | null>(null);
+  const [declarationResult, setDeclarationResult] =
+    useState<CPRADeclarationResult | null>(null);
   const [questionnaireSentAt, setQuestionnaireSentAt] = useState<Date | null>(
     null,
   );
@@ -572,28 +696,61 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   // Assessment is complete when all questions have answers
   const isComplete = allQuestions.every((q) => q.answer.trim().length > 0);
 
-  // Clear outdated localStorage answers on mount to ensure references are visible
-  // Then load any user edits that include the reference markers
+  // Load API results from localStorage and initialize question groups
   useEffect(() => {
     if (!id) return;
-    // Clear old cached answers without numbered references to show the updated initial values
+
+    const storedResults = localStorage.getItem(ASSESSMENT_RESULTS_KEY);
+    if (storedResults) {
+      try {
+        const result = JSON.parse(storedResults) as CPRAAssessmentResult;
+        setApiResult(result);
+
+        // Find the declaration result for this assessment ID
+        const declResult = result.declaration_results[id as string];
+        if (declResult) {
+          setDeclarationResult(declResult);
+
+          // Map API data to UI format
+          const groups = mapApiQuestionsToGroups(
+            result.questions,
+            declResult.answers,
+          );
+          setQuestionGroups(groups);
+
+          // Map fides_data_used to evidence
+          const evidence = mapFidesDataToEvidence(
+            declResult.answers,
+            result.questions,
+          );
+          setEvidenceItems(evidence);
+        } else {
+          // Fallback to initial questions if no declaration found
+          setQuestionGroups(initialQuestionGroups);
+          setEvidenceItems(mockEvidence);
+        }
+      } catch {
+        // Invalid data, use fallback
+        setQuestionGroups(initialQuestionGroups);
+        setEvidenceItems(mockEvidence);
+      }
+    } else {
+      // No API results, use initial values
+      setQuestionGroups(initialQuestionGroups);
+      setEvidenceItems(mockEvidence);
+    }
+  }, [id]);
+
+  // Load any user-edited answers from localStorage (merges with API answers)
+  useEffect(() => {
+    if (!id || questionGroups.length === 0) return;
+
     const stored = localStorage.getItem(QUESTION_ANSWERS_KEY);
     if (stored) {
       try {
         const answersData = JSON.parse(stored);
-        // Check if stored answers have numbered references [1], [2], etc - if not, clear them
         if (answersData[id as string]) {
           const savedAnswers = answersData[id as string] as Record<string, string>;
-          const hasNumberedReferences = Object.values(savedAnswers).some(
-            (answer) => answer && /\[\d+\]/.test(answer),
-          );
-          if (!hasNumberedReferences) {
-            // Clear outdated answers without numbered references
-            delete answersData[id as string];
-            localStorage.setItem(QUESTION_ANSWERS_KEY, JSON.stringify(answersData));
-            return; // Use default initial values with references
-          }
-          // Load answers that have numbered references
           setQuestionGroups((prev) =>
             prev.map((group) => ({
               ...group,
@@ -608,7 +765,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         // Invalid data, ignore
       }
     }
-  }, [id]);
+  }, [id, questionGroups.length === 0]); // Only run when groups are first loaded
 
   // Save question answers to localStorage and update completeness when answers change
   useEffect(() => {
@@ -711,11 +868,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     start: number;
     end: number;
   }) => {
-    toast({
-      ...DEFAULT_TOAST_PARAMS,
-      description: `Comment added on "${selection.text.substring(0, 30)}${selection.text.length > 30 ? "..." : ""}"`,
-      status: "success",
-    });
+    message.success(
+      `Comment added on "${selection.text.substring(0, 30)}${selection.text.length > 30 ? "..." : ""}"`
+    );
   };
 
   const handleRequestInput = () => {
@@ -730,19 +885,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       localStorage.setItem(QUESTIONNAIRE_STATUS_KEY, JSON.stringify(statusData));
     }
 
-    toast({
-      ...DEFAULT_TOAST_PARAMS,
-      description: "Questionnaire sent to #privacy-team on Slack.",
-      status: "success",
-    });
+    message.success("Questionnaire sent to #privacy-team on Slack.");
   };
 
   const handleSendReminder = () => {
-    toast({
-      ...DEFAULT_TOAST_PARAMS,
-      description: "Reminder sent to #privacy-team.",
-      status: "success",
-    });
+    message.success("Reminder sent to #privacy-team.");
   };
 
   const handleViewEvidence = (groupId: string) => {
@@ -751,7 +898,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   };
 
   // Filter evidence based on search query
-  const filteredEvidence = mockEvidence.filter((item) => {
+  const filteredEvidence = evidenceItems.filter((item) => {
     if (!evidenceSearchQuery) return true;
     const query = evidenceSearchQuery.toLowerCase();
 
@@ -875,11 +1022,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         }
       }
     }
-    toast({
-      ...DEFAULT_TOAST_PARAMS,
-      description: "Assessment deleted.",
-      status: "success",
-    });
+    message.success("Assessment deleted.");
     setIsDeleteModalOpen(false);
     router.push(PRIVACY_ASSESSMENTS_ROUTE);
   };
@@ -896,7 +1039,27 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     );
   }
 
-  const assessment = id ? assessmentData[id as string] : null;
+  // Use declaration result from API if available, otherwise fallback to hardcoded data
+  const assessment = useMemo(() => {
+    if (declarationResult) {
+      // Get metadata from API result
+      const dataUse =
+        (apiResult?.metadata?.data_use as string) || "processing.general";
+      const dataCategories =
+        (apiResult?.metadata?.data_categories as string[]) || [];
+
+      return {
+        name: declarationResult.declaration_name || `Assessment ${id}`,
+        system: declarationResult.system_fides_key || "Unknown System",
+        riskLevel: "Med" as const, // Could be computed from answers
+        dataCategories,
+        dataUse,
+      };
+    }
+    // Fallback to hardcoded data
+    return id ? assessmentData[id as string] : null;
+  }, [declarationResult, apiResult, id]);
+
   const assessmentName = assessment?.name ?? "Assessment";
 
   return (
@@ -1311,11 +1474,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               icon={<DownloadOutlined />}
               size="small"
               onClick={() => {
-                toast({
-                  ...DEFAULT_TOAST_PARAMS,
-                  description: "Evidence report exported",
-                  status: "success",
-                });
+                message.success("Evidence report exported");
               }}
             >
               Export
