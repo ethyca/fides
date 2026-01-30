@@ -1,5 +1,8 @@
 import { Flex, Form, Select } from "fidesui";
+import _ from "lodash";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import SearchInput from "~/features/common/SearchInput";
 import { formatUser } from "~/features/common/utils";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
@@ -26,6 +29,8 @@ const MonitorListSearchForm = ({
 > & {
   availableMonitorTypes: readonly MONITOR_TYPES[];
 }) => {
+  const currentUser = useAppSelector(selectUser);
+
   const { data: eligibleUsersData, isLoading: isLoadingUserOptions } =
     useGetAllUsersQuery({
       page: 1,
@@ -34,10 +39,16 @@ const MonitorListSearchForm = ({
       exclude_approvers: true,
     });
 
-  const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: formatUser(user),
-    value: user.id,
-  }));
+  const dataStewardOptions = _.uniqBy(
+    [
+      ...(currentUser ? [currentUser] : []),
+      ...(eligibleUsersData?.items || []),
+    ].map((user) => ({
+      label: formatUser(user),
+      value: user.id,
+    })),
+    "value",
+  );
 
   return (
     <Form
