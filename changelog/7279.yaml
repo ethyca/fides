@@ -2,6 +2,6 @@
 # Fill in the required fields and delete this comment block
 
 type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: syncing url and search form for the action center
+description: syncing url and search form for the action center and removing default monitor filter
 pr: 7279 # PR number
 labels: [] # Optional: ["high-risk", "db-migration"]
