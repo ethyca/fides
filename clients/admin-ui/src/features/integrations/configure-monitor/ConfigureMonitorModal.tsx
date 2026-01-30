@@ -79,7 +79,6 @@ const ConfigureMonitorModal = ({
       }
     }, TIMEOUT_DELAY);
 
-    // Use the generic discovery monitor PUT endpoint for all monitor types
     result = await putMonitorMutationTrigger(values);
 
     if (result) {
