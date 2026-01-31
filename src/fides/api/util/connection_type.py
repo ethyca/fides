@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
@@ -13,8 +12,6 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
     ConnectionSystemTypeMap,
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
-from fides.api.schemas.enums.connection_category import ConnectionCategory
-from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors.consent_email_connector import (
@@ -29,110 +26,16 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
-@dataclass(frozen=True)
-class DiscoveryMetadata:
-    """
-    Metadata for connection types that support data discovery and detection.
-    This provides information about discovery capabilities exposed through the API.
-    """
-
-    category: ConnectionCategory
-    tags: List[str]
-    enabled_features: List[IntegrationFeature]
-
-
-# Discovery monitor metadata for connection types that support data discovery & detection
-# This mapping is maintained to stay in sync with Fidesplus discovery monitors
-# located in fidesplus/src/fidesplus/api/service/discovery/__init__.py:MONITORS_BY_TYPE
-DISCOVERY_MONITOR_METADATA: Dict[ConnectionType, DiscoveryMetadata] = {
-    # Traditional Databases (with detection)
-    ConnectionType.postgres: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.mysql: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.mssql: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.rds_postgres: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.rds_mysql: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.google_cloud_sql_postgres: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.google_cloud_sql_mysql: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.scylla: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.dynamodb: DiscoveryMetadata(
-        category=ConnectionCategory.DATABASE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    # Data Warehouses (with detection)
-    ConnectionType.snowflake: DiscoveryMetadata(
-        category=ConnectionCategory.DATA_WAREHOUSE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    ConnectionType.bigquery: DiscoveryMetadata(
-        category=ConnectionCategory.DATA_WAREHOUSE,
-        tags=["Discovery", "Detection"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    # Identity Providers (discovery only)
-    ConnectionType.okta: DiscoveryMetadata(
-        category=ConnectionCategory.IDENTITY_PROVIDER,
-        tags=["Discovery"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    # Websites (discovery only)
-    ConnectionType.website: DiscoveryMetadata(
-        category=ConnectionCategory.WEBSITE,
-        tags=["Discovery"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-    # S3 (categorized as Data Warehouse, discovery only)
-    ConnectionType.s3: DiscoveryMetadata(
-        category=ConnectionCategory.DATA_WAREHOUSE,
-        tags=["Discovery"],
-        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
-    ),
-}
-
-
-def _get_discovery_metadata_fields(
+def _get_connection_type_metadata_fields(
     connection_type: ConnectionType,
 ) -> Dict[str, Optional[Any]]:
     """
-    Extract discovery metadata fields for a given connection type.
-    Performs a single lookup to avoid repeated dictionary access.
+    Extract metadata fields for a given connection type.
+    Performs a single lookup to avoid repeated property access.
 
     Returns a dict suitable for unpacking into ConnectionSystemTypeMap kwargs.
     """
-    metadata = DISCOVERY_MONITOR_METADATA.get(connection_type)
+    metadata = connection_type.connection_type_metadata
     if metadata:
         return {
             "category": metadata.category,
@@ -422,7 +325,7 @@ def get_connection_types(
                     human_readable=item.human_readable,
                     supported_actions=[ActionType.access, ActionType.erasure],
                     # Add discovery metadata if this connection type supports discovery monitors
-                    **_get_discovery_metadata_fields(item),
+                    **_get_connection_type_metadata_fields(item),
                 )
                 for item in database_types
             ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, List, Optional, Type
 
@@ -18,6 +19,8 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.schemas.enums.connection_category import ConnectionCategory
+from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
@@ -165,6 +168,113 @@ class ConnectionType(enum.Enum):
             return system_type_mapping[self.value]
         except KeyError:
             raise NotImplementedError("Add new ConnectionType to system_type mapping")
+
+    @property
+    def connection_type_metadata(self) -> Optional["ConnectionTypeMetadata"]:
+        """
+        Returns metadata about this connection type's capabilities.
+        
+        This metadata is used by API consumers to dynamically discover which connection types
+        support which features (data discovery, DSR automation, etc.) without hardcoding lists.
+        Particularly useful for metrics aggregation and automated tooling.
+        """
+        return CONNECTION_TYPE_METADATA_MAPPING.get(self)
+
+
+@dataclass(frozen=True)
+class ConnectionTypeMetadata:
+    """
+    Metadata describing a connection type's capabilities and categorization.
+    
+    This allows API consumers to dynamically discover which connection types support
+    which features (discovery, detection, DSR automation, etc.) and how they're categorized.
+    """
+
+    category: ConnectionCategory
+    tags: List[str]
+    enabled_features: List[IntegrationFeature]
+
+
+# Metadata mapping for connection types that support data discovery & detection
+# This mapping is maintained to stay in sync with Fidesplus discovery monitors
+# located in fidesplus/src/fidesplus/api/service/discovery/__init__.py:MONITORS_BY_TYPE
+CONNECTION_TYPE_METADATA_MAPPING: dict[ConnectionType, ConnectionTypeMetadata] = {
+    # Traditional Databases (with detection)
+    ConnectionType.postgres: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.mysql: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.mssql: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.rds_postgres: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.rds_mysql: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.google_cloud_sql_postgres: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.google_cloud_sql_mysql: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.scylla: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.dynamodb: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATABASE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    # Data Warehouses (with detection)
+    ConnectionType.snowflake: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATA_WAREHOUSE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    ConnectionType.bigquery: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATA_WAREHOUSE,
+        tags=["Discovery", "Detection"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    # Identity Providers (discovery only)
+    ConnectionType.okta: ConnectionTypeMetadata(
+        category=ConnectionCategory.IDENTITY_PROVIDER,
+        tags=["Discovery"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    # Websites (discovery only)
+    ConnectionType.website: ConnectionTypeMetadata(
+        category=ConnectionCategory.WEBSITE,
+        tags=["Discovery"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+    # S3 (categorized as Data Warehouse, discovery only)
+    ConnectionType.s3: ConnectionTypeMetadata(
+        category=ConnectionCategory.DATA_WAREHOUSE,
+        tags=["Discovery"],
+        enabled_features=[IntegrationFeature.DATA_DISCOVERY],
+    ),
+}
 
 
 class AccessLevel(enum.Enum):
