@@ -13,8 +13,6 @@ export const getCategoryLabel = (category: ConnectionCategory): string => {
       return "Database";
     case ConnectionCategory.IDENTITY_PROVIDER:
       return "Identity Provider";
-    case ConnectionCategory.STORAGE:
-      return "Storage";
     case ConnectionCategory.WEBSITE:
       return "Website";
     case ConnectionCategory.CRM:
@@ -47,7 +45,6 @@ export const getCategoryFromLabel = (
     "Data Warehouse": ConnectionCategory.DATA_WAREHOUSE,
     Database: ConnectionCategory.DATABASE,
     "Identity Provider": ConnectionCategory.IDENTITY_PROVIDER,
-    Storage: ConnectionCategory.STORAGE,
     Website: ConnectionCategory.WEBSITE,
     CRM: ConnectionCategory.CRM,
     Manual: ConnectionCategory.MANUAL,
