@@ -107,5 +107,11 @@ export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
 
+// RBAC routes
+export const RBAC_ROUTE = "/settings/rbac";
+export const RBAC_ROLES_ROUTE = "/settings/rbac/roles";
+export const RBAC_ROLE_DETAIL_ROUTE = "/settings/rbac/roles/[id]";
+export const RBAC_ROLE_NEW_ROUTE = "/settings/rbac/roles/new";
+
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";

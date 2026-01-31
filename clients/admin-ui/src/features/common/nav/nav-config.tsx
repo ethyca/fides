@@ -208,6 +208,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "rbacManagement",
+        scopes: [
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+          ScopeRegistryEnum.USER_PERMISSION_READ,
+        ],
+      },
+      {
         title: "User Detail",
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access

@@ -501,6 +501,27 @@ export type { RangeEntry } from "./models/RangeEntry";
 export type { RateLimit } from "./models/RateLimit";
 export type { RateLimitConfig } from "./models/RateLimitConfig";
 export { RateLimitPeriod } from "./models/RateLimitPeriod";
+export type {
+  RBACConstraint,
+  RBACConstraintCreate,
+  RBACConstraintUpdate,
+} from "./models/RBACConstraint";
+export { RBACConstraintType } from "./models/RBACConstraint";
+export type {
+  RBACEvaluateRequest,
+  RBACEvaluateResponse,
+} from "./models/RBACEvaluate";
+export type { RBACPermission } from "./models/RBACPermission";
+export type {
+  RBACRole,
+  RBACRoleCreate,
+  RBACRoleUpdate,
+  RBACRolePermissionsUpdate,
+} from "./models/RBACRole";
+export type {
+  RBACUserRole,
+  RBACUserRoleCreate,
+} from "./models/RBACUserRole";
 export type { RDSMySQLDocsSchema } from "./models/RDSMySQLDocsSchema";
 export type { RDSPostgresDocsSchema } from "./models/RDSPostgresDocsSchema";
 export type { ReadSaaSRequest } from "./models/ReadSaaSRequest";
