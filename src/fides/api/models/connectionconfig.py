@@ -173,7 +173,7 @@ class ConnectionType(enum.Enum):
     def connection_type_metadata(self) -> Optional["ConnectionTypeMetadata"]:
         """
         Returns metadata about this connection type's capabilities.
-        
+
         This metadata is used by API consumers to dynamically discover which connection types
         support which features (data discovery, DSR automation, etc.) without hardcoding lists.
         Particularly useful for metrics aggregation and automated tooling.
@@ -185,7 +185,7 @@ class ConnectionType(enum.Enum):
 class ConnectionTypeMetadata:
     """
     Metadata describing a connection type's capabilities and categorization.
-    
+
     This allows API consumers to dynamically discover which connection types support
     which features (discovery, detection, DSR automation, etc.) and how they're categorized.
     """
