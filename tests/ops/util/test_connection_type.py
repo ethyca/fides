@@ -18,6 +18,7 @@ def test_get_connection_types():
         len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
     )  # there are 5 connection types that are not returned by the endpoint
 
+    # PostgreSQL now has discovery monitor metadata
     assert {
         "identifier": ConnectionType.postgres.value,
         "type": SystemType.database.value,
@@ -26,9 +27,9 @@ def test_get_connection_types():
         "authorization_required": False,
         "user_guide": None,
         "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-        "category": None,
-        "tags": None,
-        "enabled_features": None,
+        "category": "DATABASE",
+        "tags": ["Discovery", "Detection"],
+        "enabled_features": ["DATA_DISCOVERY"],
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -95,9 +96,9 @@ def connection_type_objects():
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "category": None,
-            "tags": None,
-            "enabled_features": None,
+            "category": "DATABASE",
+            "tags": ["Discovery", "Detection"],
+            "enabled_features": ["DATA_DISCOVERY"],
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
