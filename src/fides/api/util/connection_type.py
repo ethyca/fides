@@ -302,6 +302,7 @@ def get_connection_types(
                 if conn_type
                 not in [
                     ConnectionType.attentive_email,
+                    ConnectionType.datahub,
                     ConnectionType.fides,
                     ConnectionType.generic_consent_email,
                     ConnectionType.generic_erasure_email,
