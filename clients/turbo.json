@@ -70,12 +70,6 @@
     "analyze:server": {
       "dependsOn": []
     },
-    "openapi:generate": {
-      "dependsOn": []
-    },
-    "openapi:generate-dictionary": {
-      "dependsOn": []
-    },
     "storybook": {
       "dependsOn": []
     }
