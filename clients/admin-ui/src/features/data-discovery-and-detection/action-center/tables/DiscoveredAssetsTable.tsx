@@ -12,6 +12,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { SelectedText } from "~/features/common/table/SelectedText";
 import {
   ConsentAlertInfo,
@@ -22,6 +23,7 @@ import {
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
+import { ClassificationReportModal } from "../ClassificationReportModal";
 import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
@@ -37,6 +39,10 @@ export const DiscoveredAssetsTable = ({
   systemId,
   consentStatus,
 }: DiscoveredAssetsTableProps) => {
+  // Feature flags
+  const { flags } = useFlags();
+  const showLlmClassification = flags.alphaWebMonitorLlmClassification;
+
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
@@ -44,6 +50,8 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [consentBreakdownModalData, setConsentBreakdownModalData] =
     useState<StagedResourceAPIResponse | null>(null);
+  const [isClassificationReportOpen, setIsClassificationReportOpen] =
+    useState<boolean>(false);
 
   const handleShowBreakdown = (stagedResource: StagedResourceAPIResponse) => {
     setConsentBreakdownModalData(stagedResource);
@@ -83,12 +91,14 @@ export const DiscoveredAssetsTable = ({
     handleBulkIgnore,
     handleBulkRestore,
     handleAddAll,
+    handleClassifyWithAI,
 
     // Loading states
     anyBulkActionIsLoading,
     isAddingAllResults,
     isBulkUpdatingSystem,
     isBulkAddingDataUses,
+    isClassifyingAssets,
     disableAddAll,
   } = useDiscoveredAssetsTable({
     monitorId,
@@ -186,6 +196,18 @@ export const DiscoveredAssetsTable = ({
                           label: "Ignore",
                           onClick: handleBulkIgnore,
                         },
+                        ...(showLlmClassification
+                          ? [
+                              {
+                                type: "divider" as const,
+                              },
+                              {
+                                key: "classify-ai",
+                                label: "Classify with AI",
+                                onClick: handleClassifyWithAI,
+                              },
+                            ]
+                          : []),
                       ]),
                 ],
               }}
@@ -205,6 +227,24 @@ export const DiscoveredAssetsTable = ({
               </Button>
             </Dropdown>
 
+            {showLlmClassification && (
+              <>
+                <Button
+                  onClick={handleClassifyWithAI}
+                  loading={isClassifyingAssets}
+                  disabled={anyBulkActionIsLoading || actionsDisabled}
+                  data-testid="classify-ai"
+                >
+                  Classify with AI
+                </Button>
+                <Button
+                  onClick={() => setIsClassificationReportOpen(true)}
+                  data-testid="classification-report"
+                >
+                  Report
+                </Button>
+              </>
+            )}
             <Tooltip
               title={
                 disableAddAll
@@ -262,6 +302,13 @@ export const DiscoveredAssetsTable = ({
           isOpen={!!consentBreakdownModalData}
           stagedResource={consentBreakdownModalData}
           onCancel={handleCloseBreakdown}
+        />
+      )}
+      {showLlmClassification && (
+        <ClassificationReportModal
+          monitorId={monitorId}
+          open={isClassificationReportOpen}
+          onClose={() => setIsClassificationReportOpen(false)}
         />
       )}
     </>
