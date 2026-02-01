@@ -1,6 +1,4 @@
 type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
 description: Added discovery metadata (category, tags, enabled_features) to connection types with data discovery capabilities. This changes the schema for the /api/v1/connections response.
 pr: 7283 # PR number
 labels: [] # Optional: ["high-risk", "db-migration"]

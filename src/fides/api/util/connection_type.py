@@ -33,7 +33,7 @@ def _get_connection_type_metadata_fields(
     Extract metadata fields for a given connection type.
     Performs a single lookup to avoid repeated property access.
 
-    Returns a dict suitable for unpacking into ConnectionSystemTypeMap kwargs.
+    Returns a dict for the ConnectionSystemTypeMap fields.
     """
     metadata = connection_type.connection_type_metadata
     if metadata:
