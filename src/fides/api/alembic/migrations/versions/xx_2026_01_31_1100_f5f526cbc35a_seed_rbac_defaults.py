@@ -149,7 +149,40 @@ SCOPE_DOCS = {
     "webhook:delete": "Remove web hooks",
     "webhook:read": "View web hooks",
     "worker-stats:read": "View worker statistics",
+    # RBAC Management scopes - for managing the RBAC system itself
+    "rbac_role:create": "Create custom roles",
+    "rbac_role:read": "Read role definitions",
+    "rbac_role:update": "Update role definitions",
+    "rbac_role:delete": "Delete custom roles",
+    "rbac_permission:read": "Read permission definitions",
+    "rbac_user_role:create": "Assign roles to users",
+    "rbac_user_role:read": "Read user role assignments",
+    "rbac_user_role:update": "Update user role assignments",
+    "rbac_user_role:delete": "Remove roles from users",
+    "rbac_constraint:create": "Create role constraints",
+    "rbac_constraint:read": "Read role constraints",
+    "rbac_constraint:update": "Update role constraints",
+    "rbac_constraint:delete": "Delete role constraints",
+    "rbac:evaluate": "Evaluate user permissions",
 }
+
+# RBAC management scopes - only Owner should have these
+RBAC_MANAGEMENT_SCOPES = [
+    "rbac_role:create",
+    "rbac_role:read",
+    "rbac_role:update",
+    "rbac_role:delete",
+    "rbac_permission:read",
+    "rbac_user_role:create",
+    "rbac_user_role:read",
+    "rbac_user_role:update",
+    "rbac_user_role:delete",
+    "rbac_constraint:create",
+    "rbac_constraint:read",
+    "rbac_constraint:update",
+    "rbac_constraint:delete",
+    "rbac:evaluate",
+]
 
 # Role definitions from roles.py
 LEGACY_ROLES = {
