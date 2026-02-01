@@ -1,5 +1,4 @@
-# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
-# Fill in the required fields and delete this comment block
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
 
 type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
 description: Added discovery metadata (category, tags, enabled_features) to connection types with data discovery capabilities. This changes the schema for the /api/v1/connections response.
