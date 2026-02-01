@@ -79,6 +79,7 @@ class RBACUserRole(Base):
         "FidesUser",
         foreign_keys=[user_id],
         backref="rbac_role_assignments",
+        passive_deletes=True,  # Let database handle CASCADE delete
     )
     role: "RBACRole" = relationship(
         "RBACRole",
