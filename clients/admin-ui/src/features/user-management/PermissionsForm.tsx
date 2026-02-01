@@ -200,6 +200,21 @@ const PermissionsForm = () => {
       }
     }
 
+    // Save managed systems (same as legacy - managed systems are independent of RBAC)
+    // Skip for approver role as the backend handles this automatically
+    const skipAssigningSystems = selectedRoleKeys.includes("approver");
+    if (!skipAssigningSystems) {
+      const fidesKeys = assignedSystems.map((s) => s.fides_key);
+      const userSystemsResult = await updateUserManagedSystemsTrigger({
+        userId: activeUserId,
+        fidesKeys,
+      });
+      if (isErrorResult(userSystemsResult)) {
+        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        return;
+      }
+    }
+
     toast(successToastParams("RBAC permissions updated"));
   };
 
