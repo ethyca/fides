@@ -209,7 +209,7 @@ class TestGetConnections:
         # 6 constant non-saas connection types match the search string (includes test_datastore)
         assert len(data) == len(expected_saas_templates) + 7
 
-        # Verify PostgreSQL is included with new fields
+        # Verify PostgreSQL is included with new discovery metadata fields
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -218,9 +218,9 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "category": None,
-            "tags": None,
-            "enabled_features": None,
+            "category": "DATABASE",
+            "tags": ["Discovery", "Detection"],
+            "enabled_features": ["DATA_DISCOVERY"],
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -286,9 +286,9 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "category": None,
-            "tags": None,
-            "enabled_features": None,
+            "category": "DATABASE",
+            "tags": ["Discovery", "Detection"],
+            "enabled_features": ["DATA_DISCOVERY"],
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -322,9 +322,9 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "category": None,
-            "tags": None,
-            "enabled_features": None,
+            "category": "DATABASE",
+            "tags": ["Discovery", "Detection"],
+            "enabled_features": ["DATA_DISCOVERY"],
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
