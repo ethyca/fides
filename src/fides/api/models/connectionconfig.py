@@ -176,7 +176,6 @@ class ConnectionType(enum.Enum):
 
         This metadata is used by API consumers to dynamically discover which connection types
         support which features (data discovery, DSR automation, etc.) without hardcoding lists.
-        Particularly useful for metrics aggregation and automated tooling.
         """
         return CONNECTION_TYPE_METADATA_MAPPING.get(self)
 
@@ -197,7 +196,6 @@ class ConnectionTypeMetadata:
 
 # Metadata mapping for connection types that support data discovery & detection
 # This mapping is maintained to stay in sync with Fidesplus discovery monitors
-# located in fidesplus/src/fidesplus/api/service/discovery/__init__.py:MONITORS_BY_TYPE
 CONNECTION_TYPE_METADATA_MAPPING: dict[ConnectionType, ConnectionTypeMetadata] = {
     # Traditional Databases (with detection)
     ConnectionType.postgres: ConnectionTypeMetadata(

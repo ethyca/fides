@@ -170,18 +170,27 @@ class TestConnectionConfigModel:
         manual_metadata = ConnectionType.manual_webhook.connection_type_metadata
         assert manual_metadata is None
 
-        # Test that metadata exists for all expected discovery-enabled types
-        discovery_types = [
+        # Test that metadata exists for ALL expected discovery-enabled types
+        # This list is the source of truth - if someone removes a type from the mapping,
+        # this test will fail and force a discussion about whether it was intentional
+        expected_discovery_types = [
             ConnectionType.postgres,
             ConnectionType.mysql,
             ConnectionType.mssql,
+            ConnectionType.rds_postgres,
+            ConnectionType.rds_mysql,
+            ConnectionType.google_cloud_sql_postgres,
+            ConnectionType.google_cloud_sql_mysql,
+            ConnectionType.scylla,
+            ConnectionType.dynamodb,
             ConnectionType.snowflake,
             ConnectionType.bigquery,
             ConnectionType.okta,
             ConnectionType.website,
             ConnectionType.s3,
         ]
-        for conn_type in discovery_types:
+
+        for conn_type in expected_discovery_types:
             metadata = conn_type.connection_type_metadata
             assert metadata is not None, f"{conn_type.value} should have metadata"
             assert metadata.category is not None
