@@ -126,7 +126,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -186,7 +186,7 @@ jobs:
         shell: bash
 
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -240,7 +240,7 @@ jobs:
     continue-on-error: false
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -293,7 +293,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -366,7 +366,7 @@ jobs:
         shell: bash
 
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -429,7 +429,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -497,7 +497,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -611,7 +611,7 @@ jobs:
       max-parallel: 1 # This prevents collisions in shared external resources
     steps:
       - name: Download container
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
