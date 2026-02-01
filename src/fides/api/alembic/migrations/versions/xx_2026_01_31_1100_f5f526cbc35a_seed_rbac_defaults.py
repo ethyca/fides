@@ -1,7 +1,7 @@
 """Seed default RBAC roles and permissions from existing role definitions
 
-Revision ID: b2c3d4e5f6a7
-Revises: a1b2c3d4e5f6
+Revision ID: f5f526cbc35a
+Revises: d9ee4ea46797
 Create Date: 2026-01-31 11:00:00.000000
 
 This migration seeds the RBAC tables with:
@@ -18,8 +18,8 @@ from alembic import op
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
-revision = "b2c3d4e5f6a7"
-down_revision = "a1b2c3d4e5f6"
+revision = "f5f526cbc35a"
+down_revision = "d9ee4ea46797"
 branch_labels = None
 depends_on = None
 
