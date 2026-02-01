@@ -11,14 +11,21 @@ import {
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  useAssignUserRoleMutation,
+  useGetRolesQuery,
+  useGetUserRolesQuery,
+  useRemoveUserRoleMutation,
+} from "~/features/rbac/rbac.slice";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -41,6 +48,9 @@ export type FormValues = typeof defaultInitialValues;
 const PermissionsForm = () => {
   const toast = useToast();
   const router = useRouter();
+  const { flags } = useFlags();
+  const isRbacEnabled = flags.rbacManagement;
+
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -61,25 +71,118 @@ const PermissionsForm = () => {
     setAssignedSystems(initialManagedSystems);
   }, [initialManagedSystems]);
 
-  const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
-    activeUserId ?? "",
-    {
+  // Legacy permission hooks
+  const { data: userPermissions, isLoading: isLoadingLegacy } =
+    useGetUserPermissionsQuery(activeUserId ?? "", {
       skip: !activeUserId,
-    },
-  );
+    });
 
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
 
-  // Check if the current user is an external respondent
-  const isExternalRespondent = Boolean(
-    userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+  // RBAC hooks - only fetch when RBAC is enabled
+  const { data: rbacRoles, isLoading: isLoadingRbacRoles } = useGetRolesQuery(
+    {},
+    { skip: !isRbacEnabled }
   );
+  const { data: userRbacRoles, isLoading: isLoadingUserRbacRoles } =
+    useGetUserRolesQuery(
+      { userId: activeUserId ?? "" },
+      { skip: !activeUserId || !isRbacEnabled }
+    );
+  const [assignUserRole] = useAssignUserRoleMutation();
+  const [removeUserRole] = useRemoveUserRoleMutation();
 
-  const updatePermissions = async (values: FormValues) => {
-    if (chooseApproverIsOpen) {
-      chooseApproverClose();
+  // Create a map of role keys to role IDs for RBAC
+  const roleKeyToIdMap = useMemo(() => {
+    if (!rbacRoles) return {};
+    return rbacRoles.reduce(
+      (acc, role) => {
+        acc[role.key] = role.id;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+  }, [rbacRoles]);
+
+  // Get current RBAC role keys from user's RBAC role assignments
+  const currentRbacRoleKeys = useMemo(() => {
+    if (!userRbacRoles || !rbacRoles) return [];
+    return userRbacRoles
+      .map((ur) => {
+        const role = rbacRoles.find((r) => r.id === ur.role_id);
+        return role?.key;
+      })
+      .filter((key): key is string => !!key);
+  }, [userRbacRoles, rbacRoles]);
+
+  const isLoading = isRbacEnabled
+    ? isLoadingRbacRoles || isLoadingUserRbacRoles
+    : isLoadingLegacy;
+
+  // Check if the current user is an external respondent
+  const isExternalRespondent = useMemo(() => {
+    if (isRbacEnabled) {
+      return currentRbacRoleKeys.includes("external_respondent");
     }
+    return Boolean(
+      userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
+    );
+  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
+
+  const updatePermissionsRbac = async (values: FormValues) => {
+    if (!activeUserId || !userRbacRoles) {
+      return;
+    }
+
+    const selectedRoleKeys = values.roles as string[];
+    const currentRoleKeys = currentRbacRoleKeys;
+
+    // Determine roles to add and remove
+    const rolesToAdd = selectedRoleKeys.filter(
+      (key) => !currentRoleKeys.includes(key)
+    );
+    const rolesToRemove = currentRoleKeys.filter(
+      (key) => !selectedRoleKeys.includes(key)
+    );
+
+    // Remove roles that are no longer selected
+    for (const roleKey of rolesToRemove) {
+      const assignment = userRbacRoles.find((ur) => {
+        const role = rbacRoles?.find((r) => r.id === ur.role_id);
+        return role?.key === roleKey;
+      });
+      if (assignment) {
+        const result = await removeUserRole({
+          userId: activeUserId,
+          assignmentId: assignment.id,
+        });
+        if (isErrorResult(result)) {
+          toast(errorToastParams(getErrorMessage(result.error)));
+          return;
+        }
+      }
+    }
+
+    // Add newly selected roles
+    for (const roleKey of rolesToAdd) {
+      const roleId = roleKeyToIdMap[roleKey];
+      if (roleId) {
+        const result = await assignUserRole({
+          userId: activeUserId,
+          data: { role_id: roleId },
+        });
+        if (isErrorResult(result)) {
+          toast(errorToastParams(getErrorMessage(result.error)));
+          return;
+        }
+      }
+    }
+
+    toast(successToastParams("RBAC permissions updated"));
+  };
+
+  const updatePermissionsLegacy = async (values: FormValues) => {
     if (!activeUserId) {
       return;
     }
@@ -114,6 +217,21 @@ const PermissionsForm = () => {
     toast(successToastParams("Permissions updated"));
   };
 
+  const updatePermissions = async (values: FormValues) => {
+    if (chooseApproverIsOpen) {
+      chooseApproverClose();
+    }
+    if (!activeUserId) {
+      return;
+    }
+
+    if (isRbacEnabled) {
+      await updatePermissionsRbac(values);
+    } else {
+      await updatePermissionsLegacy(values);
+    }
+  };
+
   const handleSubmit = async (values: FormValues) => {
     if (!activeUserId) {
       return;
@@ -142,10 +260,12 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
-  if (
-    !canAssignOwner &&
-    userPermissions?.roles?.includes(RoleRegistryEnum.OWNER)
-  ) {
+  // Check if target user is an owner (works with both RBAC and legacy)
+  const targetUserIsOwner = isRbacEnabled
+    ? currentRbacRoleKeys.includes("owner")
+    : userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
+
+  if (!canAssignOwner && targetUserIsOwner) {
     return (
       <Text data-testid="insufficient-access">
         You do not have sufficient access to change this user&apos;s
@@ -154,9 +274,17 @@ const PermissionsForm = () => {
     );
   }
 
-  const initialValues = userPermissions?.roles
-    ? { roles: userPermissions.roles }
-    : defaultInitialValues;
+  // Use RBAC roles when enabled, otherwise fall back to legacy permissions
+  const initialValues = useMemo(() => {
+    if (isRbacEnabled) {
+      return currentRbacRoleKeys.length > 0
+        ? { roles: currentRbacRoleKeys as RoleRegistryEnum[] }
+        : defaultInitialValues;
+    }
+    return userPermissions?.roles
+      ? { roles: userPermissions.roles }
+      : defaultInitialValues;
+  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
 
   // Filter roles based on whether the user is external respondent
   const availableRoles = ROLES.filter((role) => {
