@@ -208,6 +208,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Role Management",
+        path: routes.RBAC_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "rbacManagement",
+        scopes: [
+          // Only Owners can access Role Management - they have assign_owners scope
+          ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,
+        ],
+      },
+      {
         title: "User Detail",
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access
