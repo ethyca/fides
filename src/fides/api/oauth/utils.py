@@ -54,6 +54,41 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 )
 
 
+# Type for custom permission checker callback
+# Signature: (db, token_data, client, endpoint_scopes) -> bool
+PermissionCheckerCallback = Callable[
+    [Optional[Session], Dict[str, Any], "ClientDetail", "SecurityScopes"], bool
+]
+
+# Global callback for custom permission checking (e.g., RBAC)
+# When set, this callback will be used instead of the default permission logic
+_custom_permission_checker: Optional[PermissionCheckerCallback] = None
+
+
+def register_permission_checker(checker: PermissionCheckerCallback) -> None:
+    """
+    Register a custom permission checker callback.
+
+    This allows extensions (like fidesplus RBAC) to override the default
+    permission checking logic. The callback will be invoked whenever
+    permission checks are performed.
+
+    Args:
+        checker: A callable with signature (db, token_data, client, endpoint_scopes) -> bool
+                 The db parameter may be None if not available in the calling context.
+    """
+    global _custom_permission_checker
+    _custom_permission_checker = checker
+    logger.info("Custom permission checker registered")
+
+
+def clear_permission_checker() -> None:
+    """Clear the custom permission checker, reverting to default behavior."""
+    global _custom_permission_checker
+    _custom_permission_checker = None
+    logger.info("Custom permission checker cleared")
+
+
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form."""
     try:
@@ -551,10 +586,28 @@ async def extract_token_and_load_client_async(
 
 
 def has_permissions(
-    token_data: Dict[str, Any], client: ClientDetail, endpoint_scopes: SecurityScopes
+    token_data: Dict[str, Any],
+    client: ClientDetail,
+    endpoint_scopes: SecurityScopes,
+    db: Optional[Session] = None,
 ) -> bool:
     """Does the user have the necessary scopes, either via a scope they were assigned directly,
-    or a scope associated with their role(s)?"""
+    or a scope associated with their role(s)?
+
+    If a custom permission checker is registered (e.g., for RBAC), it will be used instead
+    of the default permission logic.
+
+    Args:
+        token_data: Decoded token data containing scopes and roles
+        client: The OAuth client
+        endpoint_scopes: Required scopes for the endpoint
+        db: Optional database session, passed to custom permission checker if available
+    """
+    # If a custom permission checker is registered, use it
+    if _custom_permission_checker is not None:
+        return _custom_permission_checker(db, token_data, client, endpoint_scopes)
+
+    # Default permission checking logic
     has_direct_scope: bool = _has_direct_scopes(
         token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
     )
