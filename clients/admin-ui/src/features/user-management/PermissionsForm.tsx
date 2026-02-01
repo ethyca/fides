@@ -130,6 +130,27 @@ const PermissionsForm = () => {
     );
   }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
 
+  // Use RBAC roles when enabled, otherwise fall back to legacy permissions
+  // Must be defined here (before early returns) to satisfy React's Rules of Hooks
+  const initialValues = useMemo(() => {
+    if (isRbacEnabled) {
+      return currentRbacRoleKeys.length > 0
+        ? { roles: currentRbacRoleKeys as RoleRegistryEnum[] }
+        : defaultInitialValues;
+    }
+    return userPermissions?.roles
+      ? { roles: userPermissions.roles }
+      : defaultInitialValues;
+  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
+
+  // Check if target user is an owner (works with both RBAC and legacy)
+  const targetUserIsOwner = useMemo(() => {
+    if (isRbacEnabled) {
+      return currentRbacRoleKeys.includes("owner");
+    }
+    return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
+  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
+
   const updatePermissionsRbac = async (values: FormValues) => {
     if (!activeUserId || !userRbacRoles) {
       return;
@@ -260,11 +281,6 @@ const PermissionsForm = () => {
     return <Spinner />;
   }
 
-  // Check if target user is an owner (works with both RBAC and legacy)
-  const targetUserIsOwner = isRbacEnabled
-    ? currentRbacRoleKeys.includes("owner")
-    : userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
-
   if (!canAssignOwner && targetUserIsOwner) {
     return (
       <Text data-testid="insufficient-access">
@@ -273,18 +289,6 @@ const PermissionsForm = () => {
       </Text>
     );
   }
-
-  // Use RBAC roles when enabled, otherwise fall back to legacy permissions
-  const initialValues = useMemo(() => {
-    if (isRbacEnabled) {
-      return currentRbacRoleKeys.length > 0
-        ? { roles: currentRbacRoleKeys as RoleRegistryEnum[] }
-        : defaultInitialValues;
-    }
-    return userPermissions?.roles
-      ? { roles: userPermissions.roles }
-      : defaultInitialValues;
-  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
 
   // Filter roles based on whether the user is external respondent
   const availableRoles = ROLES.filter((role) => {
