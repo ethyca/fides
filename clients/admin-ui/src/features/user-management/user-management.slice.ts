@@ -4,6 +4,7 @@ import { utf8ToB64 } from "common/utils";
 import type { RootState } from "~/app/store";
 import { selectUser } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
+import { selectEnvFlags } from "~/features/common/features/features.slice";
 import {
   RoleRegistryEnum,
   ScopeRegistryEnum,
@@ -224,17 +225,47 @@ export const selectActiveUser = createSelector(
 );
 
 const emptyScopes: ScopeRegistryEnum[] = [];
-export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
-  createSelector([(RootState) => RootState, selectUser], (RootState, user) => {
-    if (!user) {
-      return emptyScopes;
-    }
-    const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
-      RootState,
-    ).data;
 
-    return permissions ? permissions.total_scopes : emptyScopes;
-  });
+/**
+ * Selects the current user's scopes/permissions.
+ *
+ * When RBAC management is enabled, this selector prefers permissions from the
+ * RBAC system (via /rbac/me/permissions endpoint). This ensures users get the
+ * correct permissions based on their RBAC role assignments.
+ *
+ * Falls back to legacy permissions (from /user/{id}/permission endpoint) when:
+ * - RBAC is disabled
+ * - RBAC permissions haven't loaded yet
+ */
+export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
+  createSelector(
+    [(RootState) => RootState, selectUser, selectEnvFlags],
+    (RootState, user, flags) => {
+      // When RBAC is enabled, prefer RBAC-derived permissions
+      if (flags.rbacManagement) {
+        // Access the RBAC permissions cache dynamically to avoid circular imports
+        const rbacPermissions = (
+          RootState.api?.queries?.["getMyRBACPermissions(undefined)"] as
+            | { status: string; data?: string[] }
+            | undefined
+        )?.data;
+
+        if (rbacPermissions && rbacPermissions.length > 0) {
+          return rbacPermissions as ScopeRegistryEnum[];
+        }
+      }
+
+      // Fall back to legacy permissions
+      if (!user) {
+        return emptyScopes;
+      }
+      const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
+        RootState,
+      ).data;
+
+      return permissions ? permissions.total_scopes : emptyScopes;
+    }
+  );
 
 const emptyRoles: RoleRegistryEnum[] = [];
 /**
