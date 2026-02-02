@@ -1,3 +1,4 @@
+import base64
 from typing import Any, Dict, Union
 
 from cryptography.hazmat.backends import default_backend
@@ -53,20 +54,36 @@ class SnowflakeConnector(SQLConnector):
         config = self.secrets_schema(**self.configuration.secrets or {})
         connect_args: Dict[str, Union[str, bytes]] = {}
         if config.private_key:
-            config.private_key = config.private_key.replace("\\n", "\n")
-            connect_args["private_key"] = config.private_key
-            if config.private_key_passphrase:
-                private_key_encoded = serialization.load_pem_private_key(
-                    config.private_key.encode(),
-                    password=config.private_key_passphrase.encode(),  # pylint: disable=no-member
+            raw_key = config.private_key.replace("\\n", "\n")
+            # Snowflake connector expects: str = base64-encoded DER, or bytes = raw DER
+            if "-----BEGIN" in raw_key:
+                # PEM: decode to key, then pass as base64 DER string or raw DER bytes
+                password = None
+                if config.private_key_passphrase:
+                    password = (
+                        config.private_key_passphrase.encode()
+                    )  # pylint: disable=no-member
+                private_key_obj = serialization.load_pem_private_key(
+                    raw_key.encode(),
+                    password=password,
                     backend=default_backend(),
                 )
-                private_key = private_key_encoded.private_bytes(
+                der_bytes = private_key_obj.private_bytes(
                     encoding=serialization.Encoding.DER,
                     format=serialization.PrivateFormat.PKCS8,
                     encryption_algorithm=serialization.NoEncryption(),
                 )
-                connect_args["private_key"] = private_key
+                # Pass as base64 string so Snowflake's b64decode path is used
+                connect_args["private_key"] = base64.b64encode(der_bytes).decode(
+                    "ascii"
+                )
+            else:
+                # Already base64-encoded DER: strip whitespace and pass as-is
+                connect_args["private_key"] = "".join(raw_key.split())
+                if config.private_key_passphrase:
+                    connect_args["private_key_passphrase"] = (
+                        config.private_key_passphrase.encode()  # pylint: disable=no-member
+                    )
         return connect_args
 
     def query_config(self, node: ExecutionNode) -> SnowflakeQueryConfig:

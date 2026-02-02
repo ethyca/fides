@@ -1,7 +1,12 @@
+import base64
 from typing import Generator
+from unittest.mock import MagicMock
 
 import pytest
 from fideslang.models import Dataset
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -11,6 +16,98 @@ from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
     SnowflakeNamespaceMeta,
 )
 from fides.api.service.connectors.snowflake_connector import SnowflakeConnector
+
+
+def _make_base64_der_key() -> str:
+    """Produce a base64-encoded DER private key string (Snowflake str format)."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    der = private_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    return base64.b64encode(der).decode("ascii")
+
+
+def _make_pem_key() -> str:
+    """Produce a PEM-format private key string."""
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode("ascii")
+
+
+class TestSnowflakeConnectorGetConnectArgs:
+    """Unit tests for get_connect_args (private key format for Snowflake)."""
+
+    def test_base64_der_passed_through_stripped(self):
+        """Base64 DER string is stripped of whitespace and passed as str."""
+        key = _make_base64_der_key()
+        config = MagicMock()
+        config.secrets = {
+            "account_identifier": "test",
+            "user_login_name": "user",
+            "private_key": key,
+            "warehouse_name": "wh",
+        }
+        connector = SnowflakeConnector(config)
+        connect_args = connector.get_connect_args()
+        assert connect_args["private_key"] == key
+
+    def test_base64_der_with_whitespace_stripped(self):
+        """Base64 DER with newlines is normalized to single line."""
+        key = _make_base64_der_key()
+        wrapped = key[:32] + "\n" + key[32:]
+        config = MagicMock()
+        config.secrets = {
+            "account_identifier": "test",
+            "user_login_name": "user",
+            "private_key": wrapped,
+            "warehouse_name": "wh",
+        }
+        connector = SnowflakeConnector(config)
+        connect_args = connector.get_connect_args()
+        assert connect_args["private_key"] == key
+        assert "\n" not in connect_args["private_key"]
+
+    def test_pem_converted_to_base64_der_string(self):
+        """PEM key is converted to base64-encoded DER string for Snowflake."""
+        pem = _make_pem_key()
+        config = MagicMock()
+        config.secrets = {
+            "account_identifier": "test",
+            "user_login_name": "user",
+            "private_key": pem,
+            "warehouse_name": "wh",
+        }
+        connector = SnowflakeConnector(config)
+        connect_args = connector.get_connect_args()
+        assert "private_key" in connect_args
+        # Should be base64 string (no PEM headers)
+        pk = connect_args["private_key"]
+        assert "-----BEGIN" not in pk
+        assert "-----END" not in pk
+        # Should decode to valid DER
+        der = base64.b64decode(pk)
+        key = serialization.load_der_private_key(
+            der, password=None, backend=default_backend()
+        )
+        assert key is not None
+
+    def test_no_private_key_no_connect_args_key(self):
+        """When no private_key in secrets, connect_args has no private_key."""
+        config = MagicMock()
+        config.secrets = {
+            "account_identifier": "test",
+            "user_login_name": "user",
+            "password": "secret",
+            "warehouse_name": "wh",
+        }
+        connector = SnowflakeConnector(config)
+        connect_args = connector.get_connect_args()
+        assert "private_key" not in connect_args
 
 
 @pytest.fixture
