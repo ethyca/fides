@@ -70,10 +70,10 @@ const getConfidenceColor = (score: number): TagColor => {
 const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
   const {
     coverage,
-    categoryDistribution,
-    confidenceDistribution,
-    vendorStats,
-    flaggedResources,
+    category_distribution: categoryDistribution,
+    confidence_distribution: confidenceDistribution,
+    vendor_stats: vendorStats,
+    flagged_resources: flaggedResources,
     sample_classifications: sampleClassifications,
     by_resource_type: byResourceType,
   } = report;
