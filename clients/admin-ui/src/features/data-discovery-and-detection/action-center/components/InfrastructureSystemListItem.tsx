@@ -7,12 +7,16 @@ import {
   List,
   Tag,
   Text,
+  useMessage,
 } from "fidesui";
 import { useMemo } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
+import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { StagedResourceAPIResponse } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import {
   INFRASTRUCTURE_DIFF_STATUS_COLOR,
@@ -31,8 +35,6 @@ interface InfrastructureSystemListItemProps {
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
-  onSetDataUses?: (urn: string, dataUses: string[]) => void;
-  onSelectDataUse?: (value: string) => void;
   dataUsesDisabled?: boolean;
   onPromoteSuccess?: () => void;
 }
@@ -46,8 +48,6 @@ export const InfrastructureSystemListItem = ({
   monitorId,
   activeTab,
   allowIgnore,
-  onSetDataUses,
-  onSelectDataUse,
   dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
@@ -55,6 +55,21 @@ export const InfrastructureSystemListItem = ({
   const url = rowClickUrl?.(item);
   const { metadata, diff_status: diffStatus } = item;
   const systemName = item.name ?? "Uncategorized";
+
+  const messageApi = useMessage();
+
+  const [updateDataUses] = useUpdateInfrastructureSystemDataUsesMutation();
+
+  const handleUpdateDataUses = async (dataUses: string[]) => {
+    const result = await updateDataUses({
+      monitorId,
+      dataUses,
+      urn: itemKey,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    }
+  };
 
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
   const logoUrl = useMemo(() => {
@@ -94,13 +109,9 @@ export const InfrastructureSystemListItem = ({
 
   // Handle data use selection
   const handleSelectDataUse = (value: string) => {
-    if (onSelectDataUse) {
-      onSelectDataUse(value);
-    } else if (onSetDataUses && itemKey) {
-      const currentDataUses = item.preferred_data_uses ?? [];
-      if (!currentDataUses.includes(value)) {
-        onSetDataUses(itemKey, [...currentDataUses, value]);
-      }
+    const currentDataUses = item.preferred_data_uses ?? [];
+    if (!currentDataUses.includes(value)) {
+      handleUpdateDataUses([...currentDataUses, value]);
     }
   };
 
@@ -159,13 +170,11 @@ export const InfrastructureSystemListItem = ({
               );
 
               const handleClose = () => {
-                if (onSetDataUses && itemKey) {
-                  const newDataUses =
-                    item.preferred_data_uses?.filter(
-                      (dataUse) => dataUse !== props.value,
-                    ) ?? [];
-                  onSetDataUses(itemKey, newDataUses);
-                }
+                const newDataUses =
+                  item.preferred_data_uses?.filter(
+                    (dataUse) => dataUse !== props.value,
+                  ) ?? [];
+                handleUpdateDataUses(newDataUses);
               };
 
               return tagRender({
