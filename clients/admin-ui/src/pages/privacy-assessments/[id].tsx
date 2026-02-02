@@ -985,7 +985,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             align-items: center;
             justify-content: flex-end;
             gap: 24px;
-            max-width: min(800px, calc(100% - 250px));
+            max-width: min(400px, calc(100% - 500px));
             min-width: 300px;
             padding-right: 12px;
           }
@@ -1017,37 +1017,37 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             margin-left: 0;
           }
           .privacy-assessment-collapse .ant-collapse-header {
-            padding-right: min(850px, calc(100% - 200px)) !important;
+            padding-right: min(400px, calc(100% - 500px)) !important;
           }
           .privacy-assessment-collapse .ant-collapse-item-active .ant-collapse-header {
-            padding-right: min(850px, calc(100% - 200px)) !important;
+            padding-right: min(400px, calc(100% - 500px)) !important;
           }
           @media (max-width: 1400px) {
             .privacy-assessment-collapse .status-tag-container {
-              max-width: min(700px, calc(100% - 300px));
+              max-width: min(350px, calc(100% - 450px));
             }
             .privacy-assessment-collapse .status-tag-container .summary-text {
               max-width: 450px;
             }
             .privacy-assessment-collapse .ant-collapse-header {
-              padding-right: min(750px, calc(100% - 200px)) !important;
+              padding-right: min(350px, calc(100% - 450px)) !important;
             }
             .privacy-assessment-collapse .ant-collapse-item-active .ant-collapse-header {
-              padding-right: min(750px, calc(100% - 200px)) !important;
+              padding-right: min(350px, calc(100% - 450px)) !important;
             }
           }
           @media (max-width: 1200px) {
             .privacy-assessment-collapse .status-tag-container {
-              max-width: min(600px, calc(100% - 250px));
+              max-width: min(300px, calc(100% - 400px));
             }
             .privacy-assessment-collapse .status-tag-container .summary-text {
               max-width: 400px;
             }
             .privacy-assessment-collapse .ant-collapse-header {
-              padding-right: min(650px, calc(100% - 200px)) !important;
+              padding-right: min(300px, calc(100% - 400px)) !important;
             }
             .privacy-assessment-collapse .ant-collapse-item-active .ant-collapse-header {
-              padding-right: min(650px, calc(100% - 200px)) !important;
+              padding-right: min(300px, calc(100% - 400px)) !important;
             }
           }
           @media (max-width: 992px) {
@@ -1339,6 +1339,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               marginBottom: 20,
               padding: "10px 14px",
               backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
               borderRadius: 6,
               border: `1px solid ${palette.FIDESUI_NEUTRAL_200}`,
               position: "relative",
@@ -1564,6 +1565,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1626,6 +1628,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1690,6 +1693,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1976,6 +1980,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2211,6 +2216,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2244,6 +2250,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2285,6 +2292,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2326,6 +2334,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2362,6 +2371,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2585,6 +2595,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -2821,6 +2832,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     <div
                       style={{
                         backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                         padding: "16px 16px 8px 16px",
                         borderRadius: 8,
                       }}
@@ -3060,6 +3072,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3300,6 +3313,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3538,6 +3552,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3571,6 +3586,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3604,6 +3620,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3637,6 +3654,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3670,6 +3688,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3703,6 +3722,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
@@ -3736,6 +3756,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   <div
                     style={{
                       backgroundColor: palette.FIDESUI_BG_CORINTH,
+                      width: "100%",
                       padding: "16px 16px 8px 16px",
                       borderRadius: 8,
                     }}
