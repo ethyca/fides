@@ -54,8 +54,32 @@ export const DiscoveredInfrastructureSystemsTable = ({
     dataUsesFilters: infrastructureSystemsFilters.dataUsesFilters,
   });
 
+  // Build filters object for selection hook
+  const filters = useMemo(
+    () => ({
+      search: searchQuery || undefined,
+      diff_status: infrastructureSystemsFilters.statusFilters?.length
+        ? (infrastructureSystemsFilters.statusFilters as any)
+        : undefined,
+      vendor_id: infrastructureSystemsFilters.vendorFilters?.length
+        ? infrastructureSystemsFilters.vendorFilters
+        : undefined,
+      data_uses: infrastructureSystemsFilters.dataUsesFilters?.length
+        ? infrastructureSystemsFilters.dataUsesFilters
+        : undefined,
+    }),
+    [
+      searchQuery,
+      infrastructureSystemsFilters.statusFilters,
+      infrastructureSystemsFilters.vendorFilters,
+      infrastructureSystemsFilters.dataUsesFilters,
+    ],
+  );
+
   const {
     selectedItems,
+    excludedUrns,
+    selectionMode,
     hasSelectedRows,
     selectedRowsCount,
     isAllSelected,
@@ -67,12 +91,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
   } = useInfrastructureSystemsSelection({
     items: data?.items,
     getRecordKey,
+    totalCount: data?.total,
+    filters,
   });
 
   const { handleBulkAction, isBulkActionInProgress } =
     useInfrastructureSystemsBulkActions({
       monitorId,
-      getRecordKey,
       onSuccess: () => {
         clearSelection();
         refetch();
@@ -84,9 +109,27 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   const handleBulkActionWithSelectedItems = useCallback(
     (action: InfrastructureSystemBulkActionType) => {
-      handleBulkAction(action, selectedItems);
+      if (selectionMode === "all") {
+        // excludedUrns already contains all URNs that should be excluded
+        handleBulkAction(action, {
+          mode: "all",
+          filters,
+          excludeUrns: excludedUrns,
+        });
+      } else {
+        handleBulkAction(action, {
+          mode: "explicit",
+          selectedItems,
+        });
+      }
     },
-    [handleBulkAction, selectedItems],
+    [
+      handleBulkAction,
+      selectedItems,
+      selectionMode,
+      excludedUrns,
+      filters,
+    ],
   );
 
   const bulkActionsMenuItems = useMemo(
@@ -153,7 +196,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
         />
         <span className="ml-2">Select all</span>
         {selectedRowsCount > 0 && (
-          <Text strong>{selectedRowsCount.toLocaleString()} selected</Text>
+          <Text strong>
+            {selectedRowsCount.toLocaleString()}
+            {selectionMode === "all" && data?.total && selectedRowsCount < data.total
+              ? ` of ${data.total.toLocaleString()}`
+              : ""}{" "}
+            selected
+          </Text>
         )}
       </Flex>
       <List
@@ -172,7 +221,11 @@ export const DiscoveredInfrastructureSystemsTable = ({
           <InfrastructureSystemListItem
             item={item}
             selected={isItemSelected(item)}
-            onSelect={handleSelectItem}
+            onSelect={(key, selected) => {
+              // Use getRecordKey to ensure consistent key matching
+              const recordKey = getRecordKey(item);
+              handleSelectItem(recordKey, selected);
+            }}
             rowClickUrl={rowClickUrl}
             monitorId={monitorId}
             activeTab={activeTab as ActionCenterTabHash | null}
