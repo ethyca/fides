@@ -28,7 +28,22 @@ interface ClassificationReportModalProps {
 
 const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`;
 
-type TagColor = "error" | "default" | "info" | "success" | "warning" | "corinth" | "minos" | "nectar" | "olive" | "sandstone" | "terracotta" | "marble" | "alert" | "caution" | "white";
+type TagColor =
+  | "error"
+  | "default"
+  | "info"
+  | "success"
+  | "warning"
+  | "corinth"
+  | "minos"
+  | "nectar"
+  | "olive"
+  | "sandstone"
+  | "terracotta"
+  | "marble"
+  | "alert"
+  | "caution"
+  | "white";
 
 const getCategoryColor = (category: string): TagColor => {
   const colors: Record<string, TagColor> = {
@@ -57,7 +72,11 @@ export const ClassificationReportModal = ({
   open,
   onClose,
 }: ClassificationReportModalProps) => {
-  const { data: report, isLoading, error } = useGetClassificationReportQuery(
+  const {
+    data: report,
+    isLoading,
+    error,
+  } = useGetClassificationReportQuery(
     { monitor_config_key: monitorId, sample_size: 20 },
     { skip: !open },
   );
@@ -95,7 +114,15 @@ export const ClassificationReportModal = ({
 };
 
 const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
-  const { coverage, category_distribution, confidence_distribution, vendor_stats, flagged_resources, sample_classifications, by_resource_type } = report;
+  const {
+    coverage,
+    category_distribution,
+    confidence_distribution,
+    vendor_stats,
+    flagged_resources,
+    sample_classifications,
+    by_resource_type,
+  } = report;
 
   return (
     <Space direction="vertical" size="large" className="w-full">
@@ -104,19 +131,41 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
         <Flex gap="large" wrap>
           <div>
             <Text type="secondary">Total resources</Text>
-            <div><Text strong style={{ fontSize: 24 }}>{coverage.total_resources}</Text></div>
+            <div>
+              <Text strong style={{ fontSize: 24 }}>
+                {coverage.total_resources}
+              </Text>
+            </div>
           </div>
           <div>
             <Text type="secondary">Classified by Compass</Text>
-            <div><Text strong style={{ fontSize: 24, color: "#52c41a" }}>{coverage.classified_by_compass}</Text></div>
+            <div>
+              <Text strong style={{ fontSize: 24, color: "#52c41a" }}>
+                {coverage.classified_by_compass}
+              </Text>
+            </div>
           </div>
           <div>
             <Text type="secondary">Classified by LLM</Text>
-            <div><Text strong style={{ fontSize: 24, color: "#1890ff" }}>{coverage.classified_by_llm}</Text></div>
+            <div>
+              <Text strong style={{ fontSize: 24, color: "#1890ff" }}>
+                {coverage.classified_by_llm}
+              </Text>
+            </div>
           </div>
           <div>
             <Text type="secondary">Unclassified</Text>
-            <div><Text strong style={{ fontSize: 24, color: coverage.unclassified > 0 ? "#faad14" : undefined }}>{coverage.unclassified}</Text></div>
+            <div>
+              <Text
+                strong
+                style={{
+                  fontSize: 24,
+                  color: coverage.unclassified > 0 ? "#faad14" : undefined,
+                }}
+              >
+                {coverage.unclassified}
+              </Text>
+            </div>
           </div>
         </Flex>
         <Progress
@@ -132,7 +181,10 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
         <Card size="small" title="Category distribution">
           <Flex gap="small" wrap>
             {category_distribution.map((cat) => (
-              <Tooltip key={cat.category} title={`${cat.count} resources (${formatPercent(cat.percentage)})`}>
+              <Tooltip
+                key={cat.category}
+                title={`${cat.count} resources (${formatPercent(cat.percentage)})`}
+              >
                 <Tag color={getCategoryColor(cat.category)}>
                   {cat.category}: {cat.count}
                 </Tag>
@@ -148,7 +200,8 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
           <Flex gap="small" wrap>
             {confidence_distribution.map((conf) => (
               <Tag key={conf.score} color={getConfidenceColor(conf.score)}>
-                Score {conf.score}: {conf.count} ({formatPercent(conf.percentage)})
+                Score {conf.score}: {conf.count} (
+                {formatPercent(conf.percentage)})
               </Tag>
             ))}
           </Flex>
@@ -162,10 +215,15 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
             {vendor_stats.total_with_vendor_name}
           </Descriptions.Item>
           <Descriptions.Item label="Matched to Compass">
-            {vendor_stats.matched_to_compass} ({formatPercent(vendor_stats.match_rate)})
+            {vendor_stats.matched_to_compass} (
+            {formatPercent(vendor_stats.match_rate)})
           </Descriptions.Item>
           <Descriptions.Item label="Unregistered ad vendors">
-            <Text type={vendor_stats.unregistered_ad_vendors > 0 ? "danger" : undefined}>
+            <Text
+              type={
+                vendor_stats.unregistered_ad_vendors > 0 ? "danger" : undefined
+              }
+            >
               {vendor_stats.unregistered_ad_vendors}
             </Text>
           </Descriptions.Item>
@@ -212,12 +270,30 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
                   size="small"
                   pagination={{ pageSize: 5 }}
                   columns={[
-                    { title: "Domain", dataIndex: "domain", key: "domain", width: 150 },
-                    { title: "Vendor", dataIndex: "vendor_name", key: "vendor_name" },
-                    { title: "Category", dataIndex: "category", key: "category",
-                      render: (cat: string) => <Tag color={getCategoryColor(cat)}>{cat}</Tag>
+                    {
+                      title: "Domain",
+                      dataIndex: "domain",
+                      key: "domain",
+                      width: 150,
                     },
-                    { title: "Flag reason", dataIndex: "flag_reason", key: "flag_reason" },
+                    {
+                      title: "Vendor",
+                      dataIndex: "vendor_name",
+                      key: "vendor_name",
+                    },
+                    {
+                      title: "Category",
+                      dataIndex: "category",
+                      key: "category",
+                      render: (cat: string) => (
+                        <Tag color={getCategoryColor(cat)}>{cat}</Tag>
+                      ),
+                    },
+                    {
+                      title: "Flag reason",
+                      dataIndex: "flag_reason",
+                      key: "flag_reason",
+                    },
                   ]}
                 />
               ),
@@ -245,24 +321,74 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
                   size="small"
                   pagination={{ pageSize: 10 }}
                   columns={[
-                    { title: "Domain", dataIndex: "domain", key: "domain", width: 120, ellipsis: true },
-                    { title: "Type", dataIndex: "resource_type", key: "resource_type", width: 80 },
-                    { title: "Vendor", dataIndex: "vendor_name", key: "vendor_name", width: 100, ellipsis: true },
-                    { title: "Category", dataIndex: "category", key: "category", width: 100,
-                      render: (cat: string) => cat ? <Tag color={getCategoryColor(cat)}>{cat}</Tag> : "-"
+                    {
+                      title: "Domain",
+                      dataIndex: "domain",
+                      key: "domain",
+                      width: 120,
+                      ellipsis: true,
                     },
-                    { title: "Conf.", dataIndex: "confidence", key: "confidence", width: 60,
-                      render: (score: number) => score ? <Tag color={getConfidenceColor(score)}>{score}</Tag> : "-"
+                    {
+                      title: "Type",
+                      dataIndex: "resource_type",
+                      key: "resource_type",
+                      width: 80,
                     },
-                    { title: "Compass", dataIndex: "compass_matched", key: "compass_matched", width: 80,
-                      render: (matched: boolean) => matched ? <Tag color="success">Yes</Tag> : <Tag>No</Tag>
+                    {
+                      title: "Vendor",
+                      dataIndex: "vendor_name",
+                      key: "vendor_name",
+                      width: 100,
+                      ellipsis: true,
                     },
-                    { title: "Rationale", dataIndex: "rationale", key: "rationale", ellipsis: true,
+                    {
+                      title: "Category",
+                      dataIndex: "category",
+                      key: "category",
+                      width: 100,
+                      render: (cat: string) =>
+                        cat ? (
+                          <Tag color={getCategoryColor(cat)}>{cat}</Tag>
+                        ) : (
+                          "-"
+                        ),
+                    },
+                    {
+                      title: "Conf.",
+                      dataIndex: "confidence",
+                      key: "confidence",
+                      width: 60,
+                      render: (score: number) =>
+                        score ? (
+                          <Tag color={getConfidenceColor(score)}>{score}</Tag>
+                        ) : (
+                          "-"
+                        ),
+                    },
+                    {
+                      title: "Compass",
+                      dataIndex: "compass_matched",
+                      key: "compass_matched",
+                      width: 80,
+                      render: (matched: boolean) =>
+                        matched ? (
+                          <Tag color="success">Yes</Tag>
+                        ) : (
+                          <Tag>No</Tag>
+                        ),
+                    },
+                    {
+                      title: "Rationale",
+                      dataIndex: "rationale",
+                      key: "rationale",
+                      ellipsis: true,
                       render: (text: string) => (
                         <Tooltip title={text}>
-                          <Text ellipsis className="max-w-48">{text || "-"}</Text>
+                          <Text ellipsis className="max-w-48">
+                            {text || "-"}
+                          </Text>
                         </Tooltip>
-                      )
+                      ),
                     },
                   ]}
                 />

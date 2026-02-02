@@ -9,7 +9,7 @@ import {
   Form,
   Input,
   isoCodesToOptions,
-LocationSelect,
+  LocationSelect,
   Select,
   Text,
   Tooltip,
@@ -135,7 +135,7 @@ const ConfigureWebsiteMonitorForm = ({
       locations: [],
       exclude_domains: [],
     },
-stewards:
+    stewards:
       monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
     llm_model_override: monitor?.classify_params?.llm_model_override ?? "",
   };
@@ -258,7 +258,7 @@ stewards:
           onChange={(value) => form.setFieldValue("shared_config_id", value)}
           value={form.getFieldValue("shared_config_id")}
         />
-{llmClassifierFeatureEnabled && (
+        {llmClassifierFeatureEnabled && (
           <Form.Item
             label={
               <Tooltip
