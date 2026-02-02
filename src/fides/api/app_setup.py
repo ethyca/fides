@@ -62,6 +62,7 @@ from fides.api.util.saas_config_updater import update_saas_configs
 from fides.api.util.security_headers import SecurityHeadersMiddleware
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.config.validation import ValidationManager, ValidationSeverity
 
 VERSION = fides.__version__
 
@@ -235,6 +236,35 @@ async def run_database_startup(app: FastAPI) -> None:
         raise FidesError(
             f"Error occurred writing config settings to database: {str(e)}"
         )
+    finally:
+        db.close()
+
+    # Run settings validation
+    logger.info("Validating configuration settings...")
+    db = get_api_session()
+    try:
+        validation_results = ValidationManager.validate_startup(CONFIG, db)
+
+        # Log warnings
+        warnings = ValidationManager.get_warnings(validation_results)
+        for warning in warnings:
+            logger.warning("Config validation warning: {}", warning.message)
+
+        # Check for errors
+        errors = ValidationManager.get_errors(validation_results)
+        if errors:
+            error_messages = ValidationManager.format_errors(validation_results)
+            raise FidesError(f"Configuration validation failed:\n{error_messages}")
+
+        logger.info(
+            "Configuration validation passed: {} rules checked",
+            len(validation_results),
+        )
+    except FidesError:
+        raise
+    except Exception as e:
+        logger.error("Error during configuration validation: {}", str(e))
+        raise FidesError(f"Error during configuration validation: {str(e)}")
     finally:
         db.close()
 
