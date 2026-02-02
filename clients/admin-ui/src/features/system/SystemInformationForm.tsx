@@ -478,7 +478,7 @@ const SystemInformationForm = ({
                 By providing a small amount of additional context for each
                 system we can make reporting and understanding our tech stack
                 much easier for everyone from engineering to legal teams. So
-                let's do this now.
+                let&apos;s do this now.
               </Text>
               {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 

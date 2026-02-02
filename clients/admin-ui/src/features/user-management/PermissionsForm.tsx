@@ -95,19 +95,23 @@ const PermissionsForm = () => {
 
   // Create a map of role keys to role IDs for RBAC
   const roleKeyToIdMap = useMemo(() => {
-    if (!rbacRoles) return {};
-    return rbacRoles.reduce(
-      (acc, role) => {
-        acc[role.key] = role.id;
-        return acc;
-      },
-      {} as Record<string, string>,
+    if (!rbacRoles) {
+      return {};
+    }
+    return rbacRoles.reduce<Record<string, string>>(
+      (acc, role) => ({
+        ...acc,
+        [role.key]: role.id,
+      }),
+      {},
     );
   }, [rbacRoles]);
 
   // Get current RBAC role keys from user's RBAC role assignments
   const currentRbacRoleKeys = useMemo(() => {
-    if (!userRbacRoles || !rbacRoles) return [];
+    if (!userRbacRoles || !rbacRoles) {
+      return [];
+    }
     return userRbacRoles
       .map((ur) => {
         const role = rbacRoles.find((r) => r.id === ur.role_id);
@@ -168,36 +172,46 @@ const PermissionsForm = () => {
     );
 
     // Remove roles that are no longer selected
-    for (const roleKey of rolesToRemove) {
-      const assignment = userRbacRoles.find((ur) => {
-        const role = rbacRoles?.find((r) => r.id === ur.role_id);
-        return role?.key === roleKey;
-      });
-      if (assignment) {
-        const result = await removeUserRole({
-          userId: activeUserId,
-          assignmentId: assignment.id,
+    const removeResults = await Promise.all(
+      rolesToRemove.map((roleKey) => {
+        const assignment = userRbacRoles.find((ur) => {
+          const role = rbacRoles?.find((r) => r.id === ur.role_id);
+          return role?.key === roleKey;
         });
-        if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
-          return;
+        if (assignment) {
+          return removeUserRole({
+            userId: activeUserId,
+            assignmentId: assignment.id,
+          });
         }
-      }
+        return Promise.resolve(null);
+      }),
+    );
+
+    const removeError = removeResults.find(
+      (result) => result && isErrorResult(result),
+    );
+    if (removeError && isErrorResult(removeError)) {
+      toast(errorToastParams(getErrorMessage(removeError.error)));
+      return;
     }
 
     // Add newly selected roles
-    for (const roleKey of rolesToAdd) {
-      const roleId = roleKeyToIdMap[roleKey];
-      if (roleId) {
-        const result = await assignUserRole({
-          userId: activeUserId,
-          data: { role_id: roleId },
-        });
-        if (isErrorResult(result)) {
-          toast(errorToastParams(getErrorMessage(result.error)));
-          return;
-        }
-      }
+    const addResults = await Promise.all(
+      rolesToAdd
+        .filter((roleKey) => roleKeyToIdMap[roleKey])
+        .map((roleKey) =>
+          assignUserRole({
+            userId: activeUserId,
+            data: { role_id: roleKeyToIdMap[roleKey] },
+          }),
+        ),
+    );
+
+    const addError = addResults.find((result) => isErrorResult(result));
+    if (addError && isErrorResult(addError)) {
+      toast(errorToastParams(getErrorMessage(addError.error)));
+      return;
     }
 
     // Save managed systems (same as legacy - managed systems are independent of RBAC)

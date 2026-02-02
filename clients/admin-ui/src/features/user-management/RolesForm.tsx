@@ -90,7 +90,9 @@ const RolesForm = () => {
 
   // Initialize selected roles from user's current assignments
   const currentRoleIds = useMemo(() => {
-    if (!userRbacRoles) return new Set<string>();
+    if (!userRbacRoles) {
+      return new Set<string>();
+    }
     return new Set(userRbacRoles.map((ur) => ur.role_id));
   }, [userRbacRoles]);
 
@@ -109,7 +111,9 @@ const RolesForm = () => {
 
   // Get user's current role keys for permission checks
   const currentRoleKeys = useMemo(() => {
-    if (!userRbacRoles || !rbacRoles) return [];
+    if (!userRbacRoles || !rbacRoles) {
+      return [];
+    }
     return userRbacRoles
       .map((ur) => {
         const role = rbacRoles.find((r) => r.id === ur.role_id);
@@ -130,29 +134,35 @@ const RolesForm = () => {
 
   // Check if selected roles support system assignment
   const selectedRolesAllowSystemAssignment = useMemo(() => {
-    if (!rbacRoles || selectedRoleIds.size === 0) return false;
-    // Check if any selected role allows system assignment
-    for (const roleId of selectedRoleIds) {
-      const role = rbacRoles.find((r) => r.id === roleId);
-      if (role && !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key)) {
-        return true;
-      }
+    if (!rbacRoles || selectedRoleIds.size === 0) {
+      return false;
     }
-    return false;
+    // Check if any selected role allows system assignment
+    return Array.from(selectedRoleIds).some((roleId) => {
+      const role = rbacRoles.find((r) => r.id === roleId);
+      return role && !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key);
+    });
   }, [rbacRoles, selectedRoleIds]);
 
   // Check if systems have changed
   const systemsHaveChanged = useMemo(() => {
-    if (assignedSystems.length !== initialManagedSystems.length) return true;
+    if (assignedSystems.length !== initialManagedSystems.length) {
+      return true;
+    }
     const initialKeys = new Set(initialManagedSystems.map((s) => s.fides_key));
     return assignedSystems.some((s) => !initialKeys.has(s.fides_key));
   }, [assignedSystems, initialManagedSystems]);
 
   // Check if there are unsaved changes
   const hasChanges = useMemo(() => {
-    if (selectedRoleIds.size !== currentRoleIds.size) return true;
-    for (const id of selectedRoleIds) {
-      if (!currentRoleIds.has(id)) return true;
+    if (selectedRoleIds.size !== currentRoleIds.size) {
+      return true;
+    }
+    const rolesChanged = Array.from(selectedRoleIds).some(
+      (id) => !currentRoleIds.has(id),
+    );
+    if (rolesChanged) {
+      return true;
     }
     return systemsHaveChanged;
   }, [selectedRoleIds, currentRoleIds, systemsHaveChanged]);
@@ -170,7 +180,9 @@ const RolesForm = () => {
   };
 
   const handleSave = async () => {
-    if (!activeUserId || !userRbacRoles) return;
+    if (!activeUserId || !userRbacRoles) {
+      return;
+    }
 
     setIsSaving(true);
 
@@ -184,30 +196,41 @@ const RolesForm = () => {
       );
 
       // Remove roles
-      for (const roleId of rolesToRemove) {
-        const assignment = userRbacRoles.find((ur) => ur.role_id === roleId);
-        if (assignment) {
-          const result = await removeUserRole({
-            userId: activeUserId,
-            assignmentId: assignment.id,
-          });
-          if (isErrorResult(result)) {
-            message.error(getErrorMessage(result.error));
-            return;
+      const removeResults = await Promise.all(
+        rolesToRemove.map((roleId) => {
+          const assignment = userRbacRoles.find((ur) => ur.role_id === roleId);
+          if (assignment) {
+            return removeUserRole({
+              userId: activeUserId,
+              assignmentId: assignment.id,
+            });
           }
-        }
+          return Promise.resolve(null);
+        }),
+      );
+
+      const removeError = removeResults.find(
+        (result) => result && isErrorResult(result),
+      );
+      if (removeError && isErrorResult(removeError)) {
+        message.error(getErrorMessage(removeError.error));
+        return;
       }
 
       // Add roles
-      for (const roleId of rolesToAdd) {
-        const result = await assignUserRole({
-          userId: activeUserId,
-          data: { role_id: roleId },
-        });
-        if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error));
-          return;
-        }
+      const addResults = await Promise.all(
+        rolesToAdd.map((roleId) =>
+          assignUserRole({
+            userId: activeUserId,
+            data: { role_id: roleId },
+          }),
+        ),
+      );
+
+      const addError = addResults.find((result) => isErrorResult(result));
+      if (addError && isErrorResult(addError)) {
+        message.error(getErrorMessage(addError.error));
+        return;
       }
 
       // Save managed systems if the role supports it
@@ -252,8 +275,12 @@ const RolesForm = () => {
 
   // Sort roles: system roles first (by priority), then custom roles alphabetically
   const sortedRoles = [...(rbacRoles || [])].sort((a, b) => {
-    if (a.is_system_role && !b.is_system_role) return -1;
-    if (!a.is_system_role && b.is_system_role) return 1;
+    if (a.is_system_role && !b.is_system_role) {
+      return -1;
+    }
+    if (!a.is_system_role && b.is_system_role) {
+      return 1;
+    }
     if (a.is_system_role && b.is_system_role) {
       return (b.priority || 0) - (a.priority || 0);
     }
@@ -262,7 +289,9 @@ const RolesForm = () => {
 
   // Filter out inactive roles and external_respondent for regular users
   const availableRoles = sortedRoles.filter((role) => {
-    if (!role.is_active) return false;
+    if (!role.is_active) {
+      return false;
+    }
     if (isExternalRespondent) {
       return role.key === "external_respondent";
     }
