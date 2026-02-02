@@ -28,26 +28,28 @@ interface ClassificationReportModalProps {
 
 const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`;
 
-const getCategoryColor = (category: string): string => {
-  const colors: Record<string, string> = {
-    advertising: "red",
-    analytics: "blue",
-    social_media: "purple",
-    functional: "green",
-    essential: "cyan",
+type TagColor = "error" | "default" | "info" | "success" | "warning" | "corinth" | "minos" | "nectar" | "olive" | "sandstone" | "terracotta" | "marble" | "alert" | "caution" | "white";
+
+const getCategoryColor = (category: string): TagColor => {
+  const colors: Record<string, TagColor> = {
+    advertising: "error",
+    analytics: "minos",
+    social_media: "nectar",
+    functional: "success",
+    essential: "info",
     unknown: "default",
   };
   return colors[category.toLowerCase()] || "default";
 };
 
-const getConfidenceColor = (score: number): string => {
+const getConfidenceColor = (score: number): TagColor => {
   if (score >= 4) {
-    return "green";
+    return "success";
   }
   if (score >= 3) {
-    return "orange";
+    return "warning";
   }
-  return "red";
+  return "error";
 };
 
 export const ClassificationReportModal = ({
@@ -200,7 +202,7 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
               label: (
                 <Space>
                   <Text strong>Flagged resources</Text>
-                  <Tag color="red">{flagged_resources.length}</Tag>
+                  <Tag color="error">{flagged_resources.length}</Tag>
                 </Space>
               ),
               children: (
@@ -253,7 +255,7 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
                       render: (score: number) => score ? <Tag color={getConfidenceColor(score)}>{score}</Tag> : "-"
                     },
                     { title: "Compass", dataIndex: "compass_matched", key: "compass_matched", width: 80,
-                      render: (matched: boolean) => matched ? <Tag color="green">Yes</Tag> : <Tag>No</Tag>
+                      render: (matched: boolean) => matched ? <Tag color="success">Yes</Tag> : <Tag>No</Tag>
                     },
                     { title: "Rationale", dataIndex: "rationale", key: "rationale", ellipsis: true,
                       render: (text: string) => (
