@@ -213,6 +213,7 @@ class MonitorConfig(Base):
     stewards = relationship(
         FidesUser,
         secondary="monitorsteward",
+        back_populates="stewarded_monitors",
         lazy="selectin",
     )
 
