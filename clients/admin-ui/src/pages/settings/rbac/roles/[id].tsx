@@ -23,9 +23,9 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  useGetPermissionsQuery,
   useGetRoleByIdQuery,
   useGetRolesQuery,
-  useGetPermissionsQuery,
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
@@ -37,7 +37,11 @@ const RoleDetailPage: NextPage = () => {
   const message = useMessage();
   const [form] = Form.useForm();
 
-  const { data: role, isLoading, error } = useGetRoleByIdQuery(id as string, {
+  const {
+    data: role,
+    isLoading,
+    error,
+  } = useGetRoleByIdQuery(id as string, {
     skip: !id,
   });
   const { data: allRoles } = useGetRolesQuery({});
@@ -64,23 +68,25 @@ const RoleDetailPage: NextPage = () => {
 
   // Group permissions by resource type
   const groupedPermissions = useMemo(() => {
-    if (!permissions) return {};
-    return permissions.reduce(
-      (acc, perm) => {
-        const resourceType = perm.resource_type || "general";
-        if (!acc[resourceType]) {
-          acc[resourceType] = [];
-        }
-        acc[resourceType].push(perm);
-        return acc;
-      },
-      {} as Record<string, RBACPermission[]>
-    );
+    if (!permissions) {
+      return {};
+    }
+    return permissions.reduce<Record<string, RBACPermission[]>>((acc, perm) => {
+      const resourceType = perm.resource_type || "general";
+      const result = { ...acc };
+      if (!result[resourceType]) {
+        result[resourceType] = [];
+      }
+      result[resourceType].push(perm);
+      return result;
+    }, {});
   }, [permissions]);
 
   // Filter out current role and system roles from parent options
   const parentRoleOptions = useMemo(() => {
-    if (!allRoles) return [];
+    if (!allRoles) {
+      return [];
+    }
     return allRoles
       .filter((r) => r.id !== id)
       .map((r) => ({
@@ -90,7 +96,9 @@ const RoleDetailPage: NextPage = () => {
   }, [allRoles, id]);
 
   const handleSubmit = async (values: RBACRoleUpdate) => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
     try {
       await updateRole({ roleId: id as string, data: values }).unwrap();
       message.success("Role updated successfully");
@@ -100,7 +108,9 @@ const RoleDetailPage: NextPage = () => {
   };
 
   const handleSavePermissions = async () => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
     try {
       await updatePermissions({
         roleId: id as string,
@@ -114,9 +124,7 @@ const RoleDetailPage: NextPage = () => {
 
   const togglePermission = (code: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(code)
-        ? prev.filter((p) => p !== code)
-        : [...prev, code]
+      prev.includes(code) ? prev.filter((p) => p !== code) : [...prev, code],
     );
   };
 
@@ -206,13 +214,14 @@ const RoleDetailPage: NextPage = () => {
             </Form.Item>
             <Form.Item name="parent_role_id" label="Parent Role">
               <Select
+                aria-label="Parent Role"
                 allowClear
                 placeholder="Select parent role for inheritance"
                 options={parentRoleOptions}
               />
             </Form.Item>
             <Form.Item name="priority" label="Priority">
-              <InputNumber min={0} max={100} />
+              <InputNumber aria-label="Priority" min={0} max={100} />
             </Form.Item>
             <Form.Item name="is_active" label="Active" valuePropName="checked">
               <Switch />

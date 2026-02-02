@@ -264,7 +264,7 @@ export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
       ).data;
 
       return permissions ? permissions.total_scopes : emptyScopes;
-    }
+    },
   );
 
 const emptyRoles: RoleRegistryEnum[] = [];
