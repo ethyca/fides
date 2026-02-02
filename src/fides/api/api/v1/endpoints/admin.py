@@ -213,6 +213,6 @@ def get_backfill_status(
     return BackfillStatusResponse(
         is_running=is_backfill_running(),
         pending_count={
-            "is_leaf": get_pending_is_leaf_count(db),
+            "stagedresource-is_leaf": get_pending_is_leaf_count(db),
         },
     )

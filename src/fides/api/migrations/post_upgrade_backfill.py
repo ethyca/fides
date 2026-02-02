@@ -15,7 +15,7 @@ The backfill tasks are:
 
 import time
 from dataclasses import dataclass, field
-from typing import List
+from typing import Any
 
 from loguru import logger
 from sqlalchemy import text
@@ -52,7 +52,14 @@ def acquire_backfill_lock() -> bool:
     """
     cache = get_cache()
     result = cache.set(BACKFILL_LOCK_KEY, "1", ex=BACKFILL_LOCK_TTL, nx=True)
-    return bool(result)
+    acquired = bool(result)
+
+    if acquired:
+        logger.info(f"Acquired lock for '{BACKFILL_LOCK_KEY}' (TTL: {BACKFILL_LOCK_TTL}s).")
+    else:
+        logger.info(f"Failed to acquire lock for '{BACKFILL_LOCK_KEY}'.")
+
+    return acquired
 
 
 def refresh_backfill_lock() -> None:
@@ -64,12 +71,14 @@ def refresh_backfill_lock() -> None:
     """
     cache = get_cache()
     cache.expire(BACKFILL_LOCK_KEY, BACKFILL_LOCK_TTL)
+    logger.debug(f"Refreshed lock for '{BACKFILL_LOCK_KEY}' (TTL: {BACKFILL_LOCK_TTL}s).")
 
 
 def release_backfill_lock() -> None:
     """Release the backfill lock."""
     cache = get_cache()
     cache.delete(BACKFILL_LOCK_KEY)
+    logger.info(f"Released lock for '{BACKFILL_LOCK_KEY}'.")
 
 
 def is_backfill_running() -> bool:
@@ -94,7 +103,7 @@ class BackfillResult:
     total_updated: int = 0
     total_batches: int = 0
     failed_batches: int = 0
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
     @property
     def success(self) -> bool:
@@ -139,11 +148,20 @@ def is_transient_error(error: Exception) -> bool:
 
 def execute_batch_with_retry(
     db: Session,
+    query: str,
+    params: dict[str, Any],
     batch_num: int,
-    batch_size: int = BATCH_SIZE,
+    backfill_name: str = "backfill",
 ) -> int:
     """
     Execute a single batch with retry logic for transient errors.
+
+    Args:
+        db: Database session
+        query: SQL query string to execute
+        params: Query parameters dictionary
+        batch_num: Batch number for logging
+        backfill_name: Name of the backfill operation for logging
 
     Returns the number of rows updated.
     Raises the last exception if all retries fail.
@@ -152,26 +170,7 @@ def execute_batch_with_retry(
 
     for attempt in range(1, MAX_RETRIES_PER_BATCH + 1):
         try:
-            result = db.execute(
-                text(
-                    """
-                    UPDATE stagedresource
-                    SET is_leaf = (
-                        resource_type = 'Field'
-                        AND children = '{}'
-                        AND (meta->>'data_type' IS NULL OR meta->>'data_type' != 'object')
-                    )
-                    WHERE id IN (
-                        SELECT id FROM stagedresource
-                        WHERE is_leaf IS NULL
-                        AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')
-                        LIMIT :batch_size
-                        FOR UPDATE SKIP LOCKED
-                    )
-                    """
-                ),
-                {"batch_size": batch_size},
-            )
+            result = db.execute(text(query), params)
             db.commit()
             return result.rowcount
 
@@ -182,13 +181,13 @@ def execute_batch_with_retry(
             if is_transient_error(e) and attempt < MAX_RETRIES_PER_BATCH:
                 wait_time = RETRY_BACKOFF_BASE**attempt
                 logger.warning(
-                    f"is_leaf backfill: Batch {batch_num} attempt {attempt} failed "
+                    f"{backfill_name}: Batch {batch_num} attempt {attempt} failed "
                     f"with transient error: {e}. Retrying in {wait_time:.1f}s..."
                 )
                 time.sleep(wait_time)
             else:
                 logger.error(
-                    f"is_leaf backfill: Batch {batch_num} failed after {attempt} attempts: {e}"
+                    f"{backfill_name}: Batch {batch_num} failed after {attempt} attempts: {e}"
                 )
                 raise
 
@@ -204,7 +203,7 @@ def get_pending_is_leaf_count(db: Session) -> int:
         )
         return result.scalar() or 0
     except SQLAlchemyError as e:
-        logger.error(f"is_leaf backfill: Failed to get pending count: {e}")
+        logger.error(f"stagedresource-is_leaf backfill: Failed to get pending count: {e}")
         raise
 
 
@@ -226,7 +225,7 @@ def backfill_is_leaf(
 
     Returns a BackfillResult with statistics and any errors encountered.
     """
-    result = BackfillResult(name="is_leaf")
+    result = BackfillResult(name="stagedresource-is_leaf")
     consecutive_failures = 0
     start_time = time.time()
 
@@ -235,17 +234,34 @@ def backfill_is_leaf(
         pending_count = get_pending_is_leaf_count(db)
     except SQLAlchemyError as e:
         result.errors.append(f"Failed to get initial count: {e}")
-        logger.error(f"is_leaf backfill: Cannot start - {e}")
+        logger.error(f"stagedresource-is_leaf backfill: Cannot start - {e}")
         return result
 
     if pending_count == 0:
-        logger.debug("is_leaf backfill: No rows need backfilling")
+        logger.debug("stagedresource-is_leaf backfill: No rows need backfilling")
         return result
 
     logger.info(
-        f"is_leaf backfill: Starting backfill for {pending_count} rows "
+        f"stagedresource-is_leaf backfill: Starting backfill for {pending_count} rows "
         f"(batch_size={batch_size}, delay={batch_delay_seconds}s)"
     )
+
+    # Define the SQL query for is_leaf backfill
+    is_leaf_query = """
+        UPDATE stagedresource
+        SET is_leaf = (
+            resource_type = 'Field'
+            AND children = '{}'
+            AND (meta->>'data_type' IS NULL OR meta->>'data_type' != 'object')
+        )
+        WHERE id IN (
+            SELECT id FROM stagedresource
+            WHERE is_leaf IS NULL
+            AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')
+            LIMIT :batch_size
+            FOR UPDATE SKIP LOCKED
+        )
+    """
 
     while True:
         result.total_batches += 1
@@ -253,7 +269,11 @@ def backfill_is_leaf(
 
         try:
             rows_updated = execute_batch_with_retry(
-                db, result.total_batches, batch_size
+                db=db,
+                query=is_leaf_query,
+                params={"batch_size": batch_size},
+                batch_num=result.total_batches,
+                backfill_name="stagedresource-is_leaf backfill",
             )
             batch_duration = time.time() - batch_start
             consecutive_failures = 0  # Reset on success
@@ -274,7 +294,7 @@ def backfill_is_leaf(
                         else "100%"
                     )
                     logger.info(
-                        f"is_leaf backfill: Progress {result.total_updated}/{pending_count} rows "
+                        f"stagedresource-is_leaf backfill: Progress {result.total_updated}/{pending_count} rows "
                         f"({progress_pct}) | "
                         f"Batch {result.total_batches} took {batch_duration:.2f}s | "
                         f"Rate: {rate:.0f} rows/s | "
@@ -296,13 +316,13 @@ def backfill_is_leaf(
 
             if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
                 logger.error(
-                    f"is_leaf backfill: Stopping after {consecutive_failures} consecutive failures. "
+                    f"stagedresource-is_leaf backfill: Stopping after {consecutive_failures} consecutive failures. "
                     f"Last error: {e}"
                 )
                 break
 
             logger.warning(
-                f"is_leaf backfill: {error_msg}. "
+                f"stagedresource-is_leaf backfill: {error_msg}. "
                 f"Consecutive failures: {consecutive_failures}/{MAX_CONSECUTIVE_FAILURES}. Continuing..."
             )
 
@@ -313,13 +333,13 @@ def backfill_is_leaf(
 
     if result.success:
         logger.info(
-            f"is_leaf backfill: Completed successfully! "
+            f"stagedresource-is_leaf backfill: Completed successfully! "
             f"Updated {result.total_updated} rows in {result.total_batches} batches "
             f"({total_duration:.1f}s total)"
         )
     else:
         logger.warning(
-            f"is_leaf backfill: Completed with errors. "
+            f"stagedresource-is_leaf backfill: Completed with errors. "
             f"Updated {result.total_updated} rows in {result.total_batches} batches "
             f"({result.failed_batches} failed). Duration: {total_duration:.1f}s. "
             f"Errors: {result.errors}"
@@ -332,7 +352,7 @@ def run_all_backfills(
     db: Session,
     batch_size: int = BATCH_SIZE,
     batch_delay_seconds: float = BATCH_DELAY_SECONDS,
-) -> List[BackfillResult]:
+) -> list[BackfillResult]:
     """
     Run all pending backfill tasks.
 
@@ -345,7 +365,7 @@ def run_all_backfills(
 
     Returns a list of BackfillResult objects for each backfill.
     """
-    results: List[BackfillResult] = []
+    results: list[BackfillResult] = []
 
     # Backfill is_leaf column (added in migration d05acec55c64)
     results.append(backfill_is_leaf(db, batch_size, batch_delay_seconds))
@@ -426,7 +446,7 @@ def initiate_post_upgrade_backfill() -> None:
 def run_backfill_manually(
     batch_size: int = BATCH_SIZE,
     batch_delay_seconds: float = BATCH_DELAY_SECONDS,
-) -> List[BackfillResult]:
+) -> list[BackfillResult]:
     """
     Entry point for running backfills manually (e.g., from API or CLI).
 
