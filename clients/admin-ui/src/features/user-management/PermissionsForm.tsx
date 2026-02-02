@@ -83,12 +83,12 @@ const PermissionsForm = () => {
   // RBAC hooks - only fetch when RBAC is enabled
   const { data: rbacRoles, isLoading: isLoadingRbacRoles } = useGetRolesQuery(
     {},
-    { skip: !isRbacEnabled }
+    { skip: !isRbacEnabled },
   );
   const { data: userRbacRoles, isLoading: isLoadingUserRbacRoles } =
     useGetUserRolesQuery(
       { userId: activeUserId ?? "" },
-      { skip: !activeUserId || !isRbacEnabled }
+      { skip: !activeUserId || !isRbacEnabled },
     );
   const [assignUserRole] = useAssignUserRoleMutation();
   const [removeUserRole] = useRemoveUserRoleMutation();
@@ -101,7 +101,7 @@ const PermissionsForm = () => {
         acc[role.key] = role.id;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
   }, [rbacRoles]);
 
@@ -161,10 +161,10 @@ const PermissionsForm = () => {
 
     // Determine roles to add and remove
     const rolesToAdd = selectedRoleKeys.filter(
-      (key) => !currentRoleKeys.includes(key)
+      (key) => !currentRoleKeys.includes(key),
     );
     const rolesToRemove = currentRoleKeys.filter(
-      (key) => !selectedRoleKeys.includes(key)
+      (key) => !selectedRoleKeys.includes(key),
     );
 
     // Remove roles that are no longer selected
