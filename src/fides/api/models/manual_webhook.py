@@ -9,11 +9,11 @@ from sqlalchemy.orm import Session, relationship, selectinload
 
 from fides.api.db.base_class import Base
 from fides.api.models.attachment import Attachment, AttachmentReference
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
+from fides.service.attachment_service import AttachmentService
 
 
 class AccessManualWebhook(Base):

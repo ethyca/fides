@@ -597,9 +597,9 @@ class TestAttachmentWarnings:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert (
-                len(sqlalchemy_warnings) == 0
-            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            assert len(sqlalchemy_warnings) == 0, (
+                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            )
 
             # Cleanup
             if db.query(AttachmentReference).filter_by(id=attachment_ref_2.id).first():

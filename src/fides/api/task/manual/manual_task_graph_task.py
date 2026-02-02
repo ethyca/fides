@@ -5,7 +5,6 @@ from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskEntityType,
@@ -33,6 +32,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.service.attachment_service import AttachmentService
 
 
 class ManualTaskGraphTask(GraphTask):

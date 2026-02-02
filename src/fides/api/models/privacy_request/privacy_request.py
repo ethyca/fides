@@ -53,7 +53,6 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
@@ -126,6 +125,7 @@ from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]

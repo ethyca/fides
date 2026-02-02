@@ -35,7 +35,6 @@ from fides.api.schemas.storage.storage import (
 from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
 
-
 # Mapping of storage types to their uploader functions
 # These functions handle DSR-specific data transformation before upload
 _DSR_UPLOADERS: Dict[str, Any] = {}  # Populated lazily

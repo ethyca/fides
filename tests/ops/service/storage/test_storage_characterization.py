@@ -79,9 +79,9 @@ class TestStorageCharacterization:
         """Verify content type mapping for all allowed file types is preserved."""
         file_key = f"test_file.{file_extension}"
         result = get_allowed_file_type_or_raise(file_key)
-        assert (
-            result == expected_content_type
-        ), f"Content type for .{file_extension} should be {expected_content_type}, got {result}"
+        assert result == expected_content_type, (
+            f"Content type for .{file_extension} should be {expected_content_type}, got {result}"
+        )
 
     @pytest.mark.parametrize(
         "file_extension",
@@ -131,9 +131,9 @@ class TestStorageCharacterization:
         assert isinstance(result, tuple), "Upload result should be a tuple"
         assert len(result) == 2, "Upload result should have 2 elements"
         assert isinstance(result[0], int), "First element should be file size (int)"
-        assert isinstance(
-            result[1], str
-        ), "Second element should be presigned URL (str)"
+        assert isinstance(result[1], str), (
+            "Second element should be presigned URL (str)"
+        )
         assert result[0] == len(content), "File size should match content length"
 
     def test_s3_upload_rejects_non_file_like_objects(
@@ -208,9 +208,9 @@ class TestStorageCharacterization:
         assert len(result) == 2
         assert isinstance(result[0], int)  # File size
         # When get_content=True and file is small, returns BytesIO
-        assert hasattr(
-            result[1], "read"
-        ), "Should return file-like object for small files"
+        assert hasattr(result[1], "read"), (
+            "Should return file-like object for small files"
+        )
 
     def test_s3_retrieve_returns_presigned_url_for_large_files(
         self, storage_config: StorageConfig, mock_s3_client
@@ -237,9 +237,9 @@ class TestStorageCharacterization:
             get_content=False,
         )
 
-        assert isinstance(
-            result[1], str
-        ), "Should return URL string when get_content=False"
+        assert isinstance(result[1], str), (
+            "Should return URL string when get_content=False"
+        )
 
     # ==================== S3 Delete Behavior ====================
 
@@ -465,9 +465,9 @@ class TestAllowedFileTypes:
         }
         actual_allowed = {ft.name for ft in AllowedFileType}
 
-        assert (
-            actual_allowed == expected_allowed
-        ), f"Allowed file types changed. Expected {expected_allowed}, got {actual_allowed}"
+        assert actual_allowed == expected_allowed, (
+            f"Allowed file types changed. Expected {expected_allowed}, got {actual_allowed}"
+        )
 
     def test_allowed_file_type_enum_values(self):
         """Verify AllowedFileType enum values (content types) are preserved."""
@@ -486,6 +486,6 @@ class TestAllowedFileTypes:
 
         for file_type, expected_content_type in expected_mappings.items():
             actual = AllowedFileType[file_type].value
-            assert (
-                actual == expected_content_type
-            ), f"Content type for {file_type} changed from {expected_content_type} to {actual}"
+            assert actual == expected_content_type, (
+                f"Content type for {file_type} changed from {expected_content_type} to {actual}"
+            )

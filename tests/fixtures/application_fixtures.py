@@ -21,7 +21,6 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentType
@@ -116,6 +115,7 @@ from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.config.helpers import load_file
+from fides.service.attachment_service import AttachmentService
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,

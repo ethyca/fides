@@ -12,12 +12,12 @@ from typing import IO, Any, Dict, Iterator, Optional
 
 from loguru import logger
 
+from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.providers.base import (
     ObjectInfo,
     StorageProvider,
     UploadResult,
 )
-from fides.api.service.storage.gcs import get_gcs_client
 
 # Maximum TTL for signed URLs (7 days in seconds)
 MAX_TTL_SECONDS = 604800

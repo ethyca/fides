@@ -74,9 +74,9 @@ class StorageProviderContractTest(ABC):
         """UploadResult must contain accurate file size."""
         result = provider.upload(bucket, unique_key, BytesIO(test_content))
 
-        assert result.file_size == len(
-            test_content
-        ), f"File size should be {len(test_content)}, got {result.file_size}"
+        assert result.file_size == len(test_content), (
+            f"File size should be {len(test_content)}, got {result.file_size}"
+        )
 
     def test_upload_accepts_bytesio(
         self,
@@ -209,9 +209,9 @@ class StorageProviderContractTest(ABC):
         url = provider.generate_presigned_url(bucket, unique_key)
 
         valid_prefixes = ("http://", "https://", "/", "fides_uploads")
-        assert any(
-            url.startswith(prefix) for prefix in valid_prefixes
-        ), f"Presigned URL must start with one of {valid_prefixes}, got {url[:50]}"
+        assert any(url.startswith(prefix) for prefix in valid_prefixes), (
+            f"Presigned URL must start with one of {valid_prefixes}, got {url[:50]}"
+        )
 
     # ==================== File Size Contract ====================
 
@@ -227,9 +227,9 @@ class StorageProviderContractTest(ABC):
 
         size = provider.get_file_size(bucket, unique_key)
 
-        assert size == len(
-            test_content
-        ), f"File size should be {len(test_content)}, got {size}"
+        assert size == len(test_content), (
+            f"File size should be {len(test_content)}, got {size}"
+        )
 
 
 class TestLocalProviderContract(StorageProviderContractTest):

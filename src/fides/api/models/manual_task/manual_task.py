@@ -624,9 +624,9 @@ class ManualTaskConfigField(Base):
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
-        assert isinstance(
-            self.field_metadata, dict
-        ), "field_metadata must be a dictionary"
+        assert isinstance(self.field_metadata, dict), (
+            "field_metadata must be a dictionary"
+        )
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod
