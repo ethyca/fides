@@ -2,28 +2,37 @@ import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
 import { useEffect, useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DiffStatus } from "~/types/api/models/DiffStatus";
+import {
+  INFRASTRUCTURE_STATUS_FILTER_MAP,
+  InfrastructureStatusFilterOptionValue,
+  parseFiltersToFilterValue,
+} from "~/features/data-discovery-and-detection/action-center/fields/utils";
 
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
-import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
+import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 
 interface InfrastructureSystemsFiltersProps
   extends ReturnType<typeof useInfrastructureSystemsFilters> {
   monitorId: string;
 }
 
-enum StatusFilterOptionValue {
-  NEW = "new",
-  KNOWN = "known",
-  UNKNOWN = "unknown",
-  IGNORED = "ignored",
-}
-
 const STATUS_FILTER_OPTIONS = [
-  { label: "New", value: StatusFilterOptionValue.NEW },
-  { label: "Known systems", value: StatusFilterOptionValue.KNOWN },
-  { label: "Unknown systems", value: StatusFilterOptionValue.UNKNOWN },
-  { label: "Ignored", value: StatusFilterOptionValue.IGNORED },
+  {
+    label: "New",
+    value: InfrastructureStatusFilterOptionValue.NEW,
+  },
+  {
+    label: "Known systems",
+    value: InfrastructureStatusFilterOptionValue.KNOWN,
+  },
+  {
+    label: "Unknown systems",
+    value: InfrastructureStatusFilterOptionValue.UNKNOWN,
+  },
+  {
+    label: "Ignored",
+    value: InfrastructureStatusFilterOptionValue.IGNORED,
+  },
 ];
 
 export const InfrastructureSystemsFilters = ({
@@ -45,36 +54,10 @@ export const InfrastructureSystemsFilters = ({
   );
 
   // Map the actual filter values back to the dropdown option value
-  const statusFilterValue = useMemo(() => {
-    const hasAdditionStatus =
-      statusFilters &&
-      statusFilters.length > 0 &&
-      statusFilters[0] === DiffStatus.ADDITION;
-    const hasMutedStatus =
-      statusFilters &&
-      statusFilters.length > 0 &&
-      statusFilters[0] === DiffStatus.MUTED;
-    const hasKnownVendor =
-      vendorFilters && vendorFilters.length > 0 && vendorFilters[0] === "known";
-    const hasUnknownVendor =
-      vendorFilters &&
-      vendorFilters.length > 0 &&
-      vendorFilters[0] === "unknown";
-
-    if (hasAdditionStatus && hasKnownVendor) {
-      return StatusFilterOptionValue.KNOWN;
-    }
-    if (hasAdditionStatus && hasUnknownVendor) {
-      return StatusFilterOptionValue.UNKNOWN;
-    }
-    if (hasAdditionStatus && !hasKnownVendor && !hasUnknownVendor) {
-      return StatusFilterOptionValue.NEW;
-    }
-    if (hasMutedStatus) {
-      return StatusFilterOptionValue.IGNORED;
-    }
-    return undefined;
-  }, [statusFilters, vendorFilters]);
+  const statusFilterValue = useMemo(
+    () => parseFiltersToFilterValue(statusFilters, vendorFilters),
+    [statusFilters, vendorFilters],
+  );
 
   const dataUseOptions = useMemo(() => {
     if (!availableFilters?.data_uses) {
@@ -87,33 +70,12 @@ export const InfrastructureSystemsFilters = ({
   }, [availableFilters?.data_uses, getDataUseDisplayName]);
 
   const handleStatusChange = (value: string | undefined) => {
-    if (!value) {
-      setStatusFilters([]);
-      setVendorFilters([]);
-      return;
-    }
-
-    switch (value) {
-      case StatusFilterOptionValue.NEW:
-        setStatusFilters([DiffStatus.ADDITION]);
-        setVendorFilters([]);
-        break;
-      case StatusFilterOptionValue.KNOWN:
-        setStatusFilters([DiffStatus.ADDITION]);
-        setVendorFilters(["known"]);
-        break;
-      case StatusFilterOptionValue.UNKNOWN:
-        setStatusFilters([DiffStatus.ADDITION]);
-        setVendorFilters(["unknown"]);
-        break;
-      case StatusFilterOptionValue.IGNORED:
-        setStatusFilters([DiffStatus.MUTED]);
-        setVendorFilters([]);
-        break;
-      default:
-        setStatusFilters([]);
-        setVendorFilters([]);
-    }
+    const { diffStatusFilter, vendorIdFilter } =
+      INFRASTRUCTURE_STATUS_FILTER_MAP[
+        value as InfrastructureStatusFilterOptionValue
+      ] ?? { diffStatusFilter: [], vendorIdFilter: [] };
+    setStatusFilters(diffStatusFilter);
+    setVendorFilters(vendorIdFilter);
   };
 
   const handleDataUseChange = (value: string[]) => {
@@ -126,11 +88,10 @@ export const InfrastructureSystemsFilters = ({
       (!statusFilters || statusFilters.length === 0) &&
       (!vendorFilters || vendorFilters.length === 0)
     ) {
-      setStatusFilters([DiffStatus.ADDITION]);
-      setVendorFilters([]);
+      handleStatusChange(InfrastructureStatusFilterOptionValue.NEW);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount to set initial default
+  }, []);
 
   const hasActiveFilters =
     (statusFilters && statusFilters.length > 0) ||

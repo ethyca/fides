@@ -15,8 +15,8 @@ import { useCallback, useMemo } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
+import { InfrastructureSystemsFilters } from "../components/InfrastructureSystemsFilters";
 import { InfrastructureSystemBulkActionType } from "../constants";
-import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
