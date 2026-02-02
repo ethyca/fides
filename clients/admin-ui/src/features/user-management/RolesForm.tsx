@@ -14,13 +14,15 @@ import {
   ChakraSpinner as Spinner,
   Flex,
   Typography,
+  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import {
   useAssignUserRoleMutation,
@@ -28,16 +30,27 @@ import {
   useGetUserRolesQuery,
   useRemoveUserRoleMutation,
 } from "~/features/rbac/rbac.slice";
-import { ScopeRegistryEnum } from "~/types/api";
+import { ScopeRegistryEnum, System } from "~/types/api";
 
-import { selectActiveUserId } from "./user-management.slice";
+import AssignSystemsModal from "./AssignSystemsModal";
+import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
+import {
+  selectActiveUserId,
+  selectActiveUsersManagedSystems,
+  useGetUserManagedSystemsQuery,
+  useUpdateUserManagedSystemsMutation,
+} from "./user-management.slice";
 
 const { Text, Title } = Typography;
+
+// Role keys that cannot have systems assigned to them
+const ROLES_WITHOUT_SYSTEM_ASSIGNMENT = ["approver", "respondent", "external_respondent"];
 
 const RolesForm = () => {
   const message = useMessage();
   const router = useRouter();
   const activeUserId = useAppSelector(selectActiveUserId);
+  const assignSystemsModal = useDisclosure();
 
   // RBAC data fetching
   const { data: rbacRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -49,6 +62,19 @@ const RolesForm = () => {
 
   const [assignUserRole] = useAssignUserRoleMutation();
   const [removeUserRole] = useRemoveUserRoleMutation();
+
+  // System assignment data
+  useGetUserManagedSystemsQuery(activeUserId as string, {
+    skip: !activeUserId,
+  });
+  const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
+  const [assignedSystems, setAssignedSystems] = useState<System[]>([]);
+  const [updateUserManagedSystemsTrigger] = useUpdateUserManagedSystemsMutation();
+
+  // Sync assigned systems when initial data loads
+  useEffect(() => {
+    setAssignedSystems(initialManagedSystems);
+  }, [initialManagedSystems]);
 
   // Track selected roles locally for optimistic updates
   const [selectedRoleIds, setSelectedRoleIds] = useState<Set<string>>(
@@ -97,14 +123,34 @@ const RolesForm = () => {
   const targetUserIsOwner = currentRoleKeys.includes("owner");
   const isExternalRespondent = currentRoleKeys.includes("external_respondent");
 
+  // Check if selected roles support system assignment
+  const selectedRolesAllowSystemAssignment = useMemo(() => {
+    if (!rbacRoles || selectedRoleIds.size === 0) return false;
+    // Check if any selected role allows system assignment
+    for (const roleId of selectedRoleIds) {
+      const role = rbacRoles.find((r) => r.id === roleId);
+      if (role && !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key)) {
+        return true;
+      }
+    }
+    return false;
+  }, [rbacRoles, selectedRoleIds]);
+
+  // Check if systems have changed
+  const systemsHaveChanged = useMemo(() => {
+    if (assignedSystems.length !== initialManagedSystems.length) return true;
+    const initialKeys = new Set(initialManagedSystems.map((s) => s.fides_key));
+    return assignedSystems.some((s) => !initialKeys.has(s.fides_key));
+  }, [assignedSystems, initialManagedSystems]);
+
   // Check if there are unsaved changes
   const hasChanges = useMemo(() => {
     if (selectedRoleIds.size !== currentRoleIds.size) return true;
     for (const id of selectedRoleIds) {
       if (!currentRoleIds.has(id)) return true;
     }
-    return false;
-  }, [selectedRoleIds, currentRoleIds]);
+    return systemsHaveChanged;
+  }, [selectedRoleIds, currentRoleIds, systemsHaveChanged]);
 
   const handleRoleToggle = (roleId: string) => {
     setSelectedRoleIds((prev) => {
@@ -155,6 +201,20 @@ const RolesForm = () => {
         });
         if (isErrorResult(result)) {
           message.error(getErrorMessage(result.error));
+          return;
+        }
+      }
+
+      // Save managed systems if the role supports it
+      // Skip for roles that cannot have systems (like approver)
+      if (selectedRolesAllowSystemAssignment) {
+        const fidesKeys = assignedSystems.map((s) => s.fides_key);
+        const userSystemsResult = await updateUserManagedSystemsTrigger({
+          userId: activeUserId,
+          fidesKeys,
+        });
+        if (isErrorResult(userSystemsResult)) {
+          message.error(getErrorMessage(userSystemsResult.error));
           return;
         }
       }
@@ -223,6 +283,7 @@ const RolesForm = () => {
           const isDisabled = isOwnerRole
             ? !canAssignOwner
             : isExternalRespondent;
+          const supportsSystemAssignment = !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key);
 
           return (
             <Card
@@ -236,43 +297,86 @@ const RolesForm = () => {
               }}
               onClick={() => !isDisabled && handleRoleToggle(role.id)}
             >
-              <Flex align="flex-start" gap={12}>
-                <Checkbox
-                  checked={isSelected}
-                  disabled={isDisabled}
-                  onChange={() => handleRoleToggle(role.id)}
-                />
-                <Flex vertical gap={4} style={{ flex: 1 }}>
-                  <Flex align="center" gap={8}>
-                    <Text strong>{role.name}</Text>
-                    {role.is_system_role && (
-                      <Text
-                        type="secondary"
-                        style={{ fontSize: 12 }}
-                      >
-                        System role
-                      </Text>
-                    )}
-                    {!role.is_system_role && (
-                      <Text
-                        type="secondary"
-                        style={{ fontSize: 12, color: "#52c41a" }}
-                      >
-                        Custom role
+              <Flex vertical gap={12}>
+                <Flex align="flex-start" gap={12}>
+                  <Checkbox
+                    checked={isSelected}
+                    disabled={isDisabled}
+                    onChange={() => handleRoleToggle(role.id)}
+                  />
+                  <Flex vertical gap={4} style={{ flex: 1 }}>
+                    <Flex align="center" gap={8}>
+                      <Text strong>{role.name}</Text>
+                      {role.is_system_role && (
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: 12 }}
+                        >
+                          System role
+                        </Text>
+                      )}
+                      {!role.is_system_role && (
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: 12, color: "#52c41a" }}
+                        >
+                          Custom role
+                        </Text>
+                      )}
+                    </Flex>
+                    {role.description && (
+                      <Text type="secondary" style={{ fontSize: 13 }}>
+                        {role.description}
                       </Text>
                     )}
                   </Flex>
-                  {role.description && (
-                    <Text type="secondary" style={{ fontSize: 13 }}>
-                      {role.description}
-                    </Text>
-                  )}
                 </Flex>
+                {/* Show system assignment section for selected roles that support it */}
+                {isSelected && supportsSystemAssignment && (
+                  <Flex
+                    vertical
+                    gap={12}
+                    style={{ marginLeft: 32, marginTop: 8 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Flex align="center" gap={4}>
+                      <Text strong style={{ fontSize: 13 }}>
+                        Assigned systems
+                      </Text>
+                      <InfoTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
+                    </Flex>
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        assignSystemsModal.onOpen();
+                      }}
+                      data-testid="assign-systems-btn"
+                    >
+                      Assign systems +
+                    </Button>
+                    <AssignSystemsDeleteTable
+                      assignedSystems={assignedSystems}
+                      onAssignedSystemChange={setAssignedSystems}
+                    />
+                  </Flex>
+                )}
               </Flex>
             </Card>
           );
         })}
       </Flex>
+
+      {/* System assignment modal */}
+      {assignSystemsModal.isOpen && (
+        <AssignSystemsModal
+          isOpen={assignSystemsModal.isOpen}
+          onClose={assignSystemsModal.onClose}
+          assignedSystems={assignedSystems}
+          onAssignedSystemChange={setAssignedSystems}
+        />
+      )}
 
       <Flex gap={12}>
         <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
