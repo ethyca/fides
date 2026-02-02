@@ -18,7 +18,7 @@ import {
   WebsiteClassificationReport,
 } from "./action-center.slice";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface ClassificationReportModalProps {
   monitorId: string;
@@ -67,61 +67,15 @@ const getConfidenceColor = (score: number): TagColor => {
   return "error";
 };
 
-export const ClassificationReportModal = ({
-  monitorId,
-  open,
-  onClose,
-}: ClassificationReportModalProps) => {
-  const {
-    data: report,
-    isLoading,
-    error,
-  } = useGetClassificationReportQuery(
-    { monitor_config_key: monitorId, sample_size: 20 },
-    { skip: !open },
-  );
-
-  if (error) {
-    return (
-      <Modal
-        title="Classification report"
-        open={open}
-        onCancel={onClose}
-        footer={null}
-        width={900}
-      >
-        <Alert
-          type="error"
-          message="Failed to load classification report"
-          description="Please try again later."
-        />
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal
-      title="LLM classification report"
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      width={1000}
-      loading={isLoading}
-    >
-      {report && <ReportContent report={report} />}
-    </Modal>
-  );
-};
-
 const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
   const {
     coverage,
-    category_distribution,
-    confidence_distribution,
-    vendor_stats,
-    flagged_resources,
-    sample_classifications,
-    by_resource_type,
+    categoryDistribution,
+    confidenceDistribution,
+    vendorStats,
+    flaggedResources,
+    sample_classifications: sampleClassifications,
+    by_resource_type: byResourceType,
   } = report;
 
   return (
@@ -177,10 +131,10 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       </Card>
 
       {/* Category Distribution */}
-      {category_distribution.length > 0 && (
+      {categoryDistribution.length > 0 && (
         <Card size="small" title="Category distribution">
           <Flex gap="small" wrap>
-            {category_distribution.map((cat) => (
+            {categoryDistribution.map((cat) => (
               <Tooltip
                 key={cat.category}
                 title={`${cat.count} resources (${formatPercent(cat.percentage)})`}
@@ -195,10 +149,10 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       )}
 
       {/* Confidence Distribution */}
-      {confidence_distribution.length > 0 && (
+      {confidenceDistribution.length > 0 && (
         <Card size="small" title="Confidence distribution">
           <Flex gap="small" wrap>
-            {confidence_distribution.map((conf) => (
+            {confidenceDistribution.map((conf) => (
               <Tag key={conf.score} color={getConfidenceColor(conf.score)}>
                 Score {conf.score}: {conf.count} (
                 {formatPercent(conf.percentage)})
@@ -212,26 +166,26 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       <Card size="small" title="Vendor matching">
         <Descriptions column={2} size="small">
           <Descriptions.Item label="Vendors identified by LLM">
-            {vendor_stats.total_with_vendor_name}
+            {vendorStats.total_with_vendor_name}
           </Descriptions.Item>
           <Descriptions.Item label="Matched to Compass">
-            {vendor_stats.matched_to_compass} (
-            {formatPercent(vendor_stats.match_rate)})
+            {vendorStats.matched_to_compass} (
+            {formatPercent(vendorStats.match_rate)})
           </Descriptions.Item>
           <Descriptions.Item label="Unregistered ad vendors">
             <Text
               type={
-                vendor_stats.unregistered_ad_vendors > 0 ? "danger" : undefined
+                vendorStats.unregistered_ad_vendors > 0 ? "danger" : undefined
               }
             >
-              {vendor_stats.unregistered_ad_vendors}
+              {vendorStats.unregistered_ad_vendors}
             </Text>
           </Descriptions.Item>
         </Descriptions>
-        {vendor_stats.top_unmatched_vendors.length > 0 && (
+        {vendorStats.top_unmatched_vendors.length > 0 && (
           <div className="mt-2">
             <Text type="secondary">Top unmatched vendors: </Text>
-            {vendor_stats.top_unmatched_vendors.map((name) => (
+            {vendorStats.top_unmatched_vendors.map((name) => (
               <Tag key={name}>{name}</Tag>
             ))}
           </div>
@@ -239,10 +193,10 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       </Card>
 
       {/* Resource Type Breakdown */}
-      {Object.keys(by_resource_type).length > 0 && (
+      {Object.keys(byResourceType).length > 0 && (
         <Card size="small" title="By resource type">
           <Flex gap="small" wrap>
-            {Object.entries(by_resource_type).map(([type, count]) => (
+            {Object.entries(byResourceType).map(([type, count]) => (
               <Tag key={type}>
                 {type}: {count}
               </Tag>
@@ -252,7 +206,7 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       )}
 
       {/* Flagged Resources */}
-      {flagged_resources.length > 0 && (
+      {flaggedResources.length > 0 && (
         <Collapse
           items={[
             {
@@ -260,12 +214,12 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
               label: (
                 <Space>
                   <Text strong>Flagged resources</Text>
-                  <Tag color="error">{flagged_resources.length}</Tag>
+                  <Tag color="error">{flaggedResources.length}</Tag>
                 </Space>
               ),
               children: (
                 <Table
-                  dataSource={flagged_resources}
+                  dataSource={flaggedResources}
                   rowKey="urn"
                   size="small"
                   pagination={{ pageSize: 5 }}
@@ -303,7 +257,7 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
       )}
 
       {/* Sample Classifications */}
-      {sample_classifications.length > 0 && (
+      {sampleClassifications.length > 0 && (
         <Collapse
           items={[
             {
@@ -311,12 +265,12 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
               label: (
                 <Space>
                   <Text strong>Sample classifications</Text>
-                  <Tag>{sample_classifications.length}</Tag>
+                  <Tag>{sampleClassifications.length}</Tag>
                 </Space>
               ),
               children: (
                 <Table
-                  dataSource={sample_classifications}
+                  dataSource={sampleClassifications}
                   rowKey="urn"
                   size="small"
                   pagination={{ pageSize: 10 }}
@@ -406,6 +360,52 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
         showIcon
       />
     </Space>
+  );
+};
+
+export const ClassificationReportModal = ({
+  monitorId,
+  open,
+  onClose,
+}: ClassificationReportModalProps) => {
+  const {
+    data: report,
+    isLoading,
+    error,
+  } = useGetClassificationReportQuery(
+    { monitor_config_key: monitorId, sample_size: 20 },
+    { skip: !open },
+  );
+
+  if (error) {
+    return (
+      <Modal
+        title="Classification report"
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width={900}
+      >
+        <Alert
+          type="error"
+          message="Failed to load classification report"
+          description="Please try again later."
+        />
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      title="LLM classification report"
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={1000}
+      loading={isLoading}
+    >
+      {report && <ReportContent report={report} />}
+    </Modal>
   );
 };
 
