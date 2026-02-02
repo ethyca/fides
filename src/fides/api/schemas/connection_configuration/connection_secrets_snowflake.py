@@ -9,11 +9,28 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 
 
 def format_private_key(raw_key: str) -> str:
+    """Normalize PEM format: fix spaces in the key body. Only use for PEM input."""
     # Split the key into parts and remove spaces from the key body
     parts = raw_key.split("-----")
     body = parts[2].replace(" ", "\n")
     # Reassemble the key
     return f"-----{parts[1]}-----{body}-----{parts[3]}-----"
+
+
+def normalize_private_key(raw_key: str) -> str:
+    """
+    Normalize private key for Snowflake.
+    Snowflake expects a base64-encoded DER private key as a string (no PEM headers).
+    - If the key is PEM (contains -----BEGIN), normalize PEM and return as-is;
+      the connector will convert PEM to base64 DER when building connect_args.
+    - If the key is base64 DER (no PEM headers), strip whitespace and return
+      so it can be passed directly to Snowflake.
+    """
+    stripped = raw_key.strip()
+    if "-----BEGIN" in stripped:
+        return format_private_key(stripped)
+    # Base64 DER: remove any whitespace/newlines so decoding doesn't fail
+    return "".join(stripped.split())
 
 
 class SnowflakeSchema(ConnectionConfigSecretsSchema):
@@ -85,9 +102,12 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
 
         if private_key:
             try:
-                self.private_key = format_private_key(private_key)
+                self.private_key = normalize_private_key(private_key)
             except IndexError:
-                raise ValueError("Invalid private key format")
+                raise ValueError(
+                    "Invalid private key format. Provide a base64-encoded DER key "
+                    "string (no PEM headers) or a PEM key including -----BEGIN ... -----."
+                )
 
         return self
 
