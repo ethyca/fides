@@ -353,7 +353,7 @@ export const initialize = async ({
         // eslint-disable-next-line no-param-reassign
         fides.experience = { ...fides.experience, ...updatedExperience };
         fidesDebugger(
-          "Updated experience from saved preferences",
+          "Updated experience from saved cookie's preferences",
           updatedExperience,
         );
       }
