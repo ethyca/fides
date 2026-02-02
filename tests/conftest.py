@@ -2004,11 +2004,11 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="function")
-def seed_data(session):
+def seed_data(db: Session):
     """
     Fixture to load default resources into the database before a test.
     """
-    seed_db(session)
+    seed_db(db)
 
 
 @pytest.fixture(scope="function")
