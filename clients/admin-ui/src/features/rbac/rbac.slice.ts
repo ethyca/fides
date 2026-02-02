@@ -13,7 +13,7 @@ import {
   RBACUserRoleCreate,
 } from "~/types/api";
 
-const rbacApi = baseApi.injectEndpoints({
+export const rbacApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // Role endpoints
     getRoles: build.query<RBACRole[], { include_inactive?: boolean }>({
@@ -150,6 +150,12 @@ const rbacApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    // Get current user's effective permissions from RBAC
+    getMyRBACPermissions: build.query<string[], void>({
+      query: () => ({ url: `plus/rbac/me/permissions` }),
+      providesTags: ["RBAC User Roles"],
+    }),
   }),
 });
 
@@ -168,4 +174,5 @@ export const {
   useCreateConstraintMutation,
   useDeleteConstraintMutation,
   useEvaluatePermissionMutation,
+  useGetMyRBACPermissionsQuery,
 } = rbacApi;
