@@ -43,13 +43,13 @@ class TestBackfillResult:
     def test_str_includes_name(self):
         """Verify __str__ includes the backfill name."""
         result = BackfillResult(
-            name="is_leaf",
+            name="stagedresource-is_leaf",
             total_updated=1000,
             total_batches=10,
             failed_batches=0,
         )
         result_str = str(result)
-        assert "[is_leaf]" in result_str
+        assert "[stagedresource-is_leaf]" in result_str
         assert "SUCCESS" in result_str
         assert "1000 rows" in result_str
         assert "10 batches" in result_str
@@ -232,7 +232,7 @@ class TestBackfillIsLeaf:
         ):
             result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
-        assert result.name == "is_leaf"
+        assert result.name == "stagedresource-is_leaf"
         assert result.total_updated == 0
         assert result.total_batches == 0
         assert result.success is True
@@ -247,7 +247,7 @@ class TestBackfillIsLeaf:
         ):
             result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
-        assert result.name == "is_leaf"
+        assert result.name == "stagedresource-is_leaf"
         assert result.success is True
         assert result.total_updated >= 4  # At least our 4 test resources
 
@@ -279,4 +279,4 @@ class TestBackfillIsLeaf:
         ):
             result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
-        assert result.name == "is_leaf"
+        assert result.name == "stagedresource-is_leaf"

@@ -253,4 +253,4 @@ class TestBackfillEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["is_running"] is is_running
-        assert data["pending_count"]["is_leaf"] == pending_count
+        assert data["pending_count"]["stagedresource-is_leaf"] == pending_count
