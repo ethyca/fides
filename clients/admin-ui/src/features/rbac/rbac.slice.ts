@@ -38,7 +38,10 @@ export const rbacApi = baseApi.injectEndpoints({
       invalidatesTags: ["RBAC Roles"],
     }),
 
-    updateRole: build.mutation<RBACRole, { roleId: string; data: RBACRoleUpdate }>({
+    updateRole: build.mutation<
+      RBACRole,
+      { roleId: string; data: RBACRoleUpdate }
+    >({
       query: ({ roleId, data }) => ({
         url: `plus/rbac/roles/${roleId}`,
         method: "PUT",
@@ -83,7 +86,10 @@ export const rbacApi = baseApi.injectEndpoints({
     }),
 
     // User role assignment endpoints
-    getUserRoles: build.query<RBACUserRole[], { userId: string; include_expired?: boolean }>({
+    getUserRoles: build.query<
+      RBACUserRole[],
+      { userId: string; include_expired?: boolean }
+    >({
       query: ({ userId, ...params }) => ({
         url: `plus/rbac/users/${userId}/roles`,
         params,
@@ -108,7 +114,10 @@ export const rbacApi = baseApi.injectEndpoints({
       ],
     }),
 
-    removeUserRole: build.mutation<void, { userId: string; assignmentId: string }>({
+    removeUserRole: build.mutation<
+      void,
+      { userId: string; assignmentId: string }
+    >({
       query: ({ userId, assignmentId }) => ({
         url: `plus/rbac/users/${userId}/roles/${assignmentId}`,
         method: "DELETE",
@@ -143,7 +152,10 @@ export const rbacApi = baseApi.injectEndpoints({
     }),
 
     // Permission evaluation
-    evaluatePermission: build.mutation<RBACEvaluateResponse, RBACEvaluateRequest>({
+    evaluatePermission: build.mutation<
+      RBACEvaluateResponse,
+      RBACEvaluateRequest
+    >({
       query: (body) => ({
         url: `plus/rbac/evaluate`,
         method: "POST",

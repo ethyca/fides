@@ -1,5 +1,13 @@
 import Layout from "common/Layout";
-import { Button, Flex, Space, Table, Tag, Typography, useMessage } from "fidesui";
+import {
+  Button,
+  Flex,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  useMessage,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React from "react";
@@ -7,7 +15,7 @@ import React from "react";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROLE_NEW_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { useGetRolesQuery, useDeleteRoleMutation } from "~/features/rbac";
+import { useDeleteRoleMutation, useGetRolesQuery } from "~/features/rbac";
 import type { RBACRole } from "~/types/api";
 
 const RBAC_COPY =
@@ -17,7 +25,11 @@ const RBAC_COPY =
 const RBACPage: NextPage = () => {
   const router = useRouter();
   const message = useMessage();
-  const { data: roles, isLoading, error } = useGetRolesQuery({ include_inactive: true });
+  const {
+    data: roles,
+    isLoading,
+    error,
+  } = useGetRolesQuery({ include_inactive: true });
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const handleDeleteRole = async (role: RBACRole) => {
@@ -48,9 +60,13 @@ const RBACPage: NextPage = () => {
       dataIndex: "name",
       key: "name",
       render: (name: string, record: RBACRole) => (
-        <a onClick={() => router.push(`/settings/rbac/roles/${record.id}`)}>
+        <Button
+          type="link"
+          onClick={() => router.push(`/settings/rbac/roles/${record.id}`)}
+          className="p-0"
+        >
           {name}
-        </a>
+        </Button>
       ),
     },
     {
@@ -77,7 +93,9 @@ const RBACPage: NextPage = () => {
         return (
           <Space>
             <Tag>{directCount} direct</Tag>
-            {inheritedCount > 0 && <Tag color="minos">{inheritedCount} inherited</Tag>}
+            {inheritedCount > 0 && (
+              <Tag color="minos">{inheritedCount} inherited</Tag>
+            )}
           </Space>
         );
       },
@@ -126,7 +144,10 @@ const RBACPage: NextPage = () => {
       </PageHeader>
       <Flex vertical gap={16} className="p-6">
         <Flex justify="flex-end">
-          <Button type="primary" onClick={() => router.push(RBAC_ROLE_NEW_ROUTE)}>
+          <Button
+            type="primary"
+            onClick={() => router.push(RBAC_ROLE_NEW_ROUTE)}
+          >
             Create Custom Role
           </Button>
         </Flex>

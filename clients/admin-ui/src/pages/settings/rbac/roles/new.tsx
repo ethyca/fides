@@ -29,7 +29,9 @@ const NewRolePage: NextPage = () => {
 
   // Filter out system roles from parent options
   const parentRoleOptions = useMemo(() => {
-    if (!allRoles) return [];
+    if (!allRoles) {
+      return [];
+    }
     return allRoles.map((r) => ({
       label: `${r.name} (${r.key})`,
       value: r.id,
@@ -62,7 +64,11 @@ const NewRolePage: NextPage = () => {
 
   return (
     <Layout title="Create Custom Role">
-      <PageHeader heading="Create Custom Role" isSticky={false} className="pb-0">
+      <PageHeader
+        heading="Create Custom Role"
+        isSticky={false}
+        className="pb-0"
+      >
         <Typography.Paragraph className="max-w-screen-md">
           Create a new custom role with specific permissions. You can optionally
           inherit permissions from a parent role.
@@ -117,6 +123,7 @@ const NewRolePage: NextPage = () => {
               extra="Inherit permissions from another role."
             >
               <Select
+                aria-label="Parent Role"
                 allowClear
                 placeholder="Select parent role (optional)"
                 options={parentRoleOptions}
@@ -128,7 +135,12 @@ const NewRolePage: NextPage = () => {
               label="Priority"
               extra="Higher priority roles take precedence in permission conflicts (0-100)."
             >
-              <InputNumber min={0} max={100} style={{ width: "100%" }} />
+              <InputNumber
+                aria-label="Priority"
+                min={0}
+                max={100}
+                style={{ width: "100%" }}
+              />
             </Form.Item>
 
             <Form.Item>
