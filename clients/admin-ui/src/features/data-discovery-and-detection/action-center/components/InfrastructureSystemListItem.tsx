@@ -5,14 +5,13 @@ import {
   Flex,
   Icons,
   List,
-  SelectProps,
-  SparkleIcon,
   Tag,
   Text,
 } from "fidesui";
 import { useMemo } from "react";
 
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
+import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import {
@@ -22,39 +21,6 @@ import {
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
-
-type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
-
-type TagRender = (
-  props: TagRenderParams & {
-    isFromClassifier?: boolean;
-  },
-) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
-
-const tagRender: TagRender = (props) => {
-  const { label, closable, onClose, isFromClassifier } = props;
-
-  const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  return (
-    <Tag
-      color="white"
-      bordered
-      onMouseDown={onPreventMouseDown}
-      closable={closable}
-      onClose={onClose}
-      style={{
-        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
-      }}
-      icon={isFromClassifier && <SparkleIcon />}
-    >
-      <Text size="sm">{label}</Text>
-    </Tag>
-  );
-};
 
 interface InfrastructureSystemListItemProps {
   item: StagedResourceAPIResponse;
