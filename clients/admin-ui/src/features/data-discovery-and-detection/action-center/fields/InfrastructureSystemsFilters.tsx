@@ -2,19 +2,28 @@ import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { DiffStatus } from "~/types/api";
 
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
-import {
-  INFRASTRUCTURE_DIFF_STATUS_LABEL,
-  VENDOR_FILTER_OPTIONS,
-} from "../constants";
 import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
 
 interface InfrastructureSystemsFiltersProps
   extends ReturnType<typeof useInfrastructureSystemsFilters> {
   monitorId: string;
 }
+
+enum StatusFilterOptionValue {
+  NEW = "new",
+  KNOWN = "known",
+  UNKNOWN = "unknown",
+  IGNORED = "ignored",
+}
+
+const STATUS_FILTER_OPTIONS = [
+  { label: "New", value: StatusFilterOptionValue.NEW },
+  { label: "Known systems", value: StatusFilterOptionValue.KNOWN },
+  { label: "Unknown systems", value: StatusFilterOptionValue.UNKNOWN },
+  { label: "Ignored", value: StatusFilterOptionValue.IGNORED },
+];
 
 export const InfrastructureSystemsFilters = ({
   monitorId,
@@ -41,23 +50,6 @@ export const InfrastructureSystemsFilters = ({
     return statusFilters[0];
   }, [statusFilters]);
 
-  const statusOptions = useMemo(() => {
-    if (!availableFilters?.diff_status) {
-      return [];
-    }
-    return availableFilters.diff_status.map((status) => ({
-      label: INFRASTRUCTURE_DIFF_STATUS_LABEL[status as DiffStatus] ?? status,
-      value: status,
-    }));
-  }, [availableFilters?.diff_status]);
-
-  const typeFilterValue = useMemo(() => {
-    if (!vendorFilters || vendorFilters.length === 0) {
-      return undefined;
-    }
-    return vendorFilters[0];
-  }, [vendorFilters]);
-
   const dataUseOptions = useMemo(() => {
     if (!availableFilters?.data_uses) {
       return [];
@@ -73,14 +65,6 @@ export const InfrastructureSystemsFilters = ({
       setStatusFilters([value]);
     } else {
       setStatusFilters([]);
-    }
-  };
-
-  const handleTypeChange = (value: string | undefined) => {
-    if (value) {
-      setVendorFilters([value]);
-    } else {
-      setVendorFilters([]);
     }
   };
 
@@ -121,7 +105,7 @@ export const InfrastructureSystemsFilters = ({
       )}
       <Select
         placeholder="Status"
-        options={statusOptions}
+        options={STATUS_FILTER_OPTIONS}
         value={statusFilterValue}
         onChange={handleStatusChange}
         allowClear
@@ -129,21 +113,6 @@ export const InfrastructureSystemsFilters = ({
         data-testid="status-filter-select"
         aria-label="Filter by status"
       />
-
-      <Select
-        placeholder="Type"
-        options={VENDOR_FILTER_OPTIONS.map((option) => ({
-          label: option.label,
-          value: option.key,
-        }))}
-        value={typeFilterValue}
-        onChange={handleTypeChange}
-        allowClear
-        className="w-40"
-        data-testid="type-filter-select"
-        aria-label="Filter by type"
-      />
-
       <Select
         placeholder="Data use"
         options={dataUseOptions}

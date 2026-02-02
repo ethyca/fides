@@ -107,7 +107,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   return (
     <Flex vertical gap="middle" className="h-full">
-      <Flex justify="space-between">
+      <Flex justify="space-between" gap="middle">
         <Flex gap="small">
           <DebouncedSearchInput
             value={searchQuery}
