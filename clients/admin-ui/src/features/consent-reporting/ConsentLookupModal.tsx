@@ -132,6 +132,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
             {(!hasTcfData || hasPreferences) && (
               <Table
                 {...tableProps}
+                data-testid="privacy-notice-preferences-table"
                 columns={columns}
                 loading={isSearching}
                 locale={{

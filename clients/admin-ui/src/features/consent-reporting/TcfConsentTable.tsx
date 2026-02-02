@@ -12,7 +12,14 @@ interface TcfConsentTableProps {
 const TcfConsentTable = ({ tcfPreferences, loading }: TcfConsentTableProps) => {
   const { tableProps, columns } = useTcfConsentTable(tcfPreferences);
 
-  return <Table {...tableProps} columns={columns} loading={loading} />;
+  return (
+    <Table
+      data-testid="tcf-consent-table"
+      {...tableProps}
+      columns={columns}
+      loading={loading}
+    />
+  );
 };
 
 export default TcfConsentTable;
