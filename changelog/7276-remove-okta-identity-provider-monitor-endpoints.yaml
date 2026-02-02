@@ -1,4 +1,0 @@
-type: Removed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Removed Okta-specific identity provider monitor endpoints
-pr: 7276 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
