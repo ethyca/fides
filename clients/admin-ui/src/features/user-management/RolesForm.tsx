@@ -302,7 +302,12 @@ const RolesForm = () => {
                   <Checkbox
                     checked={isSelected}
                     disabled={isDisabled}
-                    onChange={() => handleRoleToggle(role.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isDisabled) {
+                        handleRoleToggle(role.id);
+                      }
+                    }}
                   />
                   <Flex vertical gap={4} style={{ flex: 1 }}>
                     <Flex align="center" gap={8}>
