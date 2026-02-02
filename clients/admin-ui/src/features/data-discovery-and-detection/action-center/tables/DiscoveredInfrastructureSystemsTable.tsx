@@ -123,13 +123,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
         });
       }
     },
-    [
-      handleBulkAction,
-      selectedItems,
-      selectionMode,
-      excludedUrns,
-      filters,
-    ],
+    [handleBulkAction, selectedItems, selectionMode, excludedUrns, filters],
   );
 
   const bulkActionsMenuItems = useMemo(
@@ -193,12 +187,15 @@ export const DiscoveredInfrastructureSystemsTable = ({
           indeterminate={isIndeterminate}
           onChange={(e) => handleSelectAll(e.target.checked)}
           title="Select all"
-        />
-        <span className="ml-2">Select all</span>
+        >
+          Select all
+        </Checkbox>
         {selectedRowsCount > 0 && (
           <Text strong>
             {selectedRowsCount.toLocaleString()}
-            {selectionMode === "all" && data?.total && selectedRowsCount < data.total
+            {selectionMode === "all" &&
+            data?.total &&
+            selectedRowsCount < data.total
               ? ` of ${data.total.toLocaleString()}`
               : ""}{" "}
             selected
