@@ -163,7 +163,7 @@ const RoleDetailPage: NextPage = () => {
               disabled={role.is_system_role || isInherited}
               onChange={() => togglePermission(record.code)}
             />
-            {isInherited && <Tag color="purple">Inherited</Tag>}
+            {isInherited && <Tag color="minos">Inherited</Tag>}
           </Space>
         );
       },
@@ -174,7 +174,7 @@ const RoleDetailPage: NextPage = () => {
     <Layout title={`Edit Role: ${role.name}`}>
       <PageHeader heading={role.name} isSticky={false} className="pb-0">
         <Space>
-          <Tag color={role.is_system_role ? "blue" : "green"}>
+          <Tag color={role.is_system_role ? "info" : "success"}>
             {role.is_system_role ? "System Role" : "Custom Role"}
           </Tag>
           <Tag color={role.is_active ? "success" : "default"}>

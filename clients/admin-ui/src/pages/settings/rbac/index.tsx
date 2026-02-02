@@ -63,7 +63,7 @@ const RBACPage: NextPage = () => {
       title: "Type",
       key: "type",
       render: (_: unknown, record: RBACRole) => (
-        <Tag color={record.is_system_role ? "blue" : "green"}>
+        <Tag color={record.is_system_role ? "info" : "success"}>
           {record.is_system_role ? "System" : "Custom"}
         </Tag>
       ),
@@ -77,7 +77,7 @@ const RBACPage: NextPage = () => {
         return (
           <Space>
             <Tag>{directCount} direct</Tag>
-            {inheritedCount > 0 && <Tag color="purple">{inheritedCount} inherited</Tag>}
+            {inheritedCount > 0 && <Tag color="minos">{inheritedCount} inherited</Tag>}
           </Space>
         );
       },
