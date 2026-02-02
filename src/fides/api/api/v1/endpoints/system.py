@@ -57,7 +57,12 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
-from fides.api.service.deps import get_connection_service, get_system_service
+from fides.api.service.deps import (
+    get_connection_service,
+    get_system_service,
+    get_user_service,
+)
+from fides.service.user.user_service import UserService
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
@@ -365,13 +370,14 @@ async def system_bulk_delete(
 async def bulk_assign_steward(
     data: AssignStewardRequest,
     db: Session = Depends(deps.get_db),
+    user_service: UserService = Depends(get_user_service),
 ) -> Dict:
     """Assign the given `data_steward` (username) as a system manager for the list of `system_keys`.
 
     This mirrors the behavior of the user permissions endpoint that assigns systems to a given user but
     from the perspective of the System API. It validates that:
 
-    1. The provided user exists.
+    1. The provided user exists and is not soft-deleted.
     2. The user already has permissions (cannot be None).
     3. The user is not an approver (approvers are explicitly disallowed from being system managers).
     4. All provided `system_keys` resolve to existing System records.
@@ -381,9 +387,8 @@ async def bulk_assign_steward(
     data_steward = data.data_steward
     system_keys = data.system_keys
 
-    user: Optional[FidesUser] = FidesUser.get_by(
-        db, field="username", value=data_steward
-    )
+    # Use service to get ORM user (excludes soft-deleted users)
+    user = user_service.get_user_orm_by_username(data_steward)
     if not user:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

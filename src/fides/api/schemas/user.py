@@ -149,3 +149,4 @@ class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 
     pending_invite = "pending_invite"
+    deleted = "deleted"

@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 from uuid import uuid4
 
@@ -373,6 +373,92 @@ class TestCreateUser:
         )
         assert HTTP_400_BAD_REQUEST == response.status_code
 
+    def test_cannot_reuse_deleted_user_username(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        """Test that a soft-deleted user's username cannot be reused."""
+        from datetime import datetime
+
+        from fides.api.schemas.user import DisabledReason
+
+        auth_header = generate_auth_header([USER_CREATE])
+
+        # Create and then soft-delete a user
+        body = {
+            "username": "deleted_username_test",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "deleted.username@example.com",
+        }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert response.status_code == HTTP_201_CREATED
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        # Try to create a new user with the same username
+        new_user_body = {
+            "username": "deleted_username_test",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "new.user@example.com",
+        }
+        response = api_client.post(url, headers=auth_header, json=new_user_body)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            response.json()["detail"]
+            == "This username belongs to a deleted user and cannot be reused."
+        )
+
+    def test_cannot_reuse_deleted_user_email(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        """Test that a soft-deleted user's email cannot be reused."""
+        from datetime import datetime
+
+        from fides.api.schemas.user import DisabledReason
+
+        auth_header = generate_auth_header([USER_CREATE])
+
+        # Create and then soft-delete a user
+        body = {
+            "username": "deleted_email_test",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "deleted.email@example.com",
+        }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert response.status_code == HTTP_201_CREATED
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        # Try to create a new user with the same email
+        new_user_body = {
+            "username": "new_user_different_name",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "deleted.email@example.com",
+        }
+        response = api_client.post(url, headers=auth_header, json=new_user_body)
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert (
+            response.json()["detail"]
+            == "This email address belongs to a deleted user and cannot be reused."
+        )
+
 
 class TestDeleteUser:
     @pytest.fixture(scope="function")
@@ -437,16 +523,21 @@ class TestDeleteUser:
 
         db.expunge_all()
 
+        # With soft-delete, user still exists but is marked as deleted
         user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
-        assert user_search is None
+        assert user_search is not None
+        assert user_search.is_deleted is True
+        assert user_search.deleted_at is not None
+        assert user_search.disabled is True
 
+        # Client and permissions are preserved for audit purposes
         client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
-        assert client_search is None
+        assert client_search is not None
 
         permissions_search = FidesUserPermissions.get_by(
             db, field="id", value=saved_permissions_id
         )
-        assert permissions_search is None
+        assert permissions_search is not None
 
     def test_delete_user(self, api_client, db):
         user = FidesUser.create(
@@ -514,16 +605,21 @@ class TestDeleteUser:
 
         db.expunge_all()
 
+        # With soft-delete, user still exists but is marked as deleted
         user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
-        assert user_search is None
+        assert user_search is not None
+        assert user_search.is_deleted is True
+        assert user_search.deleted_at is not None
+        assert user_search.disabled is True
 
+        # Client and permissions are preserved for audit purposes
         client_search = ClientDetail.get_by(db, field="id", value=saved_client_id)
-        assert client_search is None
+        assert client_search is not None
 
         permissions_search = FidesUserPermissions.get_by(
             db, field="id", value=saved_permissions_id
         )
-        assert permissions_search is None
+        assert permissions_search is not None
 
     def test_delete_user_as_root(self, api_client, db, user, root_auth_header):
         other_user = FidesUser.create(
@@ -557,17 +653,144 @@ class TestDeleteUser:
 
         db.expunge_all()
 
+        # With soft-delete, user still exists but is marked as deleted
         user_search = FidesUser.get_by(db, field="id", value=saved_user_id)
-        assert user_search is None
+        assert user_search is not None
+        assert user_search.is_deleted is True
+        assert user_search.deleted_at is not None
+        assert user_search.disabled is True
 
-        # Deleted user's client is also deleted
+        # Client and permissions are preserved for audit purposes
         client_search = ClientDetail.get_by(db, field="id", value=client_id)
-        assert client_search is None
+        assert client_search is not None
 
         permissions_search = FidesUserPermissions.get_by(
             db, field="id", value=saved_permission_id
         )
-        assert permissions_search is None
+        assert permissions_search is not None
+
+    def test_deleted_user_not_returned_by_get_user(
+        self, api_client, db, generate_auth_header
+    ):
+        """Test that soft-deleted users are not returned by get_user endpoint."""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_deleted_user_get",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "deleted.user.get@example.com",
+            },
+        )
+        FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+        # Soft-delete the user
+        from datetime import datetime
+
+        from fides.api.schemas.user import DisabledReason
+
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        auth_header = generate_auth_header([USER_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{USERS}/{user.id}", headers=auth_header
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_deleted_user_cannot_login(self, api_client, db):
+        """Test that soft-deleted users cannot log in."""
+        password = "TESTdcnG@wzJeu0&%3Qe2fGo7"
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_deleted_login",
+                "password": str_to_b64_str(password),
+                "email_address": "deleted.login@example.com",
+            },
+        )
+        FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+        # Soft-delete the user
+        from datetime import datetime
+
+        from fides.api.schemas.user import DisabledReason
+
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        # Attempt to login
+        response = api_client.post(
+            f"{V1_URL_PREFIX}/login",
+            json={
+                "username": "test_deleted_login",
+                "password": str_to_b64_str(password),
+            },
+        )
+        assert response.status_code == HTTP_403_FORBIDDEN
+
+    def test_update_user_rejects_soft_deleted_user(
+        self, api_client, db, generate_auth_header
+    ):
+        """Test that updating a soft-deleted user returns 404."""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_update_deleted",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "update.deleted@example.com",
+            },
+        )
+        FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+        # Soft-delete the user
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        auth_header = generate_auth_header([USER_UPDATE])
+        response = api_client.put(
+            f"{V1_URL_PREFIX}{USERS}/{user.id}",
+            headers=auth_header,
+            json={"first_name": "Updated"},
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+
+    def test_force_update_password_rejects_soft_deleted_user(
+        self, api_client, db, generate_auth_header
+    ):
+        """Test that force updating password for a soft-deleted user returns 404."""
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_force_pwd_deleted",
+                "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "forcepwd.deleted@example.com",
+            },
+        )
+        FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
+
+        # Soft-delete the user
+        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_by = "admin"
+        user.disabled = True
+        user.disabled_reason = DisabledReason.deleted
+        db.commit()
+
+        auth_header = generate_auth_header([USER_PASSWORD_RESET])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{USERS}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={"new_password": str_to_b64_str("NewP@ssword123!")},
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
 
 
 class TestGetUsers:

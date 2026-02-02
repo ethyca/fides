@@ -16,6 +16,7 @@ from fides.api.schemas.user_permission import (
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
+from fides.api.service.deps import get_user_service
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     USER_PERMISSION_ASSIGN_OWNERS,
@@ -26,13 +27,32 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.entities.user import UserEntity
+from fides.service.user.user_service import UserService
 
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
 
-def validate_user_id(db: Session, user_id: str) -> FidesUser:
-    """Get the user by id, otherwise throw a 404"""
-    user = FidesUser.get_by(db, field="id", value=user_id)
+def validate_user_id(user_id: str, user_service: UserService) -> UserEntity:
+    """Get the user by id, otherwise throw a 404. Excludes soft-deleted users."""
+    user = user_service.get_user(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"No user found with id {user_id}."
+        )
+    return user
+
+
+def get_user_orm_or_404(user_id: str, user_service: UserService) -> FidesUser:
+    """
+    Get the user ORM object by id, otherwise throw a 404.
+    Excludes soft-deleted users.
+
+    This is needed for permission operations that require access to user
+    relationships (client, permissions, systems).
+    """
+    user = user_service.get_user_orm(user_id)
 
     if not user:
         raise HTTPException(
@@ -67,9 +87,10 @@ async def create_user_permissions(
     user_id: str,
     authorization: str = Security(oauth2_scheme),
     permissions: UserPermissionsCreate,
+    user_service: UserService = Depends(get_user_service),
 ) -> FidesUserPermissions:
     """Create user permissions with associated roles."""
-    user = validate_user_id(db, user_id)
+    user = get_user_orm_or_404(user_id, user_service)
     if user.permissions is not None:  # type: ignore[attr-defined]
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -97,13 +118,14 @@ async def update_user_permissions(
     user_id: str,
     authorization: str = Security(oauth2_scheme),
     permissions: UserPermissionsEdit,
+    user_service: UserService = Depends(get_user_service),
 ) -> FidesUserPermissions:
     """Update a user's role(s).  The UI assigns one role at a time, but multiple
     roles are technically supported.
 
     Users inherit numerous scopes that are associated with their role(s).
     """
-    user = validate_user_id(db, user_id)
+    user = get_user_orm_or_404(user_id, user_service)
     logger.info("Updated FidesUserPermission record")
 
     await owner_role_permission_check(db, permissions.roles, authorization)
@@ -142,6 +164,7 @@ async def get_user_permissions(
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
+    user_service: UserService = Depends(get_user_service),
 ) -> Optional[FidesUserPermissions]:
     # A user is able to retrieve their own permissions.
     if current_user and current_user.id == user_id:
@@ -159,7 +182,7 @@ async def get_user_permissions(
 
     # To look up the permissions of another user, that user must exist and the current user must
     # have permission to read users.
-    validate_user_id(db, user_id)
+    validate_user_id(user_id, user_service)
     await verify_oauth_client(
         security_scopes=SecurityScopes([USER_PERMISSION_READ]),
         authorization=authorization,
