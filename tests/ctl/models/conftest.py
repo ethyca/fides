@@ -3,10 +3,10 @@ from io import BytesIO
 import pytest
 
 from fides.api.models.attachment import (
-    Attachment,
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture
@@ -22,25 +22,25 @@ def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
 
     attachment_data["user_id"] = user.id
     attachment_data["file_name"] = "file_1.txt"
-    attachment_1 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content 1")
+    attachment_1 = AttachmentService.create_and_upload(
+        db, data=attachment_data, file_data=BytesIO(b"file content 1")
     )
 
     attachment_data["file_name"] = "file_2.txt"
-    attachment_2 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content 2")
+    attachment_2 = AttachmentService.create_and_upload(
+        db, data=attachment_data, file_data=BytesIO(b"file content 2")
     )
 
     attachment_data["file_name"] = "file_3.txt"
-    attachment_3 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content 3")
+    attachment_3 = AttachmentService.create_and_upload(
+        db, data=attachment_data, file_data=BytesIO(b"file content 3")
     )
 
     yield attachment_1, attachment_2, attachment_3
     try:
-        attachment_1.delete(db)
-        attachment_2.delete(db)
-        attachment_3.delete(db)
+        AttachmentService.delete(db, attachment_1)
+        AttachmentService.delete(db, attachment_2)
+        AttachmentService.delete(db, attachment_3)
     except Exception:
         pass
 

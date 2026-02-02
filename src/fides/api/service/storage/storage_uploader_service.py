@@ -1,3 +1,21 @@
+"""
+Service for uploading DSR (Data Subject Request) packages to storage.
+
+This module handles the specialized upload of DSR data packages which require
+data transformation (JSON/CSV/HTML generation, zipping) before uploading.
+
+Note: This service uses task functions from fides.api.tasks.storage that handle
+both data transformation AND upload. For raw file I/O operations, use the
+StorageProviderFactory from fides.api.service.storage.providers instead.
+
+The task functions are kept for DSR uploads because they handle:
+- JSON serialization with BSON/ObjectId handling
+- CSV generation from nested data structures
+- HTML report building with templates
+- ZIP file creation for multi-file packages
+- DSR-specific metadata and formatting
+"""
+
 from typing import Any, Dict, Optional, Set
 
 from fideslang.validation import FidesKey
@@ -16,6 +34,11 @@ from fides.api.schemas.storage.storage import (
 )
 from fides.api.service.storage.streaming.s3.streaming_s3 import upload_to_s3_streaming
 from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
+
+
+# Mapping of storage types to their uploader functions
+# These functions handle DSR-specific data transformation before upload
+_DSR_UPLOADERS: Dict[str, Any] = {}  # Populated lazily
 
 
 def upload(

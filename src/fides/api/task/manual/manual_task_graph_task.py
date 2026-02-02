@@ -5,6 +5,7 @@ from pydantic.v1.utils import deep_update
 
 from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskEntityType,
@@ -437,7 +438,7 @@ class ManualTaskGraphTask(GraphTask):
             submission.attachments,
         ):
             try:
-                size, url = attachment.retrieve_attachment()
+                size, url = AttachmentService.retrieve_url(attachment)
                 attachment_list.append(
                     {
                         "file_name": attachment.file_name,

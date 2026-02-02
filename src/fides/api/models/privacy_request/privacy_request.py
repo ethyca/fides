@@ -53,6 +53,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
@@ -494,7 +495,7 @@ class PrivacyRequest(
         """
         self.clear_cached_values()
         self.cleanup_external_storage()
-        Attachment.delete_attachments_for_reference_and_type(
+        AttachmentService.delete_for_reference(
             db, self.id, AttachmentReferenceType.privacy_request
         )
         Comment.delete_comments_for_reference_and_type(

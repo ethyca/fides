@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, relationship, selectinload
 
 from fides.api.db.base_class import Base
 from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
@@ -208,4 +209,4 @@ class AccessManualWebhook(Base):
         """Delete the attachment associated with the manual webhook"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)

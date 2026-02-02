@@ -2418,6 +2418,18 @@ def mock_gcs_client(
             blobs[blob_name] = self
             return None
 
+        def mock_upload_from_string(
+            self,
+            data,
+            content_type=None,
+            num_retries=None,
+            client=None,
+            **kwargs,
+        ):
+            """Simulates uploading string/bytes data to the blob, storing it in the blobs dictionary."""
+            blobs[blob_name] = self
+            return None
+
         def mock_generate_signed_url(self, version, expiration, method, **kwargs):
             """Generates a signed URL for the blob, raising NotFound if the blob doesn't exist."""
             if blob_name not in blobs:
@@ -2440,6 +2452,12 @@ def mock_gcs_client(
         mock_blob.upload_from_file = types.MethodType(
             create_autospec(
                 storage.Blob.upload_from_file, side_effect=mock_upload_from_file
+            ),
+            mock_blob,
+        )
+        mock_blob.upload_from_string = types.MethodType(
+            create_autospec(
+                storage.Blob.upload_from_string, side_effect=mock_upload_from_string
             ),
             mock_blob,
         )

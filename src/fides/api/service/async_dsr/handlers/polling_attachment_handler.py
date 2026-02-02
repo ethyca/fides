@@ -16,6 +16,7 @@ from fides.api.models.attachment import (
 from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.models.storage import get_active_default_storage_config
 from fides.api.util.collection_util import Row
+from fides.service.attachment_service import AttachmentService
 
 
 class PollingAttachmentHandler:
@@ -53,14 +54,14 @@ class PollingAttachmentHandler:
                 raise PrivacyRequestError("No active storage configuration found")
 
             # Create attachment record and upload to storage
-            attachment = Attachment.create_and_upload(
+            attachment = AttachmentService.create_and_upload(
                 db=session,
                 data={
                     "file_name": filename,
                     "attachment_type": AttachmentType.include_with_access_package,
                     "storage_key": storage_config.key,
                 },
-                attachment_file=BytesIO(attachment_data),
+                file_data=BytesIO(attachment_data),
             )
 
             # Create attachment references
@@ -125,7 +126,7 @@ class PollingAttachmentHandler:
 
         if attachment_record:
             try:
-                size, url = attachment_record.retrieve_attachment()
+                size, url = AttachmentService.retrieve_url(attachment_record)
                 attachment_info = {
                     "file_name": attachment_record.file_name,
                     "download_url": str(url) if url else None,

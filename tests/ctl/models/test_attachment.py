@@ -21,6 +21,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.util import get_local_filename
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture(
@@ -46,7 +47,7 @@ def attachment_file(request):
 
 def verify_attachment_created_uploaded_s3(attachment, attachment_file_copy):
     """Helper method to verify S3 attachment retrieval."""
-    retrieved_file_size, download_url = attachment.retrieve_attachment()
+    retrieved_file_size, download_url = AttachmentService.retrieve_url(attachment)
     assert retrieved_file_size == len(attachment_file_copy)
     assert attachment.config.details[StorageDetails.BUCKET.value] in download_url
     assert f"{attachment.id}/{attachment.file_name}" in download_url
@@ -54,7 +55,9 @@ def verify_attachment_created_uploaded_s3(attachment, attachment_file_copy):
 
 def verify_attachment_created_uploaded_local(attachment, attachment_file_copy):
     """Helper method to verify local attachment retrieval."""
-    retrieved_attachment_size, download_path = attachment.retrieve_attachment()
+    retrieved_attachment_size, download_path = AttachmentService.retrieve_url(
+        attachment
+    )
     assert retrieved_attachment_size == len(attachment_file_copy)
     assert download_path == get_local_filename(
         f"{attachment.id}/{attachment.file_name}"
@@ -63,7 +66,7 @@ def verify_attachment_created_uploaded_local(attachment, attachment_file_copy):
 
 def verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy):
     """Helper method to verify GCS attachment retrieval."""
-    retrieved_file_size, download_url = attachment.retrieve_attachment()
+    retrieved_file_size, download_url = AttachmentService.retrieve_url(attachment)
     assert retrieved_file_size == len(attachment_file_copy)
     assert attachment.config.details[StorageDetails.BUCKET.value] in download_url
     assert f"{attachment.id}/{attachment.file_name}" in download_url
@@ -77,14 +80,11 @@ class TestAttachmentCreation:
     ):
         """Test creating an attachment without an attachment file raises an error."""
         with mock_aws():
-            with pytest.raises(ClientError) as excinfo:
-                Attachment.create_and_upload(
-                    db, data=attachment_data, attachment_file=None
+            with pytest.raises(TypeError) as excinfo:
+                AttachmentService.create_and_upload(
+                    db, data=attachment_data, file_data=None
                 )
-                assert (
-                    "Failed to upload attachment: The 'document' parameter must be a file-like object"
-                    in str(excinfo.value)
-                )
+            assert "file-like object" in str(excinfo.value)
 
     def test_create_attachment_with_S3_storage(
         self, s3_client, db, user, attachment_data, attachment_file, monkeypatch
@@ -99,8 +99,8 @@ class TestAttachmentCreation:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db, data=attachment_data, file_data=attachment_file[1]
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
@@ -121,7 +121,7 @@ class TestAttachmentCreation:
         file_obj.seek(0)
         assert file_obj.read() == attachment_file_copy
         verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_create_attachment_with_local_storage(
         self, db, attachment_data, attachment_file, storage_config_local
@@ -132,8 +132,8 @@ class TestAttachmentCreation:
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db=db, data=attachment_data, file_data=attachment_file[1]
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
@@ -143,7 +143,7 @@ class TestAttachmentCreation:
         assert retrieved_attachment.attachment_type == attachment.attachment_type
 
         verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_create_attachment_with_GCS_storage(
         self,
@@ -162,56 +162,22 @@ class TestAttachmentCreation:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # Get the mock bucket and blob
-        mock_bucket = mock_gcs_client.bucket.return_value
-
-        # Configure the mock blob's download behavior
-        def mock_download_to_file(self, fileobj, *args, **kwargs):
-            print(f"mock_download_to_file called with fileobj: {fileobj}")
-            fileobj.write(attachment_file_copy)
-            fileobj.seek(0)
-            print(f"Content written to fileobj: {fileobj.getvalue()}")
-            return None
-
-        # Create a mock blob with our download behavior
-        mock_blob = MagicMock()
-        mock_blob.name = "test_blob"
-        mock_blob.size = len(attachment_file_copy)
-        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
-        mock_blob.reload = MagicMock(return_value=None)
-
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
-
-        # Patch both the model and service layer GCS client imports
-        with (
-            patch(
-                "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock1,
-            patch(
-                "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock2,
+        # Patch the GCS client in the provider
+        with patch(
+            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            return_value=mock_gcs_client,
         ):
-            attachment = Attachment.create_and_upload(
-                db=db, data=attachment_data, attachment_file=attachment_file[1]
+            attachment = AttachmentService.create_and_upload(
+                db=db, data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
-            print("Retrieving attachment content...")
-            size, content = attachment.retrieve_attachment_content()
-            print(f"Retrieved size: {size}, content type: {type(content)}")
-            print(
-                f"Content before read: {content.getvalue() if hasattr(content, 'getvalue') else content}"
-            )
-
+            size, content = AttachmentService.retrieve_content(attachment)
             content_value = content.read()
-            print(f"Content after read: {content_value}")
 
             assert size == len(attachment_file_copy)
             assert content_value == attachment_file_copy
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)
 
 
 class TestAttachmentRetrieval:
@@ -230,11 +196,11 @@ class TestAttachmentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db, data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_retrieve_attachment_from_local(
         self, db, attachment_data, attachment_file, storage_config_local
@@ -244,12 +210,12 @@ class TestAttachmentRetrieval:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db=db, data=attachment_data, file_data=attachment_file[1]
         )
 
         verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_retrieve_attachment_from_gcs(
         self,
@@ -267,56 +233,22 @@ class TestAttachmentRetrieval:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # Get the mock bucket and blob
-        mock_bucket = mock_gcs_client.bucket.return_value
-
-        # Configure the mock blob's download behavior
-        def mock_download_to_file(self, fileobj, *args, **kwargs):
-            print(f"mock_download_to_file called with fileobj: {fileobj}")
-            fileobj.write(attachment_file_copy)
-            fileobj.seek(0)
-            print(f"Content written to fileobj: {fileobj.getvalue()}")
-            return None
-
-        # Create a mock blob with our download behavior
-        mock_blob = MagicMock()
-        mock_blob.name = "test_blob"
-        mock_blob.size = len(attachment_file_copy)
-        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
-        mock_blob.reload = MagicMock(return_value=None)
-
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
-
-        # Patch both the model and service layer GCS client imports
-        with (
-            patch(
-                "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock1,
-            patch(
-                "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock2,
+        # Patch the GCS client in the provider
+        with patch(
+            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            return_value=mock_gcs_client,
         ):
-            attachment = Attachment.create_and_upload(
-                db=db, data=attachment_data, attachment_file=attachment_file[1]
+            attachment = AttachmentService.create_and_upload(
+                db=db, data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
-            print("Retrieving attachment content...")
-            size, content = attachment.retrieve_attachment_content()
-            print(f"Retrieved size: {size}, content type: {type(content)}")
-            print(
-                f"Content before read: {content.getvalue() if hasattr(content, 'getvalue') else content}"
-            )
-
+            size, content = AttachmentService.retrieve_content(attachment)
             content_value = content.read()
-            print(f"Content after read: {content_value}")
 
             assert size == len(attachment_file_copy)
             assert content_value == attachment_file_copy
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)
 
 
 class TestAttachmentDeletion:
@@ -335,13 +267,13 @@ class TestAttachmentDeletion:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db, data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
 
         # Delete the file using the method
-        attachment.delete_attachment_from_storage()
+        AttachmentService.delete_from_storage(attachment)
 
         with pytest.raises(s3_client.exceptions.ClientError) as exc_info:
             file_obj = BytesIO()
@@ -351,7 +283,7 @@ class TestAttachmentDeletion:
                 Fileobj=file_obj,
             )
         assert exc_info.value.response["Error"]["Code"] == "404"
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_delete_attachment_from_local(
         self, db, attachment_data, attachment_file, storage_config_local
@@ -361,16 +293,16 @@ class TestAttachmentDeletion:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db=db, data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
 
         # Delete the file using the method
-        attachment.delete_attachment_from_storage()
+        AttachmentService.delete_from_storage(attachment)
 
         with pytest.raises(FileNotFoundError):
-            attachment.retrieve_attachment()
+            AttachmentService.retrieve_url(attachment)
         db.delete(attachment)
 
     def test_delete_attachment_from_gcs(
@@ -389,51 +321,24 @@ class TestAttachmentDeletion:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # Get the mock bucket and blob
-        mock_bucket = mock_gcs_client.bucket.return_value
-
-        # Configure the mock blob's download behavior
-        def mock_download_to_file(self, fileobj, *args, **kwargs):
-            print(f"mock_download_to_file called with fileobj: {fileobj}")
-            fileobj.write(attachment_file_copy)
-            fileobj.seek(0)
-            print(f"Content written to fileobj: {fileobj.getvalue()}")
-            return None
-
-        # Create a mock blob with our download behavior
-        mock_blob = MagicMock()
-        mock_blob.name = "test_blob"
-        mock_blob.size = len(attachment_file_copy)
-        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
-        mock_blob.reload = MagicMock(return_value=None)
-
-        # Configure the bucket to always return our mock blob
-        mock_bucket.blob.return_value = mock_blob
-
-        # Patch both the model and service layer GCS client imports
-        with (
-            patch(
-                "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock1,
-            patch(
-                "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock2,
+        # Patch the GCS client in the provider
+        with patch(
+            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            return_value=mock_gcs_client,
         ):
-            attachment = Attachment.create_and_upload(
-                db=db, data=attachment_data, attachment_file=attachment_file[1]
+            attachment = AttachmentService.create_and_upload(
+                db=db, data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
             # Delete the file using the method
-            attachment.delete_attachment_from_storage()
+            AttachmentService.delete_from_storage(attachment)
 
             # Verify the file was deleted by attempting to retrieve it
             with pytest.raises(NotFound):
-                attachment.retrieve_attachment()
+                AttachmentService.retrieve_url(attachment)
 
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)
 
 
 class TestAttachmentReferences:
@@ -483,7 +388,7 @@ class TestAttachmentReferences:
         )
         assert retrieved_reference is not None
 
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
         retrieved_reference = (
             db.query(AttachmentReference)
@@ -525,8 +430,8 @@ class TestAttachmentConstraints:
     ):
         """Test that deleting storage config cascades."""
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=BytesIO(b"test file content")
+        attachment = AttachmentService.create_and_upload(
+            db=db, data=attachment_data, file_data=BytesIO(b"test file content")
         )
         attachment_id = attachment.id
 
@@ -610,7 +515,7 @@ class TestAttachmentBulkOperations:
 
         # delete all attachments associated with the comment
         # should delete all attachments and references to the attachment
-        Attachment.delete_attachments_for_reference_and_type(
+        AttachmentService.delete_for_reference(
             db, reference_id=comment.id, reference_type=AttachmentReferenceType.comment
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
@@ -692,9 +597,9 @@ class TestAttachmentWarnings:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert len(sqlalchemy_warnings) == 0, (
-                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
-            )
+            assert (
+                len(sqlalchemy_warnings) == 0
+            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
 
             # Cleanup
             if db.query(AttachmentReference).filter_by(id=attachment_ref_2.id).first():
@@ -724,15 +629,15 @@ class TestAttachmentContentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db, data=attachment_data, file_data=attachment_file[1]
         )
 
-        size, content = attachment.retrieve_attachment_content()
+        size, content = AttachmentService.retrieve_content(attachment)
         assert size == len(attachment_file_copy)
         assert content.read() == attachment_file_copy
         assert content.getbuffer().nbytes == len(attachment_file_copy)
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_retrieve_attachment_content_from_local(
         self, db, attachment_data, attachment_file, storage_config_local
@@ -742,17 +647,17 @@ class TestAttachmentContentRetrieval:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=attachment_file[1]
+        attachment = AttachmentService.create_and_upload(
+            db=db, data=attachment_data, file_data=attachment_file[1]
         )
-        size, content = attachment.retrieve_attachment_content()
+        size, content = AttachmentService.retrieve_content(attachment)
         assert size == len(attachment_file_copy)
         # Read the content while the file is still open
         content_value = content.read()
         assert content_value == attachment_file_copy
         # Close the file after we're done with it
         content.close()
-        attachment.delete(db)
+        AttachmentService.delete(db, attachment)
 
     def test_retrieve_attachment_content_from_gcs(
         self,
@@ -770,32 +675,22 @@ class TestAttachmentContentRetrieval:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # Patch both the model and service layer GCS client imports
-        with (
-            patch(
-                "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock1,
-            patch(
-                "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock2,
+        # Patch the GCS client in the provider
+        with patch(
+            "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
+            return_value=mock_gcs_client,
         ):
-            # Create and upload the attachment
-            attachment = Attachment.create_and_upload(
-                db=db, data=attachment_data, attachment_file=attachment_file[1]
+            attachment = AttachmentService.create_and_upload(
+                db=db, data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
-            # Retrieve the attachment content
-            size, content = attachment.retrieve_attachment_content()
-
-            # Read the content and verify it matches
+            size, content = AttachmentService.retrieve_content(attachment)
             content_value = content.read()
 
             assert size == len(attachment_file_copy)
             assert content_value == attachment_file_copy
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)
 
     def test_retrieve_attachment_content_not_found(
         self, s3_client, db, attachment_data, monkeypatch
@@ -807,13 +702,13 @@ class TestAttachmentContentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=BytesIO(b"test content")
+        attachment = AttachmentService.create_and_upload(
+            db, data=attachment_data, file_data=BytesIO(b"test content")
         )
-        attachment.delete_attachment_from_storage()
+        AttachmentService.delete_from_storage(attachment)
 
         with pytest.raises(ClientError):
-            attachment.retrieve_attachment_content()
+            AttachmentService.retrieve_content(attachment)
 
     def test_content_type_property(self, s3_client, db, attachment_data, monkeypatch):
         """Test the content_type property for different file types."""
@@ -833,11 +728,11 @@ class TestAttachmentContentRetrieval:
 
         for filename, expected_content_type in test_cases:
             attachment_data["file_name"] = filename
-            attachment = Attachment.create_and_upload(
-                db, data=attachment_data, attachment_file=BytesIO(b"test content")
+            attachment = AttachmentService.create_and_upload(
+                db, data=attachment_data, file_data=BytesIO(b"test content")
             )
             assert attachment.content_type == expected_content_type
-            attachment.delete(db)
+            AttachmentService.delete(db, attachment)
 
     def test_invalid_file_type(self, s3_client, db, attachment_data, monkeypatch):
         """Test creating an attachment with an invalid file type."""
@@ -849,6 +744,6 @@ class TestAttachmentContentRetrieval:
 
         attachment_data["file_name"] = "test.invalid"
         with pytest.raises(ValueError, match="Invalid or unallowed file extension"):
-            Attachment.create_and_upload(
-                db, data=attachment_data, attachment_file=BytesIO(b"test content")
+            AttachmentService.create_and_upload(
+                db, data=attachment_data, file_data=BytesIO(b"test content")
             )

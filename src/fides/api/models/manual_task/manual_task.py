@@ -624,9 +624,9 @@ class ManualTaskConfigField(Base):
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
-        assert isinstance(self.field_metadata, dict), (
-            "field_metadata must be a dictionary"
-        )
+        assert isinstance(
+            self.field_metadata, dict
+        ), "field_metadata must be a dictionary"
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod
@@ -760,10 +760,11 @@ class ManualTaskSubmission(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the submission and all associated attachments."""
-        from fides.api.models.attachment import Attachment, AttachmentReferenceType
+        from fides.api.models.attachment import AttachmentReferenceType
+        from fides.service.attachment_service import AttachmentService
 
         # Delete attachments associated with this submission
-        Attachment.delete_attachments_for_reference_and_type(
+        AttachmentService.delete_for_reference(
             db, self.id, AttachmentReferenceType.manual_task_submission
         )
         # Delete the submission itself

@@ -21,6 +21,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentType
@@ -4258,11 +4259,11 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
     monkeypatch.setattr(
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService.create_and_upload(
+        db, data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService.delete(db, attachment)
 
 
 @pytest.fixture
@@ -4276,11 +4277,11 @@ def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
     attachment_data["attachment_type"] = AttachmentType.include_with_access_package
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService.create_and_upload(
+        db, data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService.delete(db, attachment)
 
 
 @pytest.fixture(scope="function")
