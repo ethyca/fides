@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 interface EditableTextBlockProps {
   value: string;
   onChange: (value: string) => void;
+  onSave?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
   showEditButton?: boolean;
@@ -25,6 +26,7 @@ interface EditableTextBlockProps {
 export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
   value,
   onChange,
+  onSave,
   placeholder = "Click to edit...",
   readOnly = false,
   showEditButton = true,
@@ -60,6 +62,9 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
   const handleSave = () => {
     onChange(editValue);
     setIsEditing(false);
+    if (onSave) {
+      onSave(editValue);
+    }
   };
 
   const handleCancel = () => {
