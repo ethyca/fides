@@ -250,6 +250,59 @@ def test_completion_email_sent_for_request(
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_consent_completion_skips_email_when_no_email_or_phone(
+    mock_email_dispatch: Mock,
+    db: Session,
+    consent_policy,
+    run_privacy_request_task,
+    request,
+    dsr_version,
+    privacy_request_complete_email_notification_enabled,
+) -> None:
+    """Test that consent completion succeeds without sending email when identity has no email/phone.
+
+    Consent requests can be submitted with only fides_user_device_id (e.g., browser-based consent).
+    The completion email should be skipped gracefully rather than erroring out the entire request.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    # Create privacy request with only fides_user_device_id (no email/phone)
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": datetime.utcnow(),
+            "status": PrivacyRequestStatus.in_processing,
+            "origin": "https://example.com/",
+            "policy_id": consent_policy.id,
+            "client_id": consent_policy.client_id,
+            "started_processing_at": datetime.utcnow(),
+        },
+    )
+    # Cache identity with only fides_user_device_id - no email or phone
+    privacy_request.cache_identity(
+        {"fides_user_device_id": "051b219f-20e4-45df-82f7-5eb68a00889f"}
+    )
+
+    try:
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Request should complete successfully
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+        # No email should have been dispatched since there's no email/phone identity
+        mock_email_dispatch.assert_not_called()
+    finally:
+        privacy_request.delete(db)
+
+
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "dsr_version",
