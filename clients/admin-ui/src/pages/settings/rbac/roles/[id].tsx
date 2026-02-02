@@ -1,5 +1,6 @@
 import Layout from "common/Layout";
 import {
+  Alert,
   Button,
   Checkbox,
   Flex,
@@ -253,6 +254,15 @@ const RoleDetailPage: NextPage = () => {
               <Typography.Title level={5} className="capitalize">
                 {resourceType.replace(/_/g, " ")}
               </Typography.Title>
+              {resourceType === "system" && (
+                <Alert
+                  message="System permissions apply globally"
+                  description="Note: system:read permission currently grants access to ALL systems in the organization, regardless of any resource scoping. Fine-grained per-system access control is not yet implemented."
+                  type="warning"
+                  showIcon
+                  className="mb-4"
+                />
+              )}
               <Table
                 dataSource={perms}
                 columns={permissionColumns}

@@ -1,6 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  Alert,
   Button,
   ChakraBox as Box,
   ChakraHeading as Heading,
@@ -13,6 +14,7 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useHasPermission } from "~/features/common/Restrict";
 import {
   CustomFieldsList,
   useCustomFields,
@@ -75,7 +77,7 @@ import {
   useGetAllUsersQuery,
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
-import { SystemResponse } from "~/types/api";
+import { ScopeRegistryEnum, SystemResponse } from "~/types/api";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -105,6 +107,10 @@ const SystemInformationForm = ({
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
   const { plus: systemGroupsEnabled } = useFeatures();
+
+  // Check if user has permission to update systems
+  const canUpdateSystems = useHasPermission([ScopeRegistryEnum.SYSTEM_UPDATE]);
+  const isReadOnly = passedInSystem && !canUpdateSystems;
 
   const dispatch = useAppDispatch();
 
@@ -452,18 +458,28 @@ const SystemInformationForm = ({
       {({ dirty, values, isValid }) => (
         <Form>
           <FormGuard id="SystemInfoTab" name="System Info" />
-          <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
-            {withHeader ? <SystemHeading system={passedInSystem} /> : null}
+          {isReadOnly && (
+            <Alert
+              message="Read-only access"
+              description="You have read-only access to this system. Contact an administrator if you need to make changes."
+              type="info"
+              showIcon
+              className="mb-4"
+            />
+          )}
+          <fieldset disabled={isReadOnly} style={{ border: "none", padding: 0 }}>
+            <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
+              {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <Text fontSize="sm" fontWeight="medium">
-              By providing a small amount of additional context for each system
-              we can make reporting and understanding our tech stack much easier
-              for everyone from engineering to legal teams. So let’s do this
-              now.
-            </Text>
-            {withHeader ? <SystemHeading system={passedInSystem} /> : null}
+              <Text fontSize="sm" fontWeight="medium">
+                By providing a small amount of additional context for each system
+                we can make reporting and understanding our tech stack much easier
+                for everyone from engineering to legal teams. So let's do this
+                now.
+              </Text>
+              {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
-            <SystemFormInputGroup heading="System details">
+              <SystemFormInputGroup heading="System details">
               {features.dictionaryService ? (
                 <VendorSelector
                   label="System name"
@@ -774,18 +790,21 @@ const SystemInformationForm = ({
                   ) : null}
                 </>
               )}
-          </Stack>
-          <Box mt={6}>
-            <Button
-              htmlType="submit"
-              type="primary"
-              disabled={isLoading || !dirty || !isValid}
-              loading={isLoading}
-              data-testid="save-btn"
-            >
-              Save
-            </Button>
-          </Box>
+            </Stack>
+          </fieldset>
+          {!isReadOnly && (
+            <Box mt={6}>
+              <Button
+                htmlType="submit"
+                type="primary"
+                disabled={isLoading || !dirty || !isValid}
+                loading={isLoading}
+                data-testid="save-btn"
+              >
+                Save
+              </Button>
+            </Box>
+          )}
           {children}
         </Form>
       )}
