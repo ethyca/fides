@@ -14,10 +14,10 @@ const DatastoreMonitorResultSystems: NextPage = () => {
   } = useFeatures();
   const params = useParams<{ monitorId: string }>();
 
-  const monitorId = params?.monitorId
+  const monitorKey = params?.monitorId
     ? decodeURIComponent(params.monitorId)
     : undefined;
-  const loading = !monitorId;
+  const loading = !monitorKey;
   const error = !heliosV2 && HELIOS_ACCESS_ERROR;
 
   if (error) {
@@ -26,10 +26,10 @@ const DatastoreMonitorResultSystems: NextPage = () => {
 
   return (
     <ActionCenterLayout
-      monitorId={monitorId}
+      monitorId={monitorKey}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
     >
-      {loading ? null : <InProgressMonitorTasksList filters={{ monitorId }} />}
+      {loading ? null : <InProgressMonitorTasksList filters={{ monitorKey }} />}
     </ActionCenterLayout>
   );
 };
