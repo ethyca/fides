@@ -518,10 +518,7 @@ export type {
   RBACRoleUpdate,
   RBACRolePermissionsUpdate,
 } from "./models/RBACRole";
-export type {
-  RBACUserRole,
-  RBACUserRoleCreate,
-} from "./models/RBACUserRole";
+export type { RBACUserRole, RBACUserRoleCreate } from "./models/RBACUserRole";
 export type { RDSMySQLDocsSchema } from "./models/RDSMySQLDocsSchema";
 export type { RDSPostgresDocsSchema } from "./models/RDSPostgresDocsSchema";
 export type { ReadSaaSRequest } from "./models/ReadSaaSRequest";

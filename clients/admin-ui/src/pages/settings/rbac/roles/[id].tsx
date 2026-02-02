@@ -23,9 +23,9 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { RBAC_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  useGetPermissionsQuery,
   useGetRoleByIdQuery,
   useGetRolesQuery,
-  useGetPermissionsQuery,
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
@@ -37,7 +37,11 @@ const RoleDetailPage: NextPage = () => {
   const message = useMessage();
   const [form] = Form.useForm();
 
-  const { data: role, isLoading, error } = useGetRoleByIdQuery(id as string, {
+  const {
+    data: role,
+    isLoading,
+    error,
+  } = useGetRoleByIdQuery(id as string, {
     skip: !id,
   });
   const { data: allRoles } = useGetRolesQuery({});
@@ -74,7 +78,7 @@ const RoleDetailPage: NextPage = () => {
         acc[resourceType].push(perm);
         return acc;
       },
-      {} as Record<string, RBACPermission[]>
+      {} as Record<string, RBACPermission[]>,
     );
   }, [permissions]);
 
@@ -114,9 +118,7 @@ const RoleDetailPage: NextPage = () => {
 
   const togglePermission = (code: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(code)
-        ? prev.filter((p) => p !== code)
-        : [...prev, code]
+      prev.includes(code) ? prev.filter((p) => p !== code) : [...prev, code],
     );
   };
 

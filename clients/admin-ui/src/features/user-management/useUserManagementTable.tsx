@@ -43,7 +43,7 @@ export const UserPermissionsCell = ({ userId }: { userId: string }) => {
   const { data: rbacRoles } = useGetRolesQuery({}, { skip: !isRbacEnabled });
   const { data: userRbacRoles } = useGetUserRolesQuery(
     { userId },
-    { skip: !userId || !isRbacEnabled }
+    { skip: !userId || !isRbacEnabled },
   );
 
   const permissionsLabels: string[] = useMemo(() => {
@@ -64,7 +64,7 @@ export const UserPermissionsCell = ({ userId }: { userId: string }) => {
     if (userPermissions && userPermissions.roles) {
       userPermissions.roles.forEach((permissionRole) => {
         const matchingRole = ROLES.find(
-          (role) => role.roleKey === permissionRole
+          (role) => role.roleKey === permissionRole,
         );
         if (matchingRole) {
           labels.push(matchingRole.permissions_label);

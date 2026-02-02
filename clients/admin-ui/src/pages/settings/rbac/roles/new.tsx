@@ -62,7 +62,11 @@ const NewRolePage: NextPage = () => {
 
   return (
     <Layout title="Create Custom Role">
-      <PageHeader heading="Create Custom Role" isSticky={false} className="pb-0">
+      <PageHeader
+        heading="Create Custom Role"
+        isSticky={false}
+        className="pb-0"
+      >
         <Typography.Paragraph className="max-w-screen-md">
           Create a new custom role with specific permissions. You can optionally
           inherit permissions from a parent role.

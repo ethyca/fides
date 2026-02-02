@@ -10,8 +10,8 @@ import { useHasPermission } from "common/Restrict";
 import {
   Button,
   Card,
-  Checkbox,
   ChakraSpinner as Spinner,
+  Checkbox,
   Flex,
   Typography,
   useChakraDisclosure as useDisclosure,
@@ -44,7 +44,11 @@ import {
 const { Text, Title } = Typography;
 
 // Role keys that cannot have systems assigned to them
-const ROLES_WITHOUT_SYSTEM_ASSIGNMENT = ["approver", "respondent", "external_respondent"];
+const ROLES_WITHOUT_SYSTEM_ASSIGNMENT = [
+  "approver",
+  "respondent",
+  "external_respondent",
+];
 
 const RolesForm = () => {
   const message = useMessage();
@@ -57,7 +61,7 @@ const RolesForm = () => {
   const { data: userRbacRoles, isLoading: isLoadingUserRoles } =
     useGetUserRolesQuery(
       { userId: activeUserId ?? "" },
-      { skip: !activeUserId }
+      { skip: !activeUserId },
     );
 
   const [assignUserRole] = useAssignUserRoleMutation();
@@ -69,7 +73,8 @@ const RolesForm = () => {
   });
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>([]);
-  const [updateUserManagedSystemsTrigger] = useUpdateUserManagedSystemsMutation();
+  const [updateUserManagedSystemsTrigger] =
+    useUpdateUserManagedSystemsMutation();
 
   // Sync assigned systems when initial data loads
   useEffect(() => {
@@ -78,7 +83,7 @@ const RolesForm = () => {
 
   // Track selected roles locally for optimistic updates
   const [selectedRoleIds, setSelectedRoleIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -172,10 +177,10 @@ const RolesForm = () => {
     try {
       // Determine roles to add and remove
       const rolesToAdd = Array.from(selectedRoleIds).filter(
-        (id) => !currentRoleIds.has(id)
+        (id) => !currentRoleIds.has(id),
       );
       const rolesToRemove = Array.from(currentRoleIds).filter(
-        (id) => !selectedRoleIds.has(id)
+        (id) => !selectedRoleIds.has(id),
       );
 
       // Remove roles
@@ -283,7 +288,8 @@ const RolesForm = () => {
           const isDisabled = isOwnerRole
             ? !canAssignOwner
             : isExternalRespondent;
-          const supportsSystemAssignment = !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key);
+          const supportsSystemAssignment =
+            !ROLES_WITHOUT_SYSTEM_ASSIGNMENT.includes(role.key);
 
           return (
             <Card
@@ -313,10 +319,7 @@ const RolesForm = () => {
                     <Flex align="center" gap={8}>
                       <Text strong>{role.name}</Text>
                       {role.is_system_role && (
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: 12 }}
-                        >
+                        <Text type="secondary" style={{ fontSize: 12 }}>
                           System role
                         </Text>
                       )}
