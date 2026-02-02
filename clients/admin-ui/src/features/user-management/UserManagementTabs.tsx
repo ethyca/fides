@@ -2,10 +2,12 @@ import { ChakraBox as Box, ChakraFlex as Flex, Tabs } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { useHasPermission } from "../common/Restrict";
 import PermissionsForm from "./PermissionsForm";
+import RolesForm from "./RolesForm";
 import {
   selectActiveUserId,
   useGetUserByIdQuery,
@@ -18,6 +20,8 @@ const UserManagementTabs = ({
   ...props
 }: UserFormProps) => {
   const activeUserId = useAppSelector(selectActiveUserId);
+  const { flags } = useFlags();
+  const isRbacEnabled = flags.rbacManagement;
 
   // Subscribe to active user
   useGetUserByIdQuery(activeUserId as string, { skip: !activeUserId });
@@ -27,7 +31,7 @@ const UserManagementTabs = ({
   ]);
 
   // If it is a new user, or if the user does not have permission
-  const permissionsTabDisabled = !activeUserId || !canUpdateUserPermissions;
+  const rolesTabDisabled = !activeUserId || !canUpdateUserPermissions;
 
   const tabs = [
     {
@@ -42,9 +46,13 @@ const UserManagementTabs = ({
       ),
     },
     {
-      label: "Permissions",
-      key: "permissions",
-      children: (
+      label: isRbacEnabled ? "Roles" : "Permissions",
+      key: "roles",
+      children: isRbacEnabled ? (
+        <Box w={{ base: "100%", md: "70%", xl: "60%" }} p={4}>
+          <RolesForm />
+        </Box>
+      ) : (
         <Flex gap="97px">
           <Box w={{ base: "100%", md: "50%", xl: "50%" }}>
             <PermissionsForm />
@@ -63,8 +71,8 @@ const UserManagementTabs = ({
           </Box>
         </Flex>
       ),
-      disabled: permissionsTabDisabled,
-      forceRender: !permissionsTabDisabled,
+      disabled: rolesTabDisabled,
+      forceRender: !rolesTabDisabled,
     },
   ];
 
