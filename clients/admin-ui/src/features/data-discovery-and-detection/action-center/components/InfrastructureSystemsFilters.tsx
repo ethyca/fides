@@ -1,5 +1,5 @@
 import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import {
@@ -81,17 +81,6 @@ export const InfrastructureSystemsFilters = ({
   const handleDataUseChange = (value: string[]) => {
     setDataUsesFilters(value.length > 0 ? value : []);
   };
-
-  // Set initial value to "New" if no filters are set (only on mount)
-  useEffect(() => {
-    if (
-      (!statusFilters || statusFilters.length === 0) &&
-      (!vendorFilters || vendorFilters.length === 0)
-    ) {
-      handleStatusChange(InfrastructureStatusFilterOptionValue.NEW);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const hasActiveFilters =
     (statusFilters && statusFilters.length > 0) ||

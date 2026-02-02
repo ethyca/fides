@@ -1,18 +1,20 @@
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
 
-// Stable default references to prevent infinite re-renders
-const DEFAULT_STATUS_FILTERS: string[] = [];
-const DEFAULT_VENDOR_FILTERS: string[] = [];
+import { DiffStatus } from "~/types/api/models/DiffStatus";
+
+// Initial default values for "New" filter
+const INITIAL_STATUS_FILTERS = [DiffStatus.ADDITION];
+const INITIAL_VENDOR_FILTERS: string[] = [];
 const DEFAULT_DATA_USES_FILTERS: string[] = [];
 
 export const useInfrastructureSystemsFilters = () => {
   const [statusFilters, setStatusFilters] = useQueryState(
     "statusFilters",
-    parseAsArrayOf(parseAsString).withDefault(DEFAULT_STATUS_FILTERS),
+    parseAsArrayOf(parseAsString).withDefault(INITIAL_STATUS_FILTERS),
   );
   const [vendorFilters, setVendorFilters] = useQueryState(
     "vendorFilters",
-    parseAsArrayOf(parseAsString).withDefault(DEFAULT_VENDOR_FILTERS),
+    parseAsArrayOf(parseAsString).withDefault(INITIAL_VENDOR_FILTERS),
   );
   const [dataUsesFilters, setDataUsesFilters] = useQueryState(
     "dataUsesFilters",
