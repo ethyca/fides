@@ -40,8 +40,15 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // Map status filters to diff_status parameter
   // Status filters now come directly as diff_status values from the API
   const diffStatusFilters = useMemo(() => {
-    if (!statusFilters || statusFilters.length === 0) {
+    // If statusFilters is null/undefined (not provided), use activeParams default
+    if (statusFilters === null || statusFilters === undefined) {
       return activeParams.diff_status;
+    }
+
+    // If statusFilters is an empty array (explicitly cleared), filter on "addition" and "muted"
+    // to exclude "reviewed" results
+    if (statusFilters.length === 0) {
+      return [DiffStatus.ADDITION, DiffStatus.MUTED];
     }
 
     // Status filters are now diff_status values directly
@@ -51,7 +58,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     if (diffStatuses.length === 1) {
       return diffStatuses[0];
     }
-    return diffStatuses.length > 0 ? diffStatuses : activeParams.diff_status;
+    return diffStatuses;
   }, [statusFilters, activeParams.diff_status]);
 
   // Map vendor filters to vendor_id parameter
