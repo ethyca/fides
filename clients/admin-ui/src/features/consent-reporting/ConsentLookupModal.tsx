@@ -26,9 +26,11 @@ import SearchInput from "../common/SearchInput";
 import { FidesTableV2 } from "../common/table/v2";
 import { useLazyGetCurrentPrivacyPreferencesQuery } from "./consent-reporting.slice";
 import useConsentLookupTableColumns from "./hooks/useConsentLookupTableColumns";
-import useTcfConsentColumns, {
-  TcfDetailRow,
-} from "./hooks/useTcfConsentColumns";
+import {
+  filterTcfConsentPreferences,
+  mapTcfPreferencesToRowColumns,
+} from "./hooks/useTcfConsentTable";
+import TcfConsentTable from "./TcfConsentTable";
 
 interface ConsentLookupModalProps {
   isOpen: boolean;
@@ -84,22 +86,10 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
     manualPagination: true,
   });
 
-  const {
-    tcfColumns,
-    mapTcfPreferencesToRowColumns,
-    filterTcfConsentPreferences,
-  } = useTcfConsentColumns();
+  // Check if TCF data exists for conditional rendering
   const tcfData = mapTcfPreferencesToRowColumns(searchResults);
   const filteredTcfData = filterTcfConsentPreferences(tcfData);
-
   const hasTcfData = !isEmpty(filteredTcfData);
-  const tcfTableInstance = useReactTable<TcfDetailRow>({
-    getCoreRowModel: getCoreRowModel(),
-    data: filteredTcfData,
-    columns: tcfColumns,
-    getRowId: (row) => `${row.key}-${row.id}`,
-    manualPagination: true,
-  });
 
   return (
     <Modal
@@ -166,7 +156,10 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
             )}
             {hasTcfData && (
               <div className="mt-4">
-                <FidesTableV2<TcfDetailRow> tableInstance={tcfTableInstance} />
+                <TcfConsentTable
+                  tcfPreferences={searchResults}
+                  loading={isSearching}
+                />
               </div>
             )}
           </div>
