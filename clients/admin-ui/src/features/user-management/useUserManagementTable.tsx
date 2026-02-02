@@ -49,7 +49,9 @@ export const UserPermissionsCell = ({ userId }: { userId: string }) => {
   const permissionsLabels: string[] = useMemo(() => {
     if (isRbacEnabled) {
       // Use RBAC roles
-      if (!userRbacRoles || !rbacRoles) return [];
+      if (!userRbacRoles || !rbacRoles) {
+        return [];
+      }
       return userRbacRoles
         .map((ur) => {
           const role = rbacRoles.find((r) => r.id === ur.role_id);

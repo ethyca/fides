@@ -60,9 +60,13 @@ const RBACPage: NextPage = () => {
       dataIndex: "name",
       key: "name",
       render: (name: string, record: RBACRole) => (
-        <a onClick={() => router.push(`/settings/rbac/roles/${record.id}`)}>
+        <Button
+          type="link"
+          onClick={() => router.push(`/settings/rbac/roles/${record.id}`)}
+          className="p-0"
+        >
           {name}
-        </a>
+        </Button>
       ),
     },
     {
