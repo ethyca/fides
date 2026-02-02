@@ -1,0 +1,21 @@
+import { NextPage } from "next";
+
+import Layout from "~/features/common/Layout";
+import NotificationTabs from "~/features/common/NotificationTabs";
+import PageHeader from "~/features/common/PageHeader";
+import Restrict from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
+
+import { ChatProviderConfigurations } from "~/features/chat-provider/ChatProviderConfigurations";
+
+const ChatProvidersPage: NextPage = () => (
+  <Layout title="Notifications">
+    <Restrict scopes={[ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE]}>
+      <PageHeader heading="Notifications" />
+      <NotificationTabs />
+      <ChatProviderConfigurations />
+    </Restrict>
+  </Layout>
+);
+
+export default ChatProvidersPage;

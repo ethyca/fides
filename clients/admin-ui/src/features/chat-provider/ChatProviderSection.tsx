@@ -172,7 +172,6 @@ const ChatProviderSection = () => {
       </Heading>
       <Text marginBottom="30px" fontSize="sm">
         Connect your Slack workspace to enable notifications and alerts.
-        Microsoft Teams support coming soon.
       </Text>
 
       <Formik

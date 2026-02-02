@@ -7,7 +7,6 @@ export interface ChatProviderSettings {
   client_id?: string;
   client_secret?: string;
   signing_secret?: string;
-  notification_channel_id?: string;
 }
 
 export interface ChatProviderSettingsResponse {
@@ -22,7 +21,6 @@ export interface ChatProviderSettingsResponse {
   updated_at: string;
   workspace_name?: string;
   connected_by_email?: string;
-  notification_channel_id?: string;
 }
 
 export interface ChatProviderTestResponse {

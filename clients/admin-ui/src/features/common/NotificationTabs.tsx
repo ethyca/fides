@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import {
+  CHAT_PROVIDERS_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
   NOTIFICATIONS_DIGESTS_ROUTE,
   NOTIFICATIONS_TEMPLATES_ROUTE,
@@ -18,9 +19,11 @@ const NotificationTabs = () => {
   const { plus } = useFeatures();
 
   // Determine which tab is active based on the current path
-  let selectedKey = "providers"; // Default to digests for non-Plus
+  let selectedKey = "email-providers"; // Default to email providers for non-Plus
   if (currentPath.startsWith(MESSAGING_PROVIDERS_ROUTE)) {
-    selectedKey = "providers";
+    selectedKey = "email-providers";
+  } else if (currentPath.startsWith(CHAT_PROVIDERS_ROUTE)) {
+    selectedKey = "chat-providers";
   } else if (currentPath.startsWith(NOTIFICATIONS_TEMPLATES_ROUTE)) {
     selectedKey = "templates";
   } else if (currentPath.startsWith(NOTIFICATIONS_DIGESTS_ROUTE)) {
@@ -43,11 +46,18 @@ const NotificationTabs = () => {
       path: NOTIFICATIONS_DIGESTS_ROUTE,
     },
     {
-      key: "providers",
-      label: "Providers",
+      key: "email-providers",
+      label: "Email providers",
       requiresPlus: false,
       scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       path: MESSAGING_PROVIDERS_ROUTE,
+    },
+    {
+      key: "chat-providers",
+      label: "Chat providers",
+      requiresPlus: true,
+      scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
+      path: CHAT_PROVIDERS_ROUTE,
     },
   ];
 

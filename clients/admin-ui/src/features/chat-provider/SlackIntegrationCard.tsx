@@ -14,6 +14,10 @@ import { useEffect, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  useGetConfigurationSettingsQuery,
+  usePatchConfigurationSettingsMutation,
+} from "~/features/config-settings/config-settings.slice";
 
 import {
   ChatHistoryEntry,
@@ -99,6 +103,12 @@ const SlackIntegrationCard = () => {
     skip: !settings?.authorized,
   });
 
+  // Get and update global config for privacy assessments channel
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
+  const [patchConfigSettings] = usePatchConfigurationSettingsMutation();
+
   const [selectedChannel, setSelectedChannel] = useState<string | undefined>(
     undefined
   );
@@ -111,12 +121,12 @@ const SlackIntegrationCard = () => {
   const [clientSecret, setClientSecret] = useState<string>("");
   const [signingSecret, setSigningSecret] = useState<string>("");
 
-  // Update selected channel when settings load
+  // Update selected channel when config settings load
   useEffect(() => {
-    if (settings?.notification_channel_id) {
-      setSelectedChannel(settings.notification_channel_id);
+    if (appConfig?.notifications?.privacy_assessments_channel) {
+      setSelectedChannel(appConfig.notifications.privacy_assessments_channel);
     }
-  }, [settings?.notification_channel_id]);
+  }, [appConfig?.notifications?.privacy_assessments_channel]);
 
   // Handle OAuth callback results
   useEffect(() => {
@@ -214,10 +224,10 @@ const SlackIntegrationCard = () => {
   const handleChannelChange = async (value: string) => {
     setSelectedChannel(value);
 
-    const result = await updateSettings({
-      enabled: true,
-      provider_type: "slack",
-      notification_channel_id: value,
+    const result = await patchConfigSettings({
+      notifications: {
+        privacy_assessments_channel: value,
+      },
     });
 
     if (isErrorResult(result)) {

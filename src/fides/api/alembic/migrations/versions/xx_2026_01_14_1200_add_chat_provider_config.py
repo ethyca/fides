@@ -1,8 +1,8 @@
-"""add chat provider config table
+"""add chat provider config
 
 Revision ID: c1d2e3f4a5b6
 Revises: 627c230d9917
-Create Date: 2026-01-08 12:00:00.000000
+Create Date: 2026-01-14 12:00:00.000000
 
 """
 
@@ -46,8 +46,15 @@ def upgrade():
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
             nullable=True,
         ),
+        sa.Column(
+            "signing_secret",
+            sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
+            nullable=True,
+        ),
         sa.Column("enabled", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         sa.Column("single_row", sa.Boolean(), nullable=False, server_default=sa.text("true")),
+        sa.Column("workspace_name", sa.String(), nullable=True),
+        sa.Column("connected_by_email", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
         sa.CheckConstraint("single_row", name="chat_provider_config_single_row_check"),
     )

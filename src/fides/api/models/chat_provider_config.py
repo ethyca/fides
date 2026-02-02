@@ -60,7 +60,6 @@ class ChatProviderConfig(Base):
     single_row = Column(Boolean, nullable=False, default=True)
     workspace_name = Column(String, nullable=True)
     connected_by_email = Column(String, nullable=True)
-    notification_channel_id = Column(String, nullable=True)
 
     __table_args__ = (
         CheckConstraint("single_row", name="chat_provider_config_single_row_check"),
