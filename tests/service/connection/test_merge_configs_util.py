@@ -1,6 +1,6 @@
 """Tests for merge_configs_util functions."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pytest
 from fideslang.models import FidesDatasetReference
@@ -720,403 +720,349 @@ class TestPreserveMonitoredCollectionsInDatasetMerge:
         assert collection_names == {"users", "products"}
 
 
+def _make_saas_config(
+    endpoints: List[Endpoint],
+    data_protection_request: Optional[SaaSRequest] = None,
+    external_references: Optional[List[Dict[str, Any]]] = None,
+) -> SaaSConfig:
+    """Helper to create a SaaSConfig with minimal boilerplate for testing."""
+    return SaaSConfig(
+        fides_key="test_connector",
+        name="Test Connector",
+        type="test",
+        description="Test connector",
+        version="1.0.0",
+        connector_params=[ConnectorParam(name="domain")],
+        client_config=ClientConfig(protocol="https", host="<domain>"),
+        endpoints=endpoints,
+        data_protection_request=data_protection_request,
+        external_references=external_references,
+        test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
+    )
+
+
 class TestGetSaaSConfigReferencedFields:
     """Test get_saas_config_referenced_fields function."""
 
-    @pytest.fixture
-    def base_saas_config(self) -> SaaSConfig:
-        """Create a basic SaaS config for testing."""
-        return SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector for unit tests",
-            version="1.0.0",
-            connector_params=[
-                ConnectorParam(name="domain", label="Domain"),
-                ConnectorParam(name="api_key", label="API Key"),
-            ],
-            client_config=ClientConfig(
-                protocol="https",
-                host="<domain>",
-                authentication={
-                    "strategy": "bearer",
-                    "configuration": {"token": "<api_key>"},
-                },
-            ),
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        read=SaaSRequest(
-                            path="/api/users",
-                            method=HTTPMethod.GET,
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(
-                path="/api/test",
-                method=HTTPMethod.GET,
-            ),
-        )
-
-    def test_extract_references_from_param_values(self):
-        """Test extracting field references from param_values in read requests."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="orders",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/orders",
-                            method=HTTPMethod.GET,
-                            param_values=[
-                                ParamValue(
-                                    name="user_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="<instance_fides_key>",
-                                            field="users.id",
-                                            direction="from",
-                                        )
-                                    ],
-                                ),
-                                ParamValue(
-                                    name="app_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="<instance_fides_key>",
-                                            field="apps.app_id",
-                                            direction="from",
-                                        )
-                                    ],
-                                ),
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == {("users", "id"), ("apps", "app_id")}
-
-    def test_extract_references_from_delete_request(self):
-        """Test extracting field references from delete requests."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        delete=SaaSRequest(
-                            path="/api/users/<user_id>",
-                            method=HTTPMethod.DELETE,
-                            param_values=[
-                                ParamValue(
-                                    name="user_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="<instance_fides_key>",
-                                            field="users.id",
-                                            direction="from",
-                                        )
-                                    ],
-                                ),
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == {("users", "id")}
-
-    def test_extract_references_with_instance_key_match(self):
-        """Test that references using the instance key are also matched."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="orders",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/orders",
-                            method=HTTPMethod.GET,
-                            param_values=[
-                                ParamValue(
-                                    name="user_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="my_instance_key",
-                                            field="users.id",
-                                            direction="from",
-                                        )
-                                    ],
-                                ),
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "my_instance_key")
-
-        assert result == {("users", "id")}
-
-    def test_skip_external_references(self):
-        """Test that string references (external references) are skipped."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            external_references=[{"name": "external_user_id"}],
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/users",
-                            method=HTTPMethod.GET,
-                            param_values=[
-                                ParamValue(
-                                    name="user_id",
-                                    references=[
-                                        "external_user_id"  # String reference
-                                    ],
-                                ),
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        # Should be empty since external references are skipped
-        assert result == set()
-
-    def test_extract_references_from_data_protection_request(self):
-        """Test extracting field references from data_protection_request."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        read=SaaSRequest(path="/api/users", method=HTTPMethod.GET)
-                    ),
-                ),
-            ],
-            data_protection_request=SaaSRequest(
-                path="/api/gdpr/delete",
-                method=HTTPMethod.POST,
-                param_values=[
-                    ParamValue(
-                        name="user_id",
-                        references=[
-                            FidesDatasetReference(
-                                dataset="<instance_fides_key>",
-                                field="external_ids.id",
-                                direction="from",
+    @pytest.mark.parametrize(
+        "endpoints,data_protection_request,instance_key,expected",
+        [
+            pytest.param(
+                [
+                    Endpoint(
+                        name="orders",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/orders",
+                                method=HTTPMethod.GET,
+                                param_values=[
+                                    ParamValue(
+                                        name="user_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="<instance_fides_key>",
+                                                field="users.id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                    ParamValue(
+                                        name="app_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="<instance_fides_key>",
+                                                field="apps.app_id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                ],
                             )
-                        ],
-                    ),
+                        ),
+                    )
                 ],
+                None,
+                "test_instance",
+                {("users", "id"), ("apps", "app_id")},
+                id="param_values_in_read_request",
             ),
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == {("external_ids", "id")}
-
-    def test_extract_references_from_filter_postprocessor(self):
-        """Test extracting field references from filter postprocessor dataset_reference."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="orders",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/orders",
-                            method=HTTPMethod.GET,
-                            postprocessors=[
-                                Strategy(
-                                    strategy="filter",
-                                    configuration={
-                                        "field": "customerId",
-                                        "value": {
-                                            "dataset_reference": "<instance_fides_key>.customer.customerId"
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            delete=SaaSRequest(
+                                path="/api/users/<user_id>",
+                                method=HTTPMethod.DELETE,
+                                param_values=[
+                                    ParamValue(
+                                        name="user_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="<instance_fides_key>",
+                                                field="users.id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                {("users", "id")},
+                id="param_values_in_delete_request",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            read=SaaSRequest(path="/api/users", method=HTTPMethod.GET)
+                        ),
+                    )
+                ],
+                SaaSRequest(
+                    path="/api/gdpr/delete",
+                    method=HTTPMethod.POST,
+                    param_values=[
+                        ParamValue(
+                            name="user_id",
+                            references=[
+                                FidesDatasetReference(
+                                    dataset="<instance_fides_key>",
+                                    field="external_ids.id",
+                                    direction="from",
+                                )
+                            ],
+                        ),
+                    ],
+                ),
+                "test_instance",
+                {("external_ids", "id")},
+                id="data_protection_request",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            read=[
+                                ReadSaaSRequest(
+                                    path="/api/users/v1",
+                                    method=HTTPMethod.GET,
+                                    param_values=[
+                                        ParamValue(
+                                            name="org_id",
+                                            references=[
+                                                FidesDatasetReference(
+                                                    dataset="<instance_fides_key>",
+                                                    field="orgs.id",
+                                                    direction="from",
+                                                )
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                                ReadSaaSRequest(
+                                    path="/api/users/v2",
+                                    method=HTTPMethod.GET,
+                                    param_values=[
+                                        ParamValue(
+                                            name="account_id",
+                                            references=[
+                                                FidesDatasetReference(
+                                                    dataset="<instance_fides_key>",
+                                                    field="accounts.id",
+                                                    direction="from",
+                                                )
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ]
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                {("orgs", "id"), ("accounts", "id")},
+                id="multiple_read_requests",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="orders",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/orders",
+                                method=HTTPMethod.GET,
+                                param_values=[
+                                    ParamValue(
+                                        name="user_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="my_instance_key",
+                                                field="users.id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "my_instance_key",
+                {("users", "id")},
+                id="instance_key_match",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/users",
+                                method=HTTPMethod.GET,
+                                param_values=[
+                                    ParamValue(
+                                        name="user_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="other_dataset",
+                                                field="users.id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                set(),
+                id="skip_other_datasets",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/users",
+                                method=HTTPMethod.GET,
+                                param_values=[
+                                    ParamValue(
+                                        name="address_id",
+                                        references=[
+                                            FidesDatasetReference(
+                                                dataset="<instance_fides_key>",
+                                                field="users.address.id",
+                                                direction="from",
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                {("users", "address")},
+                id="nested_field_path",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="orders",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/orders",
+                                method=HTTPMethod.GET,
+                                postprocessors=[
+                                    Strategy(
+                                        strategy="filter",
+                                        configuration={
+                                            "field": "customerId",
+                                            "value": {
+                                                "dataset_reference": "<instance_fides_key>.customer.customerId"
+                                            },
                                         },
-                                    },
-                                )
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == {("customer", "customerId")}
-
-    def test_skip_non_filter_postprocessors(self):
-        """Test that non-filter postprocessors are skipped."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="orders",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/orders",
-                            method=HTTPMethod.GET,
-                            postprocessors=[
-                                Strategy(
-                                    strategy="unwrap",
-                                    configuration={"data_path": "results"},
-                                )
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == set()
-
-    def test_extract_references_from_multiple_read_requests(self):
-        """Test extracting references from endpoints with multiple read requests."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        read=[
-                            ReadSaaSRequest(
-                                path="/api/users/v1",
-                                method=HTTPMethod.GET,
-                                param_values=[
-                                    ParamValue(
-                                        name="org_id",
-                                        references=[
-                                            FidesDatasetReference(
-                                                dataset="<instance_fides_key>",
-                                                field="orgs.id",
-                                                direction="from",
-                                            )
-                                        ],
-                                    ),
+                                    )
                                 ],
-                            ),
-                            ReadSaaSRequest(
-                                path="/api/users/v2",
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                {("customer", "customerId")},
+                id="filter_postprocessor",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="orders",
+                        requests=SaaSRequestMap(
+                            read=ReadSaaSRequest(
+                                path="/api/orders",
                                 method=HTTPMethod.GET,
-                                param_values=[
-                                    ParamValue(
-                                        name="account_id",
-                                        references=[
-                                            FidesDatasetReference(
-                                                dataset="<instance_fides_key>",
-                                                field="accounts.id",
-                                                direction="from",
-                                            )
-                                        ],
-                                    ),
+                                postprocessors=[
+                                    Strategy(
+                                        strategy="unwrap",
+                                        configuration={"data_path": "results"},
+                                    )
                                 ],
-                            ),
-                        ]
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
+                            )
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                set(),
+                id="skip_non_filter_postprocessors",
+            ),
+            pytest.param(
+                [
+                    Endpoint(
+                        name="users",
+                        requests=SaaSRequestMap(
+                            read=SaaSRequest(path="/api/users", method=HTTPMethod.GET)
+                        ),
+                    )
+                ],
+                None,
+                "test_instance",
+                set(),
+                id="empty_config",
+            ),
+        ],
+    )
+    def test_extract_references(
+        self,
+        endpoints: List[Endpoint],
+        data_protection_request: Optional[SaaSRequest],
+        instance_key: str,
+        expected: set,
+    ):
+        """Test extracting field references from various SaaS config locations."""
+        saas_config = _make_saas_config(
+            endpoints=endpoints,
+            data_protection_request=data_protection_request,
         )
+        result = get_saas_config_referenced_fields(saas_config, instance_key)
+        assert result == expected
 
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        assert result == {("orgs", "id"), ("accounts", "id")}
-
-    def test_empty_config_returns_empty_set(self, base_saas_config: SaaSConfig):
-        """Test that a config with no references returns an empty set."""
-        result = get_saas_config_referenced_fields(base_saas_config, "test_instance")
-
-        assert result == set()
-
-    def test_skip_references_to_other_datasets(self):
-        """Test that references to other datasets (not the instance) are skipped."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
+    def test_skip_external_string_references(self):
+        """Test that string references (external references) are skipped."""
+        saas_config = _make_saas_config(
             endpoints=[
                 Endpoint(
                     name="users",
@@ -1127,64 +1073,14 @@ class TestGetSaaSConfigReferencedFields:
                             param_values=[
                                 ParamValue(
                                     name="user_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="other_dataset",
-                                            field="users.id",
-                                            direction="from",
-                                        )
-                                    ],
+                                    references=["external_user_id"],
                                 ),
                             ],
                         )
                     ),
-                ),
+                )
             ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
+            external_references=[{"name": "external_user_id"}],
         )
-
         result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        # Should be empty since the dataset doesn't match
         assert result == set()
-
-    def test_nested_field_path_extracts_correctly(self):
-        """Test that nested field paths (collection.field.nested) extract correctly."""
-        saas_config = SaaSConfig(
-            fides_key="test_connector",
-            name="Test Connector",
-            type="test",
-            description="Test connector",
-            version="1.0.0",
-            connector_params=[ConnectorParam(name="domain")],
-            client_config=ClientConfig(protocol="https", host="<domain>"),
-            endpoints=[
-                Endpoint(
-                    name="users",
-                    requests=SaaSRequestMap(
-                        read=ReadSaaSRequest(
-                            path="/api/users",
-                            method=HTTPMethod.GET,
-                            param_values=[
-                                ParamValue(
-                                    name="address_id",
-                                    references=[
-                                        FidesDatasetReference(
-                                            dataset="<instance_fides_key>",
-                                            field="users.address.id",
-                                            direction="from",
-                                        )
-                                    ],
-                                ),
-                            ],
-                        )
-                    ),
-                ),
-            ],
-            test_request=SaaSRequest(path="/api/test", method=HTTPMethod.GET),
-        )
-
-        result = get_saas_config_referenced_fields(saas_config, "test_instance")
-
-        # Should extract collection (users) and top-level field (address)
-        assert result == {("users", "address")}

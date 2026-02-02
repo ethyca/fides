@@ -2,7 +2,7 @@
 
 import copy
 from textwrap import dedent
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pytest
 from sqlalchemy.orm import Session
@@ -1259,26 +1259,56 @@ class TestConnectionService:
         assert result_dataset_dict["name"] == upcoming_dataset["name"]
         assert result_dataset_dict["description"] == upcoming_dataset["description"]
 
-    def test_customer_cannot_delete_protected_field(
+    @pytest.mark.parametrize(
+        "delete_from,protected_fields,expected_exists",
+        [
+            pytest.param(
+                "customer",
+                {("products", "email")},
+                True,
+                id="customer_cannot_delete_protected_field",
+            ),
+            pytest.param(
+                "customer",
+                set(),
+                False,
+                id="customer_can_delete_unprotected_field",
+            ),
+            pytest.param(
+                "integration",
+                {("products", "email")},
+                False,
+                id="integration_can_delete_protected_field",
+            ),
+            pytest.param(
+                "customer",
+                None,
+                False,
+                id="none_protected_fields_allows_deletion",
+            ),
+        ],
+    )
+    def test_protected_field_deletion_behavior(
         self,
         connection_service: ConnectionService,
         db: Session,
         stored_dataset: Dict[str, Any],
+        delete_from: str,
+        protected_fields: Optional[set],
+        expected_exists: bool,
     ):
-        """Test that customers cannot delete fields referenced in SaaS config."""
-        # Setup: upcoming dataset (template) has all fields
+        """Test protected field deletion behavior for various scenarios."""
         upcoming_dataset = copy.deepcopy(stored_dataset)
         upcoming_dataset["fides_key"] = "test_instance_key"
-
-        # Customer tries to delete the "email" field (index 2)
         customer_dataset = copy.deepcopy(stored_dataset)
-        del customer_dataset["collections"][0]["fields"][2]  # Customer removes email
 
-        # Specify that "email" is a protected field (referenced in SaaS config)
-        protected_fields = {("products", "email")}
+        # Delete from the appropriate dataset
+        if delete_from == "customer":
+            del customer_dataset["collections"][0]["fields"][2]
+        elif delete_from == "integration":
+            del upcoming_dataset["collections"][0]["fields"][2]
 
-        # Merge the datasets
-        result_dataset_dict: Dict[str, Any] = merge_datasets(
+        result = merge_datasets(
             stored_dataset=stored_dataset,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
@@ -1286,83 +1316,8 @@ class TestConnectionService:
             protected_fields=protected_fields,
         )
 
-        # Verify the protected field is preserved (customer deletion prevented)
-        products_collection = result_dataset_dict["collections"][0]
-        field_names = {f["name"] for f in products_collection["fields"]}
-
-        assert "email" in field_names, (
-            "Protected field 'email' should be preserved despite customer deletion"
-        )
-
-    def test_customer_can_delete_unprotected_field(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test that customers can delete fields not referenced in SaaS config."""
-        # Setup: upcoming dataset (template) has all fields
-        upcoming_dataset = copy.deepcopy(stored_dataset)
-        upcoming_dataset["fides_key"] = "test_instance_key"
-
-        # Customer tries to delete the "email" field (index 2)
-        customer_dataset = copy.deepcopy(stored_dataset)
-        del customer_dataset["collections"][0]["fields"][2]  # Customer removes email
-
-        # No protected fields - customer deletion should be allowed
-        protected_fields: set[tuple[str, str]] = set()
-
-        # Merge the datasets
-        result_dataset_dict: Dict[str, Any] = merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-            instance_key="test_instance_key",
-            protected_fields=protected_fields,
-        )
-
-        # Verify the field is deleted (customer deletion allowed)
-        products_collection = result_dataset_dict["collections"][0]
-        field_names = {f["name"] for f in products_collection["fields"]}
-
-        assert "email" not in field_names, (
-            "Unprotected field 'email' should be deleted when customer removes it"
-        )
-
-    def test_integration_can_delete_protected_field(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test that integration updates can delete fields even if they were protected."""
-        # Setup: upcoming dataset (template) removes the "email" field
-        upcoming_dataset = copy.deepcopy(stored_dataset)
-        upcoming_dataset["fides_key"] = "test_instance_key"
-        del upcoming_dataset["collections"][0]["fields"][2]  # Integration removes email
-
-        # Customer hasn't made any changes
-        customer_dataset = copy.deepcopy(stored_dataset)
-
-        # Even though "email" is protected, integration can still delete it
-        protected_fields = {("products", "email")}
-
-        # Merge the datasets
-        result_dataset_dict: Dict[str, Any] = merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-            instance_key="test_instance_key",
-            protected_fields=protected_fields,
-        )
-
-        # Verify the field is deleted (integration deletion allowed)
-        products_collection = result_dataset_dict["collections"][0]
-        field_names = {f["name"] for f in products_collection["fields"]}
-
-        assert "email" not in field_names, (
-            "Integration should be able to delete even protected fields"
-        )
+        field_names = {f["name"] for f in result["collections"][0]["fields"]}
+        assert ("email" in field_names) == expected_exists
 
     def test_customer_cannot_delete_multiple_protected_fields(
         self,
@@ -1370,81 +1325,36 @@ class TestConnectionService:
         db: Session,
         stored_dataset: Dict[str, Any],
     ):
-        """Test that multiple protected fields across different collections cannot be deleted by customer."""
-        # Add another collection to the stored dataset
+        """Test that multiple protected fields across collections cannot be deleted by customer."""
         stored_dataset_with_extra = copy.deepcopy(stored_dataset)
         stored_dataset_with_extra["collections"].append(
             self._create_test_collection("orders")
         )
-
-        # Template has all fields
         upcoming_dataset = copy.deepcopy(stored_dataset_with_extra)
         upcoming_dataset["fides_key"] = "test_instance_key"
-
-        # Customer tries to delete fields from both collections
         customer_dataset = copy.deepcopy(stored_dataset_with_extra)
-        del customer_dataset["collections"][0]["fields"][
-            2
-        ]  # Remove email from products
-        if customer_dataset["collections"][1]["fields"]:
-            del customer_dataset["collections"][1]["fields"][0]  # Remove orders_id
+        del customer_dataset["collections"][0]["fields"][2]  # Remove email
+        del customer_dataset["collections"][1]["fields"][0]  # Remove orders_id
 
-        # Protect both fields
-        protected_fields = {("products", "email"), ("orders", "orders_id")}
-
-        # Merge the datasets
-        result_dataset_dict: Dict[str, Any] = merge_datasets(
+        result = merge_datasets(
             stored_dataset=stored_dataset_with_extra,
             customer_dataset=customer_dataset,
             upcoming_dataset=upcoming_dataset,
             instance_key="test_instance_key",
-            protected_fields=protected_fields,
+            protected_fields={("products", "email"), ("orders", "orders_id")},
         )
 
-        # Verify both protected fields are preserved
-        products_collection = next(
-            c for c in result_dataset_dict["collections"] if c["name"] == "products"
-        )
-        orders_collection = next(
-            c for c in result_dataset_dict["collections"] if c["name"] == "orders"
-        )
-
-        products_field_names = {f["name"] for f in products_collection["fields"]}
-        orders_field_names = {f["name"] for f in orders_collection["fields"]}
-
-        assert "email" in products_field_names, "Protected 'email' should be preserved"
-        assert "orders_id" in orders_field_names, (
-            "Protected 'orders_id' should be preserved"
-        )
-
-    def test_merge_datasets_protected_field_with_none_parameter(
-        self,
-        connection_service: ConnectionService,
-        db: Session,
-        stored_dataset: Dict[str, Any],
-    ):
-        """Test that customer deletions are allowed when protected_fields is None (backward compatibility)."""
-        # Setup: upcoming dataset (template) has all fields
-        upcoming_dataset = copy.deepcopy(stored_dataset)
-        upcoming_dataset["fides_key"] = "test_instance_key"
-
-        # Customer tries to delete the "email" field
-        customer_dataset = copy.deepcopy(stored_dataset)
-        del customer_dataset["collections"][0]["fields"][2]  # Customer removes email
-
-        # Merge with None protected_fields (backward compatible - allows all deletions)
-        result_dataset_dict: Dict[str, Any] = merge_datasets(
-            stored_dataset=stored_dataset,
-            customer_dataset=customer_dataset,
-            upcoming_dataset=upcoming_dataset,
-            instance_key="test_instance_key",
-            protected_fields=None,
-        )
-
-        # Verify the field is deleted (customer deletion allowed with None)
-        products_collection = result_dataset_dict["collections"][0]
-        field_names = {f["name"] for f in products_collection["fields"]}
-
-        assert "email" not in field_names, (
-            "Customer deletion should be allowed with None protected_fields"
-        )
+        products_fields = {
+            f["name"]
+            for f in next(c for c in result["collections"] if c["name"] == "products")[
+                "fields"
+            ]
+        }
+        orders_fields = {
+            f["name"]
+            for f in next(c for c in result["collections"] if c["name"] == "orders")[
+                "fields"
+            ]
+        }
+        assert "email" in products_fields
+        assert "orders_id" in orders_fields
