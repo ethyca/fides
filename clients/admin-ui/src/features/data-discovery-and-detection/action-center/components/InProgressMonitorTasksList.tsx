@@ -34,7 +34,7 @@ export const InProgressMonitorTasksList = ({
   filters,
 }: {
   filters?: {
-    monitorId?: string;
+    monitorKey?: string;
   };
 }) => {
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
@@ -123,12 +123,13 @@ export const InProgressMonitorTasksList = ({
       {/* Search Row */}
       <Flex justify="space-between" align="center">
         <div className="min-w-[300px]">
-          <DebouncedSearchInput
-            hidden={!!filters?.monitorId}
-            value={filters?.monitorId ?? searchQuery ?? ""}
-            onChange={updateSearch}
-            placeholder="Search by monitor name..."
-          />
+          {!filters?.monitorKey && (
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={updateSearch}
+              placeholder="Search by monitor name..."
+            />
+          )}
         </div>
         {/* Filter Popover */}
         <Popover
