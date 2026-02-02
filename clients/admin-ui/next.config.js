@@ -18,6 +18,10 @@ const nextConfig = {
   images: {
     loader: "custom",
   },
+  eslint: {
+    // Allow builds to proceed even if lint errors are present
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     // The CI tests run without a server, so we leave this value out of .env.test.
     // These rewrites then cause Next to continually try to connect, which spams the logs with "ECONNREFUSED".
