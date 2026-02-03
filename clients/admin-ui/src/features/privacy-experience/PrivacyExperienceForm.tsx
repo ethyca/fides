@@ -482,6 +482,13 @@ export const PrivacyExperienceForm = ({
               );
               return notice?.disabled ?? false;
             }}
+            selectStyles={{
+              popup: {
+                root: {
+                  maxWidth: "500px",
+                },
+              },
+            }}
           />
         </>
       ) : (
