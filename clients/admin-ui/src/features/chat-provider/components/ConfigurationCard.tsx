@@ -1,4 +1,4 @@
-import { Card, Flex, Space, Typography } from "fidesui";
+import { Card, Space, Typography } from "fidesui";
 import { ReactNode } from "react";
 
 const { Title } = Typography;
