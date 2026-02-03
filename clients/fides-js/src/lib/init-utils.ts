@@ -113,6 +113,7 @@ export const getCoreFides = ({
       showFidesBrandLink: !tcfEnabled,
       fidesConsentOverride: null,
       otFidesMapping: null,
+      transcendFidesMapping: null,
       fidesDisabledNotices: null,
       fidesDisabledSystems: null,
       fidesConsentNonApplicableFlagMode: null,
