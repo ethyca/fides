@@ -40,9 +40,7 @@ class TestRBACPermission:
 
         # Verify persistence
         retrieved = (
-            db.query(RBACPermission)
-            .filter(RBACPermission.code == "test:read")
-            .first()
+            db.query(RBACPermission).filter(RBACPermission.code == "test:read").first()
         )
         assert retrieved is not None
         assert retrieved.code == "test:read"
