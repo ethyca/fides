@@ -1,0 +1,3 @@
+type: Added
+description: RBAC management UI for dynamic role-based access control (alpha feature flag)
+pr: 7284
