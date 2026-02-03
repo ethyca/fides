@@ -24,7 +24,8 @@ class RBACPermission(Base):
     created manually in most cases.
     """
 
-    __tablename__ = "rbac_permission"
+    def __tablename__(self) -> str:
+        return "rbac_permission"
 
     code = Column(
         String(255),

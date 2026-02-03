@@ -49,7 +49,8 @@ class RBACRoleConstraint(Base):
     - Cardinality: Only 3 users can be owners
     """
 
-    __tablename__ = "rbac_role_constraint"
+    def __tablename__(self) -> str:
+        return "rbac_role_constraint"
 
     name = Column(
         String(255),
