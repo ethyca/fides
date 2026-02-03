@@ -894,23 +894,21 @@ def run_privacy_request(
                                 )
                                 if consent_message_enabled:
                                     try:
-                                        initiate_consent_request_completion_email(
+                                        email_sent = initiate_consent_request_completion_email(
                                             session,
                                             identity_data,
                                             privacy_request.property_id,
                                         )
-                                        privacy_request.add_success_execution_log(
-                                            session,
-                                            connection_key=None,
-                                            dataset_name="Consent request completion email",
-                                            collection_name=None,
-                                            message="Consent request completion email sent successfully.",
-                                            action_type=ActionType.consent,
-                                        )
-                                    except (
-                                        IdentityNotFoundException,
-                                        MessageDispatchException,
-                                    ) as e:
+                                        if email_sent:
+                                            privacy_request.add_success_execution_log(
+                                                session,
+                                                connection_key=None,
+                                                dataset_name="Consent request completion email",
+                                                collection_name=None,
+                                                message="Consent request completion email sent successfully.",
+                                                action_type=ActionType.consent,
+                                            )
+                                    except MessageDispatchException as e:
                                         privacy_request.add_error_execution_log(
                                             session,
                                             connection_key=None,
@@ -942,26 +940,28 @@ def initiate_consent_request_completion_email(
     session: Session,
     identity_data: dict[str, Any],
     property_id: Optional[str],
-) -> None:
+) -> bool:
     """
     Send consent request completion email to the user.
 
     :param session: SQLAlchemy Session
     :param identity_data: Dict of identity data
     :param property_id: Property id associated with the privacy request
+    :return: True if an email was sent, False if skipped due to missing email
     """
     config_proxy = ConfigProxy(session)
-    if not (
-        identity_data.get(ProvidedIdentityType.email.value)
-        or identity_data.get(ProvidedIdentityType.phone_number.value)
-    ):
-        raise IdentityNotFoundException(
-            "Identity email or phone number was not found, so consent completion message could not be sent."
+    email = identity_data.get(ProvidedIdentityType.email.value)
+
+    if not email:
+        # Consent requests can be submitted with only fides_user_device_id or external_id,
+        # which don't have an email to send a completion message to.
+        # This is not an error - just skip sending the completion email.
+        logger.info(
+            "Skipping consent completion email: no email in identity data"
         )
-    to_identity: Identity = Identity(
-        email=identity_data.get(ProvidedIdentityType.email.value),
-        phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
-    )
+        return False
+
+    to_identity: Identity = Identity(email=email)
     dispatch_message(
         db=session,
         action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
@@ -970,6 +970,7 @@ def initiate_consent_request_completion_email(
         message_body_params=None,
         property_id=property_id,
     )
+    return True
 
 
 def initiate_privacy_request_completion_email(
