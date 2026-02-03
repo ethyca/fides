@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
@@ -53,8 +53,9 @@ export const authSlice = createSlice({
 export const selectAuth = (state: RootState) => state.auth;
 
 // Enhanced user selector that includes isRootUser property
-export const selectUser = (state: RootState) => {
-  const { user } = selectAuth(state);
+// Memoized to prevent unnecessary rerenders when state hasn't changed
+export const selectUser = createSelector([selectAuth], (auth) => {
+  const { user } = auth;
   if (!user) {
     return null;
   }
@@ -67,7 +68,7 @@ export const selectUser = (state: RootState) => {
     ...user,
     isRootUser,
   };
-};
+});
 
 export const selectToken = (state: RootState) => selectAuth(state).token;
 

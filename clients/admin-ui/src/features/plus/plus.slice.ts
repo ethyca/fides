@@ -52,6 +52,59 @@ interface ScanParams {
   classify?: boolean;
 }
 
+// CPRA Assessment types
+export interface CPRAAssessmentRequest {
+  system_fides_key?: string;
+  declaration_id?: string;
+  model?: string;
+  use_llm?: boolean;
+}
+
+export interface CPRAAssessmentQuestion {
+  id: string;
+  requirement_key: string;
+  question_text: string;
+  guidance?: string | null;
+  required: boolean;
+  fides_sources: string[];
+  expected_coverage: string;
+}
+
+export interface FidesDataSource {
+  source_type: string;
+  source_key?: string | null;
+  field_name?: string | null;
+  value?: unknown;
+}
+
+export interface CPRAAssessmentAnswer {
+  question_id: string;
+  status: "complete" | "partial" | "needs_input";
+  answer_text: string | null;
+  confidence?: number | null;
+  fides_data_used?: FidesDataSource[];
+  sme_prompt: string | null;
+  missing_data?: string[];
+}
+
+export interface CPRADeclarationResult {
+  declaration_id: string;
+  declaration_name: string | null;
+  system_fides_key?: string;
+  system_name?: string | null;
+  data_use?: string | null;
+  data_use_name?: string | null;
+  answers: CPRAAssessmentAnswer[];
+}
+
+export interface CPRAAssessmentResult {
+  assessment_type: string;
+  assessment_name: string;
+  questions: CPRAAssessmentQuestion[];
+  declaration_results: Record<string, CPRADeclarationResult>;
+  metadata?: Record<string, unknown>;
+}
+
 interface ClassifyInstancesParams {
   fides_keys?: string[];
   resource_type: GenerateTypes;
@@ -536,6 +589,17 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    // California CPRA Risk Assessment
+    runCpraAssessment: build.mutation<
+      CPRAAssessmentResult,
+      CPRAAssessmentRequest
+    >({
+      query: (body) => ({
+        url: `plus/llm/cpra-assessment`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -580,6 +644,7 @@ export const {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
   useSyncDatahubConnectionMutation,
+  useRunCpraAssessmentMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
