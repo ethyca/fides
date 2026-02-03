@@ -266,7 +266,7 @@ const RoleDetailPage: NextPage = () => {
               {resourceType === "system" && (
                 <Alert
                   message="System permissions apply globally"
-                  description="Note: system:read permission currently grants access to ALL systems in the organization, regardless of any resource scoping."
+                  description="System permissions (system:create, system:read, system:update, system:delete) grant access to ALL systems in the organization. Use system_manager permissions for per-system access control."
                   type="warning"
                   showIcon
                   className="mb-4"
