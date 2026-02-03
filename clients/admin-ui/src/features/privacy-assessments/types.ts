@@ -9,6 +9,7 @@
 // Pagination
 // =============================================================================
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Page_PrivacyAssessmentResponse_ {
   items: PrivacyAssessmentResponse[];
   total: number;
