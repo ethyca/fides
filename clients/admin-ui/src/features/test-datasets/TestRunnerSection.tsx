@@ -1,12 +1,11 @@
 import {
   Button,
-  ChakraHeading as Heading,
-  ChakraHStack as HStack,
-  ChakraText as Text,
-  ChakraTextarea as Textarea,
-  ChakraVStack as VStack,
+  Flex,
+  Input,
   Select,
-  useChakraToast as useToast,
+  Space,
+  Typography,
+  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
@@ -15,7 +14,6 @@ import { useAppDispatch } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
@@ -50,7 +48,7 @@ interface TestResultsSectionProps {
 }
 
 const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
-  const toast = useToast();
+  const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
 
@@ -142,7 +140,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       filteredResultsError.status === 404
     ) {
       dispatch(finishTest());
-      toast(errorToastParams("Test run failed"));
+      messageApi.error("Test run failed");
       return;
     }
 
@@ -166,7 +164,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
         refetchLogs().then(() => {
           dispatch(setTestResults(resultsAction));
           dispatch(finishTest());
-          toast(successToastParams("Test run completed successfully"));
+          messageApi.success("Test run completed successfully");
         });
       }
     } else if (filteredResults.status === PrivacyRequestStatus.ERROR) {
@@ -174,7 +172,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       refetchLogs().then(() => {
         dispatch(setTestResults(resultsAction));
         dispatch(finishTest());
-        toast(errorToastParams("Test run failed"));
+        messageApi.error("Test run failed");
       });
     }
   }, [
@@ -184,7 +182,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     currentDataset,
     isTestRunning,
     dispatch,
-    toast,
+    messageApi,
     refetchLogs,
   ]);
 
@@ -227,12 +225,12 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       try {
         parsedInput = JSON.parse(inputValue);
       } catch (e) {
-        toast(errorToastParams("Invalid JSON in test input"));
+        messageApi.error("Invalid JSON in test input");
         return;
       }
 
       dispatch(startTest(currentDataset.fides_key));
-      toast(successToastParams("Test run started"));
+      messageApi.success("Test run started");
 
       const result = await testDatasets({
         connection_key: connectionKey,
@@ -242,39 +240,39 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       });
 
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        messageApi.error(getErrorMessage(result.error));
         dispatch(finishTest());
       } else if ("data" in result) {
         dispatch(setPrivacyRequestId(result.data.privacy_request_id));
       } else {
         dispatch(finishTest());
-        toast(errorToastParams("No privacy request ID in response"));
+        messageApi.error("No privacy request ID in response");
       }
     } catch (error) {
       dispatch(finishTest());
-      toast(errorToastParams("Failed to start test run"));
+      messageApi.error("Failed to start test run");
     }
   };
 
   const handleStopTest = () => {
     dispatch(interruptTest());
-    toast(successToastParams("Test manually stopped by user"));
+    messageApi.success("Test manually stopped by user");
   };
 
   return (
-    <VStack alignItems="stretch" flex="1" maxWidth="70vw" minHeight="0">
-      <Heading
-        as="h3"
-        size="sm"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack>
-          <Text>Test inputs</Text>
+    <Flex
+      align="stretch"
+      flex="1"
+      gap="small"
+      className="min-h-0 max-w-[70vw]"
+      vertical
+    >
+      <Flex align="center" justify="space-between">
+        <Space>
+          <Typography.Title level={3}>Test inputs</Typography.Title>
           <ClipboardButton copyText={inputValue} />
-        </HStack>
-        <HStack>
+        </Space>
+        <Space>
           <Select
             id="policy"
             aria-label="Policy selector"
@@ -286,7 +284,6 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
             className="w-64"
           />
           <Button
-            htmlType="submit"
             size="small"
             type="primary"
             data-testid="run-btn"
@@ -302,30 +299,26 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
                 : "Run a test access request using the provided test input data and the selected access policy"
             }
           />
-        </HStack>
-      </Heading>
-      <Textarea
-        size="sm"
-        focusBorderColor="primary.600"
-        color="gray.800"
-        isDisabled={isTestRunning}
-        height="100%"
+        </Space>
+      </Flex>
+      <Input.TextArea
+        size="small"
+        disabled={isTestRunning}
+        className="flex-1"
         value={inputValue}
         onChange={handleInputChange}
       />
-      <Heading as="h3" size="sm">
-        Test results <ClipboardButton copyText={testResults} />
-      </Heading>
-      <Textarea
-        isReadOnly
-        size="sm"
-        focusBorderColor="primary.600"
-        color="gray.800"
-        isDisabled={false}
-        height="100%"
+      <Space>
+        <Typography.Title level={3}>Test results</Typography.Title>
+        <ClipboardButton copyText={testResults} />
+      </Space>
+      <Input.TextArea
+        readOnly
+        size="small"
+        className="flex-1"
         value={testResults}
       />
-    </VStack>
+    </Flex>
   );
 };
 

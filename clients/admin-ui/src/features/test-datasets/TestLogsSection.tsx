@@ -1,10 +1,5 @@
 import { format } from "date-fns-tz";
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraHStack as HStack,
-  ChakraText as Text,
-} from "fidesui";
+import { Card, Flex, Typography } from "fidesui";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 
@@ -26,13 +21,13 @@ const formatTimestamp = (isoTimestamp: string) => {
 const getLevelColor = (level: string) => {
   switch (level) {
     case "ERROR":
-      return "red.500";
+      return "var(--ant-color-error)";
     case "WARNING":
-      return "orange.500";
+      return "var(--ant-color-warning)";
     case "INFO":
-      return "blue.500";
+      return "var(--ant-color-info)";
     default:
-      return "gray.500";
+      return "var(--ant-color-text-secondary)";
   }
 };
 
@@ -46,37 +41,36 @@ interface LogLineProps {
 }
 
 const LogLine = memo(({ log }: LogLineProps) => (
-  <Box
-    as="pre"
-    margin={0}
-    fontSize="xs"
-    fontFamily="monospace"
-    whiteSpace="pre-wrap"
-    wordBreak="break-word"
+  <pre
+    style={{
+      margin: 0,
+      fontSize: "12px",
+      fontFamily: "monospace",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+    }}
   >
-    <Text as="span" color="green.500">
+    <span style={{ color: "var(--ant-color-success)" }}>
       {formatTimestamp(log.timestamp)}
-    </Text>
-    <Text as="span"> | </Text>
-    <Text as="span" color={getLevelColor(log.level)}>
+    </span>
+    <span> | </span>
+    <span style={{ color: getLevelColor(log.level) }}>
       {log.level.padEnd(8)}
-    </Text>
-    <Text as="span"> | </Text>
-    <Text as="span" color="cyan.500">
-      {log.module_info}
-    </Text>
-    <Text as="span"> - </Text>
-    <Text
-      as="span"
-      color={
-        log.level === "ERROR" || log.level === "WARNING"
-          ? getLevelColor(log.level)
-          : "gray.800"
-      }
+    </span>
+    <span> | </span>
+    <span style={{ color: "var(--ant-color-link)" }}>{log.module_info}</span>
+    <span> - </span>
+    <span
+      style={{
+        color:
+          log.level === "ERROR" || log.level === "WARNING"
+            ? getLevelColor(log.level)
+            : "var(--ant-color-text)",
+      }}
     >
       {log.message}
-    </Text>
-  </Box>
+    </span>
+  </pre>
 ));
 
 LogLine.displayName = "LogLine";
@@ -128,26 +122,20 @@ const TestLogsSection = () => {
 
   return (
     <>
-      <Heading
-        as="h3"
-        size="sm"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack>
-          <Text>Test logs</Text>
+      <Flex align="center" justify="space-between">
+        <Flex align="center" gap="small">
+          <Typography.Title level={3}>Test logs</Typography.Title>
           <ClipboardButton copyText={plainLogs} />
-        </HStack>
-      </Heading>
-      <Box
+        </Flex>
+      </Flex>
+      <Card
         ref={logsRef}
-        height="200px"
-        overflowY="auto"
-        borderWidth={1}
-        borderColor="gray.200"
-        borderRadius="md"
-        p={2}
+        styles={{
+          body: {
+            height: "200px",
+            overflowY: "auto",
+          },
+        }}
       >
         {logs?.map((log) => (
           <LogLine
@@ -155,7 +143,7 @@ const TestLogsSection = () => {
             log={log}
           />
         ))}
-      </Box>
+      </Card>
     </>
   );
 };

@@ -1,15 +1,14 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  Alert,
   Button,
-  ChakraHeading as Heading,
-  ChakraHStack as HStack,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  ChakraVStack as VStack,
-  ErrorWarningIcon,
-  GreenCheckCircleIcon,
+  Card,
+  Flex,
+  Icons,
   Select,
+  Space,
   Tooltip,
+  Typography,
   useChakraToast as useToast,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
@@ -201,16 +200,16 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   };
 
   return (
-    <VStack alignItems="stretch" flex="1" maxWidth="70vw" maxHeight="100vh">
-      <Heading
-        as="h3"
-        size="sm"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack>
-          <Text>Edit dataset: </Text>
+    <Flex
+      align="stretch"
+      flex="1"
+      gap="small"
+      className="max-h-screen max-w-[70vw]"
+      vertical
+    >
+      <Flex align="center" justify="space-between">
+        <Space>
+          <Typography.Title level={3}>Edit dataset: </Typography.Title>
           <Select
             id="format"
             aria-label="Select a dataset"
@@ -220,22 +219,21 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             onChange={handleDatasetChange}
             className="w-64"
           />
+        </Space>
+        <Space>
           <ClipboardButton copyText={editorContent} />
-        </HStack>
-        <HStack spacing={2}>
           <Tooltip
             title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
             placement="top"
           >
             <Button
-              htmlType="submit"
               size="small"
               data-testid="refresh-btn"
               onClick={handleRefresh}
               loading={isDatasetConfigsLoading}
-            >
-              Refresh
-            </Button>
+              icon={<Icons.Renew />}
+              aria-label="Refresh"
+            />
           </Tooltip>
           <Tooltip
             title="Save your changes to update the dataset in the database."
@@ -245,18 +243,19 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
               Save
             </Button>
           </Tooltip>
-        </HStack>
-      </Heading>
-      <Stack
-        border="1px solid"
-        borderColor="gray.200"
-        borderRadius="md"
-        justifyContent="space-between"
-        py={4}
-        pr={4}
+        </Space>
+      </Flex>
+      <Card
         data-testid="empty-state"
-        flex="1 1 auto"
-        minHeight="200px"
+        className="flex flex-1"
+        styles={{
+          body: {
+            minHeight: "200px",
+            display: "flex",
+            flex: "1 1 auto",
+            paddingLeft: 0,
+          },
+        }}
       >
         <Editor
           defaultLanguage="yaml"
@@ -275,34 +274,19 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           }}
           theme="light"
         />
-      </Stack>
+      </Card>
       {reachability && (
-        <Stack
-          backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
-          border="1px solid"
-          borderColor={reachability?.reachable ? "green.500" : "red.500"}
-          borderRadius="md"
-          p={2}
-          flexShrink={0}
-          mt={2}
-        >
-          <HStack alignItems="center">
-            <HStack flex="1">
-              {reachability?.reachable ? (
-                <GreenCheckCircleIcon />
-              ) : (
-                <ErrorWarningIcon />
-              )}
-              <Text fontSize="sm" whiteSpace="pre-wrap">
-                {reachability?.reachable
-                  ? "Dataset is reachable"
-                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`}
-              </Text>
-            </HStack>
-          </HStack>
-        </Stack>
+        <Alert
+          type={reachability?.reachable ? "success" : "error"}
+          message={
+            reachability?.reachable
+              ? "Dataset is reachable"
+              : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
+          }
+          showIcon
+        />
       )}
-    </VStack>
+    </Flex>
   );
 };
 
