@@ -822,12 +822,14 @@ class TestCustomPermissionChecker:
         checker_calls = []
 
         def custom_checker(db, token_data, client, endpoint_scopes):
-            checker_calls.append({
-                "db": db,
-                "token_data": token_data,
-                "client": client,
-                "scopes": endpoint_scopes.scopes,
-            })
+            checker_calls.append(
+                {
+                    "db": db,
+                    "token_data": token_data,
+                    "client": client,
+                    "scopes": endpoint_scopes.scopes,
+                }
+            )
             return True
 
         register_permission_checker(custom_checker)
@@ -846,6 +848,7 @@ class TestCustomPermissionChecker:
 
     def test_custom_checker_grants_permission(self, oauth_client):
         """Custom checker returning True grants permission."""
+
         def always_allow(db, token_data, client, endpoint_scopes):
             return True
 
@@ -861,6 +864,7 @@ class TestCustomPermissionChecker:
 
     def test_custom_checker_denies_permission(self, oauth_client):
         """Custom checker returning False denies permission."""
+
         def always_deny(db, token_data, client, endpoint_scopes):
             return False
 
@@ -878,6 +882,7 @@ class TestCustomPermissionChecker:
 
     def test_clear_permission_checker_reverts_to_default(self, oauth_client):
         """Clearing the custom checker reverts to default behavior."""
+
         def always_deny(db, token_data, client, endpoint_scopes):
             return False
 
@@ -956,10 +961,13 @@ class TestCustomPermissionChecker:
         checker_calls = []
 
         def checker_that_handles_db_none(db, token_data, client, endpoint_scopes):
-            checker_calls.append({
-                "db_is_none": db is None,
-                "could_create_own_session": db is None,  # Proves callback can handle this
-            })
+            checker_calls.append(
+                {
+                    "db_is_none": db is None,
+                    "could_create_own_session": db
+                    is None,  # Proves callback can handle this
+                }
+            )
             # Real RBAC callback creates its own session here when db is None
             return True
 
@@ -974,6 +982,7 @@ class TestCustomPermissionChecker:
         )
 
         assert len(checker_calls) == 1
-        assert checker_calls[0]["db_is_none"] is True, \
+        assert checker_calls[0]["db_is_none"] is True, (
             "Async path passes db=None; checker must handle by creating own session"
+        )
         assert checker_calls[0]["could_create_own_session"] is True
